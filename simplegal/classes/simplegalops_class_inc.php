@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package simplegal
  *
  */
-class simplegalops extends object {
+class simplegalops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

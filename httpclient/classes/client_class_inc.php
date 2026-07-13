@@ -8,7 +8,7 @@ require_once('httpclients_class_inc.php');
  * @filesource
  */
 
-class client extends object
+class client extends ChisimbaObject
 {
 	/**
 	 * Standard init function

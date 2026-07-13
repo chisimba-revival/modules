@@ -8,7 +8,7 @@
  * @copyright  UWC 2007
  * @filesource
  */
-class weight extends object
+class weight extends ChisimbaObject
 {
     /**
      * Constructor method to instantiate objects and get variables

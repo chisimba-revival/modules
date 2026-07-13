@@ -8,7 +8,7 @@
 * 
 * @Author Derek Keats 
 */
-class scholarg extends object 
+class scholarg extends ChisimbaObject 
 {
     /**
     * Standard init function

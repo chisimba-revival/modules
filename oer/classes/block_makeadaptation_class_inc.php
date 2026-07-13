@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_makeadaptation extends object {
+class block_makeadaptation extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

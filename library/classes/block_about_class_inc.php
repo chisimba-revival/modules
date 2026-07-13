@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * $Id$
 *
 */
-class block_about extends object
+class block_about extends ChisimbaObject
 {
     var $title;
     

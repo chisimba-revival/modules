@@ -50,7 +50,7 @@ if (!
  * @copyright 2010 AVOIR
  *
  */
-class block_mynotesright extends object {
+class block_mynotesright extends ChisimbaObject {
 
     /**
      * The title of the block

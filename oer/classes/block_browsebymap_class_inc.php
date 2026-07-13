@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_browsebymap extends object {
+class block_browsebymap extends ChisimbaObject {
 
     function init() {
         $objLanguage=  $this->getObject("language", "language");

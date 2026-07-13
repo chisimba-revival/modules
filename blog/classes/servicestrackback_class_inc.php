@@ -64,7 +64,7 @@ define('SERVICES_TRACKBACK_STRICTNESS_HIGH', 3);
  * @since     0.1.0
  * @access    public
  */
-class servicestrackback extends object
+class servicestrackback extends ChisimbaObject
 {
     // {{{ var $_data
     

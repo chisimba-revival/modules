@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_fullviewadaptation extends object {
+class block_fullviewadaptation extends ChisimbaObject {
 
     function init() {
         $this->title = "";

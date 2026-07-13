@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_vieworiginalproduct extends object {
+class block_vieworiginalproduct extends ChisimbaObject {
 
     function init() {
         $this->title = "";

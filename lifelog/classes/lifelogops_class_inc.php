@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @version   $Id: $
  * @link      http://avoir.uwc.ac.za
  */
-class lifelogops extends object
+class lifelogops extends ChisimbaObject
 {
 
     public $objCurl;

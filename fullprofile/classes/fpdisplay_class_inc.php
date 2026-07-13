@@ -13,7 +13,7 @@ if ( !$GLOBALS['kewl_entry_point_run'] ) {
  * @package fullprofile
  *
  */
-class fpdisplay extends object
+class fpdisplay extends ChisimbaObject
 {
    /** @var object $objLanguage: The language class of the language module
     * @access private

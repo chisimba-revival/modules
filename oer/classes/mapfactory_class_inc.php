@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class mapfactory extends object {
+class mapfactory extends ChisimbaObject {
 
     function init() {
         

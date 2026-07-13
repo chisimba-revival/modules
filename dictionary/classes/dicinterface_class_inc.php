@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @copyright 2005 GNU GPL
 *
 **/
-class dicinterface extends object
+class dicinterface extends ChisimbaObject
 {
 
     /**

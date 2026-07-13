@@ -4,7 +4,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-abstract class core_chisimba_modules_handler extends object
+abstract class core_chisimba_modules_handler extends ChisimbaObject
 {
 
 abstract function createNewObjectFromModule();

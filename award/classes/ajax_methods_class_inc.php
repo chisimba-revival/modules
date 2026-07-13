@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @see       core
  */
  
- class ajax_methods extends object {
+ class ajax_methods extends ChisimbaObject {
  	
  	/**
  	 * Standard Chisimba constructor to initialise

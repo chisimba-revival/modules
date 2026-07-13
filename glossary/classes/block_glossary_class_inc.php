@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Megan Watson
 */
 
-class block_glossary extends object
+class block_glossary extends ChisimbaObject
 {
     /**
     * Constructor

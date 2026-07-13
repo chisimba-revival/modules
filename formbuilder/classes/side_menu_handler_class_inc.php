@@ -14,7 +14,7 @@
  *  \version 1.00
  *  \date    November 3, 2010
  */
-class side_menu_handler extends object {
+class side_menu_handler extends ChisimbaObject {
 
     /*!
      * \brief Standard constructor that loads classes for other modules.

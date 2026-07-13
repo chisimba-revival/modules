@@ -1,6 +1,6 @@
 <?php
 /**
-* dbusers class extends object
+* dbusers class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */

@@ -1,6 +1,6 @@
 <?php
 /**
-* etdtools class extends object
+* etdtools class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class etdtools extends object
+class etdtools extends ChisimbaObject
 {
     /**
     * @var string $rightContent String containing the content for the right side menu.

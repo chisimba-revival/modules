@@ -10,7 +10,7 @@
  *
  * @author monwabisi
  */
-class block_frontend_home extends object {
+class block_frontend_home extends ChisimbaObject {
         //put your code here
         var $objDom;
         var $objLanguage;

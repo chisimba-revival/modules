@@ -39,7 +39,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @porter Dean Van Niekerk
 * ported from php4 to php5
 */
-class readingease extends object {
+class readingease extends ChisimbaObject {
   
   
     /**

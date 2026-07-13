@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class buscard extends object
+class buscard extends ChisimbaObject
 {
 
     /**

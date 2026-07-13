@@ -6,7 +6,7 @@
  * and open the template in the editor.
 */
 //class which shows student payment details
-class paymentdetails extends Object {
+class paymentdetails extends ChisimbaObject {
     public $lang;
     public $validate;
 

@@ -7,7 +7,7 @@ $this->loadClass('link', 'htmlelements');
  *
  * @author davidwaf
  */
-class block_originalproductslisting extends object {
+class block_originalproductslisting extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

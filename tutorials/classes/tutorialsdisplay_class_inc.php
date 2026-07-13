@@ -1,5 +1,5 @@
 <?php
-/* ----------- tutorialsdisplay class extends object ----------*/
+/* ----------- tutorialsdisplay class extends ChisimbaObject ----------*/
 
 // security check - must be included in all scripts
 if(!$GLOBALS['kewl_entry_point_run']){
@@ -11,7 +11,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @author Kevin Cyster
 */
 
-class tutorialsdisplay extends object
+class tutorialsdisplay extends ChisimbaObject
 {
     /**
     * @var object $objIcon: The geticon class of the htmlelements module

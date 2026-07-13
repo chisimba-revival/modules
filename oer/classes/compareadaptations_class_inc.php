@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class compareadaptations extends object {
+class compareadaptations extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

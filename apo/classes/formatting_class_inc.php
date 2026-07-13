@@ -35,7 +35,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class formatting extends object {
+class formatting extends ChisimbaObject {
     /*
      * Constructor
      */

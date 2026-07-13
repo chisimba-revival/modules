@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Paul Scott <pscott@uwc.ac.za>
  */
 
-class activitystreamsobject extends object
+class activitystreamsobject extends ChisimbaObject
 {
     /**
      * Property to hold activity stream object properties

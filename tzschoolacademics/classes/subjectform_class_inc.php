@@ -9,7 +9,7 @@
  *
  * @author Boniface Chacha <bonifacechacha@gmail.com>
  */
-class subjectform extends object {
+class subjectform extends ChisimbaObject {
     public $lang;
     private $levelValue;
     private $nameValue;

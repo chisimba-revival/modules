@@ -18,7 +18,7 @@ if ( !$GLOBALS['kewl_entry_point_run'] ) {
  * @package dbbslibrary
  */
 
-class dbbslibtools extends object 
+class dbbslibtools extends ChisimbaObject 
 {
     
     /**

@@ -31,7 +31,7 @@ if (!
 $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
-class essayutil extends object {
+class essayutil extends ChisimbaObject {
     function init() {
         $this->objessays = $this->getObject('dbessays');
 

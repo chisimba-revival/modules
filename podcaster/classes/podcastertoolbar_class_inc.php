@@ -5,7 +5,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 }
 // end of security
 
-class webpresenttoolbar extends object
+class webpresenttoolbar extends ChisimbaObject
 {
 
     /**

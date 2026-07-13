@@ -59,7 +59,7 @@ if (!
  * @author    Derek Keats derek@dkeats.com
  *
  */
-class groupedit extends object {
+class groupedit extends ChisimbaObject {
 
     public $objLanguage;
     private $objThumbUploader;

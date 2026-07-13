@@ -1,6 +1,6 @@
 <?php
 /**
-* management class extends object
+* management class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class management extends object
+class management extends ChisimbaObject
 {
     /**
     * @var array $access The users access level within the class - set in the controller according to the group in which the user is a member.

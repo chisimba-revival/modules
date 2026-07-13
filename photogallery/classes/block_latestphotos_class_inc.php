@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  *
  *
  */
-class block_latestphotos extends object
+class block_latestphotos extends ChisimbaObject
 {
     /**
      * @var string $title The title of the block

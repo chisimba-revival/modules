@@ -23,7 +23,7 @@
 * @package facebookapps
 *
 */
-class Facebookwrapper extends object
+class Facebookwrapper extends ChisimbaObject
 {
     public $api_client;
     public $api_key;

@@ -16,7 +16,7 @@
 
 //TODO rewrite to use upload class from files module
 
-class thumbnailuploader extends object{
+class thumbnailuploader extends ChisimbaObject{
 
     public $results;
 

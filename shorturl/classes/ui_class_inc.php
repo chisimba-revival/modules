@@ -15,7 +15,7 @@
  * @author Charl Mert
  */
 
-    class ui extends object
+    class ui extends ChisimbaObject
     {
        /**
         * The map object

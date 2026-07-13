@@ -19,7 +19,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @package   mailmannews
  * @access    public
  */
-class mailmansignup extends object
+class mailmansignup extends ChisimbaObject
 {
 
 	/**

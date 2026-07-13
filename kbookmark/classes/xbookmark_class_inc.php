@@ -10,7 +10,7 @@
  * 
 */
 
-class xbookmark extends object
+class xbookmark extends ChisimbaObject
 {
 	/**
     *  Public output containers.

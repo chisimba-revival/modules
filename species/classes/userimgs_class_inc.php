@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@localhost.local
 *
 */
-class userimgs extends object
+class userimgs extends ChisimbaObject
 {
     
     /**

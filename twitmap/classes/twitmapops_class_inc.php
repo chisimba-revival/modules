@@ -9,7 +9,7 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
 * @author Paul Scott <pscott@uwc.ac.za>
 */
 
-class twitmapops extends object
+class twitmapops extends ChisimbaObject
 {
     public function init()
     {

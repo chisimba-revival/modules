@@ -68,7 +68,7 @@ $GLOBALS['kewl_entry_point_run']) {
 
 */
 
-class dhtmlgoodies_slider extends object
+class dhtmlgoodies_slider extends ChisimbaObject
 {
     /**
     * @var string The ID of the empty element where the slider should be inserted.

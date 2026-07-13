@@ -14,7 +14,7 @@ $GLOBALS ['kewl_entry_point_run']) {
 /**
  * @access     public
  */
-class twitops extends object {
+class twitops extends ChisimbaObject {
 
     /**
      *

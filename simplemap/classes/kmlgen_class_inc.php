@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @filesource
  */
 
-class kmlgen extends object {
+class kmlgen extends ChisimbaObject {
 	
 	/**
 	 * Class to generate KML from arbitrary latlong coords

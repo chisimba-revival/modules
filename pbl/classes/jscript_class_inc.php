@@ -1,6 +1,6 @@
 <?php
 /**
-* Class jscript extends object.
+* Class jscript extends ChisimbaObject.
 * @author Fernando Martinez
 * @author Megan Watson
 * @copyright (c) 2004 UWC
@@ -26,7 +26,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
  * @version 0.9
  */
 
-class jScript extends object
+class jScript extends ChisimbaObject
 {
     /**
     * Method to construct the class

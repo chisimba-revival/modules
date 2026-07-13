@@ -4,7 +4,7 @@
 * PHP class library for getting user lists from a remote webservice
 * @author James Scoble
 */
-class remoteimport extends object
+class remoteimport extends ChisimbaObject
 {
     
     var $errorFlag=FALSE;

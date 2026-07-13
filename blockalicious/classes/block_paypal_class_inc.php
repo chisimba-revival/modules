@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * 
 *
 */
-class block_paypal extends object
+class block_paypal extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

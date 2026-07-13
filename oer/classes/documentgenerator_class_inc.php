@@ -31,7 +31,7 @@
  * @author Paul Mungai paulwando@gmail.com, manie
  *
  */
-class documentgenerator extends object {
+class documentgenerator extends ChisimbaObject {
 
     public $pdf;
     private $dbproducts;

@@ -25,7 +25,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  *
  */
 
-class workflow extends object
+class workflow extends ChisimbaObject
 {
 
     /**

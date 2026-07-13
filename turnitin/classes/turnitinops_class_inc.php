@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Wesley Nitsckie
  * @package turnitin
  */
-class turnitinops extends object
+class turnitinops extends ChisimbaObject
 {
 	
 	//required

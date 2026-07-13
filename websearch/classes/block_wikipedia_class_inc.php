@@ -15,7 +15,7 @@
 	* $Id$
 	*
 	*/
-	class block_wikipedia extends object
+	class block_wikipedia extends ChisimbaObject
 	{
 	    /**
 	    * @var string $title The title of the block

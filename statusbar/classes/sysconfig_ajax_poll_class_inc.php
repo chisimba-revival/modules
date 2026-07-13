@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class sysconfig_ajax_poll extends object
+class sysconfig_ajax_poll extends ChisimbaObject
 {
     /**
      * 

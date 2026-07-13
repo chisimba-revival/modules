@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  *
  */
 
-class interpreter extends object
+class interpreter extends ChisimbaObject
 {
 
     /**
@@ -825,7 +825,7 @@ class interpreter extends object
 *    echo $objCurl->exec('http://ws.geonames.org/search?name_equals=Walvisbaai&style=full');
 */
 
-class curlwrapper_ extends object
+class curlwrapper_ extends ChisimbaObject
 {
     /**
     * @var array $proxyInfo Array Containing Proxy Details
@@ -1239,7 +1239,7 @@ class curlwrapper_ extends object
 *    echo $objCurl->exec('http://ws.geonames.org/search?name_equals=Walvisbaai&style=full');
 */
 
-class curlcmdwrapper_ extends object
+class curlcmdwrapper_ extends ChisimbaObject
 {
     /**
     * @var array $proxyInfo Array Containing Proxy Details

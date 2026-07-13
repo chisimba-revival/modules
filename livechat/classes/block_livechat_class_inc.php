@@ -1,6 +1,6 @@
 <?php
 
-class block_livechat extends object {
+class block_livechat extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

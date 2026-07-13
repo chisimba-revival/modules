@@ -9,7 +9,7 @@
 * 
 * @Author Derek Keats, Jameel Sauls
 */
-class search extends object {
+class search extends ChisimbaObject {
 
     /**
     * @var object $objuser: string to hold the user object

@@ -55,7 +55,7 @@ if (!
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class cmsrpcapi extends object {
+class cmsrpcapi extends ChisimbaObject {
 
     public $objCmsDb;
 

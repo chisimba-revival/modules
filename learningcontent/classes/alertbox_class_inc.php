@@ -50,7 +50,7 @@
  * @link      http://www.mattkruse.com/javascript/colorpicker/index.html
  * @link      http://avoir.uwc.ac.za
  */
-class alertbox extends object
+class alertbox extends ChisimbaObject
 {
 
     /**

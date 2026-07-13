@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package tinyurl
  *
  */
-class tiny extends object {
+class tiny extends ChisimbaObject {
 
     /**
      *

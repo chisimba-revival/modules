@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@dkeats.com
 *
 */
-class userblocks extends object
+class userblocks extends ChisimbaObject
 {
 
     public $objLanguage;

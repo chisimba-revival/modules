@@ -15,7 +15,7 @@
  * @author Charl Mert
  */
 
-    class cmsutils extends object
+    class cmsutils extends ChisimbaObject
     {
        /**
         * The context  object

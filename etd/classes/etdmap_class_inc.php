@@ -1,6 +1,6 @@
 <?php
 /**
-* etdmap class extends object
+* etdmap class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class etdmap extends object
+class etdmap extends ChisimbaObject
 {
     /**
     * @var string strXml The xml file as a string

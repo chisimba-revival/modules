@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Brent van Rensburg
 */
 
-class block_faq extends object
+class block_faq extends ChisimbaObject
 {
     /**
     * Constructor

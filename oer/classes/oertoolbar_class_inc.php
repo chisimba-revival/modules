@@ -31,7 +31,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end of security
 
-class oertoolbar extends object {
+class oertoolbar extends ChisimbaObject {
 
     /**
      * Constructor

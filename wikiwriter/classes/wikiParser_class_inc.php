@@ -14,7 +14,7 @@ if(!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Ryan Whitney, ryan@greenlikeme.org 
 */
-class wikiParser extends object
+class wikiParser extends ChisimbaObject
 {
 
 	// Personal debugger - TODO: REMOVE BEFORE COMMITTING FOR PRODUCTION!

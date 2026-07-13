@@ -25,7 +25,7 @@
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @link      http://avoir.uwc.ac.za
  */
-class sasiwebserver extends object {
+class sasiwebserver extends ChisimbaObject {
     /**
      * WSDL object
      *

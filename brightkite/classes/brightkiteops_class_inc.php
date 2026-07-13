@@ -21,7 +21,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @access    public
  * @version   $Id$
  */
-class brightkiteops extends object
+class brightkiteops extends ChisimbaObject
 {
     protected $objJson;
 

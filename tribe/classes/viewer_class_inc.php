@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package tribe
  *
  */
-class viewer extends object {
+class viewer extends ChisimbaObject {
 
     /**
      *

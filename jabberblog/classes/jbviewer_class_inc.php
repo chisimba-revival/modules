@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package IM
  *
  */
-class jbviewer extends object {
+class jbviewer extends ChisimbaObject {
 
     /**
      *

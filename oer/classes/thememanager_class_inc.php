@@ -19,7 +19,7 @@
  *
  * @author davidwaf
  */
-class thememanager extends object {
+class thememanager extends ChisimbaObject {
 
     public $objDbThemes;
     public $objDbUmbrellaThemes;

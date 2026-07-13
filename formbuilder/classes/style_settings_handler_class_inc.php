@@ -14,7 +14,7 @@
  *  \version 1.00
  *  \date    March 1, 2012
  */
-class style_settings_handler extends object {
+class style_settings_handler extends ChisimbaObject {
 
     /**
      * \brief Object to be able use the html_builder class functionality.

@@ -1,5 +1,5 @@
 <?php
-/* ----------- wikitextdiff class extends object ----------*/
+/* ----------- wikitextdiff class extends ChisimbaObject ----------*/
 
 // security check - must be included in all scripts
 if(!$GLOBALS['kewl_entry_point_run']){
@@ -13,7 +13,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @package wiki
 * @subpackage Text_Diff PEAR package author Geoffrey T. Dairiki
 */
-class wikitextdiff extends object 
+class wikitextdiff extends ChisimbaObject 
 { 
     /**
     * @var object $objLanguage: The language class in the language module

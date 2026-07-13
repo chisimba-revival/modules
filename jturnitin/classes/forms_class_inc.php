@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Wesley Nitsckie
  * @package turnitin
  */
-class forms extends object
+class forms extends ChisimbaObject
 {
 	
 	public function init()

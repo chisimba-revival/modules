@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://feediscovery.appspot.com/
  */
 
-class feediscovery extends object
+class feediscovery extends ChisimbaObject
 {
     /**
      * Instance of the curlwrapper class of the utilities module.

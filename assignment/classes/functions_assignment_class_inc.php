@@ -36,7 +36,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * The assignment admin block class displays a block with an alert if students have handed in.
  * @author Jameel Adam
  */
-class functions_assignment extends object {
+class functions_assignment extends ChisimbaObject {
 
     /**
      * Constructors

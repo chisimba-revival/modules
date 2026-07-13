@@ -6,7 +6,7 @@
  *
  * @author davidwaf
  */
-class block_groupformnav extends object {
+class block_groupformnav extends ChisimbaObject {
 
     function init() {
         $this->title="";

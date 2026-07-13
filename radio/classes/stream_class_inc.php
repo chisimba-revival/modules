@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class stream extends object
+class stream extends ChisimbaObject
 {
 
     /**

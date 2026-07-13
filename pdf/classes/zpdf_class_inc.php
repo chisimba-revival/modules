@@ -2,7 +2,7 @@
 
 require_once("modules/pdf/resources/Pdf.php");
 
-class zpdf extends object
+class zpdf extends ChisimbaObject
 {
 	static $size = "SIZE_A4";
 

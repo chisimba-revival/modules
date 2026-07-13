@@ -8,7 +8,7 @@
 * 
 * @Author Derek Keats 
 */
-class renderSearchResults extends object 
+class renderSearchResults extends ChisimbaObject 
 {
     /**
     * @var object $objLanguage: string to hold the language object

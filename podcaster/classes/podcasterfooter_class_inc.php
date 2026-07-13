@@ -38,7 +38,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end of security
 
-class podcasterfooter extends object {
+class podcasterfooter extends ChisimbaObject {
 
     // news stories object
     private $objNews;

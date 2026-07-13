@@ -44,7 +44,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class consolecommands extends object
+class consolecommands extends ChisimbaObject
 {
 
     /**

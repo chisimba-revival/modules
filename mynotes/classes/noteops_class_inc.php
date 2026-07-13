@@ -50,7 +50,7 @@ if (!
  * @copyright 2010 AVOIR
  *
  */
-class noteops extends object {
+class noteops extends ChisimbaObject {
 
     /**
      *

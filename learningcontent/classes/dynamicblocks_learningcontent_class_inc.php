@@ -46,7 +46,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @author Tohir Solomons
  *
  */
-class dynamicblocks_learningcontent extends object
+class dynamicblocks_learningcontent extends ChisimbaObject
 {
 
     /**

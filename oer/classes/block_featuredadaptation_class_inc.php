@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_featuredadaptation extends object {
+class block_featuredadaptation extends ChisimbaObject {
 
 
     function init() {

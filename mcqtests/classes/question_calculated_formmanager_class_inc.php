@@ -1,6 +1,6 @@
 <?php
 
-class question_calculated_formmanager extends object {
+class question_calculated_formmanager extends ChisimbaObject {
 
     private $id;
 

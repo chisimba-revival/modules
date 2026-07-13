@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 /**
  * Class to control the Icalendar object
 */
-class icalendar extends object 
+class icalendar extends ChisimbaObject 
 {
     
     /**

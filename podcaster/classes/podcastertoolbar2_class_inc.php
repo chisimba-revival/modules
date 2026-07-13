@@ -7,7 +7,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end of security
 
-class podcastertoolbar2 extends object {
+class podcastertoolbar2 extends ChisimbaObject {
 
     /**
      * Constructor

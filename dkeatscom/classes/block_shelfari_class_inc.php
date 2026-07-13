@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_shelfari extends object
+class block_shelfari extends ChisimbaObject
 {
     public $title;
     public $blockType;

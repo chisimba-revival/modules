@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-abstract class abtpcommon extends object
+abstract class abtpcommon extends ChisimbaObject
 {
     /**
     * 

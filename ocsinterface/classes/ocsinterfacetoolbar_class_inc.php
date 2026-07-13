@@ -7,7 +7,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end of security
 
-class ocsinterfacetoolbar extends object {
+class ocsinterfacetoolbar extends ChisimbaObject {
 
     /**
      * Constructor

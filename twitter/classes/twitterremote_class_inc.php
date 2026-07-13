@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package twitter
 *
 */
-class twitterremote extends object
+class twitterremote extends ChisimbaObject
 {
     /**
     *

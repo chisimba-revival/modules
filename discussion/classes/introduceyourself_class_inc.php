@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @package discussion
 * @version 1
 */
-class introduceyourself extends object
+class introduceyourself extends ChisimbaObject
 {
     /**
     * var string $_introTypeId: Type Id for the 'Introduce Your Self' Discussion Type

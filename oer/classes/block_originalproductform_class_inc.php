@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_originalproductform extends object {
+class block_originalproductform extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

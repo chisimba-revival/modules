@@ -1,5 +1,5 @@
 <?php
-class homemanager extends object {
+class homemanager extends ChisimbaObject {
     function init() {
         $this->objAltConfig = $this->getObject('altconfig','config');
 

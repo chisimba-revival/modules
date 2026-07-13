@@ -66,7 +66,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package Commandshell
 *
 */
-class buildad extends object
+class buildad extends ChisimbaObject
 {
 
     /**

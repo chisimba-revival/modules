@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   http://twitter.com/goodies/tweetbutton
  */
-class tweetbttn extends object
+class tweetbttn extends ChisimbaObject
 {
     
     public function init()

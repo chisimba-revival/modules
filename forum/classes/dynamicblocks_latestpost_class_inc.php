@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 /**
 * This class renders forum view dynamic block
 */
-class dynamicblocks_latestpost extends object
+class dynamicblocks_latestpost extends ChisimbaObject
  {
 
 	/**

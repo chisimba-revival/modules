@@ -4,7 +4,7 @@
 /**
 * Class to handle the display of the splashscreen before login
 */
-class splashscreenrender extends object
+class splashscreenrender extends ChisimbaObject
 {
 
     var $objModule;

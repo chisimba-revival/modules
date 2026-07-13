@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class workgroupops extends object
+class workgroupops extends ChisimbaObject
 {
 	
 	/**

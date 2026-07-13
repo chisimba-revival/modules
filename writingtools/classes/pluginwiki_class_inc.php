@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package writingtools
 *
 */
-class pluginwiki extends object
+class pluginwiki extends ChisimbaObject
 {
 
     /**

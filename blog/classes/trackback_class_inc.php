@@ -48,7 +48,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @access     Public
  * @filesource
  */
-class trackback extends object
+class trackback extends ChisimbaObject
 {
     /**
      * The trackback object Instance

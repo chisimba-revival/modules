@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_deleteforum extends object {
+class block_deleteforum extends ChisimbaObject {
 
         //put your code here
         var $objLnaguage;

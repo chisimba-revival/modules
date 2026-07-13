@@ -1,6 +1,6 @@
 <?php
 /**
-* xmlmetadata class extends object
+* xmlmetadata class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version $Id$
 */
 
-class xmlmetadata extends object
+class xmlmetadata extends ChisimbaObject
 {
     /**
     * Constructor

@@ -37,7 +37,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * The month and year would be determine by the $month and $year variables
 */
-class calendargenerator extends object
+class calendargenerator extends ChisimbaObject
 {
     /**
     * @var year The Year for which the calendar should be generated

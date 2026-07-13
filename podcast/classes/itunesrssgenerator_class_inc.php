@@ -3,7 +3,7 @@
  * Class to generate a Podcast Rss Feed based on the Itunes.com DTD
  * @author Tohir Solomons
  */
-class itunesrssgenerator extends object
+class itunesrssgenerator extends ChisimbaObject
 {
     /**
      * Title of RSS Feed

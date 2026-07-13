@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class widget_errorwidget extends object
+class widget_errorwidget extends ChisimbaObject
 {
     /**
     * Constructor for the class

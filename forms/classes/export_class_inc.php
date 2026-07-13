@@ -16,7 +16,7 @@
  * @author Charl Mert
  */
 
-class export extends object
+class export extends ChisimbaObject
 {
     /**
     * The User object

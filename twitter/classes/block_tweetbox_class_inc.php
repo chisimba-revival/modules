@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_tweetbox extends object
+class block_tweetbox extends ChisimbaObject
 {
     /**
     * Standard block title

@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 *
 */
-class block_rquote extends object
+class block_rquote extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

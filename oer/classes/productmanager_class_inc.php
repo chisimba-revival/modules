@@ -24,7 +24,7 @@
  * @link       http://www.chisimba.com
  * @author davidwaf
  */
-class productmanager extends object {
+class productmanager extends ChisimbaObject {
 
     private $dbproducts;
     private $objLanguage;

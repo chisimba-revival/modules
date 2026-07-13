@@ -1,6 +1,6 @@
 <?php
 
-class userextrautils extends object {
+class userextrautils extends ChisimbaObject {
 
     function init() {
         $this->objGroups = $this->getObject('groupadminmodel', 'groupadmin');

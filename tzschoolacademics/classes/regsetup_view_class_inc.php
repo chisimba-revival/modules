@@ -9,7 +9,7 @@
  *
  * @author Boniface Chacha <bonifacechacha@gmail.com>
  */
-class regsetup_view extends object{
+class regsetup_view extends ChisimbaObject{
     private $lang;
     private $registrar;
 

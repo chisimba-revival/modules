@@ -21,7 +21,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @access    public
  * @version   $Id$
  */
-class locationops extends object
+class locationops extends ChisimbaObject
 {
     protected $objJson;
     protected $objModules;

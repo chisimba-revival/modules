@@ -19,7 +19,7 @@
  * object from the chisimba core to manage class objects with ease.
  * If the object class is altered in the future, this class may not function.
  */
-class form_submit_results_handler extends object {
+class form_submit_results_handler extends ChisimbaObject {
 
     /*!
      * \brief Private data member to store the form number for the form that can

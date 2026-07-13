@@ -33,7 +33,7 @@ if (!
         die("You cannot view this page directly");
 }
 
-class faculties extends object {
+class faculties extends ChisimbaObject {
 
     // The Label for the Faculty
     private $facultyLabel;

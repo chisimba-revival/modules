@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   http://www.mongodb.org/
  */
-class geoops extends object
+class geoops extends ChisimbaObject
 {
 
 	/**

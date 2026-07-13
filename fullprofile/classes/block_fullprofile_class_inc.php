@@ -1,6 +1,6 @@
 <?php
 
-class block_fullprofile extends object {
+class block_fullprofile extends ChisimbaObject {
 
     function init()
     {

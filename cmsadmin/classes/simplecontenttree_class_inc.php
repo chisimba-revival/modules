@@ -20,7 +20,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @example :
 */
 
-class simplecontenttree extends object
+class simplecontenttree extends ChisimbaObject
 {
 
         /**

@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package externalblocks
 *
 */
-class renderblocks extends object
+class renderblocks extends ChisimbaObject
 {
 
     /**

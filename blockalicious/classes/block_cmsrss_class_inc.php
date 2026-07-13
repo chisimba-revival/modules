@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @access    public
 */
 
-class block_cmsrss extends object {
+class block_cmsrss extends ChisimbaObject {
 	
     public $title;
     public $objLanguage;

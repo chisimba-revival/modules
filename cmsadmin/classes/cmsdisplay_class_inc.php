@@ -17,7 +17,7 @@
  * @author Charl Mert
  */
 
-    class cmsdisplay extends object
+    class cmsdisplay extends ChisimbaObject
     {
        /**
         * The context  object

@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Brent van Rensburg
 * @copyright 2008 University of the Western Cape
 */
-class block_latestcatquestions extends object
+class block_latestcatquestions extends ChisimbaObject
 {
     public $title;
 	

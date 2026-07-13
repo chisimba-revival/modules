@@ -2,7 +2,7 @@
 /**
 * Handles attachments to events.
 */
-class attachments extends object {
+class attachments extends ChisimbaObject {
 	/**
 	* Constructor
 	*/

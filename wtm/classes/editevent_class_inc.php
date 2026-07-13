@@ -46,7 +46,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 
 
-class editevent extends object 
+class editevent extends ChisimbaObject 
 {
 	public $objLanguage;
  

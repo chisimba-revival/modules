@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package events
  *
  */
-class eventssocial extends object {
+class eventssocial extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

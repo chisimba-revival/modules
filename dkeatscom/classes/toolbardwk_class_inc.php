@@ -38,7 +38,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package dkeatscom
 *
 */
-class toolbardwk extends object
+class toolbardwk extends ChisimbaObject
 {
     /**
     *

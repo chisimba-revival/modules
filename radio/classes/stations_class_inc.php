@@ -46,7 +46,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class stations extends object
+class stations extends ChisimbaObject
 {
 
     /**

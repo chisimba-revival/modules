@@ -23,7 +23,7 @@
  *
  * @author davidwaf
  */
-class digitallibraytagcloud extends object {
+class digitallibraytagcloud extends ChisimbaObject {
 
     public function init() {
         $this->objFileTags = $this->getObject('dbfiletags', 'filemanager');

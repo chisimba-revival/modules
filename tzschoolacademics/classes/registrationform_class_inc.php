@@ -10,7 +10,7 @@
  *
  * @author Boniface Chacha <bonifacechacha@gmail.com>
  */
-abstract class registrationform extends object {
+abstract class registrationform extends ChisimbaObject {
     public $lang;
     
     public function init(){

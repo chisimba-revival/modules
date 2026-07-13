@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  */
 
-class triplesubject extends object
+class triplesubject extends ChisimbaObject
 {
     /**
      * Instance of the dbtriplestore class of the triplestore module.

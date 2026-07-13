@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @licence GNU/GPL
 *
 */
-class messagestpl extends object 
+class messagestpl extends ChisimbaObject 
 {
     /**
     * 

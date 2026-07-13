@@ -42,7 +42,7 @@
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class sysconfig_convertlocation extends object
+class sysconfig_convertlocation extends ChisimbaObject
 {
     /**
     * Constructor

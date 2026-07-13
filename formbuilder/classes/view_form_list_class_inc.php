@@ -16,7 +16,7 @@
  *  \version 1.00
  *  \date    November 3, 2010
  */
-class view_form_list extends object {
+class view_form_list extends ChisimbaObject {
 
 //dead variable
 // public $objLanguage;

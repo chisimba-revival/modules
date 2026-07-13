@@ -3,7 +3,7 @@
 require_once 'PHPExcel.php';
 require_once 'PHPExcel/IOFactory.php';
 
-class pdfgenerator extends object {
+class pdfgenerator extends ChisimbaObject {
 
     public function init() {
         $this->objDbGift = $this->getObject("dbgift");

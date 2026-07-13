@@ -3,7 +3,7 @@
  // include_once 'language_module_class_inc.php';
  //  include_once 'object_core_module_class_inc.php';
 
-class view_single_message_subject extends object
+class view_single_message_subject extends ChisimbaObject
 {
  //public $objLanguage;
     private $AllReplies;

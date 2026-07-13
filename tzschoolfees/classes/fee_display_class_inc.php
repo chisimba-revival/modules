@@ -9,7 +9,7 @@
 
 
 //class to display all  fee information from database
-class fee_display extends object{
+class fee_display extends ChisimbaObject{
 
     public $objfee;
 

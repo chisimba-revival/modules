@@ -15,7 +15,7 @@
  * @author Charl Mert <charl.mert@gmail.com>
  */
 
-    class ui extends object
+    class ui extends ChisimbaObject
     {
        /**
         * The context  object

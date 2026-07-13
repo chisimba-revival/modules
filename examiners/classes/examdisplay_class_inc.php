@@ -1,5 +1,5 @@
 <?php
-/* ----------- examdisplay class extends object ----------*/
+/* ----------- examdisplay class extends ChisimbaObject ----------*/
 
 // security check - must be included in all scripts
 if(!$GLOBALS['kewl_entry_point_run']){
@@ -11,7 +11,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @author Kevin Cyster
 */
 
-class examdisplay extends object
+class examdisplay extends ChisimbaObject
 {
     /**
     * @var object $objLanguage: The language class of the language module

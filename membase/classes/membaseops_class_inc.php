@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class membaseops extends object
+class membaseops extends ChisimbaObject
 {
     /**
      * Instance of the memcache class.

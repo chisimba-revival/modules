@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * 
 *
 */
-class block_todo extends object
+class block_todo extends ChisimbaObject
 {
 
 

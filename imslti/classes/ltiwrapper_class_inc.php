@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package imslti
 *
 */
-class ltiwrapper extends object
+class ltiwrapper extends ChisimbaObject
 {
 	
     /**

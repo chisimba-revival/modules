@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_singleview extends object {
+class block_singleview extends ChisimbaObject {
 
     var $objUser;
     var $objPost;

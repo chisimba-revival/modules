@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Kevin Cyster
 */
-class block_wiki extends object
+class block_wiki extends ChisimbaObject
 {
     /*
     * @var object $objLanguage: The language class in the language module

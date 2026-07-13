@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Charl Mert <charl.mert@gmail.com>
  */
 
-class generate extends object
+class generate extends ChisimbaObject
 {
     /**
      * Code Analyzer Object

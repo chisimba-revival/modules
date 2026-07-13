@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class manager extends object {
+class manager extends ChisimbaObject {
 
     function init() {
 

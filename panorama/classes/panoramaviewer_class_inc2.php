@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package panorama
 *
 */
-class panoramaviewer extends object
+class panoramaviewer extends ChisimbaObject
 {
     
     /**

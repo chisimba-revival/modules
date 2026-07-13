@@ -2,7 +2,7 @@
 /**
 * Handles attachments to events.
 */
-class block_smallcalendar extends object
+class block_smallcalendar extends ChisimbaObject
 {
     public function init()
     {

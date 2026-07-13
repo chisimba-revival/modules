@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @licence GNU/GPL
 *
 */
-class buddiestpl extends object
+class buddiestpl extends ChisimbaObject
 {
     /**
     *

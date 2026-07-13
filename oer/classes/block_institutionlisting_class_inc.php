@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_institutionlisting extends object {
+class block_institutionlisting extends ChisimbaObject {
 
     function init() {
         $this->title = "";

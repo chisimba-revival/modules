@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class menu extends object
+class menu extends ChisimbaObject
 {
     /**
     * @var $contextCode The current context code

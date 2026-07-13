@@ -34,7 +34,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package MXit Dictionary
  *
  */
-class sugviewer extends object {
+class sugviewer extends ChisimbaObject {
 
     /**
      *

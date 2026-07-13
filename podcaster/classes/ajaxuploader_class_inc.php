@@ -17,7 +17,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * 2) Instantiates an ajax call for the conversion process. This process is backgrounded,
 * allowing the user to continue browsing the site whilst the conversion takes place.
 */
-class ajaxuploader extends object
+class ajaxuploader extends ChisimbaObject
 {
 
     /**

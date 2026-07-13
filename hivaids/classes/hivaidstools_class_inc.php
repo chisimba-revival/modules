@@ -1,6 +1,6 @@
 <?php
 /**
-* hivaidstools class extends object
+* hivaidstools class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class hivaidstools extends object
+class hivaidstools extends ChisimbaObject
 {
     /**
     * Constructor method

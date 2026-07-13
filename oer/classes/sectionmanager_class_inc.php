@@ -20,7 +20,7 @@
  *
  * @author davidwaf
  */
-class sectionmanager extends object {
+class sectionmanager extends ChisimbaObject {
 
     function init() {
         $this->dbproducts = $this->getObject('dbproducts', 'oer');

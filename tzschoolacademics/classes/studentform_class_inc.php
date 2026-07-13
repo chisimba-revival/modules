@@ -10,7 +10,7 @@
  *
  * @author Boniface Chacha <bonifacechacha@gmail.com>
  */
-class studentform extends object{
+class studentform extends ChisimbaObject{
    public $lang;
    
    private $fNameValue='';

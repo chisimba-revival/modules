@@ -1,6 +1,6 @@
 <?php
 
-class section_calendar extends object
+class section_calendar extends ChisimbaObject
 {
 
     public function init()

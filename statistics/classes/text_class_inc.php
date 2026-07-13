@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @porter Dean Van Niekerk
 * ported from php4 to php5
 */
-class text extends object {
+class text extends ChisimbaObject {
 
     public $evaluation_string;
     

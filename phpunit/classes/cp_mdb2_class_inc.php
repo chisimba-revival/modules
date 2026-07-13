@@ -16,7 +16,7 @@
  * @author Charl Mert <charl.mert@gmail.com>
  */
 
-    class cp_mdb2 extends object
+    class cp_mdb2 extends ChisimbaObject
     {
       /**
         * objMdb2

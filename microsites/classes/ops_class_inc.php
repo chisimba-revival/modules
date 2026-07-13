@@ -44,7 +44,7 @@ $GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-class ops extends object{
+class ops extends ChisimbaObject{
     /**
     *
     * Constructor for the imageprovider class

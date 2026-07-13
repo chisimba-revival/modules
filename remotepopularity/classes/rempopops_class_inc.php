@@ -19,7 +19,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @package   blog
  * @access    public
  */
-class rempopops extends object
+class rempopops extends ChisimbaObject
 {
 
 	/**

@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://chisimba.com/
  * @see       http://wurfl.sourceforge.net/
  */
-class wurfl_installscripts extends object
+class wurfl_installscripts extends ChisimbaObject
 {
     /**
      * Instance of the altconfig class in the config module.

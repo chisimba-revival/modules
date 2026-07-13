@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 *
 */
-class calendarbiulder extends object
+class calendarbiulder extends ChisimbaObject
 {
 
 	var $NOW;

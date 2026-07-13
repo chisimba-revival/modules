@@ -61,7 +61,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@dkeats.com
 *
 */
-class stripeui extends object
+class stripeui extends ChisimbaObject
 {
     /**
      *

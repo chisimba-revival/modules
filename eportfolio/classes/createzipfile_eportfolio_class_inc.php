@@ -1,5 +1,5 @@
 <?php
-/* ----------- createzipfile_Eportfolio class extends object------------*/
+/* ----------- createzipfile_Eportfolio class extends ChisimbaObject------------*/
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Rochak Chauhan, Paul Mungai
  * @copyright 2009 University of the Western Cape & University of Nairobi
  */
-class createzipfile_Eportfolio extends object
+class createzipfile_Eportfolio extends ChisimbaObject
 {
     public $compressedData = array();
     public $centralDirectory = array(); // central directory

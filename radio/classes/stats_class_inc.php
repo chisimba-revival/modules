@@ -46,7 +46,7 @@ error_reporting(0);
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class stats extends object
+class stats extends ChisimbaObject
 {
 
     /**

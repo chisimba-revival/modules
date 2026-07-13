@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Charl Mert <charl.mert@gmail.com>
  */
 
-class api_curl extends object
+class api_curl extends ChisimbaObject
 {
     /**
      * _method

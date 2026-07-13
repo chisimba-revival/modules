@@ -1,6 +1,6 @@
 <?php
 
-class section_nextprevious extends object
+class section_nextprevious extends ChisimbaObject
 {
 
     public function init()

@@ -71,7 +71,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class presentationprovider extends object
+class presentationprovider extends ChisimbaObject
 {
     // Note that these properties violate naming standards in Chisimba
     // but that is necessary for the oembed naming standards.

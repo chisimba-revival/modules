@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Administrative User admin@localhost.local
 *
 */
-class simpleblogops extends object
+class simpleblogops extends ChisimbaObject
 {
 
     /**

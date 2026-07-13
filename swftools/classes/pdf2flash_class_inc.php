@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package swftools
 *
 */
-class pdf2flash extends object
+class pdf2flash extends ChisimbaObject
 {
     
     /**

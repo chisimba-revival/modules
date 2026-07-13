@@ -11,7 +11,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class block_importstudents extends object {
+class block_importstudents extends ChisimbaObject {
 
     function init() {
         $this->objDBContext = $this->getObject('dbcontext', 'context');

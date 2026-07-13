@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package portalimport
 *
 */
-class portalfileutils extends object
+class portalfileutils extends ChisimbaObject
 {
 	public $dirs=array();
 	public $files=array();

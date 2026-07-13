@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package qrreview
  *
  */
-class reviewops extends object {
+class reviewops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

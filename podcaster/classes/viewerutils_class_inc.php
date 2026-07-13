@@ -14,7 +14,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class viewerutils extends object {
+class viewerutils extends ChisimbaObject {
 
     /**
      * Constructor

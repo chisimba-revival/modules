@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_fbfriendme extends object
+class block_fbfriendme extends ChisimbaObject
 {
     public $title;
     public $blockType;

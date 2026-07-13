@@ -28,7 +28,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-class block_spkea4freelogin extends object
+class block_spkea4freelogin extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

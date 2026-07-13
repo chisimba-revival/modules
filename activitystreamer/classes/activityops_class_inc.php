@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Wesley Nitsckie
  * @package turnitin
  */
-class activityops extends object
+class activityops extends ChisimbaObject
 {
     /**
      * The system configuration.

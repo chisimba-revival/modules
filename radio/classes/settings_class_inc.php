@@ -47,7 +47,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class settings extends object
+class settings extends ChisimbaObject
 {
 
     /**

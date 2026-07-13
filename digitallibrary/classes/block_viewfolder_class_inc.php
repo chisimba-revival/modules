@@ -27,7 +27,7 @@
  *
  * @author davidwaf
  */
-class block_viewfolder extends object {
+class block_viewfolder extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

@@ -18,7 +18,7 @@
  * object from the chisimba core to manage class objects with ease.
  * If the object class is altered in the future, this class may not function.
  */
-class form_element_inserter extends object {
+class form_element_inserter extends ChisimbaObject {
 
     /*!
      * \brief Private data member of class form_element_inserter

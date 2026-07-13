@@ -54,7 +54,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package racemap
  *
  */
-class racemapops extends object {
+class racemapops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

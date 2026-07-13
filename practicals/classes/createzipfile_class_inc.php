@@ -9,7 +9,7 @@
  *
  * @version 1.0
  */
-class createzipfile extends object{
+class createzipfile extends ChisimbaObject{
 
     public $compressedData = array();
     public $centralDirectory = array(); // central directory

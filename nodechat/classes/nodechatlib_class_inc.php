@@ -49,7 +49,7 @@ if (!
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class nodechatlib extends object
+class nodechatlib extends ChisimbaObject
 {
     /**
      * Instance of the dbsysconfig class of the sysconfig module.

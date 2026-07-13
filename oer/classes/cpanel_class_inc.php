@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class cpanel extends object {
+class cpanel extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

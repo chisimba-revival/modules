@@ -9,7 +9,7 @@
  *
  * @author davidwaf
  */
-class block_uploads extends object {
+class block_uploads extends ChisimbaObject {
 
     function init() {
         $this->title="Speak4Free Uploads";

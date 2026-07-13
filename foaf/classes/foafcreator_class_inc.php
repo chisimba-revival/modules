@@ -4,7 +4,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 // end security check
-class foafcreator extends object
+class foafcreator extends ChisimbaObject
 {
     /**
      * @var object XML_Tree object containing the FOAF RDF/XML Tree

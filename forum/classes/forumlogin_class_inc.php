@@ -5,7 +5,7 @@
 * It only appears if you use the thetha_page_tpl.php Page Template
 * @author Tohir Solomons
 */
-class forumlogin extends object
+class forumlogin extends ChisimbaObject
 {
 
     /**

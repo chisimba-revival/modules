@@ -16,7 +16,7 @@
  *  \version 1.00
  *  \date    November 3, 2010
  */
-class help_page_handler extends object {
+class help_page_handler extends ChisimbaObject {
 
     /*!
      * \brief Private data member from the class \ref dbformbuilder_user_help_content that stores all

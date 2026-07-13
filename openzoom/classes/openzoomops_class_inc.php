@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package openzoom
 *
 */
-class openzoomops extends object
+class openzoomops extends ChisimbaObject
 {
 
     /**

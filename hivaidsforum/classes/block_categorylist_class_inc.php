@@ -8,7 +8,7 @@
 * @copyright (c) 2007 University of the Western Cape
 */
 
-class block_categorylist extends object
+class block_categorylist extends ChisimbaObject
 {
     /**
     * @var the block title

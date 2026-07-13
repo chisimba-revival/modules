@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class jqoembed extends object
+class jqoembed extends ChisimbaObject
 {
    
     /**

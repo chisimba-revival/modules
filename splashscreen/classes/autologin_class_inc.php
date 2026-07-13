@@ -1,5 +1,5 @@
 <?php
-class autologin extends object {
+class autologin extends ChisimbaObject {
     function show()
     {   
         return '';

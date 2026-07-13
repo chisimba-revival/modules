@@ -33,7 +33,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-class rssreader extends object
+class rssreader extends ChisimbaObject
 {
 	/**
 	 * RSS Object

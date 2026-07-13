@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
  * @author Paul Scott
  */
 
-class httpresponse extends object
+class httpresponse extends ChisimbaObject
 {
 	/**
      * HTTP Response Code (i.e. 404 or 200)

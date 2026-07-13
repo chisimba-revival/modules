@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_grouplisting extends object {
+class block_grouplisting extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

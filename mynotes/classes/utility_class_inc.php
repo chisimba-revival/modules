@@ -47,7 +47,7 @@ if (!
  * @copyright 2010 AVOIR
  *
  */
-class utility extends object {
+class utility extends ChisimbaObject {
     
     /*
      * @var $module The name of the current module, mynotes

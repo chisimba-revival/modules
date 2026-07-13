@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end security check
 
-class block_discussionlist extends object {
+class block_discussionlist extends ChisimbaObject {
 
         var $objLanguage;
         var $objPost;

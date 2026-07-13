@@ -33,7 +33,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class userutils extends object {
+class userutils extends ChisimbaObject {
 
     var $heading = "Podcast Manager";
     var $resourcePath;

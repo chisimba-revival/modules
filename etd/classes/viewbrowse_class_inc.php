@@ -1,6 +1,6 @@
 <?php
 /**
-* View Browse class extends object
+* View Browse class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @modified by Megan Watson on 2006 11 04 Ported to 5ive / chisimba
 */
 
-class viewBrowse extends object
+class viewBrowse extends ChisimbaObject
 {
     /**
     * @var true|false The access controll section;

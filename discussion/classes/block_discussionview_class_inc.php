@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_discussionview extends object {
+class block_discussionview extends ChisimbaObject {
 
     var $objGroups;
     var $objTranslatedDate;

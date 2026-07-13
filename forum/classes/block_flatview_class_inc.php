@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_flatview extends object {
+class block_flatview extends ChisimbaObject {
 
         var $objUser;
         var $objLanguage;

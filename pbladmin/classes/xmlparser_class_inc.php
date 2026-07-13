@@ -1,6 +1,6 @@
 <?php
 /**
-* Class xmlParser extends object.
+* Class xmlParser extends ChisimbaObject.
 * @package pbladmin
 * @filesource
 */
@@ -22,7 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.9
  */
 
-class xmlParser extends object
+class xmlParser extends ChisimbaObject
 {
     public $instrs = array();
     public $ip = 0, $ni = 0;

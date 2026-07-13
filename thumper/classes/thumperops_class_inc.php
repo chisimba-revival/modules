@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class thumperops extends object
+class thumperops extends ChisimbaObject
 {
     /**
      * Instance of the dbsysconfig class of the sysconfig module.

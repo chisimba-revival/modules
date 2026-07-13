@@ -40,7 +40,7 @@
 * @author Derek Keats
 *
 */
-class getgravatar extends object {
+class getgravatar extends ChisimbaObject {
     
     /**
     * 

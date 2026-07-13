@@ -94,7 +94,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class discoveryprovider extends object
+class discoveryprovider extends ChisimbaObject
 {
    
     /**

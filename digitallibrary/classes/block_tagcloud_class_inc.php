@@ -18,7 +18,7 @@
 
  */
 
-class block_tagcloud extends object {
+class block_tagcloud extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

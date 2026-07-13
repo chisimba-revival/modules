@@ -3,7 +3,7 @@
 * Class to provide SysConfig an input for the ALLOW_PARSE parameter of the Glossary Module
 * @author Tohir Solomons
 */
-class sysconfig_allow_parse extends object
+class sysconfig_allow_parse extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

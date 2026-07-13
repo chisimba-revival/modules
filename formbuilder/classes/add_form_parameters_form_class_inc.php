@@ -22,7 +22,7 @@
  * need some refactoring.
  */
 
-class add_form_parameters_form extends object {
+class add_form_parameters_form extends ChisimbaObject {
     /*!
      * \brief Public data member of class language_module that stores an object of this class.
      * \brief This class is composed of one object from the language class in the html elements core module of chisimba.

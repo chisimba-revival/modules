@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package featuresuggest
  *
  */
-class featuresui extends object {
+class featuresui extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

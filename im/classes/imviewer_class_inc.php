@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package IM
  *
  */
-class imviewer extends object {
+class imviewer extends ChisimbaObject {
 
     /**
      *

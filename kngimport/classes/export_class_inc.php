@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * 
  */
 
-class export extends object 
+class export extends ChisimbaObject 
 {
     /**
 	* @var object $objDBContentNodes

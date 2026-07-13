@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class wizlinks extends object
+class wizlinks extends ChisimbaObject
 {
     /**
     * 

@@ -1,5 +1,5 @@
 <?php
-class edit extends object {
+class edit extends ChisimbaObject {
 
 
     /**

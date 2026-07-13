@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Wesley  Nitsckie
 */
 
-class articlebox extends object
+class articlebox extends ChisimbaObject
 {
         /**
          * Method to initialise the articlebox object

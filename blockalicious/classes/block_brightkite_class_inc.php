@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Autor left DWK as author
 *
 */
-class block_brightkite extends object
+class block_brightkite extends ChisimbaObject
 {
     public $title;
     public $objUserParams;

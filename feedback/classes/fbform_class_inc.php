@@ -5,7 +5,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 // end security check
 
-class fbform extends object
+class fbform extends ChisimbaObject
 {
     
 	public function init()

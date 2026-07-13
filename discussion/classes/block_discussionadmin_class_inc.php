@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 // end security check
 include 'block_discussionlist_class_inc.php';
 
-class block_discussionadmin extends object {
+class block_discussionadmin extends ChisimbaObject {
 
         var $contextObject;
         var $contextTitle;

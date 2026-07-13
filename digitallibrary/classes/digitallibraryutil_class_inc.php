@@ -23,7 +23,7 @@
  *
  * @author davidwaf
  */
-class digitallibraryutil extends object {
+class digitallibraryutil extends ChisimbaObject {
 
     function init() {
         $this->objUploadMessages = $this->getObject('uploadmessages', 'filemanager');

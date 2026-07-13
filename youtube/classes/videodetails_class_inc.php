@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class videodetails extends object 
+class videodetails extends ChisimbaObject 
 {
 
     

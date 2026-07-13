@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Modified from code by Nic Appleby
 *
 */
-class registerops extends object {
+class registerops extends ChisimbaObject {
     /**
      *
      * @var string Object $objLanguage String for the language object

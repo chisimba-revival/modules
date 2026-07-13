@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @category chisimba
  */
 
-class commentapi extends object
+class commentapi extends ChisimbaObject
 {
 	/**
 	 * The user object inherited from the security class

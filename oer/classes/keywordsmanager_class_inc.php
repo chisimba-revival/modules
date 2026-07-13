@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class keywordsmanager extends object {
+class keywordsmanager extends ChisimbaObject {
 
     public $objDbKeyWords;
     private $objLanguage;

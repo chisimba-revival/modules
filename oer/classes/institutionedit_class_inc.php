@@ -61,7 +61,7 @@ if (!
  * @author    Derek Keats derek@dkeats.com
  *
  */
-class institutionedit extends object {
+class institutionedit extends ChisimbaObject {
 
     public $objLanguage;
     private $mode;

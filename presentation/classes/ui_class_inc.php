@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package presentation
 *
 */
-class ui extends object
+class ui extends ChisimbaObject
 {
     /**
     * 

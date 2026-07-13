@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package tourinfo
  *
  */
-class tourops extends object {
+class tourops extends ChisimbaObject {
 
     /**
      *

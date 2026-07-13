@@ -23,7 +23,7 @@
  *
  * @author davidwaf
  */
-class block_fileswithtag extends object {
+class block_fileswithtag extends ChisimbaObject {
 
     function init() {
         $this->title="Files with tag";

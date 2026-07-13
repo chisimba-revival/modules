@@ -25,7 +25,7 @@
  *
  * @author pwando
  */
-class adaptationmanager extends object {
+class adaptationmanager extends ChisimbaObject {
 
     private $dbproducts;
     private $dbInstitution;

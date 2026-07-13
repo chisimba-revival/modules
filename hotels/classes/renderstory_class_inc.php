@@ -1,6 +1,6 @@
 <?php
 
-class renderstory extends object
+class renderstory extends ChisimbaObject
 {
 
     public function init()

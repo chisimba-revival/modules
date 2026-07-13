@@ -33,7 +33,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * Class to render login box, register links, and do other pre login duties
 *
 **/
-class speak4freeloginInterface extends object
+class speak4freeloginInterface extends ChisimbaObject
 {
 
     /**

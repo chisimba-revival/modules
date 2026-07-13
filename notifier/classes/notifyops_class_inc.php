@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * 
 * @author Paul Scott
 */
-class notifyops extends object
+class notifyops extends ChisimbaObject
 {
 	public $jserver;
 	public $juser;

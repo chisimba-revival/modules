@@ -15,7 +15,7 @@ die( "You cannot view this page directly" );
 * @version $id$
 */
 
-class inflationgraph extends object {
+class inflationgraph extends ChisimbaObject {
 
     var $Graph;
     var $Font;

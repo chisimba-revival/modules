@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package _MODULECODE
 *
 */
-class filtertemplate extends object
+class filtertemplate extends ChisimbaObject
 {
     public $objConfig;
     public $objLanguage;

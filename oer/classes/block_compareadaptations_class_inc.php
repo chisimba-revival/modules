@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_compareadaptations extends object {
+class block_compareadaptations extends ChisimbaObject {
 
     function init() {
         $this->title = "";

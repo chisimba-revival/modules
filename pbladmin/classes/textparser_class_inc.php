@@ -1,6 +1,6 @@
 <?php
 /**
-* Class textParser extends object.
+* Class textParser extends ChisimbaObject.
 * @package pbladmin
 * @filesource
 */
@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.9
  */
 
-class textParser extends object
+class textParser extends ChisimbaObject
 {
     public $caseid;
 

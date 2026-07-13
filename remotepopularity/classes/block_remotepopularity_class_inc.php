@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2006-2008 AVOIR
  *
  */
-class block_remotepopularity extends object
+class block_remotepopularity extends ChisimbaObject
 {
     /**
      * The title of the block

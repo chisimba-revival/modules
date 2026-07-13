@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Class usermenu extends object.
+* Class usermenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -13,7 +13,7 @@
 * @copyright (c) 2004 University of the Western Cape
 * @version 1
 */
-class workgroupmenu extends object
+class workgroupmenu extends ChisimbaObject
 {
     /**
 	* Constructor method to instantiate objects and get variables

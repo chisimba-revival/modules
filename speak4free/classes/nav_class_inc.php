@@ -1,5 +1,5 @@
 <?php
-class nav extends object {
+class nav extends ChisimbaObject {
 
     public function  init() {
         $this->loadclass('link','htmlelements');

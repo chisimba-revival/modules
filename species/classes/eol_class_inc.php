@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@localhost.local
 *
 */
-class eol extends object
+class eol extends ChisimbaObject
 {
     
     /**

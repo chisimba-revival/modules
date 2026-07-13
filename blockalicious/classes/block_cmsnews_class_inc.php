@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_cmsnews extends object
+class block_cmsnews extends ChisimbaObject
 {
     public $title;
     public $objLanguage;

@@ -20,7 +20,7 @@
 * @author Tohir Solomons
 */
 require_once($this->getResourcePath('phpmathpublisher/mathpublisher.php', 'mathml'));
-class mathimg extends object
+class mathimg extends ChisimbaObject
 {
     /**
     * Constructor

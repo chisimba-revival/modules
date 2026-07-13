@@ -29,7 +29,7 @@ define('EMAIL_PASSWORD', '');
  * @package forum
  * @version 1
  */
-class forumemail extends object {
+class forumemail extends ChisimbaObject {
 
         /**
          * @var Object $eMailReciever object to get emails from the server

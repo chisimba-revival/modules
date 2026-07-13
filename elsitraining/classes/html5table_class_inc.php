@@ -28,7 +28,7 @@
  * @version   $Id: html5table_class_inc.php 19529 2010-10-28 17:20:34Z charlvn $
  * @link      http://avoir.uwc.ac.za
  */
-class html5table extends object
+class html5table extends ChisimbaObject
 {
     /**
      * Instance of the dbsysconfig class of the sysconfig module.

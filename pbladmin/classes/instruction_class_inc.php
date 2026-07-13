@@ -1,6 +1,6 @@
 <?php
 /**
-* Class instruction extends object.
+* Class instruction extends ChisimbaObject.
 * @package pbladmin
 * @filesource
 */
@@ -22,7 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.9
  */
 
-class instruction extends object
+class instruction extends ChisimbaObject
 {
     public $attrs = array(); // atributes
     public $instrs = array(); // point to nested instructions

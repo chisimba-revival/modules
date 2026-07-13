@@ -42,7 +42,7 @@
   }
   // end security check
   
-  class viewer extends object
+  class viewer extends ChisimbaObject
   {
       /**
        *

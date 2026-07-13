@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class akismetops extends object
+class akismetops extends ChisimbaObject
 {
     /**
      * Instance of the Akismet class.

@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class redisops extends object
+class redisops extends ChisimbaObject
 {
     /**
      * Instance of the php_redis class.

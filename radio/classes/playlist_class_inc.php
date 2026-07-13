@@ -46,7 +46,7 @@
  * @see       References to other sections (if any)...
  */
 
-class playlist extends object
+class playlist extends ChisimbaObject
 {
 
 

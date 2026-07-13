@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @package cms
 */
 
-class cmsadminlayouts extends object
+class cmsadminlayouts extends ChisimbaObject
 {
     
     /**

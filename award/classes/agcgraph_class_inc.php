@@ -15,7 +15,7 @@ die( "You cannot view this page directly" );
 * @version $id:
 */
 
-class agcgraph extends object {
+class agcgraph extends ChisimbaObject {
 
 	var $graph;
 	var $Dataset = array();

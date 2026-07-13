@@ -31,7 +31,7 @@ if (!
 $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
-class editform extends object {
+class editform extends ChisimbaObject {
     public $objLanguage;
 
     public function init() {

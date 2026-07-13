@@ -1,6 +1,6 @@
 <?php
 
-class formmanager extends object {
+class formmanager extends ChisimbaObject {
     /*
      * @var object to hold tbl description class
      */

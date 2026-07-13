@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class system extends object
+class system extends ChisimbaObject
 {
 
     /**

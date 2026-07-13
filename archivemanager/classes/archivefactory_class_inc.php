@@ -47,7 +47,7 @@ $GLOBALS['kewl_entry_point_run'])
 // end security check
 
 	
-	class archivefactory extends object{
+	class archivefactory extends ChisimbaObject{
 
                 private $objArchive;
 

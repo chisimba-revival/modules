@@ -61,7 +61,7 @@ if (!
  * @author    Derek Keats derek@dkeats.com
  *
  */
-class useredit extends object {
+class useredit extends ChisimbaObject {
 
     public $objLanguage;
     private $mode;

@@ -66,7 +66,7 @@ if (!
  * @package wall
  *
  */
-class wallops extends object {
+class wallops extends ChisimbaObject {
 
     /**
      *

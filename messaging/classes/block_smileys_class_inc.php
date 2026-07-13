@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Kevin Cyster
 */
-class block_smileys extends object
+class block_smileys extends ChisimbaObject
 {
     /*
     * @var object $objPopup: The windowpop class in the htmlelements module

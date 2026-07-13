@@ -6,7 +6,7 @@
  */
 include("feedcreator_class_inc.php");
 
-class feeder extends object
+class feeder extends ChisimbaObject
 {
     public $objFeeder;
     public  $rssImage = null;

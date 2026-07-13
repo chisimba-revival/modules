@@ -6,7 +6,7 @@ if(!$GLOBALS['kewl_entry_point_run']) {
 // end of security
 
 
-class ajaxuploader extends object {
+class ajaxuploader extends ChisimbaObject {
 
     /**
      * Constructor

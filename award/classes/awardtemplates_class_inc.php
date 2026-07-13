@@ -9,7 +9,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @author Nic Appleby
 * @package LRS
 */
-class awardtemplates extends object {
+class awardtemplates extends ChisimbaObject {
 
 	/**
      * Init method to load required classes

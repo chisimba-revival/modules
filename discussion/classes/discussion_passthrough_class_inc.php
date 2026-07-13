@@ -1,6 +1,6 @@
 <?php
 
-class discussion_passthrough extends object
+class discussion_passthrough extends ChisimbaObject
 {
 
     /**

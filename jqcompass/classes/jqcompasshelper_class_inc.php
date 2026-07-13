@@ -70,7 +70,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package jqcompass
 *
 */
-class jqcompasshelper extends object
+class jqcompasshelper extends ChisimbaObject
 {
 
     /**

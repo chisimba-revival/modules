@@ -63,7 +63,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package streams
 *
 */
-class streamapplet extends object
+class streamapplet extends ChisimbaObject
 {
 
     /**

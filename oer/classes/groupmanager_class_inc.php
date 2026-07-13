@@ -22,7 +22,7 @@
  * @link       http://www.chisimba.com
 
  */
-class groupmanager extends object {
+class groupmanager extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

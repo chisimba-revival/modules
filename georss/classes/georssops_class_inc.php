@@ -1,6 +1,6 @@
 <?php
 
-class georssops extends object 
+class georssops extends ChisimbaObject 
 {
 	
 	public function init()

@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @license    http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @link       http://www.chisimba.com
  */
-class schoolusersops extends object
+class schoolusersops extends ChisimbaObject
 {
     /**
      * Standard init function called by the constructor call of Object

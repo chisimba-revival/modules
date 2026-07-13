@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_mostarc extends object {
+class block_mostarc extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

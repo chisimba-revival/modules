@@ -28,7 +28,7 @@
  * @version   $Id: html5form_class_inc.php -1   $
  * @link      http://avoir.uwc.ac.za
  */
-class html5form extends object
+class html5form extends ChisimbaObject
 {
     /**
      * Generates a hidden form field.

@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Qhamani Fenama 
 *
 */
-class mobilesecurity extends object {
+class mobilesecurity extends ChisimbaObject {
      
 	
 	function init() {

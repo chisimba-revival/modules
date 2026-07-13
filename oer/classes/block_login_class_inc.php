@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_login extends object {
+class block_login extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

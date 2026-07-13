@@ -5,7 +5,7 @@
 *
 * @author Tohir Solomons
 */
-class cellnumber extends object
+class cellnumber extends ChisimbaObject
 {
     /**
     * Class constructor

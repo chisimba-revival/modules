@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package metadata
  *
  */
-class exifmeta extends object {
+class exifmeta extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

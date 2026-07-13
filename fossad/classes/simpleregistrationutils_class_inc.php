@@ -1,5 +1,5 @@
 <?php
-class simpleregistrationutils extends object{
+class simpleregistrationutils extends ChisimbaObject{
 
    /**
     * initialize the object, and set the necessary ext js scripts

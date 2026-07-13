@@ -1,6 +1,6 @@
 <?php
 /**
-* dblinks class extends object
+* dblinks class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */

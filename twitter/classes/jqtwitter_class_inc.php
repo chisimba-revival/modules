@@ -64,7 +64,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package twitter
 *
 */
-class jqtwitter extends object
+class jqtwitter extends ChisimbaObject
 {
     /**
     *

@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2012 Kenga Solutions
  *
  */
-class block_showpage extends object
+class block_showpage extends ChisimbaObject
 {
     /**
      * The title of the block

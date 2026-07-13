@@ -48,7 +48,7 @@ $GLOBALS['kewl_entry_point_run']) {
  *         $Id: block_latest_class_inc.php 11076 2010-02-09 06:58:10
  *
  */
-class block_randblog extends object
+class block_randblog extends ChisimbaObject
 {
     /**
      * The title of the block

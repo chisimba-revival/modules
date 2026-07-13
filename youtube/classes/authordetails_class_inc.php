@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class authordetails extends object 
+class authordetails extends ChisimbaObject 
 {
 
     

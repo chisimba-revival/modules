@@ -4,7 +4,7 @@
 * Class to Generate Custom Menu for the Sanord Skin
 * @author Tohir Solomons
 */
-class fsiumenu extends object
+class fsiumenu extends ChisimbaObject
 {
     /**
     * @var array $menuItems List of Menu Items/Modules to be built into the system

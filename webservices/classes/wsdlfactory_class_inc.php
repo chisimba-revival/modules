@@ -1,5 +1,5 @@
 <?php
-class wsdlfactory extends object
+class wsdlfactory extends ChisimbaObject
 {
 	public $properties;
 	public $methods;

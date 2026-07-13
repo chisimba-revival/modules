@@ -18,7 +18,7 @@ die( "You cannot view this page directly" );
 *
 * @author Kevin Cyster
 */
-class surveysession extends object
+class surveysession extends ChisimbaObject
 {
     // -------------- survey session methods -------------//
     /**

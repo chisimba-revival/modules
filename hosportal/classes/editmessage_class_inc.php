@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * \warning Do NOT pass variable types as parameters that are not specified in this class
 */
 
-class editmessage extends object
+class editmessage extends ChisimbaObject
 {
 
      /*!

@@ -3,7 +3,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-abstract class side_navigation_links_handler extends object
+abstract class side_navigation_links_handler extends ChisimbaObject
 {
 
 protected  $objbuildform;

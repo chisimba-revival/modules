@@ -14,7 +14,7 @@
 *
 */
 
-class yahoo extends object
+class yahoo extends ChisimbaObject
 {
 
     /**

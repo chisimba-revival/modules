@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package jpgraph
  *
  */
-class graphops extends object {
+class graphops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

@@ -46,7 +46,7 @@ $GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-	class archive extends object{
+	class archive extends ChisimbaObject{
 	
 		private $_status;
 		private $_comment;

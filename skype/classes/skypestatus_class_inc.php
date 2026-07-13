@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  */
 
-class skypestatus extends object
+class skypestatus extends ChisimbaObject
 {
     /**
      * Instance of the curlwrapper class of the utilities module.

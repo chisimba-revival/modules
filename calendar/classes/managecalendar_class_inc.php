@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * Its methods are coded for user events.
 */
-class managecalendar extends object
+class managecalendar extends ChisimbaObject
 {
     var $eventsList; // an array to store current events
 

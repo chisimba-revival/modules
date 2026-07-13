@@ -51,7 +51,7 @@ if (!
  * @copyright 2010 AVOIR
  *
  */
-class block_reg3 extends object {
+class block_reg3 extends ChisimbaObject {
 
     /**
      * The title of the block

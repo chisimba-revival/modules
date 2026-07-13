@@ -5,7 +5,7 @@
  * and open the template in the editor.
  */
 
-class block_optout extends object {
+class block_optout extends ChisimbaObject {
 
     /**
      *

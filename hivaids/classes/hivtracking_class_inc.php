@@ -1,6 +1,6 @@
 <?php
 /**
-* hivtracking class extends object
+* hivtracking class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class hivtracking extends object
+class hivtracking extends ChisimbaObject
 {
     /**
     * Constructor method

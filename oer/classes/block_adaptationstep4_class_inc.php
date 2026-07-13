@@ -25,7 +25,7 @@
  * 
  * @author davidwaf
  */
-class block_adaptationstep4 extends object {
+class block_adaptationstep4 extends ChisimbaObject {
 
     function init() {
         $this->title="";

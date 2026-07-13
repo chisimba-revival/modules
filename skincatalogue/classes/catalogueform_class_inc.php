@@ -43,7 +43,7 @@ if (!
 /*
  * The EditForm class
  */
-class catalogueform extends object {
+class catalogueform extends ChisimbaObject {
 
     /**
      * The images directory

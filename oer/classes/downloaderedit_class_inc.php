@@ -58,7 +58,7 @@ if (!
  * @author    Paul Mungai paulwando@gmail.com
  *
  */
-class downloaderedit extends object {
+class downloaderedit extends ChisimbaObject {
 
     public $objLanguage;
     private $objDBdownloaders;

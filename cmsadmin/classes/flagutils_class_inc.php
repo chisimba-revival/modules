@@ -16,7 +16,7 @@
 * @author Charl Mert <charl.mert@gmail.com>
 */
 
-    class flagutils extends object
+    class flagutils extends ChisimbaObject
     {
 
         /**

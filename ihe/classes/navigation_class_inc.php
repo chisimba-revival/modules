@@ -1,5 +1,5 @@
 <?php
-class navigation extends object {
+class navigation extends ChisimbaObject {
   function init() {
     $this->loadclass('link','htmlelements');
   }

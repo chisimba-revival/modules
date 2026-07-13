@@ -11,7 +11,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
  * @author Kevin Cyster
  */
 
-class questions extends object
+class questions extends ChisimbaObject
 {
     /**
      * @var object $dbType The dbtype class in the survey module

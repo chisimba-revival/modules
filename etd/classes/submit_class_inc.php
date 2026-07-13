@@ -1,6 +1,6 @@
 <?php
 /**
-* submit class extends object
+* submit class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class submit extends object
+class submit extends ChisimbaObject
 {
     /**
     * Constructor for the class

@@ -34,7 +34,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class topnavigation extends object {
+class topnavigation extends ChisimbaObject {
     /*
      * Constructor
      *

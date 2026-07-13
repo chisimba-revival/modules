@@ -1,5 +1,5 @@
 <?php
-/* ----------- getall_Eportfolio class extends object------------*/
+/* ----------- getall_Eportfolio class extends ChisimbaObject------------*/
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Paul Mungai
  * @copyright 2008 University of the Western Cape
  */
-class getall_Eportfolio extends object
+class getall_Eportfolio extends ChisimbaObject
 {
     /**
      *

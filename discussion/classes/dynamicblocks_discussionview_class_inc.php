@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 /**
 * This class renders discussion view dynamic block
 */
-class dynamicblocks_discussionview extends object
+class dynamicblocks_discussionview extends ChisimbaObject
  {
 
 	/**

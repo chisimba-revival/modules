@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package blog
 *
 */
-class blogcanvas extends object
+class blogcanvas extends ChisimbaObject
 {
 
     public $uid;

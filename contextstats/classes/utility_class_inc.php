@@ -1,6 +1,6 @@
 <?php
   /**
-   * Class utility extends object.
+   * Class utility extends ChisimbaObject.
    * @package contextstats
    * @filesource utility_class_inc.php
    */
@@ -18,7 +18,7 @@
    * @package contextstats
    * @version 1
    */
-  class utility extends object
+  class utility extends ChisimbaObject
   {
       public $wsdl;
       /**

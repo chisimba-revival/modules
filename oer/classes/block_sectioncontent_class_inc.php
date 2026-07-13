@@ -6,7 +6,7 @@
  *
  * @author davidwaf
  */
-class block_sectioncontent extends object {
+class block_sectioncontent extends ChisimbaObject {
 
     function init() {
         $this->title = "";

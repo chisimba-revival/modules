@@ -6,7 +6,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-class docblock extends object 
+class docblock extends ChisimbaObject 
 {
 	public function init()
 	{

@@ -12,7 +12,7 @@ $this->loadClass('label', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
 $this->loadClass('form', 'htmlelements');
 
-class block_addeditkeywords extends object {
+class block_addeditkeywords extends ChisimbaObject {
 
     //the language object
     private $objLanguage;

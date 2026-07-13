@@ -1,6 +1,6 @@
 <?php
 
-class opendoc extends object
+class opendoc extends ChisimbaObject
 {
 	public $odt;
 

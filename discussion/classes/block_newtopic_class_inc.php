@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_newtopic extends object {
+class block_newtopic extends ChisimbaObject {
 
     var $objDiscussion;
     var $objLanguage;

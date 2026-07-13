@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package swesos
  * @access public
  */
-class sweops extends object
+class sweops extends ChisimbaObject
 {
 	public $objConfig;
 

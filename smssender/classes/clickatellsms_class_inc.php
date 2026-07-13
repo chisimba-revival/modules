@@ -35,7 +35,7 @@
 * @package sms_api
 */
 
-class clickatellsms extends object{
+class clickatellsms extends ChisimbaObject{
 
     /**
     * Clickatell API-ID

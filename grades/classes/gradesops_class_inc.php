@@ -47,7 +47,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class gradesops extends object
+class gradesops extends ChisimbaObject
 {
     /**
      * Standard init function

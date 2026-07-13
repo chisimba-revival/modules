@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_featuredoriginalproduct extends object {
+class block_featuredoriginalproduct extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

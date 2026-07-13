@@ -63,7 +63,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package wall
 *
 */
-class wallguesser extends object
+class wallguesser extends ChisimbaObject
 {
 
    // public $objUser;

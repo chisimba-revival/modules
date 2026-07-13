@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package jqtress
 *
 */
-class jstreehelper extends object
+class jstreehelper extends ChisimbaObject
 {
 
     /**

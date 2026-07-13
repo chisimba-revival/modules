@@ -1,5 +1,5 @@
 <?php
-class view_gradebook extends object
+class view_gradebook extends ChisimbaObject
 {
     public function init()
     {

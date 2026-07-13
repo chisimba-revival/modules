@@ -27,7 +27,7 @@
  *
  * @author davidwaf
  */
-class block_createfolder extends object {
+class block_createfolder extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

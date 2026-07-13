@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class makeadaptation extends object {
+class makeadaptation extends ChisimbaObject {
 
     private $dbsectioncontent;
     private $dbSectionNodes;

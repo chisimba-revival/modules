@@ -15,7 +15,7 @@
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-class institution extends object {
+class institution extends ChisimbaObject {
 
     /**
      * This is the id of the isntitution

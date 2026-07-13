@@ -44,7 +44,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * A block to provide for the creation of a user account (user registration)
 *
 */
-class block_createaccount extends object
+class block_createaccount extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

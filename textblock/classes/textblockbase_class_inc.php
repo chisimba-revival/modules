@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Derek Keats
  *
  */
-class textblockbase extends object {
+class textblockbase extends ChisimbaObject {
 
     public $title;
     private $objDb;

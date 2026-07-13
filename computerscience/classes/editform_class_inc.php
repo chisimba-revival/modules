@@ -1,6 +1,6 @@
 <?php
 
-class editform extends object {
+class editform extends ChisimbaObject {
     public $objLanguage;
 
     public function init() {

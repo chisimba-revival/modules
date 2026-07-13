@@ -8,7 +8,7 @@
  * @copyright  UWC 2007
  * @filesource
  */
-class temp extends object
+class temp extends ChisimbaObject
 {
     /**
      * Constructor method to instantiate objects and get variables

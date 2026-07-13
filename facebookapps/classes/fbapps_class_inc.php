@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class fbapps extends object
+class fbapps extends ChisimbaObject
 {
 
     /**

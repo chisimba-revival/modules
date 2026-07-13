@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_sectionnavigator extends object {
+class block_sectionnavigator extends ChisimbaObject {
 
     function init() {
         $this->title = "";

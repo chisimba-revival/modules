@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @licence GNU GPL
  * @package cms
  */
-class cmslayouts extends object {
+class cmslayouts extends ChisimbaObject {
 
     /**
      * Constructor function

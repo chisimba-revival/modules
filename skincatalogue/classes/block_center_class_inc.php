@@ -44,7 +44,7 @@ include "catalogueform_class_inc.php";
 /**
  * The center block class
  */
-class block_center extends object {
+class block_center extends ChisimbaObject {
 
     /**
      * @access public

@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @see       http://dev.wurflpro.com/projects/wurfl-api/browser/php/core/trunk
  * @see       https://dev.wurflpro.com/svn/wurflpro/wurfl-api/php/core/trunk/WURFL/
  */
-class wurflops extends object
+class wurflops extends ChisimbaObject
 {
     /**
      * The system configuration.

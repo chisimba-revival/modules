@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  */
 
-class educommonsimport extends object
+class educommonsimport extends ChisimbaObject
 {
     protected $objSpie;
     protected $objContext;

@@ -1,6 +1,6 @@
 <?php
 /**
-* Class academicsidemenu extends object.
+* Class academicsidemenu extends ChisimbaObject.
 * @package tzacademics
 */
 
@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
  *
  * @author boniface chacha <bonifacechacha@gmail.com>
  */
-class academicsidemenu extends object{
+class academicsidemenu extends ChisimbaObject{
    public $menu;
    public $menuItems=array();
    public $lang;

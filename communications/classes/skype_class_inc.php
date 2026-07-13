@@ -10,7 +10,7 @@
 *
 */
 
-class icq extends object
+class icq extends ChisimbaObject
 {
 
     /**

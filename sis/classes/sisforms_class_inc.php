@@ -52,7 +52,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class sisforms extends object {
+class sisforms extends ChisimbaObject {
     public $objLanguage;
     public $objUser;
     public $sysConfig;

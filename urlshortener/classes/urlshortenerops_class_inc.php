@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id: membaseops_class_inc.php 18777 2010-08-21 15:36:07Z charlvn $
  * @link      http://avoir.uwc.ac.za/
  */
-class urlshortenerops extends object
+class urlshortenerops extends ChisimbaObject
 {
     /**
      * Instance of the altconfig class of the config module.

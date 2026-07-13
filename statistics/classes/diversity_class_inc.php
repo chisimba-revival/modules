@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @porter Dean Van Niekerk
 * ported from php4 to php5
 */
-class diversity extends object {
+class diversity extends ChisimbaObject {
     
 
     public $S;

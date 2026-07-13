@@ -1,5 +1,5 @@
 <?php
-/* ----------- readxml_Scorm class extends object------------*/
+/* ----------- readxml_Scorm class extends ChisimbaObject------------*/
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @copyright 2008 University of the Western Cape
  */
 
-class readxml_scorm extends object {
+class readxml_scorm extends ChisimbaObject {
 /**
  * @var groupAdminModel an object reference.
  */

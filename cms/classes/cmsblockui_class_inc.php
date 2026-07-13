@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@dkeats.com
 *
 */
-class cmsblockui extends object
+class cmsblockui extends ChisimbaObject
 {
 
     /**

@@ -1,5 +1,5 @@
 <?php
-/* ----------- mysql2xml_Eportfolio class extends object------------*/
+/* ----------- mysql2xml_Eportfolio class extends ChisimbaObject------------*/
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Paul Mungai
  * @copyright 2008 University of the Western Cape & University of Nairobi
  */
-class mysqlxml_Eportfolio extends object
+class mysqlxml_Eportfolio extends ChisimbaObject
 {
     var $recordSet;
     var $xml;

@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class mapinput extends object 
+class mapinput extends ChisimbaObject 
 {
     /**
     * 

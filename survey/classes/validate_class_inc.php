@@ -11,7 +11,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
  * @author Kevin Cyster
  */
 
-class validate extends object
+class validate extends ChisimbaObject
 {
     /**
      * @var object $objLanguage The language class in the language module

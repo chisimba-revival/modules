@@ -24,7 +24,7 @@
 * @author    David Wafula
 */
 
-    class liveinvitation extends object{
+    class liveinvitation extends ChisimbaObject{
 
 
         public function init()

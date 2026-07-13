@@ -1,6 +1,6 @@
 <?php
 
-/* ----------- logic class extends object for module maillist------------*/
+/* ----------- logic class extends ChisimbaObject for module maillist------------*/
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run'])
 {
@@ -18,7 +18,7 @@ include('Mail/mimeDecode.php');
  * @package maillist
  */
 
-class mail extends object
+class mail extends ChisimbaObject
 {
 	/**
 	 * @var string mailserv - the mail server hostname

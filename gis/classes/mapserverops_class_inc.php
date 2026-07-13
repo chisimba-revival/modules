@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package gis
  * @access public
  */
-class mapserverops extends object
+class mapserverops extends ChisimbaObject
 {
 	public $objConfig;
 	public $objMapserver;

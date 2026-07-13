@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package Sphinxsearch
  *
  */
-class sphinxops extends object {
+class sphinxops extends ChisimbaObject {
 
     /**
      *

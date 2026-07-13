@@ -7,7 +7,7 @@
  */
 
 
-class block_themes extends object {
+class block_themes extends ChisimbaObject {
 
     function init() {
        $this->title="";

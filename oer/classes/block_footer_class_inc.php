@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_footer extends object{
+class block_footer extends ChisimbaObject{
     function  init(){
         $this->title="";
     }

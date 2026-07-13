@@ -22,7 +22,7 @@ if (!
  *
  * @author monwabisi
  */
-class block_internalsright extends Object {
+class block_internalsright extends ChisimbaObject {
 
     //put your code here
 

@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Kevin Cyster
 */
-class block_contextchat extends object
+class block_contextchat extends ChisimbaObject
 {
     /*
     * @var object $objIcon: The geticon class in the htmlelements module

@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package brandmonday
  *
  */
-class bmops extends object {
+class bmops extends ChisimbaObject {
 
     /**
      *

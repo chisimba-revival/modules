@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @license GNU GPL
  * @author Serge Meunier
  */
-class cmstree extends object {
+class cmstree extends ChisimbaObject {
 
     /**
      * The sections  object

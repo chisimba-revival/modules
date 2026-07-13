@@ -56,7 +56,7 @@ if (!
  * @author    Derek Keats derek@dkeats.com
  *
  */
-class riops extends object {
+class riops extends ChisimbaObject {
 
     /**
      *

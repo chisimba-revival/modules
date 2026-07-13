@@ -19,7 +19,7 @@
 **/
 require_once($this->getResourcePath('geshi.php', 'wrapgeshi'));
 
-class geshiwrapper extends object
+class geshiwrapper extends ChisimbaObject
 {
     /**
     * @var string $source Source to Parse. Note, this is not the path to the file

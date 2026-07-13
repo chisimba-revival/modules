@@ -1,6 +1,6 @@
 <?php
 
-class block_whoisonline extends object {
+class block_whoisonline extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

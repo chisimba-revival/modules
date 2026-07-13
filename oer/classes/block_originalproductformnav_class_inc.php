@@ -6,7 +6,7 @@
  *
  * @author davidwaf
  */
-class block_originalproductformnav extends object {
+class block_originalproductformnav extends ChisimbaObject {
 
     function init() {
         $this->title="";

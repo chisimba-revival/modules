@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_addeditumbrellatheme extends object {
+class block_addeditumbrellatheme extends ChisimbaObject {
 
     function init() {
         

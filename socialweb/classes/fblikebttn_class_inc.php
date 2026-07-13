@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   https://developers.google.com/+/plugins/+1button/
  */
-class fblikebttn extends object
+class fblikebttn extends ChisimbaObject
 {
     /**
      *

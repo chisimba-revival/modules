@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class apiunit extends object
+class apiunit extends ChisimbaObject
 {
 
 	/**

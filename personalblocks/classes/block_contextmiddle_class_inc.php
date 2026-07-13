@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_contextmiddle extends object
+class block_contextmiddle extends ChisimbaObject
 {
     /**
      * The title of the block

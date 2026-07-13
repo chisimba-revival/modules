@@ -1,6 +1,6 @@
 <?php
 
-class nav extends object {
+class nav extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

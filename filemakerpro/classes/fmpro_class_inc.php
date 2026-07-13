@@ -52,7 +52,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class fmpro extends object {
+class fmpro extends ChisimbaObject {
 
     public $objUser;
     public $objLanguage;

@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * 
 * @author Paul Scott
 */
-class subsops extends object
+class subsops extends ChisimbaObject
 {
 	public $jserver;
 	public $juser;

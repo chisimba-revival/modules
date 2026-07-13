@@ -22,7 +22,7 @@ if (!
  *
  * @author monwabisi
  */
-class block_internalsmiddle extends Object {
+class block_internalsmiddle extends ChisimbaObject {
 
     var $objLanguage;
     var $dbInternals;

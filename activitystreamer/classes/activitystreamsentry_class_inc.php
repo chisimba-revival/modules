@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run'])
  */
 
 
-class activitystreamsentry extends object 
+class activitystreamsentry extends ChisimbaObject 
 {
     public $id = "";
     public $title = "";

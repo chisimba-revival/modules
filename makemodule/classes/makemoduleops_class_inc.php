@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package makemodule
 *
 */
-class makemoduleops extends object
+class makemoduleops extends ChisimbaObject
 {
 
     /**

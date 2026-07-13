@@ -5,7 +5,7 @@
  *
  * @author pwando
  */
-class commentsmanager extends object {
+class commentsmanager extends ChisimbaObject {
 
     public $objDbProductComments;
     private $objLanguage;

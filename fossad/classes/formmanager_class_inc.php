@@ -9,7 +9,7 @@
  *
  * @author david
  */
-class formmanager extends object{
+class formmanager extends ChisimbaObject{
 
    /**
     * initialize the object, and set the necessary ext js scripts

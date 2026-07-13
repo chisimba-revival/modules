@@ -51,7 +51,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2010 AVOIR
  *
  */
-class imagegalleryops extends object
+class imagegalleryops extends ChisimbaObject
 {
     /**
      * Standard init function

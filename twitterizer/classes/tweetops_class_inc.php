@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package twitterizer
  *
  */
-class tweetops extends object {
+class tweetops extends ChisimbaObject {
 
     /**
      *

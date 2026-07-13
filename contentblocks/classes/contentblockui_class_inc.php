@@ -58,7 +58,7 @@ if (!
  * @author    Paul Mungai paulwando@gmail.com
  *
  */
-class contentblockui extends object {
+class contentblockui extends ChisimbaObject {
 
     /**
      *

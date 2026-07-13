@@ -1,6 +1,6 @@
 <?php
 
-class vowfmtoolbar extends object {
+class vowfmtoolbar extends ChisimbaObject {
 
     function init() {
         $this->objAltConfig = $this->getObject('altconfig', 'config');

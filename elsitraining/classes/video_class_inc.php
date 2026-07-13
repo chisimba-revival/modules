@@ -53,7 +53,7 @@
  * $objVideo = $this->getObject('video', 'html5elements');
  * $objVideo->setVideo(198, 192, 'theora.ogg', 'ogg', TRUE, TRUE, FALSE); // for a file
  */
-class video extends object
+class video extends ChisimbaObject
 {
     /**
      * @var integer $width integer object property for defining the height of the video

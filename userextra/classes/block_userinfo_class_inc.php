@@ -11,7 +11,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class block_userinfo extends object {
+class block_userinfo extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

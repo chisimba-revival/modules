@@ -21,7 +21,7 @@ if ( !$GLOBALS['kewl_entry_point_run'] ) {
 * @version 0.1
 */
 
-class block_browselibrary extends object
+class block_browselibrary extends ChisimbaObject
 {
     /**
     * @var the block title

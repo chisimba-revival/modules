@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @copyright AVOIR
 * @licence GNU/GPL
 */
-abstract class abgenerator extends object
+abstract class abgenerator extends ChisimbaObject
 {
     /**
     * 

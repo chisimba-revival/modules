@@ -1,6 +1,6 @@
 <?php
 
-class giftops extends object {
+class giftops extends ChisimbaObject {
 
     /**
      * Initialises classes to be used

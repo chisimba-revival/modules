@@ -1,6 +1,6 @@
 <?php
 
-class vowfmlogininterface extends object {
+class vowfmlogininterface extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

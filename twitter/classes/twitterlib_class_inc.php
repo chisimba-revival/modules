@@ -51,7 +51,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Charl van Niekerk
  * @package twitter
  */
-class twitterlib extends object
+class twitterlib extends ChisimbaObject
 {
     /**
      * @var object $_objSysConfig System configuration

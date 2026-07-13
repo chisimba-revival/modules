@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek.keats@wits.ac.za>
 *
 */
-class simpleblogsecurity extends object
+class simpleblogsecurity extends ChisimbaObject
 {
     /**
      *

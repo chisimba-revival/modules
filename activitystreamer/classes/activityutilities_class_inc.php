@@ -50,7 +50,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @link      http://avoir.uwc.ac.za
  */
-class activityutilities extends object {
+class activityutilities extends ChisimbaObject {
 
     /**
      * @var object $objDBActivity

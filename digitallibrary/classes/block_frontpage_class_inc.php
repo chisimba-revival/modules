@@ -28,7 +28,7 @@
  *
  * @author davidwaf
  */
-class block_frontpage extends object {
+class block_frontpage extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

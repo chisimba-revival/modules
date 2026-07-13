@@ -1,6 +1,6 @@
 <?php
 
-class home extends object{
+class home extends ChisimbaObject{
 
     /**
      * Initialises the classes to be used

@@ -1,6 +1,6 @@
 <?php
 /**
-* profiletools class extends object
+* profiletools class extends ChisimbaObject
 * @package profiletools
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class profiletools extends object
+class profiletools extends ChisimbaObject
 {
     /**
     * Constructor method

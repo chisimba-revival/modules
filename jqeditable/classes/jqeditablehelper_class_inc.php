@@ -77,7 +77,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package jqeditable
 *
 */
-class jqeditablehelper extends object
+class jqeditablehelper extends ChisimbaObject
 {
     /**
     *

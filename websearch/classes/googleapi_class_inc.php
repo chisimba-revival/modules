@@ -12,7 +12,7 @@ require_once "lib/nusoap/nusoap.php";
 * 
 * @Author Derek Keats,Jameel Sauls
 */
-class googleApi extends object 
+class googleApi extends ChisimbaObject 
 {
     /**
     * @var string $searchengine="googleApi": The name of the search engine

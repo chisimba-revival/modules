@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_downloaderedit extends object {
+class block_downloaderedit extends ChisimbaObject {
     private $objDownloaderEdit;
 
     function init() {

@@ -9,7 +9,7 @@ if (!
 $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
-class contentmanager extends object {
+class contentmanager extends ChisimbaObject {
 /**
  * Setup display to ask the user to enter email address for the participant
  * who are to be invited.

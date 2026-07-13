@@ -39,7 +39,7 @@ $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 
-class flickrshowembed extends object {
+class flickrshowembed extends ChisimbaObject {
     
     public function init() {
         $this->objConfig = $this->getObject('altconfig', 'config');

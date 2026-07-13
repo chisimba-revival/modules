@@ -19,7 +19,7 @@ define('FOAF_AGENT', 4);
  * @copyright AVOIR 2006
  * @copyright Copyright 2003 Davey Shafik and Synaptic Media. All Rights Reserved.
  */
-class foafparser extends object
+class foafparser extends ChisimbaObject
 {
     /**
      * @var string Original FOAF file

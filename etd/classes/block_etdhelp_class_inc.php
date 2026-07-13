@@ -8,7 +8,7 @@
 * @copyright (c) UWC 2006
 */
 
-class block_etdhelp extends object
+class block_etdhelp extends ChisimbaObject
 {
     /**
     * @var the block title

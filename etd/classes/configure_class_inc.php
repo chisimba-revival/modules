@@ -1,6 +1,6 @@
 <?php
 /**
-* configure class extends object
+* configure class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @modified by Megan Watson on 2006 11 05 Ported to 5ive / chisimba
 */
 
-class configure extends object
+class configure extends ChisimbaObject
 {
     /**
     * @var array $results The search results for users

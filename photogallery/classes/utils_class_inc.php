@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 *
 */
-class utils extends object
+class utils extends ChisimbaObject
 {
 
     /**

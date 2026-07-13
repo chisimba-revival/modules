@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * $Id: block_rquote_class_inc.php,v 1.1 2006/09/14 08:19:14 Abdurahim Ported to PHP5
 *
 */
-class block_rquote extends object
+class block_rquote extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

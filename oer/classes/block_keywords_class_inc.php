@@ -17,7 +17,7 @@ $this->loadClass('form', 'htmlelements');
 $this->loadClass('radio', 'htmlelements');
 $this->loadClass('dropdown', 'htmlelements');
 
-class block_keywords extends object {
+class block_keywords extends ChisimbaObject {
 
     public $objLanguage;
     private $objDBKeyWords;

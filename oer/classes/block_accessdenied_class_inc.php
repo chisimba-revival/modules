@@ -28,7 +28,7 @@
  *
  * @author davidwaf
  */
-class block_accessdenied extends object{
+class block_accessdenied extends ChisimbaObject{
 
     public function init() {
         $this->title = "";

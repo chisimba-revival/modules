@@ -1,6 +1,6 @@
 <?php
 
-class formhelperclass extends object
+class formhelperclass extends ChisimbaObject
 {
     public $objLanguage;
     public $objUrl;

@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Serge Meunier, Prince Mbekwa, Charl Mert
  * @example :
  */
-class superfishtree extends object {
+class superfishtree extends ChisimbaObject {
 
     /**
      * The sections  object

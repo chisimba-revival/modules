@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   https://developers.google.com/+/plugins/+1button/
  */
-class gplusbttn extends object
+class gplusbttn extends ChisimbaObject
 {
     
     public function init()

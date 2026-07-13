@@ -6,7 +6,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 // end security check
 
-class foafui extends object {
+class foafui extends ChisimbaObject {
     /**
      * UI Elements (forms and stuff) for the FOAF module
      * @author Paul Scott

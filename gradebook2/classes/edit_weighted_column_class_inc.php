@@ -1,5 +1,5 @@
 <?php
-class edit_weighted_column extends object
+class edit_weighted_column extends ChisimbaObject
 {
     public function init()
     {

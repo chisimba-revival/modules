@@ -1,6 +1,6 @@
 <?php
 /**
-* Class pblMain extends object.
+* Class pblMain extends ChisimbaObject.
 * @author Fernando Martinez
 * @author Megan Watson
 * @copyright (c) 2004 UWC
@@ -24,7 +24,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
  * @version 1
  */
 
-class pblMain extends object
+class pblMain extends ChisimbaObject
 {
     private $classroom;
 

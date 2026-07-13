@@ -34,7 +34,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 // end of security
 
 
-class realtimemanager extends Object
+class realtimemanager extends ChisimbaObject
 {
  /**
      * This function generates a random string. This is used as id for the java slides server as well as

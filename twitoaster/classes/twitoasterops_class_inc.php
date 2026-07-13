@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package twitoaster
  *
  */
-class twitoasterops extends object {
+class twitoasterops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

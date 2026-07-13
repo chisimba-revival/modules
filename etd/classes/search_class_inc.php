@@ -14,7 +14,7 @@
 * @version 0.2
 */
 
-class search extends object
+class search extends ChisimbaObject
 {
     /**
     * @var string Property to store the first column field used by the browse object

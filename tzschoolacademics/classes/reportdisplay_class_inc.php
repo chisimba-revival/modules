@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  *  @author charles mhoja
  *  @email charlesmhoja@gmail.com
  */
-class reportdisplay extends object {
+class reportdisplay extends ChisimbaObject {
 
 //object of the reportdb class
     public $objreportDb;

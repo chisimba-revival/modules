@@ -49,7 +49,7 @@ if (!
  * @version   $Id: dbtriplestore_class_inc.php 21486 2011-05-15 19:32:27Z charlvn $
  * @link      http://avoir.uwc.ac.za/
  */
-class multimaplib extends object
+class multimaplib extends ChisimbaObject
 {
     /**
      * Nothing to initialise.

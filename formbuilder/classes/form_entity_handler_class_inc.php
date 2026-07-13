@@ -18,7 +18,7 @@
  *  \version 1.00
  *  \date    November 3, 2010
  */
-class form_entity_handler extends object {
+class form_entity_handler extends ChisimbaObject {
 
     /*!
      * \brief Private data member from the class \ref dbformbuilder_form_elements that stores all

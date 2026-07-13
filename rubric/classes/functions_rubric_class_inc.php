@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @version 0.1
 */
 
-class functions_rubric extends object
+class functions_rubric extends ChisimbaObject
 {
 
     public function init()

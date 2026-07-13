@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package pansamaps
  *
  */
-class pansaops extends object {
+class pansaops extends ChisimbaObject {
 
     /**
      *

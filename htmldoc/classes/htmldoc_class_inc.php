@@ -25,7 +25,7 @@ if(!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Ryan Whitney, ryan@greenlikeme.org 
 */
-class htmldoc extends object 
+class htmldoc extends ChisimbaObject 
 {
 
 	/**

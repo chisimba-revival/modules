@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_postdelete extends object {
+class block_postdelete extends ChisimbaObject {
 
     var $objLanguage;
     var $objPost;

@@ -53,7 +53,7 @@ if (!
  * @licence GNU/GPL
  *
  */
-class viewer extends object {
+class viewer extends ChisimbaObject {
 
     /**
      *

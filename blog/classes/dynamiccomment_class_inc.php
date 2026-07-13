@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package blog
 *
 */
-class dynamiccomment extends object
+class dynamiccomment extends ChisimbaObject
 {
 
     /**

@@ -5,7 +5,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 // end security check
 
-class media extends object 
+class media extends ChisimbaObject 
 {
 	public $ffmpeg;
 	

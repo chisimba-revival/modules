@@ -1,6 +1,6 @@
 <?php
 /**
-* etdresource class extends object
+* etdresource class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class etdresource extends object
+class etdresource extends ChisimbaObject
 {       
     /**
     * Constructor method

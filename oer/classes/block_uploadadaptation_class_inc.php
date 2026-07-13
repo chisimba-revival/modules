@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_uploadadaptation extends object {
+class block_uploadadaptation extends ChisimbaObject {
 
     function init() {
         $this->title = "";

@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class phirehoseops extends object
+class phirehoseops extends ChisimbaObject
 {
     /**
      * Loads the original Phirehose library and phirehosestream classes.

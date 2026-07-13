@@ -24,7 +24,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * $dateField = $this->objPopupcal->show('dateFieldName', 'no', 'no', '');
 * echo $dateField;
 */
-class datepickajax extends object
+class datepickajax extends ChisimbaObject
 {
     /**
     * @var string $str Property to display the calendar on first opening.

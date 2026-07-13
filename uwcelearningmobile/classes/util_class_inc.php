@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Qhamani Fenama 
 *
 */
-class util extends object {
+class util extends ChisimbaObject {
      
 	
 	function init() {

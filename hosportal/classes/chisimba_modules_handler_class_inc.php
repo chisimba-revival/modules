@@ -20,7 +20,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * \note This class inherits for the object class of chisimba's core to manage objects with ease.
 */
 
-abstract class chisimba_modules_handler extends object {
+abstract class chisimba_modules_handler extends ChisimbaObject {
     /*!
     * \brief Abstract public data member of that can be implemented in other classes
     * \brief As all chisimba module objects have to be created this AB function

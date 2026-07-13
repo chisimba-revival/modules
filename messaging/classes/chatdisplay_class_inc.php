@@ -1,5 +1,5 @@
 <?php
-/* ----------- templates class extends object ----------*/
+/* ----------- templates class extends ChisimbaObject ----------*/
 
 // security check - must be included in all scripts
 if(!$GLOBALS['kewl_entry_point_run']){
@@ -11,7 +11,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @author Kevin Cyster
 */
 
-class chatdisplay extends object
+class chatdisplay extends ChisimbaObject
 {
     /**
     * @var object $objTimeOut: The timeoutMessage class of the htmlelements module

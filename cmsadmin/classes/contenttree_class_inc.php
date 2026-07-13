@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Serge Meunier, Prince Mbekwa
  * @example :
  */
-class contenttree extends object {
+class contenttree extends ChisimbaObject {
 
     /**
      * The sections  object

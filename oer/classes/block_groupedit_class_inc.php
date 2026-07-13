@@ -53,7 +53,7 @@ if (!
  * @copyright 2011 AVOIR
  *
  */
-class block_groupedit extends object {
+class block_groupedit extends ChisimbaObject {
 
     /**
      * The title of the block

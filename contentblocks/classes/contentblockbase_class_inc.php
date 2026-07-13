@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Paul Mungai
 *
 */
-class contentblockbase extends object
+class contentblockbase extends ChisimbaObject
 {
     public $title;
     private $objDb;

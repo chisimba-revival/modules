@@ -9,7 +9,7 @@
  *
  * @author Boniface Chacha <bonifacechacha@gmail.com>
  */
-class studentlist extends object{
+class studentlist extends ChisimbaObject{
 
     private  $lang;
     private  $studentTable;

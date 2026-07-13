@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class block_fbcomment extends object
+class block_fbcomment extends ChisimbaObject
 {
     /**
      *

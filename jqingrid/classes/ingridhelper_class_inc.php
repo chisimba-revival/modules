@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package jqingrid
 *
 */
-class ingridhelper extends object
+class ingridhelper extends ChisimbaObject
 {
 
     /**

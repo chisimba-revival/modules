@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_filterproduct extends object {
+class block_filterproduct extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

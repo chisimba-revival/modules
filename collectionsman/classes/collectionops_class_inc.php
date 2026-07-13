@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package collectionsman
  *
  */
-class collectionops extends object {
+class collectionops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

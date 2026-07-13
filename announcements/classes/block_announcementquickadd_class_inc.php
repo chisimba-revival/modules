@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  *
  */
 
-class block_announcementquickadd extends object
+class block_announcementquickadd extends ChisimbaObject
 {
     /**
      * The title of the block

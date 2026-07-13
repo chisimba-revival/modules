@@ -9,7 +9,7 @@ include 'SCA/SCA.php';
  * @binding.restrpc
  */
  
- class server extends object
+ class server extends ChisimbaObject
  {
  	
  	/**

@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package greybox
 *
 */
-class greyboxloader extends object
+class greyboxloader extends ChisimbaObject
 {
 
     /**

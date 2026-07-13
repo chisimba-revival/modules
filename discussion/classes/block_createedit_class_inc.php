@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_createedit extends object {
+class block_createedit extends ChisimbaObject {
 
     var $objLanguage;
     var $contextTitle;

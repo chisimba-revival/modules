@@ -1,6 +1,6 @@
 <?php
 /**
-* dbvideos class extends object
+* dbvideos class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */

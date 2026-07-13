@@ -1,5 +1,5 @@
 <?php
-class short_answer_question extends object {
+class short_answer_question extends ChisimbaObject {
     function init() {
         $this->objGeneralForm = $this->getObject("question_calculated_formmanager");
         $this->objLanguage=$this->getObject('language','language');

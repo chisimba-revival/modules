@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package gis
  * @access public
  */
-class gisutils extends object
+class gisutils extends ChisimbaObject
 {
 	public $objConfig;
 	public $objLanguage;

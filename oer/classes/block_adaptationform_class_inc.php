@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class block_adaptationform extends object {
+class block_adaptationform extends ChisimbaObject {
 
     public function init() {
         $this->objLanguage = $this->getObject('language', 'language');

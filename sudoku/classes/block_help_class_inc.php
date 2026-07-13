@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Kevin Cyster
 */
-class block_help extends object
+class block_help extends ChisimbaObject
 {
     public $title;
 

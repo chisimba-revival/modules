@@ -16,7 +16,7 @@ if(!$GLOBALS['kewl_entry_point_run'])
 *
 * @author Ryan Whitney, ryan@greenlikeme.org 
 */
-class wwDocument extends object 
+class wwDocument extends ChisimbaObject 
 {
 
 	// Personal debugger - TODO: REMOVE BEFORE COMMITTING FOR PRODUCTION!

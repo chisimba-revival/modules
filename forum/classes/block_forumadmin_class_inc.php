@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 // end security check
 include 'block_forumlist_class_inc.php';
 
-class block_forumadmin extends object {
+class block_forumadmin extends ChisimbaObject {
 
         var $contextObject;
         var $contextTitle;

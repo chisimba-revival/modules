@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derekkeats@gmail.com
 *
 */
-class simplefeedbackops extends object
+class simplefeedbackops extends ChisimbaObject
 {
     
     /**

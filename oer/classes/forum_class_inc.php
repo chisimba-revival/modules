@@ -37,7 +37,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * The forum block class displays the last post
  * 
  */
-class forum extends object {
+class forum extends ChisimbaObject {
 
     /**
      * Constructor

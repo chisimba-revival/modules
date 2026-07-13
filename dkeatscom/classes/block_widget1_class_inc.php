@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_widget1 extends object
+class block_widget1 extends ChisimbaObject
 {
     var $title;
 

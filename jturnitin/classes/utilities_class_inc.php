@@ -50,7 +50,7 @@ if (!
  * @author Wesley Nitsckie
  * @package turnitin
  */
-class utilities extends object {
+class utilities extends ChisimbaObject {
 
     /**
      * The constructor

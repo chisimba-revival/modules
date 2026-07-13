@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 
 // end security check
-class block_editpost extends object {
+class block_editpost extends ChisimbaObject {
 
     //put your code here
     function init() {

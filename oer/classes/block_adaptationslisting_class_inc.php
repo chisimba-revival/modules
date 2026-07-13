@@ -27,7 +27,7 @@ $this->loadClass('link', 'htmlelements');
  *
  * @author pwando
  */
-class block_adaptationslisting extends object {
+class block_adaptationslisting extends ChisimbaObject {
 
     public function init() {
         $this->loadClass("link", "htmlelements");

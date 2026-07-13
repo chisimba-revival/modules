@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package imagemagick
 *
 */
-class convertpdf2image extends object
+class convertpdf2image extends ChisimbaObject
 {
 
     /**

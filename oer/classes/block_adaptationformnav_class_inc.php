@@ -30,7 +30,7 @@
  *
  * @author pwando
  */
-class block_adaptationformnav extends object {
+class block_adaptationformnav extends ChisimbaObject {
 
     function init() {
         $this->title="";   

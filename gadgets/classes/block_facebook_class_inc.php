@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * 
 *
 */
-class block_facebook extends object
+class block_facebook extends ChisimbaObject
 {
 
 

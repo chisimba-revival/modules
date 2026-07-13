@@ -1,6 +1,6 @@
 <?php
 /**
-* Class contextmenu extends object.
+* Class contextmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @package toolbar
 * @version 1
 */
-class contextmenu extends object
+class contextmenu extends ChisimbaObject
 {
 
     /**

@@ -44,7 +44,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 
 
-class coordinate extends object 
+class coordinate extends ChisimbaObject 
 {
 	public $objLanguage;
  

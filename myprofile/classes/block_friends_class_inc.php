@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2010 AVOIR
  *
  */
-class block_friends extends object
+class block_friends extends ChisimbaObject
 {
     /**
      * The title of the block

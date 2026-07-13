@@ -3,7 +3,7 @@ error_reporting(E_ALL|E_STRICT);
 //require_once ('PHP/Beautifier.php');
 //require_once ('PHP/Beautifier/Batch.php');
 
-class addbeauty extends object
+class addbeauty extends ChisimbaObject
 {
 	public function init()
 	{

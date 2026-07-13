@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_usersonnow extends object
+class block_usersonnow extends ChisimbaObject
 {
     public $title;
     public $objLanguage;

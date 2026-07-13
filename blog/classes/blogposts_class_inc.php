@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class blogposts extends object
+class blogposts extends ChisimbaObject
 {
     /**
      * Object of the Creative Commons Display License class.

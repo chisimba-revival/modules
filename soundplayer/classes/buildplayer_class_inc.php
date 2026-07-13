@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 * 
 */
-class buildplayer extends object
+class buildplayer extends ChisimbaObject
 {
 
     /**

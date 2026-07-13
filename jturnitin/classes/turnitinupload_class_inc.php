@@ -30,7 +30,7 @@ if (!
 $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
-class turnitinupload extends object {
+class turnitinupload extends ChisimbaObject {
     /**
      * @var array $permittedTypes The permitted file types
      */

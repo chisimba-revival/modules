@@ -7,7 +7,7 @@
 * @author Derek Keats
 *
 */
-class makesingle extends object {
+class makesingle extends ChisimbaObject {
     
     /**
     * @var $objLanguage String object property for holding the 

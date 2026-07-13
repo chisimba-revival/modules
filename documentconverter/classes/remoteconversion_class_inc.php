@@ -14,7 +14,7 @@
 *
 * @author Tohir Solomons
 */
-class remoteconversion extends object
+class remoteconversion extends ChisimbaObject
 {
     /**
     * Constructor

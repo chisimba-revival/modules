@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class blogexport extends object
+class blogexport extends ChisimbaObject
 {
 
     /**

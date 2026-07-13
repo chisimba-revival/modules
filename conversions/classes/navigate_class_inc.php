@@ -14,7 +14,7 @@
  * @copyright 2007 UWC
  * @filesource
  */
-class navigate extends object
+class navigate extends ChisimbaObject
 {
     /**
      * Constructor method to instantiate objects and get variables

@@ -70,7 +70,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package oembed
 *
 */
-class provider extends object
+class provider extends ChisimbaObject
 {
     /**
     *

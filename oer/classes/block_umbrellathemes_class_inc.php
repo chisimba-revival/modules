@@ -5,7 +5,7 @@
  *
  * @author davidwaf
  */
-class block_umbrellathemes extends object {
+class block_umbrellathemes extends ChisimbaObject {
 
     function init() {
         $this->title="";

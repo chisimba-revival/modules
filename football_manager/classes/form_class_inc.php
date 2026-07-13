@@ -1,5 +1,5 @@
 <?php
-class form extends object
+class form extends ChisimbaObject
 {
 	public function init()
 	{}

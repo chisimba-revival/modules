@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
  * 
  * @author Paul Scott <pscott@uwc.ac.za>
  */
-class activitystreamsencoder extends object
+class activitystreamsencoder extends ChisimbaObject
 {
     /**
      * Property to hold database object

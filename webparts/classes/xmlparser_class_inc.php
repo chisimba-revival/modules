@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  *
  */
 
-class xmlparser extends object
+class xmlparser extends ChisimbaObject
 {
 
     /**

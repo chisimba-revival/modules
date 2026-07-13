@@ -1,6 +1,6 @@
 <?php
 
-class numerical_question extends object {
+class numerical_question extends ChisimbaObject {
 
     /**
      * Method to construct the class.

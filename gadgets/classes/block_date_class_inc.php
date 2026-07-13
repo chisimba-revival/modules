@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * 
 *
 */
-class block_date extends object
+class block_date extends ChisimbaObject
 {
 
 

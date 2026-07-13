@@ -65,7 +65,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package simpleblog
 *
 */
-class guesser extends object
+class guesser extends ChisimbaObject
 {
 
    // public $objUser;

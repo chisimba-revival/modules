@@ -8,7 +8,7 @@
 * @author Derek Keats
 *
 */
-class structureinterface extends object {
+class structureinterface extends ChisimbaObject {
 
     /**
     * @var $objConfig String object property for holding the 

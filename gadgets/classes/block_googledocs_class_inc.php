@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * 
 *
 */
-class block_googledocs extends object
+class block_googledocs extends ChisimbaObject
 {
 
 

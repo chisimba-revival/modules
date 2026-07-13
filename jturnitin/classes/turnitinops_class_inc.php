@@ -50,7 +50,7 @@ if (!
  * @author Wesley Nitsckie
  * @package turnitin
  */
-class turnitinops extends object {
+class turnitinops extends ChisimbaObject {
 
     //required
     public $gmtime, $encrypt, $md5, $aid, $diagnostic, $uem, $ufn, $uln, $utp;

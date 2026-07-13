@@ -1,6 +1,6 @@
 <?php
 /**
-* dbDublinCore class extends object
+* dbDublinCore class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -22,7 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @modified by Megan Watson on 2006 11 04 Ported to 5ive / chisimba
 */
 
-class dbDublinCore extends object
+class dbDublinCore extends ChisimbaObject
 {
     /**
     * Constructor method

@@ -36,7 +36,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * The practical admin block class displays a block with an alert if students have handed in.
  * @author Jameel Adam
  */
-class functions_practicals extends object {
+class functions_practicals extends ChisimbaObject {
 
     /**
      * Constructors

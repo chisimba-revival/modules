@@ -9,7 +9,7 @@
 * @version $Id$
 *
 */
-class spie extends object
+class spie extends ChisimbaObject
 {
 
     public $objSimplePieWrapper;

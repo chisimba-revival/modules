@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class block_sfresults extends object
+class block_sfresults extends ChisimbaObject
 {
     /**
      * The title of the block

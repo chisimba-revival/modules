@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class block_userlister extends object
+class block_userlister extends ChisimbaObject
 {
     /**
      *

@@ -7,7 +7,7 @@
  */
 $this->loadClass('link', 'htmlelements');
 
-class block_cpanel extends object {
+class block_cpanel extends ChisimbaObject {
 
     public $objLanguage;
     public $objConfig;

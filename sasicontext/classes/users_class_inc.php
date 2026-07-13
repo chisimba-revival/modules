@@ -26,7 +26,7 @@
  * @link      http://avoir.uwc.ac.za
  */
 
-class users extends object {// extends abauth implements ifauth {
+class users extends ChisimbaObject {// extends abauth implements ifauth {
 
     /**
      * Description for public

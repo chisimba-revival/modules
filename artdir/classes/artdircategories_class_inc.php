@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class artdircategories extends object
+class artdircategories extends ChisimbaObject
 {
     /**
      * Description for public

@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package _MODULECODE
 *
 */
-class filterxml extends object
+class filterxml extends ChisimbaObject
 {
 
     /**

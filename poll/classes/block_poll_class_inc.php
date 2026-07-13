@@ -8,7 +8,7 @@
 * @copyright (c) 2007 University of the Western Cape
 */
 
-class block_poll extends object
+class block_poll extends ChisimbaObject
 {
     /**
     * @var the block title

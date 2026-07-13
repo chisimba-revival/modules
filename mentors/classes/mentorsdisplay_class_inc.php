@@ -13,7 +13,7 @@ if ( !$GLOBALS['kewl_entry_point_run'] ) {
  * @package mentors
  *
  */
-class mentorsdisplay extends object
+class mentorsdisplay extends ChisimbaObject
 {
    /** @var object $objLanguage: The language class of the language module
     * @access private

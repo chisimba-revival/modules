@@ -37,7 +37,7 @@
  * @author Tohir Solomons
  * @author Jeremy O'Connor
  */
-class convertdoc extends object {
+class convertdoc extends ChisimbaObject {
 
     /**
      * Constructor

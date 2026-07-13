@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package rackspacecloudfiles
  *
  */
-class cloudfilesops extends object {
+class cloudfilesops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

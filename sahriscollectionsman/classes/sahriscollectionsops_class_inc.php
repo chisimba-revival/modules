@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package sahriscollectionsman
  *
  */
-class sahriscollectionsops extends object {
+class sahriscollectionsops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

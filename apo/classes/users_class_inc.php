@@ -32,7 +32,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class users extends object {
+class users extends ChisimbaObject {
 
     // The Label for the Users
     private $userLabel;

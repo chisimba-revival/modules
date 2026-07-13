@@ -1,6 +1,6 @@
 <?php
 
-class rpcdbcmsadmin extends object
+class rpcdbcmsadmin extends ChisimbaObject
 {
 	public $objDbCmsAdmin;
 

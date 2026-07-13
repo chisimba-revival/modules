@@ -31,7 +31,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class createanalytic extends object
+class createanalytic extends ChisimbaObject
 {
 
     /**

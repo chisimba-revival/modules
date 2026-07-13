@@ -46,7 +46,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 
 
-class viewbuildings extends object 
+class viewbuildings extends ChisimbaObject 
 {
 	public $objLanguage;
  

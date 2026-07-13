@@ -23,7 +23,7 @@
  *
  * @author davidwaf
  */
-class block_searchresults extends object {
+class block_searchresults extends ChisimbaObject {
 
     function init() {
         $this->title = "Search results";

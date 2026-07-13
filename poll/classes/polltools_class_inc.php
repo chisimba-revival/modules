@@ -1,6 +1,6 @@
 <?php
 /**
-* polltools class extends object
+* polltools class extends ChisimbaObject
 * @package poll
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class polltools extends object
+class polltools extends ChisimbaObject
 {   
     /**
     * @var string $contextCode The current context .. to do.

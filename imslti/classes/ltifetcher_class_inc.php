@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package imslti
 *
 */
-class ltifetcher extends object
+class ltifetcher extends ChisimbaObject
 {
 	
 	private $uri;

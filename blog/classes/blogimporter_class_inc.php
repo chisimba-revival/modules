@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2006-2007 AVOIR
  * @access    public
  */
-class blogimporter extends object
+class blogimporter extends ChisimbaObject
 {
     /**
      * The DSN to the database to import FROM

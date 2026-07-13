@@ -5,7 +5,7 @@ if(!$GLOBALS['kewl_entry_point_run']) {
 }
 // end of security
 
-class speak4freetoolbar extends object {
+class speak4freetoolbar extends ChisimbaObject {
 
 /**
  * Constructor

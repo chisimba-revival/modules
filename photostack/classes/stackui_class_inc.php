@@ -48,7 +48,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class stackui extends object
+class stackui extends ChisimbaObject
 {   
     /**
      * user object

@@ -25,7 +25,7 @@
  *
  * @author pwando
  */
-class reportmanager extends object {
+class reportmanager extends ChisimbaObject {
 
     private $dbproducts;
     private $dbInstitution;

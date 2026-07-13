@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class uimanager extends object
+class uimanager extends ChisimbaObject
 {
    /**
    *

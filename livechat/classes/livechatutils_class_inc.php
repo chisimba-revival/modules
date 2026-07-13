@@ -1,6 +1,6 @@
 <?php
 
-class livechatutils extends object {
+class livechatutils extends ChisimbaObject {
 
     function init() {
         $this->objAltConfig = $this->getObject('altconfig', 'config');

@@ -1,7 +1,7 @@
 <?php
 
 /**
-* File modulelinks extends object
+* File modulelinks extends ChisimbaObject
 *
 * @author Yasser Buchana
 * @copyright (c) 2007 UWC
@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 
 
-class modulelinks_assignment extends object
+class modulelinks_assignment extends ChisimbaObject
 {
 
     public function init()

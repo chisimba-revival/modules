@@ -4,7 +4,7 @@
 * and module registration
 * @author James Scoble
 */
-class primarykey extends object
+class primarykey extends ChisimbaObject
 {
     public $tables;
     

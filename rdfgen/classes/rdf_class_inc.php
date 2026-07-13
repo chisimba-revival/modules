@@ -41,7 +41,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class rdf extends object {
+class rdf extends ChisimbaObject {
 	/**
 	 * Language object
 	 * @var    unknown

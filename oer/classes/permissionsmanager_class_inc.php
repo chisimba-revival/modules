@@ -28,7 +28,7 @@
  *
  * @author davidwaf
  */
-class permissionsmanager extends object {
+class permissionsmanager extends ChisimbaObject {
 
     
     private $EDITOR = "OER_EDITORS";

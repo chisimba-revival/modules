@@ -7,7 +7,7 @@
 * @author Derek Keats
 *
 */
-class leftmenu extends object {
+class leftmenu extends ChisimbaObject {
     
     /**
     * @var $objLanguage String object property for holding the 

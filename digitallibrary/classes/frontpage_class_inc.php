@@ -25,7 +25,7 @@
  *
  * @author davidwaf
  */
-class frontpage extends object {
+class frontpage extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  */
 
-class tripleobject extends object
+class tripleobject extends ChisimbaObject
 {
     /**
      * The triple id of this object.

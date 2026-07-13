@@ -1,5 +1,5 @@
 <?php
-class viewer extends object {
+class viewer extends ChisimbaObject {
     function init() {
         $this->loadClass("link","htmlelements");
 

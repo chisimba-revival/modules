@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Tohir Solomons
 *
 */
-class block_latestpodcast extends object
+class block_latestpodcast extends ChisimbaObject
 {
     var $title;
     

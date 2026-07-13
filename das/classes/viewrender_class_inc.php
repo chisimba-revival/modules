@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package DAS
  *
  */
-class viewrender extends object {
+class viewrender extends ChisimbaObject {
 
     /**
      *

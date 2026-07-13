@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package lucene
  */
 
-class searchresults extends object
+class searchresults extends ChisimbaObject
 {
 
 

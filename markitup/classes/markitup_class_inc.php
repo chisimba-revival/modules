@@ -21,7 +21,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class markitup extends object
+class markitup extends ChisimbaObject
 {
     /**
     *

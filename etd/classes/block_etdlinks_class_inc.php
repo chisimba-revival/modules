@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.2
 */
 
-class block_etdlinks extends object
+class block_etdlinks extends ChisimbaObject
 {
     /**
     * @var the block title

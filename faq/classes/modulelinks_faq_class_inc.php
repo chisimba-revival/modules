@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 
 
-class modulelinks_faq extends object
+class modulelinks_faq extends ChisimbaObject
 {
     public function init()
     {

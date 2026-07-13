@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class surveyexport extends object
+class surveyexport extends ChisimbaObject
 {
     /**
      * Instance of the dbanswer class of the survey module.

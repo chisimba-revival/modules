@@ -17,7 +17,7 @@ define ("UNKNOWN", 3);
 * The get_jabber_status method was written by
 */
 
-class online extends object
+class online extends ChisimbaObject
 {
 
     /**

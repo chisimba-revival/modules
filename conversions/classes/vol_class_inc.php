@@ -7,7 +7,7 @@
  * @copyright  UWC 2007
  * @filesource
  */
-class vol extends object
+class vol extends ChisimbaObject
 {
     /**
      * Constructor method to instantiate objects and get variables

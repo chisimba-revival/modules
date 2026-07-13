@@ -12,7 +12,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @license GNU/GPL
 * @package LRS
 */
-class googlenews extends object {
+class googlenews extends ChisimbaObject {
 
 	var $key;
 	var $hasKey;

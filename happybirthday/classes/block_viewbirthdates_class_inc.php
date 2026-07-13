@@ -7,7 +7,7 @@
 *
 *Happybithday block for viewing  users celebrating their birthdays today
 */
-class block_viewbirthdates extends object
+class block_viewbirthdates extends ChisimbaObject
 {
     public $objLanguage;
     public $blockContent;

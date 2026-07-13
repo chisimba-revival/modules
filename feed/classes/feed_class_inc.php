@@ -7,7 +7,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 }
 // end security check
 
-class feed extends object
+class feed extends ChisimbaObject
 {
 	/**
 	 * The feed class will make use of a number of abstract classes that will

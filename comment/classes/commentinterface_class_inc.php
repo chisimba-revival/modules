@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @package comment
 *
 */
-class commentinterface extends object
+class commentinterface extends ChisimbaObject
 {
 
     /**

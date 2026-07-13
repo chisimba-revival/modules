@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  */
 
-class triplepredicate extends object implements Iterator
+class triplepredicate extends ChisimbaObject implements Iterator
 {
     /**
      * The objects associated with this predicate.

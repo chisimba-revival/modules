@@ -1,6 +1,6 @@
 <?php
 
-class rttutil extends object {
+class rttutil extends ChisimbaObject {
 
     function init() {
         $this->objUser = $this->getObject('user', 'security');

@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package recipes
  *
  */
-class recipesops extends object {
+class recipesops extends ChisimbaObject {
 
     /**
      * @var string $objLanguage String object property for holding the language object

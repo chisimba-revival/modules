@@ -1,5 +1,5 @@
 <?php
-class enterdate extends object
+class enterdate extends ChisimbaObject
 {
 /*
 * @author Emmanuel Natalis

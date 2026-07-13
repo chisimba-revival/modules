@@ -56,7 +56,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package twitterizer
  *
  */
-class multisearchops extends object {
+class multisearchops extends ChisimbaObject {
 
     /**
      *

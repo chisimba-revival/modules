@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package twitter
 *
 */
-class jqrtt extends object
+class jqrtt extends ChisimbaObject
 {
     /**
     *

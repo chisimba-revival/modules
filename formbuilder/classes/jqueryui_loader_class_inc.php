@@ -14,7 +14,7 @@
  *  \version 1.00
  *  \date    March 1, 2012
  */
-class jqueryui_loader extends object {
+class jqueryui_loader extends ChisimbaObject {
 
     private $jquery_lib;
     private $jqueryui_lib;

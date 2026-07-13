@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @version 0.1
 */
 
-class modulelinks_worksheet extends object
+class modulelinks_worksheet extends ChisimbaObject
 {
 
     public function init()

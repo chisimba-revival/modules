@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @copyright 2005 GNU GPL
 *
 **/
-class diclookup extends object
+class diclookup extends ChisimbaObject
 {
 
     /**

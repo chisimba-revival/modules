@@ -23,7 +23,7 @@
  *
  * @author davidwaf
  */
-class block_fileinfo extends object {
+class block_fileinfo extends ChisimbaObject {
 
     function init() {
         $this->title = "File Info";

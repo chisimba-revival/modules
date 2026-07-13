@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @copyright Paul Scott 2009
 *
 */
-class yapiops extends object
+class yapiops extends ChisimbaObject
 {
     public $objLanguage;
     public $objConfig;

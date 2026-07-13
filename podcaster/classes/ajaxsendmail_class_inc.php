@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * Class for the Ajax send mail form
  *
  */
-class ajaxsendmail extends object {
+class ajaxsendmail extends ChisimbaObject {
 
     /**
      * Constructor

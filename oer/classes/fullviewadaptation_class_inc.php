@@ -29,7 +29,7 @@
  *
  * @author pwando
  */
-class fullviewadaptation extends object {
+class fullviewadaptation extends ChisimbaObject {
 
     function init() {
         $this->loadClass('textarea', 'htmlelements');

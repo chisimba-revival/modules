@@ -28,7 +28,7 @@
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za
  */
-class html5common extends object
+class html5common extends ChisimbaObject
 {
     /**
      * Generates a paragraph containing text.

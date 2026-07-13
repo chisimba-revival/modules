@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2006-2007 AVOIR
  *
  */
-class block_latestcontextannouncement extends object
+class block_latestcontextannouncement extends ChisimbaObject
 {
     /**
      * The title of the block

@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @version 0.1
 */
 
-class functions_mcqtests extends object
+class functions_mcqtests extends ChisimbaObject
 {
     public $dbTestadmin;
     public $dbQuestions;

@@ -1,6 +1,6 @@
 <?php
 /**
-* repository class extends object
+* repository class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class repository extends object
+class repository extends ChisimbaObject
 {
     /**
     * Constructor method

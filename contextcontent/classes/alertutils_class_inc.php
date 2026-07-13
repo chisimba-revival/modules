@@ -57,7 +57,7 @@ define('UNKNOWN', 'UNKNOWN');
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  */
 
-class alertutils extends object {
+class alertutils extends ChisimbaObject {
     function init() {
         $uname = php_uname('s');
         switch ($uname) {

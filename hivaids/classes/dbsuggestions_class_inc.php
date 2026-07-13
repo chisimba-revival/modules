@@ -1,6 +1,6 @@
 <?php
 /**
-* dbsuggestions class extends object
+* dbsuggestions class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */

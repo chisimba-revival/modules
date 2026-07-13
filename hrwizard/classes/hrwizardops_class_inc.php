@@ -5,7 +5,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 
-class hrwizardops extends object {
+class hrwizardops extends ChisimbaObject {
 	
 	public function init()
 	{

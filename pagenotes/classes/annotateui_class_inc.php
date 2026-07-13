@@ -64,7 +64,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek@dkeats.com>
 *
 */
-class annotateui extends object
+class annotateui extends ChisimbaObject
 {
     
     /**

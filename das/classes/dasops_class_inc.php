@@ -19,7 +19,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package   blog
  * @access    public
  */
-class dasops extends object {
+class dasops extends ChisimbaObject {
 
     /**
      * Description for public

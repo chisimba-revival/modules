@@ -1,5 +1,5 @@
 <?php
-class view_all_messages extends object
+class view_all_messages extends ChisimbaObject
 {
  //public $objLanguage;
 private $objbuildform;

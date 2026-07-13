@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   http://code.google.com/p/pubsubhubbub/
  */
-class pubsubhubbub extends object
+class pubsubhubbub extends ChisimbaObject
 {
     /**
      * Instance of the curlwrapper class of the utilities module.

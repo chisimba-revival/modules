@@ -8,7 +8,7 @@
 * @copyright (c) UWC 2006
 */
 
-class block_managemenu extends object
+class block_managemenu extends ChisimbaObject
 {
     /**
     * @var the block title

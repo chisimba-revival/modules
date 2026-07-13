@@ -41,7 +41,7 @@ $GLOBALS ['kewl_entry_point_run']) {
 }
 // end security check
 
-class viewer extends object {
+class viewer extends ChisimbaObject {
 
     /**
      *

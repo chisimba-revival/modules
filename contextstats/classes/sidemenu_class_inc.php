@@ -1,6 +1,6 @@
 <?php
   /**
-   * Class sidemenu extends object.
+   * Class sidemenu extends ChisimbaObject.
    * @package contextstats
    * @filesource sidemenu_class_inc.php
    */
@@ -18,7 +18,7 @@
    * @package contextstats
    * @version 1
    */
-  class sidemenu extends object
+  class sidemenu extends ChisimbaObject
   {
       /**
        * Constructor method to instantiate objects and get variables

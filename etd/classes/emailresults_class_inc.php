@@ -1,6 +1,6 @@
 <?php
 /**
-* Email results class extends object
+* Email results class extends ChisimbaObject
 * @package etd
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.2
 */
 
-class emailResults extends object
+class emailResults extends ChisimbaObject
 {
     /**
     * @var string Property to set the module name

@@ -40,7 +40,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  *
  */
-class bookmarkbutton extends object
+class bookmarkbutton extends ChisimbaObject
 {
 
 	public $objExtJS;

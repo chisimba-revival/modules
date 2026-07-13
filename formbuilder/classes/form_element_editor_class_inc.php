@@ -23,7 +23,7 @@
  * \warning There are two main arguments used inside this class. They are formNumber
  * and formName. Make sure that these arguments are correct and for the right form.
  */
-class form_element_editor extends object {
+class form_element_editor extends ChisimbaObject {
 
     /*!
      * \brief Private data member from the class \ref dbformbuilder_form_list that stores all

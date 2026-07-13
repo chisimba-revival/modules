@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@localhost.local
 *
 */
-class localsounds extends object
+class localsounds extends ChisimbaObject
 {
     
     /**

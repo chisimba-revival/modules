@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package myblockview
 *
 */
-class mytemplates extends object
+class mytemplates extends ChisimbaObject
 {
 
     public $templateDir;

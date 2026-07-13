@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   http://twitter.com/goodies/tweetbutton
  */
-class tweetbutton extends object
+class tweetbutton extends ChisimbaObject
 {
     /**
      * Generates the necessary HTML to include the official Twitter button.

@@ -24,7 +24,7 @@
  * @link       http://www.chisimba.com
  * @author davidwaf davidwaf@gmail.com
  */
-class vieworiginalproduct extends object {
+class vieworiginalproduct extends ChisimbaObject {
 
     function init() {
         $this->objUser = $this->getObject("user", "security");

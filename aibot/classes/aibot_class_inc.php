@@ -1,6 +1,6 @@
 <?php
 
-class aibot extends object
+class aibot extends ChisimbaObject
 {
     protected $enabled;
     protected $objClient;

@@ -1,6 +1,6 @@
 <?php
 
-class section_thumbnails extends object
+class section_thumbnails extends ChisimbaObject
 {
 
     public function init()

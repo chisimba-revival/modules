@@ -27,7 +27,7 @@
  *
  * @author davidwaf
  */
-class filtermanager extends object {
+class filtermanager extends ChisimbaObject {
 
     function init() {
         $this->objLanguage = $this->getObject('language', 'language');

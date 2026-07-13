@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Tohir Solomons
 *
 */
-class podcastdynamicblock extends object
+class podcastdynamicblock extends ChisimbaObject
 {
 
     

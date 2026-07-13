@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
  */
-class fusiontables extends object
+class fusiontables extends ChisimbaObject
 {
     /**
      * Instance of the Zend_Gdata class.

@@ -8,7 +8,7 @@
 * @author Derek Keats
 *
 */
-class simplemapinterface extends object {
+class simplemapinterface extends ChisimbaObject {
 
     /**
     * @var $objConfig String object property for holding the 

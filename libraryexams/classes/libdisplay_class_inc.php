@@ -15,7 +15,7 @@
  * @author Charl Mert
  */
 
-    class libdisplay extends object
+    class libdisplay extends ChisimbaObject
     {
       /**
         * The Skin object

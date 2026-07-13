@@ -1,6 +1,6 @@
 <?php
 
-class section_summaries extends object
+class section_summaries extends ChisimbaObject
 {
 
     public function init()

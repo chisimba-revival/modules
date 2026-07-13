@@ -51,7 +51,7 @@ if (!
  * @copyright 2011 AVOIR
  *
  */
-class block_registerinterestmiddle extends object {
+class block_registerinterestmiddle extends ChisimbaObject {
 
     /**
      * The language object

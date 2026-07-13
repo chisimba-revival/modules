@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@dkeats.com
 *
 */
-class fsbannerhelper extends object
+class fsbannerhelper extends ChisimbaObject
 {
 
     /**

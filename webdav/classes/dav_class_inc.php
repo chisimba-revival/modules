@@ -20,7 +20,7 @@
 
 require_once 'Sabre/autoload.php';
 
-class dav extends object {
+class dav extends ChisimbaObject {
 
     function init() {
         

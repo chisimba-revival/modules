@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Charl Mert
 */
 
-class pagemenu extends object
+class pagemenu extends ChisimbaObject
 {
 
         /**

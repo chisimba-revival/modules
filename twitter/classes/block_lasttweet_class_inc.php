@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_lasttweet extends object
+class block_lasttweet extends ChisimbaObject
 {
     public $title;
 

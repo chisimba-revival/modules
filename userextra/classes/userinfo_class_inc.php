@@ -16,7 +16,7 @@ $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 
-class userinfo extends object {
+class userinfo extends ChisimbaObject {
     function init() {
         $this->objLanguage=$this->getObject('language','language');
         $this->objUser=$this->getObject('user','security');

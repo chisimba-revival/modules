@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2011 AVOIR
  *
  */
-class block_localsound extends object
+class block_localsound extends ChisimbaObject
 {
     /**
      * The title of the block

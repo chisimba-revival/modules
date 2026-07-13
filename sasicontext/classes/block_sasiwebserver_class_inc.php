@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class block_sasiwebserver extends object {
+class block_sasiwebserver extends ChisimbaObject {
 
     /**
      * @var bool $requiresAdmin Specifies only admin usage

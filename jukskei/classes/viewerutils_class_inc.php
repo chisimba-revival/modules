@@ -18,7 +18,7 @@ if (!
 $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
-class viewerutils extends object {
+class viewerutils extends ChisimbaObject {
 
     public function init() {
         $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');

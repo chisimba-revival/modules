@@ -33,7 +33,7 @@ define('CATCH_ALL_BASE', 'chisimba.tohir.co.za');
  * @package discussion
  * @version 1
  */
-class discussionemail extends object {
+class discussionemail extends ChisimbaObject {
 
         /**
          * @var Object $eMailReciever object to get emails from the server

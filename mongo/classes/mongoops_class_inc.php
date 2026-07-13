@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @seealso   http://www.mongodb.org/
  */
-class mongoops extends object
+class mongoops extends ChisimbaObject
 {
     /**
      * The name of the collection to default to.

@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2008 AVOIR
  * 
  */
-class tabsmenu extends object
+class tabsmenu extends ChisimbaObject
 {
     
     /**

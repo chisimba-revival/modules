@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 
 
-class modulelinks_glossary extends object
+class modulelinks_glossary extends ChisimbaObject
 {
 
     public function init()

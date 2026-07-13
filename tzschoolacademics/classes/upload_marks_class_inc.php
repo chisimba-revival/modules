@@ -10,7 +10,7 @@ $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 
-class upload_marks extends object {
+class upload_marks extends ChisimbaObject {
 
     public $db_access;
 

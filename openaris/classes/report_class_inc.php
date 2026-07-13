@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @version   $Id: report_class_inc.php 13795 2009-06-30 08:22:23Z nic $
  * @link      http://avoir.uwc.ac.za
  */
-class report extends object {
+class report extends ChisimbaObject {
 	
     /**
      * Standard Chisimba init method

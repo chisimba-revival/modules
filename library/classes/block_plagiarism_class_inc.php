@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * $Id$
 *
 */
-class block_plagiarism extends object
+class block_plagiarism extends ChisimbaObject
 {
     var $title;
     

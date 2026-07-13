@@ -24,7 +24,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class youtubeapi extends object 
+class youtubeapi extends ChisimbaObject 
 {
     /**
     *

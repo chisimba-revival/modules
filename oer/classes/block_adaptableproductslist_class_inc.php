@@ -26,7 +26,7 @@
  *
  * @author pwando
  */
-class block_adaptableproductslist extends object {
+class block_adaptableproductslist extends ChisimbaObject {
 
     public function init() {
         $this->loadClass("link", "htmlelements");

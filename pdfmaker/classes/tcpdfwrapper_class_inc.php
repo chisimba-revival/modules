@@ -9,7 +9,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 }
 // end security check
 require_once ($this->getResourcePath('tcpdf.php', 'pdfmaker'));
-class tcpdfwrapper extends object
+class tcpdfwrapper extends ChisimbaObject
 {
     public $pdf;
     public function init() 

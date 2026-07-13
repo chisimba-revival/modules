@@ -1,5 +1,5 @@
 <?php
-/* ----------- wikiTextParser class extends object ----------*/
+/* ----------- wikiTextParser class extends ChisimbaObject ----------*/
 
 // security check - must be included in all scripts
 if(!$GLOBALS['kewl_entry_point_run']){
@@ -13,7 +13,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 * @package wiki
 * @subpackage Text_Wiki PEAR package author Paul M. Jones
 */
-class wikiTextParser extends object 
+class wikiTextParser extends ChisimbaObject 
 { 
     /**
     * @var object $objLanguage: The language class in the language module

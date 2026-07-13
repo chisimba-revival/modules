@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 *
 * Its methods are coded for user events.
 */
-class calendarinterface extends object
+class calendarinterface extends ChisimbaObject
 {
     /**
      * An array of events formatted for rendering

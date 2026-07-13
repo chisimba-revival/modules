@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @version $Id: $
 */
 
-class manageviews_essay extends object
+class manageviews_essay extends ChisimbaObject
 {
     /**
     * Initialization method.

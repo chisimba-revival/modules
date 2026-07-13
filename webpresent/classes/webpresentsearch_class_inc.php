@@ -5,7 +5,7 @@
 /**
  * Start of Class
  */
-class webpresentsearch extends object
+class webpresentsearch extends ChisimbaObject
 {
 
     public function init()

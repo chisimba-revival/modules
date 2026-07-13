@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class block_openlearnsearch extends object
+class block_openlearnsearch extends ChisimbaObject
 {
     public $title;
     public $objLanugage;

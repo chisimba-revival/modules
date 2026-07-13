@@ -29,7 +29,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @licence GNU/GPL
 *
 */
-class createtimeline extends object
+class createtimeline extends ChisimbaObject
 {
 
     /**

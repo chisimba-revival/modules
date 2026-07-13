@@ -1,6 +1,6 @@
 <?php
 /**
-* dbLoggerCalc class extends object
+* dbLoggerCalc class extends ChisimbaObject
 * @package hivaids
 * @filesource
 */

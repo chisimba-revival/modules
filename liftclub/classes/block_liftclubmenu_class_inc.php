@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @link      http://avoir.uwc.ac.za
  */
-class block_liftclubmenu extends object
+class block_liftclubmenu extends ChisimbaObject
 {
     /**
      * @var string $title The title of the block

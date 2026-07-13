@@ -1,6 +1,6 @@
 <?php
 /**
-* hivtools class extends object
+* hivtools class extends ChisimbaObject
 * @package hivaidsforum
 * @filesource
 */
@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class announcementsTools extends object
+class announcementsTools extends ChisimbaObject
 {
     /**
     * @var string $userId The user id for tracking the user

@@ -9,7 +9,7 @@
  * @copyright  UWC 2007
  * @filesource
  */
-class dist extends object
+class dist extends ChisimbaObject
 {
     /**
      * Constructor method to instantiate objects and get variables

@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run']) {
 
 */
 
-class ids extends object
+class ids extends ChisimbaObject
 {
     /**
     * @var string The version of the phpids library.

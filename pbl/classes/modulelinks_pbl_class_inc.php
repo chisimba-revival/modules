@@ -1,6 +1,6 @@
 <?php
 /**
-* Class modulelinks_pbl extends object.
+* Class modulelinks_pbl extends ChisimbaObject.
 * @package pbl
 * @filesource
 */
@@ -20,7 +20,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.1
  */
 
-class modulelinks_pbl extends object
+class modulelinks_pbl extends ChisimbaObject
 {
     /**
     * Constructor method to initialise objects

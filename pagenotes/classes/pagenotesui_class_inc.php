@@ -64,7 +64,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek@dkeats.com>
 *
 */
-class pagenotesui extends object
+class pagenotesui extends ChisimbaObject
 {
     
     /**

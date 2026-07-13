@@ -37,7 +37,7 @@ $GLOBALS ['kewl_entry_point_run']) {
 }
 // end security check
 
-class contexttoolsutils extends object {
+class contexttoolsutils extends ChisimbaObject {
     function init() {
         $this->objConfig = $this->getObject ( 'altconfig', 'config' );
     }
