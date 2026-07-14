@@ -412,7 +412,7 @@ public function dispatch($action=Null)
 							$tableId,
 							"{$i}",
 							"{$j}",
-							$_POST["cell{$i}{$j}"]
+							$_POST["cell{$i}[$j]"]
 						);
 					}
 				}

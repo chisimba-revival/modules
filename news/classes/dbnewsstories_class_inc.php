@@ -637,8 +637,8 @@ ORDER BY storydate DESC';
                 $content = stripslashes($content);
                 $content = str_replace('"', '\"', $content);
 
-                $content = ereg_replace("[\n\r]", " ", $content);
-                //$content = ereg_replace("\t\t+", "\n", $content);
+                $content = preg_replace("~[\n\r]~", " ", $content);
+                //$content = preg_replace("~\t\t+~", "\n", $content);
 
                 $str .= 'var marker = createMarker(point,"'.$content.'");'."\r\n";
                 $str .= 'map.addOverlay(marker);'."\r\n";

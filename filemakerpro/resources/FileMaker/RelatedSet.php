@@ -42,7 +42,7 @@ class FileMaker_RelatedSet
      */
     function FileMaker_RelatedSet(&$layout)
     {
-        $this->_impl =& new FileMaker_RelatedSet_Implementation($layout);
+        $this->_impl = new FileMaker_RelatedSet_Implementation($layout);
     }
 
     /**

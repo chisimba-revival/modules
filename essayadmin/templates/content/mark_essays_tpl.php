@@ -141,8 +141,8 @@ if(!empty($data)){
         $objTable->endRow();
 		//add the binary data for the zipped file
 		//$zippedStudent = 0;
-		//$zippedStudent = eregi_replace("'","",$item['student']);
-		//$zippedStudent = eregi_replace(" ","",$zippedStudent);
+		//$zippedStudent = preg_replace("~'~i","",$item['student']);
+		//$zippedStudent = preg_replace("~ ~i","",$zippedStudent);
 		/**
 		* using the same algorithms as are found within download_page_tpl.php
 		* populate the variable $filedata which contains the binary data for the essay

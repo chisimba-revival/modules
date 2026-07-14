@@ -383,7 +383,7 @@ if (!class_exists('FPDF')) {
             $cw = &$this->CurrentFont['cw'];
             $w = 0;
             $l = strlen($s);
-            for ($i = 0; $i < $l; $i++) $w+= $cw[$s{$i}];
+            for ($i = 0; $i < $l; $i++) $w+= $cw[$s[$i]];
             return $w*$this->FontSize/1000;
         }
         function SetLineWidth($width) 
@@ -638,7 +638,7 @@ if (!class_exists('FPDF')) {
             $nl = 1;
             while ($i < $nb) {
                 //Get next character
-                $c = $s{$i};
+                $c = $s[$i];
                 if ($c == "\n") {
                     //Explicit line break
                     if ($this->ws > 0) {
@@ -710,7 +710,7 @@ if (!class_exists('FPDF')) {
             $nl = 1;
             while ($i < $nb) {
                 //Get next character
-                $c = $s{$i};
+                $c = $s[$i];
                 if ($c == "\n") {
                     //Explicit line break
                     $this->Cell($w, $h, substr($s, $j, $i-$j) , 0, 2, '', 0, $link);
@@ -985,12 +985,12 @@ if (!class_exists('FPDF')) {
                     fclose($f);
                     $compressed = (substr($file, -2) == '.z');
                     if (!$compressed && isset($info['length2'])) {
-                        $header = (ord($font{0}) == 128);
+                        $header = (ord($font[0]) == 128);
                         if ($header) {
                             //Strip first binary header
                             $font = substr($font, 6);
                         }
-                        if ($header && ord($font{$info['length1']}) == 128) {
+                        if ($header && ord($font[$info['length1']]) == 128) {
                             //Strip second binary header
                             $font = substr($font, 0, $info['length1']) . substr($font, $info['length1']+6);
                         }
@@ -1196,7 +1196,7 @@ if (!class_exists('FPDF')) {
                 //Page orientation
                 if (!$orientation) $orientation = $this->DefOrientation;
                 else {
-                    $orientation = strtoupper($orientation{0});
+                    $orientation = strtoupper($orientation[0]);
                     if ($orientation != $this->DefOrientation) $this->OrientationChanges[$this->page] = true;
                 }
                 if ($orientation != $this->CurOrientation) {

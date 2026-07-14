@@ -47,7 +47,7 @@ class FileMaker_Record
      */
     function FileMaker_Record(&$layout)
     {
-        $this->_impl =& new FileMaker_Record_Implementation($layout);
+        $this->_impl = new FileMaker_Record_Implementation($layout);
     }
 
     /**

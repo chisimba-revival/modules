@@ -56,7 +56,7 @@
 		$objTable->addCell($textinput->show());
         // Display cells.
 		for ($j=0;$j<$cols;$j++) {
-			$textarea = new textarea("cell{$i}{$j}", $cells[$i][$j], 4, 18);
+			$textarea = new textarea("cell{$i}[$j]", $cells[$i][$j], 4, 18);
 			$objTable->addCell($textarea->show());
 		}
 		$objTable->endRow();

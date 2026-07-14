@@ -45,7 +45,7 @@ class FileMaker_Command_PerformScript extends FileMaker_Command
      */
     function FileMaker_Command_PerformScript($fm, $layout, $scriptName, $scriptParameters = null)
     {
-        $this->_impl =& new FileMaker_Command_PerformScript_Implementation($fm, $layout, $scriptName, $scriptParameters);
+        $this->_impl = new FileMaker_Command_PerformScript_Implementation($fm, $layout, $scriptName, $scriptParameters);
     }
 
 }

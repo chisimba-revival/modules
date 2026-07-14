@@ -35,7 +35,7 @@ class modulelinks_podcast extends ChisimbaObject
             foreach ($podcasters as $podcaster)
             {
                 // Create Node
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'byuser', 'id'=>$podcaster['userid'])), 'text'=>$podcaster['firstname'].' '.$podcaster['surname']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'byuser', 'id'=>$podcaster['userid'])), 'text'=>$podcaster['firstname'].' '.$podcaster['surname']));
                 
                 // Create Reference to Node
                 $nodesArray['podcaster_'.$podcaster['userid']] =& $node;
@@ -51,7 +51,7 @@ class modulelinks_podcast extends ChisimbaObject
             foreach ($podcasts as $podcast)
             {
                 // Create Node
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'viewpodcast', 'id'=>$podcast['id'])), 'text'=>$podcast['title']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'viewpodcast', 'id'=>$podcast['id'])), 'text'=>$podcast['title']));
                 
                 // Attach to Parent Via Reference
                 $nodesArray['podcaster_'.$podcaster['userid']]->addItem($node);

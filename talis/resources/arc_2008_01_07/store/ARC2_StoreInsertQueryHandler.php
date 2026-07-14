@@ -38,7 +38,7 @@ class ARC2_StoreInsertQueryHandler extends ARC2_StoreQueryHandler {
     else {
       $keep_bnode_ids = 1;
       ARC2::inc('StoreConstructQueryHandler');
-      $h =& new ARC2_StoreConstructQueryHandler($this->a, $this->store);
+      $h = new ARC2_StoreConstructQueryHandler($this->a, $this->store);
       if ($sub_r = $h->runQuery($this->infos)) {
         return $this->store->insert($sub_r, $this->infos['query']['target_graph'], $keep_bnode_ids);
       }

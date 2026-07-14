@@ -805,9 +805,9 @@ class userutils extends ChisimbaObject {
                     $cssClass = '';
                 }
                 if ($treeType == 'htmldropdown') {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $cfile, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $cfile, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 } else {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'viewfolder', 'folder' => $cfile)), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'viewfolder', 'folder' => $cfile)), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 }
                 $parent = dirname($folder);
 
@@ -825,12 +825,12 @@ class userutils extends ChisimbaObject {
 
 
         if ($treeType == 'htmldropdown') {
-            $treeMenu = &new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
+            $treeMenu = new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
         } else {
             $this->appendArrayVar('headerParams', $this->getJavascriptFile('TreeMenu.js', 'tree'));
             $this->setVar('pageSuppressXML', TRUE);
             $objSkin = & $this->getObject('skin', 'skin');
-            $treeMenu = &new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+            $treeMenu = new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
         }
 
         return $treeMenu->getMenu();
@@ -892,12 +892,12 @@ class userutils extends ChisimbaObject {
 
         
         if ($treeType == 'htmldropdown') {
-            $treeMenu = &new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
+            $treeMenu = new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
         } else {
             $this->appendArrayVar('headerParams', $this->getJavascriptFile('TreeMenu.js', 'tree'));
             $this->setVar('pageSuppressXML', TRUE);
             $objSkin = & $this->getObject('skin', 'skin');
-            $treeMenu = &new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+            $treeMenu = new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
         }
 
         return $treeMenu->getMenu();

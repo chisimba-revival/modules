@@ -114,7 +114,7 @@ class iconrequest extends controller
 		case "submit":
 	   		//create new request to insert into db
 	   		$this->loadClass('request');
-	   		$icon = &new request($this->getParam('reqid'),
+	   		$icon = new request($this->getParam('reqid'),
 				$this->getParam('module_name'),$this->getParam('priority'),
 	   		$this->getParam('icon_type'),$this->getParam('rdbtphptype'),
 				$this->getParam('icon_name'),$this->getParam('icon_description'),

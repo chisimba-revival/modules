@@ -71,7 +71,7 @@
 			$path = $file['path'];
 			//
             //$uri="{$siteRoot}{$contentRoot}/content/$contextCode/workgroup/$workgroupId/$filetype/$filename";
-			$uri="{$siteRoot}{$contentPath}/$path";
+			$uri="{$siteRoot}[$contentPath]/$path";
 			$iconDownload = $this->getObject('geticon','htmlelements');
 			$iconDownload->setIcon('download');
 			$iconDownload->alt = $objLanguage->languageText('mod_workgroup_download','workgroup');

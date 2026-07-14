@@ -79,7 +79,7 @@ class mailmansignup extends ChisimbaObject
 		}
 		$email->size = 15;
 		$subform->addToForm($email->show());
-		$this->objSubButton = &new button($this->objLanguage->languageText('word_subscribe', 'mailmannews'));
+		$this->objSubButton = new button($this->objLanguage->languageText('word_subscribe', 'mailmannews'));
 		$this->objSubButton->setValue($this->objLanguage->languageText('word_subscribe', 'mailmannews'));
 		$this->objSubButton->setToSubmit();
 		$subform->addToForm($this->objSubButton->show());

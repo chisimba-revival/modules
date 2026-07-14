@@ -139,7 +139,7 @@ class blogimporter extends ChisimbaObject
         // $imform->addRule('server', $this->objLanguage->languageText("mod_blog_phrase_imserverreq", "blog") , 'required');
         // $imform->addRule('username', $this->objLanguage->languageText("mod_blog_phrase_imuserreq", "blog") , 'required');
         // end off the form and add the buttons
-        $this->objIMButton = &new button($this->objLanguage->languageText('word_import', 'system'));
+        $this->objIMButton = new button($this->objLanguage->languageText('word_import', 'system'));
         $this->objIMButton->setValue($this->objLanguage->languageText('word_import', 'system'));
         $this->objIMButton->setToSubmit();
         $imfieldset->addContent($imadd->show());

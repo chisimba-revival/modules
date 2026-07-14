@@ -135,7 +135,7 @@ class FileMaker
      */
     function FileMaker($database = NULL, $hostspec = NULL, $username = NULL, $password = NULL)
     {
-        $this->_impl =& new FileMaker_Implementation($database, $hostspec, $username, $password);
+        $this->_impl = new FileMaker_Implementation($database, $hostspec, $username, $password);
     }
 
     /**

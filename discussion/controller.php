@@ -1935,26 +1935,26 @@ class discussion extends controller {
                 $this->loadClass('freemindmap', 'tree');
                 $this->loadClass('htmllist', 'tree');
                 $treeMenu = new treemenu();
-                $rootNode = & new treenode(array('text' => $discussion['discussion_name']), NULL);
+                $rootNode = new treenode(array('text' => $discussion['discussion_name']), NULL);
                 // start an array
                 $nodeArray = array();
                 // Reference the array element with the record id
                 $nodeArray[0] = & $rootNode;
                 foreach ($allTopics as $topic) {
-                        $node = & new treenode(array('text' => htmlentities($topic['post_title']), 'link' => $this->uri(array('action' => 'viewtopic', 'id' => $topic['topic_id']))), NULL);
+                        $node = new treenode(array('text' => htmlentities($topic['post_title']), 'link' => $this->uri(array('action' => 'viewtopic', 'id' => $topic['topic_id']))), NULL);
                         $nodeArray[0]->addItem($node);
                         // Reference the array element with the record id
                         $nodeArray[$topic['topic_id']] = & $node;
                         if ($topic['tangentcheck'] != '') {
                                 $tangents = $this->objTopic->getTangents($topic['topic_id']);
                                 foreach ($tangents as $tangent) {
-                                        $tangentnode = & new treenode(array('text' => $tangent['post_title'], 'link' => $this->uri(array('action' => 'viewtopic', 'id' => $tangent['id']))), NULL);
+                                        $tangentnode = new treenode(array('text' => $tangent['post_title'], 'link' => $this->uri(array('action' => 'viewtopic', 'id' => $tangent['id']))), NULL);
                                         $nodeArray[$tangent['topic_tangent_parent']]->addItem($tangentnode);
                                 }
                         }
                 }
                 $treeMenu->addItem($rootNode);
-                $tree = &new freemindmap($treeMenu);
+                $tree = new freemindmap($treeMenu);
                 header('content-type:text/xml');
                 echo $tree->getMenu();
         }
@@ -2082,7 +2082,7 @@ class discussion extends controller {
                                 $nodeDetails['cloud'] = FALSE;
                         }
                         // Create a Node
-                        $node = & new treenode($nodeDetails);
+                        $node = new treenode($nodeDetails);
                         // Check if Start of Topic or Reply
                         // If Start of topic, add to tree menu
                         // Else add as a child node
@@ -2094,7 +2094,7 @@ class discussion extends controller {
                         // Reference the array element with the record id
                         $nodeArray[$topic['post_id']] = & $node;
                 }
-                $tree = &new freemindmap($treeMenu);
+                $tree = new freemindmap($treeMenu);
                 header('content-type:text/xml');
                 echo $tree->getMenu();
         }

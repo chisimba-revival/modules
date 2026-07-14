@@ -1117,7 +1117,7 @@ class sectionmanager extends ChisimbaObject {
                 }
                 if ($treeType == 'htmldropdown') {
                     // echo "css class == $cssClass<br/>";
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $sectionNode['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $sectionNode['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 } else if ($treeType == "compare") {
                     //Check if the folderShortText contains some words in selected
                     $arr_selectedtxt = explode(" ", $selectedTitle);
@@ -1135,7 +1135,7 @@ class sectionmanager extends ChisimbaObject {
 
                     $link = new link($this->uri(array('action' => 'compareadaptations', "productid" => $compareProdId, 'selected' => $sectionNode['id'])));
                     $link->cssClass = 'sectionlink';
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $link->href, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'expanded' => true));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $link->href, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'expanded' => true));
                 } else {
 
                     $link = new link($this->uri(array('action' => 'viewsection', "productid" => $sectionNode['product_id'], 'sectionid' => $sectionNode['id'], 'nodetype' => $sectionNode['nodetype'])));
@@ -1145,7 +1145,7 @@ class sectionmanager extends ChisimbaObject {
                       if ($sectionNode['nodetype'] == 'folder') {
                       $txtLink = '#';
                       } */
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $txtLink, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'expanded' => true));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $txtLink, 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'expanded' => true));
                 }
 
                 $parent = $this->getParent($sectionNode['path'], $productId);

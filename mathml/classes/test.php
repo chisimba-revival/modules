@@ -11,7 +11,7 @@ class mathml //extends object
 	public function init()
 	{
 		$this->sym = new mathmlsymbols();
-		$this->ascii_math =& new asciimathphp($this->sym->symbols()); 
+		$this->ascii_math = new asciimathphp($this->sym->symbols()); 
 		
 	}
 	

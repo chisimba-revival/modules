@@ -127,7 +127,7 @@ if ($doccount > 0) {
     $table->endRow();
     $navtable = $table->show();
 }
-$dd = &new dropdown('rcount');
+$dd = new dropdown('rcount');
 $dd->addOption('50', '50');
 $dd->addOption('100', '100');
 $dd->addOption('150', '150');

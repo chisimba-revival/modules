@@ -2007,11 +2007,11 @@ You can create tables using pairs of vertical bars:
         }
 
         // check camel case first
-//        if(!ereg('^([A-Z]([a-z]+)){2,}$', $name)){
+//        if(!preg_match('~^([A-Z]([a-z]+)){2,}$~', $name)){
 //            $errors[] = $camelcaseLabel;
 //        }
 
-        if(ereg('^([A-Z]){2,}', $name) || !ereg('^([A-Z]([a-z])*){2,}', $name)){
+        if(preg_match('~^([A-Z]){2,}~', $name) || !preg_match('~^([A-Z]([a-z])*){2,}~', $name)){
             $errors[] = $camelcaseLabel;
         }
 

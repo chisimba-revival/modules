@@ -799,7 +799,7 @@ class simpleblogops extends ChisimbaObject
             $postTags = $this->formatTags($postTags, $blogId);
         }
         $tags = "\n<div class='simpleblog_post_tags'>" . $postTags . "</div>\n";
-        $foot = "\n<div class='simpleblog_post_footer'>{$poster} {$postDate}{$edel}</div>\n";
+        $foot = "\n<div class='simpleblog_post_footer'>{$poster} {$postDate}[$edel]</div>\n";
         
         // The wall stuff, use only if we should use the wall module here.
         if ($this->usesWall) {

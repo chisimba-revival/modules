@@ -27,13 +27,13 @@ class dbhotelslocations extends dbtable
         $nodeArray = array();
         
         $treeMenu = new treemenu();
-        $rootnode =& new treenode (array('text'=>'[- Root -]'));
+        $rootnode = new treenode (array('text'=>'[- Root -]'));
         
         foreach ($locations as $location)
         {
             $nodeDetails = array('text'=>htmlentities($location['location']), 'link'=>$location['id']);
             
-            $node =& new treenode ($nodeDetails);
+            $node = new treenode ($nodeDetails);
             $nodeArray[$location['id']] =& $node;
             
             if ($location['location_parent'] == 'root') {
@@ -47,7 +47,7 @@ class dbhotelslocations extends dbtable
         
         $treeMenu->addItem($rootnode);
         
-        $tree = &new htmldropdown($treeMenu, array('inputName'=>$name, 'id'=>'input_parentlocation'));
+        $tree = new htmldropdown($treeMenu, array('inputName'=>$name, 'id'=>'input_parentlocation'));
         
         return $tree->getMenu();
     }

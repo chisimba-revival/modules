@@ -139,11 +139,11 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 		while (!feof($ifile)) {
 			$line = $nextline;
 			$nextline = fgets($ifile, 1024);
-			$nextline = ereg_replace("[\r\n]", "", $nextline);
+			$nextline = preg_replace("~[\r\n]~", "", $nextline);
 			while (substr($nextline, 0, 1) == " ") {
 				$line = $line . substr($nextline, 1);
 				$nextline = fgets($ifile, 1024);
-				$nextline = ereg_replace("[\r\n]", "", $nextline);
+				$nextline = preg_replace("~[\r\n]~", "", $nextline);
 			}
 			$line = trim($line);
 			
@@ -458,7 +458,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 								$until = str_replace('Z', '', $until);
 								if (strlen($until) == 8) $until = $until.'235959';
 								$abs_until = $until;
-								ereg ('([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})', $until, $regs);
+								preg_match('~([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})~', $until, $regs);
 								$until = mktime($regs[4],$regs[5],$regs[6],$regs[2],$regs[3],$regs[1]);
 								$master_array[($start_date)][($hour.$minute)][$uid]['recur'][$key] = localizeDate($dateFormat_week,$until);
 								break;
@@ -646,7 +646,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 														}
 													} elseif (is_array($byday)) {
 														foreach($byday as $day) {
-															ereg ('([-\+]{0,1})?([0-9]{1})?([A-Z]{2})', $day, $byday_arr);
+															preg_match('~([-\+]{0,1})?([0-9]{1})?([A-Z]{2})~', $day, $byday_arr);
 															//Added for 2.0 when no modifier is set
 															if ($byday_arr[2] != '') {
 																$nth = $byday_arr[2]-1;
@@ -734,7 +734,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 														if ((isset($byday)) && (is_array($byday))) {
 															$checkdate_time = mktime(0,0,0,$month,1,$year);
 															foreach($byday as $day) {
-																ereg ('([-\+]{0,1})?([0-9]{1})?([A-Z]{2})', $day, $byday_arr);
+																preg_match('~([-\+]{0,1})?([0-9]{1})?([A-Z]{2})~', $day, $byday_arr);
 																if ($byday_arr[2] != '') {
 																	$nth = $byday_arr[2]-1;
 																} else {
@@ -760,7 +760,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 													}
 													if (isset($byyearday)) {
 														foreach ($byyearday as $yearday) {
-															ereg ('([-\+]{0,1})?([0-9]{1,3})', $yearday, $byyearday_arr);
+															preg_match('~([-\+]{0,1})?([0-9]{1,3})~', $yearday, $byyearday_arr);
 															if ($byyearday_arr[1] == '-') {
 																$ydtime = mktime(0,0,0,12,31,$this_year);
 																$yearnum = $byyearday_arr[2] - 1;
@@ -962,7 +962,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 			default:
 		
 				unset ($field, $data, $prop_pos, $property);
-				if (ereg ("([^:]+):(.*)", $line, $line)){
+				if (preg_match("~([^:]+):(.*)~", $line, $line)){
 				$field = $line[1];
 				$data = $line[2];
 				
@@ -1085,7 +1085,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 						
 						$data = str_replace('T', '', $data);
 						$data = str_replace('Z', '', $data);
-						ereg ('([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{0,2})([0-9]{0,2})', $data, $regs);
+						preg_match('~([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{0,2})([0-9]{0,2})~', $data, $regs);
 						$recurrence_id['date'] = $regs[1] . $regs[2] . $regs[3];
 						$recurrence_id['time'] = $regs[4] . $regs[5];
 			
@@ -1123,7 +1123,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 						break;
 					case 'DURATION':
 						if (($first_duration == TRUE) && (!stristr($field, '=DURATION'))) {
-							ereg ('^P([0-9]{1,2}[W])?([0-9]{1,2}[D])?([T]{0,1})?([0-9]{1,2}[H])?([0-9]{1,2}[M])?([0-9]{1,2}[S])?', $data, $duration); 
+							preg_match('~^P([0-9]{1,2}[W])?([0-9]{1,2}[D])?([T]{0,1})?([0-9]{1,2}[H])?([0-9]{1,2}[M])?([0-9]{1,2}[S])?~', $data, $duration); 
 							$weeks 			= str_replace('W', '', $duration[1]); 
 							$days 			= str_replace('D', '', $duration[2]); 
 							$hours 			= str_replace('H', '', $duration[4]); 
@@ -1137,7 +1137,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 						$data = str_replace ('RRULE:', '', $data);
 						$rrule = split (';', $data);
 						foreach ($rrule as $recur) {
-							ereg ('(.*)=(.*)', $recur, $regs);
+							preg_match('~(.*)=(.*)~', $recur, $regs);
 							$rrule_array[$regs[1]] = $regs[2];
 						}
 						break;

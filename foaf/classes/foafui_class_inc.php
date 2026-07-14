@@ -174,7 +174,7 @@ class foafui extends ChisimbaObject {
         $table1->endRow();
         $fieldset1->addContent($table1->show());
         $myFoafForm->addToForm($fieldset1->show());
-        $this->objButton1 = &new button($this->objLanguage->languageText('word_update', 'system'));
+        $this->objButton1 = new button($this->objLanguage->languageText('word_update', 'system'));
         $this->objButton1->setValue($this->objLanguage->languageText('word_update', 'system'));
         $this->objButton1->setToSubmit();
         $myFoafForm->addToForm($this->objButton1->show());

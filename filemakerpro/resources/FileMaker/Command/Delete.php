@@ -44,7 +44,7 @@ class FileMaker_Command_Delete extends FileMaker_Command
      */
     function FileMaker_Command_Delete($fm, $layout, $recordId)
     {
-        $this->_impl =& new FileMaker_Command_Delete_Implementation($fm, $layout, $recordId);
+        $this->_impl = new FileMaker_Command_Delete_Implementation($fm, $layout, $recordId);
     }
 
 }

@@ -191,7 +191,7 @@ class dasops extends ChisimbaObject {
         $ctbl->endRow ();
 
         //end off the form and add the buttons
-        $this->objCButton = &new button ( $this->objLanguage->languageText ( 'mod_im_send', 'im' ) );
+        $this->objCButton = new button ( $this->objLanguage->languageText ( 'mod_im_send', 'im' ) );
         $this->objCButton->setValue ( $this->objLanguage->languageText ( 'mod_im_send', 'im' ) );
         $this->objCButton->setToSubmit ();
 

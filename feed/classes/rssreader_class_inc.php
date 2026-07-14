@@ -91,7 +91,7 @@ class rssreader extends ChisimbaObject
 	 */
 	public function parseRss($url)
 	{
-		$this->rss =& new XML_RSS($url);
+		$this->rss = new XML_RSS($url);
 		return $this->rss->parse();
 	}
 

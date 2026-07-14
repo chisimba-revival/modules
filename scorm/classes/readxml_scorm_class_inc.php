@@ -117,7 +117,7 @@ class readxml_scorm extends ChisimbaObject {
         $resources = $doc->getElementsByTagName( "resource" );
         $nodesItem = $books->item(0);
         //Prepare the tree
-        $this->_objTreeMenu =& new treemenu();
+        $this->_objTreeMenu = new treemenu();
         $menu  = &$this->_objTreeMenu;
         $rootMenu = &$this->createRootNode();
         $this->_objTreeMenu->addItem( $rootMenu );
@@ -465,7 +465,7 @@ class readxml_scorm extends ChisimbaObject {
      * @return nothing
      */
     function createTreeMenu() {
-        $this->_objTreeMenu =& new treemenu();
+        $this->_objTreeMenu = new treemenu();
 
         $rootMenu = &$this->createRootNode();
         $this->_objTreeMenu->addItem( $rootMenu );

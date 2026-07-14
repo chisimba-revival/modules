@@ -18,7 +18,7 @@ $age = new dropdown('age');
 for($i=15;$i<46;$i++) {
 	$age->addOption($i,$i);
 }
-$pos=&new dropdown('position');
+$pos= new dropdown('position');
 $pos->addOption('gk','GK');
 $pos->addOption('rb','RB');
 $pos->addOption('lb','LB');

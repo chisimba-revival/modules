@@ -2,7 +2,7 @@
 //print_r($data);
 //die();
 $this->objPop= &$this->getObject('windowpop', 'htmlelements');
-$this->objPop=&new windowpop;
+$this->objPop= new windowpop;
 
 
 $userMenu  = &$this->newObject('usermenu','toolbar');

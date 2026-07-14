@@ -101,7 +101,7 @@
 //// Determine whether to show the submit form for the ratings form
 //// Without this button, form is a waste, but need to make efficient
 //if ($showRatingsForm) {
-//    $objButton=&new button('submitForm');
+//    $objButton= new button('submitForm');
 //    $objButton->cssClass = 'save';
 //    $objButton->setValue($this->objLanguage->languageText('mod_forum_sendratings', 'forum'));
 //    $objButton->setToSubmit();

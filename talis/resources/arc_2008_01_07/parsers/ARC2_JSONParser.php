@@ -39,7 +39,7 @@ class ARC2_JSONParser extends ARC2_RDFParser {
     /* reader */
     if (!$this->v('reader')) {
       ARC2::inc('Reader');
-      $this->reader = & new ARC2_Reader($this->a, $this);
+      $this->reader = new ARC2_Reader($this->a, $this);
     }
     $this->reader->setAcceptHeader('Accept: application/json; q=0.9, */*; q=0.1');
     $this->reader->activate($path, $data);

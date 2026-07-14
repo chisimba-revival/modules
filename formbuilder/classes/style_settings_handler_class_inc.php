@@ -65,7 +65,7 @@ class style_settings_handler extends ChisimbaObject {
 ///Instatiate an object from the class dropdown belonging to the module
 ///htmlelements.
 
-        $this->stylesListDropdown = &new dropdown('stylelist_dropdown');
+        $this->stylesListDropdown = new dropdown('stylelist_dropdown');
     }
 
     /**

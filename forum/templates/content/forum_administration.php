@@ -110,7 +110,7 @@
 //        $forumLinkStr = ' &nbsp;&nbsp; ';
 //    }
 //
-//    $editLink =& new link($this->uri(array( 'module'=> 'forum', 'action' => 'editforum', 'id'=>$forum['id'])));
+//    $editLink = new link($this->uri(array( 'module'=> 'forum', 'action' => 'editforum', 'id'=>$forum['id'])));
 //    $editLink->link = $this->objLanguage->languageText('word_edit', 'system');
 //    $editLink->title = $this->objLanguage->languageText('mod_forum_editForumSettings', 'forum');
 //

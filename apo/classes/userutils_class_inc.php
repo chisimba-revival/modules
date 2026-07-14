@@ -134,7 +134,7 @@ class userutils extends ChisimbaObject {
             $newUserNode = new treenode(array('text' => $userManagement, 'link' => $this->uri(array('action' => 'usermanagement')), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
 
             foreach($rolesArray as $key=>$value) {
-                $roleNode = &new treenode(array(
+                $roleNode = new treenode(array(
                                            'text' => $value,
                                            'link' => $this->uri(array('action' => 'usermanagement', 'role' => $key)),
                                            'icon' => $icon,
@@ -187,9 +187,9 @@ class userutils extends ChisimbaObject {
                     $cssClass = '';
                 }
                 if ($treeType == 'htmldropdown') {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $row['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $row['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 } else {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'home', 'facultyid' => $row['id'], 'facultyname' => $row['name'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'home', 'facultyid' => $row['id'], 'facultyname' => $row['name'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 }
 
                 $parent = $this->getParent($row['path']);
@@ -203,12 +203,12 @@ class userutils extends ChisimbaObject {
 
         $menu->addItem($allFilesNode);
         if ($treeType == 'htmldropdown') {
-            $treeMenu = &new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
+            $treeMenu = new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
         } else {
             $this->appendArrayVar('headerParams', $this->getJavascriptFile('TreeMenu.js', 'tree'));
             $this->setVar('pageSuppressXML', TRUE);
             $objSkin = & $this->getObject('skin', 'skin');
-            $treeMenu = &new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+            $treeMenu = new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
         }
 
         return $treeMenu->getMenu();

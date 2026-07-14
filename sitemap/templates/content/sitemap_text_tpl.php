@@ -40,7 +40,7 @@ foreach ($modulesList as $module)
     $modObject = $this->getObject('modulelinks_'.$module, $module);
     $menu->addItem($modObject->show());
     
-    $htmllist  = &new htmllist($menu);
+    $htmllist  = new htmllist($menu);
     //echo '<div style="width:49%; float: left; overflow: hidden;">';
     
     $objIcon->setModuleIcon($module);

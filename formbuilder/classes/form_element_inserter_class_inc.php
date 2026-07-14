@@ -60,7 +60,7 @@ class form_element_inserter extends ChisimbaObject {
 ///Instatiate an object from the class dropdown belonging to the module
 ///htmlelements.
 
-        $this->formElementInserterDropDown = &new dropdown('add_form_elements_drop_down');
+        $this->formElementInserterDropDown = new dropdown('add_form_elements_drop_down');
 
 ///Call a private member function to initialize a private data member that stores
 ///all default form elements into an array.

@@ -122,7 +122,7 @@ function delete_cal ($filename) {
 		$delete = @unlink($filename); 
 		clearstatcache();
 		if (@file_exists($filename)) { 
-			$filesys = eregi_replace("/","\\", $filename); 
+			$filesys = preg_replace("~/~i","\\", $filename); 
 			$delete = @system("del $filesys");
 			clearstatcache();
 			if (@file_exists($filename)) { 
@@ -234,7 +234,7 @@ function is_uploaded_file_v4 ($filename) {
     $filename = str_replace ("\\", "/", $filename);
     $tmp_file = str_replace ("\\", "/", $tmp_file);
     // User might have trailing slash in php.ini... 
-    return (ereg_replace('/+', '/', $tmp_file) == $filename);
+    return (preg_replace('~/+~', '/', $tmp_file) == $filename);
 }
 
 // return the appropriate error message if the file upload had an error

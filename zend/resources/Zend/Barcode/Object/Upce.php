@@ -83,8 +83,8 @@ class Zend_Barcode_Object_Upce extends Zend_Barcode_Object_Ean13
     public function getText()
     {
         $text = parent::getText();
-        if ($text{0} != 1) {
-            $text{0} = 0;
+        if ($text[0] != 1) {
+            $text[0] = 0;
         }
         return $text;
     }
@@ -157,7 +157,7 @@ class Zend_Barcode_Object_Upce extends Zend_Barcode_Object_Ean13
                     $fontSize *= 0.8;
                 }
                 $this->_addText(
-                    $text{$i},
+                    $text[$i],
                     $fontSize * $this->_factor,
                     $this->_rotate(
                         $leftPosition,
@@ -219,8 +219,8 @@ class Zend_Barcode_Object_Upce extends Zend_Barcode_Object_Ean13
     public function getChecksum($text)
     {
         $text = $this->_addLeadingZeros($text, true);
-        if ($text{0} != 1) {
-            $text{0} = 0;
+        if ($text[0] != 1) {
+            $text[0] = 0;
         }
         return parent::getChecksum($text);
     }

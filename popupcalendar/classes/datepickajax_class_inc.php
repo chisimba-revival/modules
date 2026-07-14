@@ -239,7 +239,7 @@ class datepickajax extends ChisimbaObject
     */
     public function buildCal($day = NULL, $mnth = NULL, $year = NULL, $call = NULL)
     {
-        //$objResponse = &new xajaxResponse();
+        //$objResponse = new xajaxResponse();
         if (is_null($day)) {
             $day = date('d');
         }
@@ -364,7 +364,7 @@ class datepickajax extends ChisimbaObject
     */
     public function buildTime($hour, $min)
     {
-        //$objResponse = &new xajaxResponse();
+        //$objResponse = new xajaxResponse();
         $field = $this->session('field');
         $defaultDate = $this->session($field.'_defaultDate');
         if ($defaultDate != NULL) {

@@ -125,7 +125,7 @@ Class RdqlMemEngine extends RdqlEngine {
    $i = 0;
    // parameters to be passed to the method findTriplesMatchingPattern
    foreach ($pattern as $key => $v) {     
-     if ($v['value'] && $v['value']{0} == '?') {
+     if ($v['value'] && $v['value'][0] == '?') {
         if ($key == 'object') {
             $param['object']['is_a'] = 'ANY';
             $param['object']['string'] = 'ANY';
@@ -169,17 +169,17 @@ Class RdqlMemEngine extends RdqlEngine {
                                                  $intBindings);
 
    // set values of the pattern variables to be returned
-   if ($pattern['subject']['value']{0} == '?') {
+   if ($pattern['subject']['value'][0] == '?') {
       $n = 0;
       foreach ($resModel->triples as $triple)
         $resultSet[$n++][$pattern['subject']['value']] = $triple->subj;
    }
-   if ($pattern['predicate']['value']{0} == '?') {
+   if ($pattern['predicate']['value'][0] == '?') {
       $n = 0;
       foreach ($resModel->triples as $triple)
         $resultSet[$n++][$pattern['predicate']['value']] = $triple->pred;
    }
-   if ($pattern['object']['value'] && $pattern['object']['value']{0} == '?') {
+   if ($pattern['object']['value'] && $pattern['object']['value'][0] == '?') {
       $n = 0;
       foreach ($resModel->triples as $triple)
         $resultSet[$n++][$pattern['object']['value']] = $triple->obj;

@@ -106,7 +106,7 @@ class ARC2_SemHTMLParser extends ARC2_LegacyXMLParser {
     /* reader */
     if (!$this->v('reader')) {
       ARC2::inc('Reader');
-      $this->reader = & new ARC2_Reader($this->a, $this);
+      $this->reader = new ARC2_Reader($this->a, $this);
     }
     $this->reader->setAcceptHeader('Accept: text/html, application/xhtml, */*; q=0.9');
     $this->reader->activate($path, $data);

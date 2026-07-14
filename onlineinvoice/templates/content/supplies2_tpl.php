@@ -5,7 +5,7 @@
        
 
 $this->loadClass('windowpop','htmlelements');
-$this->objPop=&new windowpop;
+$this->objPop= new windowpop;
 $this->objPop->set('window_name','Exchange Rate Information');
 $this->objPop->set('location','<a href=http://www.oanda.com/convert/classic/>www.oanda.com</a>');
 $this->objPop->set('linktext','www.oanda.com');

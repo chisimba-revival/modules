@@ -110,7 +110,7 @@ elseif(strstr($_SERVER['QUERY_STRING'],'404') || strstr($_SERVER['QUERY_STRING']
 		// fix request params
 		foreach($_GET as $k => $v)
 		{
-			if(ereg('^(404|405)',$k))
+			if(preg_match('~^(404|405)~',$k))
 			{
 				$k = substr($k, strpos($k,'?')+1);
 				$_GET[$k] = $v;

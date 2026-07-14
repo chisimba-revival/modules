@@ -43,7 +43,7 @@ class FileMaker_Command_CompoundFind extends FileMaker_Command
      */
     function FileMaker_Command_CompoundFind($fm, $layout)
     {
-        $this->_impl =& new FileMaker_Command_CompoundFind_Implementation($fm, $layout);
+        $this->_impl = new FileMaker_Command_CompoundFind_Implementation($fm, $layout);
     }
   
      /**

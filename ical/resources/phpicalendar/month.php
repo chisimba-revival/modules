@@ -7,7 +7,7 @@ header("Content-Type: text/html; charset=$charset");
 $current_view = "month";
 if ($minical_view == 'current') $minical_view = 'month';
 
-ereg ("([0-9]{4})([0-9]{2})([0-9]{2})", $getdate, $day_array2);
+preg_match("~([0-9]{4})([0-9]{2})([0-9]{2})~", $getdate, $day_array2);
 $this_day 				= $day_array2[3]; 
 $this_month 			= $day_array2[2];
 $this_year 				= $day_array2[1];

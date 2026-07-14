@@ -159,7 +159,7 @@ if(!ini_set("include_path",".:/usr/lib/php")) {
 			);
 			  
 			// Instantiate the serializer with the options
-			$Serializer = &new XML_Serializer($serializer_options);
+			$Serializer = new XML_Serializer($serializer_options);
 			
 			// Serialize the data structure
 			$status = $Serializer->serialize($playlist);

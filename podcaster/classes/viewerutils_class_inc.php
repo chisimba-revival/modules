@@ -41,7 +41,7 @@ class viewerutils extends ChisimbaObject {
      * @return boolean
      */
     public function isValidEmail($email) {
-        $result = ereg("^[^@ ]+@[^@ ]+\.[^@ \.]+$", $email);
+        $result = preg_match("~^[^@ ]+@[^@ ]+\.[^@ \.]+$~", $email);
         if ($result) {
             return true;
         } else {

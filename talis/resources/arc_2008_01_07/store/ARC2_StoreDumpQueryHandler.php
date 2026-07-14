@@ -31,7 +31,7 @@ class ARC2_StoreDumpQueryHandler extends ARC2_StoreQueryHandler {
     $this->infos = $infos;
     $con = $this->store->getDBCon();
     ARC2::inc('StoreDumper');
-    $d =& new ARC2_StoreDumper($this->a, $this->store);
+    $d = new ARC2_StoreDumper($this->a, $this->store);
     $d->dumpSPOG();
     return 1;
   }

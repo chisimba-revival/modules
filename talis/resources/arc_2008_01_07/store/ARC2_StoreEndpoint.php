@@ -181,7 +181,7 @@ class ARC2_StoreEndpoint extends ARC2_Store {
     }
     else {
       ARC2::inc('SPARQLPlusParser');
-      $p = & new ARC2_SPARQLPlusParser($this->a, $this);
+      $p = new ARC2_SPARQLPlusParser($this->a, $this);
       $p->parse($q);
       $infos = $p->getQueryInfos();
     }

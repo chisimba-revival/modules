@@ -419,12 +419,12 @@ SCRIPT;
         $return = $reCaptchaOptions;
         $return .= <<<HTML
 <script type="text/javascript"
-   src="{$host}/challenge?k={$this->_publicKey}{$errorPart}">
+   src="{$host}/challenge?k={$this->_publicKey}[$errorPart]">
 </script>
 HTML;
         $return .= <<<HTML
 <noscript>
-   <iframe src="{$host}/noscript?k={$this->_publicKey}{$errorPart}"
+   <iframe src="{$host}/noscript?k={$this->_publicKey}[$errorPart]"
        height="300" width="500" frameborder="0"></iframe>{$htmlBreak}
    <textarea name="recaptcha_challenge_field" rows="3" cols="40">
    </textarea>

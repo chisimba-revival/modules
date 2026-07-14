@@ -369,18 +369,18 @@ class Zend_Http_Response
         $str = '';
 
         if ($status_line) {
-            $str = "HTTP/{$this->version} {$this->code} {$this->message}{$br}";
+            $str = "HTTP/{$this->version} {$this->code} {$this->message}[$br]";
         }
 
         // Iterate over the headers and stringify them
         foreach ($this->headers as $name => $value)
         {
             if (is_string($value))
-                $str .= "{$name}: {$value}{$br}";
+                $str .= "{$name}: {$value}[$br]";
 
             elseif (is_array($value)) {
                 foreach ($value as $subval) {
-                    $str .= "{$name}: {$subval}{$br}";
+                    $str .= "{$name}: {$subval}[$br]";
                 }
             }
         }

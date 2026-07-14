@@ -3,7 +3,7 @@
   /** create template for per diem expenses of the travel journey **/
 
    $this->loadClass('windowpop','htmlelements');
-   $this->objPop=&new windowpop;
+   $this->objPop= new windowpop;
    $this->objPop->set('window_name','Foreign Per Diem Rates');
    $this->objPop->set('location','<a href=http://www.state.gov/m/a/als/prdm/>www.state.gov/m/a/als/prdm</a>');
    $this->objPop->set('linktext','www.state.gov/m/a/als/prdm');

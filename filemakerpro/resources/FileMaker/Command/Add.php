@@ -46,7 +46,7 @@ class FileMaker_Command_Add extends FileMaker_Command
      */
     function FileMaker_Command_Add($fm, $layout, $values = array())
     {
-        $this->_impl =& new FileMaker_Command_Add_Implementation($fm, $layout, $values);
+        $this->_impl = new FileMaker_Command_Add_Implementation($fm, $layout, $values);
     }
 
     /**

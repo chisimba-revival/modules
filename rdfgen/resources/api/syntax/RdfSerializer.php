@@ -604,7 +604,7 @@ class RdfSerializer extends Object {
 		$hasBreaks=FALSE;
 		$whiteSpaceOnly=TRUE;
 		for ($i=0; $i<strlen($textValue); $i++) {
-			$c=$textValue{$i};
+			$c=$textValue[$i];
 			if ($c=='<' || $c=='>' || $c=='&')
 			return USE_CDATA;
 			if ($c==LINEFEED)

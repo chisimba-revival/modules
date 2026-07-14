@@ -43,7 +43,7 @@
  $V1c0c74f6 = true;
 if ($Vcb5e100e === null) {
  $V1c0c74f6 = false;
-$Vcb5e100e =& new FileMaker_Error_Validation($this->_layout->_impl->_fm);
+$Vcb5e100e = new FileMaker_Error_Validation($this->_layout->_impl->_fm);
 }
 foreach ($this->getValidationRules() as $V981c1e7b) {
  switch ($V981c1e7b) {

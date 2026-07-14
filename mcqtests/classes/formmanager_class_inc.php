@@ -3501,7 +3501,7 @@ class formmanager extends ChisimbaObject {
         $newFormula = str_replace("B", floatval($no2), $newFormula);
 
         // remove any non-numbers chars; exception for math operators
-        $myformula = ereg_replace('[^0-9\+-\*\/\(\) ]', '', $newFormula);
+        $myformula = preg_replace('~[^0-9\+-\*\/\(\) ]~', '', $newFormula);
         $compute = create_function("", "return (" . $myformula . ");");
         $computed = 0 + $compute();
         $roundAns = (float) round($computed, 0);
@@ -3526,7 +3526,7 @@ class formmanager extends ChisimbaObject {
             $minVal = $computed - $newTolerance;
 
             // remove any non-numbers chars; exception for math operators
-            $minVal = ereg_replace('[^0-9\+-\*\/\(\) ]', '', $minVal);
+            $minVal = preg_replace('~[^0-9\+-\*\/\(\) ]~', '', $minVal);
             $minVal = create_function("", "return (" . $minVal . ");");
             $minVal = 0 + $minVal();
 
@@ -3534,7 +3534,7 @@ class formmanager extends ChisimbaObject {
             $maxVal = $computed + $newTolerance;
 
             // remove any non-numbers chars; exception for math operators
-            $maxVal = ereg_replace('[^0-9\+-\*\/\(\) ]', '', $maxVal);
+            $maxVal = preg_replace('~[^0-9\+-\*\/\(\) ]~', '', $maxVal);
             $maxVal = create_function("", "return (" . $maxVal . ");");
             $maxVal = 0 + $maxVal();
         } else {
@@ -3545,7 +3545,7 @@ class formmanager extends ChisimbaObject {
             $minVal = $computed - $tolerance;
 
             // remove any non-numbers chars; exception for math operators
-            $minVal = ereg_replace('[^0-9\+-\*\/\(\) ]', '', $minVal);
+            $minVal = preg_replace('~[^0-9\+-\*\/\(\) ]~', '', $minVal);
             $minVal = create_function("", "return (" . $minVal . ");");
             $minVal = 0 + $minVal();
 
@@ -3553,7 +3553,7 @@ class formmanager extends ChisimbaObject {
             $maxVal = $computed + $tolerance;
 
             // remove any non-numbers chars; exception for math operators
-            $maxVal = ereg_replace('[^0-9\+-\*\/\(\) ]', '', $maxVal);
+            $maxVal = preg_replace('~[^0-9\+-\*\/\(\) ]~', '', $maxVal);
             $maxVal = create_function("", "return (" . $maxVal . ");");
             $maxVal = 0 + $maxVal();
         }

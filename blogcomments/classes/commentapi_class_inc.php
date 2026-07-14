@@ -199,7 +199,7 @@ class commentapi extends ChisimbaObject
 		}
 
  		//end off the form and add the buttons
-		$this->objCButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+		$this->objCButton = new button($this->objLanguage->languageText('word_save', 'system'));
 		$this->objCButton->setValue($this->objLanguage->languageText('word_save', 'system'));
                 // Add the save icon
                 $this->objCButton->setIconClass("save");

@@ -109,7 +109,7 @@ class fbform extends ChisimbaObject
 		$dfbform->addRule('request_captcha', $this->objLanguage->languageText("mod_feedback_captchaval",'feedback'), 'required');
 
 		//end off the form and add the buttons
-		$this->objSaveButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+		$this->objSaveButton = new button($this->objLanguage->languageText('word_save', 'system'));
 		$this->objSaveButton->setValue($this->objLanguage->languageText('word_save', 'system'));
 		$this->objSaveButton->setToSubmit();
 		$fbfieldset->addContent($fbtable->show());

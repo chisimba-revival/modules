@@ -110,7 +110,7 @@
 //        $discussionLinkStr = ' &nbsp;&nbsp; ';
 //    }
 //
-//    $editLink =& new link($this->uri(array( 'module'=> 'discussion', 'action' => 'editdiscussion', 'id'=>$discussion['id'])));
+//    $editLink = new link($this->uri(array( 'module'=> 'discussion', 'action' => 'editdiscussion', 'id'=>$discussion['id'])));
 //    $editLink->link = $this->objLanguage->languageText('word_edit', 'system');
 //    $editLink->title = $this->objLanguage->languageText('mod_discussion_editDiscussionSettings', 'discussion');
 //

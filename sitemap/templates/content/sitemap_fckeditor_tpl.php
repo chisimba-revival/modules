@@ -37,7 +37,7 @@ foreach ($modules as $module)
 }
 
 
-$htmllist  = &new modulelinkspresentation($menu, array('target'=>'iframe'));
+$htmllist  = new modulelinkspresentation($menu, array('target'=>'iframe'));
 $this->setVar('pageSuppressBanner', TRUE);
 $this->setVar('pageSuppressToolbar', TRUE);
 $this->setVar('suppressFooter', TRUE);

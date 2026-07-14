@@ -30,7 +30,7 @@ class modulelinks_forum extends ChisimbaObject
         
         foreach ($forums as $forum)
         {
-            $node =& new treenode(array('link'=>$this->uri(array('action'=>'forum', 'id'=>$forum['id'])), 'text'=>$forum['forum_name']));
+            $node = new treenode(array('link'=>$this->uri(array('action'=>'forum', 'id'=>$forum['id'])), 'text'=>$forum['forum_name']));
             
             $nodesArray['forum_'.$forum['id']] =& $node;
             $rootNode->addItem($nodesArray['forum_'.$forum['id']]);
@@ -39,7 +39,7 @@ class modulelinks_forum extends ChisimbaObject
             
             foreach ($topics as $topic)
             {
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$topic['topic_id'])), 'text'=>$topic['post_title']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$topic['topic_id'])), 'text'=>$topic['post_title']));
                 
                 $nodesArray['topic_'.$topic['topic_id']] =& $node;
                 $nodesArray['post_'.$topic['first_post']] =& $node;
@@ -52,7 +52,7 @@ class modulelinks_forum extends ChisimbaObject
                     
                     
                     if ($post['post_parent'] != '0') {
-                        $node =& new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$post['topic_id'], 'post'=>$post['post_id'])), 'text'=>$post['post_title']));
+                        $node = new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$post['topic_id'], 'post'=>$post['post_id'])), 'text'=>$post['post_title']));
                 
                         $nodesArray['post_'.$post['post_id']] =& $node;
                         $nodesArray['post_'.$post['post_parent']]->addItem($nodesArray['post_'.$post['post_id']]);

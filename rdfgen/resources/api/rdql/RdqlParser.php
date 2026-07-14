@@ -105,52 +105,52 @@ Class RdqlParser extends Object{
    $clean = '';
    for ($i=0; $i<=$last; $i++) {
      // don't search for comments inside a 'literal'@lang^^dtype or "literal"@lang^^dtype
-     if ($query{$i} == "'" || $query{$i} == '"') {
-        $quotMark = $query{$i};
+     if ($query[$i] == "'" || $query[$i] == '"') {
+        $quotMark = $query[$i];
         do
-          $clean .= $query{$i++};
-        while($i < $last && $query{$i} != $quotMark);
-        $clean .= $query{$i};
+          $clean .= $query[$i++];
+        while($i < $last && $query[$i] != $quotMark);
+        $clean .= $query[$i];
         // language
-        if ($query{$i+1} == '@') {
+        if ($query[$i+1] == '@') {
            do{
-             if ($query{$i+1} == '^' && $query{$i+2} == '^')
+             if ($query[$i+1] == '^' && $query[$i+2] == '^')
                 break;
-             $clean .= $query{++$i};
-           }while ($i < $last && $query{$i} != ' '  && $query{$i} != "\t"
-                              && $query{$i} != "\n" && $query{$i} != "\r");
+             $clean .= $query[++$i];
+           }while ($i < $last && $query[$i] != ' '  && $query[$i] != "\t"
+                              && $query[$i] != "\n" && $query[$i] != "\r");
         }
         // datatype
-        if ($query{$i+1} == '^' && $query{$i+2} == '^') {
+        if ($query[$i+1] == '^' && $query[$i+2] == '^') {
             do
-              $clean .= $query{++$i};
-            while ($i < $last && $query{$i} != ' '  && $query{$i} != "\t"
-                             && $query{$i} != "\n" && $query{$i} != "\r" );
+              $clean .= $query[++$i];
+            while ($i < $last && $query[$i] != ' '  && $query[$i] != "\t"
+                             && $query[$i] != "\n" && $query[$i] != "\r" );
         }
      // don't search for comments inside an <URI> either
-     }elseif ($query{$i} == '<') {
+     }elseif ($query[$i] == '<') {
         do{
-           $clean .= $query{$i++};
-        }while($i < $last && $query{$i} != '>');
-        $clean .= $query{$i};
-     }elseif ($query{$i} == '/') {
+           $clean .= $query[$i++];
+        }while($i < $last && $query[$i] != '>');
+        $clean .= $query[$i];
+     }elseif ($query[$i] == '/') {
         // clear: // comment
-        if ($i < $last && $query{$i+1} == '/') {
-            while($i < $last && $query{$i} != "\n" && $query{$i} != "\r")
+        if ($i < $last && $query[$i+1] == '/') {
+            while($i < $last && $query[$i] != "\n" && $query[$i] != "\r")
               ++$i;
             $clean .= ' ';
         // clear: /*comment*/
-        }elseif ($i < $last-2 && $query{$i+1} == '*') {
+        }elseif ($i < $last-2 && $query[$i+1] == '*') {
             $i += 2;
-            while($i < $last  && ($query{$i} != '*' || $query{$i+1} != '/'))
+            while($i < $last  && ($query[$i] != '*' || $query[$i+1] != '/'))
               ++$i;
-            if ($i >= $last && ($query{$last-1} != '*' || $query{$last} != '/'))
+            if ($i >= $last && ($query[$last-1] != '*' || $query[$last] != '/'))
                trigger_error(RDQL_SYN_ERR .": unterminated comment - '*/' missing", E_USER_ERROR);
             ++$i;
         }else
-          $clean .= $query{$i};
+          $clean .= $query[$i];
      }else
-        $clean .= $query{$i};
+        $clean .= $query[$i];
    }
    return $clean;
  }
@@ -173,12 +173,12 @@ Class RdqlParser extends Object{
    $n = 0;
 
    for ($i=0; $i<$len; ++$i) {
-       if (!in_array($queryString{$i}, $specialChars))
-          $this->tokens[$n] .= $queryString{$i};
+       if (!in_array($queryString[$i], $specialChars))
+          $this->tokens[$n] .= $queryString[$i];
        else {
           if ($this->tokens[$n] != '')
              ++$n;
-          $this->tokens[$n] = $queryString{$i};
+          $this->tokens[$n] = $queryString[$i];
           $this->tokens[++$n] = '';
        }
    }
@@ -255,7 +255,7 @@ Class RdqlParser extends Object{
                      unset($this->tokens[$k]);
                      return $this->parseWhere();
                   }
-                  if ($token{0} == '?') {
+                  if ($token[0] == '?') {
                      $this->parsedQuery['selectVars'][] = $this->_validateVar($token, RDQL_SEL_ERR);
                      $commaExpected = TRUE;
                      $comma = FALSE;
@@ -300,7 +300,7 @@ Class RdqlParser extends Object{
       }else{
         $token = current($this->tokens);
         $this->parsedQuery['sources'][++$i]['value'] = $this->_validateURI($token, RDQL_SRC_ERR);
-        if ($token{0} != '<')
+        if ($token[0] != '<')
         	$this->parsedQuery['sources'][$i]['is_qname'] = TRUE;
         $commaExpected = TRUE;
         $comma = FALSE;
@@ -531,7 +531,7 @@ Class RdqlParser extends Object{
      $dtype = substr($eqExprs[5][$i], 2);
      if ($dtype) {
         $parsedFilter['strEqExprs'][$i]['value_dtype'] = $this->_validateUri($dtype, RDQL_AND_ERR);
-        if ($dtype{0} != '<')
+        if ($dtype[0] != '<')
 	       $parsedFilter['strEqExprs'][$i]['value_dtype_is_qname'] = TRUE; 	 
      }else 
         $parsedFilter['strEqExprs'][$i]['value_dtype'] = '';
@@ -596,7 +596,7 @@ Class RdqlParser extends Object{
    foreach ($this->parsedQuery['patterns'] as $pattern) {
      $count = 0;
      foreach ($pattern as $v) {
-       if ($v['value'] && $v['value']{0} == '?') {
+       if ($v['value'] && $v['value'][0] == '?') {
           ++$count;
           if (!in_array($v['value'], $vars))
              $vars[] = $v['value'];
@@ -644,7 +644,7 @@ Class RdqlParser extends Object{
    // replace namespace prefixes in the where clause
    foreach ($this->parsedQuery['patterns'] as $n => $pattern) {
      foreach ($pattern as $key => $v)
-       if ($v['value'] && $v['value']{0} != '?') {
+       if ($v['value'] && $v['value'][0] != '?') {
        	  if (isset($v['is_qname'])) {      	  	       	  	
           	 $this->parsedQuery['patterns'][$n][$key]['value']
           	 	= $this->_replaceNamespacePrefix($v['value'], RDQL_WHR_ERR);
@@ -756,11 +756,11 @@ Class RdqlParser extends Object{
  */
  function _validateVarUri($token) {
  	
-   if ($token{0} == '?') {
+   if ($token[0] == '?') {
       $token_res['value'] = $this->_validateVar($token, RDQL_WHR_ERR);
    } else {
    	  $token_res['value'] = $this->_validateUri($token, RDQL_WHR_ERR);
-   	  if ($token{0} != '<')
+   	  if ($token[0] != '<')
    	  	$token_res['is_qname'] = TRUE;   	  
    }           
    return $token_res;
@@ -784,11 +784,11 @@ Class RdqlParser extends Object{
  */
  function _validateVarUriLiteral($token) {
  
-   if ($token{0} == '?')
+   if ($token[0] == '?')
       $statement_object['value'] = $this->_validateVar($token, RDQL_WHR_ERR);   
-   elseif ($token{0} == "'" || $token{0} == '"')
+   elseif ($token[0] == "'" || $token[0] == '"')
       $statement_object = $this->_validateLiteral($token);
-   elseif ($token{0} == '<')
+   elseif ($token[0] == '<')
       $statement_object['value'] = $this->_validateUri($token, RDQL_WHR_ERR);      
    elseif (ereg(':', $token)) {
    	  $statement_object['value'] = $this->_validateUri($token, RDQL_WHR_ERR);
@@ -830,7 +830,7 @@ Class RdqlParser extends Object{
  */
  function _validateUri($token, $clause_error) {
 
-   if ($token{0} != '<') {
+   if ($token[0] != '<') {
       if (strpos($token, ':') && $this->_validateQName($token, $clause_error)) {
       	unset($this->tokens[key($this->tokens)]);
       	return rtrim($token, ':');
@@ -843,7 +843,7 @@ Class RdqlParser extends Object{
       trigger_error($errmsg, E_USER_ERROR);
    }else{
       $token_res = $token;
-      while($token{strlen($token)-1} != '>' && $token != NULL) {
+      while($token[strlen($token)-1] != '>' && $token != NULL) {
         if ($token == '(' || $token == ')' || $token == ',' ||
             $token == ' ' || $token == "\n" || $token == "\r") {
            trigger_error($clause_error .'\'' .htmlspecialchars($token_res)
@@ -876,7 +876,7 @@ Class RdqlParser extends Object{
  */
  function _validateLiteral($token) {
 
-   $quotation_mark = $token{0};
+   $quotation_mark = $token[0];
    $statement_object = array ('value' => '',
                               'is_literal' => TRUE,
                               'l_lang' => '',
@@ -886,7 +886,7 @@ Class RdqlParser extends Object{
    $return = FALSE;
    foreach ($this->tokens as $k => $token) {
 
-     if ($token != NULL && $token{strlen($token)-1} == $quotation_mark) {
+     if ($token != NULL && $token[strlen($token)-1] == $quotation_mark) {
          $token = rtrim($token, $quotation_mark);
          $return = TRUE;
 
@@ -900,7 +900,7 @@ Class RdqlParser extends Object{
                                          .$token  ." - datatype expected" ,E_USER_ERROR);
                                          
 		   $statement_object['l_dtype'] = $this->_validateUri($dtype, RDQL_WHR_ERR);
-		   if ($dtype{0} != '<')
+		   if ($dtype[0] != '<')
 		      $statement_object['l_dtype_is_qname'] = TRUE;		      
         
            $lang = substr($lang, 0, strpos($lang, '^^'));
@@ -920,7 +920,7 @@ Class RdqlParser extends Object{
                                       .$token  ." - datatype expected" ,E_USER_ERROR);       
 
         $statement_object['l_dtype'] = $this->_validateUri($dtype, RDQL_WHR_ERR);
-		if ($dtype{0} != '<')
+		if ($dtype[0] != '<')
 		   $statement_object['l_dtype_is_qname'] = TRUE;		   
 
         $token = substr($token, 0, strpos($token, $quotation_mark .'^^'));

@@ -1243,8 +1243,8 @@ class dbPost extends dbTable {
                         $highlightPost = FALSE;
                 }
 
-                $treeMenu = & new treemenu();
-                $rootNode = & new treenode($this->generateNodeText($threadArray[0], $highlightPost));
+                $treeMenu = new treemenu();
+                $rootNode = new treenode($this->generateNodeText($threadArray[0], $highlightPost));
 
                 // start an array
                 $nodeArray = array();
@@ -1265,7 +1265,7 @@ class dbPost extends dbTable {
                                 $highlightPost = FALSE;
                         }
 
-                        $thisnode = & new treenode($this->generateNodeText($thread, $highlightPost));
+                        $thisnode = new treenode($this->generateNodeText($thread, $highlightPost));
                         $nodeArray[$thread['post_parent']]->addItem($thisnode);
 
                         // Reference the array element with the record id
@@ -1274,7 +1274,7 @@ class dbPost extends dbTable {
 
                 $treeMenu->addItem($rootNode);
 
-                $tree = &new htmllist($treeMenu, array('images' => $this->objSkin->getSkinURL() . 'treeimages/imagesAlt2'), FALSE);
+                $tree = new htmllist($treeMenu, array('images' => $this->objSkin->getSkinURL() . 'treeimages/imagesAlt2'), FALSE);
                 //$this->appendArrayVar('headerParams', '<script src="modules/tree/resources/TreeMenu.js" language="JavaScript" type="text/javascript"></script>');
 
                 return $tree->getMenu();
@@ -1969,7 +1969,7 @@ function clearForTangent()
                 $nodeArray = array();
 
                 foreach ($childPosts as $childPost) {
-                        $node = & new treenode($this->generateNodeText($childPost));
+                        $node = new treenode($this->generateNodeText($childPost));
                         $nodeArray[$childPost['post_id']] = & $node;
 
                         if ($childPost['post_parent'] == $post_id) {
@@ -1981,7 +1981,7 @@ function clearForTangent()
                         }
                 }
 
-                $tree = &new htmllist($treeMenu, array('images' => $this->objSkin->getSkinURL() . 'treeimages/imagesAlt2'), FALSE);
+                $tree = new htmllist($treeMenu, array('images' => $this->objSkin->getSkinURL() . 'treeimages/imagesAlt2'), FALSE);
 
                 //$this->appendArrayVar('headerParams', '<script src="modules/tree/resources/TreeMenu.js" language="JavaScript" type="text/javascript"></script>');
                 return $tree->getMenu();

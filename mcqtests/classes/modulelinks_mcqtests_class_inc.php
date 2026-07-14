@@ -28,7 +28,7 @@ class modulelinks_mcqtests extends ChisimbaObject
 
         foreach ($tests as $test)
         {
-            $node =& new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$test['id'])), 'text'=>$test['name']));
+            $node = new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$test['id'])), 'text'=>$test['name']));
 
             $nodesArray['mcqtests_'.$test['id']] =& $node;
             $rootNode->addItem($nodesArray['mcqtests_'.$test['id']]);

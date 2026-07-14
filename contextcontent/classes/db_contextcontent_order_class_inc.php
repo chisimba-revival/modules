@@ -319,7 +319,7 @@ class db_contextcontent_order extends dbtable {
                 $nodeDetails['cssClass'] = 'confirm';
             }
 
-            $node = & new treenode($nodeDetails);
+            $node = new treenode($nodeDetails);
             $nodeArray[$treeItem['id']] = & $node;
 
             //if($treeItem['isbookmarked'] == 'Y'){
@@ -333,7 +333,7 @@ class db_contextcontent_order extends dbtable {
         }
         //}
 
-        $tree = &new htmllist($treeMenu, array('topMostListClass' => 'htmlliststyle'));
+        $tree = new htmllist($treeMenu, array('topMostListClass' => 'htmlliststyle'));
 
         return $tree->getMenu();
     }
@@ -376,7 +376,7 @@ class db_contextcontent_order extends dbtable {
                 $nodeDetails['cssClass'] = 'confirm';
             }
 
-            $node = & new treenode($nodeDetails);
+            $node = new treenode($nodeDetails);
             $nodeArray[$treeItem['id']] = & $node;
 
             //if($treeItem['isbookmarked'] == 'Y'){
@@ -390,9 +390,9 @@ class db_contextcontent_order extends dbtable {
         }
         //}
 
-        $tree = &new htmllist($treeMenu, array('inputName' => 'parentnode', 'id' => 'input_parentnode'));
+        $tree = new htmllist($treeMenu, array('inputName' => 'parentnode', 'id' => 'input_parentnode'));
 
-        $treeMenu = &new dhtml($treeMenu, array('images' => 'kins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+        $treeMenu = new dhtml($treeMenu, array('images' => 'kins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
 
         return $treeMenu->getMenu();
     }
@@ -410,7 +410,7 @@ class db_contextcontent_order extends dbtable {
 
         $nodeArray = array();
 
-        $rootnode = & new treenode(array('text' => '[- Root -]'));
+        $rootnode = new treenode(array('text' => '[- Root -]'));
         //Activity streamer icon
         $this->objAltConfig = $this->getObject('altconfig', 'config');
         $siteRoot = $this->objAltConfig->getsiteRoot();
@@ -434,7 +434,7 @@ class db_contextcontent_order extends dbtable {
                 $nodeDetails['extra'] = 'disabled="disabled" title="This page is on a lower level than the current page you are editing"';
             }
 
-            $node = & new treenode($nodeDetails);
+            $node = new treenode($nodeDetails);
             $nodeArray[$treeItem['id']] = & $node;
             //var_dump($treeItem);die;
             //if($treeItem['isbookmarked'] == 'Y'){
@@ -450,7 +450,7 @@ class db_contextcontent_order extends dbtable {
 
         $treeMenu->addItem($rootnode);
 
-        $tree = &new htmldropdown($treeMenu, array('inputName' => 'parentnode', 'id' => 'input_parentnode', 'selected' => $defaultSelected));
+        $tree = new htmldropdown($treeMenu, array('inputName' => 'parentnode', 'id' => 'input_parentnode', 'selected' => $defaultSelected));
 
         return $tree->getMenu();
     }
@@ -1126,7 +1126,7 @@ class db_contextcontent_order extends dbtable {
                 }
 
                 // Create Node
-                $node = & new treenode($nodeDetails);
+                $node = new treenode($nodeDetails);
 
                 // Check If current Item and has childen
                 if ($treeItem['id'] == $id && ($record['rght'] - $record['lft'] - 1 > 0)) {
@@ -1150,7 +1150,7 @@ class db_contextcontent_order extends dbtable {
                         $childNodeDetails = array('text' => htmlentities($childNode['menutitle']) . $showImg, 'link' => $this->uri(array('action' => 'viewpage', 'id' => $childNode['id'])), 'icon' => $showImg);
 
                         // Create Child Node
-                        $childTreeNode = & new treenode($childNodeDetails);
+                        $childTreeNode = new treenode($childNodeDetails);
 
                         // Add to Current Node
                         $node->addItem($childTreeNode);
@@ -1163,7 +1163,7 @@ class db_contextcontent_order extends dbtable {
             }
 
             // Create Menu Display
-            $tree = &new htmllist($treeMenu, array('topMostListClass' => 'twolevelstyle'));
+            $tree = new htmllist($treeMenu, array('topMostListClass' => 'twolevelstyle'));
 
             // Return Menu Display
             return $tree->getMenu();
@@ -1195,13 +1195,13 @@ class db_contextcontent_order extends dbtable {
                 }
 
                 // Create Node
-                $node = & new treenode($nodeDetails);
+                $node = new treenode($nodeDetails);
                 // Add to Menu
                 $treeMenu->addItem($node);
             }
 
             // Create Menu Display
-            $tree = &new htmllist($treeMenu);
+            $tree = new htmllist($treeMenu);
 
             // Return Menu Display
             return $tree->getMenu();
@@ -1240,7 +1240,7 @@ class db_contextcontent_order extends dbtable {
                 }
 
                 // Create Node
-                $node = & new treenode($nodeDetails);
+                $node = new treenode($nodeDetails);
                 // Add to Menu
                 $treeMenu->addItem($node);
 
@@ -1266,7 +1266,7 @@ class db_contextcontent_order extends dbtable {
                 $childNodeDetails = array('text' => htmlentities($childNode['menutitle']) . $showImg, 'link' => $this->uri(array('action' => 'viewpage', 'id' => $childNode['id'])));
 
                 // Create Child Node
-                $childTreeNode = & new treenode($childNodeDetails);
+                $childTreeNode = new treenode($childNodeDetails);
 
                 // Add to Current Node
                 $nodeArray[$id]->addItem($childTreeNode);
@@ -1275,7 +1275,7 @@ class db_contextcontent_order extends dbtable {
             // Add to Menu
             //$treeMenu->addItem($node);
             // Create Menu Display
-            $tree = &new htmllist($treeMenu);
+            $tree = new htmllist($treeMenu);
 
             // Return Menu Display
             return $tree->getMenu();

@@ -60,7 +60,7 @@ class foafparser extends ChisimbaObject
     {
         require_once 'RDF.php';
         require_once 'RDF/Model/Memory.php';
-        $this->rdf_parser = &new RDF_Parser;
+        $this->rdf_parser = new RDF_Parser;
     }
     public function isAllowedForAgent($property)
     {

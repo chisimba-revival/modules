@@ -256,7 +256,7 @@ if ( !function_exists('sha1') )
 {
 	function sha1( $string, $raw_output = false )
 	{
-		$library = &new SHA1Library();
+		$library = new SHA1Library();
 		
 		return $raw_output ? $library->str_sha1($string) : $library->hex_sha1($string);
 	}

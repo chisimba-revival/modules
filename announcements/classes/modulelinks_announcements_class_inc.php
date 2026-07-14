@@ -35,7 +35,7 @@ class modulelinks_announcements extends ChisimbaObject
             foreach ($announces as $announce)
             {
                 // Create Node
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'', 'id'=>$announce['id'])), 'text'=>$announce['title']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'', 'id'=>$announce['id'])), 'text'=>$announce['title']));
                 
                 // Create Reference to Node
                 $nodesArray['announcements'.$announce['id']] =& $node;

@@ -237,7 +237,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
         $puzzleLabel = $this -> objLanguage -> code2Txt('mod_sudoku_puzzle', 'sudoku', $array);
         $data = explode(",", $arrPuzzleData[0]['puzzle']);
     }
-    $objHeader = &new htmlHeading();
+    $objHeader = new htmlHeading();
     $objHeader -> str = $puzzleLabel;
     $objHeader -> type = 1;
     $str = $objHeader -> show();
@@ -247,7 +247,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
     // set up form elements
     // set up table
-    $objTable = &new htmltable();
+    $objTable = new htmltable();
     //$objTable -> cellspacing='2';
     $objTable -> cellpadding='2';
     $objTable -> border = '3';
@@ -264,7 +264,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
                 for($iiii = 1; $iiii <= $size; $iiii++){ //loop for cells
                     $cellClass = '<font>';
                     if($data[$x] != ''){
-                        $objText = &new textinput($x, $data[$x]);
+                        $objText = new textinput($x, $data[$x]);
                         $objText -> fldType = 'hidden';
                         $numberText = $objText -> show();
                         $number = $data[$x] . $numberText;
@@ -272,7 +272,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
                         $number = $selected[$x];
                         $cellClass = '<font class="error">';
                     }else{
-                        $objDrop = &new dropdown($x);
+                        $objDrop = new dropdown($x);
                         $objDrop -> addOption(NULL, '-');
                         //$objDrop -> extra = 'width="100px;"';
                         for($xx = 1; $xx <= pow($size, 2); $xx++){
@@ -298,26 +298,26 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
     if($solved != '1'){
         // set up timer
-        $objText = &new textinput('timer', $clock, 'text', 5);
+        $objText = new textinput('timer', $clock, 'text', 5);
         $timerText = $objText -> show();
 
         // set up hidden field
-        $objText = &new textinput('mode');
+        $objText = new textinput('mode');
         $objText -> fldType = 'hidden';
         $hiddenText = $objText -> show();
 
         // set up save button
-        $objButton = &new button('save', $saveLabel, 'document.getElementById(\'input_mode\').value = \'save\';');
+        $objButton = new button('save', $saveLabel, 'document.getElementById(\'input_mode\').value = \'save\';');
         $objButton -> setToSubmit();
         $saveButton = $objButton -> show();
 
         // set up submit button
-        $objButton = &new button('submit', $submitLabel);
+        $objButton = new button('submit', $submitLabel);
         $objButton -> setToSubmit();
         $submitButton = $objButton -> show();
 
         // Set up form
-        $objForm = &new form('saveForm', $this -> uri(array('action' => 'submit', 'id' => $id)));
+        $objForm = new form('saveForm', $this -> uri(array('action' => 'submit', 'id' => $id)));
         $objForm -> addToForm("<br />".$timerText);
         $objForm -> addToForm($hiddenText . $puzzleTable . "<p>" . $saveButton . " " . $submitButton . "</p>");
         $str = $objForm -> show();
@@ -328,7 +328,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
     }
 
 // set up exit link
-    $objLink = &new link($this -> uri(array(),'sudoku'));
+    $objLink = new link($this -> uri(array(),'sudoku'));
     $objLink -> link = $returnLabel;
     $returnLink = $objLink -> show();
     echo "<br />" . $returnLink;

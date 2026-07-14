@@ -42,7 +42,7 @@ class FileMaker_Field
      */
     function FileMaker_Field(&$layout)
     {
-        $this->_impl =& new FileMaker_Field_Implementation($layout);
+        $this->_impl = new FileMaker_Field_Implementation($layout);
     }
 
     /**

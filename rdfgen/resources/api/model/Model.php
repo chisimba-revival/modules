@@ -371,7 +371,7 @@ class Model extends Object
         {
             foreach ($pattern as $key => $val_1)
             {
-                if ($val_1['value']{0}=='?')
+                if ($val_1['value'][0]=='?')
                 {
                     if (!in_array($val_1['value'],$parsedQuery['selectVars']))
                     {

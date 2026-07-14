@@ -53,7 +53,7 @@ class modulelinks_practical extends ChisimbaObject
             foreach ($practicals as $practical)
             {
                 // Create Node
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'practical')), 'text'=>$practical['name']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'practical')), 'text'=>$practical['name']));
                 
                 // Create Reference to Node
                 $nodesArray['practical'.$practical['id']] =& $node;

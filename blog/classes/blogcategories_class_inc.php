@@ -105,7 +105,7 @@ class blogcategories extends ChisimbaObject
         $qcatname = new textinput('catname');
         $qcatname->size = 15;
         $qcatform->addToForm($qcatname->show());
-        $this->objqCButton = &new button($this->objLanguage->languageText('word_update', 'system'));
+        $this->objqCButton = new button($this->objLanguage->languageText('word_update', 'system'));
         $this->objqCButton->setValue($this->objLanguage->languageText('word_update', 'system'));
         $this->objqCButton->setIconClass("lightning");
         $this->objqCButton->setToSubmit();
@@ -255,7 +255,7 @@ class blogcategories extends ChisimbaObject
         // $catform->addRule('catname', $this->objLanguage->languageText("mod_blog_phrase_titlereq", "blog") , 'required');
         $cfieldset->addContent($catadd->show());
         $catform->addToForm($cfieldset->show());
-        $this->objCButton = &new button($this->objLanguage->languageText('word_update', 'system'));
+        $this->objCButton = new button($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setIconClass("save");
         $this->objCButton->setValue($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setToSubmit();
@@ -332,7 +332,7 @@ class blogcategories extends ChisimbaObject
         $catadd->endRow();
         $cfieldset->addContent($catadd->show());
         $catform->addToForm($cfieldset->show());
-        $this->objCButton = &new button($this->objLanguage->languageText('word_update', 'system'));
+        $this->objCButton = new button($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setValue($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setToSubmit();
         $catform->addToForm($this->objCButton->show());

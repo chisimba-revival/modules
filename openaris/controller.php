@@ -4432,19 +4432,19 @@ class openaris extends controller {
 	  
 	   if($northlat!=0) 
 	   {
-	   	if($northlat{0}=='+' or $northlat{0}=='-'){$output.='';} else { $output.='Enter +/- for north latitude<br>';}
+	   	if($northlat[0]=='+' or $northlat[0]=='-'){$output.='';} else { $output.='Enter +/- for north latitude<br>';}
 	   }
 	    if($southlat!=0) 
 	   {
-	   	if($southlat{0}=='+' or $southlat{0}=='-'){$output.='';}else{ $output.='Enter +/- for south latitude<br>';}
+	   	if($southlat[0]=='+' or $southlat[0]=='-'){$output.='';}else{ $output.='Enter +/- for south latitude<br>';}
 	   }
 	    if($westlong!=0) 
 	   {
-	   		if($westlong{0}=='+' or $westlong{0}=='-'){$output.='';} else{ $output.='Enter +/- for west longitude<br>';}
+	   		if($westlong[0]=='+' or $westlong[0]=='-'){$output.='';} else{ $output.='Enter +/- for west longitude<br>';}
 	   }
 	    if($eastlong!=0)
 	   {
-	   	if($eastlong{0}=='+' or $eastlong{0}=='-'){ $output.='';} else{ $output.='Enter +/- for east longitude<br>';}
+	   	if($eastlong[0]=='+' or $eastlong[0]=='-'){ $output.='';} else{ $output.='Enter +/- for east longitude<br>';}
 	   }
 	   if(!empty($output))
 	   {

@@ -556,7 +556,7 @@ function str2unicode_nfc($str=""){
     	};
 
 
-		if ((!strstr('<_"?.;,{}[]()@',$list[$i]{0}))AND (substr($list[$i],0,3)!='^^<')) {
+		if ((!strstr('<_"?.;,{}[]()@',$list[$i][0]))AND (substr($list[$i],0,3)!='^^<')) {
 	  $_r= explode(":",$list[$i]);
 
 
@@ -578,7 +578,7 @@ function str2unicode_nfc($str=""){
   }
 
       } else {
-	if ($list[$i]{0} == '"') {  // Congratulations - it's a literal!
+	if ($list[$i][0] == '"') {  // Congratulations - it's a literal!
 	  if (substr($list[$i],0,3) == '"""') {
 	    if (substr($list[$i],-3,3) == '"""') { // A big literal...
 	      $lit = substr($list[$i],3,-3);
@@ -1010,7 +1010,7 @@ function str2unicode_nfc($str=""){
    **/
   function toRDFNode($s,$state) {
 	$ins=substr($s,1,-1);
-    if ($s{0}=="\"") {
+    if ($s[0]=="\"") {
       $lang=NULL;
 
 

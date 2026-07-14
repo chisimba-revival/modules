@@ -29,7 +29,7 @@ if ($_POST['time'] == -1) {
 $event['description'] 	= stripslashes(urldecode($event['description']));
 $event['event_text'] 	= stripslashes(urldecode($event['event_text']));
 
-if ($event['description']) $event['description'] = ereg_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]",'<a target="_new" href="\0">\0</a>',$event['description']);
+if ($event['description']) $event['description'] = preg_replace("~[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/]~",'<a target="_new" href="\0">\0</a>',$event['description']);
 
 if (is_array($organizer)) {
 	$i=0;

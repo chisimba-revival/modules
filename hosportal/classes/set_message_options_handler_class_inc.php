@@ -62,7 +62,7 @@ protected function setUpNoOfMessagesDropDownOption()
 
    // $dd= $this->getObject('dropdown', 'htmlelements');
    $this->objDropDownMenu->createNewObjectFromModule('noOfMessagesDropDown');
-   //=&new dropdown('noOfMessagesDropDown');
+   //= new dropdown('noOfMessagesDropDown');
   // $dd->addOption()    will add a blank option
 for ($x=2;$x<11;$x++)
 {

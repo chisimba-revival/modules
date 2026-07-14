@@ -164,7 +164,7 @@ if($this->objUser->isAdmin()){
  
 
 //create the outer table 
-$outertable = & new htmltable();
+$outertable = new htmltable();
 
 $outertable->startRow();
 $outertable->addCell($photo,'20%');

@@ -157,7 +157,7 @@ if ($mode == 'alreadyused') {
     $downloadLink = new link ($this->uri(array('action'=>'downloadfile', 'id'=>$podcast['id'])));
     $downloadLink->link = htmlentities($podcast['filename']);
     
-    $this->objPop=&new windowpop;
+    $this->objPop= new windowpop;
     $this->objPop->set('location',$this->uri(array('action'=>'playpodcast', 'id'=>$podcast['id']), 'podcast'));
     $this->objPop->set('linktext', $this->objLanguage->languageText('mod_podcast_listenonline', 'podcast'));
     $this->objPop->set('width','280');

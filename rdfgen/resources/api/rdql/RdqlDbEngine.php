@@ -177,7 +177,7 @@ Class RdqlDbEngine extends RdqlEngine {
    foreach ($this->parsedQuery['patterns'] as $n => $pattern) {
      $sql_where .= ' s' .($n+1) .'.modelID=' .$modelID .' AND';
      foreach ($pattern as $key => $val_1)
-       if ($val_1['value'] && $val_1['value']{0}=='?') {
+       if ($val_1['value'] && $val_1['value'][0]=='?') {
          $sql_tmp = ' s' .($n+1) .'.' .$key .'=';
          // find internal bindings
          switch ($key) {

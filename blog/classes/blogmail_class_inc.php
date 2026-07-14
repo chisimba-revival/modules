@@ -180,7 +180,7 @@ class blogmail extends ChisimbaObject
         $madd->addCell($mblabel->show());
         $madd->addCell($mbox->show());
         $madd->endRow();
-        $this->objMButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+        $this->objMButton = new button($this->objLanguage->languageText('word_save', 'system'));
         $this->objMButton->setValue($this->objLanguage->languageText('word_save', 'system'));
         $this->objMButton->setToSubmit();
         $mfieldset->addContent($madd->show());

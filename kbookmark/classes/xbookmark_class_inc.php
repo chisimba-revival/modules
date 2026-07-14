@@ -329,7 +329,7 @@ class xbookmark extends ChisimbaObject
 			return false;
 		} else {
 			while(list($line_num, $line) = each($this->xbelFile)) {
-				if(!xml_parse($this->xmlParser, ereg_replace('&', '&amp;', $line))) {
+				if(!xml_parse($this->xmlParser, preg_replace('~&~', '&amp;', $line))) {
 					$this->Error = "on line:" . $line_num ." ". xml_error_string(xml_get_error_code($this->xmlParser));
 					return false;
 				}

@@ -157,7 +157,7 @@ if (isset($_REQUEST['deletefile'])) {
 		$deletefilemessage = 'FAILED to delete '.addslashes($_REQUEST['deletefile']).' - file does not exist';
 	}
 	if (isset($_REQUEST['noalert'])) {
-		echo '<b><font color="'.(($deletefilemessage{0} == 'F') ? '#FF0000' : '#008000').'">'.$deletefilemessage.'</font></b><hr>';
+		echo '<b><font color="'.(($deletefilemessage[0] == 'F') ? '#FF0000' : '#008000').'">'.$deletefilemessage.'</font></b><hr>';
 	} else {
 		echo '<script language="JavaScript">alert("'.$deletefilemessage.'");</script>';
 	}
@@ -562,10 +562,10 @@ function table_var_dump($variable) {
 			$variable = str_replace("\x00", ' ', $variable);
 			$varlen = strlen($variable);
 			for ($i = 0; $i < $varlen; $i++) {
-				if (ereg('['."\x0A\x0D".' -;0-9A-Za-z]', $variable{$i})) {
-					$returnstring .= $variable{$i};
+				if (ereg('['."\x0A\x0D".' -;0-9A-Za-z]', $variable[$i])) {
+					$returnstring .= $variable[$i];
 				} else {
-					$returnstring .= '&#'.str_pad(ord($variable{$i}), 3, '0', STR_PAD_LEFT).';';
+					$returnstring .= '&#'.str_pad(ord($variable[$i]), 3, '0', STR_PAD_LEFT).';';
 				}
 			}
 			$returnstring = nl2br($returnstring);

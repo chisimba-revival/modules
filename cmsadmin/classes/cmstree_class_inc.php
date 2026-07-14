@@ -412,9 +412,9 @@ class cmstree extends ChisimbaObject {
 
         if ($includeRoot) {
             if ($module == 'cmsadmin') {
-                $rootNode = & new treenode(array('text' => '[- Root -]', 'link' => 0));
+                $rootNode = new treenode(array('text' => '[- Root -]', 'link' => 0));
             } else {
-                $rootNode = & new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
+                $rootNode = new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
             }
             $menu->addItem($rootNode);
         }
@@ -456,7 +456,7 @@ class cmstree extends ChisimbaObject {
                 }
 
                 //var_dump($section);                    
-                $node = & new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
+                $node = new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
 
                 //Parent ID is null for some reason??
                 if ($section['parentid'] == NULL)
@@ -541,9 +541,9 @@ class cmstree extends ChisimbaObject {
 
         if ($includeRoot) {
             if ($module == 'cmsadmin') {
-                $rootNode = & new treenode(array('text' => '[- Root -]', 'link' => 0));
+                $rootNode = new treenode(array('text' => '[- Root -]', 'link' => 0));
             } else {
-                $rootNode = & new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
+                $rootNode = new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
             }
             $menu->addItem($rootNode);
         }
@@ -585,7 +585,7 @@ class cmstree extends ChisimbaObject {
                 }
 
                 //var_dump($section);                    
-                $node = & new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
+                $node = new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
 
                 //Parent ID is null for some reason??
                 if ($section['parentid'] == NULL)
@@ -753,9 +753,9 @@ class cmstree extends ChisimbaObject {
         $includeRoot = false;
         if ($includeRoot) {
             if ($module == 'cmsadmin') {
-                $rootNode = & new treenode(array('text' => '[- Root WES-]', 'link' => 0));
+                $rootNode = new treenode(array('text' => '[- Root WES-]', 'link' => 0));
             } else {
-                $rootNode = & new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
+                $rootNode = new treenode(array('text' => $this->objLanguage->languageText('word_home'), 'link' => $this->uri(NULL, 'cms'), 'liClass' => 'sectionfolder'));
             }
             $menu->addItem($rootNode);
         }
@@ -796,7 +796,7 @@ class cmstree extends ChisimbaObject {
                 }
 
 
-                $node = & new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
+                $node = new treenode(array('text' => $section['menutext'], 'link' => $link, 'liClass' => $cssClass));
 
                 if ($section['parentid'] == '0') {
                     $nodesArray[$section['id']] = & $node;

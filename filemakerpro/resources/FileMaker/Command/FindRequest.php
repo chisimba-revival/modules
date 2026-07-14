@@ -43,7 +43,7 @@ class FileMaker_Command_FindRequest
      */
     function FileMaker_Command_FindRequest($fm, $layout)
     {
-        $this->_impl =& new FileMaker_Command_FindRequest_Implementation($fm, $layout);
+        $this->_impl = new FileMaker_Command_FindRequest_Implementation($fm, $layout);
     }
 
     /**

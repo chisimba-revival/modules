@@ -265,7 +265,7 @@ class ARC2_Store extends ARC2_Class {
     $doc = is_array($doc) ? $this->toTurtle($doc) : $doc;
     $infos = array('query' => array('url' => $g, 'target_graph' => $g));
     ARC2::inc('StoreLoadQueryHandler');
-    $h =& new ARC2_StoreLoadQueryHandler($this->a, $this);
+    $h = new ARC2_StoreLoadQueryHandler($this->a, $this);
     $r = $h->runQuery($infos, $doc, $keep_bnode_ids);
     $this->processTriggers('insert', $infos);
     return $r;
@@ -275,7 +275,7 @@ class ARC2_Store extends ARC2_Class {
     if (!$doc) {
       $infos = array('query' => array('target_graphs' => array($g)));
       ARC2::inc('StoreDeleteQueryHandler');
-      $h =& new ARC2_StoreDeleteQueryHandler($this->a, $this);
+      $h = new ARC2_StoreDeleteQueryHandler($this->a, $this);
       $r = $h->runQuery($infos);
       $this->processTriggers('delete', $infos);
       return $r;
@@ -288,13 +288,13 @@ class ARC2_Store extends ARC2_Class {
   
   function dump() {
     ARC2::inc('StoreDumper');
-    $d =& new ARC2_StoreDumper($this->a, $this);
+    $d = new ARC2_StoreDumper($this->a, $this);
     $d->dumpSPOG();
   }
   
   function createBackup($path, $q = '') {
     ARC2::inc('StoreDumper');
-    $d =& new ARC2_StoreDumper($this->a, $this);
+    $d = new ARC2_StoreDumper($this->a, $this);
     $d->saveSPOG($path, $q);
   }
   
@@ -343,7 +343,7 @@ class ARC2_Store extends ARC2_Class {
     }
     else {
       ARC2::inc('SPARQLPlusParser');
-      $p = & new ARC2_SPARQLPlusParser($this->a, $this);
+      $p = new ARC2_SPARQLPlusParser($this->a, $this);
       $p->parse($q, $src);
       $infos = $p->getQueryInfos();
     }
@@ -376,7 +376,7 @@ class ARC2_Store extends ARC2_Class {
   function runQuery($infos, $type, $keep_bnode_ids = 0, $q = '') {
     ARC2::inc('Store' . ucfirst($type) . 'QueryHandler');
     $cls = 'ARC2_Store' . ucfirst($type) . 'QueryHandler';
-    $h =& new $cls($this->a, $this);
+    $h = new $cls($this->a, $this);
     $ticket = 1;
     $r = array();
     if ($q && ($type == 'select')) $ticket = $this->getQueueTicket($q);

@@ -53,7 +53,7 @@ class modulelinks_assignment extends ChisimbaObject
             foreach ($assignments as $assignment)
             {
                 // Create Node
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'assignment')), 'text'=>$assignment['name']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'assignment')), 'text'=>$assignment['name']));
                 
                 // Create Reference to Node
                 $nodesArray['assignment'.$assignment['id']] =& $node;

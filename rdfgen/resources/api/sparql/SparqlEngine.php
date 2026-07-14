@@ -855,7 +855,7 @@ Class SparqlEngine extends Object{
         // evaluate string calls
         if($function['string']){
             foreach($function['string'] as $var){
-                if($var{0}=='?' || $var{0}=='$'){
+                if($var[0]=='?' || $var[0]=='$'){
                     if(isset($res[$var]) && $res[$var]!==""){
                         $replacement = "'str_".$res[$var]->getLabel()."'";
                         if($res[$var] instanceof BlankNode)
@@ -865,10 +865,10 @@ Class SparqlEngine extends Object{
                     }
                     $evalString = preg_replace("/str\(\\".$var."\)/i",$replacement,$evalString);
                 }else{
-                    if($var{0}=='<'){
+                    if($var[0]=='<'){
                         $evalString = preg_replace("/str\(\s*\<(.[^\>]*)\>\s*\)/i","'str_$1'",$evalString);
                     }
-                    if($var{0}=='"'){
+                    if($var[0]=='"'){
                         $evalString = preg_replace("/str\(\s*\"(.[^\>]*)\"\@[a-z]*\s*\)/i","'str_$1'",$evalString);
                     }
                 }

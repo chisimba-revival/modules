@@ -47,7 +47,7 @@ class FileMaker_Command_Edit extends FileMaker_Command
      */
     function FileMaker_Command_Edit($fm, $layout, $recordId, $updatedValues = array())
     {
-        $this->_impl =& new FileMaker_Command_Edit_Implementation($fm, $layout, $recordId, $updatedValues);
+        $this->_impl = new FileMaker_Command_Edit_Implementation($fm, $layout, $recordId, $updatedValues);
     }
 
     /**

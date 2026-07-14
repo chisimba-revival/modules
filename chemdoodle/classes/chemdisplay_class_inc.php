@@ -152,7 +152,7 @@ class chemdisplay extends ChisimbaObject
 
     private function file2js($f)
     {
-        if (ereg('/', $f)){
+        if (preg_match('~/~', $f)){
             $file = $f;
         } else {
             $file = "./molecules/$f.mol";

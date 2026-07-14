@@ -300,13 +300,13 @@ class SparqlEngineDb_ResultRenderer_Default implements SparqlEngineDb_ResultRend
                 $pred = $triple->getPredicate();
                 $obj  = $triple->getObject();
 
-                if (is_string($sub)  && $sub{1} == '_') {
+                if (is_string($sub)  && $sub[1] == '_') {
                     $sub  = new BlankNode("_bN".$bnode);
                 }
-                if (is_string($pred) && $pred{1} == '_') {
+                if (is_string($pred) && $pred[1] == '_') {
                     $pred = new BlankNode("_bN".$bnode);
                 }
-                if (is_string($obj)  && $obj{1} == '_') {
+                if (is_string($obj)  && $obj[1] == '_') {
                     $obj  = new BlankNode("_bN".$bnode);
                 }
 

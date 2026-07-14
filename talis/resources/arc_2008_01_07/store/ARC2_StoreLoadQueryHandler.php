@@ -41,7 +41,7 @@ class ARC2_StoreLoadQueryHandler extends ARC2_StoreQueryHandler {
     $this->keep_bnode_ids = $keep_bnode_ids;
     /* reader */
     ARC2::inc('Reader');
-    $reader =& new ARC2_Reader($this->a, $this);
+    $reader = new ARC2_Reader($this->a, $this);
     $reader->activate($url, $data);
     /* format detection */
     $mappings = array(
@@ -64,7 +64,7 @@ class ARC2_StoreLoadQueryHandler extends ARC2_StoreQueryHandler {
     $suffix = 'Store' . $mappings[$format] . 'Loader';
     ARC2::inc($suffix);
     $cls = 'ARC2_' . $suffix;
-    $loader =& new $cls($this->a, $this);
+    $loader = new $cls($this->a, $this);
     $loader->setReader($reader);
     /* lock */
     if (!$this->store->getLock()) return $this->addError('Could not get lock in "runQuery"');

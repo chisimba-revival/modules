@@ -97,7 +97,7 @@ class fpdfwrapper extends ChisimbaObject
                 } else $this->pdf->Write(5, stripslashes($this->txtentities($e)));
             } else {
                 //Tag
-                if ($e{0} == '/') $this->CloseTag(strtoupper(substr($e, 1)));
+                if ($e[0] == '/') $this->CloseTag(strtoupper(substr($e, 1)));
                 else {
                     //Extract attributes
                     $a2 = explode(' ', $e);

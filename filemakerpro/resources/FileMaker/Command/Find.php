@@ -43,7 +43,7 @@ class FileMaker_Command_Find extends FileMaker_Command
      */
     function FileMaker_Command_Find($fm, $layout)
     {
-        $this->_impl =& new FileMaker_Command_Find_Implementation($fm, $layout);
+        $this->_impl = new FileMaker_Command_Find_Implementation($fm, $layout);
     }
 
     /**

@@ -74,7 +74,7 @@ if (count($podcasts) == 0) {
        	$downloadLink = new link ($this->objConfig->getcontentPath().$podcast['path']);
        	$downloadLink->link = htmlentities($podcast['filename']);
         
-       	$this->objPop=&new windowpop;
+       	$this->objPop= new windowpop;
        	$this->objPop->set('location',$this->uri(array('action'=>'playpodcast', 'id'=>$podcast['id']), 'podcast'));
        	$this->objPop->set('linktext', $this->objLanguage->languageText('mod_podcast_listenonline', 'podcast'));
        	$this->objPop->set('width','280');

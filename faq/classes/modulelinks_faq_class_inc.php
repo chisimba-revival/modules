@@ -36,7 +36,7 @@ class modulelinks_faq extends ChisimbaObject
         
         foreach ($categories as $category)
         {
-            $node =& new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$category['id'])), 'text'=>$category['categoryname']));
+            $node = new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$category['id'])), 'text'=>$category['categoryname']));
             
             $nodesArray['category'.$category['id']] =& $node;
             $rootNode->addItem($nodesArray['category'.$category['id']]);
@@ -45,7 +45,7 @@ class modulelinks_faq extends ChisimbaObject
             
             foreach ($entries as $entry)
             {
-                $node =& new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$category['id'])), 'text'=>$entry['question']));
+                $node = new treenode(array('link'=>$this->uri(array('action'=>'view', 'id'=>$category['id'])), 'text'=>$entry['question']));
                 
                 $nodesArray['entry'.$entry['id']] =& $node;
                 $nodesArray['category'.$category['id']]->addItem($nodesArray['entry'.$entry['id']]);

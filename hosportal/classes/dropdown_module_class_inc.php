@@ -56,7 +56,7 @@ private $objDropDownMenu;
      */
     public function createNewObjectFromModule($name_of_drop_down= 'noOfMessagesDropDown')
     {
-    return $this->objDropDownMenu=&new dropdown('noOfMessagesDropDown');
+    return $this->objDropDownMenu= new dropdown('noOfMessagesDropDown');
 }
 
     /**

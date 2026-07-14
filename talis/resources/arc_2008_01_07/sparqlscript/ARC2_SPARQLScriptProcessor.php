@@ -516,7 +516,7 @@ class ARC2_SPARQLScriptProcessor extends ARC2_Class {
   
   function processHTTPCall($block, $mthd = 'GET') {
     ARC2::inc('Reader');
-    $reader =& new ARC2_Reader($this->a, $this);
+    $reader = new ARC2_Reader($this->a, $this);
     $url = $this->replacePlaceholders($block['args'][0]['value'], 'function_call');
     if ($mthd != 'GET') {
       $reader->setHTTPMethod($mthd);

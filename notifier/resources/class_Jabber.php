@@ -245,7 +245,7 @@ class Jabber {
 		$this->_unique_counter = 0;
 		$this->_log_open();
 		
-		$this->xml = &new XMLParser();
+		$this->xml = new XMLParser();
 		if (!empty($_SERVER['REMOTE_ADDR'])) {
 			$this->_remote_ip = $_SERVER['REMOTE_ADDR'];
 		} else {
@@ -418,7 +418,7 @@ class Jabber {
 			unset($ndr);
  		}
 		
-		$this->_connection = &new $connector();
+		$this->_connection = new $connector();
 		$this->_server_host = $server_host;
 		$this->_server_port = $server_port;
 		$this->_server_ip = $alternate_ip ? $alternate_ip : $server_host;

@@ -44,7 +44,7 @@ class FileMaker_Command_Duplicate extends FileMaker_Command
      */
     function FileMaker_Command_Duplicate($fm, $layout, $recordId)
     {
-        $this->_impl =& new FileMaker_Command_Duplicate_Implementation($fm, $layout, $recordId);
+        $this->_impl = new FileMaker_Command_Duplicate_Implementation($fm, $layout, $recordId);
     }
 
 }

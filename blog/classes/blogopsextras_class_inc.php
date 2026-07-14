@@ -250,7 +250,7 @@ class blogopsextras extends ChisimbaObject
         // ->show());
         $geoadd->endRow();
         // end off the form and add the buttons
-        $this->objGeoButton = &new button($this->objLanguage->languageText('word_lookup', 'blog'));
+        $this->objGeoButton = new button($this->objLanguage->languageText('word_lookup', 'blog'));
         $this->objGeoButton->setValue($this->objLanguage->languageText('word_lookup', 'blog'));
         $this->objGeoButton->setToSubmit();
         $geofieldset->addContent($geoadd->show());

@@ -281,7 +281,7 @@ function _is_rdf_ordinal( $local_name )
 {
     $ordinal = -1;
 
-    if( $local_name{0} ==  '_'  )
+    if( $local_name[0] ==  '_'  )
     {
         $ordinal =  substr($local_name,1) + 1 ;
     }
@@ -336,7 +336,7 @@ function _is_rdf_property_element( $local_name )
 		|| ( $local_name == RDF_LIST )
 		|| ( $local_name == RDF_FIRST )        
 		|| ( $local_name == RDF_REST )
-        || (  $local_name{0} == '_'  );
+        || (  $local_name[0] == '_'  );
 }
 
   /**
@@ -381,7 +381,7 @@ function _is_rdf_node_element( $local_name )
 		|| ( $local_name == RDF_FIRST )        
 		|| ( $local_name == RDF_REST )		
 		|| ( $local_name == RDF_NIL )				
-        || ( $local_name{0} == '_'  );
+        || ( $local_name[0] == '_'  );
 }
 
   /**
@@ -426,20 +426,20 @@ function _is_absolute_uri($uri )
 {
     $result = false;
         $uri_p=0;
-    if( $uri && $this->_istalpha( $uri{$uri_p} ) )
+    if( $uri && $this->_istalpha( $uri[$uri_p] ) )
     {
         ++$uri_p;
 
         while( ($uri_p<strlen($uri))
-            && ( $this->_istalnum( $uri{$uri_p} )
-                || ( $uri{$uri_p} ==  '+'  )
-                || ( $uri{$uri_p} == '-'  )
-                || ( $uri{$uri_p} ==  '.'  ) ) )
+            && ( $this->_istalnum( $uri[$uri_p] )
+                || ( $uri[$uri_p] ==  '+'  )
+                || ( $uri[$uri_p] == '-'  )
+                || ( $uri[$uri_p] ==  '.'  ) ) )
         {
                 ++$uri_p;
         }
 
-        $result = ( $uri{$uri_p} == ':'  );
+        $result = ( $uri[$uri_p] == ':'  );
     }
     return $result;
 }
@@ -579,9 +579,9 @@ function _resolve_uri_reference($base_uri,$reference_uri,&$buffer )
            
             if ($reference_path != '')
             {
-            	if ($reference_path{0} == '/' || $reference_path{0} == "\\")
+            	if ($reference_path[0] == '/' || $reference_path[0] == "\\")
             	{
-            		if ($reference_path{1} == '/' || $reference_path{1} == "\\")
+            		if ($reference_path[1] == '/' || $reference_path[1] == "\\")
             		{
 						$result_authority = '';
 						$result_path = $reference_path;    
@@ -592,7 +592,7 @@ function _resolve_uri_reference($base_uri,$reference_uri,&$buffer )
             	elseif (substr($reference_path, 0, 3) == '../' ||
             	        substr($reference_path, 0, 3) == '..\\')
             	{
-            		$slash = $reference_path{2};	            		
+            		$slash = $reference_path[2];	            		
             		while($base_path != '' && ( substr($reference_path, 0, 3) == '../' 
             	                             || substr($reference_path, 0, 3) == '..\\'))
             	    {            			
@@ -666,17 +666,17 @@ function is_valid_id($id )
     
     if( $id )
     {
-        if( $this->_istalpha($id{0}) || $id{0} == '_')
+        if( $this->_istalpha($id[0]) || $id[0] == '_')
         {
             $result = TRUE;
             $i=0;
             $len = strlen($id);
 			while( $result != FALSE && ++$i < $len )
             {
-                if( !($this->_istalnum( $id{$i})
-                      || $id{$i} == '.'
-                      || $id{$i} == '-'
-                      || $id{$i} == '_'))
+                if( !($this->_istalnum( $id[$i])
+                      || $id[$i] == '.'
+                      || $id[$i] == '-'
+                      || $id[$i] == '_'))
                 {
                    $result = FALSE; 
                 }
@@ -728,10 +728,10 @@ function _split_name($name, &$buffer, &$namespace_uri, &$local_name )
         }
         else
         {
-            if( ( $buffer{ 0 } ==  'x'  )
-                && ( $buffer{ 1 } ==  'm'  )
-                && ( $buffer{ 2 } ==  'l'  )
-                && ( $buffer{ 3 } ==  ':'  ) )
+            if( ( $buffer[ 0 ] ==  'x'  )
+                && ( $buffer[ 1 ] ==  'm'  )
+                && ( $buffer[ 2 ] ==  'l'  )
+                && ( $buffer[ 3 ] ==  ':'  ) )
             {
                 $namespace_uri = XML_NAMESPACE_URI;
                 $local_name = substr($buffer,4);
@@ -2088,7 +2088,7 @@ function _character_data_handler( $parser,$s)
         if( $this->rdf_parser['top']['state'] == IN_PROPERTY_UNKNOWN_OBJECT )
         {
             /* look for non-whitespace */
-            for( $i = 0; (( $i < $len ) && (  ereg(" |\n|\t",$s{ $i }) )); $i++ );            
+            for( $i = 0; (( $i < $len ) && (  ereg(" |\n|\t",$s[ $i ]) )); $i++ );            
             /* if we found non-whitespace, this is a literal */
             if( $i < $len )
             {

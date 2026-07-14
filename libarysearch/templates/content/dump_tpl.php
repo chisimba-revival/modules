@@ -29,13 +29,13 @@
 		
 		// Search form
 
-	$searchForm = &new form('searchform',$this->uri(array('action'=>'search','cat'=>'all'),'libarysearch'));
+	$searchForm = new form('searchform',$this->uri(array('action'=>'search','cat'=>'all'),'libarysearch'));
 	$searchForm->displayType = 3;
-	$srchStr = &new textinput('srchstr',$this->getParam('srchstr'),null,'90');
-	$srchButton = &new button('search');
+	$srchStr = new textinput('srchstr',$this->getParam('srchstr'),null,'90');
+	$srchButton = new button('search');
 	$srchButton->setValue($this->objLanguage->languageText('word_search'));
 	$srchButton->setToSubmit();
-	$srchType = &new dropdown('srchtype');
+	$srchType = new dropdown('srchtype');
 	$srchType->addOption('UWC Catalogue ',$this->objLanguage->languageText('mod_libarysearch_modname','libarysearch'));
 	$srchType->addOption('UCT Catalogue ',$this->objLanguage->languageText('mod_libarysearch_modname1','libarysearch'));
 	$srchType->addOption('STELLIES Catalogue ',$this->objLanguage->languageText('mod_libarysearch_modname2','libarysearch'));

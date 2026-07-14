@@ -99,7 +99,7 @@ foreach ($mainTab as $block) {
     $actions = $upLink->show().' '.$downLink->show();
     //$actions = $upLink->show().' '.$downLink->show().' '.$ed.' '.$conf;
     ($block['visible'] == $this->TRUE)? $visibile = TRUE : $visibile = FALSE;
-    $visibility = &new checkBox($block['id'].'_vis',$block['title'],$visibile);
+    $visibility = new checkBox($block['id'].'_vis',$block['title'],$visibile);
     $updated = date('d/m/y',strtotime($block['datelastupdated']));
     $table->startRow();
     $table->addCell($block['title'],NULL,NULL,'left',$style);
@@ -129,7 +129,7 @@ foreach ($identityTab as $block) {
     $actions = $upLink->show().' '.$downLink->show();
     //$actions = $upLink->show().' '.$downLink->show().' '.$ed.' '.$conf;
     ($block['visible'] == $this->TRUE)? $visibile = TRUE : $visibile = FALSE;
-    $visibility = &new checkBox($block['id'].'_vis',$block['title'],$visibile);
+    $visibility = new checkBox($block['id'].'_vis',$block['title'],$visibile);
     $updated = date('d/m/y',strtotime($block['datelastupdated']));
     $table->startRow();
     $table->addCell($block['title'],NULL,NULL,'left',$style);
@@ -141,9 +141,9 @@ foreach ($identityTab as $block) {
     ($style == 'even')? $style = 'odd' : $style = 'even';
 }
 
-$submitButton = &new button('update',$this->objLanguage->languageText('word_update'));
+$submitButton = new button('update',$this->objLanguage->languageText('word_update'));
 $submitButton->setToSubmit();
-$objForm = &new form('vis_form',$this->uri(array('action'=>'update')));
+$objForm = new form('vis_form',$this->uri(array('action'=>'update')));
 $objForm->addToForm($table->show());
 $objForm->addToForm($submitButton);
 $link = &$this->getObject('link','htmlelements');

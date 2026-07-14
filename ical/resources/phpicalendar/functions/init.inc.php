@@ -216,7 +216,7 @@ if (count($local_cals) > 0) {
 			$subscribe_path = 'webcal://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['PHP_SELF']).'/'."$cpath/".$filename;
 			$download_filename = $filename;
 		} elseif ($download_uri != '') {
-			$newurl = eregi_replace("^(http://)", "", $download_uri); 
+			$newurl = preg_replace("~^(http://)~i", "", $download_uri); 
 				$subscribe_path = 'webcal://'.$newurl.'/'."$cpath/".basename($filename);
 				$download_filename = $download_uri.'/'."$cpath/".basename($filename);
 		} else {

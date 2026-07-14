@@ -14,7 +14,7 @@
 //$objHighlightLabels = $this->getObject('highlightlabels', 'htmlelements');
 //echo $objHighlightLabels->show();
 //
-//$header =& new htmlheading();
+//$header = new htmlheading();
 //$header->type=3;
 //
 //if ($action == 'edit') {
@@ -56,7 +56,7 @@
 //// --------- New Row ---------- //
 //
 //$table->startRow();
-//$nameLabel =& new label($this->objLanguage->languageText('word_description', 'system').':', 'input_description');
+//$nameLabel = new label($this->objLanguage->languageText('word_description', 'system').':', 'input_description');
 //$table->addCell('<strong>'.$nameLabel->show().'</strong>', 100);
 //
 //$nameInput = new textinput('description');
@@ -77,7 +77,7 @@
 //
 //    $table->addCell('<strong>'.$this->objLanguage->languageText('mod_discussion_lockdiscussion', 'discussion').'</strong>');
 //
-//    $radioGroup =& new radio('lockdiscussion');
+//    $radioGroup = new radio('lockdiscussion');
 //    $radioGroup->setBreakSpace(' / ');
 //
 //    // The option NO comes before YES - as no is this preferred
@@ -242,7 +242,7 @@
 //$table->addCell($submitButton->show().'&nbsp;&nbsp;&nbsp;&nbsp;'.$cancelButton->show(),  null,  null, null, null, ' colspan="4"');
 //
 //if ($action == 'edit') {
-//    $hiddenIdInput =& new textinput('id');
+//    $hiddenIdInput = new textinput('id');
 //    $hiddenIdInput->fldType = 'hidden';
 //    $hiddenIdInput->value = $discussion['id'];
 //    $form->addToForm($hiddenIdInput->show());

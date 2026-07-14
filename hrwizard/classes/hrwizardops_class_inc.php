@@ -74,7 +74,7 @@ class hrwizardops extends ChisimbaObject {
         $fileadd->endRow();
         
         //end off the form and add the buttons
-        $this->objIMButton = &new button($this->objLanguage->languageText('word_next', 'hrwizard'));
+        $this->objIMButton = new button($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setValue($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setToSubmit();
         $filefieldset->addContent($fileadd->show());
@@ -144,7 +144,7 @@ class hrwizardops extends ChisimbaObject {
         $fileadd->endRow();
         
         //end off the form and add the buttons
-        $this->objIMButton = &new button($this->objLanguage->languageText('word_next', 'hrwizard'));
+        $this->objIMButton = new button($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setValue($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setToSubmit();
         $filefieldset->addContent($fileadd->show());
@@ -276,7 +276,7 @@ class hrwizardops extends ChisimbaObject {
 		//$cform->addRule('csvfile', $this->objLanguage->languageText("mod_hrwizard_csvfilereq",'hrwizard'), 'required');
 		//$cform->addRule('zipfile', $this->objLanguage->languageText("mod_hrwizard_zipfilereq",'hrwizard'), 'required');
  		//end off the form and add the buttons
-		$this->objCButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+		$this->objCButton = new button($this->objLanguage->languageText('word_save', 'system'));
 		$this->objCButton->setValue($this->objLanguage->languageText('word_save', 'system'));
 		$this->objCButton->setToSubmit();
 
@@ -334,7 +334,7 @@ class hrwizardops extends ChisimbaObject {
         $fileadd->endRow();
         
         //end off the form and add the buttons
-        $this->objIMButton = &new button($this->objLanguage->languageText('word_next', 'hrwizard'));
+        $this->objIMButton = new button($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setValue($this->objLanguage->languageText('word_next', 'hrwizard'));
         $this->objIMButton->setToSubmit();
         $filefieldset->addContent($fileadd->show());

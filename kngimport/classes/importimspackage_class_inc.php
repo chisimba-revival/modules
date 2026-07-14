@@ -622,8 +622,8 @@ class importIMSPackage extends dbTable
 			$name = preg_replace('/^(.*)\.php$/i', '\\1.phps', $name);
 			for ($i=0;$i<strlen($name);$i++) 
 			{
-				if ($name{$i} == ' ') 
-					$name{$i} = '_';
+				if ($name[$i] == ' ') 
+					$name[$i] = '_';
 			}
 			$extension = "";
 			$len = strlen($name);

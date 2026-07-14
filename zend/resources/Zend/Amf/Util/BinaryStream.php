@@ -128,7 +128,7 @@ class Zend_Amf_Util_BinaryStream
             throw new Zend_Amf_Exception('Buffer underrun at needle position: ' . $this->_needle . ' while requesting length: ' . $length);
         }
 
-        return ord($this->_stream{$this->_needle++});
+        return ord($this->_stream[$this->_needle++]);
     }
 
     /**

@@ -43,20 +43,20 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 // set up heading
     $heading = $this -> objLanguage -> code2Txt('mod_sudoku_heading', 'sudoku', array('user' => $this -> objUser -> fullName($this -> objUser -> userId())));
-    $objHeader = &new htmlHeading();
+    $objHeader = new htmlHeading();
     $objHeader -> str = $heading;
     $objHeader -> type = 1;
     $str = $objHeader -> show();
     echo $str;
 
 // set up table heading
-    $objHeader = &new htmlHeading();
+    $objHeader = new htmlHeading();
     $objHeader -> str = $addLabel;
     $objHeader -> type = 3;
     $levelHeading = $objHeader -> show();
 
 // set up form elements
-    $objDrop = &new dropdown('difficulty');
+    $objDrop = new dropdown('difficulty');
     $objDrop -> addOption(NULL, $levelLabel);
     $objDrop -> addOption(1, $easyLabel);
     $objDrop -> addOption(2, $hardLabel);
@@ -66,7 +66,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
     $levelDrop = $objDrop -> show();
 
 // set up table
-    $objTable = &new htmltable();
+    $objTable = new htmltable();
     $objTable -> cellspacing='2';
     $objTable -> cellpadding='2';
 
@@ -80,18 +80,18 @@ if(!$GLOBALS['kewl_entry_point_run']){
     $levelTable = $objTable -> show();
 
 // set up submit button
-    $objButton = &new button('go', $goLabel);
+    $objButton = new button('go', $goLabel);
     $objButton -> setToSubmit();
     $goButton = $objButton -> show();
 
 // Set up form
-    $objForm = &new form('goForm', $this -> uri(array('action' => 'add')));
+    $objForm = new form('goForm', $this -> uri(array('action' => 'add')));
     $objForm -> addToForm($levelTable . " " . $goButton);
     $str = $objForm -> show();
     echo $str;
 
 // set up table
-    $objTable = &new htmltable();
+    $objTable = new htmltable();
     $objTable -> cellspacing='2';
     $objTable -> cellpadding='2';
 
@@ -168,7 +168,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
     echo $str;
 
 // set up exit link
-    $objLink = &new link($this -> uri(array(),'_default'));
+    $objLink = new link($this -> uri(array(),'_default'));
     $objLink -> link = $exitLabel;
     $exitLink = $objLink -> show();
     echo "<br />" . "<br />" . $exitLink;

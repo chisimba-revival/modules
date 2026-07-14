@@ -432,7 +432,7 @@ class asciimathphp
 			} elseif ($sym['input'] == 'text' || $sym['input'] == 'mbox') {
 				$expr = ltrim($this->getCurrExpr());
 				
-				switch($expr{0}) {
+				switch($expr[0]) {
 					case '(':
 						$end_brckt = ')';
 						break;
@@ -454,7 +454,7 @@ class asciimathphp
 				$node_0->setName('mrow');
 				
 				if ($len > 0) {
-					if ($txt{0} == " ") {
+					if ($txt[0] == " ") {
 						$node_1 = $this->createNode();
 						$node_1->setName('mspace');
 						$node_1->setAttr('width','1ex');
@@ -468,7 +468,7 @@ class asciimathphp
 					
 					$node_0->addChild($node_3);
 					
-					if ($len > 1 && $txt{$len-1} == " ") {
+					if ($len > 1 && $txt[$len-1] == " ") {
 						$node_2 = $this->createNode();
 						$node_2->setName('mspace');
 						$node_2->setAttr('width','1ex');
@@ -631,7 +631,7 @@ class asciimathphp
 		}
 		
 		// Reading string for alphabetic constants and the minus sign
-		$char = $this->_curr_expr{0};
+		$char = $this->_curr_expr[0];
 		$len_left = $chop_flg ? $this->chopExpr(1) : strlen($this->_curr_expr)-1;
 		
 		// Deals with expressions of length 1

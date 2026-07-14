@@ -5786,7 +5786,7 @@ $this->appendArrayVar('headerParams', $script);
                 {
                     if($contentedit)
                     {
-                        $link = &new Link($this->uri(array('pageid'=>$menuNodeId, 'edit' => 'true'),'cmsadmin'));
+                        $link = new Link($this->uri(array('pageid'=>$menuNodeId, 'edit' => 'true'),'cmsadmin'));
                         $link->link = 'Edit page';
                         //$strBody .= $link->show();
                     }

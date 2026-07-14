@@ -348,7 +348,7 @@ class Page {
 			$key = date ($timeFormat, $key);
 												
 
-			if (ereg("([0-9]{1,2}):00", $key)) {
+			if (preg_match("~([0-9]{1,2}):00~", $key)) {
 				$weekdisplay .= '<tr>';
 				$weekdisplay .= '<td colspan="4" rowspan="' . (60 / $gridLength) . '" align="center" valign="top" width="60" class="timeborder">'.$key.'</td>';
 				$weekdisplay .= '<td bgcolor="#a1a5a9" width="1" height="' . $gridLength . '"></td>';

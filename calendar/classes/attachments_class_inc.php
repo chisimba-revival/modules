@@ -14,11 +14,11 @@ class attachments extends ChisimbaObject {
         $siteRootPath = $this->objConfig->getsiteRootPath();
         $contentPath = $this->objConfig->getcontentPath();
         $contentPath = substr($contentPath,0,strlen($contentPath)-1);
-		$dir = "{$siteRootPath}{$contentPath}/calendar";
+		$dir = "{$siteRootPath}[$contentPath]/calendar";
 		if (!file_exists($dir)) {
 		    //mkdir($dir,0777);
 		}
-		$dir = "{$siteRootPath}{$contentPath}/calendar/attachments";
+		$dir = "{$siteRootPath}[$contentPath]/calendar/attachments";
 		if (!file_exists($dir)) {
 		    //mkdir($dir,0777);
 		}
@@ -29,7 +29,7 @@ class attachments extends ChisimbaObject {
             $siteRootPath = $this->objConfig->getsiteRootPath();
             $contentPath = $this->objConfig->getcontentPath();
             $contentPath = substr($contentPath,0,strlen($contentPath)-1);
-			$dir = "{$siteRootPath}{$contentPath}/calendar/attachments/$id";
+			$dir = "{$siteRootPath}[$contentPath]/calendar/attachments/$id";
 			if (!file_exists($dir)) {
 			    mkdir($dir,0777);
 			}
@@ -45,7 +45,7 @@ class attachments extends ChisimbaObject {
 		$siteRootPath = $this->objConfig->getsiteRootPath();
 		$contentPath = $this->objConfig->getcontentPath();
 		$contentPath = substr($contentPath,0,strlen($contentPath)-1);
-		$dir = "{$siteRootPath}{$contentPath}/calendar/attachments/$id";
+		$dir = "{$siteRootPath}[$contentPath]/calendar/attachments/$id";
 		if (!file_exists($dir)) {
 		    return array();
 		}
@@ -68,7 +68,7 @@ class attachments extends ChisimbaObject {
 		$siteRootPath = $this->objConfig->getsiteRootPath();
 		$contentPath = $this->objConfig->getcontentPath();
 		$contentPath = substr($contentPath,0,strlen($contentPath)-1);
-		$path = "{$siteRootPath}{$contentPath}/calendar/attachments/$id/$filename";
+		$path = "{$siteRootPath}[$contentPath]/calendar/attachments/$id/$filename";
 		unlink($path);
 	}
 	function deleteAllFiles($id)
@@ -80,7 +80,7 @@ class attachments extends ChisimbaObject {
 		foreach ($files as $file) {
 			unlink($file['path']);
 		}
-		$dir = "{$siteRootPath}{$contentPath}/calendar/attachments/$id";
+		$dir = "{$siteRootPath}[$contentPath]/calendar/attachments/$id";
 		if (file_exists($dir)) {
 			rmdir($dir);
 		}
@@ -90,8 +90,8 @@ class attachments extends ChisimbaObject {
 		$siteRootPath = $this->objConfig->getsiteRootPath();
 		$contentPath = $this->objConfig->getcontentPath();
 		$contentPath = substr($contentPath,0,strlen($contentPath)-1);
-		$tempDir = "{$siteRootPath}{$contentPath}/calendar/attachments/$tempId";
-		$dir = "{$siteRootPath}{$contentPath}/calendar/attachments/$event";
+		$tempDir = "{$siteRootPath}[$contentPath]/calendar/attachments/$tempId";
+		$dir = "{$siteRootPath}[$contentPath]/calendar/attachments/$event";
 		if (file_exists($tempDir)) {
 			rename($tempDir,$dir);
 		}

@@ -28,13 +28,13 @@ $this->loadClass('htmlheading', 'htmlelements');
 
 // Set up heading
 $heading = $this->objLanguage->languageText('phrase_selectdate');
-$objHead = &new htmlHeading();
+$objHead = new htmlHeading();
 $objHead->str = $heading;
 $objHead->type = 1;
 echo $objHead->show();
 
 // Calendar
-$objLayer = &new layer();
+$objLayer = new layer();
 $objLayer->str = $str;
 $objLayer->id = 'calDiv';
 $objLayer->align = 'center';
@@ -43,7 +43,7 @@ $objLayer->width = '280px';
 echo $objLayer->show();
 
 // Clock
-$objLayer = &new layer();
+$objLayer = new layer();
 $objLayer->str = $timeStr;
 $objLayer->id = 'timeDiv';
 $objLayer->align = 'center';
@@ -52,7 +52,7 @@ $objLayer->width = '280px';
 echo $objLayer->show();
 
 // Hidden form elements
-$objLayer = &new layer();
+$objLayer = new layer();
 $objLayer->str = $formStr;
 $objLayer->id = 'formDiv';
 $objLayer->align = 'center';

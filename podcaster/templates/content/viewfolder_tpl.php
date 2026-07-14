@@ -62,7 +62,7 @@ $filecount = $files['count'];
 if ($filecount > 0) {
     $count = 0;
     //Create a check all checkbox
-    $selectall = &new checkBox('selectall', Null, Null);
+    $selectall = new checkBox('selectall', Null, Null);
     $selectall->setValue('clicked');
     //Store count
     $textinput = new textinput('doc_count');
@@ -88,7 +88,7 @@ if ($filecount > 0) {
             $docId = $this->documents->getIdWithRefNo($file['refno']);
 
             //Create checkbox to help select record for batch execution
-            $approve = &new checkBox($docId . '_app', Null, Null);
+            $approve = new checkBox($docId . '_app', Null, Null);
             $approve->setValue('execute');
             $approve->setId('set4batch_' . $count);
 

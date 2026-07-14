@@ -29,7 +29,7 @@ $qpform->addToForm($qptitletxt . $qptitle->show());
 $qpform->addToForm("<br />");
 $qpform->addToForm($qpcontenttxt . $qpcontent->showFCKEditor());
 $qpform->addToForm("<br />");
-$this->objqpCButton = &new button('postit');
+$this->objqpCButton = new button('postit');
 $this->objqpCButton->setValue($this->objLanguage->languageText('mod_mailmannews_word_sendnewsletter', 'mailmannews'));
 $this->objqpCButton->setToSubmit();
 $qpform->addToForm($this->objqpCButton->show());

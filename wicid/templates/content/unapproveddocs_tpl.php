@@ -179,7 +179,7 @@ if ($doccount > 0) {
     //Add checkbox if there are docs to show
     if ($doccount > 0) {
         //Create a check all checkbox
-        $selectall = &new checkBox('selectall', Null, Null);
+        $selectall = new checkBox('selectall', Null, Null);
         $selectall->setValue('clicked');
         //Store count
         $textinput = new textinput('doc_count');
@@ -215,13 +215,13 @@ if ($doccount > 0) {
               $approve = new hiddeninput($document['id'] . '_app', "");
               } else {
               //Create checkbox to help select record for batch approval
-              $approve = &new checkBox($document['id'] . '_app', Null, Null);
+              $approve = new checkBox($document['id'] . '_app', Null, Null);
               $approve->setValue('approve');
               } */
 
             //Show checkbox even without attachment
             //Create checkbox to help select record for batch execution
-            $approve = &new checkBox($document['id'] . '_app', Null, Null);
+            $approve = new checkBox($document['id'] . '_app', Null, Null);
             $approve->setValue('execute');
             $approve->setId('set4batch_' . $count);
 
@@ -349,7 +349,7 @@ if ($doccount > 0) {
     $navtable = $table->show();
 }
 
-$dd = &new dropdown('rcount');
+$dd = new dropdown('rcount');
 $dd->addOption('50', '50');
 $dd->addOption('100', '100');
 $dd->addOption('150', '150');
@@ -365,9 +365,9 @@ $dd->onchangeScript = 'onchange="document.forms[\'totalrowcount\'].submit();"';
 
 //Check box for select only documents with attachments
 if ($attonly == "onlyattached") {
-    $onlyattached = &new checkBox('onlyattached', Null, true);
+    $onlyattached = new checkBox('onlyattached', Null, true);
 } else {
-    $onlyattached = &new checkBox('onlyattached', Null, Null);
+    $onlyattached = new checkBox('onlyattached', Null, Null);
 }
 $onlyattached->setValue('onlyattached');
 

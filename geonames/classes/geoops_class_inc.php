@@ -38,7 +38,7 @@ class geoops extends ChisimbaObject
         $fileadd->endRow();
         
         //end off the form and add the buttons
-        $this->objIMButton = &new button($this->objLanguage->languageText('word_upload', 'system'));
+        $this->objIMButton = new button($this->objLanguage->languageText('word_upload', 'system'));
         $this->objIMButton->setValue($this->objLanguage->languageText('word_upload', 'system'));
         $this->objIMButton->setToSubmit();
         $filefieldset->addContent($fileadd->show());

@@ -81,7 +81,7 @@ $objForm->addRule('password',$objLanguage->languageText('need_password'),'requir
 $objForm->addRule('listemail',$objLanguage->languageText('need_listemail'),'required');
 $objForm->addRule('listname',$objLanguage->languageText('need_listname'),'required');
 
-$this->objButton=&new button('submitform');
+$this->objButton= new button('submitform');
 $this->objButton->setValue($this->objLanguage->languageText('word_submit'));
 $this->objButton->setToSubmit();
 

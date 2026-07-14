@@ -171,9 +171,9 @@ class Zend_Pdf_StringParser
     public function skipWhiteSpace($skipComment = true)
     {
         while ($this->offset < strlen($this->data)) {
-            if (self::isWhiteSpace( ord($this->data{$this->offset}) )) {
+            if (self::isWhiteSpace( ord($this->data[$this->offset]) )) {
                 $this->offset++;
-            } else if (ord($this->data{$this->offset}) == 0x25 && $skipComment) { // '%'
+            } else if (ord($this->data[$this->offset]) == 0x25 && $skipComment) { // '%'
                 $this->skipComment();
             } else {
                 return;
@@ -189,8 +189,8 @@ class Zend_Pdf_StringParser
     {
         while ($this->offset < strlen($this->data))
         {
-            if (ord($this->data{$this->offset}) != 0x0A || // Line feed
-                ord($this->data{$this->offset}) != 0x0d    // Carriage return
+            if (ord($this->data[$this->offset]) != 0x0A || // Line feed
+                ord($this->data[$this->offset]) != 0x0d    // Carriage return
                ) {
                 $this->offset++;
             } else {
@@ -210,15 +210,15 @@ class Zend_Pdf_StringParser
         $this->skipWhiteSpace(false);
 
         /** Check if it's a comment line */
-        if ($this->data{$this->offset} != '%') {
+        if ($this->data[$this->offset] != '%') {
             return '';
         }
 
         for ($start = $this->offset;
              $this->offset < strlen($this->data);
              $this->offset++) {
-            if (ord($this->data{$this->offset}) == 0x0A || // Line feed
-                ord($this->data{$this->offset}) == 0x0d    // Carriage return
+            if (ord($this->data[$this->offset]) == 0x0A || // Line feed
+                ord($this->data[$this->offset]) == 0x0d    // Carriage return
                ) {
                 break;
             }
@@ -243,21 +243,21 @@ class Zend_Pdf_StringParser
 
         $start = $this->offset;
 
-        if (self::isDelimiter( ord($this->data{$start}) )) {
-            if ($this->data{$start} == '<' && $this->offset + 1 < strlen($this->data) && $this->data{$start+1} == '<') {
+        if (self::isDelimiter( ord($this->data[$start]) )) {
+            if ($this->data[$start] == '<' && $this->offset + 1 < strlen($this->data) && $this->data[$start+1] == '<') {
                 $this->offset += 2;
                 return '<<';
-            } else if ($this->data{$start} == '>' && $this->offset + 1 < strlen($this->data) && $this->data{$start+1} == '>') {
+            } else if ($this->data[$start] == '>' && $this->offset + 1 < strlen($this->data) && $this->data[$start+1] == '>') {
                 $this->offset += 2;
                 return '>>';
             } else {
                 $this->offset++;
-                return $this->data{$start};
+                return $this->data[$start];
             }
         } else {
             while ( ($this->offset < strlen($this->data)) &&
-                    (!self::isDelimiter(  ord($this->data{$this->offset}) )) &&
-                    (!self::isWhiteSpace( ord($this->data{$this->offset}) ))   ) {
+                    (!self::isDelimiter(  ord($this->data[$this->offset]) )) &&
+                    (!self::isWhiteSpace( ord($this->data[$this->offset]) ))   ) {
                 $this->offset++;
             }
 
@@ -347,7 +347,7 @@ class Zend_Pdf_StringParser
         $openedBrackets = 1;
 
         while ($this->offset < strlen($this->data)) {
-            switch (ord( $this->data{$this->offset} )) {
+            switch (ord( $this->data[$this->offset] )) {
                 case 0x28: // '(' - opened bracket in the string, needs balanced pair.
                     $openedBrackets++;
                     break;
@@ -387,10 +387,10 @@ class Zend_Pdf_StringParser
         $start = $this->offset;
 
         while ($this->offset < strlen($this->data)) {
-            if (self::isWhiteSpace( ord($this->data{$this->offset}) ) ||
-                ctype_xdigit( $this->data{$this->offset} ) ) {
+            if (self::isWhiteSpace( ord($this->data[$this->offset]) ) ||
+                ctype_xdigit( $this->data[$this->offset] ) ) {
                 $this->offset++;
-            } else if ($this->data{$this->offset} == '>') {
+            } else if ($this->data[$this->offset] == '>') {
                 $this->offset++;
                 return new Zend_Pdf_Element_String_Binary(
                                Zend_Pdf_Element_String_Binary::unescape( substr($this->data,
@@ -583,10 +583,10 @@ class Zend_Pdf_StringParser
          * 'stream' keyword must be followed by either cr-lf sequence or lf character only.
          * This restriction gives the possibility to recognize all cases exactly
          */
-        if ($this->data{$this->offset} == "\r" &&
-            $this->data{$this->offset + 1} == "\n"    ) {
+        if ($this->data[$this->offset] == "\r" &&
+            $this->data[$this->offset + 1] == "\n"    ) {
             $this->offset += 2;
-        } else if ($this->data{$this->offset} == "\n"    ) {
+        } else if ($this->data[$this->offset] == "\n"    ) {
             $this->offset++;
         } else {
             throw new Zend_Pdf_Exception(sprintf('PDF file syntax error. Offset - 0x%X. \'stream\' must be followed by either cr-lf sequence or lf character only.', $this->offset - strlen($nextLexeme)));
@@ -655,7 +655,7 @@ class Zend_Pdf_StringParser
         $value = 0;
         for ($count = 0; $count < $size; $count++) {
             $value *= 256;
-            $value += ord($stream{$offset + $count});
+            $value += ord($stream[$offset + $count]);
         }
 
         return $value;

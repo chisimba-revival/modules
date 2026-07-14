@@ -120,7 +120,7 @@ class blogsearching extends ChisimbaObject
         $qseekterm = new textinput('searchterm');
         $qseekterm->size = 15;
         $qseekform->addToForm($qseekterm->show());
-        $this->objsTButton = &new button($this->objLanguage->languageText('word_search', 'system'));
+        $this->objsTButton = new button($this->objLanguage->languageText('word_search', 'system'));
         $this->objsTButton->setValue($this->objLanguage->languageText('word_search', 'system'));
         $this->objsTButton->setIconClass("search");
         $this->objsTButton->setToSubmit();

@@ -44,7 +44,7 @@ class ARC2_RDFParser extends ARC2_Class {
     /* reader */
     if (!isset($this->reader)) {
       ARC2::inc('Reader');
-      $this->reader = & new ARC2_Reader($this->a, $this);
+      $this->reader = new ARC2_Reader($this->a, $this);
     }
     $this->reader->activate($path, $data) ;
     /* format detection */
@@ -68,7 +68,7 @@ class ARC2_RDFParser extends ARC2_Class {
     $suffix = $mappings[$format] . 'Parser';
     ARC2::inc($suffix);
     $cls = 'ARC2_' . $suffix;
-    $this->parser =& new $cls($this->a, $this);
+    $this->parser = new $cls($this->a, $this);
     $this->parser->setReader($this->reader);
     return $this->parser->parse($path, $data);
   }

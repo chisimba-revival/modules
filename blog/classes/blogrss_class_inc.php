@@ -279,7 +279,7 @@ class blogrss extends ChisimbaObject
         $rssadd->addCell($rssdesc->show());
         $rssadd->endRow();
         // end off the form and add the buttons
-        $this->objRssButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+        $this->objRssButton = new button($this->objLanguage->languageText('word_save', 'system'));
         $this->objRssButton->setIconClass("save");
         $this->objRssButton->setValue($this->objLanguage->languageText('word_save', 'system'));
         $this->objRssButton->setToSubmit();

@@ -36,7 +36,7 @@ foreach ($modules as $module)
     
     
 }
-$freemindmap  = &new freemindmap($menu);
+$freemindmap  = new freemindmap($menu);
 
     
     echo $freemindmap->getMenu();

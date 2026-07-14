@@ -10,7 +10,7 @@
 
 function file2js($f)
 {
-  if (ereg('/', $f))
+  if (preg_match('~/~', $f))
   {
     $file = $f;
   }

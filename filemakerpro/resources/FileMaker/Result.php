@@ -40,7 +40,7 @@ class FileMaker_Result
      */
     function FileMaker_Result(&$fm)
     {
-        $this->_impl =& new FileMaker_Result_Implementation($fm);
+        $this->_impl = new FileMaker_Result_Implementation($fm);
     }
 
     /**

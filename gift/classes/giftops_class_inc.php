@@ -250,9 +250,9 @@ class giftops extends ChisimbaObject {
                 }
                 if ($treeType == 'htmldropdown') {
                     // echo "css class == $cssClass<br/>";
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $dept['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $dept['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 } else {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'home', 'departmentid' => $dept['id'], 'departmentname' => $dept['name'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'home', 'departmentid' => $dept['id'], 'departmentname' => $dept['name'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 }
 
                 $parent = $this->getParent($dept['path']);
@@ -272,12 +272,12 @@ class giftops extends ChisimbaObject {
 
         $menu->addItem($allFilesNode);
         if ($treeType == 'htmldropdown') {
-            $treeMenu = &new htmldropdown($menu, array('inputName' => 'selecteddepartment', 'id' => 'input_parentfolder', 'selected' => $selected));
+            $treeMenu = new htmldropdown($menu, array('inputName' => 'selecteddepartment', 'id' => 'input_parentfolder', 'selected' => $selected));
         } else {
             $this->appendArrayVar('headerParams', $this->getJavascriptFile('TreeMenu.js', 'tree'));
             $this->setVar('pageSuppressXML', TRUE);
             $objSkin = & $this->getObject('skin', 'skin');
-            $treeMenu = &new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+            $treeMenu = new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
         }
 
         return $treeMenu->getMenu();

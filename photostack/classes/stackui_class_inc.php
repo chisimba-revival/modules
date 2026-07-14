@@ -296,7 +296,7 @@ class stackui extends ChisimbaObject
         // $catform->addRule('catname', $this->objLanguage->languageText("mod_artdir_phrase_titlereq", "artdir") , 'required');
         $cfieldset->addContent($catadd->show());
         $catform->addToForm($cfieldset->show());
-        $this->objCButton = &new button($this->objLanguage->languageText('word_update', 'system'));
+        $this->objCButton = new button($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setIconClass("save");
         $this->objCButton->setValue($this->objLanguage->languageText('word_update', 'system'));
         $this->objCButton->setToSubmit();

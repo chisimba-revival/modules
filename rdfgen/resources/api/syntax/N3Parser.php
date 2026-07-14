@@ -585,7 +585,7 @@ function str2unicode_nfc($str=""){
                 //float or decimal
                 // After conversion we cannot distinguish between both
                 $list[$i] = floatval($list[$i]);
-            } else if ((!strstr('<_"\'?.;,{}[]()@', $list[$i]{0}))
+            } else if ((!strstr('<_"\'?.;,{}[]()@', $list[$i][0]))
              && (substr($list[$i],0,3) != '^^<')
             ) {
                 //prefix or unknown
@@ -605,10 +605,10 @@ function str2unicode_nfc($str=""){
                 }
 
             } else {
-                if ($list[$i]{0} == '"') {
+                if ($list[$i][0] == '"') {
                     $bLiteral = true;
                     $chBase   = '"';
-                } else if ($list[$i]{0} == '\'') {
+                } else if ($list[$i][0] == '\'') {
                     $bLiteral = true;
                     $chBase   = '\'';
                 } else {
@@ -1067,7 +1067,7 @@ function str2unicode_nfc($str=""){
     function toRDFNode($s, $state)
     {
         $ins = substr($s, 1, -1);
-        if ($s{0} == '"' || $s{0} == '\'') {
+        if ($s[0] == '"' || $s[0] == '\'') {
             $lang = NULL;
 
             if (count($state)>3) {

@@ -1859,7 +1859,7 @@ duration: 0.25
         $rssadd->endRow();
 
         //end off the form and add the buttons
-        $this->objRssButton = &new button($this->objLanguage->languageText('word_save', 'system'));
+        $this->objRssButton = new button($this->objLanguage->languageText('word_save', 'system'));
         $this->objRssButton->setValue($this->objLanguage->languageText('word_save', 'system'));
         $this->objRssButton->setToSubmit();
         $rssfieldset->addContent($rssadd->show());

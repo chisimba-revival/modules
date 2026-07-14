@@ -110,7 +110,7 @@ function generateResultStatementsFromVarResult(&$result,$parsedq, &$outm,$closur
 function addMissingSelectVarsToQuery(&$parsedq){
   foreach ($parsedq['patterns'] as $n => $pattern) {
 	foreach ($pattern as $key => $val_1)
-	  if ($val_1['value']{0}=='?') {
+	  if ($val_1['value'][0]=='?') {
 		if (!in_array($val_1['value'],$parsedq['selectVars'])){
 		  array_push($parsedq['selectVars'],$val_1['value']);
 		}

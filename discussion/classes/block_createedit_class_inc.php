@@ -95,7 +95,7 @@ if(!document.getElementById && document.all) {
             $action = 'editdiscussion';
         }
 
-        $header = & new htmlheading();
+        $header = new htmlheading();
         $header->type = 3;
 
         $action = $this->getParam('action');
@@ -139,7 +139,7 @@ if(!document.getElementById && document.all) {
 // --------- New Row ---------- //
 
         $table->startRow();
-        $nameLabel = & new label($this->objLanguage->languageText('word_description', 'system') . ':', 'input_description');
+        $nameLabel = new label($this->objLanguage->languageText('word_description', 'system') . ':', 'input_description');
         $table->addCell('<strong>' . $nameLabel->show() . '</strong>', 100);
 
         $nameInput = new textinput('description');
@@ -160,7 +160,7 @@ if(!document.getElementById && document.all) {
 
             $table->addCell('<strong>' . $this->objLanguage->languageText('mod_discussion_lockdiscussion', 'discussion') . '</strong>');
 
-            $radioGroup = & new radio('lockdiscussion');
+            $radioGroup = new radio('lockdiscussion');
             $radioGroup->setBreakSpace(' / ');
 
             // The option NO comes before YES - as no is this preferred
@@ -323,7 +323,7 @@ if(!document.getElementById && document.all) {
         $table->addCell($submitButton->show() . '&nbsp;&nbsp;&nbsp;&nbsp;' . $cancelButton->show(), null, null, null, null, ' colspan="4"');
 
         if ($action == 'editdiscussion') {
-            $hiddenIdInput = & new textinput('id');
+            $hiddenIdInput = new textinput('id');
             $hiddenIdInput->fldType = 'hidden';
             $hiddenIdInput->value = $discussion['id'];
             $form->addToForm($hiddenIdInput->show());

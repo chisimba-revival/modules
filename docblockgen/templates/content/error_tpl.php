@@ -44,7 +44,7 @@ if ($handle = opendir($this->objConfig->getModulePath())) {
    closedir($handle);
 }
 
-$dd = & new dropdown('mod');
+$dd = new dropdown('mod');
 foreach($modarr as $options)
 {
 	$dd->addOption($options, $options);
@@ -52,7 +52,7 @@ foreach($modarr as $options)
 
 $objForm->addToFormEx($objLanguage->languageText('mod_docblockgen_ddlabel', 'docblockgen'),$dd->show());
 
-$this->objButton=&new button($objLanguage->languageText('mod_docblockgen_gen', 'docblockgen'));
+$this->objButton= new button($objLanguage->languageText('mod_docblockgen_gen', 'docblockgen'));
 $this->objButton->setValue($objLanguage->languageText('mod_docblockgen_gen', 'docblockgen'));
 //$this->objButton->setOnClick('alert(\'Processing\')');
 $this->objButton->setToSubmit();
