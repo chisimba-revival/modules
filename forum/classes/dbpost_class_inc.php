@@ -1831,7 +1831,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Left value of first post MUST be one
@@ -1839,7 +1838,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Right value of first post can never be zero
@@ -1847,7 +1845,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Right value of first post can never be less than left value
@@ -1855,7 +1852,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Right value of first post can never be an odd number
@@ -1863,7 +1859,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Get Num Children
@@ -1874,7 +1869,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Check if there are any duplicate Left Values
@@ -1885,7 +1879,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // Check if there are any duplicate Right Values
@@ -1896,7 +1889,6 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
                 }
 
                 // If not, topic is not broken

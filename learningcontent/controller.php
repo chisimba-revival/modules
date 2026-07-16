@@ -1519,7 +1519,7 @@ class learningcontent extends controller {
         //check which format was chosen and output according to that
         $feed = $this->objFeedCreator->output(); //defaults to RSS2.0
         echo htmlentities($feed);
-        break;
+        return;
 
     }
 }
