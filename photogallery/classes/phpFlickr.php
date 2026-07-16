@@ -381,7 +381,7 @@ class phpFlickr {
 
         $rsp = explode("\n", $this->response);
         foreach ($rsp as $line) {
-            if (ereg('<err code="([0-9]+)" msg="(.*)"', $line, $match)) {
+            if (preg_match('~<err code="([0-9]+)" msg="(.*)"~', $line, $match)) {
                 if ($this->die_on_error)
                     die("The Flickr API returned the following error: #{$match[1]} - {$match[2]}");
                 else {
@@ -390,7 +390,7 @@ class phpFlickr {
                     $this->parsed_response = false;
                     return false;
                 }
-            } elseif (ereg("<photoid>(.*)</photoid>", $line, $match)) {
+            } elseif (preg_match("~<photoid>(.*)</photoid>~", $line, $match)) {
                 $this->error_code = false;
                 $this->error_msg = false;
                 return $match[1];
@@ -449,7 +449,7 @@ class phpFlickr {
 
         $rsp = explode("\n", $this->response);
         foreach ($rsp as $line) {
-            if (ereg('<err code="([0-9]+)" msg="(.*)"', $line, $match)) {
+            if (preg_match('~<err code="([0-9]+)" msg="(.*)"~', $line, $match)) {
                 if ($this->die_on_error)
                     die("The Flickr API returned the following error: #{$match[1]} - {$match[2]}");
                 else {
@@ -458,7 +458,7 @@ class phpFlickr {
                     $this->parsed_response = false;
                     return false;
                 }
-            } elseif (ereg("<ticketid>(.*)</", $line, $match)) {
+            } elseif (preg_match("~<ticketid>(.*)</~", $line, $match)) {
                 $this->error_code = false;
                 $this->error_msg = false;
                 return $match[1];
@@ -522,7 +522,7 @@ class phpFlickr {
 
         $rsp = explode("\n", $this->response);
         foreach ($rsp as $line) {
-            if (ereg('<err code="([0-9]+)" msg="(.*)"', $line, $match)) {
+            if (preg_match('~<err code="([0-9]+)" msg="(.*)"~', $line, $match)) {
                 if ($this->die_on_error)
                     die("The Flickr API returned the following error: #{$match[1]} - {$match[2]}");
                 else {

@@ -352,7 +352,7 @@ curl_setopt($Vd88fc6ed, CURLOPT_HTTPHEADER, array('X-FMI-PE-ExtendedPrivilege: t
  if($V70106d0d == 52){
  return new FileMaker_Error($this, 'Communication Error: (' . $V70106d0d . ') ' . curl_error($Vd88fc6ed) . ' - The Web Publishing Core and/or FileMaker Server services are not running.', $V70106d0d);
 }else if($V70106d0d == 22){	
- if (eregi("50", curl_error($Vd88fc6ed))) {
+ if (preg_match("~50~i", curl_error($Vd88fc6ed))) {
  return new FileMaker_Error($this, 'Communication Error: (' . $V70106d0d . ') ' . curl_error($Vd88fc6ed) . ' - The Web Publishing Core and/or FileMaker Server services are not running.', $V70106d0d);
 }else{
  return new FileMaker_Error($this, 'Communication Error: (' . $V70106d0d . ') ' . curl_error($Vd88fc6ed) . ' - This can be due to an invalid username or password, or if the FMPHP privilege is not enabled for that user.', $V70106d0d);

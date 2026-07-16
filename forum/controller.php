@@ -673,7 +673,7 @@ class forum extends controller {
          */
         public function saveNewTopic() {
 
-                $attachment_id = $_POST['attachment'];
+                $attachment_id = $_POST['attachment'] ?? NULL;
                 $tempPostId = $_POST['temporaryId'];
 //                $this->saveTempAttachmentIfAny($tempPostId);
                 $forum_id = $_POST['forum'];
@@ -728,8 +728,10 @@ class forum extends controller {
 
                 $this->objForum->updateLastTopic($forum_id, $topic_id);
                 $post_id = $this->objPost->insertSingle($post_parent, $post_tangent_parent, $forum_id, $topic_id, $this->userId);
-                $this->saveTempAttachmentIfAny($post_id, $attachment_id);
-                $this->handleAttachments($post_id, $attachment_id);
+                if (!empty($attachment_id)) {
+                        $this->saveTempAttachmentIfAny($post_id, $attachment_id);
+                        $this->handleAttachments($post_id, $attachment_id);
+                }
                 $this->objPostText->insertSingle($post_id, $post_title, $post_text, $language, $original_post, $this->userId);
                 $this->objTopic->updateFirstPost($topic_id, $post_id);
                 $this->objForum->updateLastPost($forum_id, $post_id);
@@ -1468,17 +1470,20 @@ class forum extends controller {
         /**
          * Method to save temp attahc
          */
-        public function saveTempAttachmentIfAny($temp_id, $attachment_id) {
-                $userId = $this->objUser->userId();
-                $dateLastUpdated = mktime();
-//                $attachment_id = $this->getVar('attachment_id');
-                if ($attachment_id != '') {
-                        $this->objTempAttachments->insertSingle($temp_id, $attachment_id, $userId, $dateLastUpdated);
-                } else {
-                        echo "<h4>failed to insert values into database<h4>";
+        public function saveTempAttachmentIfAny($temp_id, $attachment_id = NULL) {
+                if (!empty($attachment_id)) {
+                        $userId = $this->objUser->userId();
+                        $dateLastUpdated = mktime();
+
+                        $this->objTempAttachments->insertSingle(
+                                $temp_id,
+                                $attachment_id,
+                                $userId,
+                                $dateLastUpdated
+                        );
                 }
+
                 $this->unsetSession('temporaryId');
-//                return $this->nextAction('attachments', array('id' => $temp_id, 'attachment' => $attachment_id));
         }
 
         /**

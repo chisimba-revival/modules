@@ -394,12 +394,12 @@ class giftops extends ChisimbaObject {
             die("I'm sorry, you must specify a file name to download.");
 
         // Make sure we can't download files above the current directory location.
-        if (eregi("\.\.", $filepath))
+        if (preg_match("~\.\.~i", $filepath))
             die("I'm sorry, you may not download that file.");
         $file = str_replace("..", "", $filepath);
 
         // Make sure we can't download .ht control files.
-        if (eregi("\.ht.+", $filepath))
+        if (preg_match("~\.ht.+~i", $filepath))
             die("I'm sorry, you may not download that file.");
 
         // Combine the download path and the filename to create the full path to the file.

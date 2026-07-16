@@ -790,7 +790,7 @@ Class RdqlParser extends Object_rap{
       $statement_object = $this->_validateLiteral($token);
    elseif ($token[0] == '<')
       $statement_object['value'] = $this->_validateUri($token, RDQL_WHR_ERR);      
-   elseif (ereg(':', $token)) {
+   elseif (preg_match('~:~', $token)) {
    	  $statement_object['value'] = $this->_validateUri($token, RDQL_WHR_ERR);
    	  $statement_object['is_qname'] = TRUE;
    }else

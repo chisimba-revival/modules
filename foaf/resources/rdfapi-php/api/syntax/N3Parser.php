@@ -585,7 +585,7 @@ function str2unicode_nfc($str=""){
 	      //	      print "++$lit++";
 	      $lit=str_replace('\n', '\\n',$lit);
 
-	      $lit=ereg_replace("[^\\]\"", "\\\"", $lit);
+	      $lit=preg_replace("~[^\\]\"~", "\\\"", $lit);
 
 	      $list[$i] = '"'.$lit.'"';
 	    }
