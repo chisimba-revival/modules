@@ -19,7 +19,7 @@ class jukskeicontent extends controller {
     return "home_tpl.php";
   }
   
-  function requiresLogin(){
+  function requiresLogin($action = null){
     return false;
   }
 

@@ -101,7 +101,7 @@
         * @access public
         * @return bool FALSE
         */
-        public function requiresLogin()
+        public function requiresLogin($action = null)
         {
 
 			//Will code login for granting access to UWC Lan User only

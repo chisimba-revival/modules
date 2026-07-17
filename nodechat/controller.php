@@ -88,7 +88,7 @@ class nodechat extends controller
      * @access public
      * @return boolean Will always be false.
      */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

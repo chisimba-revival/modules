@@ -1113,7 +1113,7 @@ class portalimporter extends controller
 
 
 				 * This is a method to determine if the user has to
-				 public function requiresLogin()
+				 public function requiresLogin($action = null)
 				 {
 				 $action=$this->getParam('action','NULL');
 				 switch ($action)
@@ -1153,7 +1153,7 @@ class portalimporter extends controller
 				 * @return boolean TRUE|FALSE
 				 *
 				 */
-				public function requiresLogin()
+				public function requiresLogin($action = null)
 				{
 						$action=$this->getParam('action','NULL');
 						switch ($action)

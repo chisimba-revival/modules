@@ -204,7 +204,7 @@ class externalblocks extends controller
     * @return boolean FALSE
     *
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

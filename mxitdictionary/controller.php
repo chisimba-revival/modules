@@ -274,7 +274,7 @@ class mxitdictionary extends controller
 		{
 	    	$this->nextAction('view_tpl.php');
     	}
- 		public function requiresLogin()
+ 		public function requiresLogin($action = null)
     	{
         	return FALSE;
 		}

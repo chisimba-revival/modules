@@ -79,7 +79,7 @@ class popupcalendar extends controller
     * @access public
     * @returns boolean TRUE or FALSE
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         $action = $this->getParam('action', 'NULL');
         switch ($action) {

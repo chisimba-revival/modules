@@ -314,7 +314,7 @@ class libraryforms extends controller {
 
 // end of notification email
 
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         return FALSE;
     }
 

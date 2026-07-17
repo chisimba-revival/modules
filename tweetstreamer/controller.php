@@ -102,7 +102,7 @@ class tweetstreamer extends controller
      * @access public
      * @return boolean FALSE since no login is required.
      */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

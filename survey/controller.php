@@ -1129,7 +1129,7 @@ class survey extends controller {
      *  Using sysConfig option to allowing anonymous survey's to be taken
      *
      */
-    function requiresLogin() {
+    function requiresLogin($action = null) {
 
         $isAnonymousSurveyAllowed = $this->objSysConfig->getValue('anonymous_survey_allowed', 'survey');
         if (!$isAnonymousSurveyAllowed) {

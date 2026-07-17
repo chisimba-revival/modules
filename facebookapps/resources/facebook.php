@@ -362,7 +362,7 @@ class Facebook
       // try loading session from $_REQUEST
       if (!$session && isset($_REQUEST['session'])) {
         $session = json_decode(
-          get_magic_quotes_gpc()
+          false
             ? stripslashes($_REQUEST['session'])
             : $_REQUEST['session'],
           true
@@ -376,7 +376,7 @@ class Facebook
         if (isset($_COOKIE[$cookieName])) {
           $session = array();
           parse_str(trim(
-            get_magic_quotes_gpc()
+            false
               ? stripslashes($_COOKIE[$cookieName])
               : $_COOKIE[$cookieName],
             '"'

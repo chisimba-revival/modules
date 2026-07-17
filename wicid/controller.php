@@ -1086,7 +1086,7 @@ class wicid extends controller {
         $this->documents->deleteDocs($docids);
     }
 
-    function requiresLogin() {
+    function requiresLogin($action = null) {
         return true;
     }
 

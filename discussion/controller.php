@@ -189,7 +189,7 @@ class discussion extends controller {
          * @access public
          *
          */
-        public function requiresLogin() {
+        public function requiresLogin($action = null) {
                 $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
 
                 // Check if User is allowed to view discussion without being logged in

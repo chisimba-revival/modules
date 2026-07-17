@@ -68,7 +68,7 @@ class quotes extends controller
     /**
     * Override the default requirement for login
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return False;  
     }

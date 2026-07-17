@@ -352,7 +352,7 @@ class radio extends controller
      * @return boolean Return description (if any) ...
      * @access public
      */
-       public function requiresLogin()
+       public function requiresLogin($action = null)
         {
             return FALSE;
 

@@ -75,10 +75,10 @@ class ConnectionSocket {
 	
 	function socket_read($byte_count)
 	{
-		$mqr = get_magic_quotes_runtime();
-		set_magic_quotes_runtime(0);
+		$mqr = false;
+		false;
 		$buffer = fread($this->socket, $byte_count);
-		set_magic_quotes_runtime($mqr);
+		false;
 
 		return $buffer;
 	}	

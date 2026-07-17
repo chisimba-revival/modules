@@ -200,7 +200,7 @@ class createaccount extends controller
     * @return boolean TRUE|FALSE
     *
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         $action=$this->getParam('action','NULL');
         switch ($action)

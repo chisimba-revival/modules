@@ -142,7 +142,7 @@ class announcements extends controller
         }
     }
 
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         switch ($this->getParam('action', NULL)) {
             case 'edit':

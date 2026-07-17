@@ -29,7 +29,7 @@ class ihe extends controller {
       }
     }
   }
-  function requiresLogin(){ //override default behaviour. Makes module accesible to any user.
+  function requiresLogin($action = null){ //override default behaviour. Makes module accesible to any user.
     return FALSE;
   }
 }

@@ -110,7 +110,7 @@ class zoopy extends controller
      * @access public
      * @return boolean True if the user needs to be logged in, false otherwise.
      */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return false;
     }

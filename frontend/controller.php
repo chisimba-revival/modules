@@ -16,7 +16,7 @@ class frontend extends controller {
                 
         }
 
-        function requiresLogin() {
+        function requiresLogin($action = null) {
                 
         }
 

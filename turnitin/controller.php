@@ -235,7 +235,7 @@ class turnitin extends controller
 	 *
 	 * @return boolean
 	 */
-	public function requiresLogin()
+	public function requiresLogin($action = null)
 	{
 		if($this->getParam('action') == 'callback')
 		{

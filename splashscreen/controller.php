@@ -29,7 +29,7 @@ class splashscreen extends controller
     * Method to set login requirement to False
     * Required to be false. prelogin screen
     */
-    function requiresLogin()
+    function requiresLogin($action = null)
     {
         return FALSE;
     }

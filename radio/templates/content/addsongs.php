@@ -684,7 +684,7 @@ function AddStripSlashesArray($input, $addslashes=false) {
 function UnifyMagicQuotes($turnon=false) {
 	global $HTTP_GET_VARS, $HTTP_POST_VARS, $HTTP_COOKIE_VARS;
 
-	if (get_magic_quotes_gpc() && !$turnon) {
+	if (false && !$turnon) {
 
 		// magic_quotes_gpc is on and we want it off!
 		$_GET    = AddStripSlashesArray($_GET,    true);
@@ -694,7 +694,7 @@ function UnifyMagicQuotes($turnon=false) {
 		unset($_REQUEST);
 		$_REQUEST = array_merge_recursive($_GET, $_POST, $_COOKIE);
 
-	} elseif (!get_magic_quotes_gpc() && $turnon) {
+	} elseif (!false && $turnon) {
 
 		// magic_quotes_gpc is off and we want it on (why??)
 		$_GET    = AddStripSlashesArray($_GET,    true);

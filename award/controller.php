@@ -123,7 +123,7 @@ class award extends controller
      *
      * @return FALSE
      */
-	public function requiresLogin() {
+	public function requiresLogin($action = null) {
 		$action = $this->getParam('action');
 		if (in_array($action, $this->adminactions)) {
 			return true;

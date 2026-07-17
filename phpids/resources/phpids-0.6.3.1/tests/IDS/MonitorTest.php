@@ -979,7 +979,7 @@ class IDS_MonitorTest extends PHPUnit_Framework_TestCase {
         $test11 = '../../../../../../../../conf/server.xml';
         $test12 = '/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd';
 
-        if (function_exists('get_magic_quotes_gpc') and @get_magic_quotes_gpc()){
+        if (function_exists('get_magic_quotes_gpc') and @false){
             $test1 = addslashes($test1);
             $test2 = addslashes($test2);
             $test3 = addslashes($test3);
@@ -1157,7 +1157,7 @@ class IDS_MonitorTest extends PHPUnit_Framework_TestCase {
         $test1 = '\47\150\151\47\51\74\57\163\143\162\151\160\164\76';
         $test2 = '\74\163\143\162\151\160\164\76\141\154\145\162\164\50\47\150\151\47\51\74\57\163\143\162\151\160\164\76';
 
-        if (function_exists('get_magic_quotes_gpc') and @get_magic_quotes_gpc()){
+        if (function_exists('get_magic_quotes_gpc') and @false){
             $test1 = addslashes($test1);
             $test2 = addslashes($test2);
         }
@@ -1184,7 +1184,7 @@ class IDS_MonitorTest extends PHPUnit_Framework_TestCase {
                     x(y)';
         $test5 = 'j&#97vascrip&#x74&#58ale&#x72&#x74&#x28&#x2F&#x58&#x53&#x53&#x20&#x50&#x55&#x4E&#x43&#x48&#x21&#x2F&#x29';
 
-        if (function_exists('get_magic_quotes_gpc') and @get_magic_quotes_gpc()){
+        if (function_exists('get_magic_quotes_gpc') and @false){
             $test1 = addslashes($test1);
             $test2 = addslashes($test2);
             $test3 = addslashes($test3);

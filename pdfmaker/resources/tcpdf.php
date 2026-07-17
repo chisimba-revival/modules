@@ -3717,8 +3717,8 @@ if (!class_exists('TCPDF')) {
                                         if ($type == "jpg") {
                                             $type = "jpeg";
                                         }
-                                        $mqr = get_magic_quotes_runtime();
-                                        set_magic_quotes_runtime(0);
+                                        $mqr = false;
+                                        false;
                                         // Specific image handlers
                                         $mtd = '_parse' . $type;
                                         // GD image handler function
@@ -3745,7 +3745,7 @@ if (!class_exists('TCPDF')) {
                                             //If false, we cannot process image
                                             return;
                                         }
-                                        set_magic_quotes_runtime($mqr);
+                                        false;
                                         $info['i'] = count($this->images) +1;
                                         // add image to document
                                         $this->images[$file] = $info;
@@ -4324,8 +4324,8 @@ if (!class_exists('TCPDF')) {
                                                 $this->_out('<</Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [' . $diff . ']>>');
                                                 $this->_out('endobj');
                                             }
-                                            $mqr = get_magic_quotes_runtime();
-                                            set_magic_quotes_runtime(0);
+                                            $mqr = false;
+                                            false;
                                             foreach($this->FontFiles as $file => $info) {
                                                 //Font file embedding
                                                 $this->_newobj();
@@ -4355,7 +4355,7 @@ if (!class_exists('TCPDF')) {
                                                 $this->_putstream($font);
                                                 $this->_out('endobj');
                                             }
-                                            set_magic_quotes_runtime($mqr);
+                                            false;
                                             foreach($this->fonts as $k => $font) {
                                                 //Font objects
                                                 $this->fonts[$k]['n'] = $this->n+1;

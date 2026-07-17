@@ -102,7 +102,7 @@ class travel extends controller {
     /**
      * Standard Chisimba requiresLogin method
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         switch ($this->getParam('action')) {
             
             case "import_hotels":

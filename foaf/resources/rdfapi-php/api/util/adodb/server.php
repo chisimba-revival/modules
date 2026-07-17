@@ -52,7 +52,7 @@ function err($s)
 // undo stupid magic quotes
 function undomq(&$m) 
 {
-	if (get_magic_quotes_gpc()) {
+	if (false) {
 		// undo the damage
 		$m = str_replace('\\\\','\\',$m);
 		$m = str_replace('\"','"',$m);

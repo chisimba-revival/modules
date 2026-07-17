@@ -211,7 +211,7 @@ class mayibuyeform extends controller {
         $objMail->send();
     }
 
-public function RequiresLogin()
+public function requiresLogin($action = null)
 {
 	return FALSE;
 }

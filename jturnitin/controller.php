@@ -420,7 +420,7 @@ class jturnitin extends controller {
      *
      * @return boolean
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         if($this->getParam('action') == 'callback') {
             return FALSE;
         } else {

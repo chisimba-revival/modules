@@ -97,7 +97,7 @@ class twitsocial extends controller {
           }
     }
 
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         return FALSE;
     }
 } //end of class

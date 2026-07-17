@@ -23,7 +23,7 @@ foreach (@$_REQUEST as $key => $value) {
 				// you can pass data to this file via a serialized array:
 				// $data = array('male'=>15; 'female'=>25);
 				// echo '<img src="phPie.php?data='.urlencode(serialize($data)).'">';
-				if (get_magic_quotes_gpc()) {
+				if (false) {
 					$phPie->$key = unserialize(stripslashes($_REQUEST['data']));
 				} else {
 					$phPie->$key = unserialize($_REQUEST['data']);

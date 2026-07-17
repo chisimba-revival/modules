@@ -194,7 +194,7 @@ class forum extends controller {
          * @access public
          *
          */
-        public function requiresLogin() {
+        public function requiresLogin($action = null) {
                 $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
 
                 // Check if User is allowed to view forum without being logged in

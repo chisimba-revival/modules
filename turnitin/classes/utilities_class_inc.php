@@ -301,7 +301,7 @@ class utilities extends ChisimbaObject
 	 * Method to disable the login 
 	 * feature 
 	 */
-	public function requiresLogin()
+	public function requiresLogin($action = null)
 	{
 		return TRUE;
 	}

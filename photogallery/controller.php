@@ -317,7 +317,7 @@ class photogallery extends controller {
     /**
      *
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         //var_dump( $this->getParam('action'));
         //die;
         switch ($this->getParam('action')) {

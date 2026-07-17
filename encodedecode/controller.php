@@ -214,7 +214,7 @@ class encodedecode extends controller
     * @return boolean TRUE|FALSE
     *
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

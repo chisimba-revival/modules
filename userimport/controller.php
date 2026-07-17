@@ -195,7 +195,7 @@ class userimport extends controller
     /**
     * Method to determine if the user has to be logged in or not
     */
-    function requiresLogin() // overides that in parent class
+    function requiresLogin($action = null) // overides that in parent class
     {
         if ($this->noLoginNeeded){ return FALSE; }
         return TRUE;

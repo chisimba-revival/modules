@@ -342,7 +342,7 @@ class triplestore extends controller {
      * @param  string $action The name of the action
      * @return bool
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         $action = $this->getParam('action', 'NULL');
         switch ($action) {
             case 'view':

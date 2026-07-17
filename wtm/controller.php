@@ -341,7 +341,7 @@ class WTM extends controller
 	/**
 	* Overrides login when accessing from outside.
 	*/
-	function requiresLogin()
+	function requiresLogin($action = null)
 	{
 		return false;
 	}

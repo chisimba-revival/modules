@@ -47,7 +47,7 @@ class ircchat extends controller
         }
     }
 
-    function requiresLogin() {
+    function requiresLogin($action = null) {
         return FALSE;
     }
 }

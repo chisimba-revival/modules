@@ -772,8 +772,8 @@ if (!class_exists('FPDF')) {
                     $type = substr($file, $pos+1);
                 }
                 $type = strtolower($type);
-                $mqr = get_magic_quotes_runtime();
-                set_magic_quotes_runtime(0);
+                $mqr = false;
+                false;
                 if ($type == 'jpg' || $type == 'jpeg') $info = $this->_parsejpg($file);
                 elseif ($type == 'png') $info = $this->_parsepng($file);
                 else {
@@ -782,7 +782,7 @@ if (!class_exists('FPDF')) {
                     if (!method_exists($this, $mtd)) $this->Error('Unsupported image type: ' . $type);
                     $info = $this->$mtd($file);
                 }
-                set_magic_quotes_runtime($mqr);
+                false;
                 $info['i'] = count($this->images) +1;
                 $this->images[$file] = $info;
             } else $info = $this->images[$file];
@@ -972,8 +972,8 @@ if (!class_exists('FPDF')) {
                     $this->_out('<</Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [' . $diff . ']>>');
                     $this->_out('endobj');
                 }
-                $mqr = get_magic_quotes_runtime();
-                set_magic_quotes_runtime(0);
+                $mqr = false;
+                false;
                 foreach($this->FontFiles as $file => $info) {
                     //Font file embedding
                     $this->_newobj();
@@ -1003,7 +1003,7 @@ if (!class_exists('FPDF')) {
                     $this->_putstream($font);
                     $this->_out('endobj');
                 }
-                set_magic_quotes_runtime($mqr);
+                false;
                 foreach($this->fonts as $k => $font) {
                     //Font objects
                     $this->fonts[$k]['n'] = $this->n+1;

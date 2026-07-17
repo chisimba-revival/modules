@@ -626,7 +626,7 @@ Approved / Rejected By<br/> General manager<br/><br/><br/><br/>
      * @return boolean TRUE|FALSE
      *
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         $action = $this->getParam('action', 'view');
         switch ($action) {
             case 'view':

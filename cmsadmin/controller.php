@@ -312,7 +312,7 @@ $this->_objJQuery->loadSimpleTreePlugin();
      * @access public
      * @return bool FALSE
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         $action = $this->getParam('action', '');
         switch ($action) {
             case 'ajaxforms':

@@ -204,7 +204,7 @@ class forms extends controller
     /**
     * Override the default requirement for login
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         $action = $this->getParam("action", NULL);
         //Allow any user to submit form data

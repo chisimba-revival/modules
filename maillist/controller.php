@@ -275,7 +275,7 @@ public $objUser;
      * @param void
      * @return false
      */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

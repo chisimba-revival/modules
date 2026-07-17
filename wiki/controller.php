@@ -104,7 +104,7 @@ class wiki extends controller {
     * @access public
     * @return boolean True or False
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         $action = $this->getParam("action", NULL);
         switch($action){

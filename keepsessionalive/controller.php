@@ -49,7 +49,7 @@ class keepsessionalive extends controller
     /** 
     * Method to determine if the user has to be logged in or not
     */
-    public function requiresLogin() // overides that in parent class
+    public function requiresLogin($action = null) // overides that in parent class
     {
         $action=$this->getParam('action','NULL');
         if ($action=='stayonline'){

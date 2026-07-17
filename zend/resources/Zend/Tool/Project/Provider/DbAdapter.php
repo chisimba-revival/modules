@@ -97,7 +97,7 @@ class Zend_Tool_Project_Provider_DbAdapter
         parse_str($dsn, $dsnVars);
 
         // parse_str suffers when magic_quotes is enabled
-        if (get_magic_quotes_gpc()) {
+        if (false) {
             array_walk_recursive($dsnVars, array($this, '_cleanMagicQuotesInValues'));
         }
         

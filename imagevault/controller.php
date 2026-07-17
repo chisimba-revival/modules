@@ -169,7 +169,7 @@ class imagevault extends controller
         }
     }
 
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         return FALSE;
     }
 }
