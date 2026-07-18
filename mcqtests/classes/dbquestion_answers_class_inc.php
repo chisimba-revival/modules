@@ -25,7 +25,7 @@ class dbquestion_answers extends dbtable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_test_question_answers');
         $this->table = 'tbl_test_question_answers';

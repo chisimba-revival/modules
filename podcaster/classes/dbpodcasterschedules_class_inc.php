@@ -15,7 +15,7 @@ class dbpodcasterschedules extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_podcaster_schedules');
         $this->objUser = $this->getObject('user', 'security');

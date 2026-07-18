@@ -9,7 +9,7 @@ $params = array(
     array('vertical',false) , array('backend','IMAGE'), array('file',''),
     array('scale',1), array('height',70), array('pswidth','') );
 
-$n=count($params);
+$n=(is_countable($params) ? count($params) : 0);
 for($i=0; $i < $n; ++$i ) {
     $v  = $params[$i][0];
     if( empty($_GET[$params[$i][0]]) ) {

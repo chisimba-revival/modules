@@ -63,7 +63,7 @@ class db_learningcontent_activitystreamer extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_activitystreamer');
         $this->objUser =& $this->getObject('user', 'security');
@@ -215,7 +215,7 @@ class db_learningcontent_activitystreamer extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -243,7 +243,7 @@ class db_learningcontent_activitystreamer extends dbtable
          $where = "";
         $logs = $this->getContextLogs( $contextcode, $where );
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $str = '{"logcount":"' . $logCount . '","availableLogs":[';
         $logArray = array();
         foreach ( $logs as $log ) {
@@ -394,7 +394,7 @@ class db_learningcontent_activitystreamer extends dbtable
         $where = "";
         $logs = $this->getContextLogs( $contextcode, $where );
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('id,userid,usernames,contextcode,modulecode,contextitemid,type,contextitemtitle,datecreated,description,starttime,endtime');
         $csvFile = "logs.csv"; 
@@ -463,7 +463,7 @@ class db_learningcontent_activitystreamer extends dbtable
         //$where = "LIMIT 390, 20";
         $logs = $this->getContextLogs( $contextcode, $where );
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('id,userid,usernames,contextcode,modulecode,contextitemid,type,contextitemtitle,datecreated,description,starttime,endtime');
         $csvFile = "logs.csv"; 

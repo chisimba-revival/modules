@@ -17,7 +17,7 @@ $objTable->cellspacing = "7";
 //Loop through and display the records
 $rowcount = 0;
 if (isset($ar)) {
-    if (count($ar) > 0) {
+    if ((is_countable($ar) ? count($ar) : 0) > 0) {
         foreach ($ar as $line) {
             $oddOrEven = ($rowcount == 0) ? "odd" : "even";
             $title = stripslashes($line['title']);

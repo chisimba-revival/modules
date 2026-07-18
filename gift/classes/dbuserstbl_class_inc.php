@@ -5,7 +5,7 @@ class dbuserstbl extends dbtable {
     /**
      * Assign the table name in dbtable to be the table specified below
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_gift_users");
         $this->objUser = $this->getObject("user", "security");
     }

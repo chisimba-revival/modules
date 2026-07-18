@@ -38,7 +38,7 @@ if ( $this->isValid('editmenuitem') && $menuId != FALSE && $this->objUser->inAdm
     $editOptions[] = $editCategoryLink->show();
 }
 
-if (count($editOptions) > 0) {
+if ((is_countable($editOptions) ? count($editOptions) : 0) > 0) {
     $divider = '';
     echo '<p>';
     foreach ($editOptions as $editOption)

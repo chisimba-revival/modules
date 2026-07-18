@@ -358,7 +358,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      */
     public function setSkipHours(array $hours)
     {
-        if (count($hours) > 24) {
+        if ((is_countable($hours) ? count($hours) : 0) > 24) {
             /**
              * @see Zend_Feed_Builder_Exception
              */
@@ -388,7 +388,7 @@ class Zend_Feed_Builder_Header extends ArrayObject
      */
     public function setSkipDays(array $days)
     {
-        if (count($days) > 7) {
+        if ((is_countable($days) ? count($days) : 0) > 7) {
             /**
              * @see Zend_Feed_Builder_Exception
              */

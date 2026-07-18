@@ -95,7 +95,8 @@ class dbPost extends dbTable {
         /**
          * Constructor method to define the table(default)
          */
-        function init() {
+        /* CHISIMBA_PHP8_DBPOST_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
                 parent::init('tbl_forum_post');
                 $this->objDom = new DOMDocument('utf-8');
                 $this->objUserPic = $this->getObject('imageupload', 'useradmin');
@@ -201,7 +202,7 @@ class dbPost extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) == 0) {
+                if ((is_countable($list) ? count($list) : 0) == 0) {
                         return 0;
                 } else {
                         return $list[0]['rght'];
@@ -218,7 +219,7 @@ class dbPost extends dbTable {
 
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return NULL;
                 } else {
                         return $array[0];
@@ -235,7 +236,7 @@ class dbPost extends dbTable {
                 $sql = 'SELECT post_order FROM tbl_forum_post WHERE topic_id=\'' . $topic_id . '\' ORDER BY post_order DESC LIMIT 1';
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return 1;
                 } else {
                         return $array[0]['post_order'] + 1;
@@ -251,7 +252,7 @@ class dbPost extends dbTable {
                 $sql = 'SELECT rght FROM tbl_forum_post WHERE id=\'' . $post_id . '\' LIMIT 1';
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return NULL;
                 } else {
                         return $array[0]['rght'];
@@ -434,7 +435,7 @@ class dbPost extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -523,7 +524,7 @@ class dbPost extends dbTable {
                 LIMIT 1; 
             ';
                 $results = $this->getArray($sql);
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -550,7 +551,7 @@ class dbPost extends dbTable {
                 //return array('post_text'=>$sql);
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -629,7 +630,7 @@ class dbPost extends dbTable {
                                 $objDateTime = $this->getObject('dateandtime', 'utilities');
                                 $date = $objDateTime->secondsInDay($dateDiff);
 //                                echo $date/60;
-                                if (count($innerPosts) == 0) {
+                                if ((is_countable($innerPosts) ? count($innerPosts) : 0) == 0) {
                                         if ($dateDiff < 1800) {
 //                        if($post['datelastupdated']){
                                                 $tposteditLink = new link('javascript:void(0)');
@@ -715,11 +716,11 @@ class dbPost extends dbTable {
                 if ($post['attachment_id'] != NULL) {
                         $attachments = $this->objPostAttachments->getAttachments($post['post_id']);
                         // By Pass if attachment has been deleted.
-                        if (count($attachments) != 0) {
+                        if ((is_countable($attachments) ? count($attachments) : 0) != 0) {
                                 $return .= '<br /><br />';
                                 foreach ($attachments AS $attachment) {
                                         $files = $this->objPostAttachments->downloadAttachment($attachment['id']);
-                                        if (count($files) > 0) {
+                                        if ((is_countable($files) ? count($files) : 0) > 0) {
                                                 $this->objFiles = $this->getObject('dbfile', 'filemanager');
                                                 $attachment_path = $this->objFiles->getFilePath($files[0]['id']);
                                                 $downloadlink = new link($attachment_path);
@@ -769,7 +770,7 @@ class dbPost extends dbTable {
 
 
                 $forumID = "<span class='forumid' id='{$topicInfo['forum_id']}' ></span>";
-                if (count($innerPosts) >= 1) {
+                if ((is_countable($innerPosts) ? count($innerPosts) : 0) >= 1) {
                         foreach ($innerPosts as $innerPost) {
                                 $dLink = "";
 //                        $sqlState = "SELECT * FROM tbl_forum_post_text WHERE post_id = '{$innerPost['id']}'";
@@ -850,7 +851,7 @@ class dbPost extends dbTable {
 
                                 foreach ($innerAttachments AS $attachment) {
                                         $files = $this->objPostAttachments->downloadAttachment($attachment['id']);
-                                        if (count($files) > 0) {
+                                        if ((is_countable($files) ? count($files) : 0) > 0) {
                                                 $this->objFiles = $this->getObject('dbfile', 'filemanager');
                                                 //$this->objFiles->getFullFilePath($files[0]['id']);
                                                 $attachment_path = $this->objFiles->getFilePath($files[0]['id']);
@@ -1174,7 +1175,7 @@ class dbPost extends dbTable {
 
                 $thread = '';
 
-                if (count($posts) == 1) {
+                if ((is_countable($posts) ? count($posts) : 0) == 1) {
                         $showExpandable = FALSE;
                 } else {
                         $showExpandable = TRUE;
@@ -1203,7 +1204,7 @@ class dbPost extends dbTable {
 
                 $thread = '';
 
-                if (count($posts) == 1) {
+                if ((is_countable($posts) ? count($posts) : 0) == 1) {
                         $showExpandable = FALSE;
                 } else {
                         $showExpandable = FALSE;
@@ -1341,7 +1342,7 @@ class dbPost extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 1) {
+                if ((is_countable($results) ? count($results) : 0) == 1) {
                         return $results[0];
                 } else {
                         return FALSE;
@@ -1392,7 +1393,7 @@ class dbPost extends dbTable {
                         $results = $this->getArray($sql);
 
                         // If there are no posts, return a message saying no recordss
-                        if (count($results) == 0) {
+                        if ((is_countable($results) ? count($results) : 0) == 0) {
                                 return '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_forum_nopostsinforum', 'forum') . '</div>';
                         } else {
 
@@ -1763,7 +1764,7 @@ function clearForTangent()
                 $sql = 'SELECT id FROM tbl_forum_post WHERE topic_id=\'' . $topic_id . '\' ORDER BY post_order LIMIT 1';
                 $results = $this->getArray($sql);
 
-                if (count($results) > 0) {
+                if ((is_countable($results) ? count($results) : 0) > 0) {
                         return $results[0]['id'];
                 } else {
                         return FALSE;
@@ -1805,7 +1806,7 @@ function clearForTangent()
 
                 $forum = $this->getArray($sql);
 
-                if (count($forum) == 1) {
+                if ((is_countable($forum) ? count($forum) : 0) == 1) {
                         return $forum[0];
                 } else {
                         return FALSE;
@@ -1875,7 +1876,7 @@ function clearForTangent()
                 $leftSql = 'SELECT t1.id  FROM tbl_forum_post t1, tbl_forum_post t2 WHERE (t1.lft = t2.lft) AND t1.topic_id = \'' . $topic . '\' AND t2.topic_id = \'' . $topic . '\' AND t1.id != t2.id GROUP BY t1.lft';
                 $leftResults = $this->getArray($leftSql);
 
-                if (count($leftResults) > 0) {
+                if ((is_countable($leftResults) ? count($leftResults) : 0) > 0) {
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
@@ -1885,7 +1886,7 @@ function clearForTangent()
                 $rightSql = 'SELECT t1.id  FROM tbl_forum_post t1, tbl_forum_post t2 WHERE (t1.rght = t2.rght) AND t1.topic_id = \'' . $topic . '\' AND t2.topic_id = \'' . $topic . '\' AND t1.id != t2.id GROUP BY t1.lft';
                 $rightResults = $this->getArray($rightSql);
 
-                if (count($rightResults) > 0) {
+                if ((is_countable($rightResults) ? count($rightResults) : 0) > 0) {
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
@@ -2039,7 +2040,7 @@ function loadTranslation(post, lang) {
         function getLastTopicPost($topicid) {
                 $results = $this->getAll(' WHERE topic_id = "' . $topicid . '" ORDER BY tbl_forum_post.dateLastUpdated DESC LIMIT 1');
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];

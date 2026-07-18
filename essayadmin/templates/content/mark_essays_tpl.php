@@ -152,7 +152,7 @@ if(!empty($data)){
 		$fId=$item['studentfileid'];
 		$fdata=0;
 		//$fdata=$this->objFile->getArray("select * from tbl_essay_filestore where fileId='$fId'");
-		if (count($fdata)==0){ // if the file has been deleted
+		if ((is_countable($fdata) ? count($fdata) : 0)==0){ // if the file has been deleted
 			$filedata = "No data found!";
 		} else {
 			$fname=0;
@@ -161,7 +161,7 @@ if(!empty($data)){
 			$fext=0;
 			$farray=array();
 			$farray=explode(".",$fname);
-			$fext=$farray[count($farray)-1];
+			$fext=$farray[(is_countable($farray) ? count($farray) : 0)-1];
 			$fsize=0;
 			$fsize=$fdata[0]['size'];
 			$ftype=0;

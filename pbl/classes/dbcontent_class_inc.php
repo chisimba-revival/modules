@@ -34,7 +34,7 @@ class dbContent extends dbTable
     /**
      * Constructor method to define the table and initialise objects
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_pbl_content');
     }

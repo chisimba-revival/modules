@@ -42,13 +42,13 @@ class Contour {
      */
     function __construct($aMatrix,$aIsobars=10, $aColors=null) {
 
-        $this->nbrRows = count($aMatrix);
+        $this->nbrRows = (is_countable($aMatrix) ? count($aMatrix) : 0);
         $this->nbrCols = count($aMatrix[0]);
         $this->dataPoints = $aMatrix;
 
         if( is_array($aIsobars) ) {
             // use the isobar values supplied
-            $this->nbrIsobars = count($aIsobars);
+            $this->nbrIsobars = (is_countable($aIsobars) ? count($aIsobars) : 0);
             $this->isobarValues = $aIsobars;
         }
         else {
@@ -63,14 +63,14 @@ class Contour {
             }
         }
 
-        if( $aColors !== null && count($aColors) > 0 ) {
+        if( $aColors !== null && (is_countable($aColors) ? count($aColors) : 0) > 0 ) {
 
             if( !is_array($aColors) ) {
                 JpGraphError::RaiseL(28001);
                 //'Third argument to Contour must be an array of colors.'
             }
 
-            if( count($aColors) != count($this->isobarValues) ) {
+            if( (is_countable($aColors) ? count($aColors) : 0) != count($this->isobarValues) ) {
                 JpGraphError::RaiseL(28002);
                 //'Number of colors must equal the number of isobar lines specified';
             }
@@ -432,7 +432,7 @@ class ContourPlot extends Plot {
         $this->contour = new Contour($this->dataMatrix,$this->isobar,$aIsobarColors);
 
         if( is_array($aIsobar) )
-            $this->nbrContours = count($aIsobar);
+            $this->nbrContours = (is_countable($aIsobar) ? count($aIsobar) : 0);
         else
             $this->nbrContours = $aIsobar;
     }

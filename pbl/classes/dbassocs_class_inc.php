@@ -36,7 +36,7 @@ class dbAssocs extends dbTable
     /**
      * Constructor method to define the table
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_pbl_assocs');
         $this->table='tbl_pbl_assocs';

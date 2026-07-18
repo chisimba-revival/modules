@@ -181,7 +181,7 @@
         private function endSession() {
             //return exec("killall python");
             $pids = $this->getPID ( 'bot.py' );
-            if (count ( $pids ) > 0) {
+            if ((is_countable($pids) ? count($pids) : 0) > 0) {
                 foreach ( $pids as $pid ) {
                     return exec ( "kill " . $pid );
                 }

@@ -33,7 +33,7 @@ class dbjbim extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_jabberblog' );
         $this->objPresence = $this->getObject ( 'dbjbpresence' );
         $this->objUser = $this->getObject ( 'user', 'security' );

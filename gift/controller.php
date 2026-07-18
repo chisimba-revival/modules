@@ -100,7 +100,7 @@ class gift extends controller {
         if ($departmentid == '') {
             $depts = $this->objDepartments->getDepartments();
 
-            if (count($depts) > 0) {
+            if ((is_countable($depts) ? count($depts) : 0) > 0) {
                 $defaultDept = $depts[0];
 
                 $departmentid = $defaultDept['id'];
@@ -323,7 +323,7 @@ class gift extends controller {
         $date_recieved = $this->getParam("date_recieved");
         $includeattachment = $this->getParam("includeattachments");
         
-        if (count($errormessages) > 0) {
+        if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
             $this->setVarByRef("errormessages", $errormessages);
             $mode = "fixup";
             $action = "save";
@@ -560,7 +560,7 @@ class gift extends controller {
 
         $comments = $this->getParam("comments");
 
-        if (count($errormessages) > 0) {
+        if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
             $this->setVarByRef("errormessages", $errormessages);
             $mode = "fixup";
             $this->setVarByRef("mode", $mode);

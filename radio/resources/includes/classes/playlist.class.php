@@ -158,7 +158,7 @@ function add_songs($file = "0", $time = "0", $bitrate = "0", $playlist_name = "0
 
 
 		$file_data1 = explode(";", $file_data);
-		$laast = count($file_data1) - 2;
+		$laast = (is_countable($file_data1) ? count($file_data1) : 0) - 2;
 		$file_data2 = explode("&", $file_data1[$laast]);
 		$file_data3 = $file_data2[3];
 		if ($file_data3 == "" or $file_data3 == "0"){$file_data3 = time();}
@@ -378,7 +378,7 @@ function get_playlist_info($station = "0", $playlist = "0")
 		$start_time = $playlist_data_open_2[2];
 		$end_time = $playlist_data_open_2[3];
 		$out2 = explode("/", $filename);
- 		$laast = count($out2) - 1;
+ 		$laast = (is_countable($out2) ? count($out2) : 0) - 1;
  		$songname = explode(".", $out2[$laast]);
  		$tottaltime = $end_time - $start_time;
  		$tottaltime  = playlist::sec2hms($tottaltime);

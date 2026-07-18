@@ -594,13 +594,13 @@ class polltools extends ChisimbaObject
                 $answerOptions = $this->dbAnswers->getAnswers($item['id']);
 		//Get the Total responses for the question
 		$totalResponses = $this->dbResponse->getPollResponses($item['id']);
-		$totalResponsesCount = count($totalResponses);
+		$totalResponsesCount = (is_countable($totalResponses) ? count($totalResponses) : 0);
 		if($answerOptions){
 	                $ansArr = array();
 			foreach($answerOptions as $ansOptions){
 				$option = $ansOptions['id'];
 				$ansResponses = $this->dbResponse->getAnswerResponses($item['id'], $option);
-				$responseCount = count($ansResponses);
+				$responseCount = (is_countable($ansResponses) ? count($ansResponses) : 0);
 				if($responseCount==0){
 				$responsePercent = 0;
 				}else{
@@ -631,7 +631,8 @@ class polltools extends ChisimbaObject
         
         return $str;
     }
-        
+    
+    
     /**
     * Method to display the configurations
     *

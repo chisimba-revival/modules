@@ -52,7 +52,7 @@ class excelgenerator extends ChisimbaObject {
         $objPHPExcel->getActiveSheet()->getStyle('H2')->getFont()->getColor()->setARGB(PHPExcel_Style_Color::COLOR_GREEN);
 
 
-        if (count($gifts) > 0) {
+        if ((is_countable($gifts) ? count($gifts) : 0) > 0) {
             $row = 3;
             foreach ($gifts as $gift) {
                 //$data[] = array($gift['giftname'], $gift['gift_type'], $gift['donor'], $gift['value'], $gift['recipient'], $gift['date_recieved'], $gift['tran_date']);

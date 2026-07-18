@@ -38,7 +38,7 @@ class dbwiki_page extends dbTable
 
      */
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 
     {
 

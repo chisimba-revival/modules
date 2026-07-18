@@ -22,7 +22,7 @@ class dbimages extends dbTable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_photogallery_images');
         $this->_objUser = $this->getObject('user', 'security');
@@ -114,7 +114,7 @@ class dbimages extends dbTable
     public function getImageCount($albumId)
     {
         $images = $this->getAll("WHERE albumId = '.$albumId.'");
-        return count($images);
+        return (is_countable($images) ? count($images) : 0);
     }
 
 
@@ -130,13 +130,13 @@ class dbimages extends dbTable
         $objAlbum = & $this->getObject('dbalbum', 'photogallery');
         $albums = $objAlbum->getAll("WHERE no_pics > 1 AND is_shared=1 ORDER BY rand() LIMIT 1 ");
 
-        if (count($albums) == 0) {
+        if ((is_countable($albums) ? count($albums) : 0) == 0) {
             return FALSE;
         }
 
         $rec = $this->getAll("WHERE album_id='".$albums[0]['id']."' ORDER BY rand() LIMIT 1 ");
 
-        if (count($rec) == 0) {
+        if ((is_countable($rec) ? count($rec) : 0) == 0) {
             return FALSE;
         } else {
             return $rec[0];

@@ -622,7 +622,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             }
 
             if (is_array($value)) {
-                $count = count($value);
+                $count = (is_countable($value) ? count($value) : 0);
                 if (array_keys($value) === range(0, $count - 1)) {
                     if ($count < 2) {
                         continue;
@@ -1127,7 +1127,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             }
 
             if (is_array($spec)) {
-                $argc = count($spec);
+                $argc = (is_countable($spec) ? count($spec) : 0);
                 $options = array();
                 if (isset($spec['type'])) {
                     $type = $spec['type'];
@@ -1646,7 +1646,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             }
 
             if (is_array($spec)) {
-                $argc  = count($spec);
+                $argc  = (is_countable($spec) ? count($spec) : 0);
                 $order = null;
                 switch ($argc) {
                     case 0:
@@ -1882,7 +1882,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                 continue;
             }
 
-            $argc    = count($spec);
+            $argc    = (is_countable($spec) ? count($spec) : 0);
             $options = array();
 
             if (isset($spec['elements'])) {
@@ -2155,7 +2155,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
     {
         $ordered = array();
         foreach ($this->_order as $name => $order) {
-            $order = isset($order) ? $order : count($ordered);
+            $order = isset($order) ? $order : (is_countable($ordered) ? count($ordered) : 0);
             if ($this->$name instanceof Zend_Form_Element ||
                 $this->$name instanceof Zend_Form) {
                 array_splice($ordered, $order, 0, array($this->$name));
@@ -2163,7 +2163,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                 $subordered = array();
                 foreach ($this->$name->getElements() as $element) {
                     $suborder = $element->getOrder();
-                    $suborder = (null !== $suborder) ? $suborder : count($subordered);
+                    $suborder = (null !== $suborder) ? $suborder : (is_countable($subordered) ? count($subordered) : 0);
                     array_splice($subordered, $suborder, 0, array($element));
                 }
                 if (!empty($subordered)) {
@@ -2675,7 +2675,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
                     $this->addDecorator($decoratorInfo);
                 }
             } elseif (is_array($decoratorInfo)) {
-                $argc    = count($decoratorInfo);
+                $argc    = (is_countable($decoratorInfo) ? count($decoratorInfo) : 0);
                 $options = array();
                 if (isset($decoratorInfo['decorator'])) {
                     $decorator = $decoratorInfo['decorator'];
@@ -3137,7 +3137,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
             if (false !== ($decorator = $this->getDecorator($decoratorName))) {
                 $decorator->setElement($this);
                 $seed = '';
-                if (0 < count($args)) {
+                if (0 < (is_countable($args) ? count($args) : 0)) {
                     $seed = array_shift($args);
                 }
                 if ($decoratorName === 'FormElements' ||

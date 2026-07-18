@@ -236,12 +236,12 @@ class BarPlot extends Plot {
 
     function SetPattern($aPattern, $aColor='black'){
         if( is_array($aPattern) ) {
-            $n = count($aPattern);
+            $n = (is_countable($aPattern) ? count($aPattern) : 0);
             $this->iPattern = array();
             $this->iPatternDensity = array();
             if( is_array($aColor) ) {
                 $this->iPatternColor = array();
-                if( count($aColor) != $n ) {
+                if( (is_countable($aColor) ? count($aColor) : 0) != $n ) {
                     JpGraphError::RaiseL(2001);//('NUmber of colors is not the same as the number of patterns in BarPlot::SetPattern()');
                 }
             }
@@ -684,7 +684,7 @@ class GroupBarPlot extends BarPlot {
     function GroupBarPlot($plots) {
         $this->width=0.7;
         $this->plots = $plots;
-        $this->nbrplots = count($plots);
+        $this->nbrplots = (is_countable($plots) ? count($plots) : 0);
         if( $this->nbrplots < 1 ) {
             JpGraphError::RaiseL(2007);//('Cannot create GroupBarPlot from empty plot array.');
         }
@@ -775,7 +775,7 @@ class AccBarPlot extends BarPlot {
     // CONSTRUCTOR
     function __construct($plots) {
         $this->plots = $plots;
-        $this->nbrplots = count($plots);
+        $this->nbrplots = (is_countable($plots) ? count($plots) : 0);
         if( $this->nbrplots < 1 ) {
             JpGraphError::RaiseL(2010);//('Cannot create AccBarPlot from empty plot array.');
         }

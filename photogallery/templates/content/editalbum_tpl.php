@@ -105,7 +105,7 @@ foreach($thumbnails as $thumbnail)
 	$cnt++;
 }
 
-$totalimages = new textinput('totalimages',count($thumbnails),'hidden');
+$totalimages = new textinput('totalimages',(is_countable($thumbnails) ? count($thumbnails) : 0),'hidden');
 
 
 $button = new button();

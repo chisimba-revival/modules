@@ -20,7 +20,7 @@ $this->loadClass('link', 'htmlelements');
     
     $homePageListTable->endHeaderRow();
     
-    if(count($listHomePages) > 0)
+    if((is_countable($listHomePages) ? count($listHomePages) : 0) > 0)
     {
     foreach ($listHomePages as $homePage)
     		{

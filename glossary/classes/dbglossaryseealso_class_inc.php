@@ -23,7 +23,7 @@ class dbGlossarySeeAlso extends dbTable
     /**
     * Constructor method to define the table(default)
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('bridge_glossary_seealso');
 

@@ -38,7 +38,7 @@ class PHP_Beautifier_Batch_Output_Files extends PHP_Beautifier_Batch_Output {
     public function get() 
     {
         $aInputFiles = $this->oBatch->getInputFiles();
-        if (count($aInputFiles) == 1) {
+        if ((is_countable($aInputFiles) ? count($aInputFiles) : 0) == 1) {
             $this->beautifierSetInputFile(reset($aInputFiles));
             $this->beautifierProcess();
             return $this->beautifierGet();

@@ -68,7 +68,7 @@ class dbquestions extends dbtable {
      * @access public
      * @return
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_questions');
         $this->table = 'tbl_test_questions';
         $this->objWashout = $this->getObject('washout', 'utilities');
@@ -339,7 +339,7 @@ class dbquestions extends dbtable {
 
         //var_dump($questions);
 
-        if (count($questions) > 0 && $questions != FALSE) {
+        if ((is_countable($questions) ? count($questions) : 0) > 0 && $questions != FALSE) {
             foreach ($questions as $question) {
                 $mark += $question['mark'];
             }

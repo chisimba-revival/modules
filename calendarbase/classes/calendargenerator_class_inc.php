@@ -71,7 +71,7 @@ class calendargenerator extends ChisimbaObject
     * @param void
     * @return void
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objSimpleCal = $this->getObject('dateandtime','utilities');
         $this->month = date('m');

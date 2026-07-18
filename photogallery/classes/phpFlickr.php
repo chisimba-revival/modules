@@ -253,9 +253,9 @@ class phpFlickr {
     function clean_text_nodes($arr) {
         if (!is_array($arr)) {
             return $arr;
-        } elseif (count($arr) == 0) {
+        } elseif ((is_countable($arr) ? count($arr) : 0) == 0) {
             return $arr;
-        } elseif (count($arr) == 1 && array_key_exists('_content', $arr)) {
+        } elseif ((is_countable($arr) ? count($arr) : 0) == 1 && array_key_exists('_content', $arr)) {
             return $arr['_content'];
         } else {
             foreach ($arr as $key => $element) {

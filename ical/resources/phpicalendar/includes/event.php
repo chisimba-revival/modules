@@ -61,8 +61,8 @@ if (!$event['location'] && $event['url']) {
 	$lang['l_location'] = 'URL';
 }
 
-if (sizeof($attendee) == 0) $attendee = '';
-if (sizeof($organizer) == 0) $organizer = '';
+if ((is_countable($attendee) ? sizeof($attendee) : 0) == 0) $attendee = '';
+if ((is_countable($organizer) ? sizeof($organizer) : 0) == 0) $organizer = '';
 
 switch ($event['status']){
 	case 'CONFIRMED':

@@ -11,7 +11,7 @@ class dbwebpresentslides extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_webpresent_slides');
         $this->objUser = $this->getObject('user', 'security');
@@ -64,7 +64,7 @@ class dbwebpresentslides extends dbtable
         $results = $objScan->scanDirectory($dir);
 
         // Check that there are results
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
 
         } else {
             // Sort by Natural Order
@@ -295,7 +295,7 @@ class dbwebpresentslides extends dbtable
     {
         $slides = $this->getSlides($fileId);
 
-        if (count($slides) > 0)
+        if ((is_countable($slides) ? count($slides) : 0) > 0)
         {
             foreach ($slides as $slide)
             {

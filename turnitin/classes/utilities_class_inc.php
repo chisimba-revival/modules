@@ -288,7 +288,7 @@ class utilities extends ChisimbaObject
 			}
 			*/
 			
-			$arr['totalCount'] = strval(count($assigments));
+			$arr['totalCount'] = strval((is_countable($assigments) ? count($assigments) : 0));
 			$arr['assignments'] = $assigments;
 		} else {
 			return false;

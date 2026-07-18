@@ -326,7 +326,7 @@ class Zend_Service_Amazon_S3 extends Zend_Service_Amazon_Abstract
         $this->_validBucketName($nameparts[0]);
 
         $firstpart = array_shift($nameparts);
-        if (count($nameparts) == 0) {
+        if ((is_countable($nameparts) ? count($nameparts) : 0) == 0) {
             return $firstpart;
         }
 

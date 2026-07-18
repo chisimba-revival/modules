@@ -432,7 +432,7 @@ class triplestore extends controller {
         $filters = array();
         $triples = $this->objTriplestore->getTriples($filters, null, 'subject');
         $allarr = array();
-        if (count($triples) > 0) {
+        if ((is_countable($triples) ? count($triples) : 0) > 0) {
             foreach ($triples as $triple) {
                 $arr = array();
                 $arr['id'] = 'subject|' . $triple['id'];
@@ -444,7 +444,7 @@ class triplestore extends controller {
                 $predicates = $this->objTriplestore->getTriples($filters, null, 'predicate');
 
                 $allpre = array();
-                if (count($predicates) > 0) {
+                if ((is_countable($predicates) ? count($predicates) : 0) > 0) {
                     foreach ($predicates as $predicate) {
                         $prearr = array();
                         $prearr['id'] = 'predicate|' . $predicate['id'];
@@ -494,7 +494,7 @@ class triplestore extends controller {
         }
         $triples = $this->objTriplestore->getTriples($filters);
         $allarr = array();
-        if (count($triples) > 0) {
+        if ((is_countable($triples) ? count($triples) : 0) > 0) {
             foreach ($triples as $triple) {
                 $arr = array();
                 $arr['id'] = $triple['id'];

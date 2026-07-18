@@ -264,7 +264,7 @@ class Zend_Queue_Message_Iterator implements Iterator, Countable
      */
     public function valid()
     {
-        return $this->_pointer < count($this);
+        return $this->_pointer < (is_countable($this) ? count($this) : 0);
     }
 
     /*

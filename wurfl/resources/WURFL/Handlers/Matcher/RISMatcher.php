@@ -44,7 +44,7 @@ class WURFL_Handlers_Matcher_RISMatcher implements WURFL_Handlers_Matcher_Interf
 		$match = NULL;
 		$bestDistance = 0;
 		$low = 0;
-		$high = sizeof($collection)-1;
+		$high = (is_countable($collection) ? sizeof($collection) : 0)-1;
 		while($low <= $high) {
 			$mid = floor(($low + $high)/2);
 			$find = $collection[$mid];

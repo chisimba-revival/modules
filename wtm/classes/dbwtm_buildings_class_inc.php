@@ -52,7 +52,7 @@ class dbwtm_buildings extends dbtable
 	/**
     * Constructor method to define the buildings table
     */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_wtm_buildings');
     }

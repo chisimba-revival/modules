@@ -25,5 +25,5 @@ if (isset($cache)) $rs = $db->CacheExecute(120,'select * from products');
 else $rs = $db->Execute('select * from products');
 
 $arr = $rs->GetArray();
-print sizeof($arr);
+print (is_countable($arr) ? sizeof($arr) : 0);
 ?>

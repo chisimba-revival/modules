@@ -17,7 +17,7 @@ class dbequipment extends dbTable{
 
 	*/
 
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_equipment');
 		$this->objUser = & $this->getObject('user','security');

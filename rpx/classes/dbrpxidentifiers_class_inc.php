@@ -66,7 +66,7 @@ class dbrpxidentifiers extends dbTable
     /**
      * The standard class constructor.
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         // Initialise the parent class with the table name.
         parent::init('tbl_rpx_identifiers');

@@ -19,7 +19,7 @@ class dbplayerdata extends dbtable{
 //user object 
 var $objUser;
 
- function init(){
+ function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 parent::init('tbl_playerdata');
 $this->table = 'tbl_playerdata';
 

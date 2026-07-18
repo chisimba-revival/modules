@@ -137,7 +137,7 @@ class PandraUUIDPluginZNative implements PandraUUIDPlugin {
         if (is_string($src))
             return self::FMT_STRING;
         else if (is_array($src)) {
-            $len = count($src);
+            $len = (is_countable($src) ? count($src) : 0);
             if ($len == 1 || ($len % 2) == 0)
                 return $len;
             else

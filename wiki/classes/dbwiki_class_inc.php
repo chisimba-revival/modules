@@ -66,7 +66,7 @@ class dbwiki extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objUser = $this->getObject('user', 'security');
@@ -815,7 +815,7 @@ class dbwiki extends dbTable
     {
         $pages = $this->getPagesByName($name);
         if(!empty($pages)){
-            $version = count($pages) + 1;
+            $version = (is_countable($pages) ? count($pages) : 0) + 1;
         }else{
             $version = 1;
         }
@@ -940,7 +940,7 @@ class dbwiki extends dbTable
             foreach($data as $line){
                 $vote = $vote + $line['page_rating'];
             }
-            $votes = count($data);
+            $votes = (is_countable($data) ? count($data) : 0);
             if($vote > 0){
                 $rating = ceil($vote / $votes);
             }else{
@@ -1236,7 +1236,7 @@ class dbwiki extends dbTable
 
         $data = $this->getPosts($name);
         if(!empty($data)){
-            $count = count($data) + 1;
+            $count = (is_countable($data) ? count($data) : 0) + 1;
         }else{
             $count = 1;
         }

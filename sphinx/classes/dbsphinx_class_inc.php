@@ -33,7 +33,7 @@ class dbsphinx extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objSysConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
     }
     

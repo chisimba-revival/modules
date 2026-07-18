@@ -13,10 +13,10 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 
 function countSort($a,$b) {
-	if (count($a) == count($b)) {
+	if ((is_countable($a) ? count($a) : 0) == (is_countable($b) ? count($b) : 0)) {
 		return strcasecmp($a['unitName'],$b['unitName']);
 	} else {
-		return (count($a) > count($b))? 1 : -1;
+		return ((is_countable($a) ? count($a) : 0) > (is_countable($b) ? count($b) : 0))? 1 : -1;
 	}
 }
 
@@ -58,7 +58,7 @@ for ($i=$startYear+($length-1);$i>=$startYear;$i--) {
 		}
 	}
 }
-$unitCount = count($units);
+$unitCount = (is_countable($units) ? count($units) : 0);
 if ($unitCount != 0) {
 	$countArray = array_count_values($units);
 	if (isset($countArray[$length])) {
@@ -67,7 +67,7 @@ if ($unitCount != 0) {
 		$coverage = 0;
 	}
 	$sum = array_sum($units);
-	$continuity = round(((($sum/count($units))/$length)*100),1);
+	$continuity = round(((($sum/(is_countable($units) ? count($units) : 0))/$length)*100),1);
 	uasort($unitYears,"{$sortType}Sort");
 } else {
 	$continuity = 0;

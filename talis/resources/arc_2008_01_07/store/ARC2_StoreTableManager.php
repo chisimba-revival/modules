@@ -273,7 +273,7 @@ class ARC2_StoreTableManager extends ARC2_Store {
 
   function retrieveSplitPredicates() {
     $r = $this->split_predicates;
-    $limit = $this->max_split_tables - count($r);
+    $limit = $this->max_split_tables - (is_countable($r) ? count($r) : 0);
     $q = 'SELECT ?p COUNT(?p) AS ?pc WHERE { ?s ?p ?o } GROUP BY ?p ORDER BY DESC(?pc) LIMIT ' . $limit;
     $rows = $this->query($q, 'rows');
     foreach ($rows as $row) {

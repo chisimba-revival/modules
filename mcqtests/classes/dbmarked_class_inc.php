@@ -26,7 +26,7 @@ class dbmarked extends dbtable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_test_marked');
         $this->table = 'tbl_test_marked';

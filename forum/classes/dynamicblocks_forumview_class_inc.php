@@ -56,7 +56,7 @@ class dynamicblocks_forumview extends ChisimbaObject
     	$forumForm = new form ('', $this->uri(NULL));
     	$forum = $this->objForum->getForum($id);
     	$topics = $this->objTopic->showTopicsInForum($id, $this->userId, $forum['archivedate'], NULL, NULL, NULL, NULL);
-        $topicsNum = count($topics);
+        $topicsNum = (is_countable($topics) ? count($topics) : 0);
 
         $objTranslatedDate = $this->getObject('translatedatedifference', 'utilities');
 

@@ -396,7 +396,7 @@ if ($mode == 'fixerror') {
         $messages[] = $this->explainProblemsInfo($problem);
     }
 }
-if ($mode == 'fixerror' && count($messages) > 0) {
+if ($mode == 'fixerror' && (is_countable($messages) ? count($messages) : 0) > 0) {
 
     echo '<ul><li><span class="error">'.$this->objLanguage->languageText('mod_userdetails_infonotsavedduetoerrors', 'userdetails').'</span>';
 

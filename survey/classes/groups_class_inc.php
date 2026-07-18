@@ -66,7 +66,7 @@ class groups extends dbTable {
      * @access public
      * @return
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_users');
         $this->table = 'tbl_users';
         $this->tblGroups = 'tbl_groupadmin_group';
@@ -240,7 +240,7 @@ class groups extends dbTable {
         $ret=$this->removeSurveyGroups($data);
 
         if(!empty($ret)) {
-            return count($ret);
+            return (is_countable($ret) ? count($ret) : 0);
         }else {
             return 0;
         }

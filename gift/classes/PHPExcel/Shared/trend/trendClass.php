@@ -38,8 +38,8 @@ class trendClass
 
 	public static function calculate($trendType=self::TREND_BEST_FIT, $yValues, $xValues=array(), $const=True) {
 		//	Calculate number of points in each dataset
-		$nY = count($yValues);
-		$nX = count($xValues);
+		$nY = (is_countable($yValues) ? count($yValues) : 0);
+		$nX = (is_countable($xValues) ? count($xValues) : 0);
 
 		//	Define X Values if necessary
 		if ($nX == 0) {

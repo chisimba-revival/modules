@@ -63,7 +63,7 @@ class dbwagesocname extends dbTable
 	    * @access public
 	    * @return void
 	    */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {
                 parent::init('tbl_award_wage_socname');
@@ -78,7 +78,7 @@ class dbwagesocname extends dbTable
             $wageSocName = $this->getRow('id',$id);
             $socName = $this->objSocName->getRow('id',$wageSocName['socnameid']);
             $socs = $this->getAll("WHERE socnameid = '{$wageSocName['socnameid']}'");
-            $socCount = count($socs);
+            $socCount = (is_countable($socs) ? count($socs) : 0);
             $a_ret['name'] = "{$socName['name']} - ($socCount)";
             $a_ret['id'] = $socName['id'];
             return $a_ret;

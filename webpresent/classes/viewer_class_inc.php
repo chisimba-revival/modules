@@ -168,7 +168,7 @@ class viewer extends ChisimbaObject
          */
     public function displayAsTable($files)
     {
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return '';
         } else {
             $table = $this->newObject('htmltable', 'htmlelements');
@@ -322,7 +322,7 @@ class viewer extends ChisimbaObject
         $objFeedCreator = $this->getObject('feeder', 'feed');
         $objFeedCreator->setupFeed(TRUE, $title, $description, $this->objConfig->getsiteRoot(), $url);
 
-        if (count($files) > 0)
+        if ((is_countable($files) ? count($files) : 0) > 0)
         {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');

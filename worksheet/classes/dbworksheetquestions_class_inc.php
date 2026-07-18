@@ -25,7 +25,7 @@ class dbworksheetquestions extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_worksheet_questions');
         $this->table='tbl_worksheet_questions';
@@ -98,7 +98,7 @@ class dbworksheetquestions extends dbTable
 
         $result = $this->getArray($sql);
 
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['question_order'];

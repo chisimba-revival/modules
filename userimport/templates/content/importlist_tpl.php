@@ -50,7 +50,7 @@
     
     // Get the info from the batch classes
     $info=$this->objUserBatch->listBatch($this->contextCode);
-    if (count($info)>0){
+    if ((is_countable($info) ? count($info) : 0)>0){
 
         print "<div align='center'>\n";
         // print the heading

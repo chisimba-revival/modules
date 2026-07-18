@@ -43,7 +43,7 @@ class dbpagequestions extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_survey_page_questions');
         $this->table='tbl_survey_page_questions';
@@ -67,7 +67,7 @@ class dbpagequestions extends dbTable
     public function addPageQuestions($pageId,$surveyId,$arrQuestionId)
     {
         $arrPageQuestionList=$this->listRows($pageId);
-        $i=!empty($arrPageQuestionList)?count($arrPageQuestionList)+1:'1';
+        $i=!empty($arrPageQuestionList)?(is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0)+1:'1';
         foreach($arrQuestionId as $questionId){
             $fields=array();
             $fields['page_id']=$pageId;

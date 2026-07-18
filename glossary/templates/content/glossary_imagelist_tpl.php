@@ -25,7 +25,7 @@ $listTable->attributes=' border="0"';
 $listTable->cellspacing='0';
 $listTable->cellpadding='5';
 
-if (count($images) == 0)
+if ((is_countable($images) ? count($images) : 0) == 0)
 {
     echo ('<p>'.$this->objLanguage->languageText('mod_glossary_noimageslisted', 'glossary').'</p>');
 

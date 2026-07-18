@@ -82,7 +82,7 @@ class dboeruserdata extends dbtable {
      * @return void
      * 
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_oeruserdata_userextra");
         $this->objAdmin = $this->getObject('useradmin_model2', 'security');
         $this->objUser = $this->getObject('user', 'security');

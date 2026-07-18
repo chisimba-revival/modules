@@ -451,7 +451,7 @@ class ARC2_RDFXMLParser extends ARC2_RDFParser {
     $data = isset($s['o_xml_data']) ? $s['o_xml_data'] : '';
     $ns = isset($s['ns']) ? $s['ns'] : array();
     $parts = $this->splitURI($t);
-    if (count($parts) === 1) {
+    if ((is_countable($parts) ? count($parts) : 0) === 1) {
       $data .= '<'.$t;
     }
     else {
@@ -477,7 +477,7 @@ class ARC2_RDFXMLParser extends ARC2_RDFParser {
     }
     foreach ($a as $k => $v) {
       $parts = $this->splitURI($k);
-      if (count($parts) === 1) {
+      if ((is_countable($parts) ? count($parts) : 0) === 1) {
         $data .= ' '.$k.'="'.$v.'"';
       }
       else {
@@ -591,7 +591,7 @@ class ARC2_RDFXMLParser extends ARC2_RDFParser {
       }
       else {
         $parts = $this->splitURI($t);
-        if (count($parts) == 1) {
+        if ((is_countable($parts) ? count($parts) : 0) == 1) {
           $data .= '</'.$t.'>';
         }
         else {

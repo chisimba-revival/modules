@@ -185,7 +185,7 @@ class Sabre_CalDAV_UserCalendars implements Sabre_DAV_IExtendedCollection, Sabre
      */
     public function createExtendedCollection($name, array $resourceType, array $properties) {
 
-        if (!in_array('{urn:ietf:params:xml:ns:caldav}calendar',$resourceType) || count($resourceType)!==2) {
+        if (!in_array('{urn:ietf:params:xml:ns:caldav}calendar',$resourceType) || (is_countable($resourceType) ? count($resourceType) : 0)!==2) {
             throw new Sabre_DAV_Exception_InvalidResourceType('Unknown resourceType for this collection');
         }
         $this->caldavBackend->createCalendar($this->principalInfo['uri'], $name, $properties);

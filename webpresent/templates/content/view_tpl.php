@@ -136,7 +136,7 @@ $rightCell .=  '<p><strong>'
         . $this->objLanguage->languageText("word_tags")
         . ':</strong> ';
 
-if (count($tags) == 0) {
+if ((is_countable($tags) ? count($tags) : 0) == 0) {
     $rightCell .=  '<em>'
             . $this->objLanguage->languageText("mod_webpresent_notags", "webpresent")
             . ' </em>';

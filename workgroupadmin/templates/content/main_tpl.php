@@ -46,7 +46,7 @@
 		$members = $objDbWorkgroupUsers->listAll($workgroup['id']);
 
         $tblclass->startRow();
-        $tblclass->addCell($workgroup['description'].'('.count($members).')', "null", "top", "left", $oddOrEven, null);
+        $tblclass->addCell($workgroup['description'].'('.(is_countable($members) ? count($members) : 0).')', "null", "top", "left", $oddOrEven, null);
 
 		if ($this->isValid('rename')) {
 	        // Rename workgroup.

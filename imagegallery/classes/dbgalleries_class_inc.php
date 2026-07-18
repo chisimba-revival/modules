@@ -77,7 +77,7 @@ class dbgalleries extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
@@ -158,7 +158,7 @@ class dbgalleries extends dbtable
         {
             $galleries = $this->getContextGalleries($fields['context_code']);
         }
-        $count = count($galleries);
+        $count = (is_countable($galleries) ? count($galleries) : 0);
         
         $fields['display_order'] = ++$count;
         $fields['created_by'] = $this->userId;

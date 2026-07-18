@@ -44,7 +44,7 @@ class dynamicblocks_faq extends ChisimbaObject
         
         $entries = $this->objEntries->getAll(" WHERE categoryid='{$id}' ORDER BY _index");
         
-        if (count($entries) == 0) {
+        if ((is_countable($entries) ? count($entries) : 0) == 0) {
             $str =  "<div class=\"noRecordsMessage\">" . $this->objLanguage->languageText("faq_noentries","faq") . "</div>";
         } else {
             $str = '<ul>';

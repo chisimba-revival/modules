@@ -174,7 +174,7 @@ class mayibuyeform extends controller {
         }
 
         //if form entry is in corect or invavalid
-        if (count($errormsg) > 0) {
+        if ((is_countable($errormsg) ? count($errormsg) : 0) > 0) {
             $this->setVarByRef('errormsg', $errormsg);
             $this->setVarByRef('insarr', $insarr);
 

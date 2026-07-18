@@ -24,7 +24,7 @@ $GLOBALS['kewl_entry_point_run']) {
 
 
 
- public function init()
+ public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
    {
 //Set the table in the parent class
 parent::init('tbl_subjects');

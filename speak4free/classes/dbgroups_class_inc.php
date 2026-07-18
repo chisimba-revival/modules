@@ -11,7 +11,7 @@
  */
 class dbgroups  extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_speak4free_groups');
         $this->table = 'tbl_speak4free_groups';
         $this->objUser=$this->getObject('user','security');

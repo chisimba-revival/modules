@@ -277,7 +277,7 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
     {
         $data = $node->getData();
         $parents = $data['sup'];
-        if ($parents === null || !is_array($parents) || count($parents) < 1) return;
+        if ($parents === null || !is_array($parents) || (is_countable($parents) ? count($parents) : 0) < 1) return;
         foreach ($parents as $parent) {
             if (!array_key_exists($parent, $repository)) continue;
             if (!array_key_exists('_parents', $data) || !is_array($data['_parents'])) {
@@ -444,7 +444,7 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
         // tokens that can have multiple values
         $multiValue = array('must', 'may', 'sup');
 
-        while (count($tokens) > 0) {
+        while ((is_countable($tokens) ? count($tokens) : 0) > 0) {
             $token = strtolower(array_shift($tokens));
             if (in_array($token, $noValue)) {
                 $data[$token] = true; // single value token
@@ -486,7 +486,7 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
         $pattern = "/\s* (?:([()]) | ([^'\s()]+) | '((?:[^']+|'[^\s)])*)') \s*/x";
         preg_match_all($pattern, $value, $matches);
         $cMatches = count($matches[0]);
-        $cPattern = count($matches);
+        $cPattern = (is_countable($matches) ? count($matches) : 0);
         for ($i = 0; $i < $cMatches; $i++) {     // number of tokens (full pattern match)
             for ($j = 1; $j < $cPattern; $j++) { // each subpattern
                 $tok = trim($matches[$j][$i]);
@@ -496,7 +496,7 @@ class Zend_Ldap_Node_Schema_OpenLdap extends Zend_Ldap_Node_Schema
             }
         }
         if ($tokens[0] == '(') array_shift($tokens);
-        if ($tokens[count($tokens) - 1] == ')') array_pop($tokens);
+        if ($tokens[(is_countable($tokens) ? count($tokens) : 0) - 1] == ')') array_pop($tokens);
         return $tokens;
     }
 }

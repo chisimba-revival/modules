@@ -17,7 +17,7 @@ $middle .= $header->show();
 
 $middle .= $topStories;
 
-if (count($categories) > 0) {
+if ((is_countable($categories) ? count($categories) : 0) > 0) {
     
     $table = $this->newObject('htmltable', 'htmlelements');
     //print_r($topStoriesId);

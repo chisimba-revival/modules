@@ -583,7 +583,7 @@ duration: 0.25
         //set a counter for the records .. display on the first 2  the rest will be dsiplayed as links
         $cnt = 0;
 
-        $numPages = count($arrFrontPages);
+        $numPages = (is_countable($arrFrontPages) ? count($arrFrontPages) : 0);
         // If only 1 page is on the front - display the full page
         if ($numPages == 1) {
             $page = $this->_objContent->getContentPage($arrFrontPages[0]['content_id']);
@@ -1066,7 +1066,7 @@ duration: 0.25
         $str = '';
 
         if ($pageId == '') {
-            if (count($arrPages)) {
+            if ((is_countable($arrPages) ? count($arrPages) : 0)) {
                 $pageId = $arrPages[0]['id'];
             }
         }
@@ -1081,7 +1081,7 @@ duration: 0.25
         // Display the selected page
         // Display links to the other pages
         if (!empty($arrPages)) {
-            $pgCnt = count($arrPages);
+            $pgCnt = (is_countable($arrPages) ? count($arrPages) : 0);
             foreach ($arrPages as $page) {
                 if ($pageId == $page['id']) {
                     if (isset($page['show_title']) && $page['show_title'] == 1) {

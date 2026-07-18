@@ -60,10 +60,10 @@ class reportmanager extends ChisimbaObject {
         $orAdaptationsCount = $this->dbproducts->getAdaptationCount();
         // original lang count
         $orLangs = $this->dbproducts->getOriginalProductLanguages();
-        $orLangCount = count($orLangs);
+        $orLangCount = (is_countable($orLangs) ? count($orLangs) : 0);
         // adaptation lang count
         $adaptLangs = $this->dbproducts->getAdaptationsLanguages();
-        $adaptLangCount = count($adaptLangs);
+        $adaptLangCount = (is_countable($adaptLangs) ? count($adaptLangs) : 0);
         // adaptation institutions
         $adaptInsts = $this->dbproducts->getDistinctAdaptationsInstitutions();
         // product oerresource
@@ -135,7 +135,7 @@ class reportmanager extends ChisimbaObject {
                 $orLang = $orLang["language"];
                 //Get originals with this language
                 $orLangProds = $this->dbproducts->getLanguageOriginalProducts($orLang);
-                $orLangProdsCount = count($orLangProds);
+                $orLangProdsCount = (is_countable($orLangProds) ? count($orLangProds) : 0);
                 if (!empty($orLang)) {
                     $orLang = $this->languageCode->getLanguage($orLang);
                 }
@@ -175,7 +175,7 @@ class reportmanager extends ChisimbaObject {
                 $adaptLang = $adaptLang["language"];
                 //Get adaptations using this language
                 $langAdaptations = $this->dbproducts->getLanguageAdaptations($adaptLang);
-                $langAdaptationsCount = count($langAdaptations);
+                $langAdaptationsCount = (is_countable($langAdaptations) ? count($langAdaptations) : 0);
                 if ($orLang == "en") {
                     $orLang = "English";
                 }
@@ -522,7 +522,7 @@ class reportmanager extends ChisimbaObject {
           $keywordSelect->extra = ' multiple="1" size="4" style="width:200pt;" ';
 
           $keywordArray = $this->objDbReporting->getProductKeywords();
-          $ArrayCount = sizeof($keywordArray);
+          $ArrayCount = (is_countable($keywordArray) ? sizeof($keywordArray) : 0);
           $keywordArray2 = array();
 
           for ($i = 0; $i < $ArrayCount; $i++) {

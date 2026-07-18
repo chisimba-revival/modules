@@ -101,7 +101,7 @@ if ($filecount > 0) {
     $table->addHeaderCell("<b>" . $this->objLanguage->languageText('mod_wicid_owner', 'wicid', "Owner") . "</b>");
     $table->endHeaderRow();
     foreach ($files as $file) {
-        if (count($file) > 1) {
+        if ((is_countable($file) ? count($file) : 0) > 1) {
             $dlink1 = new link($this->uri(array("action" => "downloadfile", "filepath" => $file['id'], "filename" => $file['actualfilename'])));
             $dlink1->link = $file['thumbnailpath'];
 

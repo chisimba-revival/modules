@@ -26,7 +26,7 @@ class modulelinks_podcast extends ChisimbaObject
         $podcasters = $this->objPodcast->listPodcasters();
         
         // Extra Check
-        if (count($podcasters) > 0) {
+        if ((is_countable($podcasters) ? count($podcasters) : 0) > 0) {
             
             // Array for References
             $nodesArray = array();

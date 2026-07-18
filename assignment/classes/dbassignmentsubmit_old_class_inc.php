@@ -44,7 +44,7 @@ class dbassignmentsubmit_old extends dbtable
     /**
     * Method to construct the class
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_assignment_submit');
         $this->table = 'tbl_assignment_submit';

@@ -41,7 +41,7 @@
         * @access public
         * @return void
         */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
             try {
                 parent::init('tbl_forms');
@@ -107,7 +107,7 @@
     
                 $data = $this->getArray($sql);
     
-                if (count($data) > 0){
+                if ((is_countable($data) ? count($data) : 0) > 0){
                     if (isset($data[0])) {
                         $formId = $data[0]['id'];
                     }

@@ -185,7 +185,7 @@ class block_forumview extends ChisimbaObject {
         $paging = $this->objTopic->prepareTopicPagingLinks($this->forumid, $page, $limitPerPage);
         $allTopics = $this->objTopic->showTopicsInForum($this->forumid, $this->objUser->userId($this->objUser->userName()), NULL, $order, $direction, NULL, NULL);
 //        echo $order;
-        $topicsNum = count($allTopics);
+        $topicsNum = (is_countable($allTopics) ? count($allTopics) : 0);
 //                if ($topicsNum > 0) {
 //                        /**
 //                         * @todo Append the number of topics to object

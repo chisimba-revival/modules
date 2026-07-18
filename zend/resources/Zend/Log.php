@@ -259,7 +259,7 @@ class Zend_Log
     {
         $priority = strtoupper($method);
         if (($priority = array_search($priority, $this->_priorities)) !== false) {
-            switch (count($params)) {
+            switch ((is_countable($params) ? count($params) : 0)) {
                 case 0:
                     /** @see Zend_Log_Exception */
                     require_once 'Zend/Log/Exception.php';

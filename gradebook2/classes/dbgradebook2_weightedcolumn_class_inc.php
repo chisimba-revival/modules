@@ -14,7 +14,7 @@ class dbgradebook2_weightedcolumn extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_gradebook2_weightedcolumn');
         $this->objUser = &$this->getObject('user', 'security');
@@ -170,7 +170,7 @@ class dbgradebook2_weightedcolumn extends dbTable
          $where = "";
         $contextGrades = $this->getContextGrades( $contextcode, $where );
 
-        $gradeCount = (count($contextGrades));
+        $gradeCount = ((is_countable($contextGrades) ? count($contextGrades) : 0));
         $gradeArray = array();
         foreach ( $contextGrades as $contextGrade ) {
           $gdArray = array();

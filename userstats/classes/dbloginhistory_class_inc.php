@@ -13,7 +13,7 @@ class dbloginhistory extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_userloginhistory');
         $this->objUser =& $this->getObject('user', 'security');
         $this->objLanguage =& $this->getObject('language', 'language');

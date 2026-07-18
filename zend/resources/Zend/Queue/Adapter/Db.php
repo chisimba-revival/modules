@@ -236,7 +236,7 @@ class Zend_Queue_Adapter_Db extends Zend_Queue_Adapter_AdapterAbstract
 
         // if the queue does not exist then it must already be deleted.
         $list = $this->_queueTable->find($id);
-        if (count($list) === 0) {
+        if ((is_countable($list) ? count($list) : 0) === 0) {
             return false;
         }
         $queue = $list->current();

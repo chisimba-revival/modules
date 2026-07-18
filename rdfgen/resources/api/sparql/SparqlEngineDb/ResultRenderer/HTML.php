@@ -65,7 +65,7 @@ class SparqlEngineDb_ResultRenderer_HTML implements SparqlEngineDb_ResultRendere
 
             case 'count':
             case 'ask':
-                if (count($arRecordSets) > 1) {
+                if ((is_countable($arRecordSets) ? count($arRecordSets) : 0) > 1) {
                     throw new Exception(
                         'More than one result set for a '
                         . $strResultForm . ' query!'
@@ -147,7 +147,7 @@ class SparqlEngineDb_ResultRenderer_HTML implements SparqlEngineDb_ResultRendere
         //I always wanted to to this :)
         return
             "<table border='1'>\n"
-            . " <caption>SPARQL result with " . count($arResult) . " rows</caption>\n"
+            . " <caption>SPARQL result with " . (is_countable($arResult) ? count($arResult) : 0) . " rows</caption>\n"
             . " <thead><th>"
                 . implode('</th><th>', array_keys(reset($arResult)))
             . "</th></thead>\n"

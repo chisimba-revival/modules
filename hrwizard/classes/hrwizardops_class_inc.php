@@ -34,7 +34,7 @@ class hrwizardops extends ChisimbaObject {
 		$row = 1;
 		$handle = fopen($csv, "r");
 		while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-    		$num = count($data);
+    		$num = (is_countable($data) ? count($data) : 0);
     		$row++;
     		$arr[] = $data;
 		}

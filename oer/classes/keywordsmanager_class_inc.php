@@ -28,7 +28,7 @@ class keywordsmanager extends ChisimbaObject {
             $errors[] = $this->objLanguage->languageText('mod_oer_title', 'oer');
         }
         $umbrellaTheme = $this->getParam("umbrellatheme");
-        if (count($errors) > 0) {
+        if ((is_countable($errors) ? count($errors) : 0) > 0) {
             $this->setVar('fieldsrequired', 'true');
             $this->setVar('errors', $errors);
             $this->setVar('title', $title);

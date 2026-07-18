@@ -132,7 +132,7 @@ class Zend_Cache_Backend_Xcache extends Zend_Cache_Backend implements Zend_Cache
     {
         $lifetime = $this->getLifetime($specificLifetime);
         $result = xcache_set($id, array($data, time()), $lifetime);
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             $this->_log(self::TAGS_UNSUPPORTED_BY_SAVE_OF_XCACHE_BACKEND);
         }
         return $result;

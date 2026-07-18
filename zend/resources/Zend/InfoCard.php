@@ -289,7 +289,7 @@ class Zend_InfoCard
         $certificatePair = $this->getCertificatePair($key_id);
 
         $temp = file($certificatePair['public']);
-        unset($temp[count($temp)-1]);
+        unset($temp[(is_countable($temp) ? count($temp) : 0)-1]);
         unset($temp[0]);
         $certificateData = base64_decode(implode("\n", $temp));
 

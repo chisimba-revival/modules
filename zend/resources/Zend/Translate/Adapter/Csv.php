@@ -98,7 +98,7 @@ class Zend_Translate_Adapter_Csv extends Zend_Translate_Adapter
                 continue;
             }
 
-            if (count($data) == 2) {
+            if ((is_countable($data) ? count($data) : 0) == 2) {
                 $this->_data[$locale][$data[0]] = $data[1];
             } else {
                 $singular = array_shift($data);

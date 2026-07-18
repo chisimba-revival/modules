@@ -882,7 +882,7 @@ class Zend_Filter_Input
 
                     $validatorRule[self::VALIDATOR_CHAIN]->addValidator($validator, $validatorRule[self::BREAK_CHAIN]);
                 }
-                $validatorRule[self::VALIDATOR_CHAIN_COUNT] = count($validatorList);
+                $validatorRule[self::VALIDATOR_CHAIN_COUNT] = (is_countable($validatorList) ? count($validatorList) : 0);
             }
 
             /**
@@ -1000,7 +1000,7 @@ class Zend_Filter_Input
                 $this->_invalidErrors[$validatorRule[self::RULE]] = $validatorRule[self::VALIDATOR_CHAIN]->getErrors();
                 return;
             }
-        } else if (count($data) > 0) {
+        } else if ((is_countable($data) ? count($data) : 0) > 0) {
             // $data is actually a one element array
             $fieldNames = array_keys($data);
             $fieldName = reset($fieldNames);

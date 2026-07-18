@@ -3312,7 +3312,7 @@ function toggleDisplay(id, type) {
         }
       }
     }
-    if (sizeof($arr) > 0) {
+    if ((is_countable($arr) ? sizeof($arr) : 0) > 0) {
       return $arr;
     } else {
       return (string)$sxml;

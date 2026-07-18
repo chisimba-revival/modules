@@ -80,7 +80,7 @@ class ADODB_postgres7 extends ADODB_postgres64 {
 		$a = array();
 		foreach($arr as $v) {
 			$data = explode(chr(0), $v['args']);
-			$size = count($data)-1; //-1 because the last node is empty
+			$size = (is_countable($data) ? count($data) : 0)-1; //-1 because the last node is empty
 			for($i = 4; $i < $size; $i++) {
 				if ($upper) 
 					$a[strtoupper($data[2])][] = strtoupper($data[$i].'='.$data[++$i]);
@@ -103,7 +103,7 @@ class ADODB_postgres7 extends ADODB_postgres64 {
 			$sqlarr = explode('?',trim($sql));
 			$sql = '';
 			$i = 1;
-			$last = sizeof($sqlarr)-1;
+			$last = (is_countable($sqlarr) ? sizeof($sqlarr) : 0)-1;
 			foreach($sqlarr as $v) {
 				if ($last < $i) $sql .= $v;
 				else $sql .= $v.' $'.$i;

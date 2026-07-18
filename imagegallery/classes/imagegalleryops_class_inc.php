@@ -652,7 +652,7 @@ class imagegalleryops extends ChisimbaObject
                 $objTooltip->setShowUrl(FALSE);
                 $objTooltip->load();
                 
-                if (count($albums) > 0)
+                if ((is_countable($albums) ? count($albums) : 0) > 0)
                 {
                     $string .= '<div class="gallery" id="' . $gallery['id'] . '">';
                     $title = $gallery['title'] . ' - ' . $clickLabel;                    
@@ -665,20 +665,20 @@ class imagegalleryops extends ChisimbaObject
                     $string .= '<div id="' . $random . '" title="' . $title . '" class="gallery_empty">' . $image . '</div>';
                 }
                                 
-                switch (count($albums))
+                switch ((is_countable($albums) ? count($albums) : 0))
                 {
                     case 0:
                         $string .= '<div class="gallery_info">(' . strtolower($emptyLabel) . ')</div>';
                         break;
                     case 1:
                         $string .= '<div class="gallery_info">' . $oneAlbumLabel . '</div>';
-                        if (count($images) == 1)
+                        if ((is_countable($images) ? count($images) : 0) == 1)
                         {
                             $string .= '<div class="gallery_info">' . $oneImageLabel . '</div>';
                         }
-                        elseif (count($images) > 1)
+                        elseif ((is_countable($images) ? count($images) : 0) > 1)
                         {
-                            $array = array('count' => count($images));
+                            $array = array('count' => (is_countable($images) ? count($images) : 0));
                             $string .= '<div class="gallery_info">' . $this->objLanguage->code2Txt('mod_imagegallery_manyimages', 'imagegallery', $array, 'ERROR: mod_imagegallery_manyimages') . '</div>';
                         }
                         else
@@ -687,15 +687,15 @@ class imagegalleryops extends ChisimbaObject
                         }
                         break;
                     default:
-                        $array = array('count' => count($albums));
+                        $array = array('count' => (is_countable($albums) ? count($albums) : 0));
                         $string .= '<div class="gallery_info">' . $this->objLanguage->code2Txt('mod_imagegallery_manyalbums', 'imagegallery', $array, 'ERROR: mod_imagegallery_manyalbums') . '</div>';
-                        if (count($images) == 1)
+                        if ((is_countable($images) ? count($images) : 0) == 1)
                         {
                             $string .= '<div class="gallery_info">' . $oneImageLabel . '</div>';
                         }
-                        elseif (count($images) > 1)
+                        elseif ((is_countable($images) ? count($images) : 0) > 1)
                         {
-                            $array = array('count' => count($images));
+                            $array = array('count' => (is_countable($images) ? count($images) : 0));
                             $string .= '<div class="gallery_info">' . $this->objLanguage->code2Txt('mod_imagegallery_manyimages', 'imagegallery', $array, 'ERROR: mod_imagegallery_manyimages') . '</div>';
                         }
                         break;                        
@@ -716,7 +716,7 @@ class imagegalleryops extends ChisimbaObject
                 
                 $options = '<b>' . $gallery['title'] . '</b><br /><br />';
                 
-                if (count($albums) > 0)
+                if ((is_countable($albums) ? count($albums) : 0) > 0)
                 {
                     $this->objIcon->setIcon('gallery_go', 'png');
                     $this->objIcon->title = $browseLabel;
@@ -1268,7 +1268,7 @@ class imagegalleryops extends ChisimbaObject
                 $objTooltip->setShowUrl(FALSE);
                 $objTooltip->load();
                 
-                if (count($images) > 0)
+                if ((is_countable($images) ? count($images) : 0) > 0)
                 {
                     $string .= '<div class="album" id="' . $album['id'] . '">';
                     $title = $album['title'] . ' - ' . $clickLabel;
@@ -1294,7 +1294,7 @@ class imagegalleryops extends ChisimbaObject
                     $string .= '<div id="' . $random . '" title="' . $title . '" class="album_empty">' . $image . '</div>';
                 }
                                 
-                switch (count($images))
+                switch ((is_countable($images) ? count($images) : 0))
                 {
                     case 0:
                         $string .= '<em class="album_info">(' . strtolower($emptyLabel) . ')</em><br />';
@@ -1303,7 +1303,7 @@ class imagegalleryops extends ChisimbaObject
                         $string .= '<br /><em class="album_info">' . $oneImageLabel . '</em>';
                         break;
                     default:
-                        $array = array('count' => count($images));
+                        $array = array('count' => (is_countable($images) ? count($images) : 0));
                         $string .= '<br /><em class="album_info">' . $this->objLanguage->code2Txt('mod_imagegallery_manyimages', 'imagegallery', $array, 'ERROR: mod_imagegallery_manyimages') . '</em>';
                         break;                        
                 }
@@ -1323,7 +1323,7 @@ class imagegalleryops extends ChisimbaObject
                 
                 $options = '<b>' . $album['title'] . '</b><br /><br />';
                 
-                if (count($images) > 0)
+                if ((is_countable($images) ? count($images) : 0) > 0)
                 {
                     $this->objIcon->setIcon('album_go', 'png');
                     $this->objIcon->title = $browseLabel;
@@ -1534,7 +1534,7 @@ class imagegalleryops extends ChisimbaObject
 
         if (empty($albumId))
         {
-            if (count($albums) > 0)
+            if ((is_countable($albums) ? count($albums) : 0) > 0)
             {
                 $objDrop = new dropdown('image_album_id');
                 $objDrop->addOption('', $newLabel);
@@ -2621,7 +2621,7 @@ class imagegalleryops extends ChisimbaObject
             {
                 if ($key == 0)
                 {
-                    if (count($images) > 1)
+                    if ((is_countable($images) ? count($images) : 0) > 1)
                     {
                         if ($shared)
                         {
@@ -2641,15 +2641,15 @@ class imagegalleryops extends ChisimbaObject
 
                         if ($shared)
                         {
-                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['image_id'], 'tabs' => '1|', 'shared' => 'true'), 'imagegallery');
+                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['image_id'], 'tabs' => '1|', 'shared' => 'true'), 'imagegallery');
                         }    
                         elseif (empty($image['context_code']))
                         {
-                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['id']), 'imagegallery');
+                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['id']), 'imagegallery');
                         }
                         else
                         {
-                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['id'], 'tabs' => '2|' . $selected), 'imagegallery');
+                            $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['id'], 'tabs' => '2|' . $selected), 'imagegallery');
                         }
                         $objLink = new link($uri);
                         $objLink->link = $last;
@@ -2675,7 +2675,7 @@ class imagegalleryops extends ChisimbaObject
                         $string = $firstGrey . '&nbsp;' . $prevGrey . '&nbsp;' . $nextGrey . '&nbsp;' . $lastGrey;
                     }
                 }
-                elseif ($key == (count($images) - 1))
+                elseif ($key == ((is_countable($images) ? count($images) : 0) - 1))
                 {
                     if ($shared)
                     {
@@ -2763,15 +2763,15 @@ class imagegalleryops extends ChisimbaObject
 
                     if ($shared)
                     {
-                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['image_id'], 'tabs' => '1|', 'shared' => 'true'), 'imagegallery');
+                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['image_id'], 'tabs' => '1|', 'shared' => 'true'), 'imagegallery');
                     }
                     elseif (empty($image['context_code']))
                     {
-                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['id']), 'imagegallery');
+                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['id']), 'imagegallery');
                     }
                     else
                     {
-                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[(count($images) - 1)]['id'], 'tabs' => '2|' . $selected), 'imagegallery');
+                        $uri = $this->uri(array('action' => 'view', 'image_id' => $images[((is_countable($images) ? count($images) : 0) - 1)]['id'], 'tabs' => '2|' . $selected), 'imagegallery');
                     }
                     $objLink = new link($uri);
                     $objLink->link = $last;

@@ -82,7 +82,7 @@ $latestuploads='<p style="color:#ea8338;">Featured</p>
                         <div id="ec_wrapper">
                             <div id="ec_inner">
 ';
-$total=count($latestuploadcontent);
+$total=(is_countable($latestuploadcontent) ? count($latestuploadcontent) : 0);
 for($i=0;$i<$total;$i++){
  $latestuploads.=' <div id="ec'.($i+1).'" class="ec_item">
                                     <div id="ec_item_inner">

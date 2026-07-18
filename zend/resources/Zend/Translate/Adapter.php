@@ -689,7 +689,7 @@ abstract class Zend_Translate_Adapter {
 
         $plural = null;
         if (is_array($messageId)) {
-            if (count($messageId) > 2) {
+            if ((is_countable($messageId) ? count($messageId) : 0) > 2) {
                 $number = array_pop($messageId);
                 if (!is_numeric($number)) {
                     $plocale = $number;

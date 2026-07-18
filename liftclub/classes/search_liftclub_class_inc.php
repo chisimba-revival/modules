@@ -14,7 +14,7 @@ class search_liftclub extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         $this->objUser = &$this->getObject('user', 'security');
         $this->objDBCities = $this->getObject('dbliftclub_cities', 'liftclub');
@@ -78,7 +78,7 @@ class search_liftclub extends dbTable
         $params["query"] = ($this->getParam("query")) ? $this->getParam("query") : null;
         $params["sort"] = ($this->getParam("sort")) ? $this->getParam("sort") : null;
         $myLifts = $this->getLifts($userneed, $start, $limit, $params);
-        $liftCount = (count($myLifts));
+        $liftCount = ((is_countable($myLifts) ? count($myLifts) : 0));
         $str = '{"liftcount":"' . $liftCount . '","searchedlifts":[';
         $searchArray = array();
         foreach($myLifts as $thisLift) {
@@ -173,7 +173,7 @@ class search_liftclub extends dbTable
         $startlimit = $start . ', ' . $limit;
         $filter = "where module = 'liftclub'";
         $liftActivities = $this->objDBActivitystreamer->getActivities($filter, $startlimit);
-        $activityCount = (count($liftActivities));
+        $activityCount = ((is_countable($liftActivities) ? count($liftActivities) : 0));
         $str = '{"activitycount":"' . $activityCount . '","searchedactivities":[';
         $searchArray = array();
         foreach($liftActivities as $thisActivity) {
@@ -255,7 +255,7 @@ class search_liftclub extends dbTable
         if (!empty($params["start"])) $start = $params["start"];
         if (!empty($params["limit"])) $limit = $params["limit"];
         $myMessages = $this->getMessages($id, $start, $limit, $params, $read, $trash);
-        $msgCount = (count($myMessages));
+        $msgCount = ((is_countable($myMessages) ? count($myMessages) : 0));
         //$str = '{"msgcount":"'.$msgCount.'","myMsgs":[';
         $searchArray = array();
         //msgid userid recipentuserid timesent markasread markasdeleted messagetitle messagebody
@@ -344,7 +344,7 @@ class search_liftclub extends dbTable
         if (!empty($params["start"])) $start = $params["start"];
         if (!empty($params["limit"])) $limit = $params["limit"];
         $myMessages = $this->getSentMessages($id, $start, $limit, $params, $read, $trash);
-        $msgCount = (count($myMessages));
+        $msgCount = ((is_countable($myMessages) ? count($myMessages) : 0));
         //$str = '{"msgcount":"'.$msgCount.'","myMsgs":[';
         $searchArray = array();
         //msgid userid recipentuserid timesent markasread markasdeleted messagetitle messagebody
@@ -453,7 +453,7 @@ class search_liftclub extends dbTable
         $params["query"] = ($this->getParam("query")) ? $this->getParam("query") : null;
         $params["sort"] = ($this->getParam("sort")) ? $this->getParam("sort") : null;
         $myLifts = $this->getFavourites($start, $limit, $params);
-        $liftCount = (count($myLifts));
+        $liftCount = ((is_countable($myLifts) ? count($myLifts) : 0));
         $str = '{"liftcount":"' . $liftCount . '","searchedlifts":[';
         $searchArray = array();
         foreach($myLifts as $thisLift) {

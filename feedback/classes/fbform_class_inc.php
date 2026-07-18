@@ -73,7 +73,7 @@ class fbform extends ChisimbaObject
             $objDb = $this->getObject('dbfb_questions');
             $questions = $objDb->get_questions();
             //$questions =  $objDb->get_questions();
-            $responses_array_size = count($questions);
+            $responses_array_size = (is_countable($questions) ? count($questions) : 0);
             for($i = 0; $i < $responses_array_size; $i++){
                 //echo "question ".$questions[$i]['fb_question']."<br/>";
                 $fbtable->startRow();

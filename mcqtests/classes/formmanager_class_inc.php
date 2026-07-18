@@ -1732,7 +1732,7 @@ class formmanager extends ChisimbaObject {
         $tagStr = "";
         $count = 0;
         //Get the count of the array
-        $arrLength = count($tagInstData);
+        $arrLength = (is_countable($tagInstData) ? count($tagInstData) : 0);
         //Get each tag and store in a string for rendering on the form, comma separated
         foreach ($tagInstData as $thisTagInst) {
             $tagData = $this->dbTag->getTag($thisTagInst["tagid"]);
@@ -2714,7 +2714,7 @@ class formmanager extends ChisimbaObject {
         $tagStr = "";
         $count = 0;
         //Get the count of the array
-        $arrLength = count($tagInstData);
+        $arrLength = (is_countable($tagInstData) ? count($tagInstData) : 0);
         //Get each tag and store in a string for rendering on the form, comma separated
         if (!empty($tagInstData)) {
             foreach ($tagInstData as $thisTagInst) {

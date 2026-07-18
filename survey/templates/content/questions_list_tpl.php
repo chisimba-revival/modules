@@ -73,7 +73,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
     $objIcon->title=$previewLabel;
     $previewIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'previewsurvey','survey_id'=>$surveyId)),'surveypreview');
 
-    if(count($arrQuestionList)>='2'){
+    if((is_countable($arrQuestionList) ? count($arrQuestionList) : 0)>='2'){
         $icons=$manageIcon.'&nbsp;'.$previewIcon;
     }else{
         $icons=$previewIcon;
@@ -144,11 +144,11 @@ if(!$GLOBALS['kewl_entry_point_run']){
             $copyIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'copyquestion','question_id'=>$questionId,'survey_id'=>$surveyId)),'surveycopy');
 
             // show icons
-            if(count($arrQuestionList)=='1'){
+            if((is_countable($arrQuestionList) ? count($arrQuestionList) : 0)=='1'){
                 $icons=$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
             }elseif($orderNumber=='1'){
                 $icons=$downIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
-            }elseif($orderNumber==count($arrQuestionList)){
+            }elseif($orderNumber==(is_countable($arrQuestionList) ? count($arrQuestionList) : 0)){
                 $icons=$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
             }else{
                 $icons=$downIcon.'&nbsp;'.$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
@@ -227,11 +227,11 @@ if(!$GLOBALS['kewl_entry_point_run']){
                 $copyIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'copyquestion','question_id'=>$questionId,'survey_id'=>$surveyId)),'surveycopy');
 
                 // show icons
-                if(count($arrQuestionList)=='1'){
+                if((is_countable($arrQuestionList) ? count($arrQuestionList) : 0)=='1'){
                     $icons=$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
                 }elseif($i=='1'){
                     $icons=$downIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
-                }elseif($i==count($arrQuestionList)){
+                }elseif($i==(is_countable($arrQuestionList) ? count($arrQuestionList) : 0)){
                     $icons=$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
                 }else{
                     $icons=$downIcon.'&nbsp;'.$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
@@ -353,11 +353,11 @@ if(!$GLOBALS['kewl_entry_point_run']){
                             $copyIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'copyquestion','question_id'=>$questionId,'survey_id'=>$surveyId)),'surveycopy');
 
                             // show icons
-                            if(count($pageQuestionList)=='1'){
+                            if((is_countable($pageQuestionList) ? count($pageQuestionList) : 0)=='1'){
                                 $icons=$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
                             }elseif($orderNumber=='1'){
                                 $icons=$downIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
-                            }elseif($orderNumber==count($pageQuestionList)){
+                            }elseif($orderNumber==(is_countable($pageQuestionList) ? count($pageQuestionList) : 0)){
                                 $icons=$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;
                             }else{
                                 $icons=$downIcon.'&nbsp;'.$upIcon.'&nbsp;'.$copyIcon.'&nbsp;'.$editIcon.'&nbsp;'.$deleteIcon;

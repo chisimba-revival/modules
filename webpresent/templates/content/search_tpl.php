@@ -48,7 +48,7 @@ if (trim($query) != '')
     }
     $results = $objSearchResults->getSearchResults($query, 'webpresent');
     
-    $numHits = count($results);
+    $numHits = (is_countable($results) ? count($results) : 0);
 
     $resultText = ($numHits == 1) ? 'Result' : 'Results';
 

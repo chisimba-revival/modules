@@ -68,7 +68,7 @@ class dbhotelsblocks extends dbTable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_blocks');
         $this->objUser = $this->getObject('user','security');
@@ -103,7 +103,7 @@ class dbhotelsblocks extends dbTable
     {
         $results = $this->getPageBlocksList($side, $pageType, $pageId);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
            return '';
         } else {
            
@@ -161,7 +161,7 @@ class dbhotelsblocks extends dbTable
         
         $array = array();
         
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $array[] = $result['block'];
@@ -207,7 +207,7 @@ class dbhotelsblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND pagetype=\''.$pageType.'\' AND pageid=\''.$pageId.'\' ORDER BY position DESC LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['position'];
@@ -299,7 +299,7 @@ class dbhotelsblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND pagetype=\''.$pageType.'\' AND pageid=\''.$pageId.'\' AND position < '.$position.' ORDER BY position DESC LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -319,7 +319,7 @@ class dbhotelsblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND pagetype=\''.$pageType.'\' AND pageid=\''.$pageId.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

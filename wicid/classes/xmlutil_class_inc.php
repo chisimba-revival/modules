@@ -4,7 +4,7 @@
  * vice versa
  */
 class xmlutil extends dbtable {
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_witsstudentonlineapplication_localcache");
         $this->objUser  = $this->getObject("user","security");
     }
@@ -80,7 +80,7 @@ class xmlutil extends dbtable {
             $node = xmlutil::toArray( $node );
 
             // support for 'anon' non-associative arrays
-            if ( $key == 'anon' ) $key = count( $arr );
+            if ( $key == 'anon' ) $key = (is_countable($arr) ? count($arr) : 0);
 
             // if the node is already set, put it into an array
             if ( isset( $arr[$key] ) ) {
@@ -134,7 +134,7 @@ class xmlutil extends dbtable {
                         $multi_tags = true;
                     }
                 }
-                if (!$multi_tags and count($value)>0) {
+                if (!$multi_tags and (is_countable($value) ? count($value) : 0)>0) {
                     $xml .= str_repeat("\t",$level)."<$key>\n";
                     $xml .= array_to_xml($value, $level+1);
                     $xml .= str_repeat("\t",$level)."</$key>\n";
@@ -163,7 +163,7 @@ class xmlutil extends dbtable {
         $userid=$this->objUser->userid();
 
         $existingdata=$this->getAll("where userid ='$userid' and formname='$formname'");
-        if(count($existingdata) > 0) {
+        if((is_countable($existingdata) ? count($existingdata) : 0) > 0) {
             $xml=$existingdata[0]['content'];
             $forms=$this->toArray($xml);
             $forms[$formname]=$data;
@@ -188,7 +188,7 @@ class xmlutil extends dbtable {
     function getXML($name) {
         $userid=$this->objUser->userid();
         $existingdata=$this->getAll("where userid ='$userid' and formname='$name'");
-        if(count($existingdata) > 0) {
+        if((is_countable($existingdata) ? count($existingdata) : 0) > 0) {
 
             $xml=$existingdata[0]['content'];
             $forms=$this->toArray($xml);

@@ -48,7 +48,7 @@ class pbrender extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objUser = $this->getObject("user", "security");
         $this->objLanguage = $this->getObject("language", "language");
         $this->loadClass("htmltable", "htmlelements");
@@ -131,7 +131,7 @@ class pbrender extends dbTable
         $ret ="";
         $blockname="";
         if (isset($ar)) {
-            if (count($ar) > 0) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0) {
                 foreach ($ar as $line) {
                     $blockcontent = $line['blockcontent'];
                     $blockcontent = str_replace('"', '&quot;',$blockcontent);
@@ -182,7 +182,7 @@ class pbrender extends dbTable
         $ret ="";
         $blockname="";
         if (isset($ar)) {
-            if (count($ar) > 0) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0) {
                 foreach ($ar as $line) {
                     $blockcontent = $line['blockcontent'];
                     $blockcontent = str_replace('"', '&quot;',$blockcontent);
@@ -285,7 +285,7 @@ class pbrender extends dbTable
         $ret ="";
         $blockname="";
         if (isset($ar)) {
-            if (count($ar) > 0) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0) {
                 foreach ($ar as $line) {
                     $blockcontent = $line['blockcontent'];
                     $blockcontent = str_replace('"', '&quot;',$blockcontent);
@@ -357,7 +357,7 @@ class pbrender extends dbTable
         $objTable->endHeaderRow();
 
         if (isset($ar)) {
-            if (count($ar) > 0) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0) {
                 $rowcount=0;
                 foreach ($ar as $line) {
                     $oddOrEven = ($rowcount == 0) ? "odd" : "even";

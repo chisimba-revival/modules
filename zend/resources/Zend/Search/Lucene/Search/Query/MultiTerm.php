@@ -107,7 +107,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
     {
         if (is_array($terms)) {
             require_once 'Zend/Search/Lucene.php';
-            if (count($terms) > Zend_Search_Lucene::getTermsPerQueryLimit()) {
+            if ((is_countable($terms) ? count($terms) : 0) > Zend_Search_Lucene::getTermsPerQueryLimit()) {
                 throw new Zend_Search_Lucene_Exception('Terms per query limit is reached.');
             }
 
@@ -244,7 +244,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
          * (they may have different signs)
          */
 
-        if (count($terms) == 1) {
+        if ((is_countable($terms) ? count($terms) : 0) == 1) {
             // It's already checked, that it's not a prohibited term
 
             // It's one term query with one required or optional element
@@ -255,7 +255,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
             return $optimizedQuery;
         }
 
-        if (count($terms) == 0) {
+        if ((is_countable($terms) ? count($terms) : 0) == 0) {
             require_once 'Zend/Search/Lucene/Search/Query/Empty.php';
             return new Zend_Search_Lucene_Search_Query_Empty();
         }
@@ -378,7 +378,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
             if ($this->_signs[$termId] === true) {
                 // required
                 $requiredVectors[]      = $termDocs;
-                $requiredVectorsSizes[] = count($termDocs);
+                $requiredVectorsSizes[] = (is_countable($termDocs) ? count($termDocs) : 0);
                 $requiredVectorsIds[]   = $termId;
             } elseif ($this->_signs[$termId] === false) {
                 // prohibited
@@ -417,7 +417,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
                 $required = $updatedVector;
             }
 
-            if (count($required) == 0) {
+            if ((is_countable($required) ? count($required) : 0) == 0) {
                 // Empty result set, we don't need to check other terms
                 break;
             }
@@ -429,13 +429,13 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
             $this->_resVector = $optional;
         }
 
-        if (count($prohibited) != 0) {
+        if ((is_countable($prohibited) ? count($prohibited) : 0) != 0) {
             // $this->_resVector = array_diff_key($this->_resVector, $prohibited);
 
             /**
              * This code is used as workaround for array_diff_key() slowness problem.
              */
-            if (count($this->_resVector) < count($prohibited)) {
+            if (count($this->_resVector) < (is_countable($prohibited) ? count($prohibited) : 0)) {
                 $updatedVector = $this->_resVector;
                 foreach ($this->_resVector as $id => $value) {
                     if (isset($prohibited[$id])) {

@@ -28,7 +28,7 @@ class dbquestions extends dbtable
     /**
     * Constructor method
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try{
             parent::init('tbl_poll_questions');

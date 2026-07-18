@@ -3,7 +3,7 @@
 class dbnewslocations extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_news_locations');
         
@@ -133,7 +133,7 @@ class dbnewslocations extends dbtable
         }
         
         
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['rght'];

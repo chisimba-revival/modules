@@ -17,7 +17,7 @@ $header->str = $this->objLanguage->languageText('mod_modulelist_header', 'module
 $header->type = 1;
 
 $countheader = new htmlHeading();
-$countheader->str = count($moduleList)." ".$this->objLanguage->languageText('mod_modulelist_countavailable', 'modulelist');
+$countheader->str = (is_countable($moduleList) ? count($moduleList) : 0)." ".$this->objLanguage->languageText('mod_modulelist_countavailable', 'modulelist');
 $countheader->type = 2;
 
 $middleColumn .= $header->show();
@@ -141,7 +141,7 @@ if ($moduleList) {
     $middleColumn .= "Invisible: $invisible <br />";
     $middleColumn .= "Unset: $unset <br />";
     $middleColumn .= "Other: $other <br />";
-    if (count($illegalStatuses) > 0) {
+    if ((is_countable($illegalStatuses) ? count($illegalStatuses) : 0) > 0) {
         array_unique($illegalStatuses);
         $middleColumn .= "<br />The following illegal statuses are used:<br />";
         foreach ($illegalStatuses as $illegalStatus) {

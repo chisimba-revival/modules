@@ -349,7 +349,7 @@ class console extends ChisimbaObject
 		$data =	$command;
 		if($data != ""){
 			$data_temp = explode(" ",$data);
-			$options_teller = count($data_temp);
+			$options_teller = (is_countable($data_temp) ? count($data_temp) : 0);
 			$command = $data_temp[0];
 			$result =  $this->console_commands->commands($command);
 			return $result;

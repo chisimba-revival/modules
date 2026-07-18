@@ -176,7 +176,7 @@ class Gradient {
                 min(255,$from_color[1]+$m), min(255,$from_color[2]+$m));
 
                 $this->GetColArray($from_color2,$to_color,$steps1,$colors,$this->numcolors);
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($x=$xl, $i=0; $i < $steps1 && $i < $n; ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Line($x,$yb,$x,$yt);
@@ -190,7 +190,7 @@ class Gradient {
                 }
                 $steps = abs($xr-$xl)-$steps1-$steps2;
                 $this->GetColArray($to_color,$from_color,$steps,$colors,$this->numcolors);
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($i=0; $i < $steps && $i < $n; ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Line($x,$yb,$x,$yt);
@@ -203,7 +203,7 @@ class Gradient {
                 $delta = $xr>=$xl ? 1 : -1;
 
                 $this->GetColArray($from_color,$to_color,$steps1,$colors,$this->numcolors);
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($x=$xl, $i=0; $i < $steps1 && $i < $n; ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Line($x,$yb,$x,$yt);
@@ -224,7 +224,7 @@ class Gradient {
 
                 $steps = abs($xr-$xl)-$steps1-$steps2;
                 $this->GetColArray($to_color,$from_color,$steps,$colors,$this->numcolors);
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($i=0; $i < $steps && $i < $n; ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Line($x,$yb,$x,$yt);
@@ -238,7 +238,7 @@ class Gradient {
                 $dx = ($xr-$xl)/2;
                 $dy = ($yb-$yt)/2;
                 $x=$xl;$y=$yt;$x2=$xr;$y2=$yb;
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($x=$xl, $i=0; $x < $xl+$dx && $y < $yt+$dy && $i < $n; ++$x, ++$y, --$x2, --$y2, ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Rectangle($x,$y,$x2,$y2);
@@ -251,7 +251,7 @@ class Gradient {
                 $steps1 = $xr-$xl;
                 $delta = $xr>=$xl ? 1 : -1;
                 $this->GetColArray($to_color,$from_color,$steps1,$colors,$this->numcolors);
-                $n = count($colors);
+                $n = (is_countable($colors) ? count($colors) : 0);
                 for($x=$xl, $i=0; $i < $steps1 && $i < $n; ++$i) {
                     $this->img->current_color = $colors[$i];
                     $this->img->Line($x,$yb,$x,$yt);
@@ -281,7 +281,7 @@ class Gradient {
                     $steps = $xr-$xl;
                     $delta = $xr>=$xl ? 1 : -1;
                     $this->GetColArray($from_color,$to_color,$steps*2,$colors,$this->numcolors);
-                    $n = count($colors);
+                    $n = (is_countable($colors) ? count($colors) : 0);
 
                     for($x=$xl, $i=0; $i < $steps && $i < $n; ++$i) {
                         $this->img->current_color = $colors[$i];
@@ -301,7 +301,7 @@ class Gradient {
                     $steps = $yb-$yt;
                     $delta = $yb>=$yt ? 1 : -1;
                     $this->GetColArray($from_color,$to_color,$steps*2,$colors,$this->numcolors);
-                    $n = count($colors);
+                    $n = (is_countable($colors) ? count($colors) : 0);
 
                     for($y=$yt, $i=0; $i < $steps && $i < $n; ++$i) {
                         $this->img->current_color = $colors[$i];
@@ -333,11 +333,11 @@ class Gradient {
     // routine. It assumes that the bottom is flat (like a drawing
     // of a mountain)
     function FilledFlatPolygon($pts,$from_color,$to_color) {
-        if( count($pts) == 0 ) return;
+        if( (is_countable($pts) ? count($pts) : 0) == 0 ) return;
 
         $maxy=$pts[1];
         $miny=$pts[1];
-        $n = count($pts) ;
+        $n = (is_countable($pts) ? count($pts) : 0) ;
         for( $i=0, $idx=0; $i < $n; $i += 2) {
             $x = round($pts[$i]);
             $y = round($pts[$i+1]);
@@ -351,7 +351,7 @@ class Gradient {
             $colmap[$i] = $colors[$idx++];
         }
 
-        $n = count($pts)/2 ;
+        $n = (is_countable($pts) ? count($pts) : 0)/2 ;
         $idx = 0 ;
         while( $idx < $n-1 ) {
             $p1 = array(round($pts[$idx*2]),round($pts[$idx*2+1]));

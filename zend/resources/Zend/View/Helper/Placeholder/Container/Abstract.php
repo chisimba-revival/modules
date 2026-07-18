@@ -134,7 +134,7 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
      */
     public function getValue()
     {
-        if (1 == count($this)) {
+        if (1 == (is_countable($this) ? count($this) : 0)) {
             $keys = $this->getKeys();
             $key  = array_shift($keys);
             return $this[$key];
@@ -339,7 +339,7 @@ abstract class Zend_View_Helper_Placeholder_Container_Abstract extends ArrayObje
     public function nextIndex()
     {
         $keys = $this->getKeys();
-        if (0 == count($keys)) {
+        if (0 == (is_countable($keys) ? count($keys) : 0)) {
             return 0;
         }
 

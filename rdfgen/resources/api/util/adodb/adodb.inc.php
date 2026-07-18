@@ -865,8 +865,8 @@
 					}
 					if (isset($sqlarr[$i])) {
 						$sql .= $sqlarr[$i];
-						if ($i+1 != sizeof($sqlarr)) ADOConnection::outp( "Input Array does not match ?: ".htmlspecialchars($sql));
-					} else if ($i != sizeof($sqlarr))	
+						if ($i+1 != (is_countable($sqlarr) ? sizeof($sqlarr) : 0)) ADOConnection::outp( "Input Array does not match ?: ".htmlspecialchars($sql));
+					} else if ($i != (is_countable($sqlarr) ? sizeof($sqlarr) : 0))	
 						ADOConnection::outp( "Input array does not match ?: ".htmlspecialchars($sql));
 		
 					$ret =& $this->_Execute($sql);
@@ -1087,7 +1087,7 @@
 					$p[] = $v->name;
 			}
 		}
-		if (sizeof($p)) return $p;
+		if ((is_countable($p) ? sizeof($p) : 0)) return $p;
 		if (function_exists('ADODB_VIEW_PRIMARYKEYS'))
 			return ADODB_VIEW_PRIMARYKEYS($this->databaseType, $this->database, $table, $owner);
 		return false;
@@ -2242,7 +2242,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 				$showt = strncmp($ttype,'T',1);
 			}
 			
-			for ($i=0; $i < sizeof($arr); $i++) {
+			for ($i=0; $i < (is_countable($arr) ? sizeof($arr) : 0); $i++) {
 				if ($hast) {
 					if ($showt == 0) {
 						if (strncmp($arr[$i][1],'T',1) == 0) $arr2[] = trim($arr[$i][0]);
@@ -4002,7 +4002,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 			
 				if (strncmp($db,'pdo',3) == 0) {
 					$sch = explode('_',$dsna['scheme']);
-					if (sizeof($sch)>1) {
+					if ((is_countable($sch) ? sizeof($sch) : 0)>1) {
 						$dsna['host'] = isset($dsna['host']) ? rawurldecode($dsna['host']) : '';
 						$dsna['host'] = rawurlencode($sch[1].':host='.rawurldecode($dsna['host']));
 						$dsna['scheme'] = 'pdo';

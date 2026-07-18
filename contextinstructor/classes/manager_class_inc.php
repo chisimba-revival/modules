@@ -21,7 +21,7 @@ class manager extends ChisimbaObject {
     function show() {
         $mainInstructorId = $this->objDbContextInstructor->getMainInstructor($this->contextCode);
         $lecturers = $this->objManageGroups->contextUsers('Lecturers', $this->contextCode, array('tbl_users.userId', 'email', 'firstName', 'surname'));
-        $total = count($lecturers);
+        $total = (is_countable($lecturers) ? count($lecturers) : 0);
         $userlist = "";
         $instructorexists = false;
         foreach ($lecturers as $row) {
@@ -76,7 +76,7 @@ class manager extends ChisimbaObject {
 
         $instructor = $this->objUser->getUserDetails($mainInstructorId);
 
-        if (count($instructor) > 0) {
+        if ((is_countable($instructor) ? count($instructor) : 0) > 0) {
             $photo = $this->objUser->getUserImage($instructor['userid']);
             $email = $instructor['emailaddress'];
             $names = $instructor['firstname'] . ' ' . $instructor['surname'];

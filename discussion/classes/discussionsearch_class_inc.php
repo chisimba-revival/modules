@@ -24,7 +24,7 @@ class discussionsearch extends dbtable
     /**
     * Constructor
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_discussion_post_text');
         
@@ -185,7 +185,7 @@ class discussionsearch extends dbtable
         $resultsArray = array_reverse($resultsArray); // Reverse for Descending Order
         
         
-        if (count($resultsArray) > 0) {
+        if ((is_countable($resultsArray) ? count($resultsArray) : 0) > 0) {
             $return = '<ol>';
             
             foreach ($resultsArray as $id=>$wordCount)

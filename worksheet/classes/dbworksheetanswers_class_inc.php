@@ -25,7 +25,7 @@ class dbworksheetanswers extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_worksheet_answers');
         $this->table='tbl_worksheet_answers';
     }
@@ -181,7 +181,7 @@ class dbworksheetanswers extends dbTable
 
         $data=$this->getArray($sql);
 
-        if(count($data) > 0){
+        if((is_countable($data) ? count($data) : 0) > 0){
             return $data[0];
         } else {
             return FALSE;
@@ -201,7 +201,7 @@ class dbworksheetanswers extends dbTable
 
         $result = $this->getArray($sql);
 
-        if(count($result) == 0){
+        if((is_countable($result) ? count($result) : 0) == 0){
             return FALSE;
         } else {
             return $result[0]['id'];

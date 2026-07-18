@@ -83,7 +83,7 @@ if ($addTextForm == FALSE)  {
 $objModules = $this->getObject('modules', 'modulecatalogue');
 $modules = $objModules->getModules(3);
 
-if (count($modules) == 0) {
+if ((is_countable($modules) ? count($modules) : 0) == 0) {
     $addModuleFormStr = '<div class="noRecordsMessage">'.$this->objLanguage->languageText('phrase_nomodulesfound', 'phrase', 'No Modules found').'</div>';
 } else {
     $addModuleForm = new form ('addmodule', $this->uri(array('action'=>'addmoduletomenu')));
@@ -110,7 +110,7 @@ if (count($modules) == 0) {
 $objBlocks = $this->getObject('dbmoduleblocks', 'modulecatalogue');
 $blocks = $objBlocks->getBlocks('normal', 'site|prelogin');
 
-if (count($blocks) == 0) {
+if ((is_countable($blocks) ? count($blocks) : 0) == 0) {
     $addBlocksFormStr = '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_hotels_noblocksavailable', 'hotels', 'No blocks available').'</div>';
 } else {
     $addBlocksForm = new form ('addmodule', $this->uri(array('action'=>'addblocktomenu')));

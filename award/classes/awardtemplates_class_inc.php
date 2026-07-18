@@ -158,8 +158,8 @@ class awardtemplates extends ChisimbaObject {
     		}
     	}
     	$sum = array_sum($units);
-    	if (count($units) > 0) {
-    		$continuity = round(((($sum/count($units))/$years)*100),1);
+    	if ((is_countable($units) ? count($units) : 0) > 0) {
+    		$continuity = round(((($sum/(is_countable($units) ? count($units) : 0))/$years)*100),1);
     		if ($this->objUser->isAdmin()) {
     			$link = "<a href='".$this->uri(array('action'=>'continuity','selected'=>$this->getParam('selected'),
     			                                     'length'=>$years,'industry'=>$industry,'mode'=>$mode,'soc'=>$soc,
@@ -647,7 +647,7 @@ class awardtemplates extends ChisimbaObject {
 		foreach ($bcea as $cat) {
 			$cells = $objBCEA->getArray("SELECT * FROM tbl_award_gender_bcea WHERE category LIKE '{$cat['category']}'");
 			$count = 0;
-			$total = count($cells);
+			$total = (is_countable($cells) ? count($cells) : 0);
 			$objTable->startRow($class);
 			$objTable->addCell($cat['category'],null,null,'center',null,"rowspan=$total border=1");
 			foreach ($cells as $cell) {
@@ -1357,7 +1357,7 @@ class awardtemplates extends ChisimbaObject {
 					
         	        $sql .= " ORDER BY average";
         	        $data = $this->objBenefit->getArray($sql);
-        	        $n = $average['sample'] = count($data);
+        	        $n = $average['sample'] = (is_countable($data) ? count($data) : 0);
 					if ($n < 4) {
 						$average['average'] = '--';
 					} else {
@@ -1735,7 +1735,7 @@ class awardtemplates extends ChisimbaObject {
 					
         	        $sql .= " ORDER BY average";
         	        $data = $this->objBenefit->getArray($sql);
-        	        $n = count($data);
+        	        $n = (is_countable($data) ? count($data) : 0);
 					if ($n < 4) {
 						$ret = '--';
 					} else {

@@ -47,7 +47,7 @@ class exportimspackage extends dbTable
 	/**
 	 * The constructor
 	*/
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		// Load System classes.
         	$this->objUser = $this->getObject('user', 'security');
@@ -177,7 +177,7 @@ class exportimspackage extends dbTable
 		// Add Course Resource.
 		$resources->appendChild($this->objIMSTools->createResource($dom, $lomValues, $eduCommonsValues));
 		// Write Images to specified directory (resources folder).
-		if(count($courseImageNames) > 0)
+		if((is_countable($courseImageNames) ? count($courseImageNames) : 0) > 0)
 		{
 			$imageNames = $this->objIEUtils->writeImages($courseImageNames, $resourceFolder);
 			foreach($courseImageNames as $courseImageName)
@@ -214,7 +214,7 @@ class exportimspackage extends dbTable
 			}
 		}
 		//.Write Resources to specified directory (resources folder).
-		if(count($courseResourceIds) > 0)
+		if((is_countable($courseResourceIds) ? count($courseResourceIds) : 0) > 0)
 			$resourceNames = $this->objIEUtils->writeResources($courseResourceIds, $resourceFolder);
 		// Retrieve Html pages.
 		$htmlPages = $this->objIEUtils->getHtmlPages($contextcode, '', '', '', 'pagecontent');
@@ -230,7 +230,7 @@ class exportimspackage extends dbTable
 		// Write Htmls to specified directory (resources folder).
 		$htmlFilenames = $this->objIEUtils->writeFiles($htmlPages, $resourceFolder,'','html');
 		// Write Images to specified directory (resources folder).
-		if(count($imageNames) > 0)
+		if((is_countable($imageNames) ? count($imageNames) : 0) > 0)
 		{
 			$imageIds = $this->objIEUtils->writeImages($imageNames, $resourceFolder);
 			foreach($imageNames as $imageName)
@@ -267,7 +267,7 @@ class exportimspackage extends dbTable
 			}
 		}
 		// Write Resources to specified directory (resources folder).
-		if(count($resourceIds) > 0)
+		if((is_countable($resourceIds) ? count($resourceIds) : 0) > 0)
 			$resourceNames = $this->objIEUtils->writeResources($resourceIds, $resourceFolder);
 		$chapterOrder = $this->objIEUtils->chapterOrder($contextcode);
 		$i = 0;
@@ -329,13 +329,13 @@ class exportimspackage extends dbTable
 	{
 		$i = 0;
 		// Check if its Course Home Page
-		if(count($htmlPages) == 1)
+		if((is_countable($htmlPages) ? count($htmlPages) : 0) == 1)
 		{
 			// Rewrite images source in html.
-			if(count($courseImageNames) > 0)
+			if((is_countable($courseImageNames) ? count($courseImageNames) : 0) > 0)
 				$htmlPages = $this->objIEUtils->changeImageSRC($htmlPages, $contextcode, $courseImageNames,'','2');
 			// Rewrite links source in html.
-			if(count($courseResourceIds) > 0)
+			if((is_countable($courseResourceIds) ? count($courseResourceIds) : 0) > 0)
 				$htmlPages = $this->changeLinkUrl($contextcode, $htmlPages, $courseResourceIds);
 			// Rewrite internal links source in html.
 
@@ -348,10 +348,10 @@ class exportimspackage extends dbTable
 			foreach($htmlPages as $htmlPage)
 			{
 				// Rewrite images source in html.
-				if(count($courseImageNames) > 0)
+				if((is_countable($courseImageNames) ? count($courseImageNames) : 0) > 0)
 					$htmlPage = $this->objIEUtils->changeImageSRC($htmlPage, $contextcode, $courseImageNames,'',TRUE);
 				// Rewrite links source in html.
-				if(count($courseResourceIds) > 0)
+				if((is_countable($courseResourceIds) ? count($courseResourceIds) : 0) > 0)
 					$htmlPage = $this->changeLinkUrl($htmlPage, $courseResourceIds);
 				$htmlsModified[$i] = $htmlPage;
 				// Rewrite internal links source in html.
@@ -367,7 +367,7 @@ class exportimspackage extends dbTable
 
 	function changeLinkUrl($htmlPage, $resourceIds)
 	{
-		for($i = 0; $i < count($resourceIds); $i++)
+		for($i = 0; $i < (is_countable($resourceIds) ? count($resourceIds) : 0); $i++)
 		{
 			$id = $this->objIEUtils->getHtmlPageId($resourceIds[$i]);
 			$regReplace = '/(href=".*'.$id.'.*?")/i';

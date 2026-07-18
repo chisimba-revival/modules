@@ -232,7 +232,7 @@ class ARC2_StoreSelectQueryHandler extends ARC2_StoreQueryHandler {
     else {
       $sub_patterns = $this->v('patterns', array(), $pattern);
       $keys = array_keys($sub_patterns);
-      $spc = count($sub_patterns);
+      $spc = (is_countable($sub_patterns) ? count($sub_patterns) : 0);
       if (($spc > 4) && $this->pattern_order_offset) {
         $keys = array();
         for ($i = 0 ; $i < $spc; $i++) {
@@ -738,7 +738,7 @@ class ARC2_StoreSelectQueryHandler extends ARC2_StoreQueryHandler {
 
   function problematicDependencies() {
     foreach ($this->dependency_log as $id => $tbls) {
-      if (count($tbls) > 1) return count($tbls);
+      if ((is_countable($tbls) ? count($tbls) : 0) > 1) return (is_countable($tbls) ? count($tbls) : 0);
     }
     return 0;
   }
@@ -897,7 +897,7 @@ class ARC2_StoreSelectQueryHandler extends ARC2_StoreQueryHandler {
           }
         }
       }
-      if (count($d_aliases) > 2) {/* @@todo fix this! */
+      if ((is_countable($d_aliases) ? count($d_aliases) : 0) > 2) {/* @@todo fix this! */
         $sub_r1 = '  /* '.$id_alias.' dependencies */';
         $sub_r2 = '((' . $id_alias . ' IS NULL) OR (CONCAT(' . join(', ', $d_aliases) . ') IS NOT NULL))';
         $r .= $r ? $nl . $sub_r1 . $nl . '  AND ' .$sub_r2 : $sub_r1 . $nl . $sub_r2;

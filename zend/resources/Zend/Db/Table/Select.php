@@ -129,7 +129,7 @@ class Zend_Db_Table_Select extends Zend_Db_Select
         $fields   = $this->getPart(Zend_Db_Table_Select::COLUMNS);
         $cols     = $this->_info[Zend_Db_Table_Abstract::COLS];
 
-        if (!count($fields)) {
+        if (!(is_countable($fields) ? count($fields) : 0)) {
             return $readOnly;
         }
 
@@ -197,7 +197,7 @@ class Zend_Db_Table_Select extends Zend_Db_Select
         if (count($this->_parts[self::UNION]) == 0) {
 
             // If no fields are specified we assume all fields from primary table
-            if (!count($fields)) {
+            if (!(is_countable($fields) ? count($fields) : 0)) {
                 $this->from($primary, self::SQL_WILDCARD, $schema);
                 $fields = $this->getPart(Zend_Db_Table_Select::COLUMNS);
             }

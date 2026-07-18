@@ -442,7 +442,7 @@ class iptcmeta extends ChisimbaObject {
         $IPTCBlock = null;
         foreach($this->IPTC as $sTagID => $aTag) {
             $sTag = str_replace('2#', null, $sTagID);
-            for($ci = 0; $ci < sizeof($aTag); $ci++) {
+            for($ci = 0; $ci < (is_countable($aTag) ? sizeof($aTag) : 0); $ci++) {
                 $nLen = strlen($aTag[$ci]);
                 // The below code is based on code contributed by Thies C. Arntzen
                 // on the PHP website at the URL: http://www.php.net/iptcembed

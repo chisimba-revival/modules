@@ -299,7 +299,7 @@ class Zend_Search_Lucene_Document_Html extends Zend_Search_Lucene_Document
             }
         }
 
-        if (count($matchedTokens) == 0) {
+        if ((is_countable($matchedTokens) ? count($matchedTokens) : 0) == 0) {
             return;
         }
 
@@ -427,7 +427,7 @@ class Zend_Search_Lucene_Document_Html extends Zend_Search_Lucene_Document
         }
         $wordsToHighlight = call_user_func_array('array_merge', $wordsToHighlightList);
 
-        if (count($wordsToHighlight) == 0) {
+        if ((is_countable($wordsToHighlight) ? count($wordsToHighlight) : 0) == 0) {
             return $this->_doc->saveHTML();
         }
 

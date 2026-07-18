@@ -182,10 +182,10 @@ class phPie {
 
 				$End = $this->StartAngle + ceil(($ValuesSoFar / $TotalArrayValues) * 360);
 
-				$this->FilledArc($img, $this->CenterX, $this->CenterY, $this->DiameterX, $this->DiameterY, $Start, $End, $line_color, $fill_color[$valuecounter % count($fill_color)]);
+				$this->FilledArc($img, $this->CenterX, $this->CenterY, $this->DiameterX, $this->DiameterY, $Start, $End, $line_color, $fill_color[$valuecounter % (is_countable($fill_color) ? count($fill_color) : 0)]);
 
 				if ($this->LegendOnSlices || $this->Legend) {
-					ImageString($img, $this->FontNumber, $x_pos, $y_pos, $text, $label_color[$valuecounter % count($label_color)]);
+					ImageString($img, $this->FontNumber, $x_pos, $y_pos, $text, $label_color[$valuecounter % (is_countable($label_color) ? count($label_color) : 0)]);
 				}
 				$Start = $End;
 

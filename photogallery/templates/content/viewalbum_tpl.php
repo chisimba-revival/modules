@@ -15,7 +15,7 @@ $head = '<div id="main2"><div id="gallerytitle">
 	';
 print $head;
 
-if(count($images) > 0)
+if((is_countable($images) ? count($images) : 0) > 0)
 {
 	$str = '';
 	foreach($images as $image)

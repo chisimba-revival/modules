@@ -30,7 +30,7 @@ class dbformbuilder_textarea_entity extends dbTable {
     /*!
      * \brief Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_formbuilder_textarea_entity');
     }
 

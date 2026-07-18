@@ -71,7 +71,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($benefitName) > '0'){
+if((is_countable($benefitName) ? count($benefitName) : 0) > '0'){
   foreach($benefitName as $name){ 
      //Get benefit type
      $benefitNameId = $name['id'];

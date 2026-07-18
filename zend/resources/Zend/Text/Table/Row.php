@@ -145,7 +145,7 @@ class Zend_Text_Table_Row
         // entire row
         if (count($this->_columns) === 0) {
             require_once 'Zend/Text/Table/Column.php';
-            $this->appendColumn(new Zend_Text_Table_Column(null, null, count($columnWidths)));
+            $this->appendColumn(new Zend_Text_Table_Column(null, null, (is_countable($columnWidths) ? count($columnWidths) : 0)));
         }
 
         // First we have to render all columns, to get the maximum height
@@ -157,7 +157,7 @@ class Zend_Text_Table_Row
             $colSpan = $column->getColSpan();
 
             // Verify if there are enough column widths defined
-            if (($colNum + $colSpan) > count($columnWidths)) {
+            if (($colNum + $colSpan) > (is_countable($columnWidths) ? count($columnWidths) : 0)) {
                 require_once 'Zend/Text/Table/Exception.php';
                 throw new Zend_Text_Table_Exception('Too many columns');
             }
@@ -175,7 +175,7 @@ class Zend_Text_Table_Row
 
             // Store the rendered column and calculate the new max height
             $renderedColumns[] = $result;
-            $maxHeight         = max($maxHeight, count($result));
+            $maxHeight         = max($maxHeight, (is_countable($result) ? count($result) : 0));
 
             // Set up the internal column number
             $colNum += $colSpan;
@@ -183,8 +183,8 @@ class Zend_Text_Table_Row
 
         // If the row doesnt contain enough columns to fill the entire row, fill
         // it with an empty column
-        if ($colNum < count($columnWidths)) {
-            $remainingWidth = (count($columnWidths) - $colNum - 1) +
+        if ($colNum < (is_countable($columnWidths) ? count($columnWidths) : 0)) {
+            $remainingWidth = ((is_countable($columnWidths) ? count($columnWidths) : 0) - $colNum - 1) +
                                array_sum(array_slice($columnWidths,
                                                      $colNum));
             $renderedColumns[] = array(str_repeat(' ', $remainingWidth));

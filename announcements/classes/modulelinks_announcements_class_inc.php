@@ -26,7 +26,7 @@ class modulelinks_announcements extends ChisimbaObject
         $announces = $this->objAnnouncements->getAll("ORDER BY createdOn");
         
         // Extra Check
-        if (count($announces) > 0) {
+        if ((is_countable($announces) ? count($announces) : 0) > 0) {
             
             // Array for References
             $nodesArray = array();

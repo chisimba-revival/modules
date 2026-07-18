@@ -19,7 +19,7 @@ class discussionstats extends dbTable
 	/**
 	* Constructor method to define the table(default)
 	*/
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_discussion');
     }
@@ -43,7 +43,7 @@ class discussionstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;
@@ -64,7 +64,7 @@ class discussionstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;
@@ -89,7 +89,7 @@ class discussionstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;

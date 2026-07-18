@@ -234,7 +234,7 @@ class dasops extends ChisimbaObject {
 
 		//return exec("killall python");
 		$pids = $this->getPID($username);
-		if(count($pids) > 0)
+		if((is_countable($pids) ? count($pids) : 0) > 0)
 		{
 			foreach($pids as $pid)
 			{			

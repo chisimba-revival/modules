@@ -148,7 +148,7 @@ class jqeditablehelper extends ChisimbaObject
         $ret .= "\n     jQuery(document).ready(function() {\n";
         $ret .= "          jQuery('.$areaClass').editable('$targetUrl'";
         $ret .=", {\n";
-        $entries = count($arrayParams);
+        $entries = (is_countable($arrayParams) ? count($arrayParams) : 0);
         $counter = 0;
         foreach ($arrayParams as $key=>$value) {
             $counter++;

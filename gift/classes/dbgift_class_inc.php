@@ -5,7 +5,7 @@ class dbgift extends dbtable {
     /**
      * Assign the table name in dbtable to be the table specified below
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_gift");
         $this->objUser = $this->getObject("user", "security");
     }
@@ -100,7 +100,7 @@ class dbgift extends dbtable {
         $sql =
                 "select * from tbl_gift where giftname ='$name' and division='$departmentid'";
         $rows = $this->getArray($sql);
-        if (count($rows) > 0) {
+        if ((is_countable($rows) ? count($rows) : 0) > 0) {
             return TRUE;
         }
         return FALSE;
@@ -128,7 +128,7 @@ class dbgift extends dbtable {
                 description = '{$data['description']}'
                 value = '{$data['value']}'";
         $info = $this->getArray(qry);
-        return count($info);
+        return (is_countable($info) ? count($info) : 0);
     }
 
     /**
@@ -157,7 +157,7 @@ class dbgift extends dbtable {
         $qry = "SELECT count(id) as total FROM tbl_gift WHERE  division= '$department' and (deleted='N' or deleted is null)";
         $total = 0;
         $data = $this->getInfo($qry);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             $row = $data[0];
             $total = $row['total'];
         }

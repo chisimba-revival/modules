@@ -152,7 +152,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
         $upIcon=' <a href="#">'.$objIcon->show().'</a>';
 
         // set up delete question icon
-        if(count($arrPageList)=='2'){
+        if((is_countable($arrPageList) ? count($arrPageList) : 0)=='2'){
             $label=$deletelastLabel;
             $deletePage='deleteall';
         }else{
@@ -172,7 +172,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
         // set up icons
         if($key=='0'){
             $icons=$downIcon.'&nbsp;'.$deleteIcon;
-        }elseif($key==(count($arrPageList)-1)){
+        }elseif($key==((is_countable($arrPageList) ? count($arrPageList) : 0)-1)){
             $icons=$upIcon.'&nbsp;'.$deleteIcon;
         }else{
             $icons=$downIcon.'&nbsp;'.$upIcon.'&nbsp;'.$deleteIcon;

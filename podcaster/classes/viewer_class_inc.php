@@ -115,7 +115,7 @@ class viewer extends ChisimbaObject {
      */
     public function displayAsTable($files) {
         $table = $this->newObject('htmltable', 'htmlelements');
-        if (count($files) == 0 || empty($files)) {
+        if ((is_countable($files) ? count($files) : 0) == 0 || empty($files)) {
             $table->startRow();
             $table->addCell($this->objLanguage->languageText("mod_podcaster_norecords", "podcaster", 'No records found'));
             $table->endRow();
@@ -226,7 +226,7 @@ class viewer extends ChisimbaObject {
      */
     public function addUserPodcastsToEvent($files, $groupId) {
         $this->loadClass('checkbox', 'htmlelements');
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return '';
         } else {
             $table = $this->newObject('htmltable', 'htmlelements');
@@ -410,7 +410,7 @@ class viewer extends ChisimbaObject {
         $objFeedCreator = $this->getObject('feeder');
         $objFeedCreator->setupFeed(TRUE, $title, $description, $url, $url);
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');
             foreach ($files as $file) {
@@ -450,7 +450,7 @@ class viewer extends ChisimbaObject {
         $objFeedCreator = $this->getObject('feeder');
         $objFeedCreator->setupFeed(TRUE, $title, $description, $url, $url);
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');
             foreach ($files as $file) {
@@ -493,7 +493,7 @@ class viewer extends ChisimbaObject {
         $objFeedCreator = $this->getObject('feeder');
         $objFeedCreator->setupFeed(TRUE, $title, $description, $url, $url);
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');
             foreach ($files as $file) {
@@ -534,7 +534,7 @@ class viewer extends ChisimbaObject {
         $objFeedCreator = $this->getObject('feeder');
         $objFeedCreator->setupFeed(TRUE, $title, $description, $url, $url);
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');
             foreach ($files as $file) {
@@ -573,7 +573,7 @@ class viewer extends ChisimbaObject {
         $objFeedCreator = $this->getObject('feeder');
         $objFeedCreator->setupFeed(TRUE, $title, strip_tags($description), $url, $url);
 
-        if (count($file) > 0) {
+        if ((is_countable($file) ? count($file) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
             $objDate = $this->getObject('dateandtime', 'utilities');
 

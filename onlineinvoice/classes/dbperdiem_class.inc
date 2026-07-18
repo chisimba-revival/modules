@@ -9,7 +9,7 @@
       /**
         * Constructor of the dbInvoice class
       */   
-	        function init()
+	        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
   	      {
 	   	       parent::init('tbl_pierdiem');
           }

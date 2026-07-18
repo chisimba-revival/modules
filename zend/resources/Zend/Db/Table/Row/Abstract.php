@@ -539,7 +539,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
          * Execute cascading updates against dependent tables.
          * Do this only if primary key value(s) were changed.
          */
-        if (count($pkDiffData) > 0) {
+        if ((is_countable($pkDiffData) ? count($pkDiffData) : 0) > 0) {
             $depTables = $this->_getTable()->getDependentTables();
             if (!empty($depTables)) {
                 $pkNew = $this->_getPrimaryKey(true);
@@ -557,7 +557,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
          * Use the $diffData variable, so the UPDATE statement
          * includes SET terms only for data values that changed.
          */
-        if (count($diffData) > 0) {
+        if ((is_countable($diffData) ? count($diffData) : 0) > 0) {
             $this->_getTable()->update($diffData, $where);
         }
 
@@ -580,7 +580,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
          * is a scalar.
          */
         $primaryKey = $this->_getPrimaryKey(true);
-        if (count($primaryKey) == 1) {
+        if ((is_countable($primaryKey) ? count($primaryKey) : 0) == 1) {
             return current($primaryKey);
         }
 
@@ -717,7 +717,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
         } else {
             $array = array_intersect_key($this->_cleanData, $primary);
         }
-        if (count($primary) != count($array)) {
+        if ((is_countable($primary) ? count($primary) : 0) != (is_countable($array) ? count($array) : 0)) {
             require_once 'Zend/Db/Table/Row/Exception.php';
             throw new Zend_Db_Table_Row_Exception("The specified Table '$this->_tableClass' does not have the same primary key as the Row");
         }
@@ -1109,7 +1109,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess, IteratorAggreg
     {
         $matches = array();
 
-        if (count($args) && $args[0] instanceof Zend_Db_Table_Select) {
+        if ((is_countable($args) ? count($args) : 0) && $args[0] instanceof Zend_Db_Table_Select) {
             $select = $args[0];
         } else {
             $select = null;

@@ -6,7 +6,7 @@ class dbdepartments extends dbtable {
     private $objGroupAdminModel;
     private $objGroupOps;
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_gift_departments");
         $this->objUser = $this->getObject('user', 'security');
         $this->objGroupOps = $this->getObject('groupops', 'groupadmin');
@@ -86,7 +86,7 @@ class dbdepartments extends dbtable {
         $sql=
         "select * from tbl_gift_departments where name ='$name'";
         $rows=$this->getArray($sql);
-        if(count($rows) > 0){
+        if((is_countable($rows) ? count($rows) : 0) > 0){
             return TRUE;
         }
         return FALSE;

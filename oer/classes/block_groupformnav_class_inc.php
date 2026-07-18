@@ -16,10 +16,10 @@ class block_groupformnav extends ChisimbaObject {
        $data = explode("|", $this->configData);
         $contextCode = NULL;
         $step = '1';
-        if (count($data) == 2) {
+        if ((is_countable($data) ? count($data) : 0) == 2) {
             $contextCode = $data[0];
             $step = $data[1];
-        } else if (count($data) == 1){
+        } else if ((is_countable($data) ? count($data) : 0) == 1){
             $contextCode = $data[0];
         }
         

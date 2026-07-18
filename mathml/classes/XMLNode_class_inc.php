@@ -38,7 +38,7 @@ class XMLNode
 	public function addChildArr($node_arr)
 	{
 		$key_arr = array_keys($node_arr);
-		$num_key = count($key_arr);
+		$num_key = (is_countable($key_arr) ? count($key_arr) : 0);
 		
 		for ($i = 0; $i < $num_key; $i++) {
 			$node =& $node_arr[$key_arr[$i]];
@@ -49,7 +49,7 @@ class XMLNode
 	public function insertChildBefore($idx,$node)
 	{
 		$key_arr = array_keys($this->_child_arr);
-		$num_key = count($key_arr);
+		$num_key = (is_countable($key_arr) ? count($key_arr) : 0);
 		$tmp_arr = arry();
 		
 		for ($i = 0;$i < $num_key;$i++) {
@@ -64,7 +64,7 @@ class XMLNode
 	public function insertChildAfter($idx,$node)
 	{
 		$key_arr = array_keys($this->_child_arr);
-		$num_key = count($key_arr);
+		$num_key = (is_countable($key_arr) ? count($key_arr) : 0);
 		$tmp_arr = arry();
 		
 		for ($i = 0;$i < $num_key;$i++) {
@@ -187,7 +187,7 @@ class XMLNode
 	public function getFirstChild()
 	{
 		$id_arr = array_keys($this->_child_arr);
-		$num_child = count($id_arr);
+		$num_child = (is_countable($id_arr) ? count($id_arr) : 0);
 		
 		if ($num_child > 0) {
 			return($this->_child_arr[$id_arr[0]]);
@@ -199,7 +199,7 @@ class XMLNode
 	public function getLastChild()
 	{
 		$id_arr = array_keys($this->_child_arr);
-		$num_child = count($id_arr);
+		$num_child = (is_countable($id_arr) ? count($id_arr) : 0);
 		
 		if ($num_child > 0) {
 			return($this->_child_arr[$id_arr[$num_child - 1]]);
@@ -244,7 +244,7 @@ class XMLNode
 	public function removeLastChild()
 	{
 		$key_arr = array_keys($this->_child_arr);
-		unset($this->_child_arr[$key_arr[count($key_arr)-1]]);
+		unset($this->_child_arr[$key_arr[(is_countable($key_arr) ? count($key_arr) : 0)-1]]);
 	}
 	
 	public function dumpXML($indent_str = "\t")
@@ -260,7 +260,7 @@ class XMLNode
 			return($tag);
 		} else {
 			$key_arr = array_keys($this->_child_arr);
-			$num_child = count($key_arr);
+			$num_child = (is_countable($key_arr) ? count($key_arr) : 0);
 			
 			$tag = "$indent<$name$xmlns$attr_txt>$this->_content";
 			
@@ -279,7 +279,7 @@ class XMLNode
 	public function _dumpAttr()
 	{
 		$id_arr = array_keys($this->_attr_arr);
-		$id_arr_cnt = count($id_arr);
+		$id_arr_cnt = (is_countable($id_arr) ? count($id_arr) : 0);
 		$attr_txt = '';
 		
 		for($i = 0;$i < $id_arr_cnt;$i++) {

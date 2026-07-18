@@ -40,7 +40,7 @@ class dublincore extends dbTable
      /**
     *The dispatch method that kick starts the module
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_dublincoremetadata');
         $this->table = 'tbl_dublincoremetadata';

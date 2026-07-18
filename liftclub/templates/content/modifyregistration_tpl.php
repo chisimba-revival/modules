@@ -319,7 +319,7 @@ if ($userneed == 'Trip') {
     //$traveltimes = new textinput('traveltimes');
     if (!empty($triptimes)) {
         $triptimesA = explode(":", $triptimes);
-        if (count($triptimesA) == 2) {
+        if ((is_countable($triptimesA) ? count($triptimesA) : 0) == 2) {
             $hval = $triptimesA[0];
             $triptimesB = explode(" ", $triptimesA[1]);
             $mval = $triptimesB[0];
@@ -572,7 +572,7 @@ if ($mode == 'addfixup') {
         $messages[] = $this->explainProblemsInfo($problem);
     }
 }
-if ($mode == 'addfixup' && count($messages) > 0) {
+if ($mode == 'addfixup' && (is_countable($messages) ? count($messages) : 0) > 0) {
     echo '<ul><li><span class="error">' . $this->objLanguage->languageText('mod_userdetails_infonotsavedduetoerrors', 'userdetails') . '</span>';
     echo '<ul>';
     foreach($messages as $message) {

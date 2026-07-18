@@ -49,11 +49,11 @@ class block_downloaderedit extends ChisimbaObject {
         $id = Null;
         $producttype = "adaptation";
         $step = '1';
-        if (count($data) == 3) {
+        if ((is_countable($data) ? count($data) : 0) == 3) {
             $id = $data[0];
             $productId = $data[1];
             $producttype = $data[2];
-        } else if (count($data) == 1){
+        } else if ((is_countable($data) ? count($data) : 0) == 1){
             $productId = $data[0];
         }
         return $this->objDownloaderEdit->show($productId, $id, $producttype);

@@ -996,7 +996,7 @@ class blog extends controller {
                     }
                     else {
                         $posts = $this->objDbBlog->getLastPosts(10, $userid); // getAllPosts($userid, $catid); // getPostsMonthly(time() , $userid);
-                        if (count($posts) < 2) {
+                        if ((is_countable($posts) ? count($posts) : 0) < 2) {
                             $posts = $this->objDbBlog->getLastPosts(10, $userid);
                         }
                         //$posts = $this->objDbBlog->getAllPosts($userid, 0);//getAbsAllPostsNoDrafts($userid);
@@ -1319,7 +1319,7 @@ class blog extends controller {
                     }
                     if (!empty($tagarray) && $tagarray[0] != "") {
 
-                        //if (count($tagarray) < count($etags)) {
+                        //if ((is_countable($tagarray) ? count($tagarray) : 0) < (is_countable($etags) ? count($etags) : 0)) {
                             //remove all the tags for the post so that we can populate with the new ones
 
                             $this->objDbBlog->insertTags($tagarray, $userid, $id);
@@ -1391,7 +1391,7 @@ class blog extends controller {
                 // Allow admin to delete
                 // check user is deleting own post
                 $post = $this->objDbBlog->getPostByPostID($id);
-                if (count($post) == 0) {
+                if ((is_countable($post) ? count($post) : 0) == 0) {
                     return $this->nextAction(NULL);
                 } else {
                     $post = $post[0];

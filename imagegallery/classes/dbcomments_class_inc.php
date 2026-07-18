@@ -77,7 +77,7 @@ class dbcomments extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
@@ -123,7 +123,7 @@ class dbcomments extends dbtable
     public function addComment($fields)
     {
         $comments = $this->getImageComments($fields['image_id']);
-        $count = count($comments);
+        $count = (is_countable($comments) ? count($comments) : 0);
         
         $fields['display_order'] = ++$count;
         $fields['created_by'] = $this->userId;

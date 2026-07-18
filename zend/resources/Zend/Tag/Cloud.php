@@ -380,7 +380,7 @@ class Zend_Tag_Cloud
     {
         $tags = $this->getItemList();
 
-        if (count($tags) === 0) {
+        if ((is_countable($tags) ? count($tags) : 0) === 0) {
             return '';
         }
 

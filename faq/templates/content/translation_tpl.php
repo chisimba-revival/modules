@@ -161,7 +161,7 @@ echo $display;
                $entrylicense =  $this->objFaqEntries->getLicenseCode($element['entryid']);
                
                $entries=$this->objFaqEntries->getCatEntry($element['entryid'],$element['language']);
-               $count=count($entries);
+               $count=(is_countable($entries) ? count($entries) : 0);
                
                
                 //echo $entrylicense.$['entryid'].pop;

@@ -56,7 +56,7 @@ class Sabre_DAV_Auth_Backend_PDO extends Sabre_DAV_Auth_Backend_AbstractDigest {
         $stmt->execute(array($username));
         $result = $stmt->fetchAll();
 
-        if (!count($result)) return;
+        if (!(is_countable($result) ? count($result) : 0)) return;
 
         return $result[0]['digesta1'];
 

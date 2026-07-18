@@ -90,7 +90,7 @@ class Zend_Mime_Decode
     public static function splitMessageStruct($message, $boundary, $EOL = Zend_Mime::LINEEND)
     {
         $parts = self::splitMime($message, $boundary);
-        if (count($parts) <= 0) {
+        if ((is_countable($parts) ? count($parts) : 0) <= 0) {
             return null;
         }
         $result = array();

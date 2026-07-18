@@ -248,7 +248,7 @@ class announcements extends controller
             // See if some items match
             $diff = array_intersect($this->lecturerContext, $this->objAnnouncements->getMessageContexts($item['id']));
             // If yes, user can edit or delete
-            if (count($diff) > 0) {
+            if ((is_countable($diff) ? count($diff) : 0) > 0) {
                 return TRUE;
             }
         }
@@ -346,7 +346,7 @@ class announcements extends controller
     {
         $page = $this->getParam('page', 0);
         $announcements = $this->objAnnouncements->getAllAnnouncements($this->userContexts, $this->itemsPerPage, $page);
-        if (count($announcements) == 0) {
+        if ((is_countable($announcements) ? count($announcements) : 0) == 0) {
             echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_announcements_noannouncements', 'announcements', 'There are no announcements').'</div>';
         } else {
             return $this->generateAjaxResponse($announcements);
@@ -362,7 +362,7 @@ class announcements extends controller
         $announcements = $this->objAnnouncements->getContextAnnouncements(
           $this->objContext->getContextCode(), $this->itemsPerPage, $page
         );
-        if (count($announcements) == 0) {
+        if ((is_countable($announcements) ? count($announcements) : 0) == 0) {
             echo '<div class="noRecordsMessage">'
               .$this->objLanguage->languageText(
                 'mod_announcements_noannouncements', 'announcements',

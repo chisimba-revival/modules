@@ -77,13 +77,13 @@ $table->endRow();
 
 if (
     $mode == 'add'
-        && count($lecturerContext) > 0
+        && (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0
     || $mode == 'edit'
         && $announcement['contextid'] == 'context'
     || $mode == 'fixup'
         && $recipienttarget == 'context') {
     $contextsList = '';
-    if (count($lecturerContext) > 0) {
+    if ((is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
         foreach ($lecturerContext as $context) {
             $checkbox = new checkbox ('contexts[]', $context);
             $checkbox->value = $context;
@@ -108,7 +108,7 @@ if (
 }
 
 if ($mode == 'add') {
-    if ($isAdmin && count($lecturerContext) > 0) {
+    if ($isAdmin && (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_announcements_sendto', 'announcements', 'Send to').':');
         $objRecipientTarget = new radio ('recipienttarget');

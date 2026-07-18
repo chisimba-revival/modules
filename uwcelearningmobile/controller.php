@@ -289,10 +289,10 @@ class uwcelearningmobile extends controller {
         //Get a current course announcement
         $coursesann = $this->objAnnouncements->getContextAnnouncements($this->contextCode);
         $coursesanncount = $this->objAnnouncements->getNumContextAnnouncements($this->contextCode);
-        //or $coursesanncount = count($coursesann);
+        //or $coursesanncount = (is_countable($coursesann) ? count($coursesann) : 0);
         //Get all my courses announcement
         $allann = $this->objAnnouncements->getAllAnnouncements($this->userContext);
-        $allanncount = count($allann);
+        $allanncount = (is_countable($allann) ? count($allann) : 0);
 
         $this->setVarByRef('coursesann', $coursesann);
         $this->setVarByRef('coursesanncount', $coursesanncount);
@@ -764,7 +764,7 @@ class uwcelearningmobile extends controller {
         $reccipients = $this->getSession('recipientList');
         $k = array_keys($reccipients, $username);
 
-        if (count($k) > 0) {
+        if ((is_countable($k) ? count($k) : 0) > 0) {
             unset($reccipients[$k[0]]);
             $this->setSession('recipientList', $reccipients);
         }
@@ -776,7 +776,7 @@ class uwcelearningmobile extends controller {
      */
     private function getRecipientListForDB() {
         $reccipients = $this->getSession('recipientList');
-        if (count($reccipients) > 0) {
+        if ((is_countable($reccipients) ? count($reccipients) : 0) > 0) {
             $str = '';
             foreach ($reccipients as $rec) {
                 $str .= $this->objUser->getUserId($rec) . '|';
@@ -793,7 +793,7 @@ class uwcelearningmobile extends controller {
      */
     private function getAllUsersCount() {
         $usercount = $this->objUser->getAll();
-        $usercount = count($usercount);
+        $usercount = (is_countable($usercount) ? count($usercount) : 0);
         return $usercount;
     }
 

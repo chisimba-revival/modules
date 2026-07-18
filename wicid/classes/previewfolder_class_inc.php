@@ -33,7 +33,7 @@ class previewfolder extends filemanagerobject {
         $objTable->addHeaderCell('&nbsp;', '30');
 
         // Set Restriction as empty if it is none
-        if (count($restriction) == 1 && $restriction[0] == '') {
+        if ((is_countable($restriction) ? count($restriction) : 0) == 1 && $restriction[0] == '') {
             $restriction = array();
         }
 
@@ -41,7 +41,7 @@ class previewfolder extends filemanagerobject {
 
         $hidden = 0;
 
-        if (count(count($files) == 0)) {
+        if (count((is_countable($files) ? count($files) : 0) == 0)) {
             $objTable->startRow();
             $objTable->addCell('<em>' . $this->objLanguage->languageText('mod_filemanager_nofilesorfolders', 'filemanager', 'No files or folders found') . '</em>', NULL, NULL, NULL, 'noRecordsMessage', 'colspan="5"');
             $objTable->endRow();
@@ -49,11 +49,11 @@ class previewfolder extends filemanagerobject {
 
 
 
-            if (count($files) > 0) {
+            if ((is_countable($files) ? count($files) : 0) > 0) {
                 //var_dump($files);
                 $fileSize = new formatfilesize();
                 foreach ($files as $file) {
-                    if (count($restriction) > 0) {
+                    if ((is_countable($restriction) ? count($restriction) : 0) > 0) {
                         if (!in_array(strtolower($file['datatype']), $restriction)) {
                             $objTable->startRow('hidefile');
                             $hidden++;
@@ -97,7 +97,7 @@ class previewfolder extends filemanagerobject {
             }
         }
 
-        if ($hidden > 0 && count($restriction) > 0) {
+        if ($hidden > 0 && (is_countable($restriction) ? count($restriction) : 0) > 0) {
             $str = '
 <script type="text/javascript">
 

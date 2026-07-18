@@ -225,7 +225,7 @@ class ARC2_Store extends ARC2_Class {
     /* queue */
     $vals = $this->getSetting('query_queue', array());
     $pos = array_search($t, $vals);
-    $queue = ($pos < (count($vals) - 1)) ? array_slice($vals, $pos + 1) : array();
+    $queue = ($pos < ((is_countable($vals) ? count($vals) : 0) - 1)) ? array_slice($vals, $pos + 1) : array();
     $this->setSetting('query_queue', $queue);
     mysql_query('UNLOCK TABLES', $con);
   }

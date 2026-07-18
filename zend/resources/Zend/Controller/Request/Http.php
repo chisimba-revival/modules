@@ -489,7 +489,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
                 $segs    = explode('/', trim($file, '/'));
                 $segs    = array_reverse($segs);
                 $index   = 0;
-                $last    = count($segs);
+                $last    = (is_countable($segs) ? count($segs) : 0);
                 $baseUrl = '';
                 do {
                     $seg     = $segs[$index];

@@ -52,7 +52,7 @@ class db_contextcontent_contextchapter extends dbtable {
 /**
  * Constructor
  */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_chaptercontext');
         $this->objUser =& $this->getObject('user', 'security');
 
@@ -99,7 +99,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0]['chaptertitle'];
@@ -139,7 +139,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -253,7 +253,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         $sql = 'WHERE contextcode =\''.$context.'\' ORDER BY chapterorder DESC LIMIT 1';
         $result = $this->getAll($sql);
 
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['chapterorder'];
@@ -271,7 +271,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
      */
     public function removeChapterFromContext($chapterId, $context) {
         $results = $this->getAll('WHERE contextcode =\''.$context.'\' AND chapterid=\''.$chapterId.'\' ');
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
 
             $objDynamicBlocks = $this->getObject('dynamicblocks', 'blocks');
 
@@ -301,7 +301,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         $prevChapterSQL = ' WHERE contextcode=\''.$chapter['contextcode'].'\' AND chapterorder < '.$chapter['chapterorder'].' ORDER BY chapterorder DESC';
         $prevChapter = $this->getAll($prevChapterSQL);
 
-        if (count($prevChapter) == 0) {
+        if ((is_countable($prevChapter) ? count($prevChapter) : 0) == 0) {
             return FALSE;
         } else {
             $prevChapter = $prevChapter[0];
@@ -330,7 +330,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         $nextChapterSQL = ' WHERE contextcode=\''.$chapter['contextcode'].'\' AND chapterorder > '.$chapter['chapterorder'].' ORDER BY chapterorder';
         $nextChapter = $this->getAll($nextChapterSQL);
 
-        if (count($nextChapter) == 0) {
+        if ((is_countable($nextChapter) ? count($nextChapter) : 0) == 0) {
             return FALSE;
         } else {
             $nextChapter = $nextChapter[0];
@@ -383,7 +383,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
     public function getContextsWithChapter($chapterId) {
         $results = $this->getAll('WHERE chapterid=\''.$chapterId.'\' ');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             $contexts = array();

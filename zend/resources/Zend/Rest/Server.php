@@ -215,7 +215,7 @@ class Zend_Rest_Server implements Zend_Server_Interface
                     ksort($calling_args);
 
                     $result = false;
-                    if (count($calling_args) < count($func_args)) {
+                    if ((is_countable($calling_args) ? count($calling_args) : 0) < (is_countable($func_args) ? count($func_args) : 0)) {
                         require_once 'Zend/Rest/Server/Exception.php';
                         $result = $this->fault(new Zend_Rest_Server_Exception('Invalid Method Call to ' . $this->_method . '. Missing argument(s): ' . implode(', ', $missing_args) . '.'), 400);
                     }

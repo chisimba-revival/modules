@@ -32,7 +32,7 @@ class calendarbiulder extends ChisimbaObject
 	/**
 	* Constructor
 	*/
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 	    $this->_objConfig = $this->getObject('altconfig', 'config');
 

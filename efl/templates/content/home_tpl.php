@@ -88,7 +88,7 @@ $docRoot=$_SERVER['DOCUMENT_ROOT'];
 $resourcePath=str_replace($docRoot,$replacewith,$modPath);
 $codebase="http://" . $_SERVER['HTTP_HOST'].'/'.$resourcePath.'/efl/resources/';
 
-$total=count($dbdata);
+$total=(is_countable($dbdata) ? count($dbdata) : 0);
 $data="";
 foreach($dbdata as $row) {
     

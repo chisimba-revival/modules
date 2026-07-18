@@ -24,7 +24,7 @@ class dbIntro extends dbtable
     *
     * @access public
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_etd_intro');
         $this->table = 'tbl_etd_intro';

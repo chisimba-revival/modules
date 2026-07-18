@@ -24,7 +24,7 @@ class dbcategories extends dbTable
         /**
         * Constructor
         */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
             parent::init('tbl_cms_categories');
         }
@@ -269,7 +269,7 @@ class dbcategories extends dbTable
         public function hasNodes($id)
         {
             $nodes = $this->getAll('WHERE parent_id = \''.$id.'\'');
-            if(count($nodes) > '0') {
+            if((is_countable($nodes) ? count($nodes) : 0) > '0') {
                 $hasNodes = True;
             } else {
                 $hasNodes = False;

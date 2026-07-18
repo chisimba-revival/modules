@@ -2,7 +2,7 @@
 
 class dbfaqtags extends dbtable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_faq_tags');
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext=$this->getObject('dbcontext','context');
@@ -14,7 +14,7 @@ class dbfaqtags extends dbtable {
     public function prepArrayForTagCloud($array) {
         $finalArray = array();
 
-        if (count($array) > 0) {
+        if ((is_countable($array) ? count($array) : 0) > 0) {
             foreach ($array as $item) {
                 $finalArray[$item['tag']] = $item;
             }
@@ -45,7 +45,7 @@ FROM tbl_faq_tags,tbl_faq_entries  where tbl_faq_tags.faqid=tbl_faq_entries.id  
         $tags = $this->getLastLimitTags();
 
         // Check that there are tags
-        if (count($tags) == 0) {
+        if ((is_countable($tags) ? count($tags) : 0) == 0) {
             return '<div class="noRecordsMessage">Tag Cloud Goes Here</div>';
         } else {
             // Load Object
@@ -71,7 +71,7 @@ FROM tbl_faq_tags,tbl_faq_entries  where tbl_faq_tags.faqid=tbl_faq_entries.id  
 
         //$this->clearFaqTags($faqId);
 
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             foreach ($tags as $tag) {
                 $tag = trim(stripslashes($tag));
 
@@ -88,7 +88,7 @@ FROM tbl_faq_tags,tbl_faq_entries  where tbl_faq_tags.faqid=tbl_faq_entries.id  
 
         $this->clearFaqTags($faqId);
 
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             foreach ($tags as $tag) {
                 $tag = trim(stripslashes($tag));
 
@@ -112,7 +112,7 @@ FROM tbl_faq_tags,tbl_faq_entries  where tbl_faq_tags.faqid=tbl_faq_entries.id  
     public function getFaqTags($faqId) {
         $results = $this->getAll(' WHERE faqid=\''.$faqId.'\'');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             $returnArray = array();

@@ -7,7 +7,7 @@ $buttonLabel = $this->objLanguage->languageText('word_next', 'system', 'System')
 $buttonNote = $this->objLanguage->languageText('mod_podcaster_clickthreefromemail', 'podcaster', 'Click on the "Next step" button to proceed to upload podcast');
 $emailSuccess = $this->objLanguage->languageText('mod_podcaster_emailsuccess', 'podcaster', 'An email was successfully sent to these addresses');
 $emailLength = explode(',', $emails);
-$emailLength = count($emailLength);
+$emailLength = (is_countable($emailLength) ? count($emailLength) : 0);
 
 //Get Admin email address
 $userAdmin = $this->objUser->getUserDetails('1');

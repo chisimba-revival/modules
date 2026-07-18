@@ -14,7 +14,7 @@ $objTable = $this->getObject('htmltable','htmlelements');
 $objLoggedIn = $this->getObject('loggedinusers', 'security');
 $objFB = $this->getObject('featurebox', 'navigation');
 
-$numCounsilors = count($users);
+$numCounsilors = (is_countable($users) ? count($users) : 0);
 $numUsers = $this->objDbImPres->getRecordCount();
 $online = False;
 $str = "IM User: <b>".$this->juser.'</b><br/>';

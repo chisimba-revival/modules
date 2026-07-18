@@ -15,7 +15,7 @@ class dbplayer extends dbTable {
  var $objUser;
  var $objLanguage;
 
-	 function init(){
+	 function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 		parent::init('tbl_player');
 		$this->table = "tbl_player";
 

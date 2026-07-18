@@ -29,7 +29,7 @@ if ($cc != '') {
       . ' - <span class="coursetitle">' . $this->objContext->getTitle($cc)
       . '</span> ('.$numContextAnnouncements.')';
 
-    if ($isAdmin || count($lecturerContext) > 0) {
+    if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
         $header->str .= ' '.$addLink->show();
     }
 
@@ -74,7 +74,7 @@ $header->str = $this->objLanguage->languageText(
   'All My Announcements'
 ).' ('.$numAnnouncements.')';
 
-if ($isAdmin || count($lecturerContext) > 0) {
+if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
     $header->str .= ' '.$addLink->show();
 }
 
@@ -97,7 +97,7 @@ $addLink->link = $this->objLanguage->languageText('mod_announcements_postnewanno
 $content.= $allAnn;
 
 // Add new announcement link
-if ($isAdmin || count($lecturerContext) > 0) {
+if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
     $content.= "<div class='linkwrapper'><div class='adminadd'></div><div class='adminaddlink'>" . $addLink->show() . "</div></div>";
 }
 

@@ -42,7 +42,7 @@ class dbAnnouncements extends dbTable {
     /**
      * Constructor method to define the table
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_announcements');
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
@@ -187,7 +187,7 @@ class dbAnnouncements extends dbTable {
     {
         parent::init('tbl_announcements_context');
         $result = $this->getAll(" WHERE announcementid = '{$id}' ");
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             foreach ($result as $context) {
                 $this->objIndexData->removeIndex('announcement_entry_' . $context['contextid'] . '_' . $id);
                 $this->delete('id', $context['id']);
@@ -326,7 +326,7 @@ class dbAnnouncements extends dbTable {
         $where = '';
         $or = '';
         if (!empty($this->userId)) {
-            if (count($contexts) > 0) {
+            if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
                 foreach ($contexts as $context) {
                     $where .= "{$or} tbl_announcements_context.contextid = '{$context}'";
                     $or = " OR ";
@@ -418,7 +418,7 @@ class dbAnnouncements extends dbTable {
         $where = '';
         $or = '';
         if (!empty($this->userId)) {
-            if (count($contexts) > 0) {
+            if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
                 foreach ($contexts as $context) {
                     $where .= "{$or} tbl_announcements_context.contextid = '{$context}'";
                     $or = " OR ";
@@ -477,7 +477,7 @@ class dbAnnouncements extends dbTable {
 
         $return = array();
 
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             foreach ($result as $context) {
                 $return[] = $context['contextid'];
             }

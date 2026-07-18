@@ -71,7 +71,7 @@ class mentorsdisplay extends ChisimbaObject
         $objTableClass->width = "70%";
         $objTableClass->attributes = 'border=0';
 
-        if(is_array($allUsers) && count($allUsers) > 0 ){
+        if(is_array($allUsers) && (is_countable($allUsers) ? count($allUsers) : 0) > 0 ){
             // Create the array for the table header
             $tableRow = array();
             $tableHd[] = "";
@@ -242,7 +242,7 @@ class mentorsdisplay extends ChisimbaObject
         $content .= $pgTitle->show();
 
         //Loop through mentors and display each mentors posts
-        if(is_array($mentors) && count($mentors)>0){
+        if(is_array($mentors) && (is_countable($mentors) ? count($mentors) : 0)>0){
             foreach($mentors as $mentorId){
                 //Get the users wiki posts
                 $wikiId = $this->objMentorFuncs->createMentorsWiki();
@@ -252,7 +252,7 @@ class mentorsdisplay extends ChisimbaObject
                 $pgTitle->type = 2;
                 $pgTitle->str = $this->objUser->fullname($mentorId);
                 $content .= $pgTitle->show();
-                if(is_array($userWikiArticles) && count($userWikiArticles)>0){
+                if(is_array($userWikiArticles) && (is_countable($userWikiArticles) ? count($userWikiArticles) : 0)>0){
                     foreach($userWikiArticles as $article){
                         $articleLink = "<a href = \"" . $this->uri(array('module' => 'wiki',
 						'action' => 'view_page',
@@ -285,7 +285,7 @@ class mentorsdisplay extends ChisimbaObject
         //Add mentors header to output string
         $content .= $pgTitle->show();
         //Loop through mentors and display each mentors posts
-        if(is_array($students) && count($students)>0){
+        if(is_array($students) && (is_countable($students) ? count($students) : 0)>0){
             foreach($students as $studentId){
                 //Get the users wiki posts
                 $wikiId = $this->objMentorFuncs->createMentorsWiki();
@@ -295,7 +295,7 @@ class mentorsdisplay extends ChisimbaObject
                 $pgTitle->type = 2;
                 $pgTitle->str = $this->objUser->fullname($studentId);
                 $content .= $pgTitle->show();
-                if(is_array($userWikiArticles) && count($userWikiArticles)>0){
+                if(is_array($userWikiArticles) && (is_countable($userWikiArticles) ? count($userWikiArticles) : 0)>0){
                     foreach($userWikiArticles as $article){
                         $articleLink = "<a href = \"" . $this->uri(array('module' => 'wiki',
 						'action' => 'view_page',

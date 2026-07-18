@@ -75,7 +75,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       $subjects[$subject] = 1;
     }
 
-    $this->assertEquals( 1 , count($subjects));
+    $this->assertEquals( 1 , (is_countable($subjects) ? count($subjects) : 0));
   }
 
 
@@ -100,7 +100,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_reset_data_posts_rdfxml_with_a_single_start_time() {
@@ -124,7 +124,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_reset_data_posts_rdfxml_with_a_type_of_job_request() {
@@ -318,7 +318,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       $subjects[$subject] = 1;
     }
 
-    $this->assertEquals( 1 , count($subjects));
+    $this->assertEquals( 1 , (is_countable($subjects) ? count($subjects) : 0));
   }
 
 
@@ -343,7 +343,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_snapshot_posts_rdfxml_with_a_single_start_time() {
@@ -367,7 +367,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_snapshot_posts_rdfxml_with_a_type_of_job_request() {
@@ -560,7 +560,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       $subjects[$subject] = 1;
     }
 
-    $this->assertEquals( 1 , count($subjects));
+    $this->assertEquals( 1 , (is_countable($subjects) ? count($subjects) : 0));
   }
 
 
@@ -585,7 +585,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_reindex_posts_rdfxml_with_a_single_start_time() {
@@ -609,7 +609,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_reindex_posts_rdfxml_with_a_type_of_job_request() {
@@ -802,7 +802,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       $subjects[$subject] = 1;
     }
 
-    $this->assertEquals( 1 , count($subjects));
+    $this->assertEquals( 1 , (is_countable($subjects) ? count($subjects) : 0));
   }
 
 
@@ -827,7 +827,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_restore_posts_rdfxml_with_a_single_start_time() {
@@ -851,7 +851,7 @@ class JobQueueTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_schedule_restore_posts_rdfxml_with_a_type_of_job_request() {

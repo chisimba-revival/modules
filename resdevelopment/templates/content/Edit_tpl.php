@@ -20,7 +20,7 @@ $addStudentUrl = str_replace("amp;", "", $this->uri(array('action'=>'saveStudent
 $getStudentData = $this->objStudents->getStudentData();
 
 $data = "[";
-$numRows = count($getStudentData);
+$numRows = (is_countable($getStudentData) ? count($getStudentData) : 0);
 $count = 1;
 
 $editName = new link();

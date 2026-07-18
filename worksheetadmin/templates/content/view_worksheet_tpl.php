@@ -110,7 +110,7 @@ if(isset($msg)){
 /* *** Questions Section *** */
 
 // add a new question
-$numQuestions = count($questions);
+$numQuestions = (is_countable($questions) ? count($questions) : 0);
 $objIcon->title=$addLabel;
 $addQ=$objIcon->getAddIcon($this->uri(array( 'module'=> 'worksheet', 'action' => 'addquestion',
 'id' => $sheet['id'], 'count' => $numQuestions)));
@@ -221,7 +221,7 @@ if(!empty($questions)){
 
 if($sheet['activity_status']=='inactive')
 {
-	$addQUrl = $this->uri(array( 'module'=> 'worksheet', 'action' => 'addquestion', 'id' => $sheet['id'], 'count' => count($questions)));
+	$addQUrl = $this->uri(array( 'module'=> 'worksheet', 'action' => 'addquestion', 'id' => $sheet['id'], 'count' => (is_countable($questions) ? count($questions) : 0)));
 	$objLink = new link($addQUrl);
 	$objLink->link = $addLabel;
 	$homeLink = "<div class='adminadd'></div><div class='adminaddlink'>".$objLink->show()."</div>";

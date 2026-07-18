@@ -25,7 +25,7 @@ class dbtestadmin extends dbtable {
      * @access public
      * @return
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_tests');
         $this->table = 'tbl_tests';
         $this->dbQuestions = &$this->newObject('dbquestions');
@@ -268,7 +268,7 @@ class dbtestadmin extends dbtable {
                 $myCountSql .= " as A join tbl_test_questions as B on A.id = B.testid";
                 $myCountSql .= " WHERE (B.questiontype=" . $type . ")";
                 $countData = $this->getArray($myCountSql);
-                $totalcount = count($countData);
+                $totalcount = (is_countable($countData) ? count($countData) : 0);
                 return json_encode(array('totalcount' => $totalcount, 'results' => $data));
             } else {
                 $sql .= " and (B.questiontype=".$type.")";
@@ -287,7 +287,7 @@ class dbtestadmin extends dbtable {
                 $myCountSql .= " WHERE A.context = '" . $contextCode . "' AND B.testid != '" . $testid . "'";
                 $myCountSql .= " and (B.questiontype=" . $type . ")";
                 $countData = $this->getArray($myCountSql);
-                $totalcount = count($countData);
+                $totalcount = (is_countable($countData) ? count($countData) : 0);
 
 
                 return json_encode(array('totalcount' => $totalcount, 'results' => $data));
@@ -307,7 +307,7 @@ class dbtestadmin extends dbtable {
             $myCountSql .= " as A join tbl_test_questions as B on A.id = B.testid";
 
             $countData = $this->getArray($myCountSql);
-            $totalcount = count($countData);
+            $totalcount = (is_countable($countData) ? count($countData) : 0);
 
             if ($data) {
                 return json_encode(array('totalcount' => $totalcount, 'results' => $data));

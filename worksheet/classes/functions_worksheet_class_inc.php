@@ -52,7 +52,7 @@ class functions_worksheet extends ChisimbaObject
 	//Load Table Object
 	$table = $this->newObject('htmltable', 'htmlelements');
 
-	if (count($worksheets) == 0) {
+	if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
 		return False;
 	} else {
 		$table->startHeaderRow();
@@ -128,7 +128,7 @@ class functions_worksheet extends ChisimbaObject
 					$mytable->cellspacing = 1;
 					$mytable->width = 500;					
 
-					if (count($worksheets) == 0) {
+					if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
 						return False;
 					} else {
 						foreach ($worksheets as $worksheet)
@@ -173,7 +173,7 @@ class functions_worksheet extends ChisimbaObject
 							$mytable->endRow();
 							$mytable->startRow();
 							$mytable->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_questions', 'worksheet', 'Questions').'</strong>: ',"100","","","","bgcolor='#D3D3D3'");
-							$mytable->addCell(count($questions),"400","","","","bgcolor='#FFFFFF'");
+							$mytable->addCell((is_countable($questions) ? count($questions) : 0),"400","","","","bgcolor='#FFFFFF'");
 							$mytable->endRow();
 							$mytable->startRow();
 							$mytable->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_percentage', 'worksheet', 'Percentage').'</strong>: ',"100","","","","bgcolor='#D3D3D3'");

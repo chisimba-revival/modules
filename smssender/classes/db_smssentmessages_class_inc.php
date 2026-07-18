@@ -14,7 +14,7 @@ class db_smssentmessages extends dbTable
     * Class constructor
     * @access public
     */
-    public function init ()
+    public function init ($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_smssender_sentmessages');
         $this->objUser =& $this->getObject('user', 'security');

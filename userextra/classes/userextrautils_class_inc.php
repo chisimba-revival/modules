@@ -17,7 +17,7 @@ class userextrautils extends ChisimbaObject {
                 $info = array();
                 $username = "";
                 $student = explode(",", $buffer);
-                if (count($student) > 2) {
+                if ((is_countable($student) ? count($student) : 0) > 2) {
                     $username = $student[0];
                     $info ['surname'] = $student[1];
                     $info ['firstname'] = $student[2];

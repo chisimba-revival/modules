@@ -452,7 +452,7 @@ class Zend_Ldap_Node extends Zend_Ldap_Node_Abstract implements Iterator, Recurs
             $this->_dn = $this->_newDn;
             $this->_newDn = null;
         }
-        if (count($changedData) > 0) {
+        if ((is_countable($changedData) ? count($changedData) : 0) > 0) {
             $ldap->update($this->_getDn(), $changedData);
         }
         $this->_originalData = $this->_currentData;

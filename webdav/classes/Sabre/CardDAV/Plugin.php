@@ -324,7 +324,7 @@ class Sabre_CardDAV_Plugin extends Sabre_DAV_ServerPlugin {
 
             $validNodes[] = $node;
 
-            if ($query->limit && $query->limit <= count($validNodes)) {
+            if ($query->limit && $query->limit <= (is_countable($validNodes) ? count($validNodes) : 0)) {
                 // We hit the maximum number of items, we can stop now.
                 break;
             }
@@ -392,7 +392,7 @@ class Sabre_CardDAV_Plugin extends Sabre_DAV_ServerPlugin {
                     $results[] = $this->validateTextMatches($texts, $filter['text-matches'], $filter['test']);
                 }
 
-                if (count($results)===1) {
+                if ((is_countable($results) ? count($results) : 0)===1) {
                     $success = $results[0];
                 } else {
                     if ($filter['test'] === 'anyof') {

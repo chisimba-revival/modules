@@ -3,7 +3,7 @@
 class dbhotelscategories extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_categories');
         $this->loadClass('link', 'htmlelements');
@@ -170,7 +170,7 @@ class dbhotelscategories extends dbtable
     {
         $result = $this->getAll(' ORDER BY categoryorder DESC LIMIT 1');
 
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['categoryorder'];
@@ -197,7 +197,7 @@ class dbhotelscategories extends dbtable
     {
         $results = $this->getCategoriesWithStories();
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             $str = '<h2>Hotels Categories</h2><ul id="nav-secondary">';

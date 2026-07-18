@@ -61,7 +61,7 @@ class db_eportfolio_activitystreamer extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_eportfolio_activitystreamer');
         $this->objUser =& $this->getObject('user', 'security');
@@ -236,7 +236,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $getDistinct = "SELECT distinct userid  FROM tbl_eportfolio_activitystreamer";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -253,7 +253,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $getDistinct = "SELECT distinct sessionid  FROM tbl_eportfolio_activitystreamer WHERE userid = '$userId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;
@@ -270,7 +270,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $getDistinct = "SELECT * FROM tbl_eportfolio_activitystreamer WHERE userid = '$userId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;
@@ -321,7 +321,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $getDistinct = "SELECT id, endtime, min(starttime) as minstarttime FROM tbl_eportfolio_activitystreamer WHERE sessionid = '$sessionId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -338,7 +338,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $getDistinct = "SELECT id, endtime, max(starttime) as maxstarttime  FROM tbl_eportfolio_activitystreamer WHERE sessionid = '$sessionId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -628,7 +628,7 @@ class db_eportfolio_activitystreamer extends dbtable
     function jsonGetEportfolioUsage() 
     {
         $logs = $this->getTimeTakenByEachMember();
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $str = '{"logcount":"' . $logCount . '","availableLogs":[';
         $logArray = array();
 
@@ -662,7 +662,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $logs = $this->getEportfolioLogs();
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $str = '{"logcount":"' . $logCount . '","availableLogs":[';
         $logArray = array();
 
@@ -840,7 +840,7 @@ class db_eportfolio_activitystreamer extends dbtable
         $where = "";
         $logs = $this->getEportfolioLogs();
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('id, userid, username, fullname, ownerfullname, contextcode, modulecode, recordid, partname, parttitle, datecreated, description, starttime, endtime');
         $csvFile = "logs.csv"; 
@@ -944,7 +944,7 @@ class db_eportfolio_activitystreamer extends dbtable
     {
         $logs = $this->getTimeTakenByEachMember();
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('userid,username,fullname,contextcode,duration');
         $csvFile = "eportfolio-usage.csv"; 

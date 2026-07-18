@@ -159,7 +159,7 @@ class utilities extends ChisimbaObject {
             //loop the array
             $i = 0;
             $totalcnt = 0;
-            if (count($subList) < 1) {
+            if ((is_countable($subList) ? count($subList) : 0) < 1) {
                 $arr['totalCount'] = "0";
                 $arr['submissions'] = array();
                 return json_encode($arr);
@@ -308,7 +308,7 @@ class utilities extends ChisimbaObject {
             }
 
 
-            $arr['totalCount'] = strval(count($assigments));
+            $arr['totalCount'] = strval((is_countable($assigments) ? count($assigments) : 0));
             $arr['assignments'] = $assigments;
         } else {
             return false;
@@ -786,11 +786,11 @@ class utilities extends ChisimbaObject {
         //split the string by the literal dot in the filename
         $pattern = preg_split('/\./', $string, -1, PREG_SPLIT_OFFSET_CAPTURE);
         //get the last dot position
-        $lastdot = $pattern[count($pattern) - 1][1];
+        $lastdot = $pattern[(is_countable($pattern) ? count($pattern) : 0) - 1][1];
         //now extract the filename using the basename function
         $filename = basename(substr($string, 0, $lastdot - 1));
         $exts = split("[/\\.]", $filepath);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         return $filename . '.' . $ext;

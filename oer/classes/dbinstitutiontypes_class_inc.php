@@ -26,7 +26,7 @@
 
 class dbinstitutiontypes extends dbtable {
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_oer_institution_types");
     }
 
@@ -82,7 +82,7 @@ class dbinstitutiontypes extends dbtable {
     function getInstitutionTypeName($id) {
         $sql = "SELECT type FROM tbl_oer_institution_types WHERE id='".$id."'";
         $institutionType = $this->getArray($sql);
-        if (count($institutionType) > 0) {
+        if ((is_countable($institutionType) ? count($institutionType) : 0) > 0) {
             return $institutionType[0]['type'];
         } else {
             return Null;
@@ -97,7 +97,7 @@ class dbinstitutiontypes extends dbtable {
     function getInstitutionTypeData($id) {
         $sql = "SELECT * FROM tbl_oer_institutions WHERE id='".$id."'";
         $institutiontype = $this->getArray($sql);
-        if (count($institutiontype) > 0) {
+        if ((is_countable($institutiontype) ? count($institutiontype) : 0) > 0) {
             return $institutiontype[0];
         } else {
             return Null;

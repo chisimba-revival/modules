@@ -41,7 +41,7 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class flickrshowembed extends ChisimbaObject {
     
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objConfig = $this->getObject('altconfig', 'config');
     }
     

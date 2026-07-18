@@ -265,7 +265,7 @@ class apiexplore extends ChisimbaObject
     */
     private function isMp3($url) {
         $ar = explode('.', $url);
-        $pos = count($ar)-1;
+        $pos = (is_countable($ar) ? count($ar) : 0)-1;
         $fileExt = strtolower($ar[$pos]);
         if ($fileExt == 'mp3') {
             return TRUE;

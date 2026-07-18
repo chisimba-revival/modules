@@ -11,7 +11,7 @@ class dbincident extends dbTable{
 	/**
 	 *Constructor
  	*/
-    	function init()
+    	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	    {
 		    parent::init('tbl_incident');
 	    }

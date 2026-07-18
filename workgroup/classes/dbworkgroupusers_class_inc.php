@@ -17,7 +17,7 @@ class dbWorkgroupUsers extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_workgroup_users');
         //$this->USE_PREPARED_STATEMENTS=True;
@@ -55,7 +55,7 @@ class dbWorkgroupUsers extends dbTable
         $sql = 'WHERE workgroupid="'.$workgroup.'" AND  userid="'.$userId.'"';
         $list = $this->getAll($sql);
 
-        if (count($list) == 0) {
+        if ((is_countable($list) ? count($list) : 0) == 0) {
 			// If the user is not a student in the workgroup,
 			// check if the user is a context lecturer.
             return $this->objUser->isContextLecturer();
@@ -76,7 +76,7 @@ class dbWorkgroupUsers extends dbTable
         AND {$this->_tableName}.workgroupid='" . $workgroupId . "'
 		ORDER BY tbl_users.surname, tbl_users.firstname ASC";
 		$rows = $this->getArray($sql);
-		$count = count($rows);
+		$count = (is_countable($rows) ? count($rows) : 0);
 		for ($i = 0; $i < $count; $i++) {
 			$rows[$i]['fullname'] = stripslashes($rows[$i]['surname']).', '.stripslashes($rows[$i]['firstname']);
 		}
@@ -98,7 +98,7 @@ class dbWorkgroupUsers extends dbTable
 		AND {$this->_tableName}.userid='" . $userId . "'
 		ORDER BY fullname";
 		$rows = $this->getArray($sql);
-		$count = count($rows);
+		$count = (is_countable($rows) ? count($rows) : 0);
 		for ($i = 0; $i < $count; $i++) {
 			$rows[$i]['fullname'] = stripslashes($rows[$i]['fullname']);
 		}

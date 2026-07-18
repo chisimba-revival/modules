@@ -14,7 +14,7 @@ class dbindexsummary extends dbTable
     /**
      * Method to define the table
      */
-     function init()
+     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
      {
          parent::init('tbl_award_index_summary');
          $this->objUser = $this->getObject('user', 'security');

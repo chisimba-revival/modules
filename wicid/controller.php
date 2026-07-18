@@ -301,7 +301,7 @@ class wicid extends controller {
 
         $foldernotempty = '<strong class="confirm">' . $this->objLanguage->languageText('mod_wicid_shortdeleteallintopicmessage', 'wicid', "Kindly delete both approved and un-approved documents in this topic before deleting it") . '</strong>';
 //Ask user to delete the contents of the folder first, else delete the topic if empty
-        if (count($checkfolderdocs) >= 1) {
+        if ((is_countable($checkfolderdocs) ? count($checkfolderdocs) : 0) >= 1) {
             return $this->nextAction('removefolder', array('message' => $foldernotempty, 'folder' => $folder));
         } else {
 //Delete the topic
@@ -722,7 +722,7 @@ class wicid extends controller {
 
 
 
-        if (count($errormessages) > 0) {
+        if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
 
             $this->setVarByRef("errormessages", $errormessages);
             $this->setVarByRef("department", $dept);
@@ -1147,7 +1147,7 @@ class wicid extends controller {
 //$ext = $path_parts['extension'];
             $filename = strtolower($filename);
             $exts = split("[/\\.]", $filename);
-            $n = count($exts) - 1;
+            $n = (is_countable($exts) ? count($exts) : 0) - 1;
             $ext = $exts[$n];
             $ext = strtolower($ext);
             $doc = $this->documents->getDocument($docid);

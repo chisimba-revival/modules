@@ -284,7 +284,7 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
             case self::TYPE_ARRAY:
                 $output .= 'array(';
                 $curArrayMultiblock = false;
-                if (count($value) > 1) {
+                if ((is_countable($value) ? count($value) : 0) > 1) {
                     $curArrayMultiblock = true;
                     $output .= PHP_EOL . str_repeat($this->_indentation, $this->_arrayDepth+1);
                 }

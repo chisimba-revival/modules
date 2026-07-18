@@ -259,7 +259,7 @@ class Zend_Pdf_Page
             }
 
             $pageDim = explode(':', $param1);
-            if(count($pageDim) == 3) {
+            if((is_countable($pageDim) ? count($pageDim) : 0) == 3) {
                 $pageWidth  = $pageDim[0];
                 $pageHeight = $pageDim[1];
             } else {

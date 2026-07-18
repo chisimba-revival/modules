@@ -13,7 +13,7 @@ $fileId=$this->getParam('fileid');
 $data=$this->objFile->getArray("select * from tbl_practicals_filestore where fileId='$fileId'");
 print_r($data);
 die;
-if (count($data)==0){ // if the file has been deleted
+if ((is_countable($data) ? count($data) : 0)==0){ // if the file has been deleted
     header("Status: 404 Not Found");
 } else {
     $name=$data[0]['filename'];

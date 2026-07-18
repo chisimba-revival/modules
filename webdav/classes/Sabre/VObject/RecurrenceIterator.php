@@ -942,7 +942,7 @@ class Sabre_VObject_RecurrenceIterator implements Iterator {
                 } else {
 
                     // if it was negative we count from the end of the array
-                    $byDayResults[] = $dayHits[count($dayHits) + $offset];
+                    $byDayResults[] = $dayHits[(is_countable($dayHits) ? count($dayHits) : 0) + $offset];
                 }
             } else {
                 // There was no counter (first, second, last wednesdays), so we
@@ -992,7 +992,7 @@ class Sabre_VObject_RecurrenceIterator implements Iterator {
         foreach($this->bySetPos as $setPos) {
 
             if ($setPos<0) {
-                $setPos = count($result)-($setPos+1);
+                $setPos = (is_countable($result) ? count($result) : 0)-($setPos+1);
             }
             if (isset($result[$setPos-1])) {
                 $filteredResult[] = $result[$setPos-1];

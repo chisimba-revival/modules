@@ -70,10 +70,10 @@
 //
 //}
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //		$str = $this->objLanguage->languageText('mod_forum_topichasfollwoingtangents', 'forum', 'This topic has the following [-COUNTTANGENTS-] tangent(s). Please indicate what you would like to happen to them as well?');
 //
-//		$str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+//		$str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
 //
 //		$deleteForm->addToForm($str);
 //
@@ -89,7 +89,7 @@
 //
 //    $deleteForm->addToForm('<fieldset><legend>'.$this->objLanguage->languageText('mod_forum_deleteoptions', 'forum', 'Delete Options').'</legend><p><strong>');
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //        $deleteForm->addToForm('a) ');
 //    }
 //
@@ -103,7 +103,7 @@
 //
 //    $deleteForm->addToForm($deleteConfirm->show().'</p>');
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //        $deleteForm->addToForm('<p>b) '.$this->objLanguage->languageText('mod_forum_whathappentotangents', 'forum', 'What should happen to the tangents?').'</p>');
 //
 //        $tangentOption = new radio ('tangentoption');
@@ -111,7 +111,7 @@
 //
 //        $dropdown = new dropdown ('topicmove');
 //
-//        if (count($otherTopicsInForum) > 0) {
+//        if ((is_countable($otherTopicsInForum) ? count($otherTopicsInForum) : 0) > 0) {
 //            foreach ($otherTopicsInForum as $forumtopic)
 //            {
 //                $dropdown->addOption($forumtopic['topic_id'], $forumtopic['post_title']);
@@ -161,7 +161,7 @@
 //// You cant move a topic as a tangent to another topic if there aren't any other topics
 //
 //
-//if (count($otherForums) > 0) {
+//if ((is_countable($otherForums) ? count($otherForums) : 0) > 0) {
 //
 //    // Increase Options Count for next item
 //    $optionsCount++;
@@ -203,7 +203,7 @@
 //// You cant move a topic as a tangent to another topic if there aren't any other topics
 //
 //
-//if (count($otherTopicsInForum) > 0) {
+//if ((is_countable($otherTopicsInForum) ? count($otherTopicsInForum) : 0) > 0) {
 //
 //    // Increase Options Count for next item
 //    $optionsCount++;
@@ -219,9 +219,9 @@
 //    }
 //    $moveToTangentForm->addToForm($this->objLanguage->languageText('mod_forum_movetopicastangent', 'forum', 'Move the Topic as a tangent to the following topic').': '.$dropdown->show());
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //		$str = $this->objLanguage->languageText('mod_forum_tangentsmovedwithtopic', 'forum', '<strong>Note</strong> This topic has [-COUNTTANGENTS-] tangent(s). They will automatically become tangents to the selected topic.');
-//		$str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+//		$str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
 //        $moveToTangentForm->addToForm('<p>'.$str.'</p>');
 //    }
 //

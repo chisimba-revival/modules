@@ -744,7 +744,7 @@ class validate extends ChisimbaObject
         $arrQuestionList=$this->dbQuestion->listQuestions($surveyId);
 
         $valid=TRUE;
-        if(count($arrPageData)>count($arrQuestionList)){
+        if((is_countable($arrPageData) ? count($arrPageData) : 0)>(is_countable($arrQuestionList) ? count($arrQuestionList) : 0)){
             $valid=FALSE;
             $array=array('fieldname_1'=>$pages,'fieldname_2'=>strtolower($questions));
             $errMsg[]=$this->objLanguage->code2Txt('mod_survey_error_10','survey',$array);

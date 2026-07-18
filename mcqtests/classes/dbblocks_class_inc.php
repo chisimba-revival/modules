@@ -50,7 +50,7 @@ class dbBlocks extends dbTable {
      * @return NULL
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         try {
             parent::init('tbl_test_blocks');
             $this->objUser = $this->getObject('user', 'security');

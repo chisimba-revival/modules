@@ -648,7 +648,7 @@ class liftclub extends controller
             $problems[] = 'captchadoesntmatch';
         }
         // If there are problems, present from to user to fix
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'registrationhome_tpl.php';
@@ -891,7 +891,7 @@ class liftclub extends controller
             $problems[] = 'captchadoesntmatch';
         }
         // If there are problems, present from to user to fix
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'modifyregistration_tpl.php';
@@ -999,7 +999,7 @@ class liftclub extends controller
         }
         // Process Update
         $update = $this->objUserAdmin->updateUserDetails($id, $username, $firstname, $surname, $title, $email, $sex, $country, $cellnumber, $staffnumber, $password);
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             $results['change'] = 'details';
         }
         $this->setSession('showconfirmation', TRUE);

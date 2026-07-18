@@ -712,7 +712,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
                     $this->addDecorator($decoratorInfo);
                 }
             } elseif (is_array($decoratorInfo)) {
-                $argc    = count($decoratorInfo);
+                $argc    = (is_countable($decoratorInfo) ? count($decoratorInfo) : 0);
                 $options = array();
                 if (isset($decoratorInfo['decorator'])) {
                     $decorator = $decoratorInfo['decorator'];
@@ -973,7 +973,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
             if (false !== ($decorator = $this->getDecorator($decoratorName))) {
                 $decorator->setElement($this);
                 $seed = '';
-                if (0 < count($args)) {
+                if (0 < (is_countable($args) ? count($args) : 0)) {
                     $seed = array_shift($args);
                 }
                 return $decorator->render($seed);

@@ -32,7 +32,7 @@ class dbkeywords extends dbtable {
 
     private $tableName = 'tbl_oer_product_keywords';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 

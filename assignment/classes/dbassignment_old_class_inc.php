@@ -45,7 +45,7 @@ class dbassignment_old extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_assignment');
         $this->table = 'tbl_assignment';

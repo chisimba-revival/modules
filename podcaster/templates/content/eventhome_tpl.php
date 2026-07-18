@@ -72,7 +72,7 @@ $grpMembers = $this->_objGroupAdmin->getGroupUsers($group, array(
             'staffnumber'
                 ), $filter);
 $grpmembersArray = array();
-if (count($grpMembers) > 0) {
+if ((is_countable($grpMembers) ? count($grpMembers) : 0) > 0) {
     foreach ($grpMembers as $grpMember) {
         $grpmembersArray[] = $grpMember['userid'];
     }
@@ -88,7 +88,7 @@ $objTable->cellspacing = 1;
 $objTable->id = "lecturerTable";
 $objTable->css_class = "sorttable";
 $objTable->startRow();
-if ($this->isValid('removeallusers') && count($grpMembers) > 0) {
+if ($this->isValid('removeallusers') && (is_countable($grpMembers) ? count($grpMembers) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->addCell("<i>" . $this->objLanguage->languageText('word_userid') . "</i>", 100, 'bottom', '', 'heading', '');
@@ -97,9 +97,9 @@ $objTable->addCell("<i>" . $this->objLanguage->languageText('word_title', 'syste
 $objTable->addCell("<i>" . $this->objLanguage->languageText('phrase_firstname', 'system', 'First name') . "</i>", '20%', 'bottom', '', 'heading', '');
 $objTable->addCell("<i>" . $this->objLanguage->languageText('word_surname', 'system', 'Surname') . "</i>", '20%', 'bottom', '', 'heading', '');
 $objTable->addCell("<i>" . $this->objLanguage->languageText('phrase_emailaddress', 'system', 'Email Address') . "</i>", '', 'bottom', '', 'heading', '');
-$gCount = count($grpMembers);
+$gCount = (is_countable($grpMembers) ? count($grpMembers) : 0);
 $rowCount = new hiddeninput('rowcount', $gCount);
-if ($this->isValid('removeuser') && count($grpMembers) > 0) {
+if ($this->isValid('removeuser') && (is_countable($grpMembers) ? count($grpMembers) : 0) > 0) {
     $objTable->addCell($rowCount->show(), 30, '', '', '', '');
 }
 $objTable->endRow();
@@ -161,7 +161,7 @@ $objForm = new form('removeusers', $this->uri(array(
                     'group' => $group
                 )));
 $objForm->addToForm($objTable->show());
-if (count($grpMembers) > 1) {
+if ((is_countable($grpMembers) ? count($grpMembers) : 0) > 1) {
     $objForm->addToForm($buttons);
 }
 //echo $objForm->show();
@@ -202,7 +202,7 @@ if ($this->isValid('addusers')) {
     $label = new label($this->objLanguage->languageText('mod_contextgroups_choosecourse', 'contextgroups', 'Users of'), 'input_course');
     $courseDropdown = new dropdown('course');
     $courseDropdown->addOption('all', $this->objLanguage->languageText('mod_contextgroups_allcourses', 'contextgroups', 'All courses'));
-    for ($i = 0; $i < count($data); $i++) {
+    for ($i = 0; $i < (is_countable($data) ? count($data) : 0); $i++) {
         $courseDropdown->addOption($data[$i]['contextcode'], $data[$i]['title']);
     }
     $courseDropdown->setSelected($course);
@@ -214,7 +214,7 @@ if ($this->isValid('addusers')) {
         "Students",
         "Guest"
     );
-    for ($i = 0; $i < count($groups); $i++) {
+    for ($i = 0; $i < (is_countable($groups) ? count($groups) : 0); $i++) {
         $groupDropdown->addOption($groups[$i], $groups[$i]);
     }
     $groupDropdown->setSelected($group);

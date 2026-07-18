@@ -780,9 +780,9 @@ class SphinxClient
 	{
 		assert ( is_string($attribute) );
 		assert ( is_array($values) );
-		assert ( count($values) );
+		assert ( (is_countable($values) ? count($values) : 0) );
 
-		if ( is_array($values) && count($values) )
+		if ( is_array($values) && (is_countable($values) ? count($values) : 0) )
 		{
 			foreach ( $values as $value )
 				assert ( is_numeric($value) );
@@ -1320,7 +1320,7 @@ class SphinxClient
 		$req .= pack ( "N", (int)$opts["around"] );
 
 		// documents
-		$req .= pack ( "N", count($docs) );
+		$req .= pack ( "N", (is_countable($docs) ? count($docs) : 0) );
 		foreach ( $docs as $doc )
 		{
 			assert ( is_string($doc) );
@@ -1347,7 +1347,7 @@ class SphinxClient
 		$pos = 0;
 		$res = array ();
 		$rlen = strlen($response);
-		for ( $i=0; $i<count($docs); $i++ )
+		for ( $i=0; $i<(is_countable($docs) ? count($docs) : 0); $i++ )
 		{
 			list(,$len) = unpack ( "N*", substr ( $response, $pos, 4 ) );
 			$pos += 4;
@@ -1480,7 +1480,7 @@ class SphinxClient
 		{
 			assert ( is_numeric($id) );
 			assert ( is_array($entry) );
-			assert ( count($entry)==count($attrs) );
+			assert ( (is_countable($entry) ? count($entry) : 0)==(is_countable($attrs) ? count($attrs) : 0) );
 			foreach ( $entry as $v )
 			{
 				if ( $mva )
@@ -1496,20 +1496,20 @@ class SphinxClient
 		// build request
 		$req = pack ( "N", strlen($index) ) . $index;
 
-		$req .= pack ( "N", count($attrs) );
+		$req .= pack ( "N", (is_countable($attrs) ? count($attrs) : 0) );
 		foreach ( $attrs as $attr )
 		{
 			$req .= pack ( "N", strlen($attr) ) . $attr;
 			$req .= pack ( "N", $mva ? 1 : 0 );
 		}
 
-		$req .= pack ( "N", count($values) );
+		$req .= pack ( "N", (is_countable($values) ? count($values) : 0) );
 		foreach ( $values as $id=>$entry )
 		{
 			$req .= sphPackU64 ( $id );
 			foreach ( $entry as $v )
 			{
-				$req .= pack ( "N", $mva ? count($v) : $v );
+				$req .= pack ( "N", $mva ? (is_countable($v) ? count($v) : 0) : $v );
 				if ( $mva )
 					foreach ( $v as $vv )
 						$req .= pack ( "N", $vv );

@@ -249,7 +249,7 @@ class Zend_Amf_Parse_Amf0_Serializer extends Zend_Amf_Parse_Serializer
      */
     public function writeArray(&$array)
     {
-        $length = count($array);
+        $length = (is_countable($array) ? count($array) : 0);
         if (!$length < 0) {
             // write the length of the array
             $this->_stream->writeLong(0);

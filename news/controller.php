@@ -433,7 +433,7 @@ class news extends controller {
         $categories = $this->objNewsCategories->getCategories('categoryname');
         $this->setVarByRef('categories', $categories);
 
-        if (count($categories) == 0) {
+        if ((is_countable($categories) ? count($categories) : 0) == 0) {
             return 'nocategories.php';
         } else {
             return 'addeditstory.php';
@@ -560,7 +560,7 @@ class news extends controller {
 
         $categories = $this->objNewsCategories->getCategories('categoryname');
         $this->setVarByRef('categories', $categories);
-        if (count($categories) == 0) {
+        if ((is_countable($categories) ? count($categories) : 0) == 0) {
             return 'nocategories.php';
         }
 
@@ -764,7 +764,7 @@ class news extends controller {
 
       $keywords = $this->objKeywords->getAjaxKeywords($start);
 
-      if (count($keywords) > 0) {
+      if ((is_countable($keywords) ? count($keywords) : 0) > 0) {
       echo '<ul>';
       $counter = 1;
       foreach ($keywords as $keyword)
@@ -821,7 +821,7 @@ class news extends controller {
 
         $stories = $this->objNewsStories->getKeywordStories($keyword);
 
-        if (count($stories) == 0) {
+        if ((is_countable($stories) ? count($stories) : 0) == 0) {
             return $this->nextAction('home');
         } else {
             $this->setVarByRef('keyword', $keyword);
@@ -952,7 +952,7 @@ class news extends controller {
 
         echo '<strong>Results:</strong> ';
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             echo '<br />';
 
             $radio = new radio('location');
@@ -1014,7 +1014,7 @@ class news extends controller {
 
         $results2 = $objGeonames->getLocationsStartingWith($location);
 
-        if (count($results2) > 0) {
+        if ((is_countable($results2) ? count($results2) : 0) > 0) {
             echo '<br /><strong>Other Possible Results:</strong><br />';
 
             $divider = '';

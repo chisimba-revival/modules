@@ -497,7 +497,7 @@ class Zend_Auth_Adapter_Ldap implements Zend_Auth_Adapter_Interface
                 continue;
             }
             if (is_array($value)) {
-                $returnObject->$attr = (count($value) > 1) ? $value : $value[0];
+                $returnObject->$attr = ((is_countable($value) ? count($value) : 0) > 1) ? $value : $value[0];
             } else {
                 $returnObject->$attr = $value;
             }

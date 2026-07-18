@@ -287,7 +287,7 @@ if ($numRecords == 1)
 //$objSelectFile->name = 'nameofforminput';
 //$editTermForm->addToForm($objSelectFile->show());
 
-if (count($images) == 0) {
+if ((is_countable($images) ? count($images) : 0) == 0) {
     echo '<p>'.$this->objLanguage->languageText('mod_glossary_noimageslisted', 'glossary').'</p>';
 } else {
     // Popup

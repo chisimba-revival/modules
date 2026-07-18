@@ -895,7 +895,7 @@ class Jabber {
 	function _node($packet,$path,$checkset = false) {
 		$cursor = &$packet;
 		
-		$pathlength = count($path);
+		$pathlength = (is_countable($path) ? count($path) : 0);
 		for ($i=0; $i<$pathlength; $i++) {
 			$last = ($i==$pathlength-1);
 			
@@ -1491,7 +1491,7 @@ class Jabber {
 			$roster_updated = false;
 
 			$itemlist = $this->_node($packet,array('iq','#','query',0,'#','item'));
-			$number_of_contacts = is_array($itemlist) ? count($itemlist) : 0;
+			$number_of_contacts = is_array($itemlist) ? (is_countable($itemlist) ? count($itemlist) : 0) : 0;
 			
 			//echo "<pre>"; echo "itemlist:\n"; var_dump($itemlist); echo "</pre>";
 
@@ -2059,7 +2059,7 @@ class Jabber {
 
 			$temp = $this->_split_incoming($incoming);
 			
-			$packet_count = count($temp);
+			$packet_count = (is_countable($temp) ? count($temp) : 0);
 
 			for ($a = 0; $a < $packet_count; $a++) {
 				$packet = $this->xml->xmlize($temp[$a]);;
@@ -2089,7 +2089,7 @@ class Jabber {
 		$temp = preg_split("/<(message|iq|presence|stream)(?=[\:\s\>])/", $incoming, -1, PREG_SPLIT_DELIM_CAPTURE);
 		$array = array();
 
-		for ($a = 1; $a < count($temp); $a = $a + 2) {
+		for ($a = 1; $a < (is_countable($temp) ? count($temp) : 0); $a = $a + 2) {
 			$array[] = "<" . $temp[$a] . $temp[($a + 1)];
 		}
 

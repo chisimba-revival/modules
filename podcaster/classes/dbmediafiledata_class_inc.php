@@ -49,7 +49,7 @@ class dbmediafiledata extends dbTable {
     /**
      * Constructor
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_podcaster_metadata_media');
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();

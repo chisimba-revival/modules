@@ -112,7 +112,7 @@ $modifiedDateBox->setCss('passive_surveillance');
 $createdBox->extra = $createdDateBox->extra = $modifiedBox->extra = $modifiedDateBox->extra = 'disabled';
 
 $nextUri = $this->uri(array('action'=>'disease_report_screen_5', 'outbreakCode'=>$outbreakCode));
-if (count($numspecies) > 0) {
+if ((is_countable($numspecies) ? count($numspecies) : 0) > 0) {
     $function = "javascript: document.location='$nextUri'";
 } else {
     $message = $this->objLanguage->languageText('mod_ahis_mustaddnumbers', 'openaris');

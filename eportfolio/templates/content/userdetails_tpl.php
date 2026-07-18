@@ -78,7 +78,7 @@ if ($mode == 'addfixup') {
         $messages[] = $this->objLanguage->languageText('mod_eportfolio_enterothernames', 'eportfolio');
     }
 }
-if ($mode == 'addfixup' && count($messages) > 0) {
+if ($mode == 'addfixup' && (is_countable($messages) ? count($messages) : 0) > 0) {
     echo '<ul><li><span class="error">' . $this->objLanguage->languageText('mod_eportfolio_infonotsavedduetoerrors', 'eportfolio') . '</span>';
     echo '<ul>';
     foreach($messages as $message) {

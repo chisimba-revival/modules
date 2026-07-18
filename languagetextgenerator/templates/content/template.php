@@ -62,7 +62,7 @@ if (isset($results)) {
     }
     echo '<h3>'.$this->objLanguage->languageText('mod_useradmin_searchresultsfor', 'useradmin', 'Search Results for').': <em>'.$this->getParam('search').'</em></h3><br />';
     
-    if (count($results) == 0) {
+    if ((is_countable($results) ? count($results) : 0) == 0) {
         echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_languagetextgenerator_nomatchingresultsfound', 'languagetextgenerator', 'No matching results found').'.</div>';
     } else {
         

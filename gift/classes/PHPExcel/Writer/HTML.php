@@ -436,7 +436,7 @@ class PHPExcel_Writer_HTML implements PHPExcel_Writer_IWriter {
 		$html = '';
 
 		// Only if there are more than 1 sheets
-		if (count($sheets) > 1) {
+		if ((is_countable($sheets) ? count($sheets) : 0) > 1) {
 			// Loop all sheets
 			$sheetId = 0;
 

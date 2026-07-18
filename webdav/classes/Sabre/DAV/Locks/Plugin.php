@@ -540,7 +540,7 @@ class Sabre_DAV_Locks_Plugin extends Sabre_DAV_ServerPlugin {
             }
 
             // Conditions were met, we'll also need to check if all the locks are gone
-            if (count($locks)) {
+            if ((is_countable($locks) ? count($locks) : 0)) {
 
                 reset($locks);
 
@@ -592,7 +592,7 @@ class Sabre_DAV_Locks_Plugin extends Sabre_DAV_ServerPlugin {
                 ),
             );
 
-            if (!$condition['uri'] && count($conditions)) $conditions[count($conditions)-1]['tokens'][] = array(
+            if (!$condition['uri'] && (is_countable($conditions) ? count($conditions) : 0)) $conditions[(is_countable($conditions) ? count($conditions) : 0)-1]['tokens'][] = array(
                 $match['not']?0:1,
                 $match['token'],
                 isset($match['etag'])?$match['etag']:''

@@ -77,7 +77,7 @@ class dbimages extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objFileMan = $this->getObject('dbfile', 'filemanager');        
         $this->objUser = $this->getObject('user', 'security');
@@ -175,7 +175,7 @@ class dbimages extends dbtable
     public function addImage($fields)
     {
         $images = $this->getAlbumImages($fields['album_id']);
-        $count = count($images);
+        $count = (is_countable($images) ? count($images) : 0);
         
         $fields['display_order'] = ++$count;
         $fields['created_by'] = $this->userId;

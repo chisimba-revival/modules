@@ -16,7 +16,7 @@ class dbRubricPerformances extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_rubric_performances');
         //$this->USE_PREPARED_STATEMENTS=True;

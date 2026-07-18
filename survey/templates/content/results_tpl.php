@@ -156,7 +156,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
         // set up move last page icon
         $objIcon->title=$lastLabel.'&nbsp;'.strtolower($pageLabel);
-        $lastIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'viewresults','survey_id'=>$surveyId)).'#'.count($arrPageQuestionList),'downend');
+        $lastIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'viewresults','survey_id'=>$surveyId)).'#'.(is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0),'downend');
 
         if($pageKey!='0'){
             $arrPageData=$this->dbPages->getPage($pageKey);
@@ -171,7 +171,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
             $pageText='';
         }
 
-        if(count($arrPageQuestionList)!='1'){
+        if((is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0)!='1'){
             $objLink=new link('#');
             $objLink->name=$counter;
             $objLink->link='&nbsp;';
@@ -179,7 +179,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
             $pageLabelText.=$objLink->show();
             if($counter=='1'){
                 $pageLabelText=$firstGreyIcon.$previousGreyIcon.$pageLabelText.$nextIcon.$lastIcon;
-            }elseif($counter==count($arrPageQuestionList)){
+            }elseif($counter==(is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0)){
                 $pageLabelText=$firstIcon.$previousIcon.$pageLabelText.$nextGreyIcon.$lastGreyIcon;
             }else{
                 $pageLabelText=$firstIcon.$previousIcon.$pageLabelText.$nextIcon.$lastIcon;
@@ -252,7 +252,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
             }elseif($type=='2'){
                 $colspan='colspan="2"';
             }elseif($type>='3' && $type<='5'){
-                $colspan='colspan="'.(count($arrColumnList)+1).'"';
+                $colspan='colspan="'.((is_countable($arrColumnList) ? count($arrColumnList) : 0)+1).'"';
             }elseif($type=='6'){
                 $colspan='colspan="'.($ratingScale+1).'"';
             }else{

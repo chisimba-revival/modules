@@ -114,7 +114,7 @@ class ADODB_ibase extends ADOConnection {
 	ORDER BY I.RDB$INDEX_NAME,S.RDB$FIELD_POSITION';
 
 		$a = $this->GetCol($sql,false,true);
-		if ($a && sizeof($a)>0) return $a;
+		if ($a && (is_countable($a) ? sizeof($a) : 0)>0) return $a;
 		return false;	  
 	}
 	
@@ -329,7 +329,7 @@ class ADODB_ibase extends ADOConnection {
 					$fnarr =& array_merge( array($sql) , $iarr);
 					$ret = call_user_func_array($fn,$fnarr);
 				} else {
-					switch(sizeof($iarr)) {
+					switch((is_countable($iarr) ? sizeof($iarr) : 0)) {
 					case 1: $ret = $fn($sql,$iarr[0]); break;
 					case 2: $ret = $fn($sql,$iarr[0],$iarr[1]); break;
 					case 3: $ret = $fn($sql,$iarr[0],$iarr[1],$iarr[2]); break;
@@ -347,11 +347,11 @@ class ADODB_ibase extends ADOConnection {
 		
 			if (is_array($iarr)) {	
 				if (ADODB_PHPVER >= 0x4050) { // actually 4.0.4
-					if (sizeof($iarr) == 0) $iarr[0] = ''; // PHP5 compat hack
+					if ((is_countable($iarr) ? sizeof($iarr) : 0) == 0) $iarr[0] = ''; // PHP5 compat hack
 					$fnarr =& array_merge( array($conn,$sql) , $iarr);
 					$ret = call_user_func_array($fn,$fnarr);
 				} else {
-					switch(sizeof($iarr)) {
+					switch((is_countable($iarr) ? sizeof($iarr) : 0)) {
 					case 1: $ret = $fn($conn,$sql,$iarr[0]); break;
 					case 2: $ret = $fn($conn,$sql,$iarr[0],$iarr[1]); break;
 					case 3: $ret = $fn($conn,$sql,$iarr[0],$iarr[1],$iarr[2]); break;

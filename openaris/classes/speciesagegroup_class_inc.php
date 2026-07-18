@@ -61,7 +61,7 @@ class speciesagegroup extends dbtable {
      * @return void  
      * @access public
      */
-	public function init() {
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		try {
 			parent::init('tbl_ahis_speciesagegroups');
 			$this->objUser = $this->getObject('user', 'security');

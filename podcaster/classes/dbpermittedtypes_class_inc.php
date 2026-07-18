@@ -25,7 +25,7 @@
 class dbpermittedtypes extends dbtable {
     var $tablename = "tbl_podcaster_permittedtypes";
     
-    public function init(){
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
         parent::init($this->tablename);
     }
 

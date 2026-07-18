@@ -232,7 +232,7 @@ function ReadUFM($file, &$cidtogidmap)
     $fm = array();
     foreach($a as $l) {
         $e = explode(' ', chop($l));
-        if (count($e) < 2) {
+        if ((is_countable($e) ? count($e) : 0) < 2) {
             continue;
         }
         $code = $e[0];
@@ -345,7 +345,7 @@ function ReadAFM($file, &$map)
     );
     foreach($a as $l) {
         $e = explode(' ', rtrim($l));
-        if (count($e) < 2) {
+        if ((is_countable($e) ? count($e) : 0) < 2) {
             continue;
         }
         $code = $e[0];
@@ -583,7 +583,7 @@ function CheckTTF($file)
     }
 }
 $arg = $GLOBALS['argv'];
-if (count($arg) >= 3) {
+if ((is_countable($arg) ? count($arg) : 0) >= 3) {
     ob_start();
     array_shift($arg);
     if (!isset($arg[2])) {

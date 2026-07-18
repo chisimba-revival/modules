@@ -600,7 +600,7 @@ class hivtracking extends ChisimbaObject
         $data = $this->dbLogCalc->getForumTopics($category, $view);
         $viewData = $this->dbLogCalc->getForumCatViews($view, 'topic', 25);
         $category = $data[0]['forum_name'];
-        $num = count($data);
+        $num = (is_countable($data) ? count($data) : 0);
 
         $arrInfo = array('bold' => '<b>', 'closebold' => '</b>', 'category' => $category, 'number' => $num);
         $head = $this->objLanguage->languageText('mod_hivaids_forummonitoring', 'hivaids');
@@ -727,7 +727,7 @@ class hivtracking extends ChisimbaObject
                 $class = ($class == 'even') ? 'odd' : 'even';
 
                 $arrTopics = $item['topics'];
-                $cnt = count($arrTopics)+1;
+                $cnt = (is_countable($arrTopics) ? count($arrTopics) : 0)+1;
 
                 $objTable->startRow($class);
                 $objTable->addCell($item['staffnumber'], '','','',$class, "rowspan='{$cnt}'");

@@ -151,7 +151,7 @@ function commands()
 $data =	$_REQUEST['command'];
 if($data != ""){
 $data_temp = explode(" ",$data);
-$options_teller = count($data_temp);
+$options_teller = (is_countable($data_temp) ? count($data_temp) : 0);
 $command = $data_temp[0];
 include('console.commands.php');
 return "command not recognized";

@@ -22,7 +22,8 @@ class dbPostText extends dbTable {
         /**
          * Constructor method to define the table(default)
          */
-        function init() {
+        /* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
                 parent::init('tbl_forum_post_text');
                 $this->objTextStats = & $this->getObject('textstats', 'utilities');
                 $this->objReadingEase = & $this->getObject('readingease', 'utilities');
@@ -72,7 +73,7 @@ class dbPostText extends dbTable {
                 $filter = ' WHERE post_id = "' . $post_id . '" LIMIT 1';
                 $results = $this->getAll($filter);
 
-                if (count($results) > 0) {
+                if ((is_countable($results) ? count($results) : 0) > 0) {
                         $id = $results[0]['id'];
                         $post_text = stripslashes($post_text);
                         // unhtmlentities $document
@@ -140,7 +141,7 @@ class dbPostText extends dbTable {
         function getTranslatedPost($postId, $language) {
                 $result = $this->getAll(' WHERE post_id=\'' . $postId . '\' AND language=\'' . strtolower($language) . '\'');
 
-                if (count($result) == 0) {
+                if ((is_countable($result) ? count($result) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $result[0];

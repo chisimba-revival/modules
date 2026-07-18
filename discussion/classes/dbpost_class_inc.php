@@ -88,7 +88,7 @@ class dbPost extends dbTable {
         /**
          * Constructor method to define the table(default)
          */
-        function init() {
+        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
                 parent::init('tbl_discussion_post');
                 $this->objUserPic = $this->getObject('imageupload', 'useradmin');
                 $this->objSkin = $this->getObject('skin', 'skin');
@@ -204,7 +204,7 @@ class dbPost extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) == 0) {
+                if ((is_countable($list) ? count($list) : 0) == 0) {
                         return 0;
                 } else {
                         return $list[0]['rght'];
@@ -221,7 +221,7 @@ class dbPost extends dbTable {
 
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return NULL;
                 } else {
                         return $array[0];
@@ -238,7 +238,7 @@ class dbPost extends dbTable {
                 $sql = 'SELECT post_order FROM tbl_discussion_post WHERE topic_id=\'' . $topic_id . '\' ORDER BY post_order DESC LIMIT 1';
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return 1;
                 } else {
                         return $array[0]['post_order'] + 1;
@@ -254,7 +254,7 @@ class dbPost extends dbTable {
                 $sql = 'SELECT rght FROM tbl_discussion_post WHERE id=\'' . $post_id . '\' LIMIT 1';
                 $array = $this->getArray($sql);
 
-                if (count($array) == 0) {
+                if ((is_countable($array) ? count($array) : 0) == 0) {
                         return NULL;
                 } else {
                         return $array[0]['rght'];
@@ -330,7 +330,7 @@ class dbPost extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -356,7 +356,7 @@ class dbPost extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -384,7 +384,7 @@ class dbPost extends dbTable {
                 //return array('post_text'=>$sql);
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return NULL;
                 } else {
                         return $results[0];
@@ -533,11 +533,11 @@ class dbPost extends dbTable {
                 if ($post['attachment_id'] != NULL) {
                         $attachments = $this->objPostAttachments->getAttachments($post['post_id']);
                         // By Pass if attachment has been deleted.
-                        if (count($attachments) != 0) {
+                        if ((is_countable($attachments) ? count($attachments) : 0) != 0) {
                                 $return .= '<br /><br /><br /><p><strong>' . $this->objLanguage->languageText('word_attachments') . ':</strong></p>';
                                 foreach ($attachments AS $attachment) {
                                         $files = $this->objPostAttachments->downloadAttachment($attachment['id']);
-                                        if (count($files) > 0) {
+                                        if ((is_countable($files) ? count($files) : 0) > 0) {
                                                 $this->objFiles = $this->getObject('dbfile', 'filemanager');
                                                 //$this->objFiles->getFullFilePath($files[0]['id']);
                                                 $attachment_path = $this->objFiles->getFilePath($files[0]['id']);
@@ -656,7 +656,7 @@ class dbPost extends dbTable {
 
                         foreach ($innerAttachments AS $attachment) {
                                 $files = $this->objPostAttachments->downloadAttachment($attachment['id']);
-                                if (count($files) > 0) {
+                                if ((is_countable($files) ? count($files) : 0) > 0) {
                                         $this->objFiles = $this->getObject('dbfile', 'filemanager');
                                         //$this->objFiles->getFullFilePath($files[0]['id']);
                                         $attachment_path = $this->objFiles->getFilePath($files[0]['id']);
@@ -1143,7 +1143,7 @@ class dbPost extends dbTable {
 
                 $thread = '';
 
-                if (count($posts) == 1) {
+                if ((is_countable($posts) ? count($posts) : 0) == 1) {
                         $showExpandable = FALSE;
                 } else {
                         $showExpandable = TRUE;
@@ -1172,7 +1172,7 @@ class dbPost extends dbTable {
 
                 $thread = '';
 
-                if (count($posts) == 1) {
+                if ((is_countable($posts) ? count($posts) : 0) == 1) {
                         $showExpandable = FALSE;
                 } else {
                         $showExpandable = FALSE;
@@ -1310,7 +1310,7 @@ class dbPost extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 1) {
+                if ((is_countable($results) ? count($results) : 0) == 1) {
                         return $results[0];
                 } else {
                         return FALSE;
@@ -1361,7 +1361,7 @@ class dbPost extends dbTable {
                         $results = $this->getArray($sql);
 
                         // If there are no posts, return a message saying no recordss
-                        if (count($results) == 0) {
+                        if ((is_countable($results) ? count($results) : 0) == 0) {
                                 return '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_discussion_nopostsindiscussion', 'discussion') . '</div>';
                         } else {
 
@@ -1732,7 +1732,7 @@ function clearForTangent()
                 $sql = 'SELECT id FROM tbl_discussion_post WHERE topic_id=\'' . $topic_id . '\' ORDER BY post_order LIMIT 1';
                 $results = $this->getArray($sql);
 
-                if (count($results) > 0) {
+                if ((is_countable($results) ? count($results) : 0) > 0) {
                         return $results[0]['id'];
                 } else {
                         return FALSE;
@@ -1774,7 +1774,7 @@ function clearForTangent()
 
                 $discussion = $this->getArray($sql);
 
-                if (count($discussion) == 1) {
+                if ((is_countable($discussion) ? count($discussion) : 0) == 1) {
                         return $discussion[0];
                 } else {
                         return FALSE;
@@ -1800,7 +1800,8 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_DISCUSSION_STRAY_BREAK: break outside loop is invalid on PHP 8. */
+                        return false;
                 }
 
                 // Left value of first post MUST be one
@@ -1808,7 +1809,8 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_STRAY_BREAK: invalid outside loop/switch. */
+                        return false;
                 }
 
                 // Right value of first post can never be zero
@@ -1816,7 +1818,8 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_STRAY_BREAK: invalid outside loop/switch. */
+                        return false;
                 }
 
                 // Right value of first post can never be less than left value
@@ -1824,7 +1827,8 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_STRAY_BREAK: invalid outside loop/switch. */
+                        return false;
                 }
 
                 // Right value of first post can never be an odd number
@@ -1832,7 +1836,8 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_STRAY_BREAK: invalid outside loop/switch. */
+                        return false;
                 }
 
                 // Get Num Children
@@ -1843,29 +1848,32 @@ function clearForTangent()
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_ILLEGAL_BREAK: parser-confirmed stray break. */
+                        return false;
                 }
 
                 // Check if there are any duplicate Left Values
                 $leftSql = 'SELECT t1.id  FROM tbl_discussion_post t1, tbl_discussion_post t2 WHERE (t1.lft = t2.lft) AND t1.topic_id = \'' . $topic . '\' AND t2.topic_id = \'' . $topic . '\' AND t1.id != t2.id GROUP BY t1.lft';
                 $leftResults = $this->getArray($leftSql);
 
-                if (count($leftResults) > 0) {
+                if ((is_countable($leftResults) ? count($leftResults) : 0) > 0) {
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_ILLEGAL_BREAK: parser-confirmed stray break. */
+                        return false;
                 }
 
                 // Check if there are any duplicate Right Values
                 $rightSql = 'SELECT t1.id  FROM tbl_discussion_post t1, tbl_discussion_post t2 WHERE (t1.rght = t2.rght) AND t1.topic_id = \'' . $topic . '\' AND t2.topic_id = \'' . $topic . '\' AND t1.id != t2.id GROUP BY t1.lft';
                 $rightResults = $this->getArray($rightSql);
 
-                if (count($rightResults) > 0) {
+                if ((is_countable($rightResults) ? count($rightResults) : 0) > 0) {
                         // If not, topic is broken - start fixing tree
                         $this->rebuildTopic($topic);
                         return;
-                        break;
+                        /* CHISIMBA_PHP8_ILLEGAL_BREAK: parser-confirmed stray break. */
+                        return false;
                 }
 
                 // If not, topic is not broken
@@ -2016,7 +2024,7 @@ function loadTranslation(post, lang) {
         function getLastTopicPost($topicid) {
                 $results = $this->getAll(' WHERE topic_id = "' . $topicid . '" ORDER BY tbl_discussion_post.dateLastUpdated DESC LIMIT 1');
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];

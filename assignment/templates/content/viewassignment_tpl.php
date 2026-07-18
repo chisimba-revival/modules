@@ -152,7 +152,7 @@ if ($this->isValid('markassignments')) {
     $table->addHeaderCell($this->objLanguage->languageText('mod_assignment_comment', 'assignment', 'Comment'));
     $table->endHeaderRow();
 
-    if (count($submissions) == 0) {
+    if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_assignment_noassignmentssubmitted', 'assignment', 'No Assignments Submitted Yet'), NULL, NULL, NULL, 'noRecordsMessage', ' colspan="4"');
         $table->endRow();
@@ -186,13 +186,13 @@ if ($this->isValid('markassignments')) {
 
     //$submissions = $this->objAssignmentSubmit->getStudentAssignment($this->objUser->userId(), $assignment['id']);
 
-//    if (count($submissions) == 0) {
+//    if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
 
-//    } else if (count($submissions) == 0) {
+//    } else if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
 
 //    } else {
 
-    if (count($submissions) != 0) {
+    if ((is_countable($submissions) ? count($submissions) : 0) != 0) {
 
         $table = $this->newObject('htmltable', 'htmlelements');
         $table->startHeaderRow();

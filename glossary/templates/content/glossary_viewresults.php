@@ -83,7 +83,7 @@ if (!empty($list)) {
         //echo '1 - '.$termInfo.'<br />';
         $seeAlsos = $this->objGlossarySeeAlso->fetchAllRecords($element['item_id']);
 
-        if (count($seeAlsos) > 0) {
+        if ((is_countable($seeAlsos) ? count($seeAlsos) : 0) > 0) {
 
             $termInfo.= '<br />';
             $termInfo.= '<strong>'.$this->objLanguage->languageText('mod_glossary_seeAlso', 'glossary').':</strong> ';
@@ -121,9 +121,9 @@ if (!empty($list)) {
         }
         
         $urls = $this->objGlossaryUrls->fetchAllRecords($element['item_id']);
-        //echo count($urls);
+        //echo (is_countable($urls) ? count($urls) : 0);
 
-        if (count($urls) > 0) {
+        if ((is_countable($urls) ? count($urls) : 0) > 0) {
             $termInfo.= '<br />';
             $termInfo.= '<strong>'.$this->objLanguage->languageText('mod_glossary_urls', 'glossary').':</strong> ';
 
@@ -149,7 +149,7 @@ if (!empty($list)) {
 
         $images = $this->objGlossaryImages->getListImage($element['item_id']);
 
-        if (count($images) > 0) {
+        if ((is_countable($images) ? count($images) : 0) > 0) {
 
             $termInfo.= '<br />';
             $termInfo.= '<strong>'.$objLanguage->languageText('word_images').' :</strong> ';

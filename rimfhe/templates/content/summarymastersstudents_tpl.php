@@ -37,7 +37,7 @@ echo $display;
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if ( count($arrDeptSummary) > 0) {
+if ( (is_countable($arrDeptSummary) ? count($arrDeptSummary) : 0) > 0) {
 
     //Description for $table
     $tableHeader = $this->objLanguage->languageText('mod_rimfhe__summary', 'rimfhe', 'Total number of Masters Students by Department');

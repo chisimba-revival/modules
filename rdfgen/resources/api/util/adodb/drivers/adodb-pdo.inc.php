@@ -258,7 +258,7 @@ class ADODB_pdo extends ADOConnection {
 		
 		
 		if ($arr) {
-		 	if (sizeof($arr)<2) return '';
+		 	if ((is_countable($arr) ? sizeof($arr) : 0)<2) return '';
 			if ((integer)$arr[1]) return $arr[2];
 			else return '';
 		} else return '-1';

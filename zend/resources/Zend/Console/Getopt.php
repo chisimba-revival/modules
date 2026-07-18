@@ -704,7 +704,7 @@ class Zend_Console_Getopt
         $argv = $this->_argv;
         $this->_options = array();
         $this->_remainingArgs = array();
-        while (count($argv) > 0) {
+        while ((is_countable($argv) ? count($argv) : 0) > 0) {
             if ($argv[0] == '--') {
                 array_shift($argv);
                 if ($this->_getoptConfig[self::CONFIG_DASHDASH]) {
@@ -714,7 +714,7 @@ class Zend_Console_Getopt
             }
             if (substr($argv[0], 0, 2) == '--') {
                 $this->_parseLongOption($argv);
-            } else if (substr($argv[0], 0, 1) == '-' && ('-' != $argv[0] || count($argv) >1))  {
+            } else if (substr($argv[0], 0, 1) == '-' && ('-' != $argv[0] || (is_countable($argv) ? count($argv) : 0) >1))  {
                 $this->_parseShortOptionCluster($argv);
             } else if($this->_getoptConfig[self::CONFIG_PARSEALL]) {
                 $this->_remainingArgs[] = array_shift($argv);
@@ -789,7 +789,7 @@ class Zend_Console_Getopt
         $realFlag = $this->_ruleMap[$flag];
         switch ($this->_rules[$realFlag]['param']) {
             case 'required':
-                if (count($argv) > 0) {
+                if ((is_countable($argv) ? count($argv) : 0) > 0) {
                     $param = array_shift($argv);
                     $this->_checkParameterType($realFlag, $param);
                 } else {
@@ -800,7 +800,7 @@ class Zend_Console_Getopt
                 }
                 break;
             case 'optional':
-                if (count($argv) > 0 && substr($argv[0], 0, 1) != '-') {
+                if ((is_countable($argv) ? count($argv) : 0) > 0 && substr($argv[0], 0, 1) != '-') {
                     $param = array_shift($argv);
                     $this->_checkParameterType($realFlag, $param);
                 } else {

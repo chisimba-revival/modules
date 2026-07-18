@@ -58,7 +58,7 @@
             * @access public
             * @return void
             */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
             try {
                 parent::init('tbl_shorturl_map');
@@ -912,7 +912,7 @@
         {
             $noPages = '0';
             $pages = $this->getAll("WHERE sectionid = '$sectionId' AND trash='0' ORDER BY ordering");
-            $noPages = count($pages);
+            $noPages = (is_countable($pages) ? count($pages) : 0);
             return $noPages;
         }
 

@@ -23,7 +23,7 @@ $table->addHeaderCell('Email');
 $table->addHeaderCell('&nbsp;');
 $table->endHeaderRow();
 
-if(count($comments) > 0)
+if((is_countable($comments) ? count($comments) : 0) > 0)
 {
 
 	foreach($comments as $comment)

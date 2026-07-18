@@ -45,7 +45,7 @@ class emailfiles extends dbTable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
@@ -184,7 +184,7 @@ class emailfiles extends dbTable
                 $attachmentId = $this->dbAttachments->addAttachments($emailId, $attachment);
                 rename($this->tempPath.$attachment['filename'], $this->filePath.$attachmentId);
             }
-            $attachmentCount = count($attachments);
+            $attachmentCount = (is_countable($attachments) ? count($attachments) : 0);
         }else{
             $attachmentCount = 0;
         }

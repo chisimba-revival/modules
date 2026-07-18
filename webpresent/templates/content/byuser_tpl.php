@@ -26,7 +26,7 @@ $heading->type = 1;
 
 echo $heading->show();
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_webpresent_userhasnotuploadedfiles', 'webpresent', 'User has not uploaded any files').'.</div>';
 } else {
     $sortOptions = array(

@@ -668,7 +668,7 @@ class Zend_Service_Audioscrobbler
         }
         $field = strtolower(substr($method, 3));
 
-        if(!is_array($args) || count($args) != 1) {
+        if(!is_array($args) || (is_countable($args) ? count($args) : 0) != 1) {
             require_once "Zend/Service/Exception.php";
             throw new Zend_Service_Exception(
                 "A value is required for setting a parameter field."

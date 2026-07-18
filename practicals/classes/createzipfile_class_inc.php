@@ -207,7 +207,7 @@ class createzipfile extends ChisimbaObject{
             trigger_error("CreateZipFile FATAL ERROR: Could not locate the specified directory $dirName", E_USER_ERROR);
         }
         $tmp = $this->parseDirectory($dirName);
-        $count = count($tmp);
+        $count = (is_countable($tmp) ? count($tmp) : 0);
         $this->addDirectory($outputDir);
         for ($i = 0; $i < $count; $i++) {
             $fileToZip = trim($tmp[$i]);

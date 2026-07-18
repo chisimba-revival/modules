@@ -33,7 +33,7 @@ class dbdocuments extends dbtable {
     var $tablename = "tbl_wicid_documents";
     var $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
         $this->objUser = $this->getObject('user', 'security');
         $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
@@ -426,7 +426,7 @@ class dbdocuments extends dbtable {
                 "select * from tbl_wicid_documents where version = '$version' and topic = '$path'
          and docname = '$title' and refno ='$refno' and department = '$department'";
         $data = $this->getArray($sql);
-        return count($data) > 0 ? TRUE : FALSE;
+        return (is_countable($data) ? count($data) : 0) > 0 ? TRUE : FALSE;
     }
 
     /**
@@ -614,7 +614,7 @@ class dbdocuments extends dbtable {
     function findexts($filename) {
         $filename = strtolower($filename);
         $exts = split("[/\\.]", $filename);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         //check if icon for this exists, else return unknown

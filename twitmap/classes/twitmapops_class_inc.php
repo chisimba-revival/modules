@@ -56,7 +56,7 @@ class twitmapops extends ChisimbaObject
               $sname = $udata->user->screen_name;
               // now check for coords from geonames db
               $loc = explode(',', $location);
-              if(count($loc) == 2)
+              if((is_countable($loc) ? count($loc) : 0) == 2)
               {
                   // dude lets not even try with just a single param...some people are just jokers (location=earth etc);
                   $loc[1] = trim($loc[1]);

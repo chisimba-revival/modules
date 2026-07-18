@@ -26,7 +26,7 @@ $form->addToForm($hiddeninput->show());
 
 echo $form->show();
 
-if (count($files) > 0) {
+if ((is_countable($files) ? count($files) : 0) > 0) {
 
     echo '<ul>';
     

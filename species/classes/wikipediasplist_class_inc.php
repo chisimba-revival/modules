@@ -119,7 +119,7 @@ class wikipediasplist extends ChisimbaObject
                 $fullname = $ar[0];
                 // Reverse the full name to get the alpabetic name
                 $alphAr = explode(' ', $fullname);
-                $keyIndex = count($alphAr) - 1;
+                $keyIndex = (is_countable($alphAr) ? count($alphAr) : 0) - 1;
                 $surname = $alphAr[$keyIndex];
                 array_pop($alphAr);
                 $surname2 = implode(" ", $alphAr);

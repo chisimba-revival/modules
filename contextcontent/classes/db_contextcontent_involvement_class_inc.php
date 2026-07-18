@@ -53,7 +53,7 @@ class db_contextcontent_involvement extends dbtable
     /**
      * Constructor
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_involvement');
     }

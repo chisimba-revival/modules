@@ -34,7 +34,7 @@ class treenodes extends dbTable
     * @access public
     * @return void
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_cms_treenodes');
@@ -161,7 +161,7 @@ class treenodes extends dbTable
                       ." WHERE parent_id = '".$parentId."'".$published;
             }
 			$nodeCount = $this->query($sql);
-            if (count($nodeCount)){
+            if ((is_countable($nodeCount) ? count($nodeCount) : 0)){
                 return $nodeCount[0]['cnt'];
             }else{
                 return 0;
@@ -254,7 +254,7 @@ class treenodes extends dbTable
         $node = $this->getNode($currentNode);
         $siblings = $this->getChildNodes($node[0]['parent_id']);
 
-        for ($i = 0; $i < count($siblings); $i++) {
+        for ($i = 0; $i < (is_countable($siblings) ? count($siblings) : 0); $i++) {
             if ($siblings[$i]['id'] == $currentNode){
                 if (isset($siblings[$i + 1])) {
                     if (isset($siblings[$i + 2])) {
@@ -283,7 +283,7 @@ class treenodes extends dbTable
         $node = $this->getNode($currentNode);
         $siblings = $this->getChildNodes($node[0]['parent_id']);
 
-        for ($i = 0; $i < count($siblings); $i++) {
+        for ($i = 0; $i < (is_countable($siblings) ? count($siblings) : 0); $i++) {
             if ($siblings[$i]['id'] == $currentNode){
                 if (isset($siblings[$i - 1])) {
                     if (isset($siblings[$i - 2])) {
@@ -328,7 +328,7 @@ class treenodes extends dbTable
             $sql = "SELECT ordering FROM tbl_cms_treenodes"
                   ." WHERE parent_id = '".$parentNode."' ORDER BY ordering DESC LIMIT 1";
 			$order = $this->query($sql);
-            if (count($order)) {
+            if ((is_countable($order) ? count($order) : 0)) {
                 $orderNum = $order[0]['ordering'] + $orderIncrement;
             } else {
                 $orderNum = $orderIncrement;

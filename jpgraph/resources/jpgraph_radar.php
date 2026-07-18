@@ -262,7 +262,7 @@ class RadarAxis extends AxisPrototype {
 
             // majpos contains (x,y) coordinates for labels
             if( ! $this->hide_labels ) {
-                $n = floor(count($majpos)/2);
+                $n = floor((is_countable($majpos) ? count($majpos) : 0)/2);
                 for($i=0; $i < $n; ++$i) {
                     // Set specific label color if specified
                     if( $ncolor > 0 ) {
@@ -366,7 +366,7 @@ class RadarGrid { //extends Grid {
         }
 
         $nbrticks = count($grid[0])/2;
-        $nbrpnts = count($grid);
+        $nbrpnts = (is_countable($grid) ? count($grid) : 0);
         $img->SetColor($this->grid_color);
         $img->SetLineWeight($this->weight);
 
@@ -659,7 +659,7 @@ class RadarGraph extends Graph {
     	if( $aPlot == null ) {
             JpGraphError::RaiseL(25010);//("Graph::Add() You tried to add a null plot to the graph.");
         }
-        if( is_array($aPlot) && count($aPlot) > 0 ) {
+        if( is_array($aPlot) && (is_countable($aPlot) ? count($aPlot) : 0) > 0 ) {
             $cl = $aPlot[0];
         }
         else {

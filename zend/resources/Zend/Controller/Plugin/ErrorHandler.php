@@ -232,7 +232,7 @@ class Zend_Controller_Plugin_ErrorHandler extends Zend_Controller_Plugin_Abstrac
 
         if ($this->_isInsideErrorHandlerLoop) {
             $exceptions = $response->getException();
-            if (count($exceptions) > $this->_exceptionCountAtFirstEncounter) {
+            if ((is_countable($exceptions) ? count($exceptions) : 0) > $this->_exceptionCountAtFirstEncounter) {
                 // Exception thrown by error handler; tell the front controller to throw it
                 $frontController->throwExceptions(true);
                 throw array_pop($exceptions);
@@ -276,7 +276,7 @@ class Zend_Controller_Plugin_ErrorHandler extends Zend_Controller_Plugin_Abstrac
             $error->request = clone $request;
 
             // get a count of the number of exceptions encountered
-            $this->_exceptionCountAtFirstEncounter = count($exceptions);
+            $this->_exceptionCountAtFirstEncounter = (is_countable($exceptions) ? count($exceptions) : 0);
 
             // Forward to the error handler
             $request->setParam('error_handler', $error)

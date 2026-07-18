@@ -172,7 +172,7 @@ class Matrix {
 	 *	@exception	IllegalArgumentException All rows must have the same length
 	 */
 	public function constructWithCopy($A) {
-		$this->m = count($A);
+		$this->m = (is_countable($A) ? count($A) : 0);
 		$this->n = count($A[0]);
 		$newCopyMatrix = new Matrix($this->m, $this->n);
 		for ($i = 0; $i < $this->m; ++$i) {
@@ -299,8 +299,8 @@ class Matrix {
 				//$R = array of row indices; $C = array of column indices
 				case 'array,array':
 						list($RL, $CL) = $args;
-						if (count($RL) > 0) { $m = count($RL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
-						if (count($CL) > 0) { $n = count($CL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($RL) ? count($RL) : 0) > 0) { $m = (is_countable($RL) ? count($RL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($CL) ? count($CL) : 0) > 0) { $n = (is_countable($CL) ? count($CL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
 						$R = new Matrix($m, $n);
 						for($i = 0; $i < $m; ++$i) {
 							for($j = 0; $j < $n; ++$j) {
@@ -312,8 +312,8 @@ class Matrix {
 				//$RL = array of row indices; $CL = array of column indices
 				case 'array,array':
 						list($RL, $CL) = $args;
-						if (count($RL) > 0) { $m = count($RL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
-						if (count($CL) > 0) { $n = count($CL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($RL) ? count($RL) : 0) > 0) { $m = (is_countable($RL) ? count($RL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($CL) ? count($CL) : 0) > 0) { $n = (is_countable($CL) ? count($CL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
 						$R = new Matrix($m, $n);
 						for($i = 0; $i < $m; ++$i) {
 							for($j = 0; $j < $n; ++$j) {
@@ -326,7 +326,7 @@ class Matrix {
 				case 'integer,integer,array':
 						list($i0, $iF, $CL) = $args;
 						if (($iF > $i0) && ($this->m >= $iF) && ($i0 >= 0)) { $m = $iF - $i0; } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
-						if (count($CL) > 0) { $n = count($CL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($CL) ? count($CL) : 0) > 0) { $n = (is_countable($CL) ? count($CL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
 						$R = new Matrix($m, $n);
 						for($i = $i0; $i < $iF; ++$i) {
 							for($j = 0; $j < $n; ++$j) {
@@ -338,7 +338,7 @@ class Matrix {
 				//$RL = array of row indices
 				case 'array,integer,integer':
 						list($RL, $j0, $jF) = $args;
-						if (count($RL) > 0) { $m = count($RL); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
+						if ((is_countable($RL) ? count($RL) : 0) > 0) { $m = (is_countable($RL) ? count($RL) : 0); } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
 						if (($jF >= $j0) && ($this->n >= $jF) && ($j0 >= 0)) { $n = $jF - $j0; } else { throw new Exception(JAMAError(ArgumentBoundsException)); }
 						$R = new Matrix($m, $n+1);
 						for($i = 0; $i < $m; ++$i) {
@@ -1411,7 +1411,7 @@ class Matrix {
 	 *	@return html version of matrix
 	 */
 	public function mprint($A, $format="%01.2f", $width=2) {
-		$m = count($A);
+		$m = (is_countable($A) ? count($A) : 0);
 		$n = count($A[0]);
 		$spacing = str_repeat('&nbsp;',$width);
 

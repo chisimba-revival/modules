@@ -221,7 +221,7 @@ class podcastprovider extends ChisimbaObject
     */
     private function getFileName($ar)
     {
-        return $ar[count($ar)-1];
+        return $ar[(is_countable($ar) ? count($ar) : 0)-1];
     }
 
     /**

@@ -639,7 +639,7 @@ class learningcontent extends controller {
                 $this->setVarByRef('id', $id);
 
                 $numPages = $this->objContentOrder->getContextPages($this->contextCode, $id);
-                $this->setVar('numPages', count($numPages));
+                $this->setVar('numPages', (is_countable($numPages) ? count($numPages) : 0));
 
                 $this->setLayoutTemplate('layout_firstpage_tpl.php');
 
@@ -687,7 +687,7 @@ class learningcontent extends controller {
                     // Delete Pages in Chapter
                     $pages = $this->objContentOrder->getContextPages($this->contextCode, $id);
 
-                    if (count($pages) > 0) {
+                    if ((is_countable($pages) ? count($pages) : 0) > 0) {
                         foreach ($pages as $page) {
                             $this->objContentTitles->deleteTitle($page['titleid']);
                         //$this->objContentOrder->deletePage($page['id']);
@@ -1210,7 +1210,7 @@ class learningcontent extends controller {
         $objMkdir->mkdirs($path);
 
         // If Chapter has no pages
-        if (count($pages) == 0) {
+        if ((is_countable($pages) ? count($pages) : 0) == 0) {
         // Send Error Message. Chapter has no Pages / Content
             $this->setVar('errorTitle', $this->objLanguage->languageText('mod_learningcontent_chapterhasnocontent', 'learningcontent', 'Chapter has no content'));
             $this->setVar('errorMessage', $this->objLanguage->languageText('mod_learningcontent_chapterhasnocontentinstruction', 'learningcontent', 'The chapter you have tried to view does not have any content, or had content which has now been deleted. Please choose another chapter'));

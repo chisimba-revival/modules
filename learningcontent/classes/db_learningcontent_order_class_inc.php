@@ -53,7 +53,7 @@ class db_learningcontent_order extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_order');
         $this->objUser =& $this->getObject('user', 'security');
@@ -99,7 +99,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -122,7 +122,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -147,7 +147,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -622,7 +622,7 @@ class db_learningcontent_order extends dbtable
         }
         
         
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['rght'];
@@ -639,7 +639,7 @@ class db_learningcontent_order extends dbtable
         
         $result = $this->getAll($sql);
         
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['pageorder'];
@@ -667,7 +667,7 @@ class db_learningcontent_order extends dbtable
         ORDER BY lft DESC LIMIT 1';
         $prevLeftValue = Null;
         $results = $this->getArray($sql);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             $page = $this->getArray("SELECT chaptertitle FROM tbl_learningcontent_chaptercontent WHERE chapterid = '$chapter'");
             //If user is logged in specify action, otherwise for public courses, just go to learningcontent home
             $userId = $this->objUser->userId();
@@ -715,7 +715,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             $page = $this->getArray("SELECT chaptertitle FROM tbl_learningcontent_chaptercontent WHERE chapterid = '$chapter'");
             //If user is logged in specify action, otherwise for public courses, just go to learningcontent home
             $userId = $this->objUser->userId();
@@ -805,7 +805,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             return $results[0];
@@ -879,7 +879,7 @@ class db_learningcontent_order extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             $returnString = array();
@@ -888,7 +888,7 @@ class db_learningcontent_order extends dbtable
             
             foreach ($results as $page)
             {
-                if ($counter == count($results)) {
+                if ($counter == (is_countable($results) ? count($results) : 0)) {
                     $returnString[] = htmlentities($page['menutitle']);
                 } else {
                     $link = new link ($this->uri(array('action'=>'viewpage', 'id'=>$page['id'])));
@@ -917,7 +917,7 @@ class db_learningcontent_order extends dbtable
         $objContextChapter = $this->getObject('db_learningcontent_contextchapter');
         $contextChapters = $objContextChapter->getContextChapters($context);
         
-        if (count($contextChapters) > 0) {
+        if ((is_countable($contextChapters) ? count($contextChapters) : 0) > 0) {
             foreach ($contextChapters as $chapter)
             {
                 $this->orderArray = array();
@@ -1030,7 +1030,7 @@ class db_learningcontent_order extends dbtable
         $nextPageSQL = ' WHERE parentid=\''.$page['parentid'].'\' AND contextcode =\''.$page['contextcode'].'\' AND pageorder < '.$page['pageorder'].' ORDER BY pageorder DESC';
         $nextPage = $this->getAll($nextPageSQL);
         
-        if (count($nextPage) == 0) {
+        if ((is_countable($nextPage) ? count($nextPage) : 0) == 0) {
             return FALSE;
         } else {
             $nextPage = $nextPage[0];
@@ -1065,7 +1065,7 @@ class db_learningcontent_order extends dbtable
         $nextPageSQL = ' WHERE parentid=\''.$page['parentid'].'\' AND contextcode =\''.$page['contextcode'].'\' AND pageorder > '.$page['pageorder'].' ORDER BY pageorder ';
         $nextPage = $this->getAll($nextPageSQL);
         
-        if (count($nextPage) == 0) {
+        if ((is_countable($nextPage) ? count($nextPage) : 0) == 0) {
             return FALSE;
         } else {
             $nextPage = $nextPage[0];
@@ -1101,7 +1101,7 @@ class db_learningcontent_order extends dbtable
         $items = explode($splitter, $string);
         
         // Only perform updates if there are more than one item
-        if (count($items) > 0) {
+        if ((is_countable($items) ? count($items) : 0) > 0) {
             // Start Counter
             $counter = 1;
             // Loop through items

@@ -457,7 +457,7 @@ It \"will\" be displayed in the built form.]<br></div>";
                     $objForm->addToForm("<div id =$formElementName class='witsCCMSFormElementCheckBox'>$constructedCheckBox</div>");
                     $checkBoxNameArray = $this->checkboxConstructor->getCheckboxName($formNumber,$formElementName);
 
-                    $numberOfCheckBoxTypes = count($checkBoxNameArray);
+                    $numberOfCheckBoxTypes = (is_countable($checkBoxNameArray) ? count($checkBoxNameArray) : 0);
                     $formElementNameArray = array_merge($formElementNameArray, $checkBoxNameArray);
                     for ($i = 0; $i < $numberOfCheckBoxTypes; $i++) {
                         $formElementTypeArray[] = $formElementType;
@@ -492,7 +492,7 @@ It \"will\" be displayed in the built form.]<br></div>";
                     $objForm->addToForm("<div id =$formElementName class='witsCCMSFormElementDatePicker'>$constructedDatePicker</div>");
 
                     $datePickerNameArray = $this->datePickerConstructor->getDatePickerName($formNumber,$formElementName);
-                    $numberOfDatePickerTypes = count($datePickerNameArray);
+                    $numberOfDatePickerTypes = (is_countable($datePickerNameArray) ? count($datePickerNameArray) : 0);
                     $formElementNameArray = array_merge($formElementNameArray, $datePickerNameArray);
                     for ($i = 0; $i < $numberOfDatePickerTypes; $i++) {
                         $formElementTypeArray[] = $formElementType;
@@ -504,7 +504,7 @@ It \"will\" be displayed in the built form.]<br></div>";
                     $constructedTextInput = $this->textinputConstructor->constructTextInputEntity($formElementName,$formNumber);
                     $objForm->addToForm("<div id =$formElementName class='witsCCMSFormElementTextInput'>$constructedTextInput</div>");
                     $textInputNameArray = $this->textinputConstructor->getTextInputName($formNumber,$formElementName);
-                    $numberOfTextInputTypes = count($textInputNameArray);
+                    $numberOfTextInputTypes = (is_countable($textInputNameArray) ? count($textInputNameArray) : 0);
                     $formElementNameArray = array_merge($formElementNameArray, $textInputNameArray);
 // $formElementNameArray[]=$formElementName;
                     for ($i = 0; $i < $numberOfTextInputTypes; $i++) {
@@ -515,7 +515,7 @@ It \"will\" be displayed in the built form.]<br></div>";
                     $constructedTextArea = $this->textareaConstructor->constructTextAreaEntity($formElementName,$formNumber);
                     $objForm->addToForm("<div id =$formElementName class='witsCCMSFormElementTextArea'>$constructedTextArea</div>");
                     $textAreaNameArray = $this->textareaConstructor->getTextAreaName($formNumber,$formElementName);
-                    $numberOfTextAreaTypes = count($textAreaNameArray);
+                    $numberOfTextAreaTypes = (is_countable($textAreaNameArray) ? count($textAreaNameArray) : 0);
                     $formElementNameArray = array_merge($formElementNameArray, $textAreaNameArray);
 // $formElementNameArray[]=$formElementName;
 

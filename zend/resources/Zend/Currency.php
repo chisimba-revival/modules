@@ -820,7 +820,7 @@ class Zend_Currency
      */
     protected function _checkOptions(array $options = array())
     {
-        if (count($options) === 0) {
+        if ((is_countable($options) ? count($options) : 0) === 0) {
             return $this->_options;
         }
 

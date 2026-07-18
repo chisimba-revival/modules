@@ -30,7 +30,7 @@ class diversity extends ChisimbaObject {
     */
     public function diversityCalc($arr=array())
     {
-        $this->S = count($arr);
+        $this->S = (is_countable($arr) ? count($arr) : 0);
         $sum=0;
         $pi=array();
         for ($current_sample = 0; $this->S > $current_sample; ++$current_sample) {

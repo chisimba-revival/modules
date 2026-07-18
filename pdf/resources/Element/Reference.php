@@ -235,7 +235,7 @@ class Zend_Pdf_Element_Reference extends Zend_Pdf_Element
             $this->_dereference();
         }
 
-        switch (count($args)) {
+        switch ((is_countable($args) ? count($args) : 0)) {
             case 0:
                 return $this->_ref->$method();
             case 1:

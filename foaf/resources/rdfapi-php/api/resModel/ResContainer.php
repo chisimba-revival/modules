@@ -160,7 +160,7 @@ class ResContainer extends ResResource
 			$this->removeAll($this->_getMembershipPropertyWithIndex($index));
 
 			//renumber all members with higher ordinal numbers than the deleted one
-			for ($i = $index;$i < count($memberIndex); $i++)
+			for ($i = $index;$i < (is_countable($memberIndex) ? count($memberIndex) : 0); $i++)
 			{
 				$this->removeAll($this->_getMembershipPropertyWithIndex($i+1));
 				$this->addProperty($this->_getMembershipPropertyWithIndex($i),$memberIndex[$i+1]);

@@ -135,7 +135,7 @@ class wsdlstruct {
 				//input
 				//only when to operation needs arguments
 				$parameters = $operation->getParameters();
-				if(count($parameters)>0 || self::CREATE_EMPTY_INPUTS){
+				if((is_countable($parameters) ? count($parameters) : 0)>0 || self::CREATE_EMPTY_INPUTS){
 					$messageName = $operationName."Request";
 					$input=$this->addElement("wsdl:input", $operationTag);
 					$input->setAttribute("message", "tns:".$messageName);

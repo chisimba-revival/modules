@@ -20,7 +20,7 @@ class dbwebpresentuploadscounter extends dbTable
     /**
     * Method to construct the class.
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_webpresent_files');
         $this->loadClass('link', 'htmlelements');
@@ -108,13 +108,13 @@ class dbwebpresentuploadscounter extends dbTable
         // Check Today
         $files = $this->getMostUploadedToday();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->getDataFormatted($files, 'today');
         }
 
         $files = $this->getMostUploadedThisWeek();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->getDataFormatted($files, 'week');
         }
 
@@ -135,13 +135,13 @@ class dbwebpresentuploadscounter extends dbTable
         // Check Today
         $files = $this->getMostUploadedToday();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->prepContent2($files, 'today');
         }
 
         $files = $this->getMostUploadedThisWeek();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->prepContent2($files, 'week');
         }
 
@@ -234,7 +234,7 @@ class dbwebpresentuploadscounter extends dbTable
         }
 
         // If no results, return notice to user
-        if (count($data) == 0)
+        if ((is_countable($data) ? count($data) : 0) == 0)
         {
             switch ($period)
             {
@@ -313,7 +313,7 @@ class dbwebpresentuploadscounter extends dbTable
         }
 
 
-        if (count($allLinks) > 0) {
+        if ((is_countable($allLinks) ? count($allLinks) : 0) > 0) {
             $linksContent = '<p align="right">';
             $divider = '';
             foreach ($allLinks as $link)
@@ -350,7 +350,7 @@ class dbwebpresentuploadscounter extends dbTable
         }
 
         // If no results, return notice to user
-        if (count($data) == 0)
+        if ((is_countable($data) ? count($data) : 0) == 0)
         {
             switch ($period)
             {
@@ -435,7 +435,7 @@ class dbwebpresentuploadscounter extends dbTable
         }
 
 
-        if (count($allLinks) > 0) {
+        if ((is_countable($allLinks) ? count($allLinks) : 0) > 0) {
             $linksContent = '<p align="right">';
             $divider = '';
             foreach ($allLinks as $link)

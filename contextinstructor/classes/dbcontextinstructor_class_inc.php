@@ -7,7 +7,7 @@
  */
 class dbcontextinstructor extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextinstructor');
     }
 
@@ -19,7 +19,7 @@ class dbcontextinstructor extends dbTable {
     function getMainInstructor($contextcode) {
         $sql = "select userid from tbl_contextinstructor where contextcode= '$contextcode'";
         $rows = $this->getArray($sql);
-        if(count($rows) > 0){
+        if((is_countable($rows) ? count($rows) : 0) > 0){
             return $rows[0]['userid'];
         }else{
             return FALSE;

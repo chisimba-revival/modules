@@ -107,7 +107,7 @@ class multisearchops extends ChisimbaObject {
         $queries[] = 'select Title,Description,Url,DisplayUrl '.'from microsoft.bing.web('.$limit.') where query="'.$query.'"';
         $queries[] = 'select title,clickurl,abstract,dispurl '.'from search.web('.$limit.') where query = "'.$query.'"';
         $queries[] = 'select titleNoFormatting,url,content,visibleUrl '.'from google.search('.$limit.') where q="'.$query.'"';
-        $url = "select * from query.multi where queries='".join($queries,';')."'";
+        $url = "select * from query.multi where queries='".join(';', $queries)."'";
         $api = 'http://query.yahooapis.com/v1/public/yql?q='.urlencode($url).'&format=json&env=store'.'%3A%2F%2Fdatatables.org%2Falltableswithkeys&diagnostics=false';
         
         return $api;
@@ -129,7 +129,7 @@ class multisearchops extends ChisimbaObject {
                     default:
                         $bing = "=== Bing ===\n\n";
                 }
-                $all = sizeof($res);
+                $all = (is_countable($res) ? sizeof($res) : 0);
                 for($i=0;$i<$all;$i++) {      
                     switch ($format) {
                         case 'html':
@@ -161,7 +161,7 @@ class multisearchops extends ChisimbaObject {
                     default:
                         $yahoo = "=== Yahoo ===\n\n";
                 }
-                $all = sizeof($res);
+                $all = (is_countable($res) ? sizeof($res) : 0);
                 for($i=0;$i<$all;$i++) {
                     switch ($format) {
                         case 'html':
@@ -193,7 +193,7 @@ class multisearchops extends ChisimbaObject {
                     default:
                         $google = "=== Google ===\n\n";
                 }
-                $all = sizeof($res);
+                $all = (is_countable($res) ? sizeof($res) : 0);
                 for($i=0;$i<$all;$i++) {
                     switch ($format) {
                         case 'html':

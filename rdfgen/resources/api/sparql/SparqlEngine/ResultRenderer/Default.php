@@ -33,14 +33,14 @@ class SparqlEngine_ResultRenderer_Default implements SparqlEngine_ResultRenderer
         if ($arVartable != null) {
             switch ($qrf) {
                 case 'ask':
-                    if (count($arVartable) > 0) {
+                    if ((is_countable($arVartable) ? count($arVartable) : 0) > 0) {
                         $result = true;
                     } else {
                         $result = false;
                     }
                     break;
                 case 'count':
-                    $result = count($arVartable);
+                    $result = (is_countable($arVartable) ? count($arVartable) : 0);
                     break;
                 case 'construct':
                     $result = $this->constructGraph(

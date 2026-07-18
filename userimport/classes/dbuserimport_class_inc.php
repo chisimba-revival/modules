@@ -28,7 +28,7 @@ class dbuserimport extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_importusers');
         $this->objUser=$this->getObject('user','security');

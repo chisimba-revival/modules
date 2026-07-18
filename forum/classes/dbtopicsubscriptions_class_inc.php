@@ -22,7 +22,8 @@ class dbtopicsubscriptions extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    /* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_forum_subscribe_topic');
     }

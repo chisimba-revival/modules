@@ -440,7 +440,7 @@ class PiePlot3D extends PiePlot {
         // indication of the inclination angle
         $h = ($angle/90.0)*$d;
         $sum = 0;
-        for($i=0; $i<count($data); ++$i ) {
+        for($i=0; $i<(is_countable($data) ? count($data) : 0); ++$i ) {
             $sum += $data[$i];
         }
 
@@ -461,8 +461,8 @@ class PiePlot3D extends PiePlot {
         //
         $idx=0;
         $adjexplode=array();
-        $numcolors = count($colors);
-        for($i=0; $i<count($data); ++$i, ++$idx ) {
+        $numcolors = (is_countable($colors) ? count($colors) : 0);
+        for($i=0; $i<(is_countable($data) ? count($data) : 0); ++$i, ++$idx ) {
             $da = $data[$i]/$sum * 360;
 
             if( empty($this->explode_radius[$i]) ) {
@@ -556,7 +556,7 @@ class PiePlot3D extends PiePlot {
         }
 
         // Total number of slices
-        $n = count($angles);
+        $n = (is_countable($angles) ? count($angles) : 0);
 
         for($i=0; $i<$n; ++$i) {
             list($dbgs,$dbge) = $angles[$i];
@@ -650,7 +650,7 @@ class PiePlot3D extends PiePlot {
             // Now print possible labels and add csim
             $this->value->ApplyFont($img);
             $margin = $img->GetFontHeight()/2 + $this->value->margin ;
-            for($i=0; $i < count($data); ++$i ) {
+            for($i=0; $i < (is_countable($data) ? count($data) : 0); ++$i ) {
                 $la = $labeldata[$i][0];
                 $x = $labeldata[$i][1] + cos($la*M_PI/180)*($d+$margin)*$this->ilabelposadj;
                 $y = $labeldata[$i][2] - sin($la*M_PI/180)*($h+$margin)*$this->ilabelposadj;
@@ -695,7 +695,7 @@ class PiePlot3D extends PiePlot {
         $img->SetLineWeight($edgeweight);
 
         $fulledge = true;
-        for($i=0; $i < count($data) && $fulledge; ++$i ) {
+        for($i=0; $i < (is_countable($data) ? count($data) : 0) && $fulledge; ++$i ) {
             if( empty($this->explode_radius[$i]) ) {
                 $this->explode_radius[$i]=0;
             }
@@ -705,7 +705,7 @@ class PiePlot3D extends PiePlot {
         }
          
 
-        for($i=0; $i < count($data); ++$i, ++$idx ) {
+        for($i=0; $i < (is_countable($data) ? count($data) : 0); ++$i, ++$idx ) {
 
             $da = $data[$i]/$sum * 2*M_PI;
             $this->StrokeFullSliceFrame($img,$xc,$yc,$a,$a+$da,$d,$h,$z,$edgecolor,
@@ -784,7 +784,7 @@ class PiePlot3D extends PiePlot {
             sort($colors);
             $idx_a=$this->themearr[$this->theme];
             $ca = array();
-            $m = count($idx_a);
+            $m = (is_countable($idx_a) ? count($idx_a) : 0);
             for($i=0; $i < $m; ++$i) {
                 $ca[$i] = $colors[$idx_a[$i]];
             }

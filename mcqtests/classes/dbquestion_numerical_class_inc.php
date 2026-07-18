@@ -26,7 +26,7 @@ class dbquestion_numerical extends dbtable {
      */
     public $table;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_question_numerical');
         $this->table = 'tbl_test_question_numerical';
     }

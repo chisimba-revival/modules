@@ -200,7 +200,7 @@ foreach ($web_cals as $web_cal) {
 }
 
 // Process the local calendars.
-if (count($local_cals) > 0) {
+if ((is_countable($local_cals) ? count($local_cals) : 0) > 0) {
 	$local_cals = availableCalendars($username, $password, $local_cals);
 	foreach ($local_cals as $local_cal) {
 		$cal_displaynames[] = str_replace('32', ' ', getCalendarName($local_cal));
@@ -210,7 +210,7 @@ if (count($local_cals) > 0) {
 	
 	// Set the download and subscribe paths from the config, if there is
 	// only one calendar being displayed and those paths are defined.
-	if (count($local_cals) == 1) {
+	if ((is_countable($local_cals) ? count($local_cals) : 0) == 1) {
 		$filename = $local_cals[0];
 		if (($download_uri == '') && (preg_match('/(^\/|\.\.\/)/', $filename) == 0)) {
 			$subscribe_path = 'webcal://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['PHP_SELF']).'/'."$cpath/".$filename;
@@ -228,7 +228,7 @@ if (count($local_cals) > 0) {
 
 // We should only allow a download filename and subscribe path if there is
 // only one calendar being displayed.
-if (count($cal_filelist) > 1) {
+if ((is_countable($cal_filelist) ? count($cal_filelist) : 0) > 1) {
 	$subscribe_path = '';
 	$download_filename = '';
 }

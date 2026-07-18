@@ -19,7 +19,7 @@ class dbinstitution extends dbtable {
 
     public $objUser;
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_oer_institutions");
 
         $this->product_adaptaion_data = 'tbl_oer_product_adaptation_data';
@@ -106,7 +106,7 @@ class dbinstitution extends dbtable {
     function getInstitutionName($id) {
         $sql = "SELECT name FROM tbl_oer_institutions WHERE id='$id'";
         $institutionName = $this->getArray($sql);
-        if (count($institutionName) > 0) {
+        if ((is_countable($institutionName) ? count($institutionName) : 0) > 0) {
             return $institutionName[0]['name'];
         } else {
             return Null;
@@ -123,7 +123,7 @@ class dbinstitution extends dbtable {
         $sql=
         "select institutionid from tbl_oer_products where institutionid = '$institutionId'";
         $rows=$this->getArray($sql);
-        if(count($rows) > 0){
+        if((is_countable($rows) ? count($rows) : 0) > 0){
             return true;
         }else{
             return false;
@@ -139,7 +139,7 @@ class dbinstitution extends dbtable {
     function getInstitutionById($id) {
         $sql = "SELECT * FROM tbl_oer_institutions WHERE id = '" . $id . "'";
         $result = $this->getArray($sql);
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             return $result[0];
         } else {
             return Null;

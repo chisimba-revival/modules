@@ -189,9 +189,9 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
             case self::ASSERT_QUERY:
             default:
                 if ($this->_negate) {
-                    return (0 == count($result));
+                    return (0 == (is_countable($result) ? count($result) : 0));
                 } else {
-                    return (0 != count($result));
+                    return (0 != (is_countable($result) ? count($result) : 0));
                 }
         }
     }
@@ -277,7 +277,7 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
     {
         $match = (string) $match;
 
-        if (0 == count($result)) {
+        if (0 == (is_countable($result) ? count($result) : 0)) {
             return false;
         }
 
@@ -300,7 +300,7 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
      */
     protected function _notMatchContent($result, $match)
     {
-        if (0 == count($result)) {
+        if (0 == (is_countable($result) ? count($result) : 0)) {
             return true;
         }
 
@@ -323,7 +323,7 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
      */
     protected function _regexContent($result, $pattern)
     {
-        if (0 == count($result)) {
+        if (0 == (is_countable($result) ? count($result) : 0)) {
             return false;
         }
 
@@ -346,7 +346,7 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
      */
     protected function _notRegexContent($result, $pattern)
     {
-        if (0 == count($result)) {
+        if (0 == (is_countable($result) ? count($result) : 0)) {
             return true;
         }
 
@@ -370,7 +370,7 @@ class Zend_Test_PHPUnit_Constraint_DomQuery extends PHPUnit_Framework_Constraint
      */
     protected function _countContent($result, $test, $type)
     {
-        $count = count($result);
+        $count = (is_countable($result) ? count($result) : 0);
 
         switch ($type) {
             case self::ASSERT_CONTENT_COUNT:

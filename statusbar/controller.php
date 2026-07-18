@@ -309,7 +309,7 @@ class statusbar extends controller
         $this->objMessage->updateMessage($id);
         $messages = $this->objMessage->getInstantMessages();
         
-        $count = count($messages);
+        $count = (is_countable($messages) ? count($messages) : 0);
         
         if ($count > 0)
         {
@@ -390,7 +390,7 @@ class statusbar extends controller
         
         $alerts = $this->objOps->ajaxGetCalendarAlerts();
         
-        $count = count($alerts);
+        $count = (is_countable($alerts) ? count($alerts) : 0);
         
         if ($count > 0)
         {
@@ -417,7 +417,7 @@ class statusbar extends controller
         
         $alerts = $this->objOps->ajaxGetContentAlerts();
         
-        $count = count($alerts);
+        $count = (is_countable($alerts) ? count($alerts) : 0);
         
         if ($count > 0)
         {

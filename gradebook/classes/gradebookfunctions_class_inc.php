@@ -115,8 +115,8 @@ class gradebookfunctions extends controller {
         //$ar=$this->objMembers->getSubGroupUsers($this->studGroupId, array('*'));
         $contextStudents = $this->userContext->getContextStudents($this->contextCode);
         $num=0;
-        //$num=count($ar);
-        $num=count($contextStudents);
+        //$num=(is_countable($ar) ? count($ar) : 0);
+        $num=(is_countable($contextStudents) ? count($contextStudents) : 0);
 
         if($num) {
             return $num;

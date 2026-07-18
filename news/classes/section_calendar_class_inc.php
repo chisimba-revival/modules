@@ -45,7 +45,7 @@ class section_calendar extends ChisimbaObject
 
         $categoryStories = $this->objStories->getMonthStories($category['id'], $month, $year);
 
-        if (count($categoryStories) > 0) {
+        if ((is_countable($categoryStories) ? count($categoryStories) : 0) > 0) {
 
 			$events = array();
 

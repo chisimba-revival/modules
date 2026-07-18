@@ -215,7 +215,7 @@ order by constraint_name, referenced_table_name, keyno";
 		$a = $this->GetCol($sql);
 		$ADODB_FETCH_MODE = $savem;
 		
-		if ($a && sizeof($a)>0) return $a;
+		if ($a && (is_countable($a) ? sizeof($a) : 0)>0) return $a;
 		$false = false;
 		return $false;	  
 	}

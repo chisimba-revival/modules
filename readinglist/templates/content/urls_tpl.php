@@ -56,7 +56,7 @@ $objTable =& $this->newObject('htmltable','htmlelements');
 		
 		$urlNum = 0;
 
-		if (count($urls) == 0) 
+		if ((is_countable($urls) ? count($urls) : 0) == 0) 
 		{
 			$urlFieldset->addContent ('<ul><li>'.$this->objLanguage->languageText('mod_readinglist_noUrlsFound', 'readinglist').'. </li></ul>');
 			

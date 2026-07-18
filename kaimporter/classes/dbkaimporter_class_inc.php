@@ -69,7 +69,7 @@ class dbkaimporter extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         //Set the parent table to our demo table
         parent::init('tbl_contextcontent_chapters');
@@ -98,7 +98,7 @@ WHERE
 AND
   tbl_contextcontent_chaptercontext.contextcode = \'' . $contextCode . '\'';
         $results = $this->getArray($sql);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;

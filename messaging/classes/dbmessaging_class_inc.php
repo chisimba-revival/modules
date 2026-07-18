@@ -55,7 +55,7 @@ class dbmessaging extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->tblUsers = 'tbl_users';
         
@@ -487,7 +487,7 @@ class dbmessaging extends dbTable
         $sql = "WHERE recipient_id = '".$recipientId."'";
         $data = $this->getAll($sql);
         if(!empty($data)){
-            return count($data);
+            return (is_countable($data) ? count($data) : 0);
         }
         return 0;
     }
@@ -936,7 +936,7 @@ class dbmessaging extends dbTable
         $sql .= " WHERE ".$field." LIKE '".$value."%'";
         $data = $this->getArray($sql);
         if(!empty($data)){
-            if(count($data) > 20){
+            if((is_countable($data) ? count($data) : 0) > 20){
                 $array = array_slice($data, 0, 20);   
             }else{
                 $array = $data;

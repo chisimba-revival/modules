@@ -326,7 +326,7 @@ class wsdlparser
             }
 
             $members = array();
-            for($i=1; $i<count($parts)-1; $i++) {
+            for($i=1; $i<(is_countable($parts) ? count($parts) : 0)-1; $i++) {
                 $parts[$i] = trim($parts[$i]);
                 list($type, $member) = explode(" ", substr($parts[$i], 0, strlen($parts[$i])-1) );
 

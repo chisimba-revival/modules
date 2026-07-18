@@ -39,7 +39,7 @@ class smssender extends controller
         
         $users = $this->objUserModel->getAll($sql);
         
-        if (count($users) == 0) {
+        if ((is_countable($users) ? count($users) : 0) == 0) {
             echo '';
         } else {
             echo '<ul>';
@@ -90,7 +90,7 @@ class smssender extends controller
         $message = $this->getParam('message');
         $parts = explode('*', $message);
         
-        if (count($parts) != 3) {
+        if ((is_countable($parts) ? count($parts) : 0) != 3) {
             return $this->nextAction(NULL, array('error'=>'norecordsentemail'));
         }
         

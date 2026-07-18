@@ -295,13 +295,13 @@ class functions_assignment extends ChisimbaObject {
         $objTable->addHeaderCell($this->objLanguage->languageText('mod_assignment_mark', 'assignment', 'Mark', '10%'));
         $objTable->addHeaderCell($viewLabel . " / " . $this->objLanguage->languageText('word_download', 'system', 'Status'), '13%');
 
-        if ($this->isValid('edit') && count($assignments) > 0) {
+        if ($this->isValid('edit') && (is_countable($assignments) ? count($assignments) : 0) > 0) {
             $objTable->addHeaderCell('&nbsp;', '60');
         }
 
         $objTable->endHeaderRow();
 
-        if (count($assignments) == 0) {
+        if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
 
 
@@ -485,7 +485,7 @@ class functions_assignment extends ChisimbaObject {
         $objTable->cellspacing = '1';
         $objTable->width = "100%";
 
-        if (count($assignments) == 0) {
+        if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
             $objTable->startRow();
             $objTable->addCell($this->objLanguage->languageText('mod_assignment_noassignments', 'assignment', 'No Assignments'), '', '', '', 'noRecordsMessage', 'colspan="6"');
             $objTable->endRow();
@@ -674,11 +674,11 @@ class functions_assignment extends ChisimbaObject {
         //split the string by the literal dot in the filename
         $pattern = preg_split('/\./', $string, -1, PREG_SPLIT_OFFSET_CAPTURE);
         //get the last dot position
-        $lastdot = $pattern[count($pattern) - 1][1];
+        $lastdot = $pattern[(is_countable($pattern) ? count($pattern) : 0) - 1][1];
         //now extract the filename using the basename function
         $filename = basename(substr($string, 0, $lastdot - 1));
         $exts = split("[/\\.]", $filepath);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         return $filename . '.' . $ext;

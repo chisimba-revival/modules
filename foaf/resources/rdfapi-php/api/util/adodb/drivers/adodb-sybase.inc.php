@@ -265,7 +265,7 @@ class ADODB_sybase extends ADOConnection {
                "ORDER BY c.column_id";
 
         $a = $this->GetCol($sql);
-        if ($a && sizeof($a)>0) return $a;
+        if ($a && (is_countable($a) ? sizeof($a) : 0)>0) return $a;
         return false;
     }
 }

@@ -35,7 +35,7 @@ class dbformbuilder_user_help_content extends dbTable {
     /*!
      * \brief Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_formbuilder_user_help_content');
     }
 

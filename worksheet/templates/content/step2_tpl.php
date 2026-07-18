@@ -46,7 +46,7 @@ $objDateTime = $this->getObject('dateandtime', 'utilities');
 $table = $this->newObject('htmltable', 'htmlelements');
 $table->startRow();
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_closingdate', 'worksheet', 'Closing Date').'</strong>: '.$objDateTime->formatDate($worksheet['closing_date']), '55%');
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_questions', 'worksheet', 'Questions').'</strong>: '.count($questions), '15%');
+$table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_questions', 'worksheet', 'Questions').'</strong>: '.(is_countable($questions) ? count($questions) : 0), '15%');
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_percentage', 'worksheet', 'Percentage').'</strong>: '.$worksheet['percentage'].'%', '15%');
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_totalmark', 'worksheet', 'Total Mark').'</strong>: '.$worksheet['total_mark'], '15%');
 $table->endRow();
@@ -58,7 +58,7 @@ echo '<hr />';
 
 echo '<div id="worksheetquestions">';
 
-if (count($questions) > 0) {
+if ((is_countable($questions) ? count($questions) : 0) > 0) {
     $counter = 1;
 
     $objIcon->setIcon('edit');

@@ -111,7 +111,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if ( count($arrDisplayDoctoral) > 0) {
+if ( (is_countable($arrDisplayDoctoral) ? count($arrDisplayDoctoral) : 0) > 0) {
 
     foreach($arrDisplayDoctoral as $doctoralstudents) {
         //Set odd even row colour

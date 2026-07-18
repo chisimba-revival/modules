@@ -502,9 +502,9 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 		$dataValidationCollection = $pSheet->getDataValidationCollection();
 
 		// Write data validations?
-		if (count($dataValidationCollection) > 0) {
+		if ((is_countable($dataValidationCollection) ? count($dataValidationCollection) : 0) > 0) {
 			$objWriter->startElement('dataValidations');
-			$objWriter->writeAttribute('count', count($dataValidationCollection));
+			$objWriter->writeAttribute('count', (is_countable($dataValidationCollection) ? count($dataValidationCollection) : 0));
 
 			foreach ($dataValidationCollection as $coordinate => $dv) {
 				$objWriter->startElement('dataValidation');
@@ -571,7 +571,7 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 		$relationId = 1;
 
 		// Write hyperlinks?
-		if (count($hyperlinkCollection) > 0) {
+		if ((is_countable($hyperlinkCollection) ? count($hyperlinkCollection) : 0) > 0) {
 			$objWriter->startElement('hyperlinks');
 
 			foreach ($hyperlinkCollection as $coordinate => $hyperlink) {
@@ -792,10 +792,10 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 		}
 
 		// rowBreaks
-		if (count($aRowBreaks) > 0) {
+		if ((is_countable($aRowBreaks) ? count($aRowBreaks) : 0) > 0) {
 			$objWriter->startElement('rowBreaks');
-			$objWriter->writeAttribute('count',			count($aRowBreaks));
-			$objWriter->writeAttribute('manualBreakCount',	count($aRowBreaks));
+			$objWriter->writeAttribute('count',			(is_countable($aRowBreaks) ? count($aRowBreaks) : 0));
+			$objWriter->writeAttribute('manualBreakCount',	(is_countable($aRowBreaks) ? count($aRowBreaks) : 0));
 
 				foreach ($aRowBreaks as $cell) {
 					$coords = PHPExcel_Cell::coordinateFromString($cell);
@@ -810,10 +810,10 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 		}
 
 		// Second, write column breaks
-		if (count($aColumnBreaks) > 0) {
+		if ((is_countable($aColumnBreaks) ? count($aColumnBreaks) : 0) > 0) {
 			$objWriter->startElement('colBreaks');
-			$objWriter->writeAttribute('count',			count($aColumnBreaks));
-			$objWriter->writeAttribute('manualBreakCount',	count($aColumnBreaks));
+			$objWriter->writeAttribute('count',			(is_countable($aColumnBreaks) ? count($aColumnBreaks) : 0));
+			$objWriter->writeAttribute('manualBreakCount',	(is_countable($aColumnBreaks) ? count($aColumnBreaks) : 0));
 
 				foreach ($aColumnBreaks as $cell) {
 					$coords = PHPExcel_Cell::coordinateFromString($cell);

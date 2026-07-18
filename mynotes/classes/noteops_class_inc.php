@@ -586,7 +586,7 @@ class noteops extends ChisimbaObject {
         $tmpLink = NULL;
         $tagList = "";
         $tagArr = explode(",", $tagValues);
-        $arraySize = count($tagArr);
+        $arraySize = (is_countable($tagArr) ? count($tagArr) : 0);
         $count = 0;
         
         foreach ($tagArr as $value) {

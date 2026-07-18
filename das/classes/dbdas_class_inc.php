@@ -35,7 +35,7 @@ class dbdas extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_das_messagesarchive');
         //$this->objPresence = $this->getObject('dbimpresence','im');

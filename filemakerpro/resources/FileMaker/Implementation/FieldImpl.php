@@ -122,7 +122,7 @@ $V84cdc76c = $V9c28d32d[3];
 break;
 default :
  preg_match('~([0-9]{1,2})[-,/,\\]([0-9]{1,2})[-,/,\\]([0-9]{1,4})~', $V2063c160, $V78f0805f);
-if (count($V78f0805f) != 3) {
+if ((is_countable($V78f0805f) ? count($V78f0805f) : 0) != 3) {
  $Vcb5e100e->addError($this, $V981c1e7b, $V2063c160);
 } else {
  $V6c8f3f79 = strlen($V78f0805f[2]);
@@ -248,7 +248,7 @@ if ($Vcaf85b7b) {
  preg_match('~([0-9]{1,2})[:]([0-9]{1,2})([:][0-9]{1,2})?~', $V2063c160, $V9c28d32d);
 $V896c55cc = $V9c28d32d[1];
 $V640fd0cc = $V9c28d32d[2];
-if (count($V9c28d32d) > 4) {
+if ((is_countable($V9c28d32d) ? count($V9c28d32d) : 0) > 4) {
  $V783e8e29 = $V9c28d32d[3];
 } 
  if ($V896c55cc < 1 || $V896c55cc > $V52124c01) {
@@ -256,7 +256,7 @@ if (count($V9c28d32d) > 4) {
 } else if ($V640fd0cc < 1 || $V640fd0cc > 59) {
  $Vcb5e100e->addError($this, $V981c1e7b, $V2063c160);
 } else
- if (count($V9c28d32d) > 4) {
+ if ((is_countable($V9c28d32d) ? count($V9c28d32d) : 0) > 4) {
  if ($V783e8e29 < 1 || $V783e8e29 > 59)
  $Vcb5e100e->addError($this, $V981c1e7b, $V2063c160);
 }

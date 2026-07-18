@@ -936,7 +936,7 @@ class sectionmanager extends ChisimbaObject {
 
         $parent = "";
         $parts = explode("/", $path);
-        $count = count($parts);
+        $count = (is_countable($parts) ? count($parts) : 0);
         for ($i = 0; $i < $count - 1; $i++) {
             if ($parent == '') {
                 $parent.= $parts[$i];
@@ -983,11 +983,11 @@ class sectionmanager extends ChisimbaObject {
                 $selectedTitle = $sectionNode['title'];
             }
 
-            if (count($sectionNodes) > 0) {
+            if ((is_countable($sectionNodes) ? count($sectionNodes) : 0) > 0) {
                 foreach ($sectionNodes as $sectionNode) {
                     //Check if the folderShortText contains some words in selected
                     $arr_selectedtxt = explode(" ", $selectedTitle);
-                    $arr_count = count($arr_selectedtxt);
+                    $arr_count = (is_countable($arr_selectedtxt) ? count($arr_selectedtxt) : 0);
                     $text = $sectionNode['title'];
                     //Check if the node is selected
                     if (!empty($selectedId)) {
@@ -1085,7 +1085,7 @@ class sectionmanager extends ChisimbaObject {
             $sectionEditor = TRUE;
         }
 
-        if (count($sectionNodes) > 0) {
+        if ((is_countable($sectionNodes) ? count($sectionNodes) : 0) > 0) {
             foreach ($sectionNodes as $sectionNode) {
                 $maxLen = 50;
                 $nodeType = $sectionNode['nodetype'];

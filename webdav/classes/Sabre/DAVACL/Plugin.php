@@ -256,7 +256,7 @@ class Sabre_DAVACL_Plugin extends Sabre_DAV_ServerPlugin {
         $check = array($currentUser);
         $principals = array($currentUser);
 
-        while(count($check)) {
+        while((is_countable($check) ? count($check) : 0)) {
 
             $principal = array_shift($check);
 
@@ -531,7 +531,7 @@ class Sabre_DAVACL_Plugin extends Sabre_DAV_ServerPlugin {
         $flat = $this->getFlatPrivilegeSet($node);
 
         $collected2 = array();
-        while(count($collected)) {
+        while((is_countable($collected) ? count($collected) : 0)) {
 
             $current = array_pop($collected);
             $collected2[] = $current['privilege'];
@@ -1158,7 +1158,7 @@ class Sabre_DAVACL_Plugin extends Sabre_DAV_ServerPlugin {
             foreach($requestedProperties as $propertyName=>$childRequestedProperties) {
 
                 // We're only traversing if sub-properties were requested
-                if(count($childRequestedProperties)===0) continue;
+                if((is_countable($childRequestedProperties) ? count($childRequestedProperties) : 0)===0) continue;
 
                 // We only have to do the expansion if the property was found
                 // and it contains an href element.

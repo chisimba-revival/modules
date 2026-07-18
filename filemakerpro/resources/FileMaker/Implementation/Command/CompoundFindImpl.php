@@ -31,7 +31,7 @@ $this->_setRelatedSetsFilters($V21ffce5b);
  foreach ($this->Vad2bfd5a as $V70a17ffa =>	$V9a7aa128)
  {  
  $V15c46c6e = $V9a7aa128->_impl->_findCriteria;
-$V8ac10dab = count($V15c46c6e);
+$V8ac10dab = (is_countable($V15c46c6e) ? count($V15c46c6e) : 0);
 
  $V090cbceb = $V090cbceb.'(';
 

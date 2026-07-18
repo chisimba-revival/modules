@@ -21,7 +21,7 @@ $editGroupUrl = str_replace("amp;", "", $this->uri(array('action'=>'editgroup'))
 $getGroupData = $this->objGroup->getGroupData();
 
 $data = "[";
-$numRows = count($getGroupData);
+$numRows = (is_countable($getGroupData) ? count($getGroupData) : 0);
 $count = 1;
 
 $editGroup = new link();

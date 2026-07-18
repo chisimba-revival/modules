@@ -12,7 +12,7 @@ class SparqlEngineDb_SqlMerger
 {
     public static function getSelect(Query $query, $arSqls, $strAdditional = '')
     {
-        if (count($arSqls) == 1) {
+        if ((is_countable($arSqls) ? count($arSqls) : 0) == 1) {
             return implode('', $arSqls[0]) . $strAdditional;
         }
 
@@ -30,7 +30,7 @@ class SparqlEngineDb_SqlMerger
 
     public static function getCount(Query $query, $arSqls, $strAdditional = '')
     {
-        if (count($arSqls) == 1) {
+        if ((is_countable($arSqls) ? count($arSqls) : 0) == 1) {
             return 'SELECT COUNT(*) as count ' . $arSqls[0]['from'] . $arSqls[0]['where'] . $strAdditional;
         }
 

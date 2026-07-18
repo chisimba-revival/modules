@@ -129,7 +129,7 @@ class XML_Tree extends XML_Parser
     */
     function &insertChild($path,$pos,$child, $content = '', $attributes = array()) {
         // update namespace to maintain namespace integrity
-        $count=count($path);
+        $count=(is_countable($path) ? count($path) : 0);
         foreach($this->namespace as $key => $val) {
             if ((array_slice($val,0,$count)==$path) && ($val[$count]>=$pos))
                 $this->namespace[$key][$count]++;
@@ -158,7 +158,7 @@ class XML_Tree extends XML_Parser
     */
     function &removeChild($path,$pos) {
         // update namespace to maintain namespace integrity
-        $count=count($path);
+        $count=(is_countable($path) ? count($path) : 0);
         foreach($this->namespace as $key => $val) {
             if (array_slice($val,0,$count)==$path) {
                 if ($val[$count]==$pos) { unset($this->namespace[$key]); break; }

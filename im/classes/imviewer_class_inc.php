@@ -162,7 +162,7 @@ class imviewer extends ChisimbaObject {
     */
     public function renderLinkList($msgs)
 	{
-		if(count($msgs) > 0)
+		if((is_countable($msgs) ? count($msgs) : 0) > 0)
 		{
 
 			$anchor = $this->getObject('link', 'htmlelements');

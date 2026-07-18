@@ -84,7 +84,7 @@ class XMPPHP_XMLObj {
 	public function __construct($name, $ns = '', $attrs = array(), $data = '') {
 		$this->name = strtolower($name);
 		$this->ns   = $ns;
-		if(is_array($attrs) && count($attrs)) {
+		if(is_array($attrs) && (is_countable($attrs) ? count($attrs) : 0)) {
 			foreach($attrs as $key => $value) {
 				$this->attrs[strtolower($key)] = $value;
 			}

@@ -513,7 +513,7 @@ class discussion extends controller {
                 $this->setVarByRef('paging', $paging);
 
                 $allTopics = $this->objTopic->showTopicsInDiscussion($id, $this->userId, $discussion['archivedate'], $order, $direction, NULL, $limit);
-                $topicsNum = count($allTopics);
+                $topicsNum = (is_countable($allTopics) ? count($allTopics) : 0);
 
                 //add to activity log
                 if ($this->eventsEnabled) {
@@ -1440,7 +1440,7 @@ class discussion extends controller {
          */
         public function downloadAttachment($id, $topic) {
                 $files = $this->objPostAttachments->downloadAttachment($id);
-                if (count($files) > 0) {
+                if ((is_countable($files) ? count($files) : 0) > 0) {
                         $location = $this->objFiles->getFullFilePath($files[0]['id']);
                         header('Content-Disposition: attachment; filename="' . $files[0]['filename'] . '"');
                         readfile($location);
@@ -1530,7 +1530,7 @@ class discussion extends controller {
                         $discussionForm = new form('discussionform', 'index.php');
                         $discussionForm->method = 'GET';
                         $discussions = $this->objDiscussion->getContextDiscussions($this->contextCode);
-                        if (count($discussions) > 1 && $showDiscussionJump) {
+                        if ((is_countable($discussions) ? count($discussions) : 0) > 1 && $showDiscussionJump) {
                                 $dd = new dropdown('id');
                                 foreach ($discussions AS $discussion) {
                                         if ($discussion['id'] != $discussion_id) {
@@ -2150,7 +2150,7 @@ class discussion extends controller {
                 $objSearch->defaultDiscussion = $discussion;
                 $objSearch->searchTerm = $term;
                 // Only perform search if no errors exist
-                if (count($errors) == 0) {
+                if ((is_countable($errors) ? count($errors) : 0) == 0) {
                         $searchResults = $objSearch->searchDiscussion($term, $discussion);
                 } else {
                         $searchResults = '';
@@ -2376,7 +2376,7 @@ class discussion extends controller {
 // Parse Images
                         $images_array = extract_tags($string, 'img');
                         $images = array();
-                        for ($i = 0; $i <= sizeof($images_array); $i++) {
+                        for ($i = 0; $i <= (is_countable($images_array) ? sizeof($images_array) : 0); $i++) {
                                 $img = trim(@$images_array[$i]['attributes']['src']);
                                 $width = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['width']);
                                 $height = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['height']);

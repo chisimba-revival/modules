@@ -15,7 +15,7 @@ die( "You cannot view this page directly" );
 
 class dbuserreg extends dbTable
 {
-	function init() {
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		parent::init('tbl_award_users');
 	}
 	

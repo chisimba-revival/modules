@@ -46,7 +46,7 @@ class dbpostgis extends dbTable
 
 	public $sysConfig;
 
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		// create the connection so as to suppress any issues as well as set the class up
 		parent::init('tbl_users');

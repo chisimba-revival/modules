@@ -20,7 +20,7 @@ $table = &$this->newObject('htmltable', 'htmlelements');
 //Add table to show results
 $table = &$this->newObject('htmltable', 'htmlelements');
 //Display results if search was positive
-if (count($files) >= 1) {
+if ((is_countable($files) ? count($files) : 0) >= 1) {
     $count = 0;
     $table->startHeaderRow();
     $table->addHeaderCell("<b>" . $this->objLanguage->languageText('mod_wicid_title', 'wicid', 'Title') . "</b>");

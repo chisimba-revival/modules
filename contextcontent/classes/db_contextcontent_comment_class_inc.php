@@ -55,7 +55,7 @@ class db_contextcontent_comment extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_page_comment');
         $this->objUser =& $this->getObject('user', 'security');

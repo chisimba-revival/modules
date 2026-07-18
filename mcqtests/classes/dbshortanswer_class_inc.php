@@ -30,7 +30,7 @@ class dbshortanswer extends dbtable {
     public $objUser;
     public $userId;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_dbshortanswer');
         $this->table = 'tbl_test_dbshortanswer';
         $this->objUser = &$this->getObject('user', 'security');

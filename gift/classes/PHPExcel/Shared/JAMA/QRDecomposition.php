@@ -171,8 +171,8 @@ class QRDecomposition {
 			}
 		}
 		/*
-		for($i = 0; $i < count($Q); ++$i) {
-			for($j = 0; $j < count($Q); ++$j) {
+		for($i = 0; $i < (is_countable($Q) ? count($Q) : 0); ++$i) {
+			for($j = 0; $j < (is_countable($Q) ? count($Q) : 0); ++$j) {
 				if(! isset($Q[$i][$j]) ) {
 					$Q[$i][$j] = 0;
 				}

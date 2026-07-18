@@ -80,7 +80,7 @@ $objSelectTable->endHeaderRow();
 
 
 $class = '';
-if(count($sicMajorGroups) > '0'){
+if((is_countable($sicMajorGroups) ? count($sicMajorGroups) : 0) > '0'){
   foreach($sicMajorGroups as $sicMajorGroup){ 
      //Get group description
      $sicMajorGroupName = $sicMajorGroup['code'];

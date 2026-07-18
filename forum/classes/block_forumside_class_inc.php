@@ -45,7 +45,7 @@ class block_forumside extends ChisimbaObject {
 
         function buildForm() {
                 $forums = $this->objForum->showAllForums($this->contextCode);
-                if (count($forums) > 0) {
+                if ((is_countable($forums) ? count($forums) : 0) > 0) {
                         $div = "";
                         $pointerLink = new link("#");
                         $pointerLink->link = ">&nbsp;";

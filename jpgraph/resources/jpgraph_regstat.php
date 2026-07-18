@@ -26,9 +26,9 @@ class Spline {
         $this->xdata = $xdata;
         $this->ydata = $ydata;
 
-        $n = count($ydata);
+        $n = (is_countable($ydata) ? count($ydata) : 0);
         $this->n = $n;
-        if( $this->n !== count($xdata) ) {
+        if( $this->n !== (is_countable($xdata) ? count($xdata) : 0) ) {
             JpGraphError::RaiseL(19001);
             //('Spline: Number of X and Y coordinates must be the same');
         }
@@ -123,8 +123,8 @@ class Bezier {
 
     function __construct($datax, $datay, $attraction_factor = 1) {
         // Adding control point multiple time will raise their attraction power over the curve
-        $this->n = count($datax);
-        if( $this->n !== count($datay) ) {
+        $this->n = (is_countable($datax) ? count($datax) : 0);
+        if( $this->n !== (is_countable($datay) ? count($datay) : 0) ) {
             JpGraphError::RaiseL(19003);
             //('Bezier: Number of X and Y coordinates must be the same');
         }

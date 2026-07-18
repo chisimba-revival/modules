@@ -948,7 +948,7 @@ Class RdqlParser extends Object{
 function _validateQName($token, $clause_error) {
  
   $parts = explode(':', $token);
-  if (count($parts) > 2)
+  if ((is_countable($parts) ? count($parts) : 0) > 2)
   	trigger_error($clause_error ."illegal QName: '$token'", E_USER_ERROR);
   if (!$this->_validateNCName($parts[0]))
   	trigger_error($clause_error ."illegal prefix in QName: '$token'", E_USER_ERROR);

@@ -25,7 +25,7 @@ class usercalendar extends ChisimbaObject
     /**
     * Constructor method to define the table
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objCalendar =& $this->getObject('dbcalendar', 'calendarbase');
         $this->objLanguage = &$this->getObject('language', 'language');
         $this->eventsList = NULL;

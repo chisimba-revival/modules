@@ -299,7 +299,7 @@ class simpleblogops extends ChisimbaObject
             $prevLink = $wordStart;
         }
         $ret ="";
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
             }
@@ -374,7 +374,7 @@ class simpleblogops extends ChisimbaObject
             $prevLink = $wordStart;
         }
         $ret ="";
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
             }
@@ -403,7 +403,7 @@ class simpleblogops extends ChisimbaObject
     public function showThisMonth($blogId) 
     {
         $posts = $this->objDbPosts->getCurrentMonth($blogId, $this->usesWall);
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret ="";
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
@@ -428,7 +428,7 @@ class simpleblogops extends ChisimbaObject
     public function showLastMonth($blogId) 
     {
         $posts = $this->objDbPosts->getLastMonth($blogId, $this->usesWall);
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret ="";
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
@@ -466,7 +466,7 @@ class simpleblogops extends ChisimbaObject
         $ret .= "<a href='$uri' alt='$lastMonth'>$lastMonth</a><br />"; 
         $uri = $this->uri(array(), 'simpleblog');
         $ret .= "<a href='$uri' alt='$blogHome'>$blogHome</a><br /><hr />"; 
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $ret = $ret . "\n\n<ul>";
             foreach ($ar as $item) {
                 $uri = $this->uri(array(
@@ -498,7 +498,7 @@ class simpleblogops extends ChisimbaObject
     public function showArchive($blogId, $year, $month) 
     {
         $posts = $this->objDbPosts->getPostsByYearMonth($blogId, $year, $month, $this->usesWall);
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret ="";
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
@@ -523,7 +523,7 @@ class simpleblogops extends ChisimbaObject
     public function showTag($blogId, $tag) 
     {
         $posts = $this->objDbPosts->getPostsByTag($blogId, $tag, $this->usesWall);
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret ="";
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
@@ -548,7 +548,7 @@ class simpleblogops extends ChisimbaObject
     public function showById($id) 
     {
         $posts = $this->objDbPosts->getPostsById($id, $this->usesWall);
-        if (count($posts) > 0) {
+        if ((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret ="";
             foreach ($posts as $post) {
                 $ret .= $this->formatItem($post);
@@ -599,7 +599,7 @@ class simpleblogops extends ChisimbaObject
         $ret = "<h3>Searching for <em>$searchTerm</em> in blog <em>$blogId</em></h3>";
         $searchTerm = preg_replace("/[^A-Za-z0-9\s\s+]/","",$searchTerm);
         $searchTerm = urlencode($searchTerm);
-        if(count($posts) > 0) {
+        if((is_countable($posts) ? count($posts) : 0) > 0) {
             $ret .= "<div class='sb_searchresults'>";
             // Get an instance of the humanize date class.
             $objDd = $this->getObject('translatedatedifference', 'utilities');

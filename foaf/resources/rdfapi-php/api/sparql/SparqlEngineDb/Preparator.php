@@ -45,7 +45,7 @@ class SparqlEngineDb_Preparator
                 implode('', $arQuery),
                 $arPlaceholders
             );
-            if (count($arQueries) == 1) {
+            if ((is_countable($arQueries) ? count($arQueries) : 0) == 1) {
                 //I currently haven't seens one case in which the count was > 1
                 //if that happens, we will need to add a fix
                 $strPrepared .= SparqlEngineDb_Offsetter::getLimitSql(

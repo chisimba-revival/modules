@@ -22,7 +22,7 @@ require_once "../Matrix.php";
 class LagrangeInterpolation {
 
 	public function findPolynomialFactors($x, $y) {
-		$n = count($x);
+		$n = (is_countable($x) ? count($x) : 0);
 
 		$data = array();  // double[n][n];
 		$rhs  = array();  // double[n];

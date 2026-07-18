@@ -131,7 +131,7 @@ class feedelement implements ArrayAccess
     public function __get($var)
     {
         $nodes = $this->_children($var);
-        $length = count($nodes);
+        $length = (is_countable($nodes) ? count($nodes) : 0);
 
         if ($length == 1) {
             return new feedelement($nodes[0]);
@@ -177,7 +177,7 @@ class feedelement implements ArrayAccess
                 $node = $this->_element->ownerDocument->createElement($var, $val);
                 $this->_element->appendChild($node);
             }
-        } elseif (count($nodes) > 1) {
+        } elseif ((is_countable($nodes) ? count($nodes) : 0) > 1) {
             throw new customException('Cannot set the value of multiple tags simultaneously.');
         } else {
             $nodes[0]->nodeValue = $val;
@@ -229,7 +229,7 @@ class feedelement implements ArrayAccess
 
         if (!$nodes) {
             return null;
-        } elseif (count($nodes) > 1) {
+        } elseif ((is_countable($nodes) ? count($nodes) : 0) > 1) {
             return $nodes;
         } else {
             return $nodes[0]->nodeValue;

@@ -29,7 +29,7 @@ class commentsmanager extends ChisimbaObject {
             $userId = $this->objUser->userId();
 
             $umbrellaTheme = $this->getParam("umbrellatheme");
-            if (count($errors) > 0) {
+            if ((is_countable($errors) ? count($errors) : 0) > 0) {
                 $this->setVar('title', $title);
                 $this->setVar('mode', "fixup");
 

@@ -55,7 +55,7 @@ class renderSearchResults extends ChisimbaObject
         $ret .= "<div align=\"center\">" . $objSearch->renderGoogleApiForm($searchterm) . "</div>";
     
         //If there are data in the array
-        if ( count($ar) > 0 ) {
+        if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
             //Create an instance of the table object
             $objTable = $this->newObject('htmltable', 'htmlelements');
             $objTable->border = "0";
@@ -219,7 +219,7 @@ class renderSearchResults extends ChisimbaObject
                 //Show link only if there are buddies
                 $objDbBuddies =& $this->getObject('dbbuddies','buddies');
                 $ar = $objDbBuddies->getBuddies($this->objUser->userId());
-                if ( count($ar) > 0 ) {
+                if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
                     $recToBuddy = $this->uri(array(
                       'type' => 'buddy',
                       'url' => $url,
@@ -286,7 +286,7 @@ class renderSearchResults extends ChisimbaObject
                 $ary = $objModelChat->getRoomsUserIsIn($this->objUser->userId());
                 //If there is at least one element in array then s/he is in chatroom
                 if (isset($ary)) {
-                    if (count($ary) >= 1) {
+                    if ((is_countable($ary) ? count($ary) : 0) >= 1) {
                         //Show the link to to chat if they are in a chatroom
                         $recToChat = $this->uri(array(
                           'type' => 'tochat',
@@ -391,7 +391,7 @@ class renderSearchResults extends ChisimbaObject
             $objTable->endRow();
             //Show the table
             return $ret . $objTable->show() . "<br />";
-        } #if ( count($ar)>0 )
+        } #if ( (is_countable($ar) ? count($ar) : 0)>0 )
     } # function render
 
 } #end of class

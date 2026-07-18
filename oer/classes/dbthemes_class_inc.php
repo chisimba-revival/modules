@@ -28,7 +28,7 @@ class dbthemes extends dbtable {
 
     private $tableName = 'tbl_oer_themes';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 
@@ -75,7 +75,7 @@ class dbthemes extends dbtable {
     function getTheme($id) {
         $sql = "select * from tbl_oer_themes where id = '" . $id . "'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return null;
@@ -92,7 +92,7 @@ class dbthemes extends dbtable {
               tbl_oer_themes th, tbl_oer_umbrella_themes uth where th.umbrellatheme = uth.id and th.id='$id'";
 
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             $row = $data[0];
             return $row['umbrellatheme'] . '|' . $row['theme'];
         } else {

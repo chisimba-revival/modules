@@ -1021,7 +1021,7 @@ class productmanager extends ChisimbaObject {
             $count++;
         }
 
-        $totalProducts = count($originalProducts);
+        $totalProducts = (is_countable($originalProducts) ? count($originalProducts) : 0);
         $reminder = $totalProducts % $maxCol;
 
         if ($reminder != 0) {

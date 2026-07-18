@@ -39,7 +39,7 @@ class ARC2_TurtleParser extends ARC2_RDFParser {
       $v = $m[2];
     }
     return ARC2::x($re, $v, $options);
-    //$this->unparsed_code = ($sub_r && count($sub_r)) ? $sub_r[count($sub_r) - 1] : '';
+    //$this->unparsed_code = ($sub_r && (is_countable($sub_r) ? count($sub_r) : 0)) ? $sub_r[(is_countable($sub_r) ? count($sub_r) : 0) - 1] : '';
   }
 
   function createBnodeID(){
@@ -151,7 +151,7 @@ class ARC2_TurtleParser extends ARC2_RDFParser {
     foreach ($more_triples as $t) {
       $this->addT($t);
     }
-    $sub_v = count($more_triples) ? $sub_v2 : $sub_v;
+    $sub_v = (is_countable($more_triples) ? count($more_triples) : 0) ? $sub_v2 : $sub_v;
     $buffer = $sub_v;
     $this->unparsed_code = $buffer;
     $this->reader->closeStream();
@@ -341,7 +341,7 @@ class ARC2_TurtleParser extends ARC2_RDFParser {
         }
       }
     } while ($proceed);
-    return count($r) ? array($r, $buffer, $pre_r, $sub_v) : array(0, $buffer, $pre_r, $sub_v);
+    return (is_countable($r) ? count($r) : 0) ? array($r, $buffer, $pre_r, $sub_v) : array(0, $buffer, $pre_r, $sub_v);
   }
   
   /* 39.. */

@@ -33,7 +33,7 @@ class dbsectioncontent extends dbTable {
 
     private $tableName = 'tbl_oer_sectioncontent';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 
@@ -47,7 +47,7 @@ class dbsectioncontent extends dbTable {
         $sql =
                 "select * from tbl_oer_sectioncontent where node_id = '$nodeId'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return FALSE;

@@ -53,7 +53,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($unitGroups) > 0){
+if((is_countable($unitGroups) ? count($unitGroups) : 0) > 0){
   foreach($unitGroups as $unitGroup){
      //Get group description
      $unitGroupDesc = $unitGroup['description'];

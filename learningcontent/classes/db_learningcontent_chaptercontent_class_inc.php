@@ -59,7 +59,7 @@ class db_learningcontent_chaptercontent extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_chaptercontent');
         $this->objUser =& $this->getObject('user', 'security');
@@ -79,7 +79,7 @@ class db_learningcontent_chaptercontent extends dbtable
         
         $results = $this->getAll($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -195,7 +195,7 @@ class db_learningcontent_chaptercontent extends dbtable
             $objChapterContext = $this->getObject('db_learningcontent_contextchapter');
             $contexts = $objChapterContext->getContextsWithChapter($chapter['chapterid']);
             
-            if (count($contexts) > 0) {
+            if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
                 foreach ($contexts as $context)
                 {
                     $objChapterContext->indexChapter($context, $chapter);

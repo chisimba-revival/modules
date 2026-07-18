@@ -431,7 +431,7 @@ class groupedit extends ChisimbaObject {
         $availablegroups = array();
         $groups = $this->objDbInstitution->getAllInstitutions();
         /*      foreach ($groups as $group) {
-          if (count($user_current_membership) > 0) { ///****** undefined
+          if ((is_countable($user_current_membership) ? count($user_current_membership) : 0) > 0) { ///****** undefined
           foreach ($user_current_membership as $membership) {
           if ($membership['institution_id'] != NULL) {
           if (strcmp($group['id'], $membership['institution_id']) == 0) {

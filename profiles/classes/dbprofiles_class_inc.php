@@ -21,7 +21,7 @@ class dbProfiles extends dbTable
     * @access public
     * @return void
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_profiles');
         $this->table = 'tbl_profiles';

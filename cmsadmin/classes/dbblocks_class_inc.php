@@ -49,7 +49,7 @@ class dbblocks extends dbTable {
      * @access public
      * @return void
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         try {
             parent::init('tbl_cms_blocks');
             $this->_objUser = & $this->getObject('user', 'security');
@@ -241,7 +241,7 @@ class dbblocks extends dbTable {
                 $pageBlocks = $this->getBlocksForSection($sectionId);
             }
             $pageBlocks = $this->getBlocksForPage($pageId);
-            if(count($pageBlocks) > 1) {
+            if((is_countable($pageBlocks) ? count($pageBlocks) : 0) > 1) {
                 foreach($pageBlocks as $pb) {
                     if($pb['ordering'] > $blockOrderNo) {
                         $newOrder = $pb['ordering'] - '1';
@@ -984,7 +984,7 @@ class dbblocks extends dbTable {
     public function getBlockByName($blockName) {
         $entry = $this->getArray('SELECT * FROM tbl_module_blocks WHERE blockname = \''.$blockName.'\'');
 
-        if (count($entry) == 0) {
+        if ((is_countable($entry) ? count($entry) : 0) == 0) {
             return FALSE;
         } else {
             return $entry['0'];
@@ -1000,7 +1000,7 @@ class dbblocks extends dbTable {
      */
     public function isFrontPage($pageid) {
         $entry = $this->getArray('SELECT * FROM tbl_cms_content_frontpage WHERE content_id = \''.$pageid.'\'');
-        if (count($entry) == 0) {
+        if ((is_countable($entry) ? count($entry) : 0) == 0) {
             return FALSE;
         } else {
             return TRUE;

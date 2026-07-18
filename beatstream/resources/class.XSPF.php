@@ -104,7 +104,7 @@ if(!ini_set("include_path",".:/usr/lib/php")) {
 			
 			// get all the tracks for the list
 			$all_tracks = $this->getTrackList();
-			$nr_tracks = sizeof($all_tracks);
+			$nr_tracks = (is_countable($all_tracks) ? sizeof($all_tracks) : 0);
 			$list = array("track"=>array());
 			// NOTE: attribution, link, meta and extension are not functional yet!
 			if($nr_tracks >= 0) {

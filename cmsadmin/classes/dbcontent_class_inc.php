@@ -59,7 +59,7 @@ class dbcontent extends dbTable
 	 * @access public
 	 * @return void
 	 */
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		try {
 			parent::init('tbl_cms_content');
@@ -1139,7 +1139,7 @@ class dbcontent extends dbTable
 	{
 		$noPages = '0';
 		$pages = $this->getAll("WHERE sectionid = '$sectionId' AND trash='0' ORDER BY ordering");
-		$noPages = count($pages);
+		$noPages = (is_countable($pages) ? count($pages) : 0);
 		return $noPages;
 	}
 
@@ -1400,7 +1400,7 @@ class dbcontent extends dbTable
 		$objLucene = $this->getObject('indexdata', 'search');
 		$contentArr = $this->getAll(' WHERE trash=1');
 
-		$total = count($contentArr);
+		$total = (is_countable($contentArr) ? count($contentArr) : 0);
 		$current = 0;
 		foreach ($contentArr as $data) {
 			$current++;
@@ -1419,7 +1419,7 @@ class dbcontent extends dbTable
 		$objLucene = $this->getObject('indexdata', 'search');
 		$contentArr = $this->getAll(' WHERE trash=0');
 
-		$total = count($contentArr);
+		$total = (is_countable($contentArr) ? count($contentArr) : 0);
 		$current = 0;
 		foreach ($contentArr as $data) {
 			$current++;

@@ -63,7 +63,7 @@ class block_faq extends ChisimbaObject
 		
 		$count = 1;
 		
-		if(count($categories) > '0'){
+		if((is_countable($categories) ? count($categories) : 0) > '0'){
   			foreach($categories as $category){
   				$categoryName = $category['categoryname'];
 			

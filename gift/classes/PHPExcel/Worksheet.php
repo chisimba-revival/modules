@@ -1416,7 +1416,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
 			}
 
 			// create or blank out the rest of the cells in the range
-			$count = count($aReferences);
+			$count = (is_countable($aReferences) ? count($aReferences) : 0);
 			for ($i = 1; $i < $count; $i++) {
 				$this->getCell($aReferences[$i])->setValueExplicit(null, PHPExcel_Cell_DataType::TYPE_NULL);
 			}
@@ -2085,7 +2085,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
 			foreach ($source as $rowData) {
 				++$currentRow;
 
-				$rowCount = count($rowData);
+				$rowCount = (is_countable($rowData) ? count($rowData) : 0);
 				for ($i = 0; $i < $rowCount; ++$i) {
 					if ($rowData[$i] != $nullValue) {
 						// Set cell value

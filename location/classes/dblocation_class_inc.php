@@ -46,7 +46,7 @@ class dblocation extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_location');
 
@@ -60,7 +60,7 @@ class dblocation extends dbTable
     }
 
     private function populate($row) {
-        if ($row && is_array($row) && count($row)) {
+        if ($row && is_array($row) && (is_countable($row) ? count($row) : 0)) {
             $this->id = $row['id'];
             $this->longitude = $row['longitude'];
             $this->latitude = $row['latitude'];

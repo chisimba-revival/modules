@@ -27,7 +27,7 @@ class dbinternals extends dbTable {
     var $domDoc;
 
     //put your code here
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_internals');
         $this->altConfig = $this->getObject('altconfig', 'config');
         $this->domDoc = new DOMDocument('utf-8');
@@ -184,7 +184,7 @@ class dbinternals extends dbTable {
         );
         $valueExists = FALSE;
         $leaveRecord = $this->getAll();
-        if (count($leaveRecord) > 0) {
+        if ((is_countable($leaveRecord) ? count($leaveRecord) : 0) > 0) {
             $leaveName = trim($leaveName);
             $leaveName = strtolower($leaveName);
             foreach ($leaveRecord as $record) {

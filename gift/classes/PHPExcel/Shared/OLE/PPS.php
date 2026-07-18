@@ -204,8 +204,8 @@ class PHPExcel_Shared_OLE_PPS
 	*/
 	public function _savePpsSetPnt(&$pps_array)
 	{
-		$pps_array[count($pps_array)] = &$this;
-		$this->No = count($pps_array) - 1;
+		$pps_array[(is_countable($pps_array) ? count($pps_array) : 0)] = &$this;
+		$this->No = (is_countable($pps_array) ? count($pps_array) : 0) - 1;
 		$this->PrevPps = 0xFFFFFFFF;
 		$this->NextPps = 0xFFFFFFFF;
 		if (count($this->children) > 0) {

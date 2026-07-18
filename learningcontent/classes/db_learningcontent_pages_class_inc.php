@@ -55,7 +55,7 @@ class db_learningcontent_pages extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_pages');
         $this->objUser =& $this->getObject('user', 'security');

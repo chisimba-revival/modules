@@ -291,7 +291,7 @@ class Image {
     // Get the specific height for a text string
     function GetTextHeight($txt="",$angle=0) {
         $tmp = preg_split('/\n/',$txt);
-        $n = count($tmp);
+        $n = (is_countable($tmp) ? count($tmp) : 0);
         $m=0;
         for($i=0; $i< $n; ++$i) {
             $m = max($m,strlen($tmp[$i]));
@@ -339,7 +339,7 @@ class Image {
     function GetTextWidth($txt,$angle=0) {
 
         $tmp = preg_split('/\n/',$txt);
-        $n = count($tmp);
+        $n = (is_countable($tmp) ? count($tmp) : 0);
         if( $this->font_family <= FF_FONT2+1 ) {
 
             $m=0;
@@ -665,7 +665,7 @@ class Image {
         else {
             if( preg_match('/\n/',$txt) ) {
                 $tmp = preg_split('/\n/',$txt);
-                for($i=0; $i < count($tmp); ++$i) {
+                for($i=0; $i < (is_countable($tmp) ? count($tmp) : 0); ++$i) {
                     $w1 = $this->GetTextWidth($tmp[$i]);
                     if( $paragraph_align=="left" ) {
                         imagestring($this->img,$use_font,$x,$y-$h+1+$i*$fh,$tmp[$i],$this->current_color);
@@ -702,7 +702,7 @@ class Image {
         // the width will be too muchy otherwise since when
         // we print we stroke the individually lines by hand.
         $e = explode("\n",$aTxt);
-        $n = count($e);
+        $n = (is_countable($e) ? count($e) : 0);
         for($i=0; $i<$n; ++$i) {
             $e[$i]=str_replace("\r","",$e[$i]);
         }
@@ -993,7 +993,7 @@ class Image {
 
             $y -= $linemargin/2;
             $tmp = preg_split('/\n/',$txt);
-            $nl = count($tmp);
+            $nl = (is_countable($tmp) ? count($tmp) : 0);
             $h = $nl * $fh;
 
             if( $this->text_halign=='right') {
@@ -1407,7 +1407,7 @@ class Image {
 
         if( $this->line_weight <= 0 ) return;
 
-        $n=count($p);
+        $n=(is_countable($p) ? count($p) : 0);
         $oldx = $p[0];
         $oldy = $p[1];
         if( $fast ) {
@@ -1433,7 +1433,7 @@ class Image {
     }
 
     function FilledPolygon($pts) {
-        $n=count($pts);
+        $n=(is_countable($pts) ? count($pts) : 0);
         if( $n == 0 ) {
             JpGraphError::RaiseL(25105);//('NULL data specified for a filled polygon. Check that your data is not NULL.');
         }
@@ -1442,7 +1442,7 @@ class Image {
         }
         $old = $this->line_weight;
         imagesetthickness($this->img,1);
-        imagefilledpolygon($this->img,$pts,count($pts)/2,$this->current_color);
+        imagefilledpolygon($this->img,$pts,(is_countable($pts) ? count($pts) : 0)/2,$this->current_color);
         $this->line_weight = $old;
         imagesetthickness($this->img,$old);
     }
@@ -1764,7 +1764,7 @@ class Image {
         $p4y=ceil(($y1 - $dist_y));
 
         $array=array($p1x,$p1y,$p2x,$p2y,$p3x,$p3y,$p4x,$p4y);
-        imagefilledpolygon ( $im, $array, (count($array)/2), $color );
+        imagefilledpolygon ( $im, $array, ((is_countable($array) ? count($array) : 0)/2), $color );
 
         // for antialias
         imageline($im, $p1x, $p1y, $p2x, $p2y, $color);
@@ -1820,12 +1820,12 @@ class Image {
         }
 
 //print_r($pts);exit;
-        if (count($pts)/2 < 3) {
+        if ((is_countable($pts) ? count($pts) : 0)/2 < 3) {
             return;
         } 
 
         imagesetthickness($im, 1);
-        imagefilledpolygon($im, $pts,count($pts)/2, $color);
+        imagefilledpolygon($im, $pts,(is_countable($pts) ? count($pts) : 0)/2, $color);
 
 
         $weight *= 2;
@@ -2034,7 +2034,7 @@ class RotImage extends Image {
     }
 
     function ArrRotate($pnts) {
-        $n = count($pnts)-1;
+        $n = (is_countable($pnts) ? count($pnts) : 0)-1;
         for($i=0; $i < $n; $i+=2) {
             list ($x,$y) = $this->Rotate($pnts[$i],$pnts[$i+1]);
             $pnts[$i] = $x; $pnts[$i+1] = $y;
@@ -2280,7 +2280,7 @@ class ImgStreamCache {
             $dirs[] = $aFile.'/';
             $aFile = dirname($aFile);
         }
-        for ($i = sizeof($dirs)-1; $i>=0; $i--) {
+        for ($i = (is_countable($dirs) ? sizeof($dirs) : 0)-1; $i>=0; $i--) {
             if(! @mkdir($dirs[$i],0777) ) {
                 JpGraphError::RaiseL(25118,$aFile);//(" Can't create directory $aFile. Make sure PHP has write permission to this directory.");
             }

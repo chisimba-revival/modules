@@ -53,7 +53,7 @@ $content = "";
 $content .= '<h3>Chapters:</h3>';
 $chapters = $this->objContextChapters->getContextChapters($this->contextCode);
 
-if (count($chapters) > 0) {
+if ((is_countable($chapters) ? count($chapters) : 0) > 0) {
     
     $content .= '<ol>';
     

@@ -558,6 +558,6 @@ class Zend_Service_WindowsAzure_Storage
      */
     public static function createQueryStringFromArray($queryString)
     {
-    	return count($queryString) > 0 ? '?' . implode('&', $queryString) : '';
+    	return (is_countable($queryString) ? count($queryString) : 0) > 0 ? '?' . implode('&', $queryString) : '';
     }	
 }

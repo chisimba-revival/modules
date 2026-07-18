@@ -93,7 +93,7 @@ if($mode == "edit")
 		}
 		if($del == "del"){$this->playlist->del_songs($nr,$playlist_name,$station_n);}
 		$list_info = explode(";", $this->playlist->get_playlist_info($station_n,$playlist_name));
-		$max = count($list_info);
+		$max = (is_countable($list_info) ? count($list_info) : 0);
 		$max = $max -2;
 		$stop = "0";
 		$teller = "0";

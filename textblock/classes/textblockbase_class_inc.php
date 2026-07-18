@@ -41,7 +41,7 @@ class textblockbase extends ChisimbaObject {
      */
     public function setData($textItem) {
         $ar = $this->objDb->getRow("blockid", $textItem);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $this->showTitle = $ar['show_title'];
             if ($this->showTitle == "1") {
                 $this->title = $ar['title'];
@@ -87,7 +87,7 @@ class textblockbase extends ChisimbaObject {
     public function setDataArr($textItem) {
         $ar = $this->objDb->getRow("blockid", $textItem);
         
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $this->showTitle = $ar['show_title'];
             if ($this->showTitle == "1") {
                 $this->title = $ar['title'];

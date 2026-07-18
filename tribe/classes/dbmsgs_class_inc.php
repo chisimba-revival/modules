@@ -32,7 +32,7 @@ class dbmsgs extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_tribe_msgs' );
         $this->objPresence = $this->getObject ( 'dbpresence' );
         $this->objUser = $this->getObject ( 'user', 'security' );

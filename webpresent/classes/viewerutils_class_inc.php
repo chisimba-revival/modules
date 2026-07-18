@@ -24,7 +24,7 @@ class viewerutils extends ChisimbaObject
         $latestFile = $objFiles->getLatestPresentation();
         $preview='';
         $fileStr='';
-        if (count($latestFile) == 0) {
+        if ((is_countable($latestFile) ? count($latestFile) : 0) == 0) {
             $latestFileContent = '';
         } else {
             $latestFileContent = '';
@@ -189,7 +189,7 @@ public function getFeatured(){
         $latestFile = $objFiles->getLatestPresentation();
         $preview='';
         $fileStr='';
-        if (count($latestFile) == 0) {
+        if ((is_countable($latestFile) ? count($latestFile) : 0) == 0) {
             $latestFileContent = '';
         } else {
             $latestFileContent = '';
@@ -268,7 +268,7 @@ public function getFeatured(){
         $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
         $latest10Desc=$objLanguage->languageText("mod_webpresent_latest10desc", "webpresent");
         $latest10Str=$objLanguage->languageText("mod_webpresent_latest10str", "webpresent");
-        $fCount = count($latestFiles);
+        $fCount = (is_countable($latestFiles) ? count($latestFiles) : 0);
         //die($fCount);
         if ($fCount == 0) {
             $latestFilesContent = '';
@@ -330,7 +330,7 @@ public function getFeatured(){
                 }
                 $tags = $objTags->getTags($file['id']);
                 $tagsStr='';
-                if (count($tags) == 0) {
+                if ((is_countable($tags) ? count($tags) : 0) == 0) {
                     $tagsStr .=  '<em>'
                     . $objLanguage->languageText("mod_webpresent_notags", "webpresent")
                     . ' </em>';
@@ -368,7 +368,7 @@ public function getFeatured(){
 
                 $column++;
                 $counter++;
-                if($column >1 || count($latestFiles) ==1){
+                if($column >1 || (is_countable($latestFiles) ? count($latestFiles) : 0) ==1){
                     $row.='</div>';
                     $row.='</div>';
                     $content .=$row;

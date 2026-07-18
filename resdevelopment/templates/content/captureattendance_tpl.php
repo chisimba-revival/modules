@@ -21,7 +21,7 @@ $editAttendanceUrl = str_replace("amp;", "", $this->uri(array('action'=>'editatt
 $getAttendanceData = $this->objAttendance->getAttendanceData();
 
 $data = "[";
-$numRows = count($getAttendanceData);
+$numRows = (is_countable($getAttendanceData) ? count($getAttendanceData) : 0);
 $count = 1;
 
 $editAttendance = new link();

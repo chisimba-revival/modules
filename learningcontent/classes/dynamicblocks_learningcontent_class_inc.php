@@ -85,7 +85,7 @@ class dynamicblocks_learningcontent extends ChisimbaObject
     {
         $chapters = $this->objContextChapters->getContextChapters($contextCode);
         
-        if (count($chapters) == 0) {
+        if ((is_countable($chapters) ? count($chapters) : 0) == 0) {
             return '<div class="noRecordsMessage">'.$this->objLanguage->code2Txt('mod_learningcontent_contexthasnochaptersorcontent', 'learningcontent', NULL, 'This [-context-] does not have chapters or content').'</div>';
         } else {
             $str = '<ol>';

@@ -75,7 +75,7 @@ class about_installscripts extends dbtable
      *
      * @access public
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
        $this->objAltConfig = $this->getObject('altconfig', 'config');
     }

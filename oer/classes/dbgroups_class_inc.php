@@ -68,7 +68,7 @@ class dbgroups extends dbtable {
      * @return VOID
      * 
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_oer_groups");
     }
 
@@ -123,7 +123,7 @@ class dbgroups extends dbtable {
         $sql=
         "select distinct pr.id from tbl_oer_products pr,tbl_oer_groups gr where gr.contextcode=pr.groupid and gr.loclat='$lat' and gr.loclong='$long'";
          $result=$this->getArray($sql);
-         if(count($result) > 0){
+         if((is_countable($result) ? count($result) : 0) > 0){
              return $result[0]['id'];
          }else{
              return NULL;
@@ -150,7 +150,7 @@ class dbgroups extends dbtable {
     public function getGroupByContextCode($contextcode) {
         $sql = "SELECT * FROM tbl_oer_groups WHERE contextcode='$contextcode'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return NULL;
@@ -412,7 +412,7 @@ class dbgroups extends dbtable {
     function getNoOfInstitutions($id) {
         $sql = "SELECT * FROM tbl_oer_group_institutions WHERE group_id='$id' AND institution_id IS NOT NULL";
         $institutions = $this->getArray($sql);
-        return count($institutions);
+        return (is_countable($institutions) ? count($institutions) : 0);
     }
 
     function getGroupOwner($groupid) {

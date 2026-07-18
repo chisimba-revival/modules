@@ -135,8 +135,8 @@ if (!$loggedIn) {
 
 $form->addToForm('<br/>' . $button->show());
 
-if (count($comments) > 0) {
-    $strComment = '<h3>Comments (' . count($comments) . ')</h3>';
+if ((is_countable($comments) ? count($comments) : 0) > 0) {
+    $strComment = '<h3>Comments (' . (is_countable($comments) ? count($comments) : 0) . ')</h3>';
     foreach ($comments as $comment) {
         $strComment .= '<div class="comment"><div class="commentmeta"><span class="commentauthor">' . $comment['name'] . '</span> says:';
         $strComment .= '</div>	<div class="commentbody">' . $comment['comment'] . '</div><div class="commentdate">';

@@ -348,7 +348,7 @@ if (isset($_REQUEST['filename'])) {
 
 					$display = FixTextFields(getid3_lib::SafeStripSlashes($filename));
 					$humm = explode(".", $display);
-					$laast_one = count($humm) -1;
+					$laast_one = (is_countable($humm) ? count($humm) : 0) -1;
 					if($humm[$laast_one] == "MP3" or $humm[$laast_one] == "mp3" )
 					{
 						$bestand4a = str_replace(" ", "_", "$display");
@@ -524,7 +524,7 @@ function table_var_dump($variable) {
 				$returnstring .= '<tr><td valign="top"><b>'.str_replace("\x00", ' ', $key).'</b></td>';
 				$returnstring .= '<td valign="top">'.gettype($value);
 				if (is_array($value)) {
-					$returnstring .= '&nbsp;('.count($value).')';
+					$returnstring .= '&nbsp;('.(is_countable($value) ? count($value) : 0).')';
 				} elseif (is_string($value)) {
 					$returnstring .= '&nbsp;('.strlen($value).')';
 				}

@@ -365,7 +365,7 @@ class calendar extends controller {
         // get the date - this is necessary for the redirect
         $date = $event['eventdate'];
 
-        if (count($event) != 0) {
+        if ((is_countable($event) ? count($event) : 0) != 0) {
             $monthYear = $this->dateFunctions->getMonthYear($date);
             $returnArray['year'] = $monthYear['year'];
             $returnArray['month'] = $monthYear['month'];

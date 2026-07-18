@@ -53,7 +53,7 @@ class section_thumbnails extends ChisimbaObject
         
         $categoryStories = $this->objStories->getCategoryStories($category['id'], str_replace('_', ' ', $category['itemsorder']));
         
-        if (count($categoryStories) == 0) {
+        if ((is_countable($categoryStories) ? count($categoryStories) : 0) == 0) {
             $output .= '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_hotels_categorydoesnothavestories', 'hotels', 'This category does not have any hotels yet.').'</div>';;
         } else {
             

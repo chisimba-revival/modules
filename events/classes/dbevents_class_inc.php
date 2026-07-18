@@ -106,7 +106,7 @@ class dbevents extends dbtable {
      *
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_events_event');
         $this->objLanguage  = $this->getObject('language', 'language');
         $this->objConfig    = $this->getObject('altconfig', 'config');

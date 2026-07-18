@@ -42,7 +42,7 @@ class dbcontentfrontpage extends dbTable
 	    * @access public
 	    * @return void
 	    */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {
                 parent::init('tbl_cms_content_frontpage');
@@ -369,7 +369,7 @@ class dbcontentfrontpage extends dbTable
 			
 			$result = $this->getArray($sql);
 			
-			if (count($result) > 0) {
+			if ((is_countable($result) ? count($result) : 0) > 0) {
 				return TRUE;
 			} else {
 				return FALSE;

@@ -51,7 +51,7 @@ $objSelectTable->addHeaderCell($this->objLanguage->languageText('mod_lrssoc_unit
 $objSelectTable->addHeaderCell('','5%', '' ,'' ,'');
 $objSelectTable->endHeaderRow();
 
-if(count($socNames) > '0'){
+if((is_countable($socNames) ? count($socNames) : 0) > '0'){
   $rowcount = '0';
   foreach($socNames as $socName){
      $rowcount++; 

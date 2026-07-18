@@ -381,7 +381,7 @@ class Zend_OpenId_Consumer
                     $line = trim($line);
                     if (!empty($line)) {
                         $x = explode(':', $line, 2);
-                        if (is_array($x) && count($x) == 2) {
+                        if (is_array($x) && (is_countable($x) ? count($x) : 0) == 2) {
                             list($key, $value) = $x;
                             $r[trim($key)] = trim($value);
                         }
@@ -587,7 +587,7 @@ class Zend_OpenId_Consumer
                 $line = trim($line);
                 if (!empty($line)) {
                     $x = explode(':', $line, 2);
-                    if (is_array($x) && count($x) == 2) {
+                    if (is_array($x) && (is_countable($x) ? count($x) : 0) == 2) {
                         list($key, $value) = $x;
                         $r[trim($key)] = trim($value);
                     } else {

@@ -153,13 +153,13 @@ class compareadaptations extends ChisimbaObject {
         $rightContent = "";
         $rightContent = '<div class="compareProductNav"><div class="frame">' . $navigator . '</div></div>';
         $contentTable->startRow();
-        if (count($productAdaptations) < 2) {
+        if ((is_countable($productAdaptations) ? count($productAdaptations) : 0) < 2) {
             $contentTable->addCell($rightContent, "", "top", "left", "", 'style="width:60px"');
         } else {
             $contentTable->addCell($rightContent, "", "top", "left", "", 'style="width:190px"');
         }
         //Show navigation for each of the product's adaptations
-        if (count($productAdaptations) > 0) {
+        if ((is_countable($productAdaptations) ? count($productAdaptations) : 0) > 0) {
             foreach ($productAdaptations as $prodAdaptation) {
                 $adaptNav = $this->sectionManager->buildSectionsTree($prodAdaptation["id"], '', "false", 'compare', $selected, "", "", $productId);
                 $adaptContent = '<div class="compareAdaptationsNav"><div class="frame">' . $adaptNav . '</div></div>';
@@ -408,7 +408,7 @@ class compareadaptations extends ChisimbaObject {
                 //get the selected product sections
                 $selectedProdNodes = $this->sectionManager->getSelectedNodes($productId, $selected);
 
-                if (count($selectedProdNodes) > 0) {
+                if ((is_countable($selectedProdNodes) ? count($selectedProdNodes) : 0) > 0) {
                     foreach ($selectedProdNodes as $selectedNode) {
                         //product thumbnail
                         $prodthumbnail = '<img src="usrfiles/' . $product['thumbnail'] . '" class="featuredadaptation" width="45" height="49" align="left"/>';
@@ -463,13 +463,13 @@ class compareadaptations extends ChisimbaObject {
                 }
             }
         //Show selected section nodes for this product adaptations
-        if (count($productAdaptations) > 0) {
+        if ((is_countable($productAdaptations) ? count($productAdaptations) : 0) > 0) {
             foreach ($productAdaptations as $prodAdaptation) {
 
                 //get the selected sections
                 $selectedNodes = $this->sectionManager->getSelectedNodes($prodAdaptation["id"], $selected);
 
-                if (count($selectedNodes) > 0) {
+                if ((is_countable($selectedNodes) ? count($selectedNodes) : 0) > 0) {
                     foreach ($selectedNodes as $selectedNode) {
                         //Get institution data
                         $instData = $this->objDbInstitution->getInstitutionById($prodAdaptation['institutionid']);

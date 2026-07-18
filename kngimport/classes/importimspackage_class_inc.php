@@ -118,7 +118,7 @@ class importIMSPackage extends dbTable
 	/**
 	 * The constructor
 	*/
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		// Load Filemanager class.
 		$this->objIndex = $this->getObject('indexfileprocessor', 'filemanager');
@@ -1197,7 +1197,7 @@ class importIMSPackage extends dbTable
 			static $k = 0;
 			$menutitles = array();
 			$orderedData = array();
-			$numItems = count($structure);
+			$numItems = (is_countable($structure) ? count($structure) : 0);
 			$numVisibleItems = 0;
 			// Change Structure of data.
 			// Add all pages.
@@ -1235,11 +1235,11 @@ class importIMSPackage extends dbTable
 				}
 			}
 			// Fix indexing.
-			for($i=0;$i<count($orderedData);$i++)
+			for($i=0;$i<(is_countable($orderedData) ? count($orderedData) : 0);$i++)
 				$indexedData[$i] = $orderedData[$i];
 			$start = 0;
 			$before = $indexOfCourse;
-			$after = count($orderedData);
+			$after = (is_countable($orderedData) ? count($orderedData) : 0);
 			$fromStart = array_slice($indexedData, $start, $before);
 			$toEnd = array_slice($indexedData, $before+1, $after);
 			$course = array_slice($indexedData, $before, $before);
@@ -1270,7 +1270,7 @@ class importIMSPackage extends dbTable
 			}
 			$this->chapterId = $this->objIEUtils->addChapters($this->contextCode, $this->courseTitle, $this->newCourse['about']);
 			// Add ordered data.
-			for($i=0;$i<count($orderedData);$i++)
+			for($i=0;$i<(is_countable($orderedData) ? count($orderedData) : 0);$i++)
 			{
 				// Unpack data.
 				$xmlResource = $orderedData[$i]['resource'];
@@ -1395,13 +1395,13 @@ class importIMSPackage extends dbTable
 			parent::init('tbl_contextcontent_order');
 			$filter = "WHERE id = '$pageOrderId'";
 			$result = $this->getAll($filter);
-			if(count($result) > 0)
+			if((is_countable($result) ? count($result) : 0) > 0)
 			{
 				$pageId = $result['0']['titleid'];
 				parent::init('tbl_contextcontent_pages');
 				$filter = "WHERE titleid = '$pageId'";
 				$result = $this->getAll($filter);
-				if(count($result) > 0)
+				if((is_countable($result) ? count($result) : 0) > 0)
 				{
 					// Retrieve page contents.
 					$fileContents = $result['0']['pagecontent'];
@@ -2130,13 +2130,13 @@ class importIMSPackage extends dbTable
 			parent::init('tbl_contextcontent_order');
 			$filter = "WHERE id = '$pageOrderId'";
 			$result = $this->getAll($filter);
-			if(count($result) > 0)
+			if((is_countable($result) ? count($result) : 0) > 0)
 			{
 				$pageId = $result['0']['titleid'];
 				parent::init('tbl_contextcontent_pages');
 				$filter = "WHERE titleid = '$pageId'";
 				$result = $this->getAll($filter);
-				if(count($result) > 0)
+				if((is_countable($result) ? count($result) : 0) > 0)
 				{
 					// Retrieve page contents.
 					$fileContents = $result['0']['pagecontent'];
@@ -2175,7 +2175,7 @@ class importIMSPackage extends dbTable
 		$menutitles = array();
 		$this->chapterId = $this->objIEUtils->addChapters($this->contextCode, $this->courseTitle, $this->newCourse['about']);
 		static $i = 0;
-		$numItems = count($structure);
+		$numItems = (is_countable($structure) ? count($structure) : 0);
 		foreach($htmlPages as $htmlPage)
 		{
 			$tree = $this->objContentOrder->getTree($this->contextCode, 'dropdown', $parent);

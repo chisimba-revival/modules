@@ -757,7 +757,7 @@ abstract class Zend_Pdf_FileParser_Font_OpenType extends Zend_Pdf_FileParser_Fon
         }
         /* Populate last value for the rest of array
          */
-        while (count($glyphWidths) < $this->numGlyphs) {
+        while ((is_countable($glyphWidths) ? count($glyphWidths) : 0) < $this->numGlyphs) {
             $glyphWidths[] = end($glyphWidths);
         }
         $this->glyphWidths = $glyphWidths;

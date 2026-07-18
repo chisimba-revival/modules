@@ -69,7 +69,7 @@ class dbvault extends dbtable
      * @return VOID
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         //Set the parent table to our demo table
         parent::init('tbl_imagevault_images');

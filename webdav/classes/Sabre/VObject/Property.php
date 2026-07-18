@@ -253,9 +253,9 @@ class Sabre_VObject_Property extends Sabre_VObject_Element {
                 $result[] = $parameter;
         }
 
-        if (count($result)===0) {
+        if ((is_countable($result) ? count($result) : 0)===0) {
             return null;
-        } elseif (count($result)===1) {
+        } elseif ((is_countable($result) ? count($result) : 0)===1) {
             return $result[0];
         } else {
             $result[0]->setIterator(new Sabre_VObject_ElementList($result));

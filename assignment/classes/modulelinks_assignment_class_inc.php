@@ -44,7 +44,7 @@ class modulelinks_assignment extends ChisimbaObject
         $assignments = $this->objAssignment->getAssignment($this->contextCode);	 
         
         // Extra Check
-        if (count($assignments) > 0) {
+        if ((is_countable($assignments) ? count($assignments) : 0) > 0) {
             
             // Array for References
             $nodesArray = array();
@@ -82,7 +82,7 @@ class modulelinks_assignment extends ChisimbaObject
        	$assignments = $this->objAssignment->getAssignment($this->contextCode);	   
           $bigArr = array();
 		
-		if(count($assignments) > 1)
+		if((is_countable($assignments) ? count($assignments) : 0) > 1)
 		{
 		 //var_dump($assignments);
           foreach ($assignments as $assignment)

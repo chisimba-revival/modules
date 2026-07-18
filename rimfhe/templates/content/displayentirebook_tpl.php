@@ -107,7 +107,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if ( count($arrDisplayBooks) > 0) {
+if ( (is_countable($arrDisplayBooks) ? count($arrDisplayBooks) : 0) > 0) {
 
     foreach($arrDisplayBooks as $entirebook) {
         //Set odd even row colour

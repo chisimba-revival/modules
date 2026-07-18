@@ -120,7 +120,7 @@ class stream extends ChisimbaObject
 				$filedata = fread($fp, 262144);
 				fclose($fp);
 				$filedata2 = explode(";", $filedata);
-				$laaste = count($filedata2) - 1;
+				$laaste = (is_countable($filedata2) ? count($filedata2) : 0) - 1;
 				$filedata_laast = explode("&", $laaste);
 				$laast_one = $filedata_laast[0];
 				$teller = 0;
@@ -238,10 +238,10 @@ class stream extends ChisimbaObject
 				$laast_played = $file;
 
 				$out2 = explode("/", $file);
-				$laast = count($out2) - 1;
+				$laast = (is_countable($out2) ? count($out2) : 0) - 1;
 				$songname = explode(".", $out2[$laast]);
 				$out23 = explode("/", $next);
-				$laast3 = count($out23) - 1;
+				$laast3 = (is_countable($out23) ? count($out23) : 0) - 1;
 				$next = explode(".", $out23[$laast3]);
 				$title = "StreamTitle='".$songname[0].$timeleft."';\n\0";
 				$tailletitle = strlen($title);

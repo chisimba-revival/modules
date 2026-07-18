@@ -48,7 +48,7 @@ class importuserdata extends ChisimbaObject
         // Parse the file line-by-line, as a Comma Seperated Variable file
         while ($line = fgetcsv($fp, 1024, ","))
         {
-            if (count($line)==$this->fieldcount){
+            if ((is_countable($line) ? count($line) : 0)==$this->fieldcount){
                 $newline=array();
                 $num=0;
                 //Build an array from the CSV text
@@ -296,7 +296,7 @@ class importuserdata extends ChisimbaObject
         } else {
             $data=$this->objUser->getAll("where username='".addslashes($username)."' and firstname='".addslashes($firstname)."' and surname='".addslashes($surname)."' and emailAddress='".addslashes($email)."'");
         }
-        $count=count($data);
+        $count=(is_countable($data) ? count($data) : 0);
         if ($count==0){
             return FALSE;
         } else {

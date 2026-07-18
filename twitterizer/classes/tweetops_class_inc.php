@@ -276,7 +276,7 @@ class tweetops extends ChisimbaObject {
     public function searchTweets($query){
     	
     	$msgs = $this->objDbTweets->searcTable($query);
-    	$cnt = count($msgs);
+    	$cnt = (is_countable($msgs) ? count($msgs) : 0);
     	echo json_encode(array('totalCount' => $cnt[0]['cnt'], 'tweets' => $msgs));
     }
     

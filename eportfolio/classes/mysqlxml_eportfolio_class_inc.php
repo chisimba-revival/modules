@@ -1640,7 +1640,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
                 //Add image and files
                 foreach($aPathQcl as $aPathQclN) {
                     $explodeaQcl = explode('/', $aPathQclN);
-                    $explodeaQclCount = count($explodeaQcl);
+                    $explodeaQclCount = (is_countable($explodeaQcl) ? count($explodeaQcl) : 0);
                     $explodeaQclFileNo = $explodeaQclCount-1;
                     $explodeaQclFilePath = $explodeaQclCount-2;
                     $aFileName = $explodeaQcl[$explodeaQclFileNo];
@@ -1670,7 +1670,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathQcl)) {
                 foreach($imgPathQcl as $imgPathQclN) {
                     $explodeimgQcl = explode('/', $imgPathQclN);
-                    $explodeimgQclCount = count($explodeimgQcl);
+                    $explodeimgQclCount = (is_countable($explodeimgQcl) ? count($explodeimgQcl) : 0);
                     $explodeimgQclFileNo = $explodeimgQclCount-1;
                     $explodeimgQclFilePath = $explodeimgQclCount-2;
                     $imgFileName = $explodeimgQcl[$explodeimgQclFileNo];
@@ -1710,7 +1710,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathAff)) {
                 foreach($aPathAff as $aPathAffN) {
                     $explodeaAff = explode('/', $aPathAffN);
-                    $explodeaAffCount = count($explodeaAff);
+                    $explodeaAffCount = (is_countable($explodeaAff) ? count($explodeaAff) : 0);
                     $explodeaAffFileNo = $explodeaAffCount-1;
                     $explodeaAffFilePath = $explodeaAffCount-2;
                     $aFileName = $explodeaAff[$explodeaAffFileNo];
@@ -1740,7 +1740,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathAff)) {
                 foreach($imgPathAff as $imgPathAffN) {
                     $explodeimgAff = explode('/', $imgPathAffN);
-                    $explodeimgAffCount = count($explodeimgAff);
+                    $explodeimgAffCount = (is_countable($explodeimgAff) ? count($explodeimgAff) : 0);
                     $explodeimgAffFileNo = $explodeimgAffCount-1;
                     $explodeimgAffFilePath = $explodeimgAffCount-2;
                     $imgFileName = $explodeimgAff[$explodeimgAffFileNo];
@@ -1780,7 +1780,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathTrans)) {
                 foreach($aPathTrans as $aPathTransN) {
                     $explodeaTrans = explode('/', $aPathTransN);
-                    $explodeaTransCount = count($explodeaTrans);
+                    $explodeaTransCount = (is_countable($explodeaTrans) ? count($explodeaTrans) : 0);
                     $explodeaTransFileNo = $explodeaTransCount-1;
                     $explodeaTransFilePath = $explodeaTransCount-2;
                     $aFileName = $explodeaTrans[$explodeaTransFileNo];
@@ -1810,7 +1810,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathTrans)) {
                 foreach($imgPathTrans as $imgPathTransN) {
                     $explodeimgTrans = explode('/', $imgPathTransN);
-                    $explodeimgTransCount = count($explodeimgTrans);
+                    $explodeimgTransCount = (is_countable($explodeimgTrans) ? count($explodeimgTrans) : 0);
                     $explodeimgTransFileNo = $explodeimgTransCount-1;
                     $explodeimgTransFilePath = $explodeimgTransCount-2;
                     $imgFileName = $explodeimgTrans[$explodeimgTransFileNo];
@@ -1850,7 +1850,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathActivity)) {
                 foreach($aPathActivity as $aPathActivityN) {
                     $explodeaAct = explode('/', $aPathActivityN);
-                    $explodeaActCount = count($explodeaAct);
+                    $explodeaActCount = (is_countable($explodeaAct) ? count($explodeaAct) : 0);
                     $explodeaActFileNo = $explodeaActCount-1;
                     $explodeaActFilePath = $explodeaActCount-2;
                     $aFileName = $explodeaAct[$explodeaActFileNo];
@@ -1880,7 +1880,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathActivity)) {
                 foreach($imgPathActivity as $imgPathActivityN) {
                     $explodeimgAct = explode('/', $imgPathActivityN);
-                    $explodeimgActCount = count($explodeimgAct);
+                    $explodeimgActCount = (is_countable($explodeimgAct) ? count($explodeimgAct) : 0);
                     $explodeimgActFileNo = $explodeimgActCount-1;
                     $explodeimgActFilePath = $explodeimgActCount-2;
                     $imgFileName = $explodeimgAct[$explodeimgActFileNo];
@@ -1920,7 +1920,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathAssert)) {
                 foreach($aPathAssert as $aPathAssertN) {
                     $explodeaAssert = explode('/', $aPathAssertN);
-                    $explodeaAssertCount = count($explodeaAssert);
+                    $explodeaAssertCount = (is_countable($explodeaAssert) ? count($explodeaAssert) : 0);
                     $explodeaAssertFileNo = $explodeaAssertCount-1;
                     $explodeaAssertFilePath = $explodeaAssertCount-2;
                     $aFileName = $explodeaAssert[$explodeaAssertFileNo];
@@ -1950,7 +1950,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathAssert)) {
                 foreach($imgPathAssert as $imgPathAssertN) {
                     $explodeimgAssert = explode('/', $imgPathAssertN);
-                    $explodeimgAssertCount = count($explodeimgAssert);
+                    $explodeimgAssertCount = (is_countable($explodeimgAssert) ? count($explodeimgAssert) : 0);
                     $explodeimgAssertFileNo = $explodeimgAssertCount-1;
                     $explodeimgAssertFilePath = $explodeimgAssertCount-2;
                     $imgFileName = $explodeimgAssert[$explodeimgAssertFileNo];
@@ -1990,7 +1990,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathRefl)) {
                 foreach($aPathRefl as $aPathReflN) {
                     $explodeaRefl = explode('/', $aPathReflN);
-                    $explodeaReflCount = count($explodeaRefl);
+                    $explodeaReflCount = (is_countable($explodeaRefl) ? count($explodeaRefl) : 0);
                     $explodeaReflFileNo = $explodeaReflCount-1;
                     $explodeaReflFilePath = $explodeaReflCount-2;
                     $aFileName = $explodeaRefl[$explodeaReflFileNo];
@@ -2020,7 +2020,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathRefl)) {
                 foreach($imgPathRefl as $imgPathReflN) {
                     $explodeimgRefl = explode('/', $imgPathReflN);
-                    $explodeimgReflCount = count($explodeimgRefl);
+                    $explodeimgReflCount = (is_countable($explodeimgRefl) ? count($explodeimgRefl) : 0);
                     $explodeimgReflFileNo = $explodeimgReflCount-1;
                     $explodeimgReflFilePath = $explodeimgReflCount-2;
                     $imgFileName = $explodeimgRefl[$explodeimgReflFileNo];
@@ -2060,7 +2060,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathComptcy)) {
                 foreach($aPathComptcy as $aPathComptcyN) {
                     $explodeaComptcy = explode('/', $aPathComptcyN);
-                    $explodeaComptcyCount = count($explodeaComptcy);
+                    $explodeaComptcyCount = (is_countable($explodeaComptcy) ? count($explodeaComptcy) : 0);
                     $explodeaComptcyFileNo = $explodeaComptcyCount-1;
                     $explodeaComptcyFilePath = $explodeaComptcyCount-2;
                     $aFileName = $explodeaComptcy[$explodeaComptcyFileNo];
@@ -2090,7 +2090,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathComptcy)) {
                 foreach($imgPathComptcy as $imgPathComptcyN) {
                     $explodeimgComptcy = explode('/', $imgPathComptcyN);
-                    $explodeimgComptcyCount = count($explodeimgComptcy);
+                    $explodeimgComptcyCount = (is_countable($explodeimgComptcy) ? count($explodeimgComptcy) : 0);
                     $explodeimgComptcyFileNo = $explodeimgComptcyCount-1;
                     $explodeimgComptcyFilePath = $explodeimgComptcyCount-2;
                     $imgFileName = $explodeimgComptcy[$explodeimgComptcyFileNo];
@@ -2130,7 +2130,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathInt)) {
                 foreach($aPathInt as $aPathIntN) {
                     $explodeaInt = explode('/', $aPathIntN);
-                    $explodeaIntCount = count($explodeaInt);
+                    $explodeaIntCount = (is_countable($explodeaInt) ? count($explodeaInt) : 0);
                     $explodeaIntFileNo = $explodeaIntCount-1;
                     $explodeaIntFilePath = $explodeaIntCount-2;
                     $aFileName = $explodeaInt[$explodeaIntFileNo];
@@ -2160,7 +2160,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathInt)) {
                 foreach($imgPathInt as $imgPathIntN) {
                     $explodeimgInt = explode('/', $imgPathIntN);
-                    $explodeimgIntCount = count($explodeimgInt);
+                    $explodeimgIntCount = (is_countable($explodeimgInt) ? count($explodeimgInt) : 0);
                     $explodeimgIntFileNo = $explodeimgIntCount-1;
                     $explodeimgIntFilePath = $explodeimgIntCount-2;
                     $imgFileName = $explodeimgInt[$explodeimgIntFileNo];
@@ -2200,7 +2200,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($aPathGoals)) {
                 foreach($aPathGoals as $aPathGoalsN) {
                     $explodeaGoals = explode('/', $aPathGoalsN);
-                    $explodeaGoalsCount = count($explodeaGoals);
+                    $explodeaGoalsCount = (is_countable($explodeaGoals) ? count($explodeaGoals) : 0);
                     $explodeaGoalsFileNo = $explodeaGoalsCount-1;
                     $explodeaGoalsFilePath = $explodeaGoalsCount-2;
                     $aFileName = $explodeaGoals[$explodeaGoalsFileNo];
@@ -2230,7 +2230,7 @@ class mysqlxml_Eportfolio extends ChisimbaObject
             if (!empty($imgPathGoals)) {
                 foreach($imgPathGoals as $imgPathGoalsN) {
                     $explodeimgGoals = explode('/', $imgPathGoalsN);
-                    $explodeimgGoalsCount = count($explodeimgGoals);
+                    $explodeimgGoalsCount = (is_countable($explodeimgGoals) ? count($explodeimgGoals) : 0);
                     $explodeimgGoalsFileNo = $explodeimgGoalsCount-1;
                     $explodeimgGoalsFilePath = $explodeimgGoalsCount-2;
                     $imgFileName = $explodeimgGoals[$explodeimgGoalsFileNo];

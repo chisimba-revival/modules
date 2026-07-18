@@ -120,7 +120,7 @@ class Zend_Translate_Adapter_Gettext extends Zend_Translate_Adapter {
                 fseek($this->_file, $transtemp[$count * 2 + 2]);
                 $translate = fread($this->_file, $transtemp[$count * 2 + 1]);
                 $translate = explode("\0", $translate);
-                if ((count($original) > 1) && (count($translate) > 1)) {
+                if (((is_countable($original) ? count($original) : 0) > 1) && ((is_countable($translate) ? count($translate) : 0) > 1)) {
                     $this->_data[$locale][$original[0]] = $translate;
                     array_shift($original);
                     foreach ($original as $orig) {

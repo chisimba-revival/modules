@@ -145,7 +145,7 @@ class kbookmark extends controller
 		$parentid = $this->getParam('node');
 		$userid = $this->objUser->userId();		
 		$dirs = $this->objDbfolder->getUserFolders($userid, $parentid);
-		if(count($dirs) > 0)
+		if((is_countable($dirs) ? count($dirs) : 0) > 0)
 		{
 			foreach($dirs as $dir)
 			{
@@ -197,7 +197,7 @@ class kbookmark extends controller
 	{
 		$folderid = $this->getParam('id');
 		$bookmarks = $this->objDbBookmark->getUserFolderBookmark($folderid);
-		$count = count($bookmarks);
+		$count = (is_countable($bookmarks) ? count($bookmarks) : 0);
 		if($count > 0)
 		{
 			$allarr = array();
@@ -774,7 +774,7 @@ class kbookmark extends controller
             $status="";
         if ($item=='bookmark') {
             $bookmarks=$this->getParam('bookmark');
-            if (count($bookmarks)>0) {
+            if ((is_countable($bookmarks) ? count($bookmarks) : 0)>0) {
                 if ($operation=='Delete') {
                     foreach ($bookmarks as $list) {
                         $this->objDbBookmark->delete('id',$list);
@@ -795,7 +795,7 @@ class kbookmark extends controller
             return $this->nextAction('',array('folderId'=>$folderId, 'status'=>$status,'title'=>$title));
         } else {
             $folders=$this->getParam('folders');
-            if (count($folders)>0) {
+            if ((is_countable($folders) ? count($folders) : 0)>0) {
                 foreach ($folders as $list){
                     $isEmpty = $this->objDbBookmark->isEmpty($list);
                     if ($isEmpty) {

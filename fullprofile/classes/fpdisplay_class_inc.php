@@ -191,7 +191,7 @@ class fpdisplay extends ChisimbaObject
         //Get the users activity
         $userActivity = $this->objFuncs->getActivity($userId);
         //Display the activity
-        if(is_array($userActivity) && count($userActivity)>0){
+        if(is_array($userActivity) && (is_countable($userActivity) ? count($userActivity) : 0)>0){
             foreach($userActivity as $ua){
                 $dateTime = date("F j, Y, g:i a", strtotime($ua['createdon']));
                 $title = $ua['title'];
@@ -232,7 +232,7 @@ class fpdisplay extends ChisimbaObject
         //Get the users triples
         $userTriples = $this->objFuncs->getTriples($userId);
 
-        if(is_array($userTriples) && count($userTriples)>0){
+        if(is_array($userTriples) && (is_countable($userTriples) ? count($userTriples) : 0)>0){
             foreach($userTriples as $trip){
                 //Convert triple into readable string
                 $tripleString = $this->objFuncs->tripleToString($trip);
@@ -322,7 +322,7 @@ class fpdisplay extends ChisimbaObject
         $title->str = $this->objLanguage->languageText('mod_foaf_interests', 'foaf');
         //get the users interests
         $userInterests = $this->objDbFoaf->getInterests($userId);
-        if(is_array($userInterests) && count($userInterests)>0){
+        if(is_array($userInterests) && (is_countable($userInterests) ? count($userInterests) : 0)>0){
 
             $table->startRow();
             $table->addCell($title->show(), null, 'top', null, null, 'colspan="2"', '0');
@@ -349,7 +349,7 @@ class fpdisplay extends ChisimbaObject
         $title->str = $this->objLanguage->languageText('mod_foaf_depictions', 'foaf');
         //get the users depictions
         $userDepictions = $this->objDbFoaf->getDepictions($userId);
-        if(is_array($userDepictions) && count($userDepictions)>0){
+        if(is_array($userDepictions) && (is_countable($userDepictions) ? count($userDepictions) : 0)>0){
 
             $table->startRow();
             $table->addCell($title->show(), null, 'top', null, null, 'colspan="2"', '0');
@@ -378,7 +378,7 @@ class fpdisplay extends ChisimbaObject
         $title->str = $this->objLanguage->languageText('mod_foaf_pages', 'foaf');
         //get the users pages
         $userPages = $this->objDbFoaf->getPgs($userId);
-        if(is_array($userPages) && count($userPages)>0){
+        if(is_array($userPages) && (is_countable($userPages) ? count($userPages) : 0)>0){
 
             $table->startRow();
             $table->addCell($title->show(), null, 'top', null, null, 'colspan="2"', '0');
@@ -495,10 +495,10 @@ class fpdisplay extends ChisimbaObject
         //Get the users activity
         $userContexts = $this->objFuncs->getContexts($userId);
         //Display the activity
-        if(is_array($userContexts) && count($userContexts)>0){
+        if(is_array($userContexts) && (is_countable($userContexts) ? count($userContexts) : 0)>0){
             foreach($userContexts as $context){
                 $contextDetails = $this->objDbContext->getContext($context);
-                if(is_array($contextDetails) && count($contextDetails)>0){
+                if(is_array($contextDetails) && (is_countable($contextDetails) ? count($contextDetails) : 0)>0){
                        //Display context
                         $html .= $this->objContextDsiplay->formatContextDisplayBlock($contextDetails, FALSE);
                 }
@@ -537,7 +537,7 @@ class fpdisplay extends ChisimbaObject
         //Create table to hold friends
         $friendsTbl = $this->newObject('htmltable', 'htmlelements');
         
-        if(is_array($friendsList) && count($friendsList)>0){
+        if(is_array($friendsList) && (is_countable($friendsList) ? count($friendsList) : 0)>0){
             $count = 0;
             foreach($friendsList as $friend){
 
@@ -615,7 +615,7 @@ class fpdisplay extends ChisimbaObject
 
         $html .= '<div id=searchresult>';
 
-        if(is_array($result) && count($result)>0){
+        if(is_array($result) && (is_countable($result) ? count($result) : 0)>0){
             $table = $this->newObject('htmltable', 'htmlelements');
             $table->width = "60%";
             $title = $this->getObject('htmlheading', 'htmlelements');
@@ -747,7 +747,7 @@ class fpdisplay extends ChisimbaObject
             $tagsAr = explode("-", $tags);
             $ret = "";
             $terms="";
-            $tagNo = count($tagsAr);
+            $tagNo = (is_countable($tagsAr) ? count($tagsAr) : 0);
             $counter = 1;
             foreach ($tagsAr as $tag) {
                 if ($counter == $tagNo) {

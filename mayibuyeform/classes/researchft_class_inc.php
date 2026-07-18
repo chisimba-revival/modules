@@ -7,7 +7,7 @@ class researchft extends dbTable
 
 
 
- public function init()
+ public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 
 {
  $this->objLanguage = $this->getObject('language', 'language');

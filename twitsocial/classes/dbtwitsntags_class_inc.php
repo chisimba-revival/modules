@@ -18,7 +18,7 @@ class dbtwitsntags extends dbtable {
 
     public $objLanguage;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_twitsocial_sn');
     }
 

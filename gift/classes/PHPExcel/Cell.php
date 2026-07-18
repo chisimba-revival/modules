@@ -518,7 +518,7 @@ class PHPExcel_Cell
 	public static function splitRange($pRange = 'A1:A1')
 	{
 		$exploded = explode(',', $pRange);
-		for ($i = 0; $i < count($exploded); ++$i) {
+		for ($i = 0; $i < (is_countable($exploded) ? count($exploded) : 0); ++$i) {
 			$exploded[$i] = explode(':', $exploded[$i]);
 		}
 		return $exploded;
@@ -534,13 +534,13 @@ class PHPExcel_Cell
 	public static function buildRange($pRange)
 	{
 		// Verify range
-		if (!is_array($pRange) || count($pRange) == 0 || !is_array($pRange[0])) {
+		if (!is_array($pRange) || (is_countable($pRange) ? count($pRange) : 0) == 0 || !is_array($pRange[0])) {
 			throw new Exception('Range does not contain any information.');
 		}
 
 		// Build range
 		$imploded = array();
-		for ($i = 0; $i < count($pRange); ++$i) {
+		for ($i = 0; $i < (is_countable($pRange) ? count($pRange) : 0); ++$i) {
 			$pRange[$i] = implode(':', $pRange[$i]);
 		}
 		$imploded = implode(',', $pRange);
@@ -689,7 +689,7 @@ class PHPExcel_Cell
 
 			// Range...
 			$range = PHPExcel_Cell::splitRange($explodedSpaces);
-			for ($i = 0; $i < count($range); ++$i) {
+			for ($i = 0; $i < (is_countable($range) ? count($range) : 0); ++$i) {
 				// Single cell?
 				if (count($range[$i]) == 1) {
 					$col = 'A';

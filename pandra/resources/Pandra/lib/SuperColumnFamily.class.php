@@ -222,7 +222,7 @@ class PandraSuperColumnFamily extends PandraColumnFamily implements PandraColumn
             $data = json_decode($data, TRUE);
         }
 
-        if (is_array($data) && count($data)) {
+        if (is_array($data) && (is_countable($data) ? count($data) : 0)) {
 
             foreach ($data as $idx => $colValue) {
 

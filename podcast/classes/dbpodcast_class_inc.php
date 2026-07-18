@@ -10,7 +10,7 @@ class dbpodcast extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_podcast');
         $this->objFile =& $this->getObject('dbfile', 'filemanager');
@@ -156,7 +156,7 @@ class dbpodcast extends dbTable
         
         $results = $this->getArray($sql);
         
-        if (count($results)==0) {
+        if ((is_countable($results) ? count($results) : 0)==0) {
             return FALSE;
         } else {
             return $results[0];
@@ -259,7 +259,7 @@ class dbpodcast extends dbTable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -319,7 +319,7 @@ class dbpodcast extends dbTable
     {
         $result = $this->getAll(' WHERE creatorid=\''.$userId.'\' AND fileid=\''.$fileId.'\' LIMIT 1');
         
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return FALSE;
         } else {
             return $this->getPodcast($result[0]['id']);

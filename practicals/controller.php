@@ -293,7 +293,7 @@ class practicals extends controller {
             $this->objPracticalLearningOutcomes->deleteGoals($result);
             if (is_array($goals)) {
 
-                if (count($goals) > 0) {
+                if ((is_countable($goals) ? count($goals) : 0) > 0) {
                     foreach ($goals as $goal) {
                         $this->objPracticalLearningOutcomes->addGoal($result, $goal);
                     }
@@ -303,7 +303,7 @@ class practicals extends controller {
             $this->objPracticalGroups->deleteWorkgroups($result);
             if (is_array($groups)) {
 
-                if (count($groups) > 0) {
+                if ((is_countable($groups) ? count($groups) : 0) > 0) {
                     foreach ($groups as $group) {
                         $this->objPracticalGroups->addWorkgroup($result, $group);
                     }
@@ -419,7 +419,7 @@ class practicals extends controller {
         $this->objPracticalLearningOutcomes->deleteGoals($id);
         if (is_array($goals)) {
 
-            if (count($goals) > 0) {
+            if ((is_countable($goals) ? count($goals) : 0) > 0) {
                 foreach ($goals as $goal) {
                     $this->objPracticalLearningOutcomes->addGoal($id, $goal);
                 }
@@ -428,7 +428,7 @@ class practicals extends controller {
 
         $this->objPracticalGroups->deleteWorkgroups($id);
         if (is_array($groups)) {
-            if (count($groups) > 0) {
+            if ((is_countable($groups) ? count($groups) : 0) > 0) {
                 foreach ($groups as $group) {
                     $this->objPracticalGroups->addWorkgroup($id, $group);
                 }

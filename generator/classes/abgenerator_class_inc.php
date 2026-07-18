@@ -407,7 +407,7 @@ abstract class abgenerator extends ChisimbaObject
    				$ret[]=$cd;
 		    }
      	}
-     	if (count($ret) > 0) {
+     	if ((is_countable($ret) ? count($ret) : 0) > 0) {
      		$this->unDeclaredMethods=$ret;
      	    return FALSE;
      	} else {

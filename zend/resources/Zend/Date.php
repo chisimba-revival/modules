@@ -1200,22 +1200,22 @@ class Zend_Date extends Zend_Date_DateObject
         }
 
         preg_match('/([+-]\d{2}):{0,1}\d{2}/', $zone, $match);
-        if (!empty($match) and ($match[count($match) - 1] <= 12) and ($match[count($match) - 1] >= -12)) {
+        if (!empty($match) and ($match[(is_countable($match) ? count($match) : 0) - 1] <= 12) and ($match[(is_countable($match) ? count($match) : 0) - 1] >= -12)) {
             $zone = "Etc/GMT";
-            $zone .= ($match[count($match) - 1] < 0) ? "+" : "-";
-            $zone .= (int) abs($match[count($match) - 1]);
+            $zone .= ($match[(is_countable($match) ? count($match) : 0) - 1] < 0) ? "+" : "-";
+            $zone .= (int) abs($match[(is_countable($match) ? count($match) : 0) - 1]);
             return $zone;
         }
 
         preg_match('/([[:alpha:]\/]{3,30})(?!.*([[:alpha:]\/]{3,30}))/', $zone, $match);
         try {
-            if (!empty($match) and (!is_int($match[count($match) - 1]))) {
+            if (!empty($match) and (!is_int($match[(is_countable($match) ? count($match) : 0) - 1]))) {
                 $oldzone = $this->getTimezone();
-                $this->setTimezone($match[count($match) - 1]);
+                $this->setTimezone($match[(is_countable($match) ? count($match) : 0) - 1]);
                 $result = $this->getTimezone();
                 $this->setTimezone($oldzone);
                 if ($result !== $oldzone) {
-                    return $match[count($match) - 1];
+                    return $match[(is_countable($match) ? count($match) : 0) - 1];
                 }
             }
         } catch (Exception $e) {

@@ -118,7 +118,7 @@ class search extends ChisimbaObject {
                 //Get the past search history
                 $objDb = & $this->getObject('dbsearch');
                 $ar = $objDb->getSearchHistory('googleapi');
-                if ( count($ar) > 0 ) {
+                if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
                     //Add the past searches label to the form
                     $pastLabel = new label($this->objLanguage->languageText("mod_websearch_pastsearches","websearch") 
                       . ':<br />', 'search_selector');
@@ -230,7 +230,7 @@ class search extends ChisimbaObject {
         //Provide the search history
         $objDb = & $this->getObject('dbsearch');
         $ar = $objDb->getSearchHistory('google_scholar');
-        if ( count($ar) > 0 ) {
+        if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
             //Add the past searches label to the form
             $pastLabel = new label('<br />' 
               . $this->objLanguage->languageText("mod_websearch_pastsearches" , "websearch") 
@@ -305,7 +305,7 @@ class search extends ChisimbaObject {
         //Provide the search history
         $objDb = & $this->getObject('dbsearch');
         $ar = $objDb->getSearchHistory('wikipedia');
-        if ( count($ar) > 0 ) {
+        if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
             //Add the past searches label to the form
             $pastLabel = new label('<br />' 
               . $this->objLanguage->languageText("mod_websearch_pastsearches", "websearch") 
@@ -416,11 +416,11 @@ class search extends ChisimbaObject {
           ."' AND searchengine='" 
           . $searchengine . "' ";
         $ar = $objDb->getLastEntry($filter, 'datecreated');
-        if ( count($ar) > 0 ) {
+        if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
             return $ar[0]['searchterm'];
         } else {
             return NULL;
-        } #if ( count($ar) > 0 )
+        } #if ( (is_countable($ar) ? count($ar) : 0) > 0 )
     } #function _getLastSearch
     
     /**

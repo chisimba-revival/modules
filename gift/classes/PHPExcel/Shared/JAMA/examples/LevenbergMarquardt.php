@@ -19,7 +19,7 @@ class LevenbergMarquardt {
 	 * @param object $f
 	 */
 	function chiSquared($x, $a, $y, $s, $f) {
-		$npts = count($y);
+		$npts = (is_countable($y) ? count($y) : 0);
 		$sum = 0.0;
 
 		for ($i = 0; $i < $npts; ++$i) {
@@ -55,12 +55,12 @@ class LevenbergMarquardt {
 	 *  task, setting maxiter to something small.
 	 */
 	function solve($x, $a, $y, $s, $vary, $f, $lambda, $termepsilon, $maxiter, $verbose) {
-		$npts = count($y);
-		$nparm = count($a);
+		$npts = (is_countable($y) ? count($y) : 0);
+		$nparm = (is_countable($a) ? count($a) : 0);
 
 		if ($verbose > 0) {
-			print("solve x[".count($x)."][".count($x[0])."]");
-			print(" a[".count($a)."]");
+			print("solve x[".(is_countable($x) ? count($x) : 0)."][".count($x[0])."]");
+			print(" a[".(is_countable($a) ? count($a) : 0)."]");
 			println(" y[".count(length)."]");
 		}
 

@@ -40,7 +40,7 @@ if ($this->getParam('msg') != '' )
 
     echo '<p>'.$timeoutMessage->show().'</p>';
 }
-if(count($usernames) > 0)
+if((is_countable($usernames) ? count($usernames) : 0) > 0)
 {
  	$table = new htmltable();
 	$table->cssClass = 'bordered';

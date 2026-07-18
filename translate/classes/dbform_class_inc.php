@@ -25,7 +25,7 @@ class dbform extends dbtable
      * @access public
      * @return
      */
-public function init()
+public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 {
 	parent::init('tbl_langs_avail');
 	$this->table = 'tbl_langs_avail';

@@ -4236,7 +4236,7 @@ if (!class_exists('TCPDF', false)) {
 			// get array of chars
 			$uchars = $this->UTF8ArrayToUniArray($chars);
 			// get the number of characters
-			$nb = count($chars);
+			$nb = (is_countable($chars) ? count($chars) : 0);
 			// replacement for SHY character (minus symbol)
 			$shy_replacement = 45;
 			$shy_replacement_char = $this->unichr($shy_replacement);
@@ -4550,7 +4550,7 @@ if (!class_exists('TCPDF', false)) {
 				$start = 0;
 			}
 			if (strlen($end) == 0) {
-				$end = count($strarr);
+				$end = (is_countable($strarr) ? count($strarr) : 0);
 			}
 			$string = '';
 			for ($i=$start; $i < $end; ++$i) {
@@ -4573,7 +4573,7 @@ if (!class_exists('TCPDF', false)) {
 				$start = 0;
 			}
 			if (strlen($end) == 0) {
-				$end = count($uniarr);
+				$end = (is_countable($uniarr) ? count($uniarr) : 0);
 			}
 			$string = '';
 			for ($i=$start; $i < $end; ++$i) {
@@ -6479,7 +6479,7 @@ if (!class_exists('TCPDF', false)) {
 			$nextk = -1;
 			$prevint = false;
 			foreach ($range as $k => $ws) {
-				$cws = count($ws);
+				$cws = (is_countable($ws) ? count($ws) : 0);
 				if (($k == $nextk) AND (!$prevint) AND ((!isset($ws['interval'])) OR ($cws < 4))) {
 					if (isset($range[$k]['interval'])) {
 						unset($range[$k]['interval']);
@@ -6507,7 +6507,7 @@ if (!class_exists('TCPDF', false)) {
 			foreach ($range as $k => $ws) {
 				if (count(array_count_values($ws)) == 1) {
 					// interval mode is more compact
-					$w .= ' '.$k.' '.($k + count($ws) - 1).' '.$ws[0];
+					$w .= ' '.$k.' '.($k + (is_countable($ws) ? count($ws) : 0) - 1).' '.$ws[0];
 				} else {
 					// range mode
 					$w .= ' '.$k.' [ '.implode(' ', $ws).' ]';
@@ -7449,7 +7449,7 @@ if (!class_exists('TCPDF', false)) {
 			$length = strlen($str);
 			for ($i = 0; $i < $length; ++$i) {
 				$char = ord($str[$i]); // get one string character at time
-				if (count($bytes) == 0) { // get starting octect
+				if ((is_countable($bytes) ? count($bytes) : 0) == 0) { // get starting octect
 					if ($char <= 0x7F) {
 						$unicode[] = $char; // use the character "as is" because is ASCII
 						$numbytes = 1;
@@ -7470,7 +7470,7 @@ if (!class_exists('TCPDF', false)) {
 					}
 				} elseif (($char >> 0x06) == 0x02) { // bytes 2, 3 and 4 must start with 0x02 = 10 BIN
 					$bytes[] = $char - 0x80;
-					if (count($bytes) == $numbytes) {
+					if ((is_countable($bytes) ? count($bytes) : 0) == $numbytes) {
 						// compose UTF-8 bytes to a single unicode value
 						$char = $bytes[0];
 						for ($j = 1; $j < $numbytes; ++$j) {
@@ -8869,7 +8869,7 @@ if (!class_exists('TCPDF', false)) {
 		* @since 2.1.000 (2008-01-08)
 		*/
 		public function Polygon($p, $style='', $line_style=array(), $fill_color=array(), $closed=true) {
-			$nc = count($p); // number of coordinates
+			$nc = (is_countable($p) ? count($p) : 0); // number of coordinates
 			$np = $nc / 2; // number of points
 			if ($closed) {
 				// close polygon by adding the first 2 points at the end (one line)
@@ -9277,7 +9277,7 @@ if (!class_exists('TCPDF', false)) {
 			}
 			
 			// get number of chars
-			$numchars = count($ta);
+			$numchars = (is_countable($ta) ? count($ta) : 0);
 			
 			if ($forcertl == 'R') {
 					$pel = 1;
@@ -9363,8 +9363,8 @@ if (!class_exists('TCPDF', false)) {
 					}
 				} elseif ($ta[$i] == K_PDF) {
 					// X7. With each PDF, determine the matching embedding or override code. If there was a valid matching code, restore (pop) the last remembered (pushed) embedding level and directional override.
-					if (count($remember)) {
-						$last = count($remember ) - 1;
+					if ((is_countable($remember) ? count($remember) : 0)) {
+						$last = (is_countable($remember) ? count($remember) : 0) - 1;
 						if (($remember[$last]['num'] == K_RLE) OR 
 							  ($remember[$last]['num'] == K_LRE) OR 
 							  ($remember[$last]['num'] == K_RLO) OR 
@@ -9405,7 +9405,7 @@ if (!class_exists('TCPDF', false)) {
 			// 3.3.3 Resolving Weak Types
 			// Weak types are now resolved one level run at a time. At level run boundaries where the type of the character on the other side of the boundary is required, the type assigned to sor or eor is used.
 			// Nonspacing marks are now resolved based on the previous characters.
-			$numchars = count($chardata);
+			$numchars = (is_countable($chardata) ? count($chardata) : 0);
 			
 			// W1. Examine each nonspacing mark (NSM) in the level run, and change the type of the NSM to the type of the previous character. If the NSM is at the start of the level run, it will get the type of sor.
 			$prevlevel = -1; // track level changes
@@ -9769,7 +9769,7 @@ if (!class_exists('TCPDF', false)) {
 					}
 				}
 				$chardata = array_values($chardata2);
-				$numchars = count($chardata);
+				$numchars = (is_countable($chardata) ? count($chardata) : 0);
 				unset($chardata2);
 				unset($arabicarr);
 				unset($laaletter);
@@ -11535,7 +11535,7 @@ if (!class_exists('TCPDF', false)) {
 			$bpcd = 65535; //16 BitsPerCoordinate
 			//build the data stream
 			$this->gradients[$n]['stream'] = '';
-			$count_patch = count($patch_array);
+			$count_patch = (is_countable($patch_array) ? count($patch_array) : 0);
 			for ($i=0; $i < $count_patch; ++$i) {
 				$this->gradients[$n]['stream'] .= chr($patch_array[$i]['f']); //start with the edge flag as 8 bit
 				$count_points = count($patch_array[$i]['points']);
@@ -11785,7 +11785,7 @@ if (!class_exists('TCPDF', false)) {
 			$regs = array();
 			// EPS/AI compatibility check (only checks files created by Adobe Illustrator!)
 			preg_match("/%%Creator:([^\r\n]+)/", $data, $regs); # find Creator
-			if (count($regs) > 1) {
+			if ((is_countable($regs) ? count($regs) : 0) > 1) {
 				$version_str = trim($regs[1]); # e.g. "Adobe Illustrator(R) 8.0"
 				if (strpos($version_str, 'Adobe Illustrator') !== false) {
 					$versexp = explode(' ', $version_str);
@@ -11802,7 +11802,7 @@ if (!class_exists('TCPDF', false)) {
 			}
 			// find BoundingBox params
 			preg_match("/%%BoundingBox:([^\r\n]+)/", $data, $regs);
-			if (count($regs) > 1) {
+			if ((is_countable($regs) ? count($regs) : 0) > 1) {
 				list($x1, $y1, $x2, $y2) = explode(' ', trim($regs[1]));
 			} else {
 				$this->Error('No BoundingBox found in EPS file: '.$file);
@@ -11895,7 +11895,7 @@ if (!class_exists('TCPDF', false)) {
 			preg_match('/[\r\n]+/s', $data, $regs);
 			$lines = explode($regs[0], $data);
 			$u=0;
-			$cnt = count($lines);
+			$cnt = (is_countable($lines) ? count($lines) : 0);
 			for ($i=0; $i < $cnt; ++$i) {
 				$line = $lines[$i];
 				if (($line == '') OR ($line[0] == '%')) {
@@ -12629,7 +12629,7 @@ if (!class_exists('TCPDF', false)) {
 			// explodes the string
 			$a = preg_split($tagpattern, $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 			// count elements
-			$maxel = count($a);
+			$maxel = (is_countable($a) ? count($a) : 0);
 			$elkey = 0;
 			$key = 0;
 			// create an array of elements
@@ -13067,7 +13067,7 @@ if (!class_exists('TCPDF', false)) {
 				$this->lasth = $this->FontSize * $this->cell_height_ratio; 
 			}
 			$dom = $this->getHtmlDomArray($html);
-			$maxel = count($dom);
+			$maxel = (is_countable($dom) ? count($dom) : 0);
 			$key = 0;
 			while ($key < $maxel) {
 				if ($dom[$key]['tag'] AND $dom[$key]['opening'] AND isset($dom[$key]['attribute']['nobr']) AND ($dom[$key]['attribute']['nobr'] == 'true')) {

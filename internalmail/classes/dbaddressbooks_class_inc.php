@@ -22,7 +22,7 @@ class dbaddressbooks extends dbTable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_internalmail_addressbooks');
         $this->table = 'tbl_internalmail_addressbooks';

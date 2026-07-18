@@ -65,7 +65,7 @@ class dbdwcategories extends dbTable
 	    * @return void
 	    */
 
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {
                     $this->objDWValues = $this->getObject('dbdwvalues');

@@ -17,7 +17,7 @@
 
 class dbusergroups extends dbtable {
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_unesco_oer_user_groups");
     }
 
@@ -82,7 +82,7 @@ class dbusergroups extends dbtable {
     function groupMembers($groupid) {
         $sql = "SELECT * FROM tbl_unesco_oer_user_groups WHERE groupid='$groupid'";
         $array = $this->getArray($sql);
-        return count($array);
+        return (is_countable($array) ? count($array) : 0);
     }
 
     // get a user list of groups that he belong
@@ -113,7 +113,7 @@ class dbusergroups extends dbtable {
     function ismemberOfgroup($userid, $groupid) {
         $sql = "SELECT * FROM tbl_unesco_oer_user_groups WHERE groupid='$groupid' AND userid='$userid'";
         $array = $this->getArray($sql);
-        if (count($array) > 0) {
+        if ((is_countable($array) ? count($array) : 0) > 0) {
             return 1; //TRUE
         } else {
             return 0;
@@ -123,7 +123,7 @@ class dbusergroups extends dbtable {
     function ismemberOfAnygroup($userid) {
         $sql = "SELECT * FROM tbl_unesco_oer_user_groups WHERE userid='$userid'";
         $array = $this->getArray($sql);
-        if (count($array) > 0) {
+        if ((is_countable($array) ? count($array) : 0) > 0) {
             return 1; //TRUE
         } else {
             return 0;
@@ -133,7 +133,7 @@ class dbusergroups extends dbtable {
     function check_availableUserGroup($userId, $groupid) {
         $sql = "SELECT * FROM tbl_unesco_oer_user_groups WHERE id='$userId' and groupid='$groupid'";
         $array = $this->getArray($sql);
-        if (count($array) > 0) {
+        if ((is_countable($array) ? count($array) : 0) > 0) {
             return TRUE;
         }
     }

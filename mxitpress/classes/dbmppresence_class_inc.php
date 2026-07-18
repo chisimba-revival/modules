@@ -33,7 +33,7 @@ class dbmppresence extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_mxitpress_presence' );
         $this->objSysConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
     }

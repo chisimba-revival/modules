@@ -35,7 +35,7 @@ class mentorfuncs extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         // system classes
         $this->objLanguage = $this->getObject('language','language');
@@ -57,7 +57,7 @@ class mentorfuncs extends dbTable
 	//Get the users mentor
         $resultArr = array();
 	$result = $this->objDbTripleStore->getTriples(array('predicate'=>'isMentorOf', 'object'=>$userId), array('subject'));
-        if(is_array($result) && count($result) > 0){
+        if(is_array($result) && (is_countable($result) ? count($result) : 0) > 0){
             foreach($result as $res){
                 $resultArr[] = $res['subject'];
             }
@@ -77,7 +77,7 @@ class mentorfuncs extends dbTable
 	//Get the users mentor
         $resultArr = array();
 	$result = $this->objDbTripleStore->getTriples(array('predicate'=>'isMentorOf', 'subject'=>$userId), array('object'));
-        if(is_array($result) && count($result) > 0){
+        if(is_array($result) && (is_countable($result) ? count($result) : 0) > 0){
             foreach($result as $res){
                 $resultArr[] = $res['object'];
             }
@@ -97,7 +97,7 @@ class mentorfuncs extends dbTable
     {
 	//Check if relationship exists
         $results = $this->objDbTripleStore->getTriples(array('predicate'=>'isMentorOf', 'object'=>$userId), array('userId'));
-        if(is_array($result) && count($result)>0){
+        if(is_array($result) && (is_countable($result) ? count($result) : 0)>0){
             $return = 'Already mentoring user';
 	} else {
            $return = $this->objDbTripleStore->insert($mentorId, 'isMentorOf', $userId);
@@ -117,7 +117,7 @@ class mentorfuncs extends dbTable
     {
 	//Check if relationship exists
         $results = $this->objDbTripleStore->getTriples(array('predicate'=>'isStudentOf', 'object'=>$mentorId), array('userId'));
-        if(is_array($result) && count($result)>0){
+        if(is_array($result) && (is_countable($result) ? count($result) : 0)>0){
             $return = 'Already being mentored by user';
 	} else {
             $return = $this->objDbTripleStore->insert($userId, 'isStudentOf', $mentorId);
@@ -137,7 +137,7 @@ class mentorfuncs extends dbTable
     {
 	//Check if relationship exists
         $results = $this->objDbTripleStore->getTriples(array('subject'=>$mentorId, 'predicate'=>'isMentorOf', 'object'=>$userId), array('id'));
-        if(is_array($results) && count($results)>0){
+        if(is_array($results) && (is_countable($results) ? count($results) : 0)>0){
             foreach($results as $res){
                 $return = $this->objDbTripleStore->delete($res['id']);
             }
@@ -159,7 +159,7 @@ class mentorfuncs extends dbTable
         parent::init('tbl_wiki_wikis');
         $sql = "WHERE wiki_name = 'mentors'";
         $data = $this->getAll($sql);
-        if(is_array($data) && count($data)>0){
+        if(is_array($data) && (is_countable($data) ? count($data) : 0)>0){
             $wikiId = $data[0]['id'];
         } else {
             $wikiId = $this->objDbWiki->addWiki('mentors', $this->objLanguage->languageText('mod_mentors_wikidesc', 'mentors'), '1');

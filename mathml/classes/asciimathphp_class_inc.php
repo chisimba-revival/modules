@@ -106,8 +106,8 @@ class asciimathphp
 		$key_arr_0 = array_keys($node_arr_0);
 		$key_arr_1 = array_keys($node_arr_1);
 		
-		$num_key_0 = count($key_arr_0);
-		$num_key_1 = count($key_arr_1);
+		$num_key_0 = (is_countable($key_arr_0) ? count($key_arr_0) : 0);
+		$num_key_1 = (is_countable($key_arr_1) ? count($key_arr_1) : 0);
 		
 		$merge_arr = array();
 		
@@ -196,7 +196,7 @@ class asciimathphp
 		//var_dump($sym);
 		// Possibly to deal with matrices
 		if (isset($sym['right_bracket'])) {
-			$node_cnt = count($node_arr);
+			$node_cnt = (is_countable($node_arr) ? count($node_arr) : 0);
 			$key_node_arr = array_keys($node_arr);
 			
 			if ($node_cnt > 1) {
@@ -338,7 +338,7 @@ class asciimathphp
 								
 								$row_node_arr[$tmp_c_node->getId()] = $tmp_c_node;
 								
-								if (count($node_arr) > 2) {
+								if ((is_countable($node_arr) ? count($node_arr) : 0) > 2) {
 									$tmp_key_node_arr = array_keys($node_arr);
 									unset($node_arr[$tmp_key_node_arr[0]]);
 									unset($node_arr[$tmp_key_node_arr[1]]);

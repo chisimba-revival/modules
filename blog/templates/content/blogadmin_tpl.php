@@ -213,7 +213,7 @@ $objBlogUi = $this->getObject('blogui');
 $bconf = $objBlogUi->doConfig($userid);
 $leftblocks = $bconf[0]['leftblocks'];
 $rightblocks = $bconf[0]['rightblocks'];
-$rb = count($rightblocks);
+$rb = (is_countable($rightblocks) ? count($rightblocks) : 0);
 
 
 // Added by Tohir - Standard layout for elearn

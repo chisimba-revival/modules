@@ -594,7 +594,7 @@ class Zend_Wildfire_Plugin_FirePhp implements Zend_Wildfire_Plugin_Interface
       if (!$table) {
           return $table;
       }
-      for ($i=0 ; $i<count($table) ; $i++) {
+      for ($i=0 ; $i<(is_countable($table) ? count($table) : 0) ; $i++) {
           if (is_array($table[$i])) {
               for ($j=0 ; $j<count($table[$i]) ; $j++) {
                   $table[$i][$j] = $this->_encodeObject($table[$i][$j]);
@@ -615,7 +615,7 @@ class Zend_Wildfire_Plugin_FirePhp implements Zend_Wildfire_Plugin_Interface
       if (!$trace) {
           return $trace;
       }
-      for ($i=0 ; $i<sizeof($trace) ; $i++) {
+      for ($i=0 ; $i<(is_countable($trace) ? sizeof($trace) : 0) ; $i++) {
           if (isset($trace[$i]['args'])) {
               $trace[$i]['args'] = $this->_encodeObject($trace[$i]['args']);
           }

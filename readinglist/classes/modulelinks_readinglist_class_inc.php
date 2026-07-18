@@ -45,7 +45,7 @@ class modulelinks_readinglist extends ChisimbaObject
       
 	       $bigArr = array();
          
-         if(count($read) > 0)
+         if((is_countable($read) ? count($read) : 0) > 0)
          {
          
           foreach ($read as $r)

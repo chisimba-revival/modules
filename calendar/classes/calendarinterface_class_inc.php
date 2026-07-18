@@ -105,7 +105,7 @@ class calendarinterface extends ChisimbaObject
     * @access public
     * 
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objCalendar = $this->getObject('dbcalendar', 'calendarbase');
         $this->objLanguage = $this->getObject('language', 'language');
@@ -160,11 +160,11 @@ class calendarinterface extends ChisimbaObject
         }
         $userContextsArray = array(); 
         $otherEvents = array();
-        if (count($userContextsArray) > 0) {
+        if ((is_countable($userContextsArray) ? count($userContextsArray) : 0) > 0) {
             foreach ($userContextsArray as $context) {
                 if ($context['contextcode'] != $this->contextCode) {
                     $otherContextEvents = $this->getContextEvents($context['contextcode'], $month, $year);
-                    if (count($otherContextEvents) > 0) {
+                    if ((is_countable($otherContextEvents) ? count($otherContextEvents) : 0) > 0) {
                         $otherEvents = array_merge($otherEvents, $otherContextEvents);
                     }
                 }
@@ -175,10 +175,10 @@ class calendarinterface extends ChisimbaObject
         $this->prepareEventsForCalendar($contextEvents, 'context');
         $this->prepareEventsForCalendar($otherEvents, 'other');
         
-        $this->numUserEvents = count($userEvents);
-        $this->numSiteEvents = count($siteEvents);
-        $this->numContextEvents = count($contextEvents);
-        $this->numOtherEvents = count($otherEvents);
+        $this->numUserEvents = (is_countable($userEvents) ? count($userEvents) : 0);
+        $this->numSiteEvents = (is_countable($siteEvents) ? count($siteEvents) : 0);
+        $this->numContextEvents = (is_countable($contextEvents) ? count($contextEvents) : 0);
+        $this->numOtherEvents = (is_countable($otherEvents) ? count($otherEvents) : 0);
     }
     
     
@@ -495,7 +495,7 @@ class calendarinterface extends ChisimbaObject
             ksort($this->rawEventsList);
             foreach ($this->rawEventsList as $day => $events)
             {
-                if (count($events) > 1)
+                if ((is_countable($events) ? count($events) : 0) > 1)
                 {
                     $startTime = array();
                     //$events = $this->rawEventsList[$day];
@@ -511,7 +511,7 @@ class calendarinterface extends ChisimbaObject
             $str = '';
             foreach ($this->rawEventsList as $day => $events)
             {
-                if (count($events) > 1)
+                if ((is_countable($events) ? count($events) : 0) > 1)
                 {
                     $array = array('date' => date('l, j F Y', strtotime($events[0]['eventdate'])));
                     $title = $this->objLanguage->code2Txt('mod_calendar_events', 'calendar', $array);

@@ -150,7 +150,7 @@ class cmsadminChecklist extends PHPUnit_Framework_TestCase
 
 //Retrieve Content Records
 $result = $this->dbcontent->getContentPages('');
-$this->recordCountBefore = count($result);
+$this->recordCountBefore = (is_countable($result) ? count($result) : 0);
 
 //Add Content
 //TODO: Should these be declared as individual members / fixtures?
@@ -545,7 +545,7 @@ $result = $this->dbcontent->editContent($id ,
     $record = $record[0];
 
     //Checking Publish
-    $this->assertEquals(0, count($record));
+    $this->assertEquals(0, (is_countable($record) ? count($record) : 0));
 
     }
 
@@ -559,7 +559,7 @@ $result = $this->dbcontent->editContent($id ,
 
         //Retrieve Content Records
         $result = $this->dbsections->getSections();
-        $this->recordCountBefore = count($result);
+        $this->recordCountBefore = (is_countable($result) ? count($result) : 0);
 
 
 //Preparing the database for tests
@@ -1194,7 +1194,7 @@ $data = array(
 
 //Retrieve Content Records
 $result = $this->dbcontent->getTemplatePages('');
-$this->recordCountBefore = count($result);
+$this->recordCountBefore = (is_countable($result) ? count($result) : 0);
 
 //Add Template
 //TODO: Should these be declared as individual members / fixtures?
@@ -1589,7 +1589,7 @@ $result = $this->dbcontent->editContent($id ,
     $record = $record[0];
 
     //Checking Publish
-    $this->assertEquals(0, count($record));
+    $this->assertEquals(0, (is_countable($record) ? count($record) : 0));
 
     }
 
@@ -5432,7 +5432,7 @@ $result = $this->dbcontent->editContent($id ,
 
 //Retrieve Content Records
 $result = $this->dbcontent->getContentPages('');
-$this->recordCountBefore = count($result);
+$this->recordCountBefore = (is_countable($result) ? count($result) : 0);
 
 //Add Content
 //TODO: Should these be declared as individual members / fixtures?

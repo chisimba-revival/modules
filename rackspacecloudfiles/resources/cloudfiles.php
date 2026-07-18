@@ -1387,7 +1387,7 @@ class CF_Container
      * # Note the use of the previous result's last object name being
      * # used as the 'marker' parameter to fetch the next 10 objects
      * #
-     * $next_ten = $images->list_objects(10, $first_ten[count($first_ten)-1]);
+     * $next_ten = $images->list_objects(10, $first_ten[(is_countable($first_ten) ? count($first_ten) : 0)-1]);
      *
      * # Grab images starting with "birthday_party" and default limit/marker
      * # to match all photos with that prefix
@@ -1446,7 +1446,7 @@ class CF_Container
      * # Note the use of the previous result's last object name being
      * # used as the 'marker' parameter to fetch the next 10 objects
      * #
-     * $next_ten = $images->list_objects(10, $first_ten[count($first_ten)-1]);
+     * $next_ten = $images->list_objects(10, $first_ten[(is_countable($first_ten) ? count($first_ten) : 0)-1]);
      *
      * # Grab images starting with "birthday_party" and default limit/marker
      * # to match all photos with that prefix

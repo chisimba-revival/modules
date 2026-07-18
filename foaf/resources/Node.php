@@ -246,7 +246,7 @@ class XML_Tree_Node {
     * @return object  element
     */
     function &getElement($path) {
-        if (sizeof($path) == 0) {
+        if ((is_countable($path) ? sizeof($path) : 0) == 0) {
             return $this;
         }
 

@@ -17,7 +17,7 @@ class dbscores extends dbtable{
 //variable
 var $objUser;
 
- function init(){
+ function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 parent::init('tbl_scores');
 $this->table = 'tbl_scores';
 

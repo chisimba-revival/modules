@@ -17,7 +17,7 @@ class requestTable extends dbTable {
     /**
     * Constructor to link to table
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 	parent::init('tbl_request');
     }
     

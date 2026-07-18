@@ -72,7 +72,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($subMajorGroups) > 0){
+if((is_countable($subMajorGroups) ? count($subMajorGroups) : 0) > 0){
   foreach($subMajorGroups as $subMajorGroup){
      //Get group description
      $subMajorGroupDesc = $subMajorGroup['description'];

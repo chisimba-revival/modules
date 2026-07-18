@@ -679,7 +679,7 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 
 				// Create absolute coordinate
 				$range = PHPExcel_Cell::splitRange($namedRange->getRange());
-				for ($i = 0; $i < count($range); $i++) {
+				for ($i = 0; $i < (is_countable($range) ? count($range) : 0); $i++) {
 					$range[$i][0] = '\'' . str_replace("'", "''", $namedRange->getWorksheet()->getTitle()) . '\'!' . PHPExcel_Cell::absoluteCoordinate($range[$i][0]);
 					if (isset($range[$i][1])) {
 						$range[$i][1] = PHPExcel_Cell::absoluteCoordinate($range[$i][1]);
@@ -773,7 +773,7 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 			if ($sheetSetup->isPrintAreaSet()) {
 				// Print area, e.g. A3:J6,H1:X20
 				$printArea = PHPExcel_Cell::splitRange($sheetSetup->getPrintArea());
-				$countPrintArea = count($printArea);
+				$countPrintArea = (is_countable($printArea) ? count($printArea) : 0);
 
 				$formulaData = '';
 				for ($j = 0; $j < $countPrintArea; ++$j) {
@@ -1254,8 +1254,8 @@ class PHPExcel_Writer_Excel5_Workbook extends PHPExcel_Writer_Excel5_BIFFwriter
 		$aref            = $this->_palette;
 
 		$record          = 0x0092;                 // Record identifier
-		$length          = 2 + 4 * count($aref);   // Number of bytes to follow
-		$ccv             =         count($aref);   // Number of RGB values to follow
+		$length          = 2 + 4 * (is_countable($aref) ? count($aref) : 0);   // Number of bytes to follow
+		$ccv             =         (is_countable($aref) ? count($aref) : 0);   // Number of RGB values to follow
 		$data = '';                                // The RGB data
 
 		// Pack the RGB data

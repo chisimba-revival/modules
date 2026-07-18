@@ -594,7 +594,7 @@ class Zend_Mail_Protocol_Imap
                 continue;
             }
             // if we only want one item we return that one directly
-            if (count($items) == 1) {
+            if ((is_countable($items) ? count($items) : 0) == 1) {
                 if ($tokens[2][0] == $items[0]) {
                     $data = $tokens[2][1];
                 } else {
@@ -655,7 +655,7 @@ class Zend_Mail_Protocol_Imap
         }
 
         foreach ($list as $item) {
-            if (count($item) != 4 || $item[0] != 'LIST') {
+            if ((is_countable($item) ? count($item) : 0) != 4 || $item[0] != 'LIST') {
                 continue;
             }
             $result[$item[3]] = array('delim' => $item[2], 'flags' => $item[1]);

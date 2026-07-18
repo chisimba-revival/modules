@@ -168,7 +168,7 @@ $lbConfirm = $this->objLanguage->languageText('mod_cmsadmin_confirmremovefromfp'
 //setup the tables rows  and loop though the records
 if(!empty($files)){
     $count = 1;
-    $total = count($files);
+    $total = (is_countable($files) ? count($files) : 0);
     
     $oddOrEven = 'even';
     foreach($files as $file) {

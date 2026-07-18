@@ -33,7 +33,7 @@ class dbdocuments extends dbtable {
     var $tablename = "tbl_apo_documents";
     var $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
         $this->objUser = $this->getObject('user', 'security');
         $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');

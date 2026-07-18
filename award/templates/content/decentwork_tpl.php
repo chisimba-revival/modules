@@ -54,7 +54,7 @@ $objCategoryHeadTable = $this->newObject('htmltable','htmlelements');
 
 $content = '';
 $class = '';
-if(count($categoryList) > 0) {
+if((is_countable($categoryList) ? count($categoryList) : 0) > 0) {
 	foreach($categoryList as $catList) {
 		$objCategoryTable->init();
 		$objCategoryTable->cellspacing = 2;

@@ -309,7 +309,7 @@ class Zend_View_Helper_Navigation_Links
                     }
                 }
 
-                return count($result) == 1 ? $result[0] : $result;
+                return (is_countable($result) ? count($result) : 0) == 1 ? $result[0] : $result;
             }
         }
 
@@ -465,7 +465,7 @@ class Zend_View_Helper_Navigation_Links
             }
         }
 
-        switch (count($found)) {
+        switch ((is_countable($found) ? count($found) : 0)) {
             case 0:
                 return null;
             case 1:
@@ -498,7 +498,7 @@ class Zend_View_Helper_Navigation_Links
             }
         }
 
-        switch (count($found)) {
+        switch ((is_countable($found) ? count($found) : 0)) {
             case 0:
                 return null;
             case 1:
@@ -537,7 +537,7 @@ class Zend_View_Helper_Navigation_Links
             }
         }
 
-        switch (count($found)) {
+        switch ((is_countable($found) ? count($found) : 0)) {
             case 0:
                 return null;
             case 1:

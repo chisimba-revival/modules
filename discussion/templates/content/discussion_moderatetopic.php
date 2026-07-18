@@ -70,10 +70,10 @@
 //
 //}
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //		$str = $this->objLanguage->languageText('mod_discussion_topichasfollwoingtangents', 'discussion', 'This topic has the following [-COUNTTANGENTS-] tangent(s). Please indicate what you would like to happen to them as well?');
 //
-//		$str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+//		$str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
 //
 //		$deleteForm->addToForm($str);
 //
@@ -89,7 +89,7 @@
 //
 //    $deleteForm->addToForm('<fieldset><legend>'.$this->objLanguage->languageText('mod_discussion_deleteoptions', 'discussion', 'Delete Options').'</legend><p><strong>');
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //        $deleteForm->addToForm('a) ');
 //    }
 //
@@ -103,7 +103,7 @@
 //
 //    $deleteForm->addToForm($deleteConfirm->show().'</p>');
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //        $deleteForm->addToForm('<p>b) '.$this->objLanguage->languageText('mod_discussion_whathappentotangents', 'discussion', 'What should happen to the tangents?').'</p>');
 //
 //        $tangentOption = new radio ('tangentoption');
@@ -111,7 +111,7 @@
 //
 //        $dropdown = new dropdown ('topicmove');
 //
-//        if (count($otherTopicsInDiscussion) > 0) {
+//        if ((is_countable($otherTopicsInDiscussion) ? count($otherTopicsInDiscussion) : 0) > 0) {
 //            foreach ($otherTopicsInDiscussion as $discussiontopic)
 //            {
 //                $dropdown->addOption($discussiontopic['topic_id'], $discussiontopic['post_title']);
@@ -161,7 +161,7 @@
 //// You cant move a topic as a tangent to another topic if there aren't any other topics
 //
 //
-//if (count($otherDiscussions) > 0) {
+//if ((is_countable($otherDiscussions) ? count($otherDiscussions) : 0) > 0) {
 //
 //    // Increase Options Count for next item
 //    $optionsCount++;
@@ -203,7 +203,7 @@
 //// You cant move a topic as a tangent to another topic if there aren't any other topics
 //
 //
-//if (count($otherTopicsInDiscussion) > 0) {
+//if ((is_countable($otherTopicsInDiscussion) ? count($otherTopicsInDiscussion) : 0) > 0) {
 //
 //    // Increase Options Count for next item
 //    $optionsCount++;
@@ -219,9 +219,9 @@
 //    }
 //    $moveToTangentForm->addToForm($this->objLanguage->languageText('mod_discussion_movetopicastangent', 'discussion', 'Move the Topic as a tangent to the following topic').': '.$dropdown->show());
 //
-//    if (count($tangents) > 0) {
+//    if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
 //		$str = $this->objLanguage->languageText('mod_discussion_tangentsmovedwithtopic', 'discussion', '<strong>Note</strong> This topic has [-COUNTTANGENTS-] tangent(s). They will automatically become tangents to the selected topic.');
-//		$str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+//		$str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
 //        $moveToTangentForm->addToForm('<p>'.$str.'</p>');
 //    }
 //

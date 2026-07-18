@@ -157,7 +157,7 @@ class imagevaultops extends ChisimbaObject {
     {
         $filename = $name."_tn";
 	    $system = explode(".", $name);
-	    if(count($system) == 3) {
+	    if((is_countable($system) ? count($system) : 0) == 3) {
 	        $sys = $system[2];
 	    }
 	    else {
@@ -806,9 +806,9 @@ class imagevaultops extends ChisimbaObject {
     } 
     
     private function getGps($exifCoord, $hemi) {
-        $degrees = count($exifCoord) > 0 ? $this->gps2Num($exifCoord[0]) : 0;
-        $minutes = count($exifCoord) > 1 ? $this->gps2Num($exifCoord[1]) : 0;
-        $seconds = count($exifCoord) > 2 ? $this->gps2Num($exifCoord[2]) : 0;
+        $degrees = (is_countable($exifCoord) ? count($exifCoord) : 0) > 0 ? $this->gps2Num($exifCoord[0]) : 0;
+        $minutes = (is_countable($exifCoord) ? count($exifCoord) : 0) > 1 ? $this->gps2Num($exifCoord[1]) : 0;
+        $seconds = (is_countable($exifCoord) ? count($exifCoord) : 0) > 2 ? $this->gps2Num($exifCoord[2]) : 0;
         $flip = ($hemi == 'W' or $hemi == 'S') ? -1 : 1;
 
         return $flip * ($degrees + $minutes / 60 + $seconds / 3600);
@@ -816,10 +816,10 @@ class imagevaultops extends ChisimbaObject {
 
     private function gps2Num($coordPart) {
         $parts = explode('/', $coordPart);
-        if (count($parts) <= 0) {
+        if ((is_countable($parts) ? count($parts) : 0) <= 0) {
             return 0;
         }
-        if (count($parts) == 1) {
+        if ((is_countable($parts) ? count($parts) : 0) == 1) {
             return $parts[0];
         }
         

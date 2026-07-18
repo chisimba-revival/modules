@@ -87,7 +87,7 @@ class Sabre_CalDAV_CalendarQueryParser {
         }
 
         $compFilters = $this->parseCompFilters($filter->item(0));
-        if (count($compFilters)!==1) {
+        if ((is_countable($compFilters) ? count($compFilters) : 0)!==1) {
             throw new Sabre_DAV_Exception_BadRequest('There must be exactly 1 top-level comp-filter.');
         }
 

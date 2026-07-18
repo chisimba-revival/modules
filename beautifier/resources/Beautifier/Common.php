@@ -132,7 +132,7 @@ class PHP_Beautifier_Common {
             }
             $aPreviousParts=explode("/",$sPrevious);
             $aCurrentParts=explode("/",dirname($sFile));
-            for($x=0;$x<count($aPreviousParts);$x++) {
+            for($x=0;$x<(is_countable($aPreviousParts) ? count($aPreviousParts) : 0);$x++) {
                 if($aPreviousParts[$x]!=$aCurrentParts[$x]) {
                     $sPrevious=implode("/",array_slice($aPreviousParts,0,$x));                    
                 }

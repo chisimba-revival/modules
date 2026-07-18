@@ -17,7 +17,7 @@ class dbpodcasterfiles extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_podcaster_files');
         $this->objUser = $this->getObject('user', 'security');
@@ -311,7 +311,7 @@ class dbpodcasterfiles extends dbtable
         $objBuddies = $this->getObject('dbbuddies', 'buddies');
         $buddies = $objBuddies->getBuddies($userId);
 
-        if (count($buddies) == 0) {
+        if ((is_countable($buddies) ? count($buddies) : 0) == 0) {
             return array();
         } else {
             $where = 'WHERE (';

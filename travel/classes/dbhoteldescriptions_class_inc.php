@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 */
 class dbhoteldescriptions extends dbtable {
     
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_travel_hotel_descriptions");
         $this->objUser = $this->getObject('user','security');
     }

@@ -9,7 +9,7 @@ $objFeatureBox = & $this->newObject('featurebox', 'navigation');
 $tabBox = & $this->newObject('tabpane', 'htmlelements');
 
 
-if(count($galleries) > 0)
+if((is_countable($galleries) ? count($galleries) : 0) > 0)
 {
     
     
@@ -20,8 +20,8 @@ if(count($galleries) > 0)
     { 
       
        $galThumbs = $this->_objUtils->getGalleryThumbs($gals);
-      // print count($galThumbs);
-      if(count($galThumbs) > 0)
+      // print (is_countable($galThumbs) ? count($galThumbs) : 0);
+      if((is_countable($galThumbs) ? count($galThumbs) : 0) > 0)
        {
            $rowcount = 0;
             $i=0;

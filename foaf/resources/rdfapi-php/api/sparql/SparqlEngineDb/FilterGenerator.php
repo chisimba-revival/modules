@@ -83,7 +83,7 @@ class SparqlEngineDb_FilterGenerator
     */
     public function createFilterSql($tree, $bOptional, $nUnionCount)
     {
-        if (count($tree) == 0) {
+        if ((is_countable($tree) ? count($tree) : 0) == 0) {
             //empty filter pattern?
             return '';
         }

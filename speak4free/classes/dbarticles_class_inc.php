@@ -11,7 +11,7 @@
  */
 class dbarticles  extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_speak4free_articles');
         $this->table = 'tbl_speak4free_articles';
     }

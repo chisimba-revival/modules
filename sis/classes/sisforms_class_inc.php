@@ -385,7 +385,7 @@ class sisforms extends ChisimbaObject {
     }
 
     public function listKids($children) {
-         $count = sizeof($children);
+         $count = (is_countable($children) ? sizeof($children) : 0);
          $counter = 0;
          while ($counter < $count) {
              $firstname = $children[$counter]->getField("FirstName");
@@ -401,7 +401,7 @@ class sisforms extends ChisimbaObject {
     }
 
     public function countKids($children) {
-        $count = sizeof($children);
+        $count = (is_countable($children) ? sizeof($children) : 0);
         $objheader = $this->getObject('htmlheading', 'htmlelements');
         $objheader->str = "There are $count students associated with this profile:";
         $objheader->type = 1;

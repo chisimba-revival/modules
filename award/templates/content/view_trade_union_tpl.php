@@ -63,7 +63,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($tradeUnions) > '0'){
+if((is_countable($tradeUnions) ? count($tradeUnions) : 0) > '0'){
   foreach($tradeUnions as $tradeUnion){ 
      //Get group description
      $unionName = $tradeUnion['name'];

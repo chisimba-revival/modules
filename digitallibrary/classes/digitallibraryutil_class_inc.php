@@ -70,7 +70,7 @@ class digitallibraryutil extends ChisimbaObject {
         }
 
         // Check if no files were provided
-        if (count($results) == 1 && array_key_exists('nofileprovided', $results)) {
+        if ((is_countable($results) ? count($results) : 0) == 1 && array_key_exists('nofileprovided', $results)) {
             return "ERROR: No file provided";
         }
         $overwrite = $this->objUploadMessages->processOverwriteMessages();
@@ -131,7 +131,7 @@ class digitallibraryutil extends ChisimbaObject {
 
         $files = $this->objFileTags->getFilesWithTagByFilter(" AND tbl_files.path like '/digitallibrary/%' AND tbl_files_filetags.tag='$tag' ");
 
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return "No files with selected tag";
         }
 
@@ -146,7 +146,7 @@ class digitallibraryutil extends ChisimbaObject {
         $content = "";
         $content.= '<h1>' . $this->objLanguage->languageText('mod_filemanager_fileswithtag', 'filemanager', 'Files with tag') . ': ' . $tag . '</h1>';
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $form = new form('deletefiles', $this->uri(array('action' => 'multidelete')));
             $form->addToForm($table);
 
@@ -185,7 +185,7 @@ class digitallibraryutil extends ChisimbaObject {
 
         $files = $this->objFiles->getMatchingFiles(" WHERE filename like '%$searchQuery%' or description like '%$searchQuery%'");
 
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return "No files found";
         }
 
@@ -200,7 +200,7 @@ class digitallibraryutil extends ChisimbaObject {
         $content = "";
         $content.= '<h1>' . $this->objLanguage->languageText('mod_filemanager_fileswithtag', 'filemanager', 'Files with tag') . ': ' . $searchQuery . '</h1>';
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $form = new form('deletefiles', $this->uri(array('action' => 'multidelete')));
             $form->addToForm($table);
 
@@ -293,7 +293,7 @@ class digitallibraryutil extends ChisimbaObject {
         $content.= '<p><strong>' . $this->objLanguage->languageText('word_tags', 'system', 'Tags') . ':</strong> ';
 
         $tags = $this->objFileTags->getFileTags($file['id']);
-        if (count($tags) == 0) {
+        if ((is_countable($tags) ? count($tags) : 0) == 0) {
             $content.= '<em>' . $this->objLanguage->languageText('phrase_notags', 'system', 'no tags') . '</em>';
         } else {
             $comma = '';
@@ -549,7 +549,7 @@ class digitallibraryutil extends ChisimbaObject {
         $folders = $this->objFolders->getFolders($folderType, $id);
 
         $objFile = $this->getObject("dbfile", "filemanager");
-        if (count($folders) > 0) {
+        if ((is_countable($folders) ? count($folders) : 0) > 0) {
             foreach ($folders as $folder) {
                 $extTitle = '';
 
@@ -769,7 +769,7 @@ document.getElementById(\'renameButton\').onclick = function() {
             $folderActions.=$fieldset->show();
         }
 
-        if ((count($files) > 0 || count($subfolders) > 0 || count($symlinks) > 0) && $folderPermission) {
+        if (((is_countable($files) ? count($files) : 0) > 0 || (is_countable($subfolders) ? count($subfolders) : 0) > 0 || (is_countable($symlinks) ? count($symlinks) : 0) > 0) && $folderPermission) {
             $form = new form('movedeletefiles', $this->uri(array('action' => 'multimovedelete')));
             $form->addToForm($table);
 

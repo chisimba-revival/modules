@@ -78,7 +78,7 @@ class backupops extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objLanguage = $this->getObject('language', 'language');
     }

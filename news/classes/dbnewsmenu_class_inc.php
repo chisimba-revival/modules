@@ -11,7 +11,7 @@ class dbnewsmenu extends dbtable
      */
     protected $objSysConfig;
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_news_menu');
         $this->objLanguage = $this->getObject('language', 'language');
@@ -73,7 +73,7 @@ class dbnewsmenu extends dbtable
         $homeLinkText = $this->objSysConfig->getValue('mod_news_homelinktext', 'news');
         $str = '<h2 id="newswelcome">'.$this->prepareItem_module(array('itemvalue'=>'news', 'itemname'=>$homeLinkText)).'</h2>';
 
-        if (count($list) == 0){
+        if ((is_countable($list) ? count($list) : 0) == 0){
             return $str.'<p class="warning">'.$this->objLanguage->languageText('mod_news_nosectionssetupyet', 'news', 'No Sections setup yet').'.</p>';
         } else {
 
@@ -208,7 +208,7 @@ class dbnewsmenu extends dbtable
     {
         $results = $this->getAll('ORDER BY itemorder DESC LIMIT 1');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['itemorder'];
@@ -256,7 +256,7 @@ class dbnewsmenu extends dbtable
         } else {
             $item2 = $this->getAll(' WHERE itemorder < '.$item['itemorder'].' ORDER BY itemorder DESC LIMIT 1');
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 return $item2[0];
@@ -273,7 +273,7 @@ class dbnewsmenu extends dbtable
         } else {
             $item2 = $this->getAll(' WHERE itemorder > '.$item['itemorder'].' ORDER BY itemorder LIMIT 1');
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 return $item2[0];
@@ -391,7 +391,7 @@ class dbnewsmenu extends dbtable
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0]['id'];

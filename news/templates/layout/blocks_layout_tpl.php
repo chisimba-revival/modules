@@ -69,7 +69,7 @@ if ($objUser->isAdmin()) {
     $adminOptions[] = '<li>' . $addNewsStoryLink->show() . '</li>';
 }
 
-if (count($adminOptions) > 0) {
+if ((is_countable($adminOptions) ? count($adminOptions) : 0) > 0) {
 
     $leftContent .= '<h3>News Options</h3>';
 

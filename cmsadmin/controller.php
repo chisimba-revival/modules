@@ -1691,7 +1691,7 @@ $this->_objJQuery->loadSimpleTreePlugin();
 
                 $this->setVar('content', $this->_objUtils->showBody($contentId, $pageId, FALSE));
 
-                if (count($page) == 0) {
+                if ((is_countable($page) ? count($page) : 0) == 0) {
                     $contentId = NULL;
                     $sectionId = NULL;
                 } else {
@@ -1733,7 +1733,7 @@ $this->_objJQuery->loadSimpleTreePlugin();
             //Getting origonal members from DB
             $membersDb = $this->_objSecurity->getAuthorizedContentMembers($contentid);
             //Preparing a list of USER ID's
-            $memberCount = count($membersDb);
+            $memberCount = (is_countable($membersDb) ? count($membersDb) : 0);
             $userList = array();
             for ($i = 0; $i < $memberCount; $i++) {
                 $memberId = $membersDb[$i]['id'];
@@ -1846,7 +1846,7 @@ $this->_objJQuery->loadSimpleTreePlugin();
             //Getting origonal members from DB
             $membersDb = $this->_objSecurity->getAuthorizedSectionMembers($sectionid);
             //Preparing a list of USER ID's
-            $memberCount = count($membersDb);
+            $memberCount = (is_countable($membersDb) ? count($membersDb) : 0);
             $userList = array();
             for ($i = 0; $i < $memberCount; $i++) {
                 $memberId = $membersDb[$i]['id'];
@@ -2085,11 +2085,11 @@ $this->_objJQuery->loadSimpleTreePlugin();
 
                 //Updating Checks for the assigned users
                 $usersList = $this->_objSecurity->getAssignedContentUsers($contentid);
-                $usersCount = count($usersList);
+                $usersCount = (is_countable($usersList) ? count($usersList) : 0);
 
                 //Preparing a list of GROUP_ID's
                 $groupsList = $this->_objSecurity->getAssignedContentGroups($contentid);
-                $groupsCount = count($groupsList);
+                $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
 
                 $globalChkCounter = 0;
 
@@ -2242,10 +2242,10 @@ $this->_objJQuery->loadSimpleTreePlugin();
 
                 //Updating Checks for the assigned users
                 $usersList = $this->_objSecurity->getAssignedSectionUsers($sectionid);
-                $usersCount = count($usersList);
+                $usersCount = (is_countable($usersList) ? count($usersList) : 0);
                 //Preparing a list of GROUP_ID's
                 $groupsList = $this->_objSecurity->getAssignedSectionGroups($sectionid);
-                $groupsCount = count($groupsList);
+                $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
 
                 $globalChkCounter = 0;
 
@@ -2619,14 +2619,14 @@ $this->_objJQuery->loadSimpleTreePlugin();
         $menuNode = $this->objTreeMenu->getNode($this->currentPageId, FALSE);
 
         if (!$add) {
-            if (count($menuNode) > 0) {
+            if ((is_countable($menuNode) ? count($menuNode) : 0) > 0) {
 
                 $this->setVar('editForm', $this->_objUtils->showEditNode($this->currentPageId));
             }
         } else {
             $this->setVar('editForm', $this->_objUtils->showAddNode($this->currentPageId));
         }
-        if (count($menuNode) > 0) {
+        if ((is_countable($menuNode) ? count($menuNode) : 0) > 0) {
             $this->setVar('menuNodeParent', $menuNode[0]['parent_id']);
             if ($menuNode[0]['node_type'] == 1) {
                 $this->setVar('content', $this->_objUtils->showBody($menuNode[0]['link_reference'], $this->currentPageId));

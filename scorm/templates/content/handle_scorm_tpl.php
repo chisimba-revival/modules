@@ -229,7 +229,7 @@ if ($mode == 'page') {
         $list[] = $deleteLink->show();
     }
 
-    if (count($list) == 0) {
+    if ((is_countable($list) ? count($list) : 0) == 0) {
         $middle = '&nbsp;';
     } else {
         $middle = '';
@@ -320,7 +320,7 @@ if ($mode == 'page') {
 }
 
 if (!empty($this->userId)) {
-    if (count($chapters) > 1 && $this->isValid('movetochapter')) {
+    if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $this->isValid('movetochapter')) {
 
         $this->loadClass('dropdown', 'htmlelements');
         $this->loadClass('hiddeninput', 'htmlelements');

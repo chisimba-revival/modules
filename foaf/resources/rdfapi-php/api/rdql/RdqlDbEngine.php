@@ -350,7 +350,7 @@ Class RdqlDbEngine extends RdqlEngine {
  function toString(&$queryResult) {
 
    // if a result set is empty return only variable sames
-   if (count($queryResult) == 0) {
+   if ((is_countable($queryResult) ? count($queryResult) : 0) == 0) {
       foreach ($this->parsedQuery['selectVars'] as $selectVar)
          $res[0][$selectVar] = NULL;
       return $res;
@@ -385,7 +385,7 @@ Class RdqlDbEngine extends RdqlEngine {
  function toNodes(&$queryResult) {
 
    // if a result set is empty return only variable sames
-   if (count($queryResult) == 0) {
+   if ((is_countable($queryResult) ? count($queryResult) : 0) == 0) {
       foreach ($this->parsedQuery['selectVars'] as $selectVar)
          $res[0][$selectVar] = NULL;
       return $res;

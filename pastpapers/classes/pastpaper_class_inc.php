@@ -8,7 +8,7 @@
 
 class pastpaper extends dbTable{
 
-function init(){
+function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 parent::init('tbl_pastpapers');
 $this->table = 'tbl_pastpapers';
 

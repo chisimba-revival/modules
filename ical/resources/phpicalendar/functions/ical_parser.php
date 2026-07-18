@@ -34,7 +34,7 @@ $this_year = $day_array2[1];
 // reading the file if it's allowed
 $parse_file = true;
 if ($save_parsed_cals == 'yes') {	
-	if (sizeof ($cal_filelist) > 1) {
+	if ((is_countable($cal_filelist) ? sizeof($cal_filelist) : 0) > 1) {
 		$parsedcal = $tmp_dir.'/parsedcal-'.urlencode($cal_filename).'-'.$this_year;
 		if (file_exists($parsedcal)) {
 			$fd = fopen($parsedcal, 'r');
@@ -43,7 +43,7 @@ if ($save_parsed_cals == 'yes') {
 			$master_array = unserialize($contents);
 			$z=1;
 			$y=0;
-			if (sizeof($master_array['-4']) == (sizeof($cal_filelist))) {
+			if (sizeof($master_array['-4']) == ((is_countable($cal_filelist) ? sizeof($cal_filelist) : 0))) {
 				foreach ($master_array['-4'] as $temp_array) {
 					$mtime = $master_array['-4'][$z]['mtime'];
 					$fname = $master_array['-4'][$z]['filename'];
@@ -62,7 +62,7 @@ if ($save_parsed_cals == 'yes') {
 					if (isset($temp_array) && $temp_array !='') $caldisplaynames[] = $temp_array;
 				}
 
-				if ($y == sizeof($cal_filelist)) {
+				if ($y == (is_countable($cal_filelist) ? sizeof($cal_filelist) : 0)) {
 					if ($master_array['-1'] == 'valid cal file') {
 						$parse_file = false;
 						$calendar_name = $master_array['calendar_name'];
@@ -522,7 +522,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 
 							// Modify the COUNT based on BYDAY
 							if ((is_array($byday)) && (isset($count))) {
-								$blah = sizeof($byday);
+								$blah = (is_countable($byday) ? sizeof($byday) : 0);
 								$count = ($count / $blah);
 								unset ($blah);
 							}
@@ -692,7 +692,7 @@ foreach ($cal_filelist as $cal_key=>$filename) {
 													}
 													break;
 												case 'YEARLY':
-													if ((!isset($bymonth)) || (sizeof($bymonth) == 0)) {
+													if ((!isset($bymonth)) || ((is_countable($bymonth) ? sizeof($bymonth) : 0) == 0)) {
 														$m = date('m', $start_date_time);
 														$bymonth = array("$m");
 													}	

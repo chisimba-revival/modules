@@ -70,7 +70,7 @@ class activityutilities extends ChisimbaObject {
     /**
      * Constructor method to define the table
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objDBActivity = $this->getObject ( 'activitydb', 'activitystreamer' );
         $this->objConfig = $this->getObject ( 'config', 'config' );
         $this->objLanguage = $this->getObject ( 'language', 'language' );
@@ -95,11 +95,11 @@ class activityutilities extends ChisimbaObject {
     	$limit = (empty($limit)) ? 5 : $limit;
 
     	$all = $this->objDBActivity->getArray("SELECT count( id ) as cnt FROM tbl_activity");
-					//$limit = count($all);
+					//$limit = (is_countable($all) ? count($all) : 0);
     	$activities = $this->objDBActivity->getAll("ORDER BY createdon DESC limit ".$start.", ".$limit);    	
     	$activityCount = $all[0]['cnt'];
     	$cnt = 0;
-    	$str = '{"totalCount":"'.count($all).'","activities":[';
+    	$str = '{"totalCount":"'.(is_countable($all) ? count($all) : 0).'","activities":[';
 
         $activitiesArray = array();
         if($activityCount > 0)
@@ -144,7 +144,7 @@ ORDER BY tbl_contextcontent_pages.datemodified DESC, tbl_contextcontent_pages.da
 LIMIT ".$start.", ".$limit);
 
     	 $activityCount = $all[0]['cnt'];
-    	 $str = '{"totalCount":"'.count($all).'","activities":[';
+    	 $str = '{"totalCount":"'.(is_countable($all) ? count($all) : 0).'","activities":[';
     	 if($activityCount > 0)
     	 {
     	 $activitiesArray = array();

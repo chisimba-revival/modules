@@ -107,7 +107,7 @@ if ($mode == 'edit') {
 
 $efs = new fieldset();
 $efs->setLegend($this->objLanguage->languageText('mod_langadmin_fieldsrequired', 'langadmin'));
-if (count($errormessages) > 0) {
+if (count((array) $errormessages) > 0) {
 
     // $errorstr = '<ul>';
 

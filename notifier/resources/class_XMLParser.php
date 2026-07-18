@@ -80,7 +80,7 @@ class XMLParser {
 			array_push($children, trim($vals[$i]['value']));
 		}
 
-		while (++$i < count($vals)) {
+		while (++$i < (is_countable($vals) ? count($vals) : 0)) {
 			switch ($vals[$i]['type']) {
 				case 'cdata':
 					array_push($children, trim($vals[$i]['value']));

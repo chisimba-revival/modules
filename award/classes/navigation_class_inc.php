@@ -33,7 +33,7 @@ class navigation extends dbtable {
     /**
      * Standard init method
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_award_navigation');
         $this->objConfig = $this->getObject('altconfig','config');
         $this->objUser = $this->getObject('user','security');

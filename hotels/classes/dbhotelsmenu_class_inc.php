@@ -3,7 +3,7 @@
 class dbhotelsmenu extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_menu');
         $this->objLanguage =& $this->getObject('language', 'language');
@@ -65,7 +65,7 @@ class dbhotelsmenu extends dbtable
         $str = '<h2>'.$this->prepareItem_module(array('itemvalue'=>'hotels', 'itemname'=>$this->objLanguage->languageText('mod_hotels_frontpage', 'hotels', 'Front Page'))).'</h2>';
         $str = '<h2>'.$this->prepareItem_module(array('itemvalue'=>'hotels', 'itemname'=>'Welcome')).'</h2>';
 
-        if (count($list) == 0){
+        if ((is_countable($list) ? count($list) : 0) == 0){
             return $str.'<p class="warning">'.$this->objLanguage->languageText('mod_hotels_nosectionssetupyet', 'hotels', 'No Sections setup yet').'.</p>';
         } else {
 
@@ -200,7 +200,7 @@ class dbhotelsmenu extends dbtable
     {
         $results = $this->getAll('ORDER BY itemorder DESC LIMIT 1');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['itemorder'];
@@ -248,7 +248,7 @@ class dbhotelsmenu extends dbtable
         } else {
             $item2 = $this->getAll(' WHERE itemorder < '.$item['itemorder'].' ORDER BY itemorder DESC LIMIT 1');
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 return $item2[0];
@@ -265,7 +265,7 @@ class dbhotelsmenu extends dbtable
         } else {
             $item2 = $this->getAll(' WHERE itemorder > '.$item['itemorder'].' ORDER BY itemorder LIMIT 1');
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 return $item2[0];
@@ -383,7 +383,7 @@ class dbhotelsmenu extends dbtable
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0]['id'];

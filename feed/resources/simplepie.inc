@@ -3009,7 +3009,7 @@ function embed_wmedia(width, height, link) {
 
 	function merge_items($urls, $start = 0, $end = 0, $limit = 0)
 	{
-		if (is_array($urls) && sizeof($urls) > 0)
+		if (is_array($urls) && (is_countable($urls) ? sizeof($urls) : 0) > 0)
 		{
 			$items = array();
 			foreach ($urls as $arg)
@@ -4003,16 +4003,16 @@ class SimplePie_Item
 				if (isset($duration_parent[0]['data']))
 				{
 					$temp = explode(':', $this->sanitize($duration_parent[0]['data'], SIMPLEPIE_CONSTRUCT_TEXT));
-					if (sizeof($temp) > 0)
+					if ((is_countable($temp) ? sizeof($temp) : 0) > 0)
 					{
 						(int) $seconds = array_pop($temp);
 					}
-					if (sizeof($temp) > 0)
+					if ((is_countable($temp) ? sizeof($temp) : 0) > 0)
 					{
 						(int) $minutes = array_pop($temp);
 						$seconds += $minutes * 60;
 					}
-					if (sizeof($temp) > 0)
+					if ((is_countable($temp) ? sizeof($temp) : 0) > 0)
 					{
 						(int) $hours = array_pop($temp);
 						$seconds += $hours * 3600;
@@ -8462,7 +8462,7 @@ class SimplePie_Misc
 		$name = preg_quote($realname, '/');
 		if (preg_match_all("/<($name)" . SIMPLEPIE_PCRE_HTML_ATTRIBUTE . "(>(.*)<\/$name>|(\/)?>)/siU", $string, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE))
 		{
-			for ($i = 0, $total_matches = count($matches); $i < $total_matches; $i++)
+			for ($i = 0, $total_matches = (is_countable($matches) ? count($matches) : 0); $i < $total_matches; $i++)
 			{
 				$return[$i]['tag'] = $realname;
 				$return[$i]['full'] = $matches[$i][0][0];
@@ -8479,7 +8479,7 @@ class SimplePie_Misc
 				$return[$i]['attribs'] = array();
 				if (isset($matches[$i][2][0]) && preg_match_all('/[\x09\x0A\x0B\x0C\x0D\x20]+([^\x09\x0A\x0B\x0C\x0D\x20\x2F\x3E][^\x09\x0A\x0B\x0C\x0D\x20\x2F\x3D\x3E]*)(?:[\x09\x0A\x0B\x0C\x0D\x20]*=[\x09\x0A\x0B\x0C\x0D\x20]*(?:"([^"]*)"|\'([^\']*)\'|([^\x09\x0A\x0B\x0C\x0D\x20\x22\x27\x3E][^\x09\x0A\x0B\x0C\x0D\x20\x3E]*)?))?/', ' ' . $matches[$i][2][0] . ' ', $attribs, PREG_SET_ORDER))
 				{
-					for ($j = 0, $total_attribs = count($attribs); $j < $total_attribs; $j++)
+					for ($j = 0, $total_attribs = (is_countable($attribs) ? count($attribs) : 0); $j < $total_attribs; $j++)
 					{
 						if (count($attribs[$j]) == 2)
 						{
@@ -8618,7 +8618,7 @@ class SimplePie_Misc
 		}
 		elseif (preg_match('/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/', $url, $match))
 		{
-			for ($i = count($match); $i <= 9; $i++)
+			for ($i = (is_countable($match) ? count($match) : 0); $i <= 9; $i++)
 			{
 				$match[$i] = '';
 			}
@@ -11515,12 +11515,12 @@ class SimplePie_Parse_Date
 			*/
 
 			// Fill in empty matches
-			for ($i = count($match); $i <= 3; $i++)
+			for ($i = (is_countable($match) ? count($match) : 0); $i <= 3; $i++)
 			{
 				$match[$i] = '1';
 			}
 
-			for ($i = count($match); $i <= 7; $i++)
+			for ($i = (is_countable($match) ? count($match) : 0); $i <= 7; $i++)
 			{
 				$match[$i] = '0';
 			}

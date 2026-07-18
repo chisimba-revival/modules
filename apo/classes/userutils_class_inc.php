@@ -174,7 +174,7 @@ class userutils extends ChisimbaObject {
         $refArray = array();
         $refArray[$this->rootTitle] = & $facultyManagementNode;
         
-        if (count($faculties) > 0) {
+        if ((is_countable($faculties) ? count($faculties) : 0) > 0) {
             foreach ($faculties as $row) {
                 $folderText = $row['name'];
 
@@ -257,7 +257,7 @@ class userutils extends ChisimbaObject {
 
         $parent = "";
         $parts = explode("/", $path);
-        $count = count($parts);
+        $count = (is_countable($parts) ? count($parts) : 0);
         for ($i = 0; $i < $count - 1; $i++) {
             if ($parent == '') {
                 $parent.= $parts[$i];

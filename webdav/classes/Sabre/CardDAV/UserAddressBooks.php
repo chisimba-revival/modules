@@ -159,7 +159,7 @@ class Sabre_CardDAV_UserAddressBooks extends Sabre_DAV_Collection implements Sab
      */
     public function createExtendedCollection($name, array $resourceType, array $properties) {
 
-        if (!in_array('{'.Sabre_CardDAV_Plugin::NS_CARDDAV.'}addressbook',$resourceType) || count($resourceType)!==2) {
+        if (!in_array('{'.Sabre_CardDAV_Plugin::NS_CARDDAV.'}addressbook',$resourceType) || (is_countable($resourceType) ? count($resourceType) : 0)!==2) {
             throw new Sabre_DAV_Exception_InvalidResourceType('Unknown resourceType for this collection');
         }
         $this->carddavBackend->createAddressBook($this->principalUri, $name, $properties);

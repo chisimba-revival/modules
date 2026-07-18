@@ -154,7 +154,7 @@ Class RdqlMemEngine extends RdqlEngine {
    
    // find pattern internal bindings e.g. (?x, ?z, ?x)
    $intBindings = NULL;
-   for ($i=0; $i<count($var); $i++)
+   for ($i=0; $i<(is_countable($var) ? count($var) : 0); $i++)
        foreach($var as $n => $v)
          if ($i != $n && $var[$i]['val'] == $v['val'])
             $intBindings[] = $var[$i]['key'];
@@ -271,7 +271,7 @@ Class RdqlMemEngine extends RdqlEngine {
  */
  function joinTuples(&$finalRes, &$res) {
 
-   if (count($finalRes) == 0 || count($res) == 0)
+   if ((is_countable($finalRes) ? count($finalRes) : 0) == 0 || (is_countable($res) ? count($res) : 0) == 0)
       return array();
 
    // find joint variables and new variables to be added to $finalRes
@@ -446,7 +446,7 @@ Class RdqlMemEngine extends RdqlEngine {
 
    // if nothing has been found return only one row of $finalRes
    // with select variables having empty values
-   if (count($finalRes) == 0) {
+   if ((is_countable($finalRes) ? count($finalRes) : 0) == 0) {
       foreach ($this->parsedQuery['selectVars'] as $selectVar)
          $finalRes[0][$selectVar] = NULL;
       return $finalRes;

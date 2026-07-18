@@ -108,7 +108,7 @@ class block_latestcontextactivity extends ChisimbaObject
     		$recs = array();
     	}
     	$str = "";
-    	if(count($recs) > 0) {
+    	if((is_countable($recs) ? count($recs) : 0) > 0) {
             foreach($recs as $rec) {
                     $str .="<div>".$rec['title']."</div>";
             }

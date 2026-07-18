@@ -246,7 +246,7 @@ class block_newtopic extends ChisimbaObject {
             $button->cssClass = 'save';
             $button->extra = 'onclick="saveAttachment(this.parentNode)"';
             if (isset($files)) {
-                if (count($files) > 0) {
+                if ((is_countable($files) ? count($files) : 0) > 0) {
 
                     foreach ($files AS $file) {
                         $icon = $objIcon->getDeleteIconWithConfirm($file['id'], array('action' => 'deleteattachment', 'id' => $file['id'], 'attachmentwindow' => $discussionId), 'discussion', 'Are you sure wou want to remove this attachment');

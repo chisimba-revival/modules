@@ -37,7 +37,7 @@ class Sabre_VObject_Reader {
             if (!$line) continue;
 
             if ($line[0]===" " || $line[0]==="\t") {
-                $lines2[count($lines2)-1].=substr($line,1);
+                $lines2[(is_countable($lines2) ? count($lines2) : 0)-1].=substr($line,1);
             } else {
                 $lines2[] = $line;
             }

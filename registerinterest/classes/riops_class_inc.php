@@ -270,7 +270,7 @@ class riops extends ChisimbaObject {
         if ($this->objUser->isAdmin()) {
             $dataArray = $this->objDB->getAll();
             //if there are no values, return text indicating as such
-            if (count($dataArray) == 0) {
+            if ((is_countable($dataArray) ? count($dataArray) : 0) == 0) {
                 return $this->objLanguage->languageText(" mod_registerinterest_noentries", "registerinterest", "There are no names on the list ");
             } else {
                 $domElements['table'] = $this->domDoc->createElement('table');

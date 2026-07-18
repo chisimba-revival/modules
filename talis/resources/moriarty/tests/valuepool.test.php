@@ -71,7 +71,7 @@ class ValuePoolTest extends PHPUnit_Framework_TestCase {
     $values = $pool->get_candidate_values('http://example.org/pool');
 
     $this->assertTrue( is_array($values) );
-    $this->assertEquals( 5, count($values) );
+    $this->assertEquals( 5, (is_countable($values) ? count($values) : 0) );
   }
 
   function test_get_candidate_values_reads_uri() {

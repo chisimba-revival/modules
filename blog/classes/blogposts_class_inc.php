@@ -902,12 +902,12 @@ class blogposts extends ChisimbaObject
         $allposts = $this->objDbBlog->getAbsAllPosts($userid);
         // print_r($allposts);
         $revposts = array_reverse($allposts);
-        $recs = count($revposts);
+        $recs = (is_countable($revposts) ? count($revposts) : 0);
         if ($recs > 0) {
             $recs = $recs-1;
         }
         if (!empty($revposts)) {
-            // echo count($revposts);
+            // echo (is_countable($revposts) ? count($revposts) : 0);
             $lastrec = $revposts[$recs]['post_ts'];
             $firstrec = $revposts[0]['post_ts'];
             $c1 = date("ym", $firstrec);
@@ -1009,7 +1009,7 @@ class blogposts extends ChisimbaObject
             }
             $posts = $this->objDbBlog->getAbsAllPosts($userid);
         }
-        $count = count($posts);
+        $count = (is_countable($posts) ? count($posts) : 0);
         // print_r($posts);
         // add in a table header...
         $edtable->startHeaderRow();

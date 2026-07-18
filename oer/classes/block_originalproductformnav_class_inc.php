@@ -16,10 +16,10 @@ class block_originalproductformnav extends ChisimbaObject {
        $data = explode("|", $this->configData);
         $id = NULL;
         $step = '1';
-        if (count($data) == 2) {
+        if ((is_countable($data) ? count($data) : 0) == 2) {
             $id = $data[0];
             $step = $data[1];
-        } else if (count($data) == 1){
+        } else if ((is_countable($data) ? count($data) : 0) == 1){
             $id = $data[0];
         }
         

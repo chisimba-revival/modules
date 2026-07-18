@@ -599,7 +599,7 @@ class Zend_View_Helper_Navigation_Menu
         );
 
         if (is_array($partial)) {
-            if (count($partial) != 2) {
+            if ((is_countable($partial) ? count($partial) : 0) != 2) {
                 require_once 'Zend/View/Exception.php';
                 $e = new Zend_View_Exception(
                     'Unable to render menu: A view partial supplied as ' 

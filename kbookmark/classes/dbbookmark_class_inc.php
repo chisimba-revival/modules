@@ -15,7 +15,7 @@ class dbBookmark extends dbTable
     * Initialise objects used in the module
     */
 
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_bookmarks');
     }

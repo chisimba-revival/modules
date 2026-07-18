@@ -26,7 +26,7 @@ class dbfolderpermissions extends dbtable {
     private $tablename = "tbl_podcaster_folderpermissions";
     private $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
         $this->userobj=$this->getObject('user','security');
         $this->userid=$this->userobj->userid();
@@ -92,7 +92,7 @@ class dbfolderpermissions extends dbtable {
        
         $rows=$this->getArray($sql);
 
-        return count($rows) > 0  ? TRUE: FALSE;
+        return (is_countable($rows) ? count($rows) : 0) > 0  ? TRUE: FALSE;
 
     }
     /**

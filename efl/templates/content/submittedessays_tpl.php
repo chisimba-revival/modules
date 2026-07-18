@@ -83,7 +83,7 @@ if($this->objUser->isAdmin()) {
 else {
     $dbdata=$this->essays->getSubmittedEssays($essayId, $this->objUser->userId());
 }
-$total=count($dbdata);
+$total=(is_countable($dbdata) ? count($dbdata) : 0);
 /*$objAltConfig = $this->getObject('altconfig','config');
 $modPath=$objAltConfig->getModulePath();
 $replacewith="";
@@ -92,7 +92,7 @@ $resourcePath=str_replace($docRoot,$replacewith,$modPath);
 $codebase="http://" . $_SERVER['HTTP_HOST'].'/'.$resourcePath.'/efl/resources/';*/
 
 $count = 1;
-$numRows = count($dbdata);
+$numRows = (is_countable($dbdata) ? count($dbdata) : 0);
 $titleid=$this->getparam('essayid');
 $essaytitle = $this->essays->getTitle($titleid);
 

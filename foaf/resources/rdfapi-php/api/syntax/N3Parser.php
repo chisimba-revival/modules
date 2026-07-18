@@ -89,7 +89,7 @@ class N3Parser extends Object_rap {
      //     $t = array( $LLiteral, $URI); //, $Literal, $PrefixDecl, $QName, $bNode, $Prefix,
      //	    $Univar, 'a', '{', '}', '\(', '\)', '\[', '\]', ',', ';', '\.', $WS, $Comment);
      $t = array( $Datatype_URI,$Datatype,$LLiteral, $URI, $Literal, $PrefixDecl, $QName, $bNode, $Prefix, $Univar, 'a','=', '{', '}', '\(', '\)', '\[', '\]', ',', ';', '\.', $WS, $Comment,$LangTag);
-     $this->Tokens="/(".join($t,"|").")/m";
+     $this->Tokens="/(".join("|", $t).")/m";
 
      $this->bNode=0;
      $this->debug=0;
@@ -121,7 +121,7 @@ class N3Parser extends Object_rap {
     $stat=$this->n3tolist($s);
     foreach ( $stat as $t) {
 
-      if (count($t)>3) {
+      if ((is_countable($t) ? count($t) : 0)>3) {
         $object=$t[2];
 
         for ($i = 3; $i < 5; $i++){
@@ -149,7 +149,7 @@ class N3Parser extends Object_rap {
     $stat=$this->n3tolist($s);
     foreach ( $stat as $t) {
 
-    	if (count($t)>3) {
+    	if ((is_countable($t) ? count($t) : 0)>3) {
         $object=$t[2];
 
         for ($i = 3; $i < 5; $i++){
@@ -381,7 +381,7 @@ function str2unicode_nfc($str=""){
    * @access private
    **/
   function array_concat($a, $b) {
-    array_splice($a,count($a),0,$b);
+    array_splice($a,(is_countable($a) ? count($a) : 0),0,$b);
     return $a;
   }
 
@@ -425,7 +425,7 @@ function str2unicode_nfc($str=""){
     //$lines=explode("\n",$s);
 
     //$reallines=array_filter($lines, array($this, "notComment"));
-    //    print "LINES: ".join($reallines, " ")." :LINES\n";
+    //    print "LINES: ".join(" ", $reallines)." :LINES\n";
     //array_walk($reallines, array($this, "trimLine"));
     //$res=array();
 
@@ -462,7 +462,7 @@ function str2unicode_nfc($str=""){
     $m=array_slice($list, $start,$l);
     $e=array_slice($list, $end);
 
-    //  array_push($s,"\"".join($m," ")."\"");
+    //  array_push($s,"\"".join(" ", $m)."\"");
     array_push($s,$m);
 
     return $this->array_concat($s,$e);
@@ -493,7 +493,7 @@ function str2unicode_nfc($str=""){
       }
     }
 
-	if (count($prefixes)<1) $list= array_slice($list,0);
+	if ((is_countable($prefixes) ? count($prefixes) : 0)<1) $list= array_slice($list,0);
 
     return array($prefixes, $list);
   }
@@ -539,7 +539,7 @@ function str2unicode_nfc($str=""){
     array_walk($list, array($this, 'replace_equal'));
     array_walk($list, array($this, 'replace_this'));
 
-    for ($i=0;$i<count($list);$i++) {
+    for ($i=0;$i<(is_countable($list) ? count($list) : 0);$i++) {
       //   for i in range(len(list)) {
 //      if (!strstr('<_"?.;,{}[]()',$list[$i]{0})) {
 
@@ -619,7 +619,7 @@ function str2unicode_nfc($str=""){
     $statements = array();
 
     while (in_array('.', $list)) {
-      //  for($i=0;$i<count($list); $i++) {
+      //  for($i=0;$i<(is_countable($list) ? count($list) : 0); $i++) {
       //    if ($list[$i]==".") {
       //   while '.' in list {
       $pos=array_search('.',$list);
@@ -653,7 +653,7 @@ function str2unicode_nfc($str=""){
       $list=$r[1];
 
       // skip lone semicolons, e.g. "<a> <b> <c> ; ."
-      if (count($pov) == 1) continue;
+      if ((is_countable($pov) ? count($pov) : 0) == 1) continue;
 
       $povs[]=array_slice($pov,1);
     }
@@ -674,7 +674,7 @@ function str2unicode_nfc($str=""){
     $objs = array();
     while (in_array(",",$list)) {
       $pos=array_search(",",$list);
-      //  for($i=0;$i<count($list); $i++) {
+      //  for($i=0;$i<(is_countable($list) ? count($list) : 0); $i++) {
       //    if ($list[$i]==",") {
       //   while ',' in list {
 
@@ -712,15 +712,15 @@ function str2unicode_nfc($str=""){
    **/
   function statementize($list) {
 
-    if (count($list) == 1 && preg_match("/_".BNODE_PREFIX."[0-9]+_/",$list[0])) {
+    if ((is_countable($list) ? count($list) : 0) == 1 && preg_match("/_".BNODE_PREFIX."[0-9]+_/",$list[0])) {
 	if ($this->debug) print "Ignored bNode exists statement. $list\n";
 	return array();
     }
 
 
 
-    if (count($list) == 3) return array($list);
-    if (count($list) < 3) die("Error: statement too short!");
+    if ((is_countable($list) ? count($list) : 0) == 3) return array($list);
+    if ((is_countable($list) ? count($list) : 0) < 3) die("Error: statement too short!");
 
     //Get all ;
     $r=$this->getPovs($list);
@@ -793,7 +793,7 @@ function str2unicode_nfc($str=""){
       $ndict=array();
       $nestingLevel=0;
       $biggest=0;
-      for ($i=0;$i<count($list);$i++) {
+      for ($i=0;$i<(is_countable($list) ? count($list) : 0);$i++) {
 	if ($list[$i] == $schar) {
 	  $nestingLevel += 1;
 	  if (!in_array($nestingLevel, array_keys($ndict))) {
@@ -855,7 +855,7 @@ function str2unicode_nfc($str=""){
    **/
   function fixAnon($list) {
 //    $map=array();
-    for($i=0;$i<count($list);$i++) {
+    for($i=0;$i<(is_countable($list) ? count($list) : 0);$i++) {
       $l=$list[$i];
       if (substr($l,0,2)=="_:") {
 	  if (!isset($this->bNodeMap[$l])) {
@@ -876,7 +876,7 @@ function str2unicode_nfc($str=""){
    **/
   function expandLists($list) {
 
-    for($i=0;$i<count($list);$i++) {
+    for($i=0;$i<(is_countable($list) ? count($list) : 0);$i++) {
       if (is_array($list[$i])) {
 	if ( $list[$i][0]=='[' ) {
 	  $bnode=$this->bnodeID();
@@ -901,7 +901,7 @@ function str2unicode_nfc($str=""){
 	    //link first bnode into graph
 	    $list[$i] = $fromBnode;
 
-	    $count = count($t_list);
+	    $count = (is_countable($t_list) ? count($t_list) : 0);
 
 	    //loop through list, convert to RDF linked list
 	    for ($idx = 0; $idx < $count; $idx++){
@@ -1015,10 +1015,10 @@ function str2unicode_nfc($str=""){
 
 
 
-      if (count($state)>3) {
+      if ((is_countable($state) ? count($state) : 0)>3) {
 
 
-        for ($i = 3; $i < count($state); $i++){
+        for ($i = 3; $i < (is_countable($state) ? count($state) : 0); $i++){
           if ($state[$i][0]=='@')$lang=substr($state[3],1);
           if (substr($state[$i],0,2)=='^^'){
 

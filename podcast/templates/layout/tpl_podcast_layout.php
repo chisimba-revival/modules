@@ -25,7 +25,7 @@ $sidebar = $objSideBar->show($menuItems);
 $podcasters = $this->objPodcast->listPodcasters();
 $podcastCourses = $this->objPodcast->listPodcastCourses();
 
-if (count($podcasters) > 0) {
+if ((is_countable($podcasters) ? count($podcasters) : 0) > 0) {
     $this->loadClass('form', 'htmlelements');
     $this->loadClass('button', 'htmlelements');
     $this->loadClass('dropdown', 'htmlelements');

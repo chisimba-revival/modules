@@ -184,7 +184,7 @@ if ($doccount > 0) {
     $table->endRow();
 
     foreach ($documents as $document) {
-        if (count($document) > 1) {
+        if ((is_countable($document) ? count($document) : 0) > 1) {
             //$topic=  substr($document['topic'], strlen($this->baseDir));
             $link = new link($this->uri(array("action" => "editdocument", "id" => $document['id'])));
             $link->link = $document['filename'];

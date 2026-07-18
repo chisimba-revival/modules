@@ -87,7 +87,7 @@ class Zend_Tool_Framework_System_Provider_Manifest
             $longestAttrNameLen = (strlen($metadataAttrs) > $longestAttrNameLen) ? strlen($metadataAttrs) : $longestAttrNameLen;
 
             $metadataValue = $metadata->getValue();
-            if (is_array($metadataValue) && count($metadataValue) > 0) {
+            if (is_array($metadataValue) && (is_countable($metadataValue) ? count($metadataValue) : 0) > 0) {
                 $metadataValue = urldecode(http_build_query($metadataValue, null, ', '));
             } elseif (is_array($metadataValue)) {
                 $metadataValue = '(empty array)';

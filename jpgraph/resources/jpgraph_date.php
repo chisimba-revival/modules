@@ -300,7 +300,7 @@ class DateScale extends LinearScale {
         array(1,SECADJ_1)),
         );
 
-        $ns = count($scalePoints);
+        $ns = (is_countable($scalePoints) ? count($scalePoints) : 0);
         // Establish major and minor scale units for the date scale
         $diff = $aEndTime - $aStartTime;
         if( $diff < 1 ) return false;

@@ -206,7 +206,7 @@ $hiddenId = new hiddeninput('departmentid', $departmentid);
 $form->addToForm($hiddenId->show());
 $efs = new fieldset();
 $efs->setLegend('Please, note that the following fields are mandatory');
-if (count($errormessages) > 0) {
+if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
 
     // $errorstr = '<ul>';
 

@@ -64,7 +64,7 @@ class dbfeatures extends dbTable
 	 * @param void
 	 * @return void
 	 */
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		$this->objLanguage = $this->getObject("language", "language");
 		$this->objUser = $this->getObject('user', 'security');

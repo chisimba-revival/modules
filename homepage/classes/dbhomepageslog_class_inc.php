@@ -16,7 +16,7 @@ class dbHomePagesLog extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() 
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_homepages_log');
         $this->objIPToCountry =& $this->newObject('iptocountry', 'utilities');
@@ -51,7 +51,7 @@ class dbHomePagesLog extends dbTable
     {
         $sql = "SELECT id from tbl_homepages WHERE userid = '$userId'";
         $homepageId = $this->getArray($sql);	
-        if (count($homepageId) > 0) {
+        if ((is_countable($homepageId) ? count($homepageId) : 0) > 0) {
 	        $sql = "SELECT 
 				count(id) 
 			FROM tbl_homepages_log 
@@ -87,7 +87,7 @@ class dbHomePagesLog extends dbTable
     public function convertIpToCountries($array)
     {  
         $countries = array();
-        $size = count($array);
+        $size = (is_countable($array) ? count($array) : 0);
         foreach ($array as $ip)
         {	  	 
             if (!is_null($ip['ip'])) {

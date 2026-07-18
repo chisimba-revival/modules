@@ -61,7 +61,7 @@ class active extends dbtable {
      * @return void  
      * @access public
      */
-	public function init() {
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		try {
 			
 			$this->objHerd = $this->getObject('newherd');

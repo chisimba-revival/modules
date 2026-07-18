@@ -20,7 +20,7 @@ $heading->type = 1;
 
 echo $heading->show();
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText("mod_podcaster_nofilesmatchtag", "podcaster", 'No files match this tag').'</div>';
 } else {
     $sortOptions = array(

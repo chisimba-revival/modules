@@ -2,7 +2,7 @@
 
 class dbrtt extends dbtable {
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_news_stories');
         $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');
         $this->objWashout=$this->getObject('washout','utilities');

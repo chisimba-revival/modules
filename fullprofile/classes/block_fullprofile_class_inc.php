@@ -52,7 +52,7 @@ class block_fullprofile extends ChisimbaObject {
         $objTable->addCell($title->show(), null, 'top', null, null, 'colspan="2"', '0');
         $objTable->endRow();
 
-        if(is_array($friends) && count($friends)>0){
+        if(is_array($friends) && (is_countable($friends) ? count($friends) : 0)>0){
             $count = 0;
             foreach($friends as $friend){
                 $fuserid = $friend['fuserid'];

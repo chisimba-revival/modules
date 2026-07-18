@@ -23,7 +23,7 @@ $heading->type = 1;
 
 echo $heading->show();
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText("mod_podcaster_nouploadsbyu", "podcaster", 'You have not Uploaded any files yet. Click on uploads link to upload a podcast').'</div>';
 } else {
     $sortOptions = array(

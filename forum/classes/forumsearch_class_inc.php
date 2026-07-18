@@ -24,7 +24,8 @@ class forumsearch extends dbtable
     /**
     * Constructor
     */
-    function init()
+    /* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_forum_post_text');
         
@@ -185,7 +186,7 @@ class forumsearch extends dbtable
         $resultsArray = array_reverse($resultsArray); // Reverse for Descending Order
         
         
-        if (count($resultsArray) > 0) {
+        if ((is_countable($resultsArray) ? count($resultsArray) : 0) > 0) {
             $return = '<ol>';
             
             foreach ($resultsArray as $id=>$wordCount)

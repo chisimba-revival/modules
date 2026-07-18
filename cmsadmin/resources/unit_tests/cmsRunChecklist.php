@@ -66,7 +66,7 @@ $result = $cl->getContentPages('');
 echo "Array Test: ";
 echo (is_array($result)) ? 'is_array: TRUE' : 'is_array: FALSE';
 echo "\nCount: ";
-echo count($result);
+echo (is_countable($result) ? count($result) : 0);
 echo "\n\n";
 
 echo "Add Content : \n";
@@ -324,7 +324,7 @@ $result = $cl->getContentPages('');
 echo "Array Test: ";
 echo (is_array($result)) ? 'is_array: TRUE' : 'is_array: FALSE';
 echo "\nCount: ";
-echo count($result);
+echo (is_countable($result) ? count($result) : 0);
 echo "\n";
 
 echo "\n===================Testing DB Section Functions===================\n";
@@ -335,7 +335,7 @@ $result = $cl->getAllSections();
 echo "Array Test: ";
 echo (is_array($result)) ? 'is_array: TRUE' : 'is_array: FALSE';
 echo "\nCount: ";
-echo count($result);
+echo (is_countable($result) ? count($result) : 0);
 echo "\n";
 
 //Save the section
@@ -612,7 +612,7 @@ $result = $cl->getAllSections();
 echo "Array Test: ";
 echo (is_array($result)) ? 'is_array: TRUE' : 'is_array: FALSE';
 echo "\nCount: ";
-echo count($result);
+echo (is_countable($result) ? count($result) : 0);
 echo "\n";
 
 ?>

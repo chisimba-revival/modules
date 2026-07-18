@@ -529,7 +529,7 @@ class Zend_Loader_Autoloader
         }
 
         $parts = explode('.', $version);
-        $count = count($parts);
+        $count = (is_countable($parts) ? count($parts) : 0);
         if (1 == $count) {
             return 'major';
         }

@@ -129,7 +129,7 @@ class contexttools extends controller {
         $objUserContext = $this->getObject('usercontext', 'context');
         $objDisplayContext = $this->getObject ( 'displaycontext', 'context' );
         $userContexts = $objUserContext->jsonUserCourses($this->objUser->userId(), $ctstart, $ctlimit);
-        if ( count ( $userContexts ) > 0 ) {
+        if ( (is_countable($userContexts) ? count($userContexts) : 0) > 0 ) {
             echo $objDisplayContext->jsonContextOutput( $userContexts );
             exit(0);
         }

@@ -31,7 +31,7 @@ $objIcon->alt = $this->objLanguage->languageText('mod_hotels_willappearlater', '
 $objIcon->title = $this->objLanguage->languageText('mod_hotels_willappearlater', 'hotels', 'Will Appear Later');
 $clockIcon = $objIcon->show();
 
-if (count($stories) == 0) {
+if ((is_countable($stories) ? count($stories) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_hotels_categoryhasnostories', 'hotels', 'Category has no hotels').'</div>';
 } else {
     $table = $this->newObject('htmltable', 'htmlelements');
@@ -63,7 +63,7 @@ if (count($stories) == 0) {
             $moveItemUp = $link->show();
         }
         
-        if ($counter == count($stories)) {
+        if ($counter == (is_countable($stories) ? count($stories) : 0)) {
             $moveItemDown = '&nbsp;';
         } else {
             $link = new link ($this->uri(array('action'=>'movepagedown', 'id'=>$story['id'])));
@@ -123,7 +123,7 @@ if ($this->isValid('editmenuitem') && $menuId != FALSE) {
     $editOptions[] = $editCategoryLink->show();
 }
 
-if (count($editOptions) > 0) {
+if ((is_countable($editOptions) ? count($editOptions) : 0) > 0) {
     $divider = '';
     echo '<p>';
     foreach ($editOptions as $editOption)

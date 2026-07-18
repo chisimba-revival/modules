@@ -129,7 +129,7 @@ class xmltag_Eportfolio extends ChisimbaObject
             $tagstr.= " $attr_str";
         }
         $keys = array_keys($this->tags);
-        $numtags = sizeof($keys);
+        $numtags = (is_countable($keys) ? sizeof($keys) : 0);
         // If there are subtags and no data (only whitespace),
         // then go ahead and add a carriage
         // return.  Otherwise the tag should be of this form:

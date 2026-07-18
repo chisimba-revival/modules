@@ -30,7 +30,7 @@ class dbproductrating extends dbtable {
 
     private $productRatingTableName = 'tbl_oer_productrating';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->productRatingTableName);
     }
     

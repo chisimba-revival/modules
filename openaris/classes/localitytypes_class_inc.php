@@ -42,7 +42,7 @@ $GLOBALS['kewl_entry_point_run']) {
 class localitytypes extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_ahis_locality_types');
         

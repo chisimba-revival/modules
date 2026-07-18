@@ -125,7 +125,7 @@ class frontpage extends ChisimbaObject {
         // $this->tags->addElement($tags['name'], $tags['url'], $tags['weight'], $tags['time']);
         $tagCloud = '<p><strong>' . $this->objLanguage->languageText('word_tags', 'system', 'Tags') . ':</strong> ';
 
-        if (count($tags) == 0) {
+        if ((is_countable($tags) ? count($tags) : 0) == 0) {
             $tagCloud.= '<em>' . $this->objLanguage->languageText('phrase_notags', 'system', 'no tags') . '</em>';
         } else {
             $tagsArray = array();

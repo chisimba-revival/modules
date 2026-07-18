@@ -95,7 +95,7 @@ class dbstack extends dbtable {
      *
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_photostack_album');
         $this->objLanguage  = $this->getObject('language', 'language');
         $this->objConfig    = $this->getObject('altconfig', 'config');

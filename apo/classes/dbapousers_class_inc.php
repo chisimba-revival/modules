@@ -40,7 +40,7 @@ class dbapousers extends dbtable {
      * @return none
      */
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
         $this->objUser = $this->getObject('user', 'security');
     }
@@ -158,7 +158,7 @@ class dbapousers extends dbtable {
         $sql =
                 "select * from " . $this->tablename . " where name ='$name'";
         $rows = $this->getArray($sql);
-        if (count($rows) > 0) {
+        if ((is_countable($rows) ? count($rows) : 0) > 0) {
             return TRUE;
         }
 

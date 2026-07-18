@@ -261,24 +261,24 @@ class statusbarops extends ChisimbaObject
         if ($this->objModules->checkIfRegistered('messaging'))
         {
             $instantMessages = $this->ajaxGetUnreadInstantMessages();
-            $class = (count($instantMessages) > 0) ? 'statusbar_messaging_on' : 'statusbar_messaging_off';
-            $instantMessages = (count($instantMessages) > 0) ? '<span class="statusbar_message_count">' . count($instantMessages) . '</span>' : '&nbsp;';
+            $class = ((is_countable($instantMessages) ? count($instantMessages) : 0) > 0) ? 'statusbar_messaging_on' : 'statusbar_messaging_off';
+            $instantMessages = ((is_countable($instantMessages) ? count($instantMessages) : 0) > 0) ? '<span class="statusbar_message_count">' . (is_countable($instantMessages) ? count($instantMessages) : 0) . '</span>' : '&nbsp;';
             $messageLink = "<span title=\"$messageLabel\"><div class=\"$class\">$instantMessages</div></span>";
         }
             
         if ($this->objModules->checkIfRegistered('calendar'))
         {
             $events = $this->ajaxGetCalendarAlerts();
-            $class = (count($events) > 0) ? 'statusbar_alert_on' : 'statusbar_alert_off';
-            $alerts = (count($events) > 0) ? '<span class="statusbar_alert_count">' . count($events) . '</span>' : '&nbsp;';
+            $class = ((is_countable($events) ? count($events) : 0) > 0) ? 'statusbar_alert_on' : 'statusbar_alert_off';
+            $alerts = ((is_countable($events) ? count($events) : 0) > 0) ? '<span class="statusbar_alert_count">' . (is_countable($events) ? count($events) : 0) . '</span>' : '&nbsp;';
             $alertLink = "<span title=\"$alertLabel\"><div class=\"$class\">$alerts</div></span>";
         }
 
         if ($this->objModules->checkIfRegistered('contextcontent'))
         {
             $events = $this->ajaxGetContentAlerts();
-            $class = (count($events) > 0) ? 'statusbar_document_on' : 'statusbar_document_off';
-            $alerts = (count($events) > 0) ? '<span class="statusbar_document_count">' . count($events) . '</span>' : '&nbsp;';
+            $class = ((is_countable($events) ? count($events) : 0) > 0) ? 'statusbar_document_on' : 'statusbar_document_off';
+            $alerts = ((is_countable($events) ? count($events) : 0) > 0) ? '<span class="statusbar_document_count">' . (is_countable($events) ? count($events) : 0) . '</span>' : '&nbsp;';
             $documentLink = "<span title=\"$documentLabel\"><div class=\"$class\">$alerts</div></span>";
         }
             
@@ -741,7 +741,7 @@ class statusbarops extends ChisimbaObject
         $onlineBuddies = $this->objBuddies->getOnlineBuddies($this->userId);
         
         $count = array();
-        $count['all'] = count($allBuddies);
+        $count['all'] = (is_countable($allBuddies) ? count($allBuddies) : 0);
         $count['online'] = $onlineBuddies;
         
         return $count;
@@ -922,7 +922,7 @@ class statusbarops extends ChisimbaObject
         $alerts = array();
         
         $userEvents = $this->objCalendar->getAlerts($timestamp, $this->userId, NULL);
-        if (count($userEvents) > 0)
+        if ((is_countable($userEvents) ? count($userEvents) : 0) > 0)
         {
             foreach ($userEvents as $event)
             {
@@ -930,7 +930,7 @@ class statusbarops extends ChisimbaObject
             }
         }
         
-        if (count($contexts) > 0)
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0)
         {
             $contextEvents = array();
             foreach ($contexts as $contextCode)
@@ -938,7 +938,7 @@ class statusbarops extends ChisimbaObject
                 $contextEvents = $this->objDBbridging->getContextCalendarAlerts($timestamp, $contextCode);
             }
             
-            if (count($contextEvents) > 0)
+            if ((is_countable($contextEvents) ? count($contextEvents) : 0) > 0)
             {
                 foreach ($contextEvents as $event)
                 {
@@ -973,7 +973,7 @@ class statusbarops extends ChisimbaObject
 
         $alerts = array();
         
-        if (count($contexts) > 0)
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0)
         {
             $contextEvents = array();
             foreach ($contexts as $contextCode)
@@ -981,7 +981,7 @@ class statusbarops extends ChisimbaObject
                 $contextEvents = $this->objDBbridging->getContextContentAlerts($timestamp, $contextCode);
             }
           
-            if (count($contextEvents) > 0)
+            if ((is_countable($contextEvents) ? count($contextEvents) : 0) > 0)
             {
                 foreach ($contextEvents as $event)
                 {

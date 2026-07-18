@@ -76,7 +76,7 @@ class dbThesis extends dbtable
     /**
     * Constructor method
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_etd_metadata_thesis');
         $this->table = 'tbl_etd_metadata_thesis';

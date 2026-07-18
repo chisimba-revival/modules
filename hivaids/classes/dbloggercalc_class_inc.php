@@ -22,7 +22,7 @@ class dbLoggerCalc extends dbtable
     /**
     * Constructor method
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_logger');
         $this->table = 'tbl_logger';
@@ -129,7 +129,7 @@ class dbLoggerCalc extends dbtable
 
         $data = $this->getArray($sql);
         if(!empty($data)){
-            $cnt = count($data);
+            $cnt = (is_countable($data) ? count($data) : 0);
             return $cnt;
         }
         return 0;
@@ -156,7 +156,7 @@ class dbLoggerCalc extends dbtable
 
         $data = $this->getArray($sql);
         if(!empty($data)){
-            $cnt = count($data);
+            $cnt = (is_countable($data) ? count($data) : 0);
             return $cnt;
         }
         return 0;

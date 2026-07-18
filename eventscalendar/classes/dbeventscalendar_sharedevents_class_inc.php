@@ -6,7 +6,7 @@ class dbeventscalendar_sharedevents extends dbTable
 {
 	
 	
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		
 		parent::init('tbl_eventscalendar_sharedevents');
@@ -30,7 +30,7 @@ class dbeventscalendar_sharedevents extends dbTable
 	{
 		$recs = $this->getAll("WHERE eventid='".$eventId."' AND sharedwithid='".$sharedWithId."'");
 		//var_dump($eventId);
-		if(count($recs) > 0)
+		if((is_countable($recs) ? count($recs) : 0) > 0)
 		{
 			return TRUE;
 		} else {

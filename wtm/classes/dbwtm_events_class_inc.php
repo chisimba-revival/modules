@@ -50,7 +50,7 @@ class dbwtm_events extends dbtable
 	/**
     * Constructor method to define the events table
     */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_wtm_events');
     }

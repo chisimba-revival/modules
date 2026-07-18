@@ -28,7 +28,7 @@ class dbdiscussion extends dbTable {
         /**
          * Constructor method to define the table(default)
          */
-        function init() {
+        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
                 parent::init('tbl_discussion');
 
                 // Context Code
@@ -283,7 +283,7 @@ class dbdiscussion extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) > 0) {
+                if ((is_countable($list) ? count($list) : 0) > 0) {
                         return $list[0];
                 } else {
                         return;
@@ -395,7 +395,7 @@ class dbdiscussion extends dbTable {
         function checkIfDiscussionLocked($discussionId) {
                 $discussion = $this->getDiscussion($discussionId);
 
-                if (count($discussion) > 0 && $discussion['discussionlocked'] == 'Y') {
+                if ((is_countable($discussion) ? count($discussion) : 0) > 0 && $discussion['discussionlocked'] == 'Y') {
                         return TRUE;
                 } else {
                         return FALSE;
@@ -437,7 +437,7 @@ class dbdiscussion extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) > 0) {
+                if ((is_countable($list) ? count($list) : 0) > 0) {
                         return $list[0]['id'];
                 } else {
                         return NULL;
@@ -590,7 +590,7 @@ class dbdiscussion extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                return count($results);
+                return (is_countable($results) ? count($results) : 0);
         }
 
         /**
@@ -605,7 +605,7 @@ class dbdiscussion extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];
@@ -623,7 +623,7 @@ class dbdiscussion extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                return count($results);
+                return (is_countable($results) ? count($results) : 0);
         }
 
         /**
@@ -637,7 +637,7 @@ class dbdiscussion extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];

@@ -111,7 +111,7 @@ class agcgraph extends ChisimbaObject {
 			$this->graph->setProp("key", $this->titles[$i],$i);
             $this->graph->setProp("color",$this->colors[$i],$i);
             $this->graph->setProp("pointstyle",$this->pointStyles[$i],$i);
-            $xincs = count($data);
+            $xincs = (is_countable($data) ? count($data) : 0);
             foreach ($data as $pair) {
                 //if ($j == 0) $this->graph->setProp("startdate",$pair['x']);
                 //if ($j == 11) $this->graph->setProp("enddate",$pair['x']); 

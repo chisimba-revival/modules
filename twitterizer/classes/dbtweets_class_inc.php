@@ -48,7 +48,7 @@ class dbtweets extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_twitterizer' );
         $this->objSysConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
     }
@@ -73,7 +73,7 @@ class dbtweets extends dbTable {
     
     public function getUserCount () {
         $users = $this->getArray("SELECT DISTINCT screen_name FROM tbl_twitterizer ORDER BY id");
-        return count($users);
+        return (is_countable($users) ? count($users) : 0);
     }
 
     public function getAllPosts() {

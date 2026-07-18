@@ -5,7 +5,7 @@ $link = $this->getObject('link','htmlelements');
 $icon = $this->getObject('geticon', 'htmlelements');
 $cnt =0 ;
 $str = '';
-if(count($arrAlbum) > 0)
+if((is_countable($arrAlbum) ? count($arrAlbum) : 0) > 0)
 {
 	foreach($arrAlbum as $album)
 	{
@@ -44,7 +44,7 @@ $table->endRow();
 
 //flickr tables
 
-if(count($flickrusernames) > 0)
+if((is_countable($flickrusernames) ? count($flickrusernames) : 0) > 0)
 {
 	
 	foreach($flickrusernames as $username)

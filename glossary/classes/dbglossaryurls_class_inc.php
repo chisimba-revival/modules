@@ -22,7 +22,7 @@ class dbGlossaryUrls extends dbTable
     /**
     * Constructor method to define the table(default)
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_glossary_urls');
     }

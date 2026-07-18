@@ -365,7 +365,7 @@ class commentinterface extends ChisimbaObject
     */
     public function displayAllComments($tableName, $ar, $userId = null, $moduleCode = null)
     {
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             //Loop Through the comments & display them
             $rowcount=0;
             $ret = "&nbsp;&nbsp;<b>" . $this->objLanguage->languageText("word_comments") . "</b>";
@@ -396,7 +396,7 @@ class commentinterface extends ChisimbaObject
                     $iconext = "gif";
                     $objGetIcon = $this->newObject('geticon', 'htmlelements');
                     $objGetIcon->setIcon($iconname, $iconext);
-                    if (count($tar) > 0){
+                    if ((is_countable($tar) ? count($tar) : 0) > 0){
                         $objGetIcon->alt = $tar[0]['title'];
                     }else{
                         $objGetIcon->alt = $type;
@@ -489,7 +489,7 @@ class commentinterface extends ChisimbaObject
         $sourceId = $this->get('sourceId');
 
         $ar = $this->objDb->getMostRecentComment($tableName, $sourceId, $count, $offset);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             //Loop Through the comments & display them
             $rowcount=0;
             $ret = "&nbsp;&nbsp;<b>" . $this->objLanguage->languageText("word_comments") . "</b>";
@@ -521,7 +521,7 @@ class commentinterface extends ChisimbaObject
                     $iconext = "gif";
                     $objGetIcon = $this->newObject('geticon', 'htmlelements');
                     $objGetIcon->setIcon($iconname, $iconext);
-                    if (count($tar) > 0){
+                    if ((is_countable($tar) ? count($tar) : 0) > 0){
                         $objGetIcon->alt = $tar[0]['title'];
                     }else{
                         $objGetIcon->alt = $type;
@@ -614,7 +614,7 @@ class commentinterface extends ChisimbaObject
         $sourceId = $this->get('sourceId');
 
         $ar = $this->objDb->getCommentByType($tableName, $sourceId, $type, $count, $offset);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             //Loop Through the comments & display them
             $rowcount=0;
             $ret = "&nbsp;&nbsp;<b>" . $this->objLanguage->languageText("word_comments") . "</b>";
@@ -645,7 +645,7 @@ class commentinterface extends ChisimbaObject
                     $iconext = "gif";
                     $objGetIcon = $this->newObject('geticon', 'htmlelements');
                     $objGetIcon->setIcon($iconname, $iconext);
-                    if (count($tar) > 0){
+                    if ((is_countable($tar) ? count($tar) : 0) > 0){
                         $objGetIcon->alt = $tar[0]['title'];
                     }else{
                         $objGetIcon->alt = $type;

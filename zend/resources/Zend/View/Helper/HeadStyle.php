@@ -135,7 +135,7 @@ class Zend_View_Helper_HeadStyle extends Zend_View_Helper_Placeholder_Container_
     {
         if (preg_match('/^(?P<action>set|(ap|pre)pend|offsetSet)(Style)$/', $method, $matches)) {
             $index  = null;
-            $argc   = count($args);
+            $argc   = (is_countable($args) ? count($args) : 0);
             $action = $matches['action'];
 
             if ('offsetSet' == $action) {

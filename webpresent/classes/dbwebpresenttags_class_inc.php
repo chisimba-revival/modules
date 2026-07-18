@@ -59,7 +59,7 @@ class dbwebpresenttags extends dbtable
     /**
     * Method to construct the class.
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_webpresent_tags');
     }
@@ -78,7 +78,7 @@ class dbwebpresenttags extends dbtable
     {
         $tags = $this->getTags($fileId);
 
-        if (count($tags) == 0)
+        if ((is_countable($tags) ? count($tags) : 0) == 0)
         {
             return array();
         } else {
@@ -120,7 +120,7 @@ FROM tbl_webpresent_tags GROUP BY tbl_webpresent_tags.tag ORDER BY tbl_webpresen
     {
         $finalArray = array();
 
-        if (count($array) > 0) {
+        if ((is_countable($array) ? count($array) : 0) > 0) {
             foreach ($array as $item)
             {
                 $finalArray[$item['tag']] = $item;
@@ -140,7 +140,7 @@ FROM tbl_webpresent_tags GROUP BY tbl_webpresent_tags.tag ORDER BY tbl_webpresen
         $tags = $this->getLastLimitTags();
 
         // Check that there are tags
-        if (count($tags) == 0) {
+        if ((is_countable($tags) ? count($tags) : 0) == 0) {
             return '<div class="noRecordsMessage">Tag Cloud Goes Here</div>';
         } else {
             // Load Object
@@ -171,7 +171,7 @@ FROM tbl_webpresent_tags GROUP BY tbl_webpresent_tags.tag ORDER BY tbl_webpresen
         $tags = $this->getAllTags();
 
         // Check that there are tags
-        if (count($tags) == 0) {
+        if ((is_countable($tags) ? count($tags) : 0) == 0) {
             return '<div class="noRecordsMessage">Tag Cloud Goes Here</div>';
         } else {
             // Load Object
@@ -201,7 +201,7 @@ FROM tbl_webpresent_tags GROUP BY tbl_webpresent_tags.tag ORDER BY tbl_webpresen
     public function addTags($fileId, $tags)
     {
         // Check that there are tags
-        if (is_array($tags) && count($tags) > 0) {
+        if (is_array($tags) && (is_countable($tags) ? count($tags) : 0) > 0) {
 
             // Delete Existing Tags
             $this->deleteTags($fileId);

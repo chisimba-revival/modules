@@ -64,7 +64,7 @@ $objTable->addHeader($tableHd, "heading");
 //Loop through and display the records
 $rowcount = 0;
 if (!empty($ar)) {
-    if (count($ar) > 0) {
+    if ((is_countable($ar) ? count($ar) : 0) > 0) {
         foreach ($ar as $line) {
             $oddOrEven = ($rowcount == 0) ? "odd" : "even";
 

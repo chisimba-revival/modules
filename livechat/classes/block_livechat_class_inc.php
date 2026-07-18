@@ -44,7 +44,7 @@ class block_livechat extends ChisimbaObject {
         $jq = "<script type='text/javascript'>" . $sendInviteJS . "</script>";
         $objFeatureBox = $this->newObject('featurebox', 'navigation');
         $loggedInUsers = $this->loggedInUsers->getListOnlineUsersInCurrentContext($this->contextCode);
-        $content = '<div id="results"></div>' . $jq . '<b>' . count($loggedInUsers) . ' users online</b><br/>';
+        $content = '<div id="results"></div>' . $jq . '<b>' . (is_countable($loggedInUsers) ? count($loggedInUsers) : 0) . ' users online</b><br/>';
         $inviteButton = new button('invitetochat', $this->objLanguage->languageText('mod_livechat_invitetochat', 'livechat', 'Invite to Chat'));
         $inviteButton->setId("invitetochatbutton");
         //$inviteButton->setToSubmit();

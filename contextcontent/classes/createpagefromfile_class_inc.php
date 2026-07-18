@@ -41,7 +41,7 @@ class createpagefromfile {
     function getExt($filename) {
         $filename = strtolower($filename) ;
         $exts = split("[/\\.]", $filename) ;
-        $n = count($exts)-1;
+        $n = (is_countable($exts) ? count($exts) : 0)-1;
         $ext = $exts[$n];
     }
 }

@@ -226,7 +226,7 @@ class Zend_Service_WindowsAzure_Storage_Queue extends Zend_Service_WindowsAzure_
 		if (!self::isValidQueueName($queueName)) {
 		    throw new Zend_Service_WindowsAzure_Exception('Queue name does not adhere to queue naming conventions. See http://msdn.microsoft.com/en-us/library/dd179349.aspx for more information.');
 		}
-		if (count($metadata) == 0) {
+		if ((is_countable($metadata) ? count($metadata) : 0) == 0) {
 		    return;
 		}
 		    
@@ -301,20 +301,20 @@ class Zend_Service_WindowsAzure_Storage_Queue extends Zend_Service_WindowsAzure_
 
 			$queues = array();
 			if (!is_null($xmlQueues)) {
-				for ($i = 0; $i < count($xmlQueues); $i++) {
+				for ($i = 0; $i < (is_countable($xmlQueues) ? count($xmlQueues) : 0); $i++) {
 					$queues[] = new Zend_Service_WindowsAzure_Storage_QueueInstance(
 						(string)$xmlQueues[$i]->Name,
 						$this->_parseMetadataElement($xmlQueues[$i])
 					);
 				}
 			}
-			$currentResultCount = $currentResultCount + count($queues);
+			$currentResultCount = $currentResultCount + (is_countable($queues) ? count($queues) : 0);
 			if (!is_null($maxResults) && $currentResultCount < $maxResults) {
     			if (!is_null($xmlMarker) && $xmlMarker != '') {
     			    $queues = array_merge($queues, $this->listQueues($prefix, $maxResults, $xmlMarker, $include, $currentResultCount));
     			}
 			}
-			if (!is_null($maxResults) && count($queues) > $maxResults) {
+			if (!is_null($maxResults) && (is_countable($queues) ? count($queues) : 0) > $maxResults) {
 			    $queues = array_slice($queues, 0, $maxResults);
 			}
 			    
@@ -426,7 +426,7 @@ class Zend_Service_WindowsAzure_Storage_Queue extends Zend_Service_WindowsAzure_
     		}
 
 			$messages = array();
-			for ($i = 0; $i < count($xmlMessages); $i++) {
+			for ($i = 0; $i < (is_countable($xmlMessages) ? count($xmlMessages) : 0); $i++) {
 				$messages[] = new Zend_Service_WindowsAzure_Storage_QueueMessage(
 					(string)$xmlMessages[$i]->MessageId,
 					(string)$xmlMessages[$i]->InsertionTime,

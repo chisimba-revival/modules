@@ -16,7 +16,7 @@ $GLOBALS['kewl_entry_point_run']) {
 class animal_population extends dbtable {
 	
   
-	public function init() {
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		try {
 			parent::init('tbl_ahis_animal_population_census');
 		}

@@ -6,7 +6,7 @@ class dbforwardto extends dbtable {
     var $tablename = "tbl_wicid_forward";
     var $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
 
     }

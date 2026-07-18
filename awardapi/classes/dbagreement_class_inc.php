@@ -63,7 +63,7 @@ class dbagreement extends dbTable
 	* @access public
 	* @return void
 	*/
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
     	try {
             parent::init('tbl_award_agree');
             $this->objBenefits = $this->getObject('dbbenefits');
@@ -131,7 +131,7 @@ class dbagreement extends dbTable
      		$sql .= " AND sic.major_divid = '$sicId'";
      	}
      	$result = $this->getArray($sql);
-     	return count($result);     	
+     	return (is_countable($result) ? count($result) : 0);     	
     }
     
     public function getUnitParties($unitId) {
@@ -297,7 +297,7 @@ class dbagreement extends dbTable
      	}
      	
      	$result = $this->getArray($sql);
-     	return count($result);     	
+     	return (is_countable($result) ? count($result) : 0);     	
     }
         
 }

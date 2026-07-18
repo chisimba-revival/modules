@@ -12,7 +12,7 @@
  */
 class dblanguageadmin extends dbtable {
     
-    function init(){
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
         parent::init('tbl_languagetext');
     }
     

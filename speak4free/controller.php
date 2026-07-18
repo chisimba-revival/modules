@@ -429,7 +429,7 @@ class speak4free extends controller {
 
         //$this->_prepareDataForSearch($file);
 
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'process_tpl.php';

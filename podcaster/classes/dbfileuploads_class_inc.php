@@ -28,7 +28,7 @@ class dbfileuploads extends dbtable {
     var $tablename = "tbl_podcaster_fileuploads";
     var $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
         $this->objUser = $this->getObject('user', 'security');
         $this->objConfig = $this->getObject('altconfig', 'config');
@@ -60,7 +60,7 @@ class dbfileuploads extends dbtable {
         $sql =
                 "select id from  " . $this->tablename . " where docid='$docid'";
         $res = $this->getArray($sql);
-        if (count($res) > 0) {
+        if ((is_countable($res) ? count($res) : 0) > 0) {
             return true;
         } else {
             return false;
@@ -284,7 +284,7 @@ class dbfileuploads extends dbtable {
             default : $bB = "B";
                 break;
         }
-        for ($i = 0; $i < count($symbols) - 1 && $val >= $factor; $i++)
+        for ($i = 0; $i < (is_countable($symbols) ? count($symbols) : 0) - 1 && $val >= $factor; $i++)
             $val /= $factor;
         $p = strpos($val, ".");
         if ($p !== false && $p > $digits)
@@ -302,7 +302,7 @@ class dbfileuploads extends dbtable {
     function findexts($filename) {
         $filename = strtolower($filename);
         $exts = split("[/\\.]", $filename);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         //check if icon for this exists, else return unknown
@@ -398,12 +398,12 @@ class dbfileuploads extends dbtable {
      */
     function checkAttachment($ids) {
         $docids = explode(",", $ids);
-        $count = count($docids);
+        $count = (is_countable($docids) ? count($docids) : 0);
         for ($i = 0; $i < $count; $i++) {
             if (strlen(trim($docids[$i])) > 0) {
                 $filter = "where docid = '" . $docids[$i] . "'";
                 $res = $this->getAll($filter);
-                if (count($res) == 0) {
+                if ((is_countable($res) ? count($res) : 0) == 0) {
                     return "false";
                 }
             }

@@ -116,7 +116,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if ( count($arrDisplayMasters) > 0) {
+if ( (is_countable($arrDisplayMasters) ? count($arrDisplayMasters) : 0) > 0) {
 
     foreach($arrDisplayMasters as $mastersstudents) {
 

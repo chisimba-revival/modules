@@ -44,7 +44,7 @@ class dbcategory extends dbtable {
      */
     public $contextCode;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_category');
         $this->table = 'tbl_test_category';
         $this->objUser = &$this->getObject('user', 'security');
@@ -71,7 +71,7 @@ class dbcategory extends dbtable {
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;

@@ -1065,7 +1065,7 @@ abstract class Zend_Db_Table_Abstract
          * else return an associative array of the PK column/value pairs.
          */
         $pkData = array_intersect_key($data, array_flip($primary));
-        if (count($primary) == 1) {
+        if ((is_countable($primary) ? count($primary) : 0) == 1) {
             reset($pkData);
             return current($pkData);
         }
@@ -1220,12 +1220,12 @@ abstract class Zend_Db_Table_Abstract
         $args = func_get_args();
         $keyNames = array_values((array) $this->_primary);
 
-        if (count($args) < count($keyNames)) {
+        if ((is_countable($args) ? count($args) : 0) < (is_countable($keyNames) ? count($keyNames) : 0)) {
             require_once 'Zend/Db/Table/Exception.php';
             throw new Zend_Db_Table_Exception("Too few columns for the primary key");
         }
 
-        if (count($args) > count($keyNames)) {
+        if ((is_countable($args) ? count($args) : 0) > (is_countable($keyNames) ? count($keyNames) : 0)) {
             require_once 'Zend/Db/Table/Exception.php';
             throw new Zend_Db_Table_Exception("Too many columns for the primary key");
         }
@@ -1233,7 +1233,7 @@ abstract class Zend_Db_Table_Abstract
         $whereList = array();
         $numberTerms = 0;
         foreach ($args as $keyPosition => $keyValues) {
-            $keyValuesCount = count($keyValues);
+            $keyValuesCount = (is_countable($keyValues) ? count($keyValues) : 0);
             // Coerce the values to an array.
             // Don't simply typecast to array, because the values
             // might be Zend_Db_Expr objects.
@@ -1256,7 +1256,7 @@ abstract class Zend_Db_Table_Abstract
         }
 
         $whereClause = null;
-        if (count($whereList)) {
+        if ((is_countable($whereList) ? count($whereList) : 0)) {
             $whereOrTerms = array();
             $tableName = $this->_db->quoteTableAs($this->_name, null, true);
             foreach ($whereList as $keyValueSets) {
@@ -1366,7 +1366,7 @@ abstract class Zend_Db_Table_Abstract
 
         $rows = $this->_fetch($select);
 
-        if (count($rows) == 0) {
+        if ((is_countable($rows) ? count($rows) : 0) == 0) {
             return null;
         }
 
@@ -1406,7 +1406,7 @@ abstract class Zend_Db_Table_Abstract
     public function createRow(array $data = array(), $defaultSource = null)
     {
         $cols     = $this->_getCols();
-        $defaults = array_combine($cols, array_fill(0, count($cols), null));
+        $defaults = array_combine($cols, array_fill(0, (is_countable($cols) ? count($cols) : 0), null));
 
         // nothing provided at call-time, take the class value
         if ($defaultSource == null) {

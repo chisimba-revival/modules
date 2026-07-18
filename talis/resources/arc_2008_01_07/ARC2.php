@@ -247,7 +247,7 @@ class ARC2 {
   function getCleanedIndex() {/* removes triples from a given index */
     $indexes = func_get_args();
     $r = $indexes[0];
-    for ($i = 1, $i_max = count($indexes); $i < $i_max; $i++) {
+    for ($i = 1, $i_max = (is_countable($indexes) ? count($indexes) : 0); $i < $i_max; $i++) {
       $index = $indexes[$i];
       foreach ($index as $s => $ps) {
         if (!isset($r[$s])) continue;

@@ -77,7 +77,7 @@ class dbscheduledregistration extends dbtable
     * Standard init method to define table
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
       //Set the table in the parent class
       parent::init('tbl_elsitraining_scheduledregistration');

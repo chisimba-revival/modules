@@ -52,7 +52,7 @@ class dbassignmentuploadablefiletypes extends dbtable {
      * Initialisation.
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_assignment_uploadablefiletypes');
         $this->objUser = $this->getObject('user', 'security');
         //$this->objLanguage = $this->getObject('language', 'language');

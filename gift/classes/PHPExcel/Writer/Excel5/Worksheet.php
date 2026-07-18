@@ -521,7 +521,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		$firstCell = $explodes[0];
 
 		// extract last cell, e.g. 'B6'
-		if (count($explodes) == 1) {
+		if ((is_countable($explodes) ? count($explodes) : 0) == 1) {
 			$lastCell = $firstCell;
 		} else {
 			$lastCell = $explodes[1];
@@ -1410,7 +1410,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		$selectedCells = $this->_phpSheet->getSelectedCells();
 		$selectedCells = PHPExcel_Cell::splitRange($this->_phpSheet->getSelectedCells());
 		$selectedCells = $selectedCells[0];
-		if (count($selectedCells) == 2) {
+		if ((is_countable($selectedCells) ? count($selectedCells) : 0) == 2) {
 			list($first, $last) = $selectedCells;
 		} else {
 			$first = $selectedCells[0];
@@ -1475,7 +1475,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 	private function _writeMergedCells()
 	{
 		$mergeCells = $this->_phpSheet->getMergeCells();
-		$countMergeCells = count($mergeCells);
+		$countMergeCells = (is_countable($mergeCells) ? count($mergeCells) : 0);
 
 		if ($countMergeCells == 0) {
 			return;
@@ -1609,7 +1609,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		foreach ($this->_phpSheet->getProtectedCells() as $range => $password) {
 			// number of ranges, e.g. 'A1:B3 C20:D25'
 			$cellRanges = explode(' ', $range);
-			$cref = count($cellRanges);
+			$cref = (is_countable($cellRanges) ? count($cellRanges) : 0);
 
 			$recordData = pack(
 				'vvVVvCVvVv',
@@ -1721,7 +1721,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		$x	   = isset($panes[1]) ? $panes[1] : null;
 		$rwTop   = isset($panes[2]) ? $panes[2] : null;
 		$colLeft = isset($panes[3]) ? $panes[3] : null;
-		if (count($panes) > 4) { // if Active pane was received
+		if ((is_countable($panes) ? count($panes) : 0) > 4) { // if Active pane was received
 			$pnnAct = $panes[4];
 		} else {
 			$pnnAct = null;
@@ -2185,7 +2185,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		}
 
 		//horizontal page breaks
-		if (count($hbreaks) > 0) {
+		if ((is_countable($hbreaks) ? count($hbreaks) : 0) > 0) {
 
 			// Sort and filter array of page breaks
 			sort($hbreaks, SORT_NUMERIC);
@@ -2194,7 +2194,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 			}
 
 			$record  = 0x001b;			   // Record identifier
-			$cbrk	= count($hbreaks);	   // Number of page breaks
+			$cbrk	= (is_countable($hbreaks) ? count($hbreaks) : 0);	   // Number of page breaks
 			if ($this->_BIFF_version == 0x0600) {
 				$length  = 2 + 6 * $cbrk;	  // Bytes to follow
 			} else {
@@ -2217,7 +2217,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		}
 
 		// vertical page breaks
-		if (count($vbreaks) > 0) {
+		if ((is_countable($vbreaks) ? count($vbreaks) : 0) > 0) {
 
 			// 1000 vertical pagebreaks appears to be an internal Excel 5 limit.
 			// It is slightly higher in Excel 97/200, approx. 1026
@@ -2230,7 +2230,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 			}
 
 			$record  = 0x001a;			   // Record identifier
-			$cbrk	= count($vbreaks);	   // Number of page breaks
+			$cbrk	= (is_countable($vbreaks) ? count($vbreaks) : 0);	   // Number of page breaks
 			if ($this->_BIFF_version == 0x0600) {
 				$length  = 2 + 6 * $cbrk;	  // Bytes to follow
 			} else {
@@ -2735,7 +2735,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 
 			// split the Escher stream
 			$spOffsets[0] = 0;
-			$nm = count($spOffsets) - 1; // number of shapes excluding first shape
+			$nm = (is_countable($spOffsets) ? count($spOffsets) : 0) - 1; // number of shapes excluding first shape
 			for ($i = 1; $i <= $nm; ++$i) {
 				// MSODRAWING record
 				$record = 0x00EC;			// Record identifier
@@ -2788,7 +2788,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		$dataValidationCollection = $this->_phpSheet->getDataValidationCollection();
 
 		// Write data validations?
-		if (count($dataValidationCollection) > 0) {
+		if ((is_countable($dataValidationCollection) ? count($dataValidationCollection) : 0) > 0) {
 
 			// DATAVALIDATIONS record
 			$record = 0x01B2;	  // Record identifier
@@ -2801,7 +2801,7 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 
 		$header	  = pack('vv', $record, $length);
 		$data		= pack('vVVVV', $grbit, $horPos, $verPos, $objId,
-										 count($dataValidationCollection));
+										 (is_countable($dataValidationCollection) ? count($dataValidationCollection) : 0));
 		$this->_append($header.$data);
 
 			// DATAVALIDATION records

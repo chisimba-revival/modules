@@ -35,7 +35,7 @@ class SparqlEngineDb_QuerySimplifier
         $arPatterns = $query->getResultPart();
         self::dropEmpty($arPatterns);
         $arPlan     = $this->createPlan($arPatterns);
-        if (count($arPlan) == 0) {
+        if ((is_countable($arPlan) ? count($arPlan) : 0) == 0) {
             $query->setResultPart($arPatterns);
             return 0;
         }
@@ -56,7 +56,7 @@ class SparqlEngineDb_QuerySimplifier
     protected function createPlan(&$arPatterns)
     {
         $arNumbers = $this->getNumbers($arPatterns);
-        if (count($arNumbers) == 0) {
+        if ((is_countable($arNumbers) ? count($arNumbers) : 0) == 0) {
             return array();
         }
 

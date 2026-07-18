@@ -93,12 +93,12 @@ class html5table extends ChisimbaObject
             $caption->appendChild($text);
         }
 
-        if (count($headers) > 0) {
+        if ((is_countable($headers) ? count($headers) : 0) > 0) {
             if (is_string($checkbox)) {
                 array_unshift($headers, 'Select');
             }
 
-            if (count($edit) > 0 || count($delete)) {
+            if ((is_countable($edit) ? count($edit) : 0) > 0 || (is_countable($delete) ? count($delete) : 0)) {
                 array_push($headers, 'Actions');
             }
 
@@ -117,7 +117,7 @@ class html5table extends ChisimbaObject
             }
         }
 
-        if (count($contents) > 0) {
+        if ((is_countable($contents) ? count($contents) : 0) > 0) {
             $tbody = $document->createElement('tbody');
             $table->appendChild($tbody);
 
@@ -143,11 +143,11 @@ class html5table extends ChisimbaObject
                     $td->appendChild($text);
                 }
 
-                if (count($edit) > 0 || count($delete) > 0) {
+                if ((is_countable($edit) ? count($edit) : 0) > 0 || (is_countable($delete) ? count($delete) : 0) > 0) {
                     $td = $document->createElement('td');
                     $tr->appendChild($td);
 
-                    if (count($edit) > 0) {
+                    if ((is_countable($edit) ? count($edit) : 0) > 0) {
                         $edit['id'] = $i;
 
                         $a = $document->createElement('a');
@@ -164,7 +164,7 @@ class html5table extends ChisimbaObject
                         $a->appendChild($img);
                     }
 
-                    if (count($delete) > 0) {
+                    if ((is_countable($delete) ? count($delete) : 0) > 0) {
                         $delete['id'] = $i;
 
                         $a = $document->createElement('a');

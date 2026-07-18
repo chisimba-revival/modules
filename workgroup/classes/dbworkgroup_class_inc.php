@@ -15,7 +15,7 @@ class dbWorkgroup extends dbTable {
     /**
      * Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_workgroup');
         //$this->USE_PREPARED_STATEMENTS=True;
         $this->objUser = &$this->newObject('user', 'security');

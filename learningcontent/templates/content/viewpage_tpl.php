@@ -94,7 +94,7 @@ if ($this->isValid('deletepage')) {
     $list[] = $deleteLink->show();
 }
 
-if (count($list) == 0) {
+if ((is_countable($list) ? count($list) : 0) == 0) {
     $middle .= '&nbsp;';
 } else {
     $middle .= '';
@@ -353,7 +353,7 @@ $content = $objTable->show();
 
 $form = "";
 
-if (count($chapters) > 1 && $this->isValid('movetochapter')) {
+if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $this->isValid('movetochapter')) {
     $this->loadClass('form', 'htmlelements');
     $this->loadClass('dropdown', 'htmlelements');
     $this->loadClass('hiddeninput', 'htmlelements');
@@ -402,7 +402,7 @@ if($showcomment==1)
 	echo '<br/>'.$objHead->show().'<br/>';
 
 	$commentpost = $this->objContextComments->getPageComments($currentPage);
-	if (count($commentpost) < 1)
+	if ((is_countable($commentpost) ? count($commentpost) : 0) < 1)
 	{
 		
 		echo $this->objLanguage->languageText('mod_learningcontent_nocomment','learningcontent').'<br/>';

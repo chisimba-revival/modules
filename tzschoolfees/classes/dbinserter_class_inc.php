@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 
 class Inserter extends dbTable {
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::tbl_classes;
         parent::tbl_fee;
         parent::tbl_payment;

@@ -56,7 +56,7 @@ class dynamicblocks_discussionview extends ChisimbaObject
     	$discussionForm = new form ('', $this->uri(NULL));
     	$discussion = $this->objDiscussion->getDiscussion($id);
     	$topics = $this->objTopic->showTopicsInDiscussion($id, $this->userId, $discussion['archivedate'], NULL, NULL, NULL, NULL);
-        $topicsNum = count($topics);
+        $topicsNum = (is_countable($topics) ? count($topics) : 0);
 
         $objTranslatedDate = $this->getObject('translatedatedifference', 'utilities');
 

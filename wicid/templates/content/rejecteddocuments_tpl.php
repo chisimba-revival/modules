@@ -46,7 +46,7 @@ if ($doccount > 0) {
     $table->endHeaderRow();
     $count = 0;
     foreach ($documents as $document) {
-        if (count($document) > 1) {
+        if ((is_countable($document) ? count($document) : 0) > 1) {
             if (($count % 2) == 0) {
                 $table->startRow("even");
             } else {

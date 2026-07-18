@@ -31,7 +31,7 @@ class dbformbuilder_form_list extends dbTable {
     /*!
      * Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_formbuilder_form_list');
         $this->objUser = &$this->getObject('user', 'security');
     }

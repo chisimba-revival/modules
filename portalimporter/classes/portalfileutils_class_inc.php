@@ -361,7 +361,7 @@ class portalfileutils extends ChisimbaObject
 	public function getLevel($portalPath, $level)
 	{
 		$pStr = explode("/", $portalPath);
-		$items = count($pStr);
+		$items = (is_countable($pStr) ? count($pStr) : 0);
 		if ($items == 1 || empty($pStr)) {
 			$portal = "/";
 			$section = "";
@@ -622,10 +622,10 @@ class portalfileutils extends ChisimbaObject
 		} else {
 			// Get the title from the filename
 			$titleAr = explode("/", $titleTxt);
-			$x = count($titleAr)-1;
+			$x = (is_countable($titleAr) ? count($titleAr) : 0)-1;
 			$filePart = $titleAr[$x];
 			$titAr = explode(".", filePart);
-			$x = count($filePart) - 1;
+			$x = (is_countable($filePart) ? count($filePart) : 0) - 1;
 			$ret = $x;
 		}
 	}
@@ -634,7 +634,7 @@ class portalfileutils extends ChisimbaObject
 	{
 		$fTmp = str_replace(START_DIR . "/", "", $filename);
 		$pStr = explode("/", $fTmp);
-		return count($pStr) - 1;
+		return (is_countable($pStr) ? count($pStr) : 0) - 1;
 	}
 
 	public function getPortalPath($filename)
@@ -645,7 +645,7 @@ class portalfileutils extends ChisimbaObject
 	public function getPortalStructure($portalPath)
 	{
 		$pStr = explode("/", $portalPath);
-		$items = count($pStr);
+		$items = (is_countable($pStr) ? count($pStr) : 0);
 		if ($items == 1 || empty($pStr)) {
 			$portal = "<portal>/</portal>\n";
 			$section = "<section />\n";
@@ -1085,7 +1085,7 @@ class portalfileutils extends ChisimbaObject
 					{
 						//Title will consist of all other information delimited by --
 						/*
-						$total = count($title);
+						$total = (is_countable($title) ? count($title) : 0);
 						for ($i = 1;$i < $total; $i++){
 						    $title_str .= $this->str_first_upper($this->strip_ext(trim($title[$i])), '--').' ';
 						}	
@@ -1287,7 +1287,7 @@ class portalfileutils extends ChisimbaObject
 					{
 						//Title will consist of all other information delimited by --
 						/*
-						$total = count($title);
+						$total = (is_countable($title) ? count($title) : 0);
 						for ($i = 1; $i < $total; $i++){
 						    $title_str .= $this->str_first_upper($this->strip_ext(trim($title[$i])), '--').' ';
                         }
@@ -1448,8 +1448,8 @@ class portalfileutils extends ChisimbaObject
 
 				function str_first_upper($str, $delim = ' '){
 						$str = explode($delim, strtolower($str));
-						for($i = 0; $i < count($str); $i++){
-								if (count($str) > 1){
+						for($i = 0; $i < (is_countable($str) ? count($str) : 0); $i++){
+								if ((is_countable($str) ? count($str) : 0) > 1){
 										$str[$i] = strtoupper(substr($str[$i], 0, 1)) . substr($str[$i], 1) . ' ';
 								} else {
 										$str[$i] = strtoupper(substr($str[$i], 0, 1)) . substr($str[$i], 1);

@@ -202,7 +202,7 @@ class Zend_Mime
         // Split encoded text into separate lines
         $tmp = "";
         while(strlen($str) > 0) {
-            $currentLine = max(count($lines)-1, 0);
+            $currentLine = max((is_countable($lines) ? count($lines) : 0)-1, 0);
             $token       = self::getNextQuotedPrintableToken($str);
             $str         = substr($str, strlen($token));
 
@@ -224,7 +224,7 @@ class Zend_Mime
         }
 
         // assemble the lines together by pre- and appending delimiters, charset, encoding.
-        for($i = 0; $i < count($lines); $i++) {
+        for($i = 0; $i < (is_countable($lines) ? count($lines) : 0); $i++) {
             $lines[$i] = " ".$prefix.$lines[$i]."?=";
         }
         $str = trim(implode($lineEnd, $lines));

@@ -78,7 +78,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($sicMajorDivs) > '0'){
+if((is_countable($sicMajorDivs) ? count($sicMajorDivs) : 0) > '0'){
   foreach($sicMajorDivs as $sicMajorDiv){ 
      //Get group description
      $sicMajorDivName = $sicMajorDiv['code'];

@@ -19,7 +19,8 @@ class forumstats extends dbTable
 	/**
 	* Constructor method to define the table(default)
 	*/
-	function init()
+	/* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_forum');
     }
@@ -43,7 +44,7 @@ class forumstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;
@@ -64,7 +65,7 @@ class forumstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;
@@ -89,7 +90,7 @@ class forumstats extends dbTable
 
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             return $results[0];
         } else {
             return FALSE;

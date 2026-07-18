@@ -60,7 +60,7 @@ class NetworkResourceTest extends PHPUnit_Framework_TestCase {
 
     
 
-    $this->assertEquals( 1, count($triples) );
+    $this->assertEquals( 1, (is_countable($triples) ? count($triples) : 0) );
   }  
   
   function test_get_set_label() {

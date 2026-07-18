@@ -111,7 +111,7 @@ class Zend_Validate_File_Upload extends Zend_Validate_Abstract
                 }
             }
 
-            if (count($return) === 0) {
+            if ((is_countable($return) ? count($return) : 0) === 0) {
                 require_once 'Zend/Validate/Exception.php';
                 throw new Zend_Validate_Exception("The file '$file' was not found");
             }
@@ -130,7 +130,7 @@ class Zend_Validate_File_Upload extends Zend_Validate_Abstract
      */
     public function setFiles($files = array())
     {
-        if (count($files) === 0) {
+        if ((is_countable($files) ? count($files) : 0) === 0) {
             $this->_files = $_FILES;
         } else {
             $this->_files = $files;

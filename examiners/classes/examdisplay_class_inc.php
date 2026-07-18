@@ -2227,7 +2227,7 @@ class examdisplay extends ChisimbaObject
         
         // set up page links
         $links = '';
-        for($i = 1; $i <= count($pageUsers); $i++){
+        for($i = 1; $i <= (is_countable($pageUsers) ? count($pageUsers) : 0); $i++){
             $this->objLink = new link($this->uri(array(
                 'action' => 'fac_users',
                 'f' => $facId,
@@ -2238,9 +2238,9 @@ class examdisplay extends ChisimbaObject
             )), 'examiners');
             $this->objLink->link = $lblPage.'&#160;'.$i;
             $lnkPage = $this->objLink->show();
-            if($i < count($pageUsers)){
+            if($i < (is_countable($pageUsers) ? count($pageUsers) : 0)){
                 $links .= $lnkPage.'&#160;|&#160;';
-            }elseif(count($pageUsers) == 1){
+            }elseif((is_countable($pageUsers) ? count($pageUsers) : 0) == 1){
                 $links = '';
             }else{
                $links .= $lnkPage;
@@ -2690,7 +2690,7 @@ class examdisplay extends ChisimbaObject
         
         // set up page links
         $links = '';
-        for($i = 1; $i <= count($pageUsers); $i++){
+        for($i = 1; $i <= (is_countable($pageUsers) ? count($pageUsers) : 0); $i++){
             $this->objLink = new link($this->uri(array(
                 'action' => 'dep_users',
                 'f' => $facId,
@@ -2702,9 +2702,9 @@ class examdisplay extends ChisimbaObject
             )), 'examiners');
             $this->objLink->link = $lblPage.'&#160;'.$i;
             $lnkPage = $this->objLink->show();
-            if($i < count($pageUsers)){
+            if($i < (is_countable($pageUsers) ? count($pageUsers) : 0)){
                 $links .= $lnkPage.'&#160;|&#160;';
-            }elseif(count($pageUsers) == 1){
+            }elseif((is_countable($pageUsers) ? count($pageUsers) : 0) == 1){
                 $links = '';
             }else{
                $links .= $lnkPage;
@@ -3160,7 +3160,7 @@ class examdisplay extends ChisimbaObject
         
         // set up page links
         $links = '';
-        for($i = 1; $i <= count($pageUsers); $i++){
+        for($i = 1; $i <= (is_countable($pageUsers) ? count($pageUsers) : 0); $i++){
             $this->objLink = new link($this->uri(array(
                 'action' => 'admin_users',
                 'f' => $facId,
@@ -3172,9 +3172,9 @@ class examdisplay extends ChisimbaObject
             )), 'examiners');
             $this->objLink->link = $lblPage.'&#160;'.$i;
             $lnkPage = $this->objLink->show();
-            if($i < count($pageUsers)){
+            if($i < (is_countable($pageUsers) ? count($pageUsers) : 0)){
                 $links .= $lnkPage.'&#160;|&#160;';
-            }elseif(count($pageUsers) == 1){
+            }elseif((is_countable($pageUsers) ? count($pageUsers) : 0) == 1){
                 $links = '';
             }else{
                $links .= $lnkPage;

@@ -136,7 +136,7 @@ $objTableArea2->cellspacing = 2;
 $objTableArea2->width = '99%';
 
 $nextUri = $this->uri(array('action'=>'disease_report_screen_3', 'outbreakCode'=>$outbreakCode));
-if (count($numloc) > 0) {
+if ((is_countable($numloc) ? count($numloc) : 0) > 0) {
     $function = "javascript: document.location='$nextUri'";
 } else {
     $message = $this->objLanguage->languageText('mod_ahis_mustaddlocality', 'openaris');

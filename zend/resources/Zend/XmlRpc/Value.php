@@ -289,7 +289,7 @@ abstract class Zend_XmlRpc_Value
                 $obj = 'Zend_XmlRpc_Value_Array';
 
                 // Determine if this is an associative array
-                if (!empty($value) && is_array($value) && (array_keys($value) !== range(0, count($value) - 1))) {
+                if (!empty($value) && is_array($value) && (array_keys($value) !== range(0, (is_countable($value) ? count($value) : 0) - 1))) {
                     require_once 'Zend/XmlRpc/Value/Struct.php';
                     $obj = 'Zend_XmlRpc_Value_Struct';
                 }

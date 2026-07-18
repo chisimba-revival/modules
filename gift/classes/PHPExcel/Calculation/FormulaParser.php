@@ -464,7 +464,7 @@ class PHPExcel_Calculation_FormulaParser {
 		}
 
 		// move tokenList to new set, excluding unnecessary white-space tokens and converting necessary ones to intersections
-		$tokenCount = count($tokens1);
+		$tokenCount = (is_countable($tokens1) ? count($tokens1) : 0);
 		for ($i = 0; $i < $tokenCount; ++$i) {
 			$token = $tokens1[$i];
 			if (isset($tokens1[$i - 1])) {
@@ -518,7 +518,7 @@ class PHPExcel_Calculation_FormulaParser {
 		// to noop when appropriate, identifying operand and infix-operator subtypes, and pulling "@" from function names
 		$this->_tokens = array();
 
-		$tokenCount = count($tokens2);
+		$tokenCount = (is_countable($tokens2) ? count($tokens2) : 0);
 		for ($i = 0; $i < $tokenCount; ++$i) {
 			$token = $tokens2[$i];
 			if (isset($tokens2[$i - 1])) {

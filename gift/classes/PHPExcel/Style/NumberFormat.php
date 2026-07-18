@@ -523,7 +523,7 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 		//   2 sections:  [POSITIVE/ZERO/TEXT] [NEGATIVE]
 		//   3 sections:  [POSITIVE/TEXT] [NEGATIVE] [ZERO]
 		//   4 sections:  [POSITIVE] [NEGATIVE] [ZERO] [TEXT]
-		switch (count($sections)) {
+		switch ((is_countable($sections) ? count($sections) : 0)) {
 			case 1:
 				$format = $sections[0];
 				break;

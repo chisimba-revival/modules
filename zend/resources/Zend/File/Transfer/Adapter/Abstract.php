@@ -388,7 +388,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
                     $this->addValidator($validatorInfo, null, null, $files);
                 }
             } else if (is_array($validatorInfo)) {
-                $argc                = count($validatorInfo);
+                $argc                = (is_countable($validatorInfo) ? count($validatorInfo) : 0);
                 $breakChainOnFailure = false;
                 $options             = array();
                 if (isset($validatorInfo['validator'])) {
@@ -678,18 +678,18 @@ abstract class Zend_File_Transfer_Adapter_Abstract
                         break;
                     }
 
-                    if (($class === 'Zend_Validate_File_Upload') and (count($fileerrors) > 0)) {
+                    if (($class === 'Zend_Validate_File_Upload') and ((is_countable($fileerrors) ? count($fileerrors) : 0) > 0)) {
                         break;
                     }
 
-                    if (($this->_break[$class]) and (count($fileerrors) > 0)) {
+                    if (($this->_break[$class]) and ((is_countable($fileerrors) ? count($fileerrors) : 0) > 0)) {
                         $break = true;
                         break;
                     }
                 }
             }
 
-            if (count($fileerrors) > 0) {
+            if ((is_countable($fileerrors) ? count($fileerrors) : 0) > 0) {
                 $this->_files[$key]['validated'] = false;
             } else {
                 $this->_files[$key]['validated'] = true;
@@ -957,7 +957,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             $result[$file] = $directory . $this->_files[$file]['name'];
         }
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return current($result);
         }
 
@@ -1090,7 +1090,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
 
         if (empty($destinations)) {
             $destinations = $this->_getTmpDir();
-        } else if (count($destinations) == 1) {
+        } else if ((is_countable($destinations) ? count($destinations) : 0) == 1) {
             $destinations = current($destinations);
         }
 
@@ -1183,7 +1183,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return current($result);
         }
 
@@ -1216,7 +1216,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return current($result);
         }
 
@@ -1265,7 +1265,7 @@ abstract class Zend_File_Transfer_Adapter_Abstract
             }
         }
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return current($result);
         }
 

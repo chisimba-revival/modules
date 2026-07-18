@@ -169,7 +169,7 @@ class Zend_Service_WindowsAzure_Credentials_SharedKey
     	$stringToSign[] = $this->_issetOr($headers, 'If-Unmodified-Since', '');		// If-Unmodified-Since
     	$stringToSign[] = $this->_issetOr($headers, 'Range', '');					// Range
     	
-    	if (!$forTableStorage && count($canonicalizedHeaders) > 0) {
+    	if (!$forTableStorage && (is_countable($canonicalizedHeaders) ? count($canonicalizedHeaders) : 0) > 0) {
     		$stringToSign[] = implode("\n", $canonicalizedHeaders); // Canonicalized headers
     	}
     		

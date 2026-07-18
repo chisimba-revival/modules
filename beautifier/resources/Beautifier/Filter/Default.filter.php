@@ -49,7 +49,7 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
     protected $sDescription = 'Default Filter for PHP_Beautifier';
     function __call($sMethod, $aArgs) 
     {
-        if (!is_array($aArgs) or count($aArgs) != 1) {
+        if (!is_array($aArgs) or (is_countable($aArgs) ? count($aArgs) : 0) != 1) {
             throw (new Exception('Call to Filter::__call with wrong argument'));
         }
         //PHP_Beautifier_Common::getLog()->log('Default Filter:unhandled[' . $aArgs[0] . ']', PEAR_LOG_DEBUG);

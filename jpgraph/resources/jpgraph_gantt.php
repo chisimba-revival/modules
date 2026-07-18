@@ -198,7 +198,7 @@ class GanttActivityInfo {
     }
 
     function SetMinColWidth($aWidths) {
-        $n = min(count($this->iTitles),count($aWidths));
+        $n = min(count($this->iTitles),(is_countable($aWidths) ? count($aWidths) : 0));
         for($i=0; $i < $n; ++$i ) {
             if( !empty($aWidths[$i]) ) {
                 if( empty($this->iWidth[$i]) ) {
@@ -314,7 +314,7 @@ class GanttActivityInfo {
         // Stroke vertical column dividers
         $cols=array();
         $this->GetColStart($aImg,$cols);
-        $n=count($cols);
+        $n=(is_countable($cols) ? count($cols) : 0);
         for( $i=1; $i < $n; ++$i ) {
             $this->vgrid->Stroke($aImg,$cols[$i],$aYBottom,$cols[$i],
             $aImg->height - $aImg->bottom_margin);
@@ -382,7 +382,7 @@ class GanttGraph extends Graph {
 
     // A utility function to help create basic Gantt charts
     function CreateSimple($data,$constrains=array(),$progress=array()) {
-        $num = count($data);
+        $num = (is_countable($data) ? count($data) : 0);
         for( $i=0; $i < $num; ++$i) {
             switch( $data[$i][1] ) {
                 case ACTYPE_GROUP:
@@ -412,7 +412,7 @@ class GanttGraph extends Graph {
                     $a->SetPattern($this->iSimpleStyle,$this->iSimpleColor);
                     $a->SetFillColor($this->iSimpleBkgColor);
                     // Check if this activity should have a constrain line
-                    $n = count($constrains);
+                    $n = (is_countable($constrains) ? count($constrains) : 0);
                     for( $j=0; $j < $n; ++$j ) {
                         if( empty($constrains[$j]) || (count($constrains[$j]) != 3) ) {
                             JpGraphError::RaiseL(6003,$j);
@@ -424,7 +424,7 @@ class GanttGraph extends Graph {
                     }
 
                     // Check if this activity have a progress bar
-                    $n = count($progress);
+                    $n = (is_countable($progress) ? count($progress) : 0);
                     for( $j=0; $j < $n; ++$j ) {
 
                         if( empty($progress[$j]) || (count($progress[$j]) != 2) ) {
@@ -496,7 +496,7 @@ class GanttGraph extends Graph {
 
     // Add a new Gantt object
     function Add($aObject) {
-        if( is_array($aObject) && count($aObject) > 0 ) {
+        if( is_array($aObject) && (is_countable($aObject) ? count($aObject) : 0) > 0 ) {
             $cl = $aObject[0];
             if( class_exists('IconPlot',false) && ($cl instanceof IconPlot) ) {
                 $this->AddIcon($aObject);
@@ -505,7 +505,7 @@ class GanttGraph extends Graph {
             	$this->AddText($aObject);
             }
             else {
-                $n = count($aObject);
+                $n = (is_countable($aObject) ? count($aObject) : 0);
                 for($i=0; $i < $n; ++$i)
                 $this->iObj[] = $aObject[$i];
             }
@@ -936,7 +936,7 @@ class GanttGraph extends Graph {
 
         for( $i=0; $i < $n; ++$i ) {
             $tmp = $this->iObj[$i]->title->GetColWidth($this->img,$m);
-            $nn = count($tmp);
+            $nn = (is_countable($tmp) ? count($tmp) : 0);
             for( $j=0; $j < $nn; ++$j ) {
                 if( empty($w[$j]) )
                 $w[$j] = $tmp[$j];
@@ -1084,7 +1084,7 @@ class GanttGraph extends Graph {
                         //('You have specifed a constrain from row='.$this->iObj[$i]->iVPos.' to row='.$vpos.' which does not have any activity.');
                     }
                     $c2 = $this->iObj[$targetobj]->iConstrainPos;
-                    if( count($c1) == 4 && count($c2 ) == 4) {
+                    if( (is_countable($c1) ? count($c1) : 0) == 4 && (is_countable($c2) ? count($c2) : 0) == 4) {
                         switch( $this->iObj[$i]->constraints[$k]->iConstrainType ) {
                             case CONSTRAIN_ENDSTART:
                                 if( $c1[1] < $c2[1] ) {
@@ -1649,13 +1649,13 @@ class TextProperty {
         if( is_string($this->iText) ) {
             if( strlen($this->iText) == 0 ) return 0;
             $tmp = preg_split('/\t/',$this->iText);
-            if( count($tmp) <= 1 || !$aUseTabs ) {
+            if( (is_countable($tmp) ? count($tmp) : 0) <= 1 || !$aUseTabs ) {
                 $w = $aImg->GetTextWidth($this->iText);
                 return $w + 2*$extra_margin;
             }
             else {
                 $tot=0;
-                $n = count($tmp);
+                $n = (is_countable($tmp) ? count($tmp) : 0);
                 for($i=0; $i < $n; ++$i) {
                     $res[$i] = $aImg->GetTextWidth($tmp[$i]);
                     $tot += $res[$i]*$aTabExtraMargin;
@@ -1786,8 +1786,8 @@ class TextProperty {
                         $aX = array_fill(0,$n,$aX);
                         $aY = array_fill(0,$n,$aY);
                     }
-                    $n = min($n, count($aX) ) ;
-                    $n = min($n, count($aY) ) ;
+                    $n = min($n, (is_countable($aX) ? count($aX) : 0) ) ;
+                    $n = min($n, (is_countable($aY) ? count($aY) : 0) ) ;
                     for($i=0; $i < $n; ++$i ) {
                         $tmp = $this->iText[$i];
                         if( is_object($tmp) ) {
@@ -1808,7 +1808,7 @@ class TextProperty {
             }
             else {
                 $tmp = preg_split('/\t/',$this->iText);
-                $n = min(count($tmp),count($aX));
+                $n = min((is_countable($tmp) ? count($tmp) : 0),(is_countable($aX) ? count($aX) : 0));
                 for($i=0; $i < $n; ++$i) {
                     if( $i < count($this->iFontArray) ) {
                         $font = $this->iFontArray[$i];
@@ -3372,7 +3372,7 @@ class GanttBar extends GanttPlotObject {
             $colwidth = $this->title->GetColWidth($aImg);
             $colstarts=array();
             $aScale->actinfo->GetColStart($aImg,$colstarts,true);
-            $n = min(count($colwidth),count($this->title->csimtarget));
+            $n = min((is_countable($colwidth) ? count($colwidth) : 0),count($this->title->csimtarget));
             for( $i=0; $i < $n; ++$i ) {
                 $title_xt = $colstarts[$i];
                 $title_xb = $title_xt + $colwidth[$i];
@@ -3559,7 +3559,7 @@ class MileStone extends GanttPlotObject {
             $colwidth = $this->title->GetColWidth($aImg);
             $colstarts=array();
             $aScale->actinfo->GetColStart($aImg,$colstarts,true);
-            $n = min(count($colwidth),count($this->title->csimtarget));
+            $n = min((is_countable($colwidth) ? count($colwidth) : 0),count($this->title->csimtarget));
             for( $i=0; $i < $n; ++$i ) {
                 $title_xt = $colstarts[$i];
                 $title_xb = $title_xt + $colwidth[$i];

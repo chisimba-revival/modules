@@ -71,7 +71,7 @@ class dbsites extends dbTable{
     * @return VOID
     *
     */
-    public function init(){
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
         parent::init('tbl_microsites_sites');
     }
     

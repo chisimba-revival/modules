@@ -20,7 +20,7 @@ class dbtempattachments extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_calendar_temp_attachment');
     }
 
@@ -89,7 +89,7 @@ class dbtempattachments extends dbTable
 	{
 		$files = $this->getAll(' WHERE id="'.$attachment_id.'" AND temp_id="'.$event_id.'" ');
 
-		if (count($files) > 0) {
+		if ((is_countable($files) ? count($files) : 0) > 0) {
 			return $this->delete('id', $attachment_id);
 		} else {
 			return FALSE;

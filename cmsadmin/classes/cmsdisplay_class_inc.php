@@ -396,7 +396,7 @@
 
             $drpUser = new dropdown('drp_owner');
             $allUsers = $this->_objSecurity->getAllUsers();
-            $allUsersCount = count($allUsers);
+            $allUsersCount = (is_countable($allUsers) ? count($allUsers) : 0);
             //var_dump($allUsers);  
             for ($i = 0; $i < $allUsersCount; $i++){
                 //$drpUser->addOption($allUsers[$i]['userid'], $allUsers[$i]['firstname'].' '.$allUsers[$i]['surname']);

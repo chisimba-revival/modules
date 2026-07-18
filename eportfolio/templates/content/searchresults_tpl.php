@@ -53,7 +53,7 @@ $table->startRow();
 $label = new label($this->objLanguage->languageText('mod_contextgroups_choosecourse', 'contextgroups') , 'input_course');
 $courseDropdown = new dropdown('course');
 $courseDropdown->addOption('all', $this->objLanguage->languageText('mod_contextgroups_allcourses', 'contextgroups'));
-for ($i = 0; $i < count($data); $i++) {
+for ($i = 0; $i < (is_countable($data) ? count($data) : 0); $i++) {
     $courseDropdown->addOption($data[$i]['contextcode'], $data[$i]['title']);
 }
 $courseDropdown->setSelected($course);
@@ -65,7 +65,7 @@ $groups = array(
     "Students",
     "Guest"
 );
-for ($i = 0; $i < count($groups); $i++) {
+for ($i = 0; $i < (is_countable($groups) ? count($groups) : 0); $i++) {
     $groupDropdown->addOption($groups[$i], $groups[$i]);
 }
 $groupDropdown->setSelected($group);
@@ -101,7 +101,7 @@ $form = new form('searchforusers', $this->uri(array(
 $form->addToForm($table->show());
 echo $form->show();
 // --------------------------------
-if (count($results) == 0) {
+if ((is_countable($results) ? count($results) : 0) == 0) {
     echo '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_contextgroups_nousersfoundsearchcriteria', 'contextgroups', 'No Users found with search criteria') . '</div>';
 } else {
     $start = ($page-1) *$numresults+1;

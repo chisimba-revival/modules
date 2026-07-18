@@ -47,7 +47,7 @@ class dbquestion extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_survey_question');
         $this->table='tbl_survey_question';

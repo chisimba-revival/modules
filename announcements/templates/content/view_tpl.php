@@ -44,7 +44,7 @@ if ($announcement['contextid'] == 'site') {
         NULL, '[-context-] Announcement')
       ).' - ';
     $contexts = $this->objAnnouncements->getMessageContexts($announcement['id']);
-    if (count($contexts) > 0) {
+    if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
         $divider = '';
         foreach ($contexts as $context)
         {
@@ -64,7 +64,7 @@ $backLink->link = $this->objLanguage->languageText('mod_announcements_back', 'an
 $addLink = new link ($this->uri(array('action'=>'add')));
 $addLink->link = $this->objLanguage->languageText('mod_announcements_postnewannouncement', 'announcements', 'Post New Announcement');
 $outStr = "<div class='linkwrapper'><div class='modulehome'></div><div class='modulehomelink'>" . $backLink->show() . "</div></div>";
-if ($isAdmin || count($lecturerContext) > 0) {
+if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
     $outStr .=  "<div class='linkwrapper'><div class='adminadd'></div><div class='adminaddlink'>" . $addLink->show() . "</div></div>";
 }
 echo  "<div class='announcements'><div class='outerwrapper'>"

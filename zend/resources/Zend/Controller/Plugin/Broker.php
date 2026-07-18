@@ -147,7 +147,7 @@ class Zend_Controller_Plugin_Broker extends Zend_Controller_Plugin_Abstract
             }
         }
 
-        switch (count($found)) {
+        switch ((is_countable($found) ? count($found) : 0)) {
             case 0:
                 return false;
             case 1:

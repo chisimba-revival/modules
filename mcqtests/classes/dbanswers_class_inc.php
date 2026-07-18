@@ -25,7 +25,7 @@ class dbanswers extends dbtable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_test_answers');
         $this->table = 'tbl_test_answers';
@@ -127,7 +127,7 @@ class dbanswers extends dbtable
     {
         $answers = $this->getAll("WHERE questionid = '$questionId' AND correct='1' ORDER BY answerorder");
 
-        if (count($answers) == 0) {
+        if ((is_countable($answers) ? count($answers) : 0) == 0) {
             return 0;
         } else {
             return $answers[0]['answerorder'];

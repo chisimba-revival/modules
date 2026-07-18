@@ -31,7 +31,7 @@ class dbformbuilder_publish_options extends dbTable {
     /*!
      * \brief Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_formbuilder_publish_options');
         $this->objUser = &$this->getObject('user', 'security');
     }

@@ -501,7 +501,7 @@ class ADODB_mysqli extends ADOConnection {
 	        }
 
 	        $foreign_keys[$ref_table] = array();
-	        $num_fields               = count($my_field);
+	        $num_fields               = (is_countable($my_field) ? count($my_field) : 0);
 	        for ( $j = 0;  $j < $num_fields;  $j ++ ) {
 	            if ( $associative ) {
 	                $foreign_keys[$ref_table][$ref_field[$j]] = $my_field[$j];

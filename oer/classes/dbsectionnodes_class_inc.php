@@ -33,7 +33,7 @@ class dbsectionnodes extends dbTable {
 
     private $tableName = 'tbl_oer_sectionnodes';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 
@@ -47,7 +47,7 @@ class dbsectionnodes extends dbTable {
                 "select count(id) as totalnodes from tbl_oer_sectionnodes where product_id = '$productId'";
         $results = $this->getArray($sql);
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             if (array_key_exists('first', $results)) {
                 return $results['totalnodes'] > 0 ? TRUE : FALSE;
             } else {
@@ -74,7 +74,7 @@ class dbsectionnodes extends dbTable {
         $sql =
                 "select * from tbl_oer_sectionnodes where id = '$sectionId'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return null;

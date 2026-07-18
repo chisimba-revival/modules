@@ -486,13 +486,13 @@ class podcaster extends controller {
                         }
                     }
                     // Add these members
-                    if (count($addList) > 0) {
+                    if ((is_countable($addList) ? count($addList) : 0) > 0) {
                         $this->objEventUtils->manageEventPodcasts($addList, $groupId);
                     }
                 } else {
                     $addList = $selectedParts;
                     // Add these members
-                    if (count($addList) > 0) {
+                    if ((is_countable($addList) ? count($addList) : 0) > 0) {
                         $this->objEventUtils->manageEventPodcasts($addList, $groupId);
                     }
                 }
@@ -568,7 +568,7 @@ class podcaster extends controller {
      */
     function __batchremoveusers() {
         $users = $userId = $this->getParam('user', '');
-        $usersCount = count($users);
+        $usersCount = (is_countable($users) ? count($users) : 0);
         if (is_array($users)) {
             foreach ($users as $userId) {
                 if (!empty($userId)) {
@@ -736,7 +736,7 @@ class podcaster extends controller {
         //We need to remove the userId from the path
         if ($path != '/') {
             $remUId = split("/", $path);
-            $count = count($remUId);
+            $count = (is_countable($remUId) ? count($remUId) : 0);
             $start = 0;
             do {
                 if ($userId != $remUId[$start] && $remUId[$start] != "") {
@@ -944,7 +944,7 @@ Sincerely,<br />
             //We need to remove the userId from the path
             $remUId = split("/", $path);
             $pathf = "/";
-            $count = count($remUId);
+            $count = (is_countable($remUId) ? count($remUId) : 0);
             $start = 0;
             do {
                 if ($userId != $remUId[$start] && $remUId[$start] != "") {
@@ -1013,7 +1013,7 @@ Sincerely,<br />
         //We need to remove the userId from the path
         $remUId = split("/", $path);
         $pathf = "/";
-        $count = count($remUId);
+        $count = (is_countable($remUId) ? count($remUId) : 0);
         $start = 0;
         do {
             if ($userId != $remUId[$start] && $remUId[$start] != "") {
@@ -1042,7 +1042,7 @@ Sincerely,<br />
 
         $foldernotempty = '<strong class="confirm">' . $this->objLanguage->languageText('mod_podcaster_shortdeleteallinfoldermessage', 'podcaster', "Kindly delete both approved and un-approved podcasts in this folder before deleting it") . '</strong>';
         //Ask user to delete the contents of the folder first, else delete the topic if empty
-        if (count($checkfolderdocs) >= 1) {
+        if ((is_countable($checkfolderdocs) ? count($checkfolderdocs) : 0) >= 1) {
             return $this->nextAction('removefolder', array('message' => $foldernotempty, 'folder' => $folder));
         } else {
             //Delete the topic
@@ -1322,7 +1322,7 @@ Sincerely,<br />
 
         $this->_prepareDataForSearch($file);
 
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'process_tpl.php';
@@ -2061,7 +2061,7 @@ Sincerely,<br />
         //keep the user connection alive, even if browser is closed!
         //$callback = $objBackground->keepAlive();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             $file = $files[0];
             foreach ($files as $file) {
                 $tags = $this->objTags->getTagsAsArray($file['id']);
@@ -2174,7 +2174,7 @@ Sincerely,<br />
     private function __listall() {
         $results = $this->objFiles->getAll(' ORDER BY dateuploaded DESC');
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             $this->loadClass('link', 'htmlelements');
 
             echo '<ol>';
@@ -2203,7 +2203,7 @@ Sincerely,<br />
     private function __converttov2() {
         $results = $this->objFiles->getAll(' ORDER BY dateuploaded DESC');
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
 
 
             foreach ($results as $file) {

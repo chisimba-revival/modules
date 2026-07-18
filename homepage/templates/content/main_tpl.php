@@ -95,7 +95,7 @@ echo '<div style=" width: 40%; float: left;">';
     
     echo $homePageListTable->show();
     
-    if (count($listHomePages) > 10) {
+    if ((is_countable($listHomePages) ? count($listHomePages) : 0) > 10) {
         $viewAllLink = new link ($this->uri(array('action'=>'viewlist')));
         $viewAllLink->link = $objLanguage->languageText('mod_homepage_viewlistofallhomepages', 'homepage');
         echo '<p align="center">'.$viewAllLink->show().'</p>';

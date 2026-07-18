@@ -22,7 +22,7 @@ class dbconfiguration extends dbTable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_internalmail_config');
         $this->table = 'tbl_internalmail_config';

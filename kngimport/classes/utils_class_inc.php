@@ -597,7 +597,7 @@ class utils extends ChisimbaObject
             //table headings
             $table->width = '60%';
             $rowcount = 0;
-            if(count($lecturerArr) > 0)
+            if((is_countable($lecturerArr) ? count($lecturerArr) : 0) > 0)
             {
 
                 foreach($lecturerArr as $lecture)
@@ -628,7 +628,7 @@ class utils extends ChisimbaObject
             //table headings
             $table->width = '60%';
             $rowcount = 0;
-            if(count($studentArr) > 0)
+            if((is_countable($studentArr) ? count($studentArr) : 0) > 0)
             {
 
                 foreach($studentArr as $student)
@@ -663,7 +663,7 @@ class utils extends ChisimbaObject
             //table headings
             $table->width = '60%';
             $rowcount = 0;
-            if(count($guestArr) > 0)
+            if((is_countable($guestArr) ? count($guestArr) : 0) > 0)
             {
 
                 foreach($guestArr as $guest)

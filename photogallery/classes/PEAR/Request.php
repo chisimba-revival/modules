@@ -1232,7 +1232,7 @@ class HTTP_Response
             $cookie['name']  = trim(substr($elements[0], 0, $pos));
             $cookie['value'] = trim(substr($elements[0], $pos + 1));
 
-            for ($i = 1; $i < count($elements); $i++) {
+            for ($i = 1; $i < (is_countable($elements) ? count($elements) : 0); $i++) {
                 if (false === strpos($elements[$i], '=')) {
                     $elName  = trim($elements[$i]);
                     $elValue = null;

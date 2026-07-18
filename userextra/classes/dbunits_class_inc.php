@@ -3,7 +3,7 @@ class dbunits extends dbtable {
 /**
  * Assign the table name in dbtable to be the table specified below
  */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_userextra_units");
         
     }
@@ -23,7 +23,7 @@ class dbunits extends dbtable {
     $sql="select count(unitcode) as totalcount from tbl_userextra_units";
     $total=0;
     $rows=$this->getArray($sql); 
-    if(count($rows) > 0){
+    if((is_countable($rows) ? count($rows) : 0) > 0){
       $total=$rows[0]['totalcount'];
       
     }

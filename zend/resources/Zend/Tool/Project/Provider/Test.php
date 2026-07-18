@@ -112,7 +112,7 @@ class Zend_Tool_Project_Provider_Test extends Zend_Tool_Project_Provider_Abstrac
 
         while ($nameOrNamespacePart = array_shift($fsParts)) {
 
-            if (count($fsParts) > 0) {
+            if ((is_countable($fsParts) ? count($fsParts) : 0) > 0) {
 
                 if (($libraryDirectoryResource = $currentDirectoryResource->search(array('TestLibraryNamespaceDirectory' => array('namespaceName' => $nameOrNamespacePart)))) === false) {
                     $currentDirectoryResource = $currentDirectoryResource->createResource('TestLibraryNamespaceDirectory', array('namespaceName' => $nameOrNamespacePart));

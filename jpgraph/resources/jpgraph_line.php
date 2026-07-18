@@ -381,7 +381,7 @@ class LinePlot extends Plot{
                 // Remove first and last coordinate before drawing the line
                 // sine we otherwise get the vertical start and end lines which
                 // doesn't look appropriate
-                $img->Polygon(array_slice($cord,2,count($cord)-4));
+                $img->Polygon(array_slice($cord,2,(is_countable($cord) ? count($cord) : 0)-4));
             }
         }
 
@@ -401,7 +401,7 @@ class LinePlot extends Plot{
                 array_slice($cord,
                 $this->filledAreas[$i][0] * $factor,
                 ($this->filledAreas[$i][1] - $this->filledAreas[$i][0] + ($this->step_style ? 0 : 1))  * $factor));
-                $areaCoords[] = $areaCoords[sizeof($areaCoords)-2]; // last x
+                $areaCoords[] = $areaCoords[(is_countable($areaCoords) ? sizeof($areaCoords) : 0)-2]; // last x
                 $areaCoords[] = $minY; // last y
 
                 if($this->filledAreas[$i][3]) {
@@ -474,7 +474,7 @@ class AccLinePlot extends Plot {
     // CONSTRUCTOR
     function __construct($plots) {
         $this->plots = $plots;
-        $this->nbrplots = count($plots);
+        $this->nbrplots = (is_countable($plots) ? count($plots) : 0);
         $this->numpoints = $plots[0]->numpoints;
 
         // Verify that all plots have the same number of data points
@@ -582,7 +582,7 @@ class AccLinePlot extends Plot {
     // will be replaced by the the first valid data point
     function LineInterpolate(&$aData) {
 
-        $n=count($aData);
+        $n=(is_countable($aData) ? count($aData) : 0);
         $i=0;
 
         // If first point is undefined we will set it to the same as the first

@@ -355,7 +355,7 @@ class chatdisplay extends ChisimbaObject
                 $deleteLink = '<nobr>'.$objLink->show().'</nobr>';
                 
                 $activeUsers = $this->dbMessaging->listRoomUsers($room['id']);
-                $userCount = $activeUsers ? count($activeUsers) : 0;
+                $userCount = $activeUsers ? (is_countable($activeUsers) ? count($activeUsers) : 0) : 0;
                 
                 if($roomType == 1 && $ownerId == $this->userId){
                     if($userCount == 0){
@@ -1122,7 +1122,7 @@ class chatdisplay extends ChisimbaObject
                 $str = '<div class="chatbubble">' . $str . '</div>';
                 $i++;
             }
-            $count = count($messages);
+            $count = (is_countable($messages) ? count($messages) : 0);
         }else{
             $count = 0;
         }
@@ -1845,7 +1845,7 @@ class chatdisplay extends ChisimbaObject
         $closeLabel = $this->objLanguage->languageText('mod_messaging_wordclose', 'messaging');
         $titleLabel = $this->objLanguage->languageText('mod_messaging_closetitle', 'messaging');
         
-        if(count($usersList) > 1){
+        if((is_countable($usersList) ? count($usersList) : 0) > 1){
             $confirmLabel = $multipleLabel;
         }else{
             $confirmLabel = $singleLabel;
@@ -2221,7 +2221,7 @@ class chatdisplay extends ChisimbaObject
         $imData = $this->dbMessaging->getAllIm();
 
         if($imData != FALSE){
-            $count = count($imData);
+            $count = (is_countable($imData) ? count($imData) : 0);
         }else{
             $count = 0;
         }

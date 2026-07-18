@@ -13,7 +13,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 class dbbcea extends dbTable
 {
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_award_gender_bcea');
 	}

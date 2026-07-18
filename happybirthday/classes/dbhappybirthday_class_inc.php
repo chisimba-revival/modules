@@ -31,7 +31,7 @@ public $objUser;
 public $objLanguage;
       
 
- public function init()
+ public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 {
   // Getting the user object. security is the name of the module and user is the name of the class whose object is gonna be created
            $this->objUser = $this->getObject('user', 'security');

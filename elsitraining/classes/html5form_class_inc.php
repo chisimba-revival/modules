@@ -82,7 +82,7 @@ class html5form extends ChisimbaObject
         $form = $document->createElement('form');
         $form->setAttribute('method', $method);
 
-        if (count($params) > 0 && is_string($module)) {
+        if ((is_countable($params) ? count($params) : 0) > 0 && is_string($module)) {
             $action = $this->uri($params, $module, '', FALSE, TRUE, TRUE);
             $form->setAttribute('action', $action);
         }

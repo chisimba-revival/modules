@@ -412,7 +412,7 @@ class Zend_Db_Adapter_Pdo_Mssql extends Zend_Db_Adapter_Pdo_Abstract
         try {
             $stmt = $this->query("SELECT SERVERPROPERTY('productversion')");
             $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
-            if (count($result)) {
+            if ((is_countable($result) ? count($result) : 0)) {
                 return $result[0][0];
             }
             return null;

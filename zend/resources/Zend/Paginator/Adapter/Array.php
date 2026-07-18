@@ -54,7 +54,7 @@ class Zend_Paginator_Adapter_Array implements Zend_Paginator_Adapter_Interface
     public function __construct(array $array)
     {
         $this->_array = $array;
-        $this->_count = count($array);
+        $this->_count = (is_countable($array) ? count($array) : 0);
     }
 
     /**

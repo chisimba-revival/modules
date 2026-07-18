@@ -237,7 +237,7 @@ class das extends controller {
                 $time = $time_end - $time_start;
                 $conn2->disconnect ();
 
-                echo "Messages were sent to ".count($users)." users <br> Time taking ".number_format($time, 2, '.', '')." seconds";
+                echo "Messages were sent to ".(is_countable($users) ? count($users) : 0)." users <br> Time taking ".number_format($time, 2, '.', '')." seconds";
 				exit(0);
                 break;
             case 'sendtoall':
@@ -346,7 +346,7 @@ class das extends controller {
                 $time = $time_end - $time_start;
                 $conn2->disconnect ();
 
-                echo "Messages were sent to ".count($users)." users <br> Time taking ".number_format($time, 2, '.', '')." seconds";
+                echo "Messages were sent to ".(is_countable($users) ? count($users) : 0)." users <br> Time taking ".number_format($time, 2, '.', '')." seconds";
 				exit(0);
                 break;
                 

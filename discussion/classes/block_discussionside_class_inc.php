@@ -45,7 +45,7 @@ class block_discussionside extends ChisimbaObject {
 
         function buildForm() {
                 $discussions = $this->objDiscussion->showAllDiscussions($this->contextCode);
-                if (count($discussions) > 0) {
+                if ((is_countable($discussions) ? count($discussions) : 0) > 0) {
                         $div = "";
                         $pointerLink = new link("#");
                         $pointerLink->link = ">&nbsp;";

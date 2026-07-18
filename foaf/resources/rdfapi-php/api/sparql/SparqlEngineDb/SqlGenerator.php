@@ -241,7 +241,7 @@ class SparqlEngineDb_SqlGenerator
                 }
                 foreach ($arSelect as $nUnionCount => $arSelectPart) {
                     $arSelectPart = self::removeNull($arSelectPart);
-                    if (count($arSelectPart) == 0) {
+                    if ((is_countable($arSelectPart) ? count($arSelectPart) : 0) == 0) {
                         throw new SparqlEngineDb_SqlGeneratorException('No variable that could be returned.');
                     }
                     $arStrSelect[$nUnionCount] = strtoupper($strSelectType) . ' ' . implode(', '   , $arSelectPart);
@@ -489,7 +489,7 @@ class SparqlEngineDb_SqlGenerator
     protected function createEqualSelects($arSelect)
     {
         $arNewSelect = array();
-        if (count($arSelect) == 1) {
+        if ((is_countable($arSelect) ? count($arSelect) : 0) == 1) {
             if ($arSelect[0] == array(array())) {
                 //ASK and COUNT
                 return array(array(''));
@@ -500,7 +500,7 @@ class SparqlEngineDb_SqlGenerator
                 foreach ($arTripleVars as $arVarParts) {
                     $ar[] = implode(', ', $arVarParts);
                 }
-                if (count($ar) > 0) {
+                if ((is_countable($ar) ? count($ar) : 0) > 0) {
                     $arNewSelect[0][] = implode(', ', $ar);
                 }
             }

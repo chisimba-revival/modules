@@ -64,7 +64,7 @@ class dbbenefittypes extends dbTable
 	    * @return void
 	    */
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_award_benefit_types');

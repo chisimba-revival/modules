@@ -41,7 +41,7 @@ class PHP_Beautifier_Batch_Output_Directory extends PHP_Beautifier_Batch_Output 
         $sOutputPath = $this->oBatch->getOutputPath();
         $aOutputFiles = PHP_Beautifier_Common::getSavePath($aInputFiles, $sOutputPath);
         $oLog = PHP_Beautifier_Common::getLog();
-        for ($x = 0;$x<count($aInputFiles);$x++) {
+        for ($x = 0;$x<(is_countable($aInputFiles) ? count($aInputFiles) : 0);$x++) {
             try {
                 $this->beautifierSetInputFile($aInputFiles[$x]);
                 $this->beautifierProcess();

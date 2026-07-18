@@ -64,7 +64,7 @@ foreach ($modulesList as $module)
     echo $result;
     $counter++;
     
-    if ($counter < count($modulesList)) {
+    if ($counter < (is_countable($modulesList) ? count($modulesList) : 0)) {
         echo '<hr style="width: 70%; height:2px; margin-left: 50px;" />';
     }
 }

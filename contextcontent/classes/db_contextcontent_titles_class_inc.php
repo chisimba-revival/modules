@@ -65,7 +65,7 @@ class db_contextcontent_titles extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_titles');
         $this->objContentPages =& $this->getObject('db_contextcontent_pages');
@@ -154,7 +154,7 @@ class db_contextcontent_titles extends dbtable
         $objContextOrder = $this->getObject('db_contextcontent_order');
         $contexts = $objContextOrder->getContextWithPages($id);
         
-        if (is_array($contexts) && count($contexts) > 0) {
+        if (is_array($contexts) && (is_countable($contexts) ? count($contexts) : 0) > 0) {
             foreach ($contexts as $context) {
                 $objContextOrder->deletePage($context['id']);
             }

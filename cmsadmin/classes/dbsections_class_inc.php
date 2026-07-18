@@ -59,7 +59,7 @@ class dbsections extends dbTable
 	    * @access public
 	    * @return void
 	    */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {        
                 parent::init('tbl_cms_sections');
@@ -705,7 +705,7 @@ class dbsections extends dbTable
         {
             $list = $this->getAll();
 
-            if (count($list) > 0) {
+            if ((is_countable($list) ? count($list) : 0) > 0) {
                 return TRUE;
             } else {
                 return FALSE;
@@ -780,7 +780,7 @@ class dbsections extends dbTable
         {
 			//Checking for child sections
             $nodes = $this->getAll("WHERE id = '$id' AND trash = 0");
-            if (count($nodes) > 0) {
+            if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
                 $hasNodes = True;
             } else {
                 $hasNodes = False;
@@ -789,7 +789,7 @@ class dbsections extends dbTable
         	    $nodes = $this->getAll("WHERE sectionid = '$id' AND trash = 0");
 				$this->_tableName = 'tbl_cms_sections';
 
-	            if (count($nodes) > 0) {
+	            if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
 	                $hasNodes = True;
 	            } else {
 	                $hasNodes = False;
@@ -814,7 +814,7 @@ class dbsections extends dbTable
             $this->_tableName = 'tbl_cms_content';
             $nodes = $this->getAll("WHERE sectionid = '$id' AND trash = 0");
 
-            if (count($nodes) > 0) {
+            if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
                 $hasNodes = true;
             } else {
                 $hasNodes = false;
@@ -837,7 +837,7 @@ class dbsections extends dbTable
             $hasNodes = false;
             //Checking for child sections
             $nodes = $this->getAll("WHERE parentid = '$id' AND trash = 0");
-            if (count($nodes) > 0) {
+            if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
                 $hasNodes = true;
             }
 
@@ -983,7 +983,7 @@ class dbsections extends dbTable
         {
 	        $this->_tableName = 'tbl_cms_sections';
             $subSecs = $this->getAll("WHERE parentid = '$sectionId' AND trash = 0");
-	        $noSubSecs = count($subSecs);
+	        $noSubSecs = (is_countable($subSecs) ? count($subSecs) : 0);
             return $noSubSecs;
         }
 

@@ -66,7 +66,7 @@ class httpresponse
         $this->code = $code;
 
         // Make sure we got valid headers and set them
-        if (! (is_array($headers) && count($headers) > 0))
+        if (! (is_array($headers) && (is_countable($headers) ? count($headers) : 0) > 0))
             throw new customException('No valid headers were passed');
 
         foreach ($headers as $name => $value) {

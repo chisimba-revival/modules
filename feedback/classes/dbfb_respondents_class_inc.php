@@ -19,7 +19,7 @@
  	* Standard init method to define table and instantiate
  	* common objects.
 	*/
- 		function init()
+ 		function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
  		{
   			//Set the table in the parent class
   			parent::init('tbl_feedback_respondents');
@@ -34,7 +34,7 @@
             //echo $query;
 			$arr =  $this->getArray($query);
             $quesitons = $arr;
-            //for($i = 0; $i < count($quesitons); $i++){
+            //for($i = 0; $i < (is_countable($quesitons) ? count($quesitons) : 0); $i++){
                 //echo ($i+1)." question ".$questions[$i]['fb_question']."<br/>";
             //}
 			return $arr;
@@ -47,7 +47,7 @@
             $id = $this->insert($row);
             $query = 'SELECT puid FROM '.$this->table." where id = '".$id."'";
             $arr =  $this->getArray($query);
-            //for($i = 0; $i < count($arr); $i++){
+            //for($i = 0; $i < (is_countable($arr) ? count($arr) : 0); $i++){
               //  echo ($i+1)." puid ".$arr[$i]['puid']."<br/>";
             //}
             return $arr[0]['puid'];

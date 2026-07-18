@@ -193,7 +193,7 @@ class Zend_Db_Statement_Mysqli extends Zend_Db_Statement
         }
         // send $params as input parameters to the statement
         if ($params) {
-            array_unshift($params, str_repeat('s', count($params)));
+            array_unshift($params, str_repeat('s', (is_countable($params) ? count($params) : 0)));
             $stmtParams = array();
             foreach ($params as $k => &$value) {
                 $stmtParams[$k] = &$value;

@@ -89,7 +89,7 @@ if (!isset($arrFlagOptions)) {
 }
 
 //setup the tables rows  and loop though the records
-if (count($arrFlagOptions) > 0) {
+if ((is_countable($arrFlagOptions) ? count($arrFlagOptions) : 0) > 0) {
 	foreach($arrFlagOptions as $flagOption) {
 	    //Set odd even row colour
 	    $oddOrEven = ($rowcount == 0) ? "even" : "odd";
@@ -210,7 +210,7 @@ if (!isset($arrEmail)) {
 }
 
 //setup the tables rows  and loop though the records
-if (count($arrEmail) > 0) {
+if ((is_countable($arrEmail) ? count($arrEmail) : 0) > 0) {
     foreach($arrEmail as $email) {
         //Set odd even row colour
         $oddOrEven = ($rowcount == 0) ? "even" : "odd";

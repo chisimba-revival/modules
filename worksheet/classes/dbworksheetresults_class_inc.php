@@ -23,7 +23,7 @@ class dbworksheetresults extends dbtable
     /**
     * Constructor function.
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_worksheet_results');
         $this->table='tbl_worksheet_results';
@@ -45,7 +45,7 @@ class dbworksheetresults extends dbtable
     {
         $result = $this->getRecordCount(" WHERE worksheet_id='{$worksheet}' AND userid='{$userId}' AND completed='Y' LIMIT 1");
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return TRUE;
         } else {
             return FALSE;
@@ -56,7 +56,7 @@ class dbworksheetresults extends dbtable
     {
         $result = $this->getAll(" WHERE worksheet_id='{$worksheet}' AND userid='{$userId}' AND completed='Y' LIMIT 1");
 
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return $result[0];
         } else {
             return FALSE;

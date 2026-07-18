@@ -33,7 +33,7 @@ if(!isset($albums))
 {
 	$albums = '';
 }
-if(count($albums) > 0 && $this->_objUser->isLoggedIn() && $this->getParam('mode') != 'shared')
+if((is_countable($albums) ? count($albums) : 0) > 0 && $this->_objUser->isLoggedIn() && $this->getParam('mode') != 'shared')
 {
 	$str = '';
 	
@@ -80,7 +80,7 @@ if(count($albums) > 0 && $this->_objUser->isLoggedIn() && $this->getParam('mode'
  
 
 
-		if(count($sharedalbums) > 0 )
+		if((is_countable($sharedalbums) ? count($sharedalbums) : 0) > 0 )
 		{
 			
 			foreach($sharedalbums as $sharedAlbum)
@@ -121,7 +121,7 @@ if(count($albums) > 0 && $this->_objUser->isLoggedIn() && $this->getParam('mode'
 		}
 		
 		$str = '';
-		if(isset($flickralbums) && (count($flickralbums) > 0 ))
+		if(isset($flickralbums) && ((is_countable($flickralbums) ? count($flickralbums) : 0) > 0 ))
 		{
 			
 			foreach($flickralbums as $userAlbums)			

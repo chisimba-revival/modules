@@ -432,7 +432,7 @@ if (is_array($workgroupsinpracticals)) {
     }
 }        
 
-if (count($groups) > 0) {
+if ((is_countable($groups) ? count($groups) : 0) > 0) {
 
     foreach ($groups as $group) {
         $checkbox = new checkbox('groups[]', $group['id']);
@@ -482,7 +482,7 @@ if (is_array($learningoutcomesinpractical)) {
     }
 }
 
-if (count($goals) > 0) {
+if ((is_countable($goals) ? count($goals) : 0) > 0) {
     $goalsList = "";
 
     foreach ($goals as $goal) {

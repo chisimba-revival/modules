@@ -38,7 +38,7 @@ echo $header->show();
 // Array for In Place Editors
 $inPlaceEditors = array();
 
-if (count($menuItems) == 0) {
+if ((is_countable($menuItems) ? count($menuItems) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_hotels_nomenuitemssetup', 'hotels', 'No Menu Items have been setup yet.').'</div>';
 } else {
     $table = $this->newObject('htmltable', 'htmlelements');
@@ -81,7 +81,7 @@ if (count($menuItems) == 0) {
             $moveItemUp = $link->show();
         }
         
-        if ($counter == count($menuItems)) {
+        if ($counter == (is_countable($menuItems) ? count($menuItems) : 0)) {
             $moveItemDown = '&nbsp;';
         } else {
             $link = new link ($this->uri(array('action'=>'movecategorydown', 'id'=>$item['id'])));

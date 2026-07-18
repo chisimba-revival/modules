@@ -51,7 +51,7 @@ class block_lastsearch extends ChisimbaObject
 	{
 	    $objSh = $this->getObject('dbsearch');
         $goo = $objSh->getLastEntry(" WHERE searchengine='googleapi' ", "datecreated");
-        if ( count($goo)>0 ) {
+        if ( (is_countable($goo) ? count($goo) : 0)>0 ) {
           $objTermLink =& $this->getObject('link', 'htmlelements');
           $objTermLink->link($this->uri(array('action'=>'gapi',
                                               'searchterm'=>$goo[0]['searchterm'],
@@ -64,7 +64,7 @@ class block_lastsearch extends ChisimbaObject
         $ret = "<font size=\"-2\">";
         $ret .= "<b>Google</b>: " . $term;
         $goo = $objSh->getLastEntry(" WHERE searchengine='google_scholar' ", "datecreated");
-        if ( count($goo)>0 ) {
+        if ( (is_countable($goo) ? count($goo) : 0)>0 ) {
           $objTermLink =& $this->getObject('link', 'htmlelements');
           $objTermLink->link($this->uri(array('action'=>'schgoogle',
                                               'q'=>$goo[0]['searchterm'],
@@ -78,7 +78,7 @@ class block_lastsearch extends ChisimbaObject
           . $this->objLanguage->languageText("mod_websearch_scholarg","websearch")
           . "</b>: " . $term;
         $goo = $objSh->getLastEntry(" WHERE searchengine='wikipedia' ", "datecreated");
-        if ( count($goo)>0 ) {
+        if ( (is_countable($goo) ? count($goo) : 0)>0 ) {
         $objTermLink =& $this->getObject('link', 'htmlelements');
         $objTermLink->link($this->uri(array('action'=>'wikipedia',
                                             'search'=>$goo[0]['searchterm'],

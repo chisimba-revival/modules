@@ -60,7 +60,7 @@ class dboerusermain extends dbtable {
      * @return void
      * 
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_users");
     }
     

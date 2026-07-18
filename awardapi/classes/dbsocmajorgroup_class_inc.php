@@ -59,7 +59,7 @@ class dbsocmajorgroup extends dbTable {
     * @access public
     * @return void
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         try {
             parent::init('tbl_award_socmajorgroup');
 			$this->objPayPeriodTypes = $this->getObject('dbpayperiodtypes','awardapi');

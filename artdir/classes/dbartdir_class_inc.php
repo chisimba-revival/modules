@@ -38,7 +38,7 @@ class dbartdir extends dbTable
      * @param  void
      * @return void
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objLanguage = $this->getObject("language", "language");
         $this->sysConfig = $this->getObject('dbsysconfig', 'sysconfig');
@@ -292,7 +292,7 @@ class dbartdir extends dbTable
         $people = $this->getAll();
         
         if(!empty($people)) {
-            $count = count($people);
+            $count = (is_countable($people) ? count($people) : 0);
             if($count >= $onum) {
                 $ret = array_rand($people, $onum);
                 $back = array($people[$ret[0]], $people[$ret[1]], $people[$ret[2]]);

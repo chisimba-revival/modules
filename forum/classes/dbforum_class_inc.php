@@ -28,7 +28,8 @@ class dbForum extends dbTable {
         /**
          * Constructor method to define the table(default)
          */
-        function init() {
+        /* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+        function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
                 parent::init('tbl_forum');
 
                 // Context Code
@@ -283,7 +284,7 @@ class dbForum extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) > 0) {
+                if ((is_countable($list) ? count($list) : 0) > 0) {
                         return $list[0];
                 } else {
                         return;
@@ -395,7 +396,7 @@ class dbForum extends dbTable {
         function checkIfForumLocked($forumId) {
                 $forum = $this->getForum($forumId);
 
-                if (count($forum) > 0 && $forum['forumlocked'] == 'Y') {
+                if ((is_countable($forum) ? count($forum) : 0) > 0 && $forum['forumlocked'] == 'Y') {
                         return TRUE;
                 } else {
                         return FALSE;
@@ -437,7 +438,7 @@ class dbForum extends dbTable {
 
                 $list = $this->getArray($sql);
 
-                if (count($list) > 0) {
+                if ((is_countable($list) ? count($list) : 0) > 0) {
                         return $list[0]['id'];
                 } else {
                         return NULL;
@@ -590,7 +591,7 @@ class dbForum extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                return count($results);
+                return (is_countable($results) ? count($results) : 0);
         }
 
         /**
@@ -605,7 +606,7 @@ class dbForum extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];
@@ -623,7 +624,7 @@ class dbForum extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                return count($results);
+                return (is_countable($results) ? count($results) : 0);
         }
 
         /**
@@ -637,7 +638,7 @@ class dbForum extends dbTable {
 
                 $results = $this->getArray($sql);
 
-                if (count($results) == 0) {
+                if ((is_countable($results) ? count($results) : 0) == 0) {
                         return FALSE;
                 } else {
                         return $results[0]['id'];

@@ -247,7 +247,7 @@ class Sabre_CalDAV_Backend_PDO extends Sabre_CalDAV_Backend_Abstract {
 
             // Removing unused statuscodes for cleanliness
             foreach($result as $status=>$properties) {
-                if (is_array($properties) && count($properties)===0) unset($result[$status]);
+                if (is_array($properties) && (is_countable($properties) ? count($properties) : 0)===0) unset($result[$status]);
             }
 
             return $result;

@@ -28,7 +28,7 @@ $objIcon->alt = $this->objLanguage->languageText('mod_apo_deletefaculty', 'apo',
 $objIcon->title = $this->objLanguage->languageText('mod_apo_deletefaculty', 'apo', 'Delete Faculty');
 $deleteIcon = $objIcon->show();
 
-if (count($faculties) > 0) {
+if ((is_countable($faculties) ? count($faculties) : 0) > 0) {
     foreach ($faculties as $faculty) {
         $table->startRow();
         $table->addCell($faculty['name']);

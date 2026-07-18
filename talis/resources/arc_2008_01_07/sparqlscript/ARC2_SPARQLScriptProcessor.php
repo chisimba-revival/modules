@@ -165,7 +165,7 @@ class ARC2_SPARQLScriptProcessor extends ARC2_Class {
     $path = $this->replacePlaceholders($path, 'property_value', 0);
     /* reserved */
     if ($path == 'size') {
-      if ($obj['value_type'] == 'rows') return count($val);
+      if ($obj['value_type'] == 'rows') return (is_countable($val) ? count($val) : 0);
       if ($obj['value_type'] == 'literal') return strlen($val);
     }
     if (preg_match('/^replace\([\'\"](\/.*\/[a-z]*)[\'\"],\s*[\'\"](.*)[\'\"]\)$/is', $path, $m)) {
@@ -471,7 +471,7 @@ class ARC2_SPARQLScriptProcessor extends ARC2_Class {
     $iterator = $block['iterator'];
     $blocks = $block['blocks'];
     if (!is_array($entries)) return 0;
-    $rc = count($entries);
+    $rc = (is_countable($entries) ? count($entries) : 0);
     foreach ($entries as $i => $entry) {
       $val_type = $this->v('value_type', 'set', $set) . ' entry';
       $this->env['vars'][$iterator] = array(
@@ -565,7 +565,7 @@ class ARC2_SPARQLScriptProcessor extends ARC2_Class {
       else {
         return 0;
       }
-      for ($i = 0; $i < count($vars); $i++) {
+      for ($i = 0; $i < (is_countable($vars) ? count($vars) : 0); $i++) {
         if ($vars[$i]) {
           $this->setVar($vars[$i], isset($vals[$i + 1]) ? $vals[$i + 1] : '');
         }

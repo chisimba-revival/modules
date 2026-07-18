@@ -172,7 +172,7 @@ class Zend_Validate_NotEmpty extends Zend_Validate_Abstract
             $type -= self::OBJECT_COUNT;
             $object = true;
 
-            if (is_object($value) && ($value instanceof Countable) && (count($value) == 0)) {
+            if (is_object($value) && ($value instanceof Countable) && ((is_countable($value) ? count($value) : 0) == 0)) {
                 $this->_error(self::IS_EMPTY);
                 return false;
             }

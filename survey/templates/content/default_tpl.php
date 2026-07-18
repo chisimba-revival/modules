@@ -195,7 +195,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
             }
 
             // set up status icon
-            $questionCount=count($arrQuestionList);
+            $questionCount=(is_countable($arrQuestionList) ? count($arrQuestionList) : 0);
             $arrPageList=$this->dbPages->listPages($surveyId);
             $arrAllPageQuestionList=$this->dbPageQuestions->listSurveyPages($surveyId);
             if($surveyActive!='1'){
@@ -218,7 +218,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
                             }
                         }
                         $unassignedQuestions=FALSE;
-                        if(count($arrQuestionList)!=count($arrAllPageQuestionList)){
+                        if((is_countable($arrQuestionList) ? count($arrQuestionList) : 0)!=(is_countable($arrAllPageQuestionList) ? count($arrAllPageQuestionList) : 0)){
                             $unassignedQuestions=TRUE;
                         }
                         if($blankPages){

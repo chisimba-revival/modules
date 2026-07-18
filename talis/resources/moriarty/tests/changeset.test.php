@@ -251,7 +251,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
 
     $additions = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#addition"];
 
-    $this->assertEquals(2,  count($additions));
+    $this->assertEquals(2,  (is_countable($additions) ? count($additions) : 0));
   }
 
   function test_additions_are_different_bnodes() {
@@ -296,7 +296,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $changesetResource = $this->_find_changeset_resource($index);
 
     $additions = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#addition"];
-    $this->assertEquals(1,  count($additions));
+    $this->assertEquals(1,  (is_countable($additions) ? count($additions) : 0));
   }
 
 
@@ -309,7 +309,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
 
     $additions = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#addition"];
 
-    $this->assertEquals(1,  count($additions));
+    $this->assertEquals(1,  (is_countable($additions) ? count($additions) : 0));
     $this->assertEquals("bnode",  $additions[0]["type"]);
 
     $subjects = $index[ $additions[0]['value'] ]["http://www.w3.org/1999/02/22-rdf-syntax-ns#subject"];
@@ -331,7 +331,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $this->_parser->parse("", $cs->to_rdfxml()  );
     $triples = $this->_parser->getTriples();
 
-    $this->assertEquals( count( $cs->get_triples() ), count( $triples ) );
+    $this->assertEquals( count( $cs->get_triples() ), (is_countable($triples) ? count($triples) : 0) );
   }
 
   function test_changeset_resource_has_addition_with_literal_object() {
@@ -370,7 +370,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $triples = $this->_parser->getTriples();
 
     $objectLanguage = null;
-    for($i=0,$i_max=count($triples);$i<$i_max;$i++) {
+    for($i=0,$i_max=(is_countable($triples) ? count($triples) : 0);$i<$i_max;$i++) {
       if ( $triples[$i]['p'] == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#object' ) {
         $objectLanguage = $triples[$i]['o_lang'];
       }
@@ -394,7 +394,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $triples = $this->_parser->getTriples();
 
     $subjectId = null;
-    for($i=0,$i_max=count($triples);$i<$i_max;$i++) {
+    for($i=0,$i_max=(is_countable($triples) ? count($triples) : 0);$i<$i_max;$i++) {
       if ( $triples[$i]['p'] == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#subject' ) {
         $subjectId = $triples[$i]['o'];
       }
@@ -457,7 +457,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $objects = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#addition"];
 
     // $this->assertEquals("foo",  $cs->to_rdfxml() );
-    $this->assertEquals(1,  count( $objects ));
+    $this->assertEquals(1,  (is_countable($objects) ? count($objects) : 0));
   }
 
   function test_changeset_caclulates_single_removal() {
@@ -472,7 +472,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $objects = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#removal"];
 
     // $this->assertEquals("foo",  $cs->to_rdfxml() );
-    $this->assertEquals(1,  count( $objects ));
+    $this->assertEquals(1,  (is_countable($objects) ? count($objects) : 0));
   }
 
   function test_changeset_calculates_all_removals_when_no_after() {
@@ -488,7 +488,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $objects = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#removal"];
 
     // $this->assertEquals("foo",  $cs->to_rdfxml() );
-    $this->assertEquals(2,  count( $objects ));
+    $this->assertEquals(2,  (is_countable($objects) ? count($objects) : 0));
   }
 
   function test_changeset_reads_before_rdfxml() {
@@ -502,7 +502,7 @@ class ChangeSetTest extends PHPUnit_Framework_TestCase
     $objects = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#removal"];
 
     // $this->assertEquals("foo",  $cs->to_rdfxml() );
-    $this->assertEquals(2,  count( $objects ));
+    $this->assertEquals(2,  (is_countable($objects) ? count($objects) : 0));
   }
 
 }

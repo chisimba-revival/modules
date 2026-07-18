@@ -43,7 +43,7 @@ class ADODB_oci8po extends ADODB_oci8 {
 	{
 		$sqlarr = explode('?',$sql);
 		$sql = $sqlarr[0];
-		for ($i = 1, $max = sizeof($sqlarr); $i < $max; $i++) {
+		for ($i = 1, $max = (is_countable($sqlarr) ? sizeof($sqlarr) : 0); $i < $max; $i++) {
 			$sql .=  ':'.($i-1) . $sqlarr[$i];
 		} 
 		return ADODB_oci8::Prepare($sql,$cursor);

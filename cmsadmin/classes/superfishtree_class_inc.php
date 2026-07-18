@@ -306,7 +306,7 @@ class superfishtree extends ChisimbaObject {
         while ($nodeId != '0') {
             $node = $this->getNode($nodeId);
 
-            if (count($node)) {
+            if ((is_countable($node) ? count($node) : 0)) {
                 $nodeId = $node['parentid'];
                 $openNodes[$i] = $nodeId;
                 $i++;

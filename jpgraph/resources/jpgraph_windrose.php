@@ -66,7 +66,7 @@ class WindrosePlotScale {
         $this->iZeroSum=0;
         foreach( $aData as $idx => $legdata ) {
             $legsum = array_sum($legdata);
-            $maxnum = max($maxnum,count($legdata)-1);
+            $maxnum = max($maxnum,(is_countable($legdata) ? count($legdata) : 0)-1);
             $max = max($legsum-$legdata[0],$max);
             $totlegsum += $legsum;
             $this->iZeroSum += $legdata[0] ;
@@ -477,7 +477,7 @@ class WindrosePlot {
     }
 
     function SetCompassLabels($aLabels) {
-        if( count($aLabels) != 16 ) {
+        if( (is_countable($aLabels) ? count($aLabels) : 0) != 16 ) {
             JpgraphError::RaiseL(22004); //('Label specification for windrose directions must have 16 values (one for each compass direction).');
         }
         $this->iAllDirectionLabels = $aLabels ;
@@ -538,7 +538,7 @@ class WindrosePlot {
     }
 
     function SetRangeWeights($aWeights) {
-        $n=count($aWeights);
+        $n=(is_countable($aWeights) ? count($aWeights) : 0);
         for($i=0; $i< $n; ++$i ) {
             $aWeights[$i] = floor($aWeights[$i]/2);
         }
@@ -787,7 +787,7 @@ class WindrosePlot {
             $keys = array_keys($data);
             sort($keys, SORT_NUMERIC);
 
-            $n = count($data);
+            $n = (is_countable($data) ? count($data) : 0);
             $found = false;
             $max = 0 ;
             for( $i=0; $i < 15; ++$i ) {
@@ -1000,7 +1000,7 @@ class WindrosePlot {
         $i=0;
         foreach($this->iData as $dir => $legdata) {
             $legdata = array_slice($legdata,1);
-            $nn = count($legdata);
+            $nn = (is_countable($legdata) ? count($legdata) : 0);
 
             $a = $txtpos[$i][2];
             $rri = $ri/$scaling;
@@ -1162,7 +1162,7 @@ class WindrosePlot {
         $keys = array_keys($this->iData);
         foreach($this->iData as $idx => $legdata) {
             $legdata = array_slice($legdata,1);
-            $nn = count($legdata);
+            $nn = (is_countable($legdata) ? count($legdata) : 0);
             if( is_string($idx) ) {
                 $idx = strtoupper($idx);
                 $idx = array_search($idx,$this->iAllDirectionLabels);
@@ -1484,7 +1484,7 @@ class WindroseGraph extends Graph {
     //---------------
     // PUBLIC METHODS
     function Add($aObj) {
-        if( is_array($aObj) && count($aObj) > 0 ) {
+        if( is_array($aObj) && (is_countable($aObj) ? count($aObj) : 0) > 0 ) {
             $cl = $aObj[0];
         }
         else {

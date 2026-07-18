@@ -327,7 +327,7 @@ class Zend_Amf_Server implements Zend_Server_Interface
         $info = $this->_table[$qualifiedName];
         $argv = $info->getInvokeArguments();
 
-        if (0 < count($argv)) {
+        if (0 < (is_countable($argv) ? count($argv) : 0)) {
             $params = array_merge($params, $argv);
         }
 

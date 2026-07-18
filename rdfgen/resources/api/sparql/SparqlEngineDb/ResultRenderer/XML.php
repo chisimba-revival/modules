@@ -61,7 +61,7 @@ class SparqlEngineDb_ResultRenderer_XML implements SparqlEngineDb_ResultRenderer
 
             case 'count':
             case 'ask':
-                if (count($arRecordSets) > 1) {
+                if ((is_countable($arRecordSets) ? count($arRecordSets) : 0) > 1) {
                     throw new Exception(
                         'More than one result set for a '
                         . $strResultForm . ' query!'

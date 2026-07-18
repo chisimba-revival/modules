@@ -48,7 +48,7 @@ class dbpagemenu extends dbTable {
      * @access public
      * @return void
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         try {
             parent::init('tbl_cms_page_menu');
             $this->table = 'tbl_cms_page_menu';
@@ -136,7 +136,7 @@ class dbpagemenu extends dbTable {
      */
     public function hasDefaultMenu() {
         $menuRow = $this->getAll('WHERE menukey = \'default\'');
-        if (count($menuRow) > 0) {
+        if ((is_countable($menuRow) ? count($menuRow) : 0) > 0) {
             return true;
         } else {
             return false;
@@ -181,7 +181,7 @@ class dbpagemenu extends dbTable {
 
         $data = $this->getArray($sql);
 
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             $newId = null;
             $id = $data[0]['id'];
             $this->update('id', $id, $fields);
@@ -506,7 +506,7 @@ class dbpagemenu extends dbTable {
     public function getNumberOfPagesInSection($sectionId) {
         $noPages = '0';
         $pages = $this->getAll("WHERE sectionid = '$sectionId' AND trash='0' ORDER BY ordering");
-        $noPages = count($pages);
+        $noPages = (is_countable($pages) ? count($pages) : 0);
         return $noPages;
     }
 

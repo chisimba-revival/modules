@@ -80,7 +80,7 @@ class SparqlEngineDb_TypeSorter
     */
     public function getOrderifiedSqls($arSqls)
     {
-        if (count($arSqls) == 0) {
+        if ((is_countable($arSqls) ? count($arSqls) : 0) == 0) {
             return $arSqls;
         }
 
@@ -96,7 +96,7 @@ class SparqlEngineDb_TypeSorter
         }
 
         $arSpecial = $this->getSpecialOrderVariables();
-        if (count($arSpecial) == 0) {
+        if ((is_countable($arSpecial) ? count($arSpecial) : 0) == 0) {
             $strOrder = $this->getSqlOrderBy();
             foreach ($arSqls as &$arSql) {
                 $arSql['order'] = $strOrder;
@@ -225,7 +225,7 @@ class SparqlEngineDb_TypeSorter
 
         $arTypes = array();
         foreach ($arResult as $arRow) {
-            $nLine = count($arTypes);
+            $nLine = (is_countable($arTypes) ? count($arTypes) : 0);
             foreach ($arRow as $key => $value) {
                 list($strSparqlVar, $strType) = explode('-', $key);
                 $arTypes[$nLine][$strSparqlVar][$strType] = $value;

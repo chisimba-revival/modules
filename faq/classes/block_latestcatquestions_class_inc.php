@@ -18,7 +18,7 @@ class block_latestcatquestions extends ChisimbaObject
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objLanguage =& $this->getObject('language', 'language');
         $this->title = $this->objLanguage->languageText('phrase_faq');
@@ -75,7 +75,7 @@ class block_latestcatquestions extends ChisimbaObject
 		
 		$count = 1;
 		
-		if(count($questions) > '0'){
+		if((is_countable($questions) ? count($questions) : 0) > '0'){
   			foreach($questions as $question){
   				$catQuestion = $question['question'];
 			

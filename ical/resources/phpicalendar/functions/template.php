@@ -40,7 +40,7 @@ class Page {
 				$column++;
 			}
 			// Print remaining empty columns if necessary
-			$number_of_columns = count($filelist);
+			$number_of_columns = (is_countable($filelist) ? count($filelist) : 0);
 			while (gettype($number_of_columns/$COLUMNS_TO_PRINT) != "integer") {
 				$delete_table .= '<td>&nbsp;</td>';
 				$number_of_columns++;
@@ -392,7 +392,7 @@ class Page {
 				}
 				
 				// check for eventstart 
-				if (isset($this_time_arr) && sizeof($this_time_arr) > 0) {
+				if (isset($this_time_arr) && (is_countable($this_time_arr) ? sizeof($this_time_arr) : 0) > 0) {
 					#print "<pre>";
 					#print_r ($this_time_arr);
 					#print "</pre>";
@@ -603,7 +603,7 @@ class Page {
 			}
 
 			// check for eventstart 
-			if (isset($this_time_arr) && sizeof($this_time_arr) > 0) {
+			if (isset($this_time_arr) && (is_countable($this_time_arr) ? sizeof($this_time_arr) : 0) > 0) {
 				foreach ($this_time_arr as $eventKey => $loopevent) {
 					$drawEvent = drawEventTimes ($cal_time, $loopevent['event_end']);
 					$j = 0;
@@ -614,7 +614,7 @@ class Page {
 						}
 						$j++;
 					}
-					if ($j == sizeof($event_length)) {
+					if ($j == (is_countable($event_length) ? sizeof($event_length) : 0)) {
 						array_push ($event_length, array ('length' => ($drawEvent['draw_length'] / $gridLength), 'key' => $eventKey, 'overlap' => $loopevent['event_overlap'],'state' => 'begin'));
 					}
 				}
@@ -639,14 +639,14 @@ class Page {
 				$class = ' class="dayborder2"';
 				$dayborder = 0;
 			}
-			if (sizeof($event_length) == 0) {
+			if ((is_countable($event_length) ? sizeof($event_length) : 0) == 0) {
 				$daydisplay .= '<td colspan="' . $nbrGridCols . '" '.$class.'>&nbsp;</td>'."\n";
 				
 			} else {
 				$emptyWidth = $nbrGridCols;
 				// Used to "join" ended events, so the ended case below results in one colspan'd td instead of multiple tds.
 				$ended_counter = 0;
-				for ($i=0;$i<sizeof($event_length);$i++) {
+				for ($i=0;$i<(is_countable($event_length) ? sizeof($event_length) : 0);$i++) {
 					$drawWidth = $nbrGridCols / ($event_length[$i]['overlap'] + 1);
 					$emptyWidth = $emptyWidth - $drawWidth;
 					switch ($event_length[$i]['state']) {
@@ -709,7 +709,7 @@ class Page {
 				if ($emptyWidth > 0) {
 					$daydisplay .= '<td colspan="' . $emptyWidth . '" ' . $class . '>&nbsp;</td>'."\n";
 				}
-				while (isset($event_length[(sizeof($event_length) - 1)]) && $event_length[(sizeof($event_length) - 1)]['state'] == 'ended') {
+				while (isset($event_length[((is_countable($event_length) ? sizeof($event_length) : 0) - 1)]) && $event_length[((is_countable($event_length) ? sizeof($event_length) : 0) - 1)]['state'] == 'ended') {
 					array_pop($event_length);
 				}
 				
@@ -1056,7 +1056,7 @@ class Page {
 	}
 	
 	function replace_tags($tags = array()) {
-		if (sizeof($tags) > 0)
+		if ((is_countable($tags) ? sizeof($tags) : 0) > 0)
 			foreach ($tags as $tag => $data) {
 				
 				// This removes any unfilled tags
@@ -1073,7 +1073,7 @@ class Page {
 		}
 		
 	function replace_files($tags = array()) {
-		if (sizeof($tags) > 0)
+		if ((is_countable($tags) ? sizeof($tags) : 0) > 0)
 			foreach ($tags as $tag => $data) {
 				
 				// This opens up another template and parses it as well.
@@ -1097,7 +1097,7 @@ class Page {
 		
 		// Looks for {MONTH} before sending page out
 		preg_match_all ('!\{MONTH_([A-Z]*)\|?([+|-])([0-9]{1,2})\}!is', $this->page, $match);
-		if (sizeof($match) > 0) {
+		if ((is_countable($match) ? sizeof($match) : 0) > 0) {
 			$i=0;
 			foreach ($match[1] as $key => $val) {
 				if ($match[1][$i] == 'SMALL') {

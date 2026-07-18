@@ -65,7 +65,7 @@ class dbsocname extends dbTable
 	    */
 
 	
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {
                 parent::init('tbl_award_socname');

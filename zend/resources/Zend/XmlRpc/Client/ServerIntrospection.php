@@ -99,7 +99,7 @@ class Zend_XmlRpc_Client_ServerIntrospection
             throw new Zend_XmlRpc_Client_IntrospectException($error);
         }
 
-        if (count($serverSignatures) != count($methods)) {
+        if ((is_countable($serverSignatures) ? count($serverSignatures) : 0) != (is_countable($methods) ? count($methods) : 0)) {
             $error = 'Bad number of signatures received from multicall';
             require_once 'Zend/XmlRpc/Client/IntrospectException.php';
             throw new Zend_XmlRpc_Client_IntrospectException($error);

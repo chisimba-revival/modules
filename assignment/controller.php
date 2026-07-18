@@ -297,7 +297,7 @@ class assignment extends controller {
             $this->objAssignmentLearningOutcomes->deleteGoals($result);
             if (is_array($goals)) {
 
-                if (count($goals) > 0) {
+                if ((is_countable($goals) ? count($goals) : 0) > 0) {
                     foreach ($goals as $goal) {
                         $this->objAssignmentLearningOutcomes->addGoal($result, $goal);
                     }
@@ -307,7 +307,7 @@ class assignment extends controller {
             $this->objAssignmentGroups->deleteWorkgroups($result);
             if (is_array($groups)) {
 
-                if (count($groups) > 0) {
+                if ((is_countable($groups) ? count($groups) : 0) > 0) {
                     foreach ($groups as $group) {
                         $this->objAssignmentGroups->addWorkgroup($result, $group);
                     }
@@ -431,7 +431,7 @@ class assignment extends controller {
         $this->objAssignmentLearningOutcomes->deleteGoals($id);
         if (is_array($goals)) {
 
-            if (count($goals) > 0) {
+            if ((is_countable($goals) ? count($goals) : 0) > 0) {
                 foreach ($goals as $goal) {
                     $this->objAssignmentLearningOutcomes->addGoal($id, $goal);
                 }
@@ -440,7 +440,7 @@ class assignment extends controller {
 
         $this->objAssignmentGroups->deleteWorkgroups($id);
         if (is_array($groups)) {
-            if (count($groups) > 0) {
+            if ((is_countable($groups) ? count($groups) : 0) > 0) {
                 foreach ($groups as $group) {
                     $this->objAssignmentGroups->addWorkgroup($id, $group);
                 }

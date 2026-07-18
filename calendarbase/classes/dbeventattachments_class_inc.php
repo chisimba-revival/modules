@@ -20,7 +20,7 @@ class dbeventattachments extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_calendar_event_attachment');
     }
 
@@ -67,7 +67,7 @@ class dbeventattachments extends dbTable
 	{
 		$files = $this->getAll(' WHERE id="'.$attachment_id.'" AND event_id="'.$event_id.'" ');
 
-		if (count($files) == 0) {
+		if ((is_countable($files) ? count($files) : 0) == 0) {
 			return FALSE;
 		} else {
 			return $files[0];
@@ -78,7 +78,7 @@ class dbeventattachments extends dbTable
 	{
 		$files = $this->getAll(' WHERE id="'.$attachment_id.'" AND event_id="'.$event_id.'" ');
 
-		if (count($files) > 0) {
+		if ((is_countable($files) ? count($files) : 0) > 0) {
 			return $this->delete('id', $attachment_id);
 		} else {
 			return FALSE;

@@ -564,7 +564,7 @@ class nusoap_base {
                 if($valueType=='arraySimple' || preg_match('/^ArrayOf/',$type)){
 			   		$this->debug("serialize_val: serialize array");
 					$i = 0;
-					if(is_array($val) && count($val)> 0){
+					if(is_array($val) && (is_countable($val) ? count($val) : 0)> 0){
 						foreach($val as $v){
 	                    	if(is_object($v) && get_class($v) ==  'soapval'){
 								$tt_ns = $v->type_ns;
@@ -579,7 +579,7 @@ class nusoap_base {
 							$xml .= $this->serialize_val($v,'item',false,false,false,false,$use);
 							++$i;
 						}
-						if(count($array_types) > 1){
+						if((is_countable($array_types) ? count($array_types) : 0) > 1){
 							$array_typename = 'xsd:anyType';
 						} elseif(isset($tt) && isset($this->typemap[$this->XMLSchemaVersion][$tt])) {
 							if ($tt == 'integer') {
@@ -1276,7 +1276,7 @@ class nusoap_xmlschema extends nusoap_base  {
         }
 		
         // loop thru attributes, expanding, and registering namespace declarations
-        if(count($attrs) > 0){
+        if((is_countable($attrs) ? count($attrs) : 0) > 0){
         	foreach($attrs as $k => $v){
                 // if ns declarations, add to class level array of valid namespaces
 				if(preg_match('/^xmlns/',$k)){
@@ -3000,7 +3000,7 @@ class soap_transport_http extends nusoap_base {
 		$this->incoming_cookies = array();
 		foreach($header_array as $header_line){
 			$arr = explode(':',$header_line, 2);
-			if(count($arr) > 1){
+			if((is_countable($arr) ? count($arr) : 0) > 1){
 				$header_name = strtolower(trim($arr[0]));
 				$this->incoming_headers[$header_name] = trim($arr[1]);
 				if ($header_name == 'set-cookie') {
@@ -3178,7 +3178,7 @@ class soap_transport_http extends nusoap_base {
 		// clean headers
 		foreach ($header_array as $header_line) {
 			$arr = explode(':',$header_line,2);
-			if(count($arr) > 1){
+			if((is_countable($arr) ? count($arr) : 0) > 1){
 				$header_name = strtolower(trim($arr[0]));
 				$this->incoming_headers[$header_name] = trim($arr[1]);
 				if ($header_name == 'set-cookie') {
@@ -3202,7 +3202,7 @@ class soap_transport_http extends nusoap_base {
 		$arr = explode(' ', $this->response_status_line, 3);
 		$http_version = $arr[0];
 		$http_status = intval($arr[1]);
-		$http_reason = count($arr) > 2 ? $arr[2] : '';
+		$http_reason = (is_countable($arr) ? count($arr) : 0) > 2 ? $arr[2] : '';
 
  		// see if we need to resend the request with http digest authentication
  		if (isset($this->incoming_headers['location']) && ($http_status == 301 || $http_status == 302)) {
@@ -4689,7 +4689,7 @@ class wsdl extends nusoap_base {
     			foreach ($list as $xs) {
 					$wsdlparts = parse_url($this->wsdl);	// this is bogusly simple!
 		            foreach ($xs->imports as $ns2 => $list2) {
-		                for ($ii = 0; $ii < count($list2); $ii++) {
+		                for ($ii = 0; $ii < (is_countable($list2) ? count($list2) : 0); $ii++) {
 		                	if (! $list2[$ii]['loaded']) {
 		                		$this->schemas[$ns]->imports[$ns2][$ii]['loaded'] = true;
 		                		$url = $list2[$ii]['location'];
@@ -4715,7 +4715,7 @@ class wsdl extends nusoap_base {
     		// WSDL imports
 			$wsdlparts = parse_url($this->wsdl);	// this is bogusly simple!
             foreach ($this->import as $ns => $list) {
-                for ($ii = 0; $ii < count($list); $ii++) {
+                for ($ii = 0; $ii < (is_countable($list) ? count($list) : 0); $ii++) {
                 	if (! $list[$ii]['loaded']) {
                 		$this->import[$ns][$ii]['loaded'] = true;
                 		$url = $list[$ii]['location'];
@@ -4900,7 +4900,7 @@ class wsdl extends nusoap_base {
             $this->depth_array[$depth] = $pos;
             $this->message[$pos] = array('cdata' => ''); 
             // process attributes
-            if (count($attrs) > 0) {
+            if ((is_countable($attrs) ? count($attrs) : 0) > 0) {
 				// register namespace declarations
                 foreach($attrs as $k => $v) {
                     if (preg_match('/^xmlns/',$k)) {
@@ -5191,7 +5191,7 @@ class wsdl extends nusoap_base {
 				}
 			}
 		}
-		if (count($ops) == 0) {
+		if ((is_countable($ops) ? count($ops) : 0) == 0) {
 			$this->debug("getOperations found no operations for port '$portName' bindingType $bindingType");
 		}
 		return $ops;
@@ -5673,7 +5673,7 @@ class wsdl extends nusoap_base {
 		// since there are no elements for the type, if the user passed no
 		// parameters, the parameters match wrapped.
 		$this->debug("in parametersMatchWrapped: no elements type $ns:$uqType");
-		return count($parameters) == 0;
+		return (is_countable($parameters) ? count($parameters) : 0) == 0;
 	}
 
 	/**
@@ -5719,13 +5719,13 @@ class wsdl extends nusoap_base {
 		$xml = '';
 		if (isset($opData[$direction]['parts']) && sizeof($opData[$direction]['parts']) > 0) {
 			$parts = &$opData[$direction]['parts'];
-			$part_count = sizeof($parts);
+			$part_count = (is_countable($parts) ? sizeof($parts) : 0);
 			$style = $opData['style'];
 			$use = $opData[$direction]['use'];
 			$this->debug("have $part_count part(s) to serialize using $style/$use");
 			if (is_array($parameters)) {
 				$parametersArrayType = $this->isArraySimpleOrStruct($parameters);
-				$parameter_count = count($parameters);
+				$parameter_count = (is_countable($parameters) ? count($parameters) : 0);
 				$this->debug("have $parameter_count parameter(s) provided as $parametersArrayType to serialize");
 				// check for Microsoft-style wrapped parameters
 				if ($style == 'document' && $use == 'literal' && $part_count == 1 && isset($parts['parameters'])) {
@@ -6118,15 +6118,15 @@ class wsdl extends nusoap_base {
 			if (isset($typeDef['multidimensional'])) {
 				$nv = array();
 				foreach($value as $v) {
-					$cols = ',' . sizeof($v);
+					$cols = ',' . (is_countable($v) ? sizeof($v) : 0);
 					$nv = array_merge($nv, $v);
 				} 
 				$value = $nv;
 			} else {
 				$cols = '';
 			} 
-			if (is_array($value) && sizeof($value) >= 1) {
-				$rows = sizeof($value);
+			if (is_array($value) && (is_countable($value) ? sizeof($value) : 0) >= 1) {
+				$rows = (is_countable($value) ? sizeof($value) : 0);
 				$contents = '';
 				foreach($value as $k => $v) {
 					$this->debug("serializing array element: $k, $v of type: $typeDef[arrayType]");
@@ -6280,7 +6280,7 @@ class wsdl extends nusoap_base {
 				$xvalue = array();
 			}
 			// toggle whether all elements are present - ideally should validate against schema
-			if (count($typeDef['elements']) != count($xvalue)){
+			if (count($typeDef['elements']) != (is_countable($xvalue) ? count($xvalue) : 0)){
 				$optionals = true;
 			}
 			foreach ($typeDef['elements'] as $eName => $attrs) {
@@ -6362,7 +6362,7 @@ class wsdl extends nusoap_base {
 	* @access public
 	*/
 	function addComplexType($name,$typeClass='complexType',$phpType='array',$compositor='',$restrictionBase='',$elements=array(),$attrs=array(),$arrayType='') {
-		if (count($elements) > 0) {
+		if ((is_countable($elements) ? count($elements) : 0) > 0) {
 			$eElements = array();
 	    	foreach($elements as $n => $e){
 	            // expand each element
@@ -6377,7 +6377,7 @@ class wsdl extends nusoap_base {
 	    	$elements = $eElements;
 		}
 		
-		if (count($attrs) > 0) {
+		if ((is_countable($attrs) ? count($attrs) : 0) > 0) {
 	    	foreach($attrs as $n => $a){
 	            // expand each attribute
 	            foreach ($a as $k => $v) {
@@ -7472,7 +7472,7 @@ class nusoap_client extends nusoap_base  {
 				if(is_array($return)){
 					// multiple 'out' parameters, which we return wrapped up
 					// in the array
-					if(sizeof($return) > 1){
+					if((is_countable($return) ? sizeof($return) : 0) > 1){
 						return $return;
 					}
 					// single 'out' parameter (normally the return value)
@@ -8082,13 +8082,13 @@ class nusoap_client extends nusoap_base  {
 	function UpdateCookies($cookies) {
 		if (sizeof($this->cookies) == 0) {
 			// no existing cookies: take whatever is new
-			if (sizeof($cookies) > 0) {
+			if ((is_countable($cookies) ? sizeof($cookies) : 0) > 0) {
 				$this->debug('Setting new cookie(s)');
 				$this->cookies = $cookies;
 			}
 			return true;
 		}
-		if (sizeof($cookies) == 0) {
+		if ((is_countable($cookies) ? sizeof($cookies) : 0) == 0) {
 			// no new cookies: keep what we've got
 			return true;
 		}

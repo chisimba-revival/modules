@@ -387,7 +387,7 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     public function isEmpty()
     {
-        return count($this) == 0;
+        return (is_countable($this) ? count($this) : 0) == 0;
     }
 
     /**

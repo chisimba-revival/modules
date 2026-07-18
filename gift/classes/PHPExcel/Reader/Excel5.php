@@ -837,7 +837,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
 						$explodes = explode('!', $range);	// FIXME: what if sheetname contains exclamation mark?
 						$sheetName = $explodes[0];
 
-						if (count($explodes) == 2) {
+						if ((is_countable($explodes) ? count($explodes) : 0) == 2) {
 							$extractedRanges[] = str_replace('$', '', $explodes[1]); // C7:J66
 						}
 					}
@@ -867,14 +867,14 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
 
 						$explodes = explode('!', $range);
 
-						if (count($explodes) == 2) {
+						if ((is_countable($explodes) ? count($explodes) : 0) == 2) {
 							if ($docSheet = $this->_phpExcel->getSheetByName($explodes[0])) {
 
 								$extractedRange = $explodes[1];
 								$extractedRange = str_replace('$', '', $extractedRange);
 
 								$coordinateStrings = explode(':', $extractedRange);
-								if (count($coordinateStrings) == 2) {
+								if ((is_countable($coordinateStrings) ? count($coordinateStrings) : 0) == 2) {
 									list($firstColumn, $firstRow) = PHPExcel_Cell::coordinateFromString($coordinateStrings[0]);
 									list($lastColumn, $lastRow) = PHPExcel_Cell::coordinateFromString($coordinateStrings[1]);
 
@@ -896,7 +896,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
 				// Extract range
 				$explodes = explode('!', $definedName['formula']);
 
-				if (count($explodes) == 2) {
+				if ((is_countable($explodes) ? count($explodes) : 0) == 2) {
 					if ($docSheet = $this->_phpExcel->getSheetByName($explodes[0])) {
 						$extractedRange = $explodes[1];
 						$extractedRange = str_replace('$', '', $extractedRange);
@@ -4417,7 +4417,7 @@ class PHPExcel_Reader_Excel5 implements PHPExcel_Reader_IReader
 	private function _createFormulaFromTokens($tokens, $additionalData)
 	{
 		// empty formula?
-		if (count($tokens) == 0) {
+		if ((is_countable($tokens) ? count($tokens) : 0) == 0) {
 			return '';
 		}
 

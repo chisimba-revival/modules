@@ -12,7 +12,7 @@ $this->setVar('bodyParams', 'class="iframewindow"');
 $objFileIcons =& $this->getObject('fileicons', 'files');
 $objIcon = $this->getObject('geticon', 'htmlelements');
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
 	echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('phrase_noattachments_at_present', 'calendar', 'No Attachments at Present').'</div>';
 } else {
 	$table = $this->getObject('htmltable', 'htmlelements');

@@ -10,7 +10,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class dbevents extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_simpleregistrationevents');  //super
         $this->table = 'tbl_simpleregistrationevents';
         $this->objUser = $this->getObject('user', 'security');

@@ -153,7 +153,7 @@ if ($this->isValid('markpracticals')) {
     $table->addHeaderCell($this->objLanguage->languageText('mod_practicals_comment', 'practicals', 'Comment'));
     $table->endHeaderRow();
 
-    if (count($submissions) == 0) {
+    if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_practicals_nopracticalssubmitted', 'practicals', 'No Practicals Submitted Yet'), NULL, NULL, NULL, 'noRecordsMessage', ' colspan="4"');
         $table->endRow();
@@ -187,12 +187,12 @@ if ($this->isValid('markpracticals')) {
 
     $submissions = $this->objPracticalSubmit->getStudentPractical($this->objUser->userId(), $practical['id']);
 
-//    if (count($submissions) == 0) {
+//    if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
 
-//    } else if (count($submissions) == 0) {
+//    } else if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
 
 //    } else {
-    if (count($submissions) != 0) {
+    if ((is_countable($submissions) ? count($submissions) : 0) != 0) {
 
         $table = $this->newObject('htmltable', 'htmlelements');
         $table->startHeaderRow();

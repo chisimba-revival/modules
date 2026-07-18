@@ -58,7 +58,7 @@ $dbdata=$this->objStudentEssays->getstudentEssays($essayid);
 //$dbdata=$this->essays->getEssays($this->objUser->userid());
 $essaytitle =$this->essays->getTitle($essayid);
 
-$total=count($dbdata);
+$total=(is_countable($dbdata) ? count($dbdata) : 0);
 $data="";
 foreach($dbdata as $row) {
     //$essaytitle=$this->essays->getTitle($essayid);

@@ -282,7 +282,7 @@ class fpdfwrapper extends ChisimbaObject
                 45
             );
             //Header
-            for ($i = 0; $i < count($header); $i++) $this->pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C');
+            for ($i = 0; $i < (is_countable($header) ? count($header) : 0); $i++) $this->pdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C');
             $this->pdf->Ln();
             //Data
             foreach($data as $row) {

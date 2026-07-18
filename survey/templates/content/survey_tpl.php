@@ -179,7 +179,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
         // set up move last page icon
         $objIcon->title=$lastLabel.'&nbsp;'.strtolower($pageLabel);
-        $lastIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'previewsurvey','survey_id'=>$surveyId)).'#'.count($arrPageQuestionList),'downend');
+        $lastIcon=$objIcon->getLinkedIcon($this->uri(array('action'=>'previewsurvey','survey_id'=>$surveyId)).'#'.(is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0),'downend');
 
         if($pageKey!='0'){
             $arrPageData=$this->dbPages->getPage($pageKey);
@@ -195,7 +195,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
         }
 
         if($mode=='view'){
-            if(count($arrPageQuestionList)!='1'){
+            if((is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0)!='1'){
                 $objLink=new link('#');
                 $objLink->name=$ii;
                 $objLink->link='&nbsp;';
@@ -203,7 +203,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
                 $pageLabelText.=$objLink->show();
                 if($ii=='1'){
                     $pageLabelText=$firstGreyIcon.$previousGreyIcon.$pageLabelText.$nextIcon.$lastIcon;
-                }elseif($ii==count($arrPageQuestionList)){
+                }elseif($ii==(is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0)){
                     $pageLabelText=$firstIcon.$previousIcon.$pageLabelText.$nextGreyIcon.$lastGreyIcon;
                 }else{
                     $pageLabelText=$firstIcon.$previousIcon.$pageLabelText.$nextIcon.$lastIcon;
@@ -256,17 +256,17 @@ if(!$GLOBALS['kewl_entry_point_run']){
             $objTable->cellpadding='2';
 
             if($type=='1' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='2' && $booleanType!='1' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='2' && $booleanType=='1' && $verticalAlignment=='1'){
                 $colspan='colspan="3"';
             }elseif($type>='3' && $type<='5'){
-                $colspan='colspan="'.(count($arrColumnList)+1).'"';
+                $colspan='colspan="'.((is_countable($arrColumnList) ? count($arrColumnList) : 0)+1).'"';
             }elseif($type=='6'){
                 $colspan='colspan="'.($ratingScale+1).'"';
             }elseif($type<='8' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='8' && $verticalAlignment!='1'){
                 $colspan='colspan="2"';
             }else{

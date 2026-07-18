@@ -25,7 +25,7 @@ class dbsection_group extends dbTable
     * @access public
     * @return void
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_cms_section_group');

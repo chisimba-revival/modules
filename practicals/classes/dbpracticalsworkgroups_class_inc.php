@@ -52,7 +52,7 @@ class dbpracticalsworkgroups extends dbtable {
      * Initialisation.
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_practicals_workgroups');
         $this->objUser = $this->getObject('user', 'security');
         $this->loadClass('link','htmlelements');

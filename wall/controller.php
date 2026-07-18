@@ -237,7 +237,7 @@ class wall extends controller
         if ($id) {
             $objDbComment = $this->getObject('dbcomment', 'wall');
             $commentAr = $objDbComment->getComments($id, 100, 3);
-            $ct = count($commentAr);
+            $ct = (is_countable($commentAr) ? count($commentAr) : 0);
             $currentModule = $this->getParam('module', 'wall');
             $objUi = $this->getObject('wallops', 'wall');
             $comments = $objUi->loadComments($commentAr, $currentModule);

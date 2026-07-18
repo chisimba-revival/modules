@@ -33,7 +33,7 @@ class section_previous extends ChisimbaObject
             
             $nextItems = $this->objStories->getNextItem($story['id'], $category['id'], $category['pagination']);
             
-            if (count($nextItems) > 0 && $nextItems != FALSE) {
+            if ((is_countable($nextItems) ? count($nextItems) : 0) > 0 && $nextItems != FALSE) {
                 $str .= '<h4>Previous Stories</h4>';
                 $str .= '<ul>';
                 foreach($nextItems as $item)

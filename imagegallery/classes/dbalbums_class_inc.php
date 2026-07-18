@@ -77,7 +77,7 @@ class dbalbums extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
@@ -163,7 +163,7 @@ class dbalbums extends dbtable
     public function addAlbum($fields)
     {
         $albums = $this->getGalleryAlbums($fields['gallery_id']);
-        $count = count($albums);
+        $count = (is_countable($albums) ? count($albums) : 0);
         
         $fields['display_order'] = ++$count;
         $fields['created_by'] = $this->userId;

@@ -99,7 +99,7 @@ class contentmanager extends ChisimbaObject {
 
         //data grid from db
         $dbdata=$this->groups->getMyTopics($this->objUser->userid());
-        $total=count($dbdata);
+        $total=(is_countable($dbdata) ? count($dbdata) : 0);
         $data="";
         foreach($dbdata as $row) {
             $topicdata=$this->topics->getTitle($row['topicid']);
@@ -207,7 +207,7 @@ window.location=\''.str_replace('amp;','', $addtopicurl).'\';
         $content.= $renderSurface.'</br><div id="grouping-grid"></div>';
 
         $dbdata=$this->groups->getMembers($topicid);
-        $total=count($dbdata);
+        $total=(is_countable($dbdata) ? count($dbdata) : 0);
         $index=0;
         foreach($dbdata as $row) {
             $deleteLink=new link();
@@ -228,7 +228,7 @@ window.location=\''.str_replace('amp;','', $addtopicurl).'\';
         }
 
         $usrdata=$this->groups->getUsers();
-        $total=count($usrdata);
+        $total=(is_countable($usrdata) ? count($usrdata) : 0);
         $index=0;
         $userlist="";
         foreach($usrdata as $row) {
@@ -298,7 +298,7 @@ window.location=\''.str_replace('amp;','', $addtopicurl).'\';
 
         //data grid from db
         $dbdata=$this->articles->getArticles($topicid);
-        $total=count($dbdata);
+        $total=(is_countable($dbdata) ? count($dbdata) : 0);
         $data="";
         foreach($dbdata as $row) {
 

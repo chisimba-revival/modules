@@ -12,7 +12,7 @@ class fee_info extends dbTable{
 
 public $tableName;
 //init ethod for da class fee info
-    public function  init() {
+    public function  init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 parent::init('tbl_fee');
 parent::init('tbl_payment');
 parent::init('tbl_student2');

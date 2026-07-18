@@ -407,7 +407,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'staffregistration_tpl.php';
@@ -474,7 +474,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'accreditedjournal_tpl.php';
@@ -552,7 +552,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'entirebook_tpl.php';
@@ -639,7 +639,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'chapterinbook_tpl.php';
@@ -732,7 +732,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'doctoralstudents_tpl.php';
@@ -824,7 +824,7 @@ Public fuction to instantiate required  objestc
             $problems[] = 'captchadoesntmatch';
         }
         //if form entry is in corect or invavalid
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'fixerror');
             $this->setVarByRef('problems', $problems);
             return 'mastersstudents_tpl.php';

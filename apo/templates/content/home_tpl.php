@@ -6,7 +6,7 @@ $this->loadClass('fieldset', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 $header = new htmlheading();
 $header->type = 2;
-$header->str = $this->objLanguage->languageText('mod_wicid_unapproved', 'wicid', 'Unapproved Documents') . ' (' . count($documents) . ')';
+$header->str = $this->objLanguage->languageText('mod_wicid_unapproved', 'wicid', 'Unapproved Documents') . ' (' . (is_countable($documents) ? count($documents) : 0) . ')';
 
 echo $header->show();
 
@@ -44,7 +44,7 @@ $table->endHeaderRow();
 $objIcon = $this->newObject('geticon', 'htmlelements');
 $objIcon->setIcon('edit');
 
-if (count($documents) > 0) {
+if ((is_countable($documents) ? count($documents) : 0) > 0) {
     foreach ($documents as $document) {
         $makepdf = new link($this->uri(array("action"=>"makepdf", "id"=>$document['id'], "all"=>"on")));
         $forwardDocument = new link($this->uri(array("action"=>"forwardtoAPO", "id"=>$document['id'], "all"=>"on")));

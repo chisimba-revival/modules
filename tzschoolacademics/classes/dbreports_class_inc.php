@@ -15,7 +15,7 @@ class dbreports extends dbTable {
     public $_tableName;
 
     //constructor
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_academic_year');
         parent::init('tbl_class');
         parent::init('tbl_exam');

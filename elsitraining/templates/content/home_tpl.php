@@ -23,7 +23,7 @@ $notice = $this->objLanguage->languageText('mod_homeWelcome_warning', 'elsitrain
 
 
 
-/*if (count($gifts) > 0) {
+/*if ((is_countable($gifts) ? count($gifts) : 0) > 0) {
     foreach ($gifts as $gift) {
         $table->startRow($class);
         $table->addCell($deleted . $viewDetailsLink->show() . $edit );

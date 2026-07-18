@@ -43,7 +43,7 @@ class section_page extends ChisimbaObject
         
         $allTitles = $this->objStories->getCategoryTitles($category['id'], str_replace('_', ' ', $category['itemsorder']));
         
-        if (count($allTitles) > 1) {
+        if ((is_countable($allTitles) ? count($allTitles) : 0) > 1) {
             $str .= '<br /><p style="text-align:center">';
             $divider = '';
             

@@ -80,7 +80,7 @@
           
           $objTable = $this->newObject('htmltable', 'htmlelements');
           
-          if (count($records) == 0) {
+          if ((is_countable($records) ? count($records) : 0) == 0) {
               $objTable->startRow();
               $objTable->addCell($this->objLanguage->code2Txt('mod_contextstats_phrasenodata', 'contextstats'), '99%', 'center', 'center', '', '');
               $objTable->endRow();

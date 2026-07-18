@@ -41,7 +41,7 @@ $GLOBALS['kewl_entry_point_run']) {
 class unitofarea extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_ahis_unitofarea');
         

@@ -639,7 +639,7 @@ class Snoopy
 		if(!empty($this->user) || !empty($this->pass))	
 			$headers[] = "Authorization: BASIC ".base64_encode($this->user.":".$this->pass);
 			
-		for($curr_header = 0; $curr_header < count($headers); $curr_header++) {
+		for($curr_header = 0; $curr_header < (is_countable($headers) ? count($headers) : 0); $curr_header++) {
 			$cmdline_params .= " -H \"".$headers[$curr_header]."\"";
 		}
 			  	                         
@@ -669,7 +669,7 @@ class Snoopy
 		$this->_redirectaddr = false;
 		unset($this->headers);
 						
-		for($currentHeader = 0; $currentHeader < count($result_headers); $currentHeader++)
+		for($currentHeader = 0; $currentHeader < (is_countable($result_headers) ? count($result_headers) : 0); $currentHeader++)
 		{
 			
 			// if a header begins with Location: or URI:, set the redirect
@@ -839,7 +839,7 @@ class Snoopy
 		settype($formvars, "array");
 		settype($formfiles, "array");
 
-		if (count($formvars) == 0 && count($formfiles) == 0)
+		if ((is_countable($formvars) ? count($formvars) : 0) == 0 && (is_countable($formfiles) ? count($formfiles) : 0) == 0)
 			return;
 		
 		switch ($this->_submit_type) {

@@ -24,7 +24,7 @@ class dbflickrusernames extends dbTable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_photogallery_flickr_users');
         $this->_objUser = $this->getObject('user', 'security');

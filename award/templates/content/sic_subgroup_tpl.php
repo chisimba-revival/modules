@@ -89,7 +89,7 @@ $objSelectTable->endHeaderRow();
 
 
 $class = '';
-if(count($sicSubGroups) > '0'){
+if((is_countable($sicSubGroups) ? count($sicSubGroups) : 0) > '0'){
   foreach($sicSubGroups as $sicSubGroup){ 
      //Get group description
      $sicSubGroupName = $sicSubGroup['code'];

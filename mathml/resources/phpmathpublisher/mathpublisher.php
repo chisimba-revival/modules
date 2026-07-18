@@ -341,7 +341,7 @@ $extraits = array();
 $result=array();
 //stupid code but token_get_all bug in some php versions
 $d=0;
-for($i = 0; $i < count($t); $i++)
+for($i = 0; $i < (is_countable($t) ? count($t) : 0); $i++)
 	{
 	if(is_array($t[$i])) $t[$i] = $t[$i][1];
 	if (preg_match("~formula~", $t[$i]))
@@ -350,7 +350,7 @@ for($i = 0; $i < count($t); $i++)
 		break;
 		}
 	}
-for($i = $d; $i < count($t) - 1; $i++)
+for($i = $d; $i < (is_countable($t) ? count($t) : 0) - 1; $i++)
 	{
 	if(is_array($t[$i])) $t[$i] = $t[$i][1];
 	if($t[$i] == '<=') $t[$i] = 'le';
@@ -374,7 +374,7 @@ for($i = $d; $i < count($t) - 1; $i++)
 		}
 	if(trim($t[$i]) != '') $extraits[] = $t[$i];
 	}
-for($i = 0; $i < count($extraits); $i++)
+for($i = 0; $i < (is_countable($extraits) ? count($extraits) : 0); $i++)
 	{
 	$result[]=new expression_texte($extraits[$i]);
 	}
@@ -774,7 +774,7 @@ for($i = 0; $i < count($this->noeuds); $i++)
 	elseif($this->noeuds[$i]->texte == ')' || $this->noeuds[$i]->texte == '}')
 		{
 		$pos = array_pop($parentheses);
-		if(count($parentheses) == 0)
+		if((is_countable($parentheses) ? count($parentheses) : 0) == 0)
 			{
 			$sub = array_slice($this->noeuds, $pos + 1, $i - $pos - 1);
 			if($this->noeuds[$i]->texte == ')') 
@@ -784,7 +784,7 @@ for($i = 0; $i < count($this->noeuds); $i++)
 			else $ret[] = new expression_math($sub);
 			}
 		}
-	elseif(count($parentheses) == 0) $ret[] = $this->noeuds[$i];
+	elseif((is_countable($parentheses) ? count($parentheses) : 0) == 0) $ret[] = $this->noeuds[$i];
 	}
 $ret = $this->traite_fonction($ret, 'sqrt', 1);
 $ret = $this->traite_fonction($ret, 'vec', 1);
@@ -821,11 +821,11 @@ function traite_operation($noeuds, $operation)
 do
 	{
 	$change = false;
-	if(count($noeuds) <= 3) return $noeuds;
+	if((is_countable($noeuds) ? count($noeuds) : 0) <= 3) return $noeuds;
 	$ret = array();
-	for($i = 0; $i < count($noeuds); $i++)
+	for($i = 0; $i < (is_countable($noeuds) ? count($noeuds) : 0); $i++)
 		{
-		if(!$change && $i < count($noeuds) - 2 && $noeuds[$i+1]->texte == $operation)
+		if(!$change && $i < (is_countable($noeuds) ? count($noeuds) : 0) - 2 && $noeuds[$i+1]->texte == $operation)
 			{
 			$ret[] = new expression_math(array($noeuds[$i], $noeuds[$i+1], $noeuds[$i+2]));
 			$i += 2;
@@ -842,11 +842,11 @@ return $ret;
 
 function traite_fonction($noeuds, $fonction, $nbarg)
 {
-if(count($noeuds) <= $nbarg + 1) return $noeuds;
+if((is_countable($noeuds) ? count($noeuds) : 0) <= $nbarg + 1) return $noeuds;
 $ret = array();
-for($i = 0; $i < count($noeuds); $i++)
+for($i = 0; $i < (is_countable($noeuds) ? count($noeuds) : 0); $i++)
 {
-if($i < count($noeuds) - $nbarg && $noeuds[$i]->texte == $fonction)
+if($i < (is_countable($noeuds) ? count($noeuds) : 0) - $nbarg && $noeuds[$i]->texte == $fonction)
 {
 	$a = array();
 	for($j = $i; $j <= $i + $nbarg; $j++)
@@ -1014,7 +1014,7 @@ $blanc=ImageColorAllocate($result,255,255,255);
 $blanc=imagecolortransparent($result,$blanc);
 ImageFilledRectangle($result,0,0,$largeur-1,$hauteur-1,$blanc);
 $pos = 0;
-for($i = 0; $i < count($img); $i++)
+for($i = 0; $i < (is_countable($img) ? count($img) : 0); $i++)
 	{
 	if(isset($img[$i]))
 		{

@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 */
 class dbhotelimages extends dbtable {
     
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init("tbl_travel_hotel_images");
         $this->objLanguage = $this->getObject('language','language');
         $this->objConfig = $this->getObject('altconfig','config');

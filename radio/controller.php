@@ -254,7 +254,7 @@ class radio extends controller
     	$header_site = $settings_data_temp[3];
     	$debugkey = $settings_data_temp[4];
     	$site_temp = explode("/", $_SERVER["PHP_SELF"]);
-    	$laast_one = count($site_temp) -1;
+    	$laast_one = (is_countable($site_temp) ? count($site_temp) : 0) -1;
     	$between = str_replace($site_temp[$laast_one], "", $_SERVER["PHP_SELF"]);
     	$station_site = "http://".$_SERVER["HTTP_HOST"].$between;
     	$data = explode(";", $this->playlist->get_playlist_info($station,$playlist_name));

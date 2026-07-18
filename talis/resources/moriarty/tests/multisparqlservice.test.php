@@ -151,7 +151,7 @@ class MultiSparqlServiceTest extends SparqlServiceBaseTest {
   
     $triples = $ss->describe_to_triple_list( 'http://example.org/subj', Array('http://example.org/graphs/1') );
 
-    $this->assertEquals( 1, count( $triples ) );
+    $this->assertEquals( 1, (is_countable($triples) ? count($triples) : 0) );
     $this->assertEquals( 'iri', $triples[0]['s_type'] );
     $this->assertEquals( 'http://example.org/subj', $triples[0]['s'] );
     $this->assertEquals( 'http://example.org/pred', $triples[0]['p'] );

@@ -53,7 +53,7 @@ $objSelectTable->addHeaderCell($this->objLanguage->languageText('mod_lrs_decent_
 $objSelectTable->endHeaderRow();
 
 $class = '';
-if(count($blurb) > '0'){
+if((is_countable($blurb) ? count($blurb) : 0) > '0'){
   foreach($blurbs as $blurb){ 
      $blurbId = $blurb['id'];
      $blurbModule = ucwords(strtolower($blurb['module']));

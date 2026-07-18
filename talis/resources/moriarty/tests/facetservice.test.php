@@ -83,7 +83,7 @@ class FacetServiceTest extends PHPUnit_Framework_TestCase {
 
     $ss = new FacetService("http://example.org/store/services/facet");
     $facets = $ss->parse_facet_xml( $xml );
-    $this->assertEquals( 1, count( $facets ) );
+    $this->assertEquals( 1, (is_countable($facets) ? count($facets) : 0) );
     $this->assertEquals( 3, count( $facets['tag'] ) );
     $this->assertEquals( 'dogs', $facets['tag'][0]['value'] );
     $this->assertEquals( 'walking', $facets['tag'][1]['value'] );

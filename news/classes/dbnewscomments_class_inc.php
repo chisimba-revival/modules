@@ -3,7 +3,7 @@
 class dbnewscomments extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_news_storycomments');
 		$this->objUser = $this->getObject('user', 'security');
@@ -34,7 +34,7 @@ class dbnewscomments extends dbtable
         
         $comments = $this->getStoryCommentsSQL($storyId);
         
-        if (count($comments) == 0) {
+        if ((is_countable($comments) ? count($comments) : 0) == 0) {
             return '';
         } else {
             

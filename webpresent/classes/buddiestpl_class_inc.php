@@ -115,8 +115,8 @@ class buddiestpl extends ChisimbaObject
             $objIcon->setIcon('instantmessaging', 'gif', 'icons/modules');
             $this->objIcon->title = $this->objLanguage->languageText("phrase_sendinstantmessage");
             $imIcon = $objIcon->show();
-            if (count($ar)!==0 && !empty($ar)) {
-                $this->budCount = " (" . count($ar) . ")";
+            if ((is_countable($ar) ? count($ar) : 0)!==0 && !empty($ar)) {
+                $this->budCount = " (" . (is_countable($ar) ? count($ar) : 0) . ")";
                 foreach ($ar as $buddy) {
                     $rowTable->startRow();
                     $buddyName = $this->objUser->fullName($buddy['buddyid']);

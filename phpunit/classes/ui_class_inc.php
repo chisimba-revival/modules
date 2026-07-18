@@ -305,7 +305,7 @@ $this->appendArrayVar('headerParams', $script);
 
 				$maxCols = 4;
 
-				$columnCount = count($filesArr) / $maxCols;
+				$columnCount = (is_countable($filesArr) ? count($filesArr) : 0) / $maxCols;
 				$counter = 1;
 
 				$tbl->startRow();

@@ -11,8 +11,8 @@ class LMQuadTest {
 	 * @param array[] $a
 	 */
 	function val($x, $a) {
-		if (count($a) != 3) die ("Wrong number of elements in array a");
-		if (count($x) != 2) die ("Wrong number of elements in array x");
+		if ((is_countable($a) ? count($a) : 0) != 3) die ("Wrong number of elements in array a");
+		if ((is_countable($x) ? count($x) : 0) != 2) die ("Wrong number of elements in array x");
 
 		$ox = $a[0];
 		$oy = $a[1];
@@ -42,8 +42,8 @@ class LMQuadTest {
 	 * @param array[] $a
 	 */
 	function grad($x, $a, $a_k) {
-		if (count($a) != 3) die ("Wrong number of elements in array a");
-		if (count($x) != 2) die ("Wrong number of elements in array x");
+		if ((is_countable($a) ? count($a) : 0) != 3) die ("Wrong number of elements in array a");
+		if ((is_countable($x) ? count($x) : 0) != 2) die ("Wrong number of elements in array x");
 		if ($a_k < 3) die ("a_k=".$a_k);
 
 		$ox = $a[0];

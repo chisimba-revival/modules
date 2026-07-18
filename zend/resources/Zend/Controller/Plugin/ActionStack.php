@@ -201,7 +201,7 @@ class Zend_Controller_Plugin_ActionStack extends Zend_Controller_Plugin_Abstract
     public function popStack()
     {
         $stack = $this->getStack();
-        if (0 == count($stack)) {
+        if (0 == (is_countable($stack) ? count($stack) : 0)) {
             return false;
         }
 

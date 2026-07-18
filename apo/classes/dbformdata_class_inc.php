@@ -10,7 +10,7 @@ class dbformdata extends dbtable {
     var $tablename = "tbl_apo_overview";
     var $userid;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
     }
 
@@ -28,7 +28,7 @@ class dbformdata extends dbtable {
             print_r("exists");
             $existingdata = $this->getAll("where docid='$docid'");
 
-            if (count($existingdata) > 0) {
+            if ((is_countable($existingdata) ? count($existingdata) : 0) > 0) {
                 $this->update('docid', $existingdata[0]['docid'], $formdata, $tablename);
             }
         }
@@ -40,7 +40,7 @@ class dbformdata extends dbtable {
     function exists($docid, $formname) {
         $sql = "select * from tbl_apo_" . $formname . " where docid='$docid'";
         $rows = $this->getArray($sql);
-        if (count($rows) > 0) {
+        if ((is_countable($rows) ? count($rows) : 0) > 0) {
             return TRUE;
         }
         else

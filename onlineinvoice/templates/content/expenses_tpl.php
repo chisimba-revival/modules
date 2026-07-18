@@ -103,7 +103,7 @@ $initial =  $itineraryinfo[0]['departuredate'];
 /**
  *get the arrival date from the itinerary from the last leg of the itinerary
  */
-$count = count($itineraryinfo);
+$count = (is_countable($itineraryinfo) ? count($itineraryinfo) : 0);
 $num = $count - 1;
 $last = $itineraryinfo[$num]['departuredate'];
 
@@ -276,7 +276,7 @@ $this->objtxtdinnerrate->value  = "0.00";
        $myTabExpenses->addCell(' ');
        $myTabExpenses->addCell('<b />' .'Date:');
 //display dates dates in drop down if any dates else if no more dates then display msg
-       if(count($notInSession) > '0'){
+       if((is_countable($notInSession) ? count($notInSession) : 0) > '0'){
          $myTabExpenses->addCell($expDates->show());
        } else {
            $myTabExpenses->addCell('All dates added');
@@ -331,7 +331,7 @@ $this->objtxtdinnerrate->value  = "0.00";
        $myTabExpenses->addCell('');
        $myTabExpenses->addCell('');
        $myTabExpenses->addCell('');
-       if(count($notInSession) > '0'){
+       if((is_countable($notInSession) ? count($notInSession) : 0) > '0'){
          $myTabExpenses->addCell($this->objAddperdiem->show());
        } else {
            $myTabExpenses->addCell('');

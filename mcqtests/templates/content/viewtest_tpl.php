@@ -188,7 +188,7 @@ echo $objTable->show();
 
 
 
-$count = count($questions);
+$count = (is_countable($questions) ? count($questions) : 0);
 if (empty($questions)) {
     $count = 0;
 }

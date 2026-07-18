@@ -21,7 +21,7 @@ class dbpostattachments extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_discussion_post_attachment');
         $this->objFileRegister =& $this->getObject('registerfileusage', 'filemanager');
     }

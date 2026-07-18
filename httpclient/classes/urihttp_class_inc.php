@@ -549,7 +549,7 @@ class urihttp extends aburi
         if (is_scalar($array)) {
             $queryVars[] = implode('', $queryVarNames) . '=' . urlencode($array);
         } else if (is_array($array)) {
-            if (count($array)) {
+            if ((is_countable($array) ? count($array) : 0)) {
                 foreach ($array as $key => $value) {
                     array_push($queryVarNames, '[' . urlencode($key) . ']');
                     $this->_queryArrayRecurse($value, null, $queryVars);

@@ -92,7 +92,7 @@ class utility extends ChisimbaObject {
      */
     public function wordlimit($string, $length = 50, $ellipsis = " ...") {
         $words = explode(' ', $string);
-        if (count($words) > $length) {
+        if ((is_countable($words) ? count($words) : 0) > $length) {
             return implode(' ', array_slice($words, 0, $length)) . $ellipsis;
         } else {
             return $string . $ellipsis;

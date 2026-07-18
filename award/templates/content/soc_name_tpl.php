@@ -53,7 +53,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($socNames) > 0){
+if((is_countable($socNames) ? count($socNames) : 0) > 0){
   foreach($socNames as $socName){
      //Get group description
      $socNameDesc = $socName['name'];

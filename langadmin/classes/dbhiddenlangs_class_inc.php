@@ -26,14 +26,15 @@
  */
 class dbhiddenlangs extends dbtable {
 
-    function init() {
+    /* CHISIMBA_PHP8_DBHIDDENLANGS_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_hiddenlangs');
     }
 
     function isHidden($langid) {
         $sql = "select * from tbl_hiddenlangs where langid = '".$langid."'";
         $data= $this->getArray($sql);
-        return count($data) > 0 ? true: false;
+        return (is_countable($data) ? count($data) : 0) > 0 ? true: false;
     }
 
     function unhideLang($langid) {

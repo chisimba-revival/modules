@@ -554,7 +554,7 @@ class geoops extends ChisimbaObject
 			$lat = floatval($pt[1]);
 			$types = explode(":", $line['NAME']);
 			
-			if(count($types) == 2) {
+			if((is_countable($types) ? count($types) : 0) == 2) {
 				$name = $types[1];
 				$subtype = $types[0];
 			}

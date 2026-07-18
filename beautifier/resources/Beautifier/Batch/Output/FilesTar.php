@@ -55,7 +55,7 @@ class PHP_Beautifier_Batch_Output_FilesTar extends PHP_Beautifier_Batch_Output {
     {
         $aInputFiles = $this->oBatch->getInputFiles();
         $aOutputFiles = PHP_Beautifier_Common::getSavePath($aInputFiles);
-        for ($x = 0;$x<count($aInputFiles);$x++) {
+        for ($x = 0;$x<(is_countable($aInputFiles) ? count($aInputFiles) : 0);$x++) {
             $this->beautifierSetInputFile($aInputFiles[$x]);
             $this->beautifierProcess();
             $this->oTar->addString($aOutputFiles[$x], $this->beautifierGet());

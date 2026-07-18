@@ -432,14 +432,14 @@ class Zend_OpenId
         if ($method == 'POST') {
             $body = "<html><body onLoad=\"document.forms[0].submit();\">\n";
             $body .= "<form method=\"POST\" action=\"$url\">\n";
-            if (is_array($params) && count($params) > 0) {
+            if (is_array($params) && (is_countable($params) ? count($params) : 0) > 0) {
                 foreach($params as $key => $value) {
                     $body .= '<input type="hidden" name="' . $key . '" value="' . $value . "\">\n";
                 }
             }
             $body .= "<input type=\"submit\" value=\"Continue OpenID transaction\">\n";
             $body .= "</form></body></html>\n";
-        } else if (is_array($params) && count($params) > 0) {
+        } else if (is_array($params) && (is_countable($params) ? count($params) : 0) > 0) {
             if (strpos($url, '?') === false) {
                 $url .= '?' . self::paramsToQuery($params);
             } else {

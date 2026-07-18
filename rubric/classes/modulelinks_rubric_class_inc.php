@@ -35,7 +35,7 @@ class modulelinks_rubric extends ChisimbaObject
         
          $rubrics = $this->objRubric->listAll($contextCode);	
 		
-		if(count($rubrics) > 0)
+		if((is_countable($rubrics) ? count($rubrics) : 0) > 0)
 		{
 			
 			 foreach ( $rubrics as $rubric)

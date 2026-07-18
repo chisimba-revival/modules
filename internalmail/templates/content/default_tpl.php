@@ -440,7 +440,7 @@ if (empty($messageData)) {
         if($recipient != ""){
             $to .= $this->dbRouting->getName($recipient);
         }
-        if ($key != count($arrRecipients) -1) {
+        if ($key != (is_countable($arrRecipients) ? count($arrRecipients) : 0) -1) {
             $to.= '; ';
         }
         if ($key == 9) {

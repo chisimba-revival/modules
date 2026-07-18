@@ -49,7 +49,7 @@ class ResSeq extends ResContainer
 			$this->addProperty(new ResResource(RDF_NAMESPACE_URI.RDF_TYPE),$this->containerType);
 		
 		//renumber all higher members
-		for ($i = count($memberIndex);$i >= $index ; $i--)
+		for ($i = (is_countable($memberIndex) ? count($memberIndex) : 0);$i >= $index ; $i--)
 		{
 			$this->removeAll($this->_getMembershipPropertyWithIndex($i));
 			$this->addProperty($this->_getMembershipPropertyWithIndex($i+1),$memberIndex[$i]);
@@ -123,7 +123,7 @@ class ResSeq extends ResContainer
 
 		$this->removeAll($this->_getMembershipPropertyWithIndex($index));
 
-		for ($i = $index;$i < count($memberIndex); $i++)
+		for ($i = $index;$i < (is_countable($memberIndex) ? count($memberIndex) : 0); $i++)
 		{
 			$this->removeAll($this->_getMembershipPropertyWithIndex($i+1));
 			$this->addProperty($this->_getMembershipPropertyWithIndex($i),$memberIndex[$i+1]);

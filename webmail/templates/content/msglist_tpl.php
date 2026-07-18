@@ -15,7 +15,7 @@ $table->addHeader($tableHd, "heading");
 $rowcount = 0;
 if (isset($data))
 {
-    if (count($data) > 0)
+    if ((is_countable($data) ? count($data) : 0) > 0)
     {
         foreach ($data as $line)
         {

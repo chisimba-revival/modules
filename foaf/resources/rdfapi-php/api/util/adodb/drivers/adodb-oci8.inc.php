@@ -598,7 +598,7 @@ NATSOFT.DOMAIN =
 			 if (is_array($inputarr)) {
 			 	foreach($inputarr as $k => $v) {
 					if (is_array($v)) {
-						if (sizeof($v) == 2) // suggested by g.giunta@libero.
+						if ((is_countable($v) ? sizeof($v) : 0) == 2) // suggested by g.giunta@libero.
 							OCIBindByName($stmt,":$k",$inputarr[$k][0],$v[1]);
 						else
 							OCIBindByName($stmt,":$k",$inputarr[$k][0],$v[1],$v[2]);
@@ -822,7 +822,7 @@ NATSOFT.DOMAIN =
 		if (is_array($sql)) $stmt = $sql;
 		else $stmt = ADODB_oci8::Prepare($sql,true); # true to allocate OCINewCursor
 	
-		if (is_array($stmt) && sizeof($stmt) >= 5) {
+		if (is_array($stmt) && (is_countable($stmt) ? sizeof($stmt) : 0) >= 5) {
 			$hasref = true;
 			$ignoreCur = false;
 			$this->Parameter($stmt, $ignoreCur, $cursorName, false, -1, OCI_B_CURSOR);
@@ -877,7 +877,7 @@ NATSOFT.DOMAIN =
 		
 		if (!is_array($stmt)) return false;
         
-        if (($type == OCI_B_CURSOR) && sizeof($stmt) >= 5) { 
+        if (($type == OCI_B_CURSOR) && (is_countable($stmt) ? sizeof($stmt) : 0) >= 5) { 
             return OCIBindByName($stmt[1],":".$name,$stmt[4],$size,$type);
         }
         
@@ -1003,7 +1003,7 @@ NATSOFT.DOMAIN =
 		if (is_array($inputarr)) {
 			foreach($inputarr as $k => $v) {
 				if (is_array($v)) {
-					if (sizeof($v) == 2) // suggested by g.giunta@libero.
+					if ((is_countable($v) ? sizeof($v) : 0) == 2) // suggested by g.giunta@libero.
 						OCIBindByName($stmt,":$k",$inputarr[$k][0],$v[1]);
 					else
 						OCIBindByName($stmt,":$k",$inputarr[$k][0],$v[1],$v[2]);
@@ -1158,7 +1158,7 @@ SELECT /*+ RULE */ distinct b.column_name
 			$tabcol = $this->GetArray("select table_name,column_name from {$tabp}cons_columns where owner=$rowner and constraint_name=$rcons order by position");
 			
 			if ($cols && $tabcol) 
-				for ($i=0, $max=sizeof($cols); $i < $max; $i++) {
+				for ($i=0, $max=(is_countable($cols) ? sizeof($cols) : 0); $i < $max; $i++) {
 					$arr[$tabcol[$i][0]] = $cols[$i][0].'='.$tabcol[$i][1];
 				}
 		}

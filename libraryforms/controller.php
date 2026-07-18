@@ -124,7 +124,7 @@ class libraryforms extends controller {
         }
 
         //if form entry is in corect or invavalid
-        if (count($msg) > 0) {
+        if ((is_countable($msg) ? count($msg) : 0) > 0) {
             $this->setVarByRef('msg', $msg);
             $this->setVarByRef('insarr', $insarr);
             return 'editadd_tpl.php';
@@ -182,7 +182,7 @@ class libraryforms extends controller {
             $erormsg [] = 'badcaptcha';
         }
         //if form entry is in corect or invavalid
-        if (count($erormsg) > 0) {
+        if ((is_countable($erormsg) ? count($erormsg) : 0) > 0) {
             $this->setVarByRef('erormsg', $erormsg);
             $this->setVarByRef('insarr', $insarr);
             return 'editadd_tpl.php';
@@ -234,7 +234,7 @@ class libraryforms extends controller {
             $errormsg[] = 'badcaptcha';
         }
         //if form entry is in corect or invavalid
-        if (count($errormsg) > 0) {
+        if ((is_countable($errormsg) ? count($errormsg) : 0) > 0) {
             $this->setVarByRef('$errormsg', $errormsg);
             $this->setVarByRef('insarr', $insarr);
             return 'editadd_tpl.php';
@@ -273,7 +273,7 @@ class libraryforms extends controller {
         }
 
         //if form entry is in corect or invavalid
-        if (count($errormsg) > 0) {
+        if ((is_countable($errormsg) ? count($errormsg) : 0) > 0) {
             $this->setVarByRef('errormsg', $errormsg);
             $this->setVarByRef('insarr', $insarr);
 

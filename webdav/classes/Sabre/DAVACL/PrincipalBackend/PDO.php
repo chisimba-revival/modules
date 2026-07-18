@@ -396,7 +396,7 @@ class Sabre_DAVACL_PrincipalBackend_PDO implements Sabre_DAVACL_IPrincipalBacken
     public function setGroupMemberSet($principal, array $members) {
 
         // Grabbing the list of principal id's.
-        $stmt = $this->pdo->prepare('SELECT id, uri FROM '.$this->tableName.' WHERE uri IN (? ' . str_repeat(', ? ', count($members)) . ');');
+        $stmt = $this->pdo->prepare('SELECT id, uri FROM '.$this->tableName.' WHERE uri IN (? ' . str_repeat(', ? ', (is_countable($members) ? count($members) : 0)) . ');');
         $stmt->execute(array_merge(array($principal), $members));
 
         $memberIds = array();

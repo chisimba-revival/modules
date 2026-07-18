@@ -493,7 +493,7 @@ class forum extends controller {
                                         //extract the topic ID from the message subject
                                         $topic_id = 'gen' . substr($eMailSubject, $end + 1, strlen($eMailSubject));
                                         $topicDetails = $this->objTopic->getTopicDetails($topic_id);
-                                        if (count($topicDetails) > 0) {
+                                        if ((is_countable($topicDetails) ? count($topicDetails) : 0) > 0) {
                                                 //get the topic's forum ID
                                                 $forum_id = $topicDetails['forum_id'];
                                                 if ($objTopicSubScription->isSubscribedToTopic($topic_id, $userId) || $this->objForumSubscriptions->isSubscribedToForum($forum_id, $userId)) {
@@ -603,7 +603,7 @@ class forum extends controller {
                 $this->setVarByRef('paging', $paging);
 
                 $allTopics = $this->objTopic->showTopicsInForum($id, $this->userId, $forum['archivedate'], $order, $direction, NULL, $limit);
-                $topicsNum = count($allTopics);
+                $topicsNum = (is_countable($allTopics) ? count($allTopics) : 0);
 
                 //add to activity log
                 if ($this->eventsEnabled) {
@@ -1541,7 +1541,7 @@ class forum extends controller {
          */
         public function downloadAttachment($id, $topic) {
                 $files = $this->objPostAttachments->downloadAttachment($id);
-                if (count($files) > 0) {
+                if ((is_countable($files) ? count($files) : 0) > 0) {
                         $location = $this->objFiles->getFullFilePath($files[0]['id']);
                         header('Content-Disposition: attachment; filename="' . $files[0]['filename'] . '"');
                         readfile($location);
@@ -1631,7 +1631,7 @@ class forum extends controller {
                         $forumForm = new form('forumform', 'index.php');
                         $forumForm->method = 'GET';
                         $forums = $this->objForum->getContextForums($this->contextCode);
-                        if (count($forums) > 1 && $showForumJump) {
+                        if ((is_countable($forums) ? count($forums) : 0) > 1 && $showForumJump) {
                                 $dd = new dropdown('id');
                                 foreach ($forums AS $forum) {
                                         if ($forum['id'] != $forum_id) {
@@ -1740,7 +1740,7 @@ class forum extends controller {
                 $values = $this->objPostRatings->fetchAll($smt);
                 if ($currentRating >= 1) {
                         $currentRating -= 1;
-                        if (count($values) == 0) {
+                        if ((is_countable($values) ? count($values) : 0) == 0) {
                                 return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
                         }
                 } else {
@@ -1758,15 +1758,15 @@ class forum extends controller {
                         $smt = "WHERE post_id='{$post_id}' AND userid='{$this->objUser->userId()}'";
 //                        echo $smt;
                         $values = $this->objPostRatings->fetchAll($smt);
-//                        echo count($values);
+//                        echo (is_countable($values) ? count($values) : 0);
                         if (empty($currentRating)) {
                                 $currentRating = 1;
-                                if (count($values) == 0) {
+                                if ((is_countable($values) ? count($values) : 0) == 0) {
                                         return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
                                 }
                         } else {
                                 $currentRating += 1;
-                                if (count($values) == 0) {
+                                if ((is_countable($values) ? count($values) : 0) == 0) {
                                         return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
                                 }
                         }
@@ -2241,7 +2241,7 @@ class forum extends controller {
                 $objSearch->defaultForum = $forum;
                 $objSearch->searchTerm = $term;
                 // Only perform search if no errors exist
-                if (count($errors) == 0) {
+                if ((is_countable($errors) ? count($errors) : 0) == 0) {
                         $searchResults = $objSearch->searchForum($term, $forum);
                 } else {
                         $searchResults = '';
@@ -2467,7 +2467,7 @@ class forum extends controller {
 // Parse Images
                         $images_array = extract_tags($string, 'img');
                         $images = array();
-                        for ($i = 0; $i <= sizeof($images_array); $i++) {
+                        for ($i = 0; $i <= (is_countable($images_array) ? sizeof($images_array) : 0); $i++) {
                                 $img = trim(@$images_array[$i]['attributes']['src']);
                                 $width = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['width']);
                                 $height = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['height']);

@@ -5,7 +5,7 @@ if(!$GLOBALS['kewl_entry_point_run']) {
 }
 class dbuseractivation extends dbtable {
     private $tablename;
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_userextra_activation');
         $this->tablename='tbl_userextra_activation';
     }
@@ -15,7 +15,7 @@ class dbuseractivation extends dbtable {
         $sql=
                 "select userid from tbl_userextra_activation where userid = '$userid'";
         $rows=$this->getArray($sql);
-        if(count($rows) > 0) {
+        if((is_countable($rows) ? count($rows) : 0) > 0) {
             return TRUE;
         }else {
             return FALSE;

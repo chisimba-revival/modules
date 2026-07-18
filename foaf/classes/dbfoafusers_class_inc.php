@@ -40,7 +40,7 @@ class dbfoaf extends dbtable
      * @param void
      * @return void
      */
-    public function init() 
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         try {
             //initialize the parent table

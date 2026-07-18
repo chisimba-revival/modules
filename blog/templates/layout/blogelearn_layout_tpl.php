@@ -37,7 +37,7 @@ $bloggers = $this->objDbBlog->getUBlogs('userid', 'tbl_blog_posts');
 
 //$sidebar .= $this->objblogSearching->searchBox();
 
-if (count($bloggers) > 0) {
+if ((is_countable($bloggers) ? count($bloggers) : 0) > 0) {
     $this->loadClass('form', 'htmlelements');
     $this->loadClass('button', 'htmlelements');
     $this->loadClass('dropdown', 'htmlelements');

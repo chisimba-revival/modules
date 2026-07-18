@@ -308,11 +308,11 @@ class turnitinupload extends ChisimbaObject {
         //split the string by the literal dot in the filename
         $pattern = preg_split('/\./', $string, -1, PREG_SPLIT_OFFSET_CAPTURE);
         //get the last dot position
-        $lastdot = $pattern[count($pattern)-1][1];
+        $lastdot = $pattern[(is_countable($pattern) ? count($pattern) : 0)-1][1];
         //now extract the filename using the basename function
         $filename = basename(substr($string, 0, $lastdot-1));
         $exts = split("[/\\.]", $filepath) ;
-        $n = count($exts)-1;
+        $n = (is_countable($exts) ? count($exts) : 0)-1;
         $ext = $exts[$n];
 
         return $filename.'.'.$ext;

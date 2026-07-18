@@ -92,7 +92,7 @@ if (empty($data)) {
 // Display questions
 if (!empty($data)) {
     $i = $data[0]['questionorder'];
-    $count = count($data) + $i - 1;
+    $count = (is_countable($data) ? count($data) : 0) + $i - 1;
     $questionCounter = $i;
     $qnum = $i;
     foreach ($data as $line) {

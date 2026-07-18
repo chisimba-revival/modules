@@ -26,7 +26,7 @@ class import extends dbTable
 	/**
 	*Initialize method
 	*/
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		//set initial table
 		parent::init('tbl_context');
@@ -369,7 +369,7 @@ class import extends dbTable
             $src=spliti("\"",$segment[1]);
             $src=$src[0];
             $segment[1]=strstr($segment[1],"\"");
-            $check=count($segment);
+            $check=(is_countable($segment) ? count($segment) : 0);
             $text='';
             if ($check>2){
                 for($ic=1;$ic!=$check;$ic++)

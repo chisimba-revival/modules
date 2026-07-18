@@ -121,7 +121,7 @@ $table->addHeaderCell("Date Recieved", NULL, NULL, "center");
 $table->endHeaderRow();
 
 
-if (count($gifts) > 0) {
+if ((is_countable($gifts) ? count($gifts) : 0) > 0) {
     foreach ($gifts as $gift) {
 
         $objIcon->setIcon('edit');

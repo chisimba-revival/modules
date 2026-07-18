@@ -37,7 +37,7 @@ class block_latestpodcasts extends ChisimbaObject
     {
         $podcasts = $this->objPodcast->getLast5();
         
-        if (count($podcasts) == 0) {
+        if ((is_countable($podcasts) ? count($podcasts) : 0) == 0) {
             return $this->objLanguage->languageText('mod_podcast_nopodcastsavailable', 'podcast');
         } else {
            //print_r($podcasts);

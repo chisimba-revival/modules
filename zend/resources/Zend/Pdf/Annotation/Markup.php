@@ -126,7 +126,7 @@ class Zend_Pdf_Annotation_Markup extends Zend_Pdf_Annotation
 
         $annotationDictionary->Contents = new Zend_Pdf_Element_String($text);
 
-        if (!is_array($quadPoints)  ||  count($quadPoints) == 0  ||  count($quadPoints) % 8 != 0) {
+        if (!is_array($quadPoints)  ||  (is_countable($quadPoints) ? count($quadPoints) : 0) == 0  ||  (is_countable($quadPoints) ? count($quadPoints) : 0) % 8 != 0) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('$quadPoints parameter must be an array of 8xN numbers');
         }

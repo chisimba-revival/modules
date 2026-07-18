@@ -101,7 +101,7 @@ function format_search($search_str) {
 	
 	// start out with an AND array of all the items
 	$and_arr = explode(' ', $search_str);
-	$count = count($and_arr);
+	$count = (is_countable($and_arr) ? count($and_arr) : 0);
 	$j = 0;
 	
 	// build an OR array from the items in AND
@@ -133,25 +133,25 @@ function format_search($search_str) {
 	}
 	
 	// prepare our formatted search string
-	if (count($and_arr) > 1) {
+	if ((is_countable($and_arr) ? count($and_arr) : 0) > 1) {
 		$final_str_arr[] = implode('</b> AND <b>', $and_arr);
 	} elseif (isset($and_arr[0]) && $and_arr[0] != '') {
 		$final_str_arr[] = $and_arr[0];
 	}
 	
-	if (count($or_str_arr) > 1) {
+	if ((is_countable($or_str_arr) ? count($or_str_arr) : 0) > 1) {
 		$final_str_arr[] = implode('</b> AND <b>', $or_str_arr);
 	} elseif (isset($or_str_arr[0]) && $or_str_arr[0] != '') {
 		$final_str_arr[] = $or_str_arr[0];
 	}
 	
-	if (count($not_arr) > 1) {
+	if ((is_countable($not_arr) ? count($not_arr) : 0) > 1) {
 		$final_str_arr[] = '-'.implode('</b> AND <b>-', $not_arr);
 	} elseif (isset($not_arr[0]) && $not_arr[0] != '') {
 		$final_str_arr[] = '-'.$not_arr[0];
 	}
 	
-	if (count($final_str_arr) > 1) {
+	if ((is_countable($final_str_arr) ? count($final_str_arr) : 0) > 1) {
 		$formatted_search = '<b>'.implode('</b> AND <b>', $final_str_arr).'</b>';
 	} else {
 		$formatted_search = '<b>'.$final_str_arr[0].'</b>';
@@ -169,9 +169,9 @@ function search_boolean($needle_arr, $haystack) {
 	$not_arr = $needle_arr[3];
 	
 	if (!$needle_arr[0]) return false;
-	if ((sizeof($and_arr) == 0) &&
-		(sizeof($or_arr) == 0) &&
-		(sizeof($not_arr) == 0)) return false;
+	if (((is_countable($and_arr) ? sizeof($and_arr) : 0) == 0) &&
+		((is_countable($or_arr) ? sizeof($or_arr) : 0) == 0) &&
+		((is_countable($not_arr) ? sizeof($not_arr) : 0) == 0)) return false;
 	
 	// compare lowercase versions of the strings
 	$haystack = strtolower($haystack);

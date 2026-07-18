@@ -53,7 +53,7 @@ class db_learningcontent_involvement extends dbtable
     /**
      * Constructor
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_involvement');
     }

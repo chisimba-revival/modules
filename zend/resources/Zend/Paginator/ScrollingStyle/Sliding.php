@@ -52,7 +52,7 @@ class Zend_Paginator_ScrollingStyle_Sliding implements Zend_Paginator_ScrollingS
         }
 
         $pageNumber = $paginator->getCurrentPageNumber();
-        $pageCount  = count($paginator);
+        $pageCount  = (is_countable($paginator) ? count($paginator) : 0);
 
         if ($pageRange > $pageCount) {
             $pageRange = $pageCount;

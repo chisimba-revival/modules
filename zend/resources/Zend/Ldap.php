@@ -212,7 +212,7 @@ class Zend_Ldap
         } else {
             $message = '';
         }
-        if (count($errorMessages) > 0) {
+        if ((is_countable($errorMessages) ? count($errorMessages) : 0) > 0) {
             $message .= '(' . implode('; ', $errorMessages) . ')';
         } else {
             $message .= '(no error message from LDAP)';
@@ -309,7 +309,7 @@ class Zend_Ldap
                 }
             }
         }
-        if (count($options) > 0) {
+        if ((is_countable($options) ? count($options) : 0) > 0) {
             $key = key($options);
             /**
              * @see Zend_Ldap_Exception
@@ -682,7 +682,7 @@ class Zend_Ldap
              */
             require_once 'Zend/Ldap/Exception.php';
             $code = Zend_Ldap_Exception::LDAP_OPERATIONS_ERROR;
-            $str = "Unexpected result count ($count) for: $accountFilter";
+            $str = "Unexpected result (is_countable($count) ? count($count) : 0) for: $accountFilter";
         }
         $accounts->close();
         /**
@@ -1201,7 +1201,7 @@ class Zend_Ldap
         }
         self::prepareLdapEntryArray($entry);
         foreach ($entry as $key => $value) {
-            if (is_array($value) && count($value) === 0) {
+            if (is_array($value) && (is_countable($value) ? count($value) : 0) === 0) {
                 unset($entry[$key]);
             }
         }
@@ -1265,7 +1265,7 @@ class Zend_Ldap
             }
         }
 
-        if (count($entry) > 0) {
+        if ((is_countable($entry) ? count($entry) : 0) > 0) {
             $isModified = @ldap_modify($this->getResource(), $dn->toString(), $entry);
             if($isModified === false) {
                 /**

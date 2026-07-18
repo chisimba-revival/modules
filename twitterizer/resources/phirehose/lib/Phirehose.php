@@ -155,7 +155,7 @@ abstract class Phirehose
     $locationBoxes = array();
     foreach ($boundingBoxes as $boundingBox) {
       // Sanity check
-      if (count($boundingBox) != 4) {
+      if ((is_countable($boundingBox) ? count($boundingBox) : 0) != 4) {
         // Invalid - Not much we can do here but log error
         $this->log('Invalid location bounding box: [' . implode(', ', $boundingBox) . ']');
         return FALSE;
@@ -184,7 +184,7 @@ abstract class Phirehose
     }
     $locationBoxes = $this->locationBoxes; // Copy array
     $ret = array();
-    while (count($locationBoxes) >= 4) {
+    while ((is_countable($locationBoxes) ? count($locationBoxes) : 0) >= 4) {
       $ret[] = array_splice($locationBoxes, 0, 4); // Append to ret array in blocks of 4
     }
     return $ret;
@@ -211,7 +211,7 @@ abstract class Phirehose
     $boundingBoxes = array();
     foreach ($locations as $locTriplet) {
       // Sanity check
-      if (count($locTriplet) != 3) {
+      if ((is_countable($locTriplet) ? count($locTriplet) : 0) != 3) {
         // Invalid - Not much we can do here but log error
         $this->log('Invalid location triplet for ' . __METHOD__ . ': [' . implode(', ', $locTriplet) . ']');
         return FALSE;

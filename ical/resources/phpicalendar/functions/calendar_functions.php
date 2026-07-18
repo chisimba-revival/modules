@@ -268,7 +268,7 @@ function display_ical_list($cals, $pick=FALSE) {
 		// if it is a webcal. So that is how we perform the comparison when
 		// trying to figure out if this is the selected calendar.
 		if($pick) {
-			if (in_array($cal_encoded_tmp, explode(",", $cal)) || count($cals) == count(explode(",", $cal))) {
+			if (in_array($cal_encoded_tmp, explode(",", $cal)) || (is_countable($cals) ? count($cals) : 0) == count(explode(",", $cal))) {
 					$return .= "<option value=\"$cal_encoded_tmp\" selected=\"selected\">$cal_displayname_tmp</option>\n";
 			} else {
 					$return .= "<option value=\"$cal_encoded_tmp\">$cal_displayname_tmp</option>\n";	

@@ -68,7 +68,7 @@ class dbpersonalspaceblocks extends dbTable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_personalspace_blocks');
         $this->objUser = $this->getObject('user','security');
@@ -84,7 +84,7 @@ class dbpersonalspaceblocks extends dbTable
     {
         $results = $this->getUserBlocksList($userId, $side);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
            return '';
         } else {
            
@@ -144,7 +144,7 @@ class dbpersonalspaceblocks extends dbTable
         
         $array = array();
         
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $array[] = $result['block'];
@@ -188,7 +188,7 @@ class dbpersonalspaceblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' ORDER BY position DESC LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['position'];
@@ -289,7 +289,7 @@ class dbpersonalspaceblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position < '.$position.' ORDER BY position DESC LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -309,7 +309,7 @@ class dbpersonalspaceblocks extends dbTable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

@@ -61,7 +61,7 @@ $GLOBALS['kewl_entry_point_run']) {
  
 class dataexport extends dbtable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_award_agree');
         
         $this->objRegion = $this->getObject('dbregion', 'awardapi');

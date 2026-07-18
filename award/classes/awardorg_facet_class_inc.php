@@ -54,7 +54,7 @@ class awardorg_facet extends dbTable
     *
     * @access private
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     { 
         $this -> _objUnitDb = $this -> getObject('dbunit', 'awardapi');
         $this -> _objTypeDb = $this -> getObject('dbindex', 'awardapi');

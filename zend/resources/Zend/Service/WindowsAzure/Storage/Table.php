@@ -446,7 +446,7 @@ class Zend_Service_WindowsAzure_Storage_Table
         );
         
         // Return
-        if (count($result) == 1) {
+        if ((is_countable($result) ? count($result) : 0) == 1) {
             return $result[0];
         }
         
@@ -508,7 +508,7 @@ class Zend_Service_WindowsAzure_Storage_Table
     		}
     		    
     	    // Build queryString
-    	    if (count($query) > 0)  {
+    	    if ((is_countable($query) ? count($query) : 0) > 0)  {
     	        $queryString = '?' . implode('&', $query);
     	    }
 		} else if (get_class($tableName) == 'Zend_Service_WindowsAzure_Storage_TableEntityQuery') {
@@ -641,7 +641,7 @@ class Zend_Service_WindowsAzure_Storage_Table
 	public function mergeEntity($tableName = '', Zend_Service_WindowsAzure_Storage_TableEntity $entity = null, $verifyEtag = false, $properties = array())
 	{
 		$mergeEntity = null;
-		if (is_array($properties) && count($properties) > 0) {
+		if (is_array($properties) && (is_countable($properties) ? count($properties) : 0) > 0) {
 			// Build a new object
 			$mergeEntity = new Zend_Service_WindowsAzure_Storage_DynamicTableEntity($entity->getPartitionKey(), $entity->getRowKey());
 			

@@ -116,7 +116,7 @@ class SparqlServiceBaseTest extends PHPUnit_Framework_TestCase {
   
     $triples = $ss->describe_to_triple_list( 'http://example.org/subj' );
 
-    $this->assertEquals( 1, count( $triples ) );
+    $this->assertEquals( 1, (is_countable($triples) ? count($triples) : 0) );
     $this->assertEquals( 'iri', $triples[0]['s_type'] );
     $this->assertEquals( 'http://example.org/subj', $triples[0]['s'] );
     $this->assertEquals( 'http://example.org/pred', $triples[0]['p'] );
@@ -189,7 +189,7 @@ class SparqlServiceBaseTest extends PHPUnit_Framework_TestCase {
   
     $triples = $ss->graph_to_triple_list( 'construct {?s ?p ?o } where { ?s ?p ?o .}' );
 
-    $this->assertEquals( 1, count( $triples ) );
+    $this->assertEquals( 1, (is_countable($triples) ? count($triples) : 0) );
     $this->assertEquals( 'iri', $triples[0]['s_type'] );
     $this->assertEquals( 'http://example.org/subj', $triples[0]['s'] );
     $this->assertEquals( 'http://example.org/pred', $triples[0]['p'] );
@@ -346,7 +346,7 @@ class SparqlServiceBaseTest extends PHPUnit_Framework_TestCase {
   
     $array = $ss->select_to_array( 'select distinct ?s where { ?s ?p ?o .} limit 3' );
 
-    $this->assertEquals( 2, count( $array ) );
+    $this->assertEquals( 2, (is_countable($array) ? count($array) : 0) );
 
     $this->assertEquals( 3, count($array[0]) );
     $this->assertEquals( 'uri', $array[0]['s']['type'] );
@@ -396,7 +396,7 @@ class SparqlServiceBaseTest extends PHPUnit_Framework_TestCase {
     $ss = new SparqlService("http://example.org/store/services/sparql");
     $array = $ss->parse_select_results($xml );
 
-    $this->assertEquals( 1, count( $array ) );
+    $this->assertEquals( 1, (is_countable($array) ? count($array) : 0) );
 
     $this->assertEquals( 3, count($array[0]) );
     $this->assertEquals( 'literal', $array[0]['o']['type'] );
@@ -435,7 +435,7 @@ class SparqlServiceBaseTest extends PHPUnit_Framework_TestCase {
     $ss = new SparqlService("http://example.org/store/services/sparql");
     $array = $ss->parse_select_results($xml );
 
-    $this->assertEquals( 1, count( $array ) );
+    $this->assertEquals( 1, (is_countable($array) ? count($array) : 0) );
 
     $this->assertEquals( 3, count($array[0]) );
     $this->assertEquals( 'literal', $array[0]['o']['type'] );

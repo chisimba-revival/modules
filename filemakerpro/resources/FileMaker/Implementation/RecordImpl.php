@@ -60,7 +60,7 @@ if (FileMaker::isError($V06e3d36f)) {
 switch ($V06e3d36f->getResult()) {
  case 'date': 
  $V78f0805f = explode('/', $V2063c160);
-if (count($V78f0805f) != 3) {
+if ((is_countable($V78f0805f) ? count($V78f0805f) : 0) != 3) {
  return new FileMaker_Error($this->_fm, 'Failed to parse "' . $V2063c160 . '" as a FileMaker date value.');
 }
 $Vd7e6d55b = @mktime(0, 0, 0, $V78f0805f[0], $V78f0805f[1], $V78f0805f[2]);
@@ -70,7 +70,7 @@ if ($Vd7e6d55b === false) {
 break;
 case 'time': 
  $V78f0805f = explode(':', $V2063c160);
-if (count($V78f0805f) != 3) {
+if ((is_countable($V78f0805f) ? count($V78f0805f) : 0) != 3) {
  return new FileMaker_Error($this->_fm, 'Failed to parse "' . $V2063c160 . '" as a FileMaker time value.');
 }
 $Vd7e6d55b = @mktime($V78f0805f[0], $V78f0805f[1], $V78f0805f[2], 1, 1, 1970);

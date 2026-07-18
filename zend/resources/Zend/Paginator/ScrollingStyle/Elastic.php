@@ -54,8 +54,8 @@ class Zend_Paginator_ScrollingStyle_Elastic extends Zend_Paginator_ScrollingStyl
 
         if ($originalPageRange + $pageNumber - 1 < $pageRange) {
             $pageRange = $originalPageRange + $pageNumber - 1;
-        } else if ($originalPageRange + $pageNumber - 1 > count($paginator)) {
-            $pageRange = $originalPageRange + count($paginator) - $pageNumber;
+        } else if ($originalPageRange + $pageNumber - 1 > (is_countable($paginator) ? count($paginator) : 0)) {
+            $pageRange = $originalPageRange + (is_countable($paginator) ? count($paginator) : 0) - $pageNumber;
         }
 
         return parent::getPages($paginator, $pageRange);

@@ -16,7 +16,7 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class dbgroups  extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_jukskei_groups');
         $this->table = 'tbl_jukskei_groups';
         $this->objUser=$this->getObject('user','security');

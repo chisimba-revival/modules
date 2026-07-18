@@ -73,7 +73,7 @@ class MeshInterpolate {
         $step = pow( 2, $aIntFactor-1 );
 
         $orig_cols = count( $aData[0] );
-        $orig_rows = count( $aData );
+        $orig_rows = (is_countable($aData) ? count($aData) : 0);
         // Number of new columns/rows
         // N = (a-1) * 2^(f-1) + 1
         $p = pow( 2, $aIntFactor-1 );

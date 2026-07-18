@@ -11,7 +11,7 @@
  */
 class storyparser  extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_stories');
         $this->table = 'tbl_stories';
     }

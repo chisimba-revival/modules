@@ -119,7 +119,7 @@ class block_latestcontextannouncement extends ChisimbaObject
 
         $announcements = $this->objBlocks->getContextAnnouncements($this->contextCode, 0, 5);
 
-        if (count($announcements) > 0) {
+        if ((is_countable($announcements) ? count($announcements) : 0) > 0) {
             $str .= '<ul>';
 
             foreach ($announcements as $announcement)

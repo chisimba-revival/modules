@@ -73,7 +73,7 @@ class block_internalsmiddle extends ChisimbaObject {
         $tblLeave->addCell('&nbsp;');
         $tblLeave->endRow();
         $index = 0;
-        if (count($leaves) > 0) {
+        if ((is_countable($leaves) ? count($leaves) : 0) > 0) {
             //populate the dropdown list with the values from the database
             foreach ($leaves as $item) {
                 $tblLeave->startRow();
@@ -83,7 +83,7 @@ class block_internalsmiddle extends ChisimbaObject {
                 $rdLeaveTypes->addOption($item['id'], $item['name']);
                 $tblLeave->addCell($rdLeaveTypes->show());
                 $tblLeave->addCell($item['numberofdays'], NULL, NULL, 'center', NULL, NULL);
-                if (count($daysLeft) <= 0) {
+                if ((is_countable($daysLeft) ? count($daysLeft) : 0) <= 0) {
 //                    $daysLeft = $item['numberofdays'];
                     $tblLeave->addCell($item['numberofdays'], NULL, NULL, 'center', NULL, NULL);
                 } else {
@@ -154,7 +154,7 @@ class block_internalsmiddle extends ChisimbaObject {
         $tblLeave->endRow();
 
         $frmLeave->addToForm($tblLeave->show());
-        if (count($leaves) <= 0) {
+        if ((is_countable($leaves) ? count($leaves) : 0) <= 0) {
             return $this->objLanguage->languageText('phrase_noappleave', 'system');
         }
         return $frmLeave->show();
@@ -173,7 +173,7 @@ class block_internalsmiddle extends ChisimbaObject {
         $link = $this->getObject('link', 'htmlelements');
         //get applicable leaves
         $leaveList = $this->dbInternals->getLeaveList();
-        if (count($leaveList) > 0) {
+        if ((is_countable($leaveList) ? count($leaveList) : 0) > 0) {
             foreach ($leaveList as $Item) {
                 $link->link = $Item['name'];
                 $link->href = '#';
@@ -257,7 +257,7 @@ class block_internalsmiddle extends ChisimbaObject {
         //if user is internals amdin, get the list of leave requests
         $values = $this->dbInternals->getLeaveRequests();
         //check available requests and display them
-        if (count($values) > 0) {
+        if ((is_countable($values) ? count($values) : 0) > 0) {
             foreach ($values as $value) {
                 //reject link
                 $rejectLink->cssId = $value['id'];

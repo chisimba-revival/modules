@@ -40,7 +40,7 @@ class etdfiles extends dbtable
     /**
     * Constructor
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try{
             $this->objUpload =& $this->getObject('upload', 'files');

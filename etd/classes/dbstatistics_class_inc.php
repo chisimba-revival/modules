@@ -21,7 +21,7 @@ class dbStatistics extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_etd_statistics');
         $this->table = 'tbl_etd_statistics';
@@ -591,7 +591,7 @@ class dbStatistics extends dbTable
                 foreach($mntArr as $key => $val){
                     $month = $this->objDate->monthFull($key);
                     ksort($val);
-                    $rows = count($val) + 1;
+                    $rows = (is_countable($val) ? count($val) : 0) + 1;
                     
                     $objTable->startRow();
                     $objTable->addCell($month, '25%', '', '', '', "rowspan='{$rows}'");
@@ -770,7 +770,7 @@ class dbStatistics extends dbTable
                 foreach($cntArr as $key => $val){
                     $country = $this->objIpCountry->getCountryName($key);
                     ksort($val);
-                    $rows = count($val) + 1;
+                    $rows = (is_countable($val) ? count($val) : 0) + 1;
                     
                     $objTable->startRow();
                     $objTable->addCell($country, '25%', '', '', '', "rowspan='{$rows}'");

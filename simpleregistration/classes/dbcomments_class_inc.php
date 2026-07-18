@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 }
 class dbcomments extends dbTable{
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_simpleregistrationcomments');  //super
         $this->table = 'tbl_simpleregistrationcomments';

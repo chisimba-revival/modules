@@ -352,7 +352,7 @@ class Zend_Amf_Parse_Amf3_Serializer extends Zend_Amf_Parse_Serializer
         }
 
         // write the preamble id of the array
-        $length = count($numeric);
+        $length = (is_countable($numeric) ? count($numeric) : 0);
         $id     = ($length << 1) | 0x01;
         $this->writeInteger($id);
 
@@ -474,7 +474,7 @@ class Zend_Amf_Parse_Amf3_Serializer extends Zend_Amf_Parse_Serializer
 
             $traitsInfo = Zend_Amf_Constants::AMF3_OBJECT_ENCODING;
             $traitsInfo |= $encoding << 2;
-            $traitsInfo |= (count($propertyNames) << 4);
+            $traitsInfo |= ((is_countable($propertyNames) ? count($propertyNames) : 0) << 4);
         }
 
         $this->writeInteger($traitsInfo);

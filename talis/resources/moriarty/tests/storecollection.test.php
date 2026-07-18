@@ -86,7 +86,7 @@ class StoreCollectionTest extends PHPUnit_Framework_TestCase {
       $subjects[$subject] = 1;
     }
 
-    $this->assertEquals( 1 , count($subjects));
+    $this->assertEquals( 1 , (is_countable($subjects) ? count($subjects) : 0));
   }
 
 
@@ -111,7 +111,7 @@ class StoreCollectionTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
   function test_create_store_posts_rdfxml_with_a_single_store_template() {
@@ -135,7 +135,7 @@ class StoreCollectionTest extends PHPUnit_Framework_TestCase {
       }
     }
 
-    $this->assertEquals( 1 , count($values));
+    $this->assertEquals( 1 , (is_countable($values) ? count($values) : 0));
   }
 
 
@@ -175,7 +175,7 @@ class StoreCollectionTest extends PHPUnit_Framework_TestCase {
 
     $list = $coll->get_store_uris();
 
-    $this->assertEquals(2, count($list));
+    $this->assertEquals(2, (is_countable($list) ? count($list) : 0));
   }
 
 

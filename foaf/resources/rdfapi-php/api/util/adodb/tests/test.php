@@ -800,7 +800,7 @@ END Adodb;
 	$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
 	$val1 = $db->GetRow("select count(*) from ADOXYZ");
 	$val2 = $db->GetRow("select count(*) from ADOXYZ");
-	 if ($val1[0] == 50 and sizeof($val1) == 1 and $val2[0] == 50 and sizeof($val2) == 1) print "<p>GetRow returns ok</p>";
+	 if ($val1[0] == 50 and (is_countable($val1) ? sizeof($val1) : 0) == 1 and $val2[0] == 50 and (is_countable($val2) ? sizeof($val2) : 0) == 1) print "<p>GetRow returns ok</p>";
 	 else {
 	 	print_r($val);
 	 	print "<p><b>Fail: GetRow returns {$val2[0]}</b></p>";
@@ -1059,7 +1059,7 @@ END Adodb;
 	$rs = $db->Execute("select * from ADOXYZ order by id");
 	if ($rs) {
 		$arr = $rs->GetArray(10);
-		if (sizeof($arr) != 10 || trim($arr[1][1]) != 'John' || trim($arr[1][2]) != 'Lim') print $arr[1][1].' '.$arr[1][2]."<b> &nbsp; ERROR</b><br>";
+		if ((is_countable($arr) ? sizeof($arr) : 0) != 10 || trim($arr[1][1]) != 'John' || trim($arr[1][2]) != 'Lim') print $arr[1][1].' '.$arr[1][2]."<b> &nbsp; ERROR</b><br>";
 		else print " OK<BR>";
 	}
 	
@@ -1083,7 +1083,7 @@ END Adodb;
 	else {
 		$arr = $rs->GetArray();
 		if (!$arr) Err("Prepare failed 2");
-		if (sizeof($arr) != 2) Err("Prepare failed 3");
+		if ((is_countable($arr) ? sizeof($arr) : 0) != 2) Err("Prepare failed 3");
 	}
 	print "Testing GetAssoc() ";
 	$savecrecs = $ADODB_COUNTRECS;
@@ -1702,7 +1702,7 @@ if (@$_SERVER['COMPUTERNAME'] == 'TIGRESS') {
 	CheckWS('fbsql');
 	print "White Space Check complete<p>";
 }
-if (sizeof($_GET) == 0) $testmysql = true;
+if ((is_countable($_GET) ? sizeof($_GET) : 0) == 0) $testmysql = true;
 
 
 foreach($_GET as $k=>$v)  {

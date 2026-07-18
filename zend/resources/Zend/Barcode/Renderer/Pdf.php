@@ -137,7 +137,7 @@ class Zend_Barcode_Renderer_Pdf extends Zend_Barcode_Renderer_RendererAbstract
             $x[] = $point[0] * $this->_moduleSize + $this->_leftOffset;
             $y[] = $page->getHeight() - $point[1] * $this->_moduleSize - $this->_topOffset;
         }
-        if (count($y) == 4) {
+        if ((is_countable($y) ? count($y) : 0) == 4) {
             if ($x[0] != $x[3] && $y[0] == $y[3]) {
                 $y[0] -= ($this->_moduleSize / 2);
                 $y[3] -= ($this->_moduleSize / 2);

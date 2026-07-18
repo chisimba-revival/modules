@@ -110,7 +110,7 @@ class cmstree extends ChisimbaObject {
     public function buildLevel($parentId, $currentNode, $admin) {
         //gets all the child nodes of id
         $nodes = $this->getChildNodes($parentId);
-        if (count($nodes)) {
+        if ((is_countable($nodes) ? count($nodes) : 0)) {
 
             $htmlLevel = '';
             foreach ($nodes as $node) {
@@ -154,7 +154,7 @@ class cmstree extends ChisimbaObject {
      */
     public function addContent($id) {
         $contentNodes = $this->getContent($id);
-        if (count($contentNodes)) {
+        if ((is_countable($contentNodes) ? count($contentNodes) : 0)) {
             $htmlContent = '';
             foreach ($contentNodes as $contentNode) {
                 $contentUri = $this->uri(array('action' => 'showcontent', 'id' => $contentNode['id'], 'sectionid' => $contentNode['sectionid']), 'cms');
@@ -419,7 +419,7 @@ class cmstree extends ChisimbaObject {
             $menu->addItem($rootNode);
         }
 
-        if (count($sections) > 0) {
+        if ((is_countable($sections) ? count($sections) : 0) > 0) {
 
             foreach ($sections as $section) {
 
@@ -548,7 +548,7 @@ class cmstree extends ChisimbaObject {
             $menu->addItem($rootNode);
         }
 
-        if (count($sections) > 0) {
+        if ((is_countable($sections) ? count($sections) : 0) > 0) {
 
             foreach ($sections as $section) {
 
@@ -657,7 +657,7 @@ class cmstree extends ChisimbaObject {
 
         $sections = $secureSections;
 
-        return count($sections);
+        return (is_countable($sections) ? count($sections) : 0);
     }
 
     /**
@@ -706,7 +706,7 @@ class cmstree extends ChisimbaObject {
 
         $sections = $secureSections;
 
-        return count($sections);
+        return (is_countable($sections) ? count($sections) : 0);
     }
 
     /**
@@ -760,7 +760,7 @@ class cmstree extends ChisimbaObject {
             $menu->addItem($rootNode);
         }
 
-        if (count($sections) > 0) {
+        if ((is_countable($sections) ? count($sections) : 0) > 0) {
 
             foreach ($sections as $section) {
                 if ($useLinks) {

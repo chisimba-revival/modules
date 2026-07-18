@@ -27,7 +27,7 @@ if ($arrBookList == false && empty($arrContextList)) {
             // get number of entries
             $groupId = $this->objGroupAdmin->getLeafId(array($context));
             $arrContextUserList = $this->objGroupAdmin->getGroupUsers($groupId, array('userId', 'firstName', 'surname', 'username'));
-            $entries = count($arrContextUserList);
+            $entries = (is_countable($arrContextUserList) ? count($arrContextUserList) : 0);
 
             $objLink = new link($this->uri(array('action' => 'addressbook', 'contextcode' => $context, 'currentFolderId' => $currentFolderId,)), 'internalmail');
 
@@ -46,7 +46,7 @@ if ($arrBookList == false && empty($arrContextList)) {
         foreach ($arrBookList as $book) {
             // get number of entries
             $arrBookEntriesList = $this->dbBookEntries->listBookEntries($book['id']);
-            $entries = $arrBookEntriesList != false ? count($arrBookEntriesList) : 0;
+            $entries = $arrBookEntriesList != false ? (is_countable($arrBookEntriesList) ? count($arrBookEntriesList) : 0) : 0;
 
             $objLink = new link($this->uri(array('action' => 'addressbook', 'bookId' => $book['id'], 'currentFolderId' => $currentFolderId,)), 'uwcelearningmobile');
             $objLink->link = $book['book_name'];

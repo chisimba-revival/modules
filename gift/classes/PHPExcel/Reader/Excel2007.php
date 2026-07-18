@@ -1072,7 +1072,7 @@ class PHPExcel_Reader_Excel2007 implements PHPExcel_Reader_IReader
 	    									$row          = null;
 
 	    									$clientData   = $shape->xpath('.//x:ClientData');
-	    									if (is_array($clientData) && count($clientData) > 0) {
+	    									if (is_array($clientData) && (is_countable($clientData) ? count($clientData) : 0) > 0) {
 	        									$clientData   = $clientData[0];
 
 	        									if ( isset($clientData['ObjectType']) && (string)$clientData['ObjectType'] == 'Note' ) {
@@ -1350,7 +1350,7 @@ class PHPExcel_Reader_Excel2007 implements PHPExcel_Reader_IReader
 
 										default:
 											$range = explode('!', (string)$definedName);
-											if (count($range) == 2) {
+											if ((is_countable($range) ? count($range) : 0) == 2) {
 												$range[0] = str_replace("''", "'", $range[0]);
 												$range[0] = str_replace("'", "", $range[0]);
 												if ($worksheet = $docSheet->getParent()->getSheetByName($range[0])) {

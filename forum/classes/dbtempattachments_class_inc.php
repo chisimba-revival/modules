@@ -20,7 +20,8 @@ class dbtempattachments extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() {
+    /* CHISIMBA_PHP8_FORUM_INIT_SIGNATURE: match dbTable::init() for PHP 8 compatibility. */
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_forum_temp_attachment');
     }
     
@@ -83,7 +84,7 @@ class dbtempattachments extends dbTable
     {
         $list = $this->getAll('WHERE temp_id="'.$temp_id.'" AND attachment_id="'.$attachment_id.'"');
         
-        if (count($list) > 0) {
+        if ((is_countable($list) ? count($list) : 0) > 0) {
             foreach ($list as $item)
             {
                 $this->delete('id', $item['id']);

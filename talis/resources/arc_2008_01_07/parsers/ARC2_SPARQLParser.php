@@ -331,7 +331,7 @@ class ARC2_SPARQLParser extends ARC2_TurtleParser {
       while ((list($sub_r, $sub_v) = $this->xOrderCondition($sub_v)) && $sub_r) {
         $r[] = $sub_r;
       }
-      if (count($r)) {
+      if ((is_countable($r) ? count($r) : 0)) {
         return array($r, $sub_v);
       }
       else {

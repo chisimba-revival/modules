@@ -478,7 +478,7 @@ class Zend_Tool_Framework_Client_Console_ArgumentParser implements Zend_Tool_Fra
                 break;
             }
 
-            if (count($wordStack) == count($wordArguments)) {
+            if ((is_countable($wordStack) ? count($wordStack) : 0) == (is_countable($wordArguments) ? count($wordArguments) : 0)) {
                 // when we get at most the number of arguments we are expecting
                 // then break out.
                 break;
@@ -487,7 +487,7 @@ class Zend_Tool_Framework_Client_Console_ArgumentParser implements Zend_Tool_Fra
         }
 
         if ($wordStack && $wordArguments) {
-            for ($wordIndex = 1; $wordIndex <= count($wordArguments); $wordIndex++) {
+            for ($wordIndex = 1; $wordIndex <= (is_countable($wordArguments) ? count($wordArguments) : 0); $wordIndex++) {
                 if (!array_key_exists($wordIndex-1, $wordStack) || !array_key_exists($wordIndex, $wordArguments)) {
                     break;
                 }

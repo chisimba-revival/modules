@@ -111,7 +111,7 @@ abstract class Theme {
         if (isset($color_list[$this->color_index])) {
             $color = $color_list[$this->color_index];
         } else {
-            $color_count = count($color_list);
+            $color_count = (is_countable($color_list) ? count($color_list) : 0);
             if ($color_count <= $this->color_index) {
                 $color_tmp = $color_list[$this->color_index % $color_count];
                 $brightness = 1.0 - intval($this->color_index / $color_count) * 0.2;

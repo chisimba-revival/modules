@@ -69,7 +69,7 @@ class dbblogs extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         //Set the parent table to our demo table
         parent::init('tbl_simpleblog_blogs');
@@ -115,7 +115,7 @@ class dbblogs extends dbtable
               . $userId . '\' AND blogtype=\'personal\'';
             $result = $this->getArrayWithLimit($sql, 0, 1);
             if (is_array($result)) {
-                if (count($result) > 0) {
+                if ((is_countable($result) ? count($result) : 0) > 0) {
                     $blogId = $result[0]['blogid'];
                     return $blogId;
                 } else {

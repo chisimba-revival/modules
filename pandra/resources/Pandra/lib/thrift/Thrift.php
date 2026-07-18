@@ -274,7 +274,7 @@ class TException extends Exception {
     } else {
       $vspec = $spec['val'];
     }
-    $xfer += $output->writeMapBegin($ktype, $vtype, count($var));
+    $xfer += $output->writeMapBegin($ktype, $vtype, (is_countable($var) ? count($var) : 0));
     foreach ($var as $key => $val) {
       if (isset($kwrite)) {
         $xfer += $output->$kwrite($key);
@@ -327,9 +327,9 @@ class TException extends Exception {
       $espec = $spec['elem'];
     }
     if ($set) {
-      $xfer += $output->writeSetBegin($etype, count($var));
+      $xfer += $output->writeSetBegin($etype, (is_countable($var) ? count($var) : 0));
     } else {
-      $xfer += $output->writeListBegin($etype, count($var));
+      $xfer += $output->writeListBegin($etype, (is_countable($var) ? count($var) : 0));
     }
     foreach ($var as $key => $val) {
       $elem = $set ? $key : $val;
@@ -612,7 +612,7 @@ abstract class TBase {
     } else {
       $vspec = $spec['val'];
     }
-    $xfer += $output->writeMapBegin($ktype, $vtype, count($var));
+    $xfer += $output->writeMapBegin($ktype, $vtype, (is_countable($var) ? count($var) : 0));
     foreach ($var as $key => $val) {
       if (isset($kwrite)) {
         $xfer += $output->$kwrite($key);
@@ -665,9 +665,9 @@ abstract class TBase {
       $espec = $spec['elem'];
     }
     if ($set) {
-      $xfer += $output->writeSetBegin($etype, count($var));
+      $xfer += $output->writeSetBegin($etype, (is_countable($var) ? count($var) : 0));
     } else {
-      $xfer += $output->writeListBegin($etype, count($var));
+      $xfer += $output->writeListBegin($etype, (is_countable($var) ? count($var) : 0));
     }
     foreach ($var as $key => $val) {
       $elem = $set ? $key : $val;

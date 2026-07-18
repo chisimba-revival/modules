@@ -1337,7 +1337,7 @@ class Sabre_DAV_Server {
         // If the propertyNames array is empty, it means all properties are requested.
         // We shouldn't actually return everything we know though, and only return a
         // sensible list.
-        $allProperties = count($propertyNames)==0;
+        $allProperties = (is_countable($propertyNames) ? count($propertyNames) : 0)==0;
 
         foreach($nodes as $myPath=>$node) {
 
@@ -1376,7 +1376,7 @@ class Sabre_DAV_Server {
             // node as it is inaccessible.
             if ($result===false) continue;
 
-            if (count($currentPropertyNames) > 0) {
+            if ((is_countable($currentPropertyNames) ? count($currentPropertyNames) : 0) > 0) {
 
                 if ($node instanceof Sabre_DAV_IProperties)
                     $newProperties['200'] = $newProperties[200] + $node->getProperties($currentPropertyNames);
@@ -1565,7 +1565,7 @@ class Sabre_DAV_Server {
         } else {
 
             // No special resourcetypes are supported
-            if (count($resourceType)>1) {
+            if ((is_countable($resourceType) ? count($resourceType) : 0)>1) {
                 throw new Sabre_DAV_Exception_InvalidResourceType('The {DAV:}resourcetype you specified is not supported here.');
             }
 
@@ -1574,7 +1574,7 @@ class Sabre_DAV_Server {
             $exception = null;
             $errorResult = null;
 
-            if (count($properties)>0) {
+            if ((is_countable($properties) ? count($properties) : 0)>0) {
 
                 try {
 
@@ -1660,7 +1660,7 @@ class Sabre_DAV_Server {
 
         // If the node is not an instance of Sabre_DAV_IProperties, every
         // property is 403 Forbidden
-        if (!$hasError && count($remainingProperties) && !($node instanceof Sabre_DAV_IProperties)) {
+        if (!$hasError && (is_countable($remainingProperties) ? count($remainingProperties) : 0) && !($node instanceof Sabre_DAV_IProperties)) {
             $hasError = true;
             foreach($properties as $propertyName=> $value) {
                 $result[403][$propertyName] = null;
@@ -1671,7 +1671,7 @@ class Sabre_DAV_Server {
         // Only if there were no errors we may attempt to update the resource
         if (!$hasError) {
 
-            if (count($remainingProperties)>0) {
+            if ((is_countable($remainingProperties) ? count($remainingProperties) : 0)>0) {
 
                 $updateResult = $node->updateProperties($remainingProperties);
 
@@ -1718,7 +1718,7 @@ class Sabre_DAV_Server {
         // Removing empty array values
         foreach($result as $status=>$props) {
 
-            if (count($props)===0) unset($result[$status]);
+            if ((is_countable($props) ? count($props) : 0)===0) unset($result[$status]);
 
         }
         $result['href'] = $uri;

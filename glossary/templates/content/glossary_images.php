@@ -19,7 +19,7 @@ echo $objPop->putJs(); // you only need to do this once per page
 //print_r($images);
 
 
-if (count($images) < 1) {
+if ((is_countable($images) ? count($images) : 0) < 1) {
     $listTable->addCell('<p>No Images for this Item</p>');
 } else {
 

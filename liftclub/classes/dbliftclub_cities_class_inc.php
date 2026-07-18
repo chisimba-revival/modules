@@ -14,7 +14,7 @@ class dbLiftclub_cities extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_liftclub_cities');
         $this->objUser = &$this->getObject('user', 'security');
@@ -88,7 +88,7 @@ class dbLiftclub_cities extends dbTable
     function jsongetCities($city, $start, $limit) 
     {
         $myCities = $this->getCities($city, $start, $limit);
-        $cityCount = (count($myCities));
+        $cityCount = ((is_countable($myCities) ? count($myCities) : 0));
         $str = '{"citycount":"' . $cityCount . '","searchedcities":[';
         $searchArray = array();
         foreach($myCities as $thisCity) {

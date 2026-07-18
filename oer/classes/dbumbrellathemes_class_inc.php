@@ -9,7 +9,7 @@ class dbumbrellathemes extends dbtable {
 
     private $tableName = 'tbl_oer_umbrella_themes';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 

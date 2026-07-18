@@ -53,7 +53,7 @@ class SparqlEngine_ResultRenderer_HTML implements SparqlEngine_ResultRenderer
 
             case 'count':
             case 'ask':
-                $nCount = count($arVartable);
+                $nCount = (is_countable($arVartable) ? count($arVartable) : 0);
 
                 if ($strResultForm == 'ask') {
                     $strCode = 'There were results.';
@@ -87,7 +87,7 @@ class SparqlEngine_ResultRenderer_HTML implements SparqlEngine_ResultRenderer
 
     protected function createTableFromRecords($arVartable)
     {
-        if (count($arVartable) == 0) {
+        if ((is_countable($arVartable) ? count($arVartable) : 0) == 0) {
             return 'No result rows.';
         }
 
@@ -103,7 +103,7 @@ class SparqlEngine_ResultRenderer_HTML implements SparqlEngine_ResultRenderer
         //I always wanted to to this :)
         return
             "<table border='1'>\n"
-            . " <caption>SPARQL result with " . count($arResult) . " rows</caption>\n"
+            . " <caption>SPARQL result with " . (is_countable($arResult) ? count($arResult) : 0) . " rows</caption>\n"
             . " <thead><th>"
                 . implode('</th><th>', array_keys(reset($arResult)))
             . "</th></thead>\n"

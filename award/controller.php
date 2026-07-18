@@ -162,7 +162,7 @@ class award extends controller
 			case 'populate_workers':
 				$sql = "SELECT * FROM tbl_award_agree WHERE workers = 0 OR workers IS NULL";
 				$agrees = $this->objAgree->getArray($sql);
-				echo count($agrees)."<br />";
+				echo (is_countable($agrees) ? count($agrees) : 0)."<br />";
 				$updates = 0;
 				foreach ($agrees as $agree) {
 					if ($oldId = $this->objAgree->getPreviousAgreementId($agree['id'],$agree['implementation'])) {
@@ -195,7 +195,7 @@ class award extends controller
 							WHERE agree.id = benefits.agreeid AND nameid = 'init_7'
 						)";
 				$r = $this->objAgree->getArray($sql);
-				echo count($r);
+				echo (is_countable($r) ? count($r) : 0);
 				echo "<br />";
 				foreach ($r as $agree) {
 					$imp = strtotime($agree['implementation']);
@@ -558,10 +558,10 @@ class award extends controller
                 $val = $this->getParam('str');
                 $content = $this->objDbUnit->getAll("WHERE name LIKE '$val%' ORDER BY name");
                 $objselectUnits = new dropdown('id');
-                if (count($content) > 5) {
+                if ((is_countable($content) ? count($content) : 0) > 5) {
                 	$objselectUnits->size = 5;
                 } else {
-                	$objselectUnits->size = count($content);
+                	$objselectUnits->size = (is_countable($content) ? count($content) : 0);
                 }
                 $objselectUnits->addFromDB($content,'name','id');
                 

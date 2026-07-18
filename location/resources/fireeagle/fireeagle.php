@@ -327,7 +327,7 @@ class FireEagle {
     $r = array();
     foreach (explode('&', $responseString) as $param) {
       $pair = explode('=', $param, 2);
-      if (count($pair) != 2) continue;
+      if ((is_countable($pair) ? count($pair) : 0) != 2) continue;
       $r[urldecode($pair[0])] = urldecode($pair[1]);
     }  
     return $r;

@@ -22,7 +22,7 @@ class dbtopicsubscriptions extends dbtable
     /**
     * Constructor
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_discussion_subscribe_topic');
     }

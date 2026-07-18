@@ -16,7 +16,7 @@ $GLOBALS['kewl_entry_point_run']) {
 class vacinventory extends dbtable {
 	
   
-	public function init() {
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		try {
 			parent::init('tbl_ahis_vacinventory');
 		}

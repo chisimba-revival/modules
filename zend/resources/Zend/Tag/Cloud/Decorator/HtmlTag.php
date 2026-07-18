@@ -97,7 +97,7 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
     public function setClassList(array $classList = null)
     {
         if (is_array($classList)) {
-            if (count($classList) === 0) {
+            if ((is_countable($classList) ? count($classList) : 0) === 0) {
                 require_once 'Zend/Tag/Cloud/Decorator/Exception.php';
                 throw new Zend_Tag_Cloud_Decorator_Exception('Classlist is empty');
             }

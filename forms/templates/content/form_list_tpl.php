@@ -83,7 +83,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if (count($arrForms) > 0) {
+if ((is_countable($arrForms) ? count($arrForms) : 0) > 0) {
 	foreach($arrForms as $form) {
 	    //Set odd even row colour
 	    $oddOrEven = ($rowcount == 0) ? "even" : "odd";

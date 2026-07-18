@@ -525,7 +525,7 @@ if(!$numberAssignments) {
                         if($classAvg[0]["classavg"] > 0 && $iassignment["mark"] > 0)
                             $ca=$classAvg[0]["classavg"]/$iassignment["mark"];
                         $totalAvgMark+=$ca;
-                        $studentResult=$xstudentResult[(count($xstudentResult)-1)];
+                        $studentResult=$xstudentResult[((is_countable($xstudentResult) ? count($xstudentResult) : 0)-1)];
                         if(!empty($xstudentResult)) {
                             // foreach($xstudentResult as $studentResult) {
                             $this->TableInstructions->addCell(round(($studentResult["mark"]/$iassignment["mark"])*100,2));

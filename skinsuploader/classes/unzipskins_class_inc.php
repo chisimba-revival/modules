@@ -24,7 +24,7 @@ class unzipskins extends dbTable
 	*/
 	public $objConf;
 
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		$this->objConf = & $this->getObject('altconfig','config');
 	}
@@ -219,7 +219,7 @@ class unzipskins extends dbTable
 	*/
 	public function move_Files($foldersLocation, $filesLocation, $newLocation)
 	{
-		for($i=0;$i<count($foldersLocation);$i++)
+		for($i=0;$i<(is_countable($foldersLocation) ? count($foldersLocation) : 0);$i++)
 		{
 			//Remove /tmp from folder location
 			$foldersLocation[$i] = str_replace("/tmp/","", $foldersLocation[$i]);
@@ -251,7 +251,7 @@ class unzipskins extends dbTable
 			}
 		}
 
-		for($i=0;$i<count($filesLocation);$i++)
+		for($i=0;$i<(is_countable($filesLocation) ? count($filesLocation) : 0);$i++)
 		{
 			$contentsOfFile = file_get_contents($filesLocation[$i]);
 			$filesLocation[$i] = str_replace("/tmp/","", $filesLocation[$i]);

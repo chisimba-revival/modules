@@ -310,8 +310,8 @@ class PHPExcel_Best_Fit
 
 	function __construct($yValues, $xValues=array(), $const=True) {
 		//	Calculate number of points
-		$nY = count($yValues);
-		$nX = count($xValues);
+		$nY = (is_countable($yValues) ? count($yValues) : 0);
+		$nX = (is_countable($xValues) ? count($xValues) : 0);
 
 		//	Define X Values if necessary
 		if ($nX == 0) {

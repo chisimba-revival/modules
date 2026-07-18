@@ -22,7 +22,7 @@ class utils extends ChisimbaObject
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
        $this->_objUser = $this->getObject('user', 'security');
        $this->objLanguage = & $this->getObject('language','language');
@@ -446,10 +446,10 @@ class utils extends ChisimbaObject
    {	$tagsStr = '';
 		$link = $this->getObject('link', 'htmlelements');
 		$tagsArr = $this->_objTags->getPostTags($imageId, 'photogallery');
-		if(count($tagsArr) > 0 )
+		if((is_countable($tagsArr) ? count($tagsArr) : 0) > 0 )
 		{
 			$cnt = 0; 	
-			$max = count($tagsArr);
+			$max = (is_countable($tagsArr) ? count($tagsArr) : 0);
 			foreach($tagsArr as $t)
 			{
 			
@@ -481,7 +481,7 @@ class utils extends ChisimbaObject
 		
 		$tags = $this->_objTags->getTagsByModule('photogallery');
 		
-		if (count($tags) > 0 )
+		if ((is_countable($tags) ? count($tags) : 0) > 0 )
 		{
 			foreach ($tags as $tag)
 			{
@@ -561,7 +561,7 @@ class utils extends ChisimbaObject
 		$objThumbnail = & $this->getObject('thumbnails','filemanager');
 		$link = $this->getObject('link','htmlelements');
 		$str = '';
-		if(count($images) > 0)
+		if((is_countable($images) ? count($images) : 0) > 0)
 		{
 			
 			foreach($images as $image)

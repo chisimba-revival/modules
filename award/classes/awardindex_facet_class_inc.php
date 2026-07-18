@@ -40,7 +40,7 @@ class awardindex_facet extends dbTable
     *
     * @access private
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this -> _objTypesDb = $this -> getObject('dbindex', 'awardapi');
         $this -> _objValuesDb = $this -> getObject('dbindexvalues', 'awardapi');

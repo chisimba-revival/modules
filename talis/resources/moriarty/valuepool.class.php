@@ -8,7 +8,7 @@ class ValuePool {
 
   function get_value($pool_uri) {
     $values = $this->get_candidate_values($pool_uri);
-    $index = rand(0, count($values) - 1);
+    $index = rand(0, (is_countable($values) ? count($values) : 0) - 1);
 
     if ( $this->select_value( $pool_uri, $values[$index], 100) ) {
       return $values[$index];

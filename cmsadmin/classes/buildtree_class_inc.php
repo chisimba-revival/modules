@@ -307,7 +307,7 @@ class buildtree extends ChisimbaObject {
         $str = '';
 
         //check if there are any root nodes
-        if (count($nodes) > 0) {
+        if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
             foreach ($nodes as $node) {
                 if ($node['node_type'] == 1) {
                     //cms content page
@@ -348,7 +348,7 @@ class buildtree extends ChisimbaObject {
         $i = 0;
         while ($nodeId != $rootId) {
             $node = $this->getNode($nodeId);
-            if (count($node)) {
+            if ((is_countable($node) ? count($node) : 0)) {
                 $nodeId = $node[0]['parent_id'];
                 $openNodes[$i] = $node[0];
                 $i++;
@@ -371,7 +371,7 @@ class buildtree extends ChisimbaObject {
         $i = 0;
         while ($nodeId != $rootId) {
             $node = $this->getNode($nodeId);
-            if (count($node)) {
+            if ((is_countable($node) ? count($node) : 0)) {
                 $nodeId = $node[0]['parent_id'];
                 $openNodes[$i] = $nodeId;
                 $i++;
@@ -422,7 +422,7 @@ class buildtree extends ChisimbaObject {
     public function getRecursiveValue($id, $field, $rootId = '1') {
         $node = $this->objTreeNodes->getNode($id);
 
-        if (count($node) > 0) {
+        if ((is_countable($node) ? count($node) : 0) > 0) {
             if ($rootId == $node[0]['parent_id']) {
                 return $node[0][$field];
             }
@@ -445,7 +445,7 @@ class buildtree extends ChisimbaObject {
     public function getRoot($nodeId) {
         $node = $this->getNode($nodeId);
 
-        if (count($node) > 0) {
+        if ((is_countable($node) ? count($node) : 0) > 0) {
             if ($node[0]['parent_id'] == '0') {
                 return $node[0]['id'];
             } else {
@@ -584,7 +584,7 @@ class buildtree extends ChisimbaObject {
         $i = 1;
         while ($nodeId != '0') {
             $node = $this->getNode($nodeId);
-            if (count($node)) {
+            if ((is_countable($node) ? count($node) : 0)) {
                 $nodeId = $node[0]['parent_id'];
                 $openNodes[$i] = $nodeId;
                 $i++;
@@ -629,7 +629,7 @@ class buildtree extends ChisimbaObject {
 
         //get the list of nodes that need to stay open for the currently selected node
         $openNodes = $this->getOpenNodeIds($currentNode);
-        if (count($nodes)) {
+        if ((is_countable($nodes) ? count($nodes) : 0)) {
 
             foreach ($nodes as $node) {
                 $htmlChildren = '';

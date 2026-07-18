@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 
 class dbmatchplayer extends dbtable{
 
- function init(){
+ function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 	parent::init('tbl_match_players');
 	$this->table = "tbl_match_players";
 

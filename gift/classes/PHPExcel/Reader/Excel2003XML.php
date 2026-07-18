@@ -415,7 +415,7 @@ class PHPExcel_Reader_Excel2003XML implements PHPExcel_Reader_IReader
 												break;
 									}
 								}
-								if (count($thisBorder) > 0) {
+								if ((is_countable($thisBorder) ? count($thisBorder) : 0) > 0) {
 									if (($borderPosition == 'left') || ($borderPosition == 'right') || ($borderPosition == 'top') || ($borderPosition == 'bottom')) {
 										$this->_styles[$styleID]['borders'][$borderPosition] = $thisBorder;
 									}

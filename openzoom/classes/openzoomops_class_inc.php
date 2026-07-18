@@ -132,7 +132,7 @@ class openzoomops extends ChisimbaObject
         $pieces = explode("/", $url);
         $ignore = TRUE;
         $path = "";
-        $numOfPieces = count($pieces);
+        $numOfPieces = (is_countable($pieces) ? count($pieces) : 0);
         $counter = 0;
         foreach ($pieces as $piece) {
             $counter++;

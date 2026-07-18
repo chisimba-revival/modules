@@ -27,7 +27,7 @@ class ical extends dbTable
     /**
      *Constructor
      **/
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objConfig = $this->getObject('altconfig', 'config');
         $setup = array('UNIQUE'       => 'ical.net'  // site unique id

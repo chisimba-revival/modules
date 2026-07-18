@@ -724,7 +724,7 @@ abstract class PandraColumnContainer implements ArrayAccess, Iterator, Countable
             $data = $data->columns;
         }
 
-        if (is_array($data) && count($data)) {
+        if (is_array($data) && (is_countable($data) ? count($data) : 0)) {
 
             // Check depth, take first few keys as keyspace/columnfamily/key
             foreach ($data as $idx => $column) {

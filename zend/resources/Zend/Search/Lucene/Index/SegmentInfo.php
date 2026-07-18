@@ -456,7 +456,7 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
                             $deletions[$byteNum*8 + $bit] = 1;
                         }
                     }
-                    return (count($deletions) > 0) ? $deletions : null;
+                    return ((is_countable($deletions) ? count($deletions) : 0) > 0) ? $deletions : null;
                 }
 
             } while ($delFile->tell() < $delFileSize);
@@ -484,7 +484,7 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
                     }
                 }
 
-                return (count($deletions) > 0) ? $deletions : null;
+                return ((is_countable($deletions) ? count($deletions) : 0) > 0) ? $deletions : null;
             }
         }
     }
@@ -970,11 +970,11 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     $updatedFilterData = array();
@@ -1093,12 +1093,12 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     $updatedFilterData = array();
@@ -1220,11 +1220,11 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     for ($count = 0; $count < $termInfo->docFreq; $count++) {
@@ -1536,7 +1536,7 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
             }
         }
 
-        if (count($delFileList) == 0) {
+        if ((is_countable($delFileList) ? count($delFileList) : 0) == 0) {
             // There is no deletions file for current segment in the directory
             // Set deletions file generation number to 1
             return -1;
@@ -1775,13 +1775,13 @@ class Zend_Search_Lucene_Index_SegmentInfo implements Zend_Search_Lucene_Index_T
          *   $mode (default value is self::SM_TERMS_ONLY)
          */
         $argList = func_get_args();
-        if (count($argList) > 2) {
+        if ((is_countable($argList) ? count($argList) : 0) > 2) {
             require_once 'Zend/Search/Lucene/Exception.php';
             throw new Zend_Search_Lucene_Exception('Wrong number of arguments');
-        } else if (count($argList) == 2) {
+        } else if ((is_countable($argList) ? count($argList) : 0) == 2) {
             $startId = $argList[0];
             $mode    = $argList[1];
-        } else if (count($argList) == 1) {
+        } else if ((is_countable($argList) ? count($argList) : 0) == 1) {
             $startId = $argList[0];
             $mode    = self::SM_TERMS_ONLY;
         } else {

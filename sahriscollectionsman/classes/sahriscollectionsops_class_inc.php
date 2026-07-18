@@ -1371,7 +1371,7 @@ class sahriscollectionsops extends ChisimbaObject {
         $row = 1;
         if (($handle = fopen($file, "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $num = count($data);
+                $num = (is_countable($data) ? count($data) : 0);
                 $rows[] = $data;
                 $row++;
             }
@@ -2048,13 +2048,13 @@ class sahriscollectionsops extends ChisimbaObject {
         //print_r($allposts);
         // $revposts = array_reverse($allposts);
         $revposts = $allposts;
-        $recs = count($revposts);
+        $recs = (is_countable($revposts) ? count($revposts) : 0);
         
         if ($recs > 0) {
             $recs = $recs-1;
         }
         if (!empty($revposts)) {
-            //echo count($revposts);
+            //echo (is_countable($revposts) ? count($revposts) : 0);
             $lastrec = $revposts[$recs]['obj_ts'];
             $firstrec = $revposts[0]['obj_ts'];
             

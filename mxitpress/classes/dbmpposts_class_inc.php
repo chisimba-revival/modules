@@ -33,7 +33,7 @@ class dbmpposts extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_mxitpress_posts' );
         $this->objPresence = $this->getObject ( 'dbmppresence' );
         $this->objUser = $this->getObject ( 'user', 'security' );

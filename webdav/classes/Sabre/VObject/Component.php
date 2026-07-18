@@ -264,7 +264,7 @@ class Sabre_VObject_Component extends Sabre_VObject_Element {
     public function __get($name) {
 
         $matches = $this->select($name);
-        if (count($matches)===0) {
+        if ((is_countable($matches) ? count($matches) : 0)===0) {
             return null;
         } else {
             $firstMatch = current($matches);
@@ -284,7 +284,7 @@ class Sabre_VObject_Component extends Sabre_VObject_Element {
     public function __isset($name) {
 
         $matches = $this->select($name);
-        return count($matches)>0;
+        return (is_countable($matches) ? count($matches) : 0)>0;
 
     }
 
@@ -304,7 +304,7 @@ class Sabre_VObject_Component extends Sabre_VObject_Element {
     public function __set($name, $value) {
 
         $matches = $this->select($name);
-        $overWrite = count($matches)?key($matches):null;
+        $overWrite = (is_countable($matches) ? count($matches) : 0)?key($matches):null;
 
         if ($value instanceof Sabre_VObject_Component || $value instanceof Sabre_VObject_Property) {
             $value->parent = $this;

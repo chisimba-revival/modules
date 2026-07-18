@@ -26,7 +26,7 @@ class dbnumericalunits extends dbtable {
      */
     public $table;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_question_numericalunits');
         $this->table = 'tbl_test_question_numericalunits';
     }

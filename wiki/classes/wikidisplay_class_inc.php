@@ -753,7 +753,7 @@ class wikidisplay extends ChisimbaObject
             $objLink->extra = 'onclick="javascript:getDiff(\'false\', \''.$pageName.'\');"';
         }
         $diffLink = $objLink->show();
-        if(count($data) > 1){
+        if((is_countable($data) ? count($data) : 0) > 1){
             $str = $diffLink;
         }else{
             $str = '';
@@ -772,7 +772,7 @@ class wikidisplay extends ChisimbaObject
         $objTable->border = '1';
         $objTable->row_attributes = ' name="row_'.$objTable->id.'"';
         $objTable->startRow();
-        if(count($data) > 1){
+        if((is_countable($data) ? count($data) : 0) > 1){
             $objTable->addCell('<b>'.$diffLabel.'<br />'.$fromLabel.'&#160;|&#160;'.$toLabel.'</b>', '5%', '', 'center', 'heading', 'rowspan="2"');
         }
         $objTable->addCell('&#160;'.'<b>'.$versionLabel.'</b>', '', '', '', 'heading', '');
@@ -820,7 +820,7 @@ class wikidisplay extends ChisimbaObject
                 $date = $this->objDate->formatDate($line['date_created']);
 
                 // page name link
-                if(count($data) == $pageVersion){
+                if((is_countable($data) ? count($data) : 0) == $pageVersion){
                     $action = $this->uri(array(
                         'action' => 'view_page',
                         'name' => $name,
@@ -847,7 +847,7 @@ class wikidisplay extends ChisimbaObject
                 $authorLink = $objLink->show();
 
                 // restore link
-                if($pageStatus < 5 && count($data) != $pageVersion){
+                if($pageStatus < 5 && (is_countable($data) ? count($data) : 0) != $pageVersion){
                     $objLink = new link($this->uri(array(
                         'action' => 'restore_page',
                         'name' => $name,
@@ -873,10 +873,10 @@ class wikidisplay extends ChisimbaObject
                 }
 
                 // diff radios
-                if($pageVersion != count($data)){
+                if($pageVersion != (is_countable($data) ? count($data) : 0)){
                     $objRadio = new radio('from');
                     $objRadio->addOption($pageVersion, '');
-                    $objRadio->setSelected(count($data) - 1);
+                    $objRadio->setSelected((is_countable($data) ? count($data) : 0) - 1);
                     $objRadio->extra = 'style="vertical-align: middle;" onclick="javascript:manipulateRadios(this);"';
                     $fromRadio = $objRadio->show();
                 }else{
@@ -886,8 +886,8 @@ class wikidisplay extends ChisimbaObject
                 if($pageVersion != 1){
                     $objRadio = new radio('to');
                     $objRadio->addOption($pageVersion, '');
-                    $objRadio->setSelected(count($data));
-                    if($pageVersion != count($data)){
+                    $objRadio->setSelected((is_countable($data) ? count($data) : 0));
+                    if($pageVersion != (is_countable($data) ? count($data) : 0)){
                         $objRadio->extra = 'style="vertical-align: middle; visibility: hidden;" onclick="javascript:manipulateRadios(this);"';
                     }else{
                         $objRadio->extra = 'style="vertical-align: middle;" onclick="javascript:manipulateRadios(this);"';
@@ -906,7 +906,7 @@ class wikidisplay extends ChisimbaObject
 
                 // data display
                 $objTable->startRow();
-                if(count($data) > 1){
+                if((is_countable($data) ? count($data) : 0) > 1){
                     $objTable->addCell($radioTable, '', '', 'center', $class, 'rowspan="2"');
                 }
                 $objTable->addCell('&#160;'.$pageLink, '', '', '', $class, '');
@@ -2888,7 +2888,7 @@ You can create tables using pairs of vertical bars:
             $objTable->endRow();
             $str .= $objTable->show();
         }else{
-            if(count($data) > 5){
+            if((is_countable($data) ? count($data) : 0) > 5){
                 $sections = array_chunk($data, 5);
             }else{
                 $sections[] = $data;
@@ -2979,7 +2979,7 @@ You can create tables using pairs of vertical bars:
                     $string .= $objTable->show().'<br />';
                 }
                 $start = (($key * 5) + 1);
-                $end = (($key * 5) + count($subsection));
+                $end = (($key * 5) + (is_countable($subsection) ? count($subsection) : 0));
                 $tabArray = array(
                     'name' => $start.' - '.$end,
                     'content' => $string,

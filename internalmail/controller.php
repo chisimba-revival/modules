@@ -435,7 +435,7 @@ class internalmail extends controller
                 $sortOrder = explode('|', $messageListTable);
                 if ($mode == 'prev' || $mode == 'next') {
                     $arrMessageList = $this->dbRouting->getAllMail($folderId, $sortOrder, $filter);
-                    $arrCnt = count($arrMessageList);
+                    $arrCnt = (is_countable($arrMessageList) ? count($arrMessageList) : 0);
                     foreach($arrMessageList as $key => $message) {
                         if ($mode == 'prev') {
                             if ($message['routing_id'] == $routingId) {
@@ -1095,7 +1095,7 @@ class internalmail extends controller
     	$reccipients = $this->getSession('recipientList');
     	$k = array_keys($reccipients, $username);
 		
-    	if(count($k) > 0)
+    	if((is_countable($k) ? count($k) : 0) > 0)
     	{    		
     		unset($reccipients[$k[0]]);
     		$this->setSession('recipientList', $reccipients);   		
@@ -1111,7 +1111,7 @@ class internalmail extends controller
     public function formatRecipientList()
     {
     	$list = $this->getSession('recipientList');
-    	if(count($list) > 0)
+    	if((is_countable($list) ? count($list) : 0) > 0)
     	{
     		$objIcon = $this->getObject('geticon','htmlelements');
     		$objIcon->setIcon('delete','png');
@@ -1131,7 +1131,7 @@ class internalmail extends controller
 				
 				$str .= '&nbsp;'.$objLink->show();
     			//add the comma
-    			if($cnt < count($list))
+    			if($cnt < (is_countable($list) ? count($list) : 0))
     			{
     				$str .=",";
     			}
@@ -1151,7 +1151,7 @@ class internalmail extends controller
 	public function getRecipientListForDB()
 	{
 		$reccipients = $this->getSession('recipientList');
-    	if(count($reccipients) > 0)
+    	if((is_countable($reccipients) ? count($reccipients) : 0) > 0)
     	{
     		$str = '';
     		foreach($reccipients as $rec)

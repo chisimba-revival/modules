@@ -20,7 +20,7 @@ function adodb_probetypes(&$array,&$types,$probe=8)
 {
 // probe and guess the type
 	$types = array();
-	if ($probe > sizeof($array)) $max = sizeof($array);
+	if ($probe > (is_countable($array) ? sizeof($array) : 0)) $max = (is_countable($array) ? sizeof($array) : 0);
 	else $max = $probe;
 	
 	
@@ -62,7 +62,7 @@ function adodb_probetypes(&$array,&$types,$probe=8)
 function  adodb_transpose(&$arr, &$newarr, &$hdr, &$fobjs)
 {
 	$oldX = sizeof(reset($arr));
-	$oldY = sizeof($arr);	
+	$oldY = (is_countable($arr) ? sizeof($arr) : 0);	
 	
 	if ($hdr) {
 		$startx = 1;
@@ -103,7 +103,7 @@ function _array_change_key_case($an_array)
 
 function _adodb_replace(&$zthis, $table, $fieldArray, $keyCol, $autoQuote, $has_autoinc)
 {
-		if (count($fieldArray) == 0) return 0;
+		if ((is_countable($fieldArray) ? count($fieldArray) : 0) == 0) return 0;
 		$first = true;
 		$uSet = '';
 		
@@ -194,7 +194,7 @@ function _adodb_getmenu(&$zthis, $name,$defstr='',$blank1stItem=true,$multiple=f
 	if ($blank1stItem) 
 		if (is_string($blank1stItem))  {
 			$barr = explode(':',$blank1stItem);
-			if (sizeof($barr) == 1) $barr[] = '';
+			if ((is_countable($barr) ? sizeof($barr) : 0) == 1) $barr[] = '';
 			$s .= "\n<option value=\"".$barr[0]."\">".$barr[1]."</option>";
 		} else $s .= "\n<option></option>";
 
@@ -280,7 +280,7 @@ function _adodb_getmenu_gp(&$zthis, $name,$defstr='',$blank1stItem=true,$multipl
 	if ($blank1stItem) 
 		if (is_string($blank1stItem))  {
 			$barr = explode(':',$blank1stItem);
-			if (sizeof($barr) == 1) $barr[] = '';
+			if ((is_countable($barr) ? sizeof($barr) : 0) == 1) $barr[] = '';
 			$s .= "\n<option value=\"".$barr[0]."\">".$barr[1]."</option>";
 		} else $s .= "\n<option></option>";
 
@@ -1054,7 +1054,7 @@ function _adodb_backtrace($printOrArr=true,$levels=9999,$skippy=0)
 	else $traceArr = debug_backtrace();
 	array_shift($traceArr);
 	array_shift($traceArr);
-	$tabs = sizeof($traceArr)-2;
+	$tabs = (is_countable($traceArr) ? sizeof($traceArr) : 0)-2;
 	
 	foreach ($traceArr as $arr) {
 		if ($skippy) {$skippy -= 1; continue;}
@@ -1069,7 +1069,7 @@ function _adodb_backtrace($printOrArr=true,$levels=9999,$skippy=0)
 		if (isset($arr['args']))
 		 foreach($arr['args'] as $v) {
 			if (is_null($v)) $args[] = 'null';
-			else if (is_array($v)) $args[] = 'Array['.sizeof($v).']';
+			else if (is_array($v)) $args[] = 'Array['.(is_countable($v) ? sizeof($v) : 0).']';
 			else if (is_object($v)) $args[] = 'Object:'.get_class($v);
 			else if (is_bool($v)) $args[] = $v ? 'true' : 'false';
 			else {

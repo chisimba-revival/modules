@@ -236,7 +236,7 @@ class Zend_Rest_Client extends Zend_Service_Abstract
             return new Zend_Rest_Client_Result($response->getBody());
         } else {
             // More than one arg means it's definitely a Zend_Rest_Server
-            if (sizeof($args) == 1) {
+            if ((is_countable($args) ? sizeof($args) : 0) == 1) {
                 // Uses first called function name as method name
                 if (!isset($this->_data['method'])) {
                     $this->_data['method'] = $method;
@@ -245,7 +245,7 @@ class Zend_Rest_Client extends Zend_Service_Abstract
                 $this->_data[$method]  = $args[0];
             } else {
                 $this->_data['method'] = $method;
-                if (sizeof($args) > 0) {
+                if ((is_countable($args) ? sizeof($args) : 0) > 0) {
                     foreach ($args as $key => $arg) {
                         $key = 'arg' . $key;
                         $this->_data[$key] = $arg;

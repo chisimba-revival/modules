@@ -43,7 +43,7 @@ class dbpracticalssubmit extends dbtable {
     /**
      * Method to construct the class
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->loadClass("link", "htmlelements");
         $this->objUser=$this->getObject("user","security");
         parent::init('tbl_practicals_submit');

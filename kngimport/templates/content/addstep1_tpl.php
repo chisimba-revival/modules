@@ -145,7 +145,7 @@ if(!isset($list))
 
 $contextArr = $this->_objDBContext->getAll();
 
-$cnt = count($contextArr);
+$cnt = (is_countable($contextArr) ? count($contextArr) : 0);
 $i = 0;
 
 foreach ($contextArr as $context)

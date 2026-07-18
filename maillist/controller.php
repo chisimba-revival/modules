@@ -118,7 +118,7 @@ public $objUser;
                     }
                     //OK there are messages, so we carry on with the number of messages
                     else {
-                        $num_msgs = array('msgcount' => count($msgs));
+                        $num_msgs = array('msgcount' => (is_countable($msgs) ? count($msgs) : 0));
                     }
                     //get the decoded mail
                     $decodedMail = $this->objMail->decodeMessages($msgs);

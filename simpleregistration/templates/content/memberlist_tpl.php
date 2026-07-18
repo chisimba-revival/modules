@@ -12,7 +12,7 @@ $this->appendArrayVar('headerParams', $extallcss);
 //data grid from db
 $reg = $this->getObject('dbregistration');
 $dbdata=$reg->getRegistrations($eventid);
-$total=count($dbdata);
+$total=(is_countable($dbdata) ? count($dbdata) : 0);
 
 if(!$this->objUser->isAdmin()){
  $this->nextAction('success',array('title1'=>$this->objLanguage->languageText('mod_simpleregistration_alreadysignedup', 'simpleregistration'),

@@ -32,7 +32,7 @@ class dbsectiongroup extends dbTable
     * @access public
     * @return void
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_cms_sectiongroup');
@@ -114,7 +114,7 @@ class dbsectiongroup extends dbTable
                       ." WHERE parentid = '".$parentId."' AND user_id = '".$userPKId."'";
             }
 			$nodeCount = $this->query($sql);
-			if (count($nodeCount)){
+			if ((is_countable($nodeCount) ? count($nodeCount) : 0)){
                 return $nodeCount[0]['cnt'];
             }else{
                 return 0;

@@ -12,7 +12,7 @@ class filesharelist extends dbtable
     /**
     * Constructor
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_fileshare');
         $this->objLanguage = $this->getObject('language','language');
@@ -36,7 +36,7 @@ class filesharelist extends dbtable
     function getFormattedDisplay($workgroupId)
     {
         $filesList = $this->getWorkgroupFiles($workgroupId);        
-        if (count($filesList) == 0) {
+        if ((is_countable($filesList) ? count($filesList) : 0) == 0) {
             return '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_fileshare_norecords').'</div>';
         } else {
             $this->loadClass('link', 'htmlelements');

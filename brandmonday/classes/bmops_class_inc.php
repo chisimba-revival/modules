@@ -246,7 +246,7 @@ class bmops extends ChisimbaObject {
         $objFlashGraphData = $this->newObject('flashgraphdata', 'utilities');
         $objFlashGraphData->graphType = 'pie';
         $tagarr = $this->objDbBm->getBmTags('plus', NULL);
-        $num = count($tagarr);
+        $num = (is_countable($tagarr) ? count($tagarr) : 0);
         $last = $num - 20;
         $tagarr = array_slice($tagarr, 0, 20);
         $colours = $this->getObject('websafecolours', 'utilities');
@@ -335,7 +335,7 @@ class bmops extends ChisimbaObject {
         $objFlashGraphData = $this->newObject('flashgraphdata', 'utilities');
         $objFlashGraphData->graphType = 'pie';
         $tagarr = $this->objDbBm->getBmTags('minus', NULL);
-        $num = count($tagarr);
+        $num = (is_countable($tagarr) ? count($tagarr) : 0);
         $last = $num - 20;
         $tagarr = array_slice($tagarr, 0, 20);
         $colours = $this->getObject('websafecolours', 'utilities');

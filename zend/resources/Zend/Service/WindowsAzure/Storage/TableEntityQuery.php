@@ -215,7 +215,7 @@ class Zend_Service_WindowsAzure_Storage_TableEntityQuery
 			$query[] = '$top=' . $this->_top;
 		}
 		
-		if (count($query) != 0) {
+		if ((is_countable($query) ? count($query) : 0) != 0) {
 			return '?' . implode('&', $query);
 		}
 		

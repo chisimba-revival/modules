@@ -20,7 +20,7 @@ class dbtopic extends dbTable {
     /**
      * Constructor method to define the table(default)
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_discussion_topic');
         $this->loadClass('form', 'htmlelements');
         $this->loadClass('dropdown', 'htmlelements');
@@ -244,7 +244,7 @@ class dbtopic extends dbTable {
 
         $list =$this->getArray($sql);
 
-        if (count($list) == 0) {
+        if ((is_countable($list) ? count($list) : 0) == 0) {
             return 0;
         } else {
             return $list[0]['rght'];
@@ -277,7 +277,7 @@ GROUP BY tbl_discussion_topic.id                ';
     function showTangentsTable($topic) {
         $tangents = $this->getTangents($topic);
 
-        if (count($tangents) == 0) {
+        if ((is_countable($tangents) ? count($tangents) : 0) == 0) {
             return NULL;
         } else {
 
@@ -428,7 +428,7 @@ GROUP BY tbl_discussion_topic.id                ';
 
         $topic = $this->getArray($sql);
 
-        if (count($topic) == 1) {
+        if ((is_countable($topic) ? count($topic) : 0) == 1) {
             return $topic[0];
         } else {
             return FALSE;
@@ -447,7 +447,7 @@ GROUP BY tbl_discussion_topic.id                ';
 
         $discussion = $this->getArray($sql);
 
-        if (count($discussion) == 1) {
+        if ((is_countable($discussion) ? count($discussion) : 0) == 1) {
             return $discussion[0];
         } else {
             return FALSE;

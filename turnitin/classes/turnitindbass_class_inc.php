@@ -34,7 +34,7 @@ class turnitindbass extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_turnitin_assignments');
         
@@ -68,7 +68,7 @@ class turnitindbass extends dbTable
     public function assExists($title, $contextCode)
     {
     	$rec = $this->getAll("WHERE contextcode='$contextCode' AND title='$title'");
-    	if(count($rec) > 0)
+    	if((is_countable($rec) ? count($rec) : 0) > 0)
     	{
     		return TRUE;
     	}else{
@@ -87,7 +87,7 @@ class turnitindbass extends dbTable
     {
     	$recs = $this->getAll("WHERE contextcode='$contextCode' ORDER BY duedate");
     	
-    	if(count($recs) > 0)
+    	if((is_countable($recs) ? count($recs) : 0) > 0)
     	{
     		return $recs;
     	} else {

@@ -33,7 +33,7 @@ $GLOBALS['kewl_entry_point_run']) {
 }
 
 class dbessays extends dbtable {
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objUser=$this->getObject('user','security');
          parent::init('tbl_efl_proposedessaytopics');
     }

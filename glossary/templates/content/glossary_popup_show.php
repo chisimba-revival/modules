@@ -94,7 +94,7 @@ if ($urlNum > 0)
 
 }
 
-    if (count($images) > 0){
+    if ((is_countable($images) ? count($images) : 0) > 0){
         
         $imageDisplay = '<p>';
         

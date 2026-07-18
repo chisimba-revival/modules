@@ -79,7 +79,7 @@ $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
 $allowExternalReg=$objSysConfig->getValue('ALLOW_EXTERNAL_REG', 'simpleregistration');
 $eventcontent=array();
 
-if(count($content) > 0){
+if((is_countable($content) ? count($content) : 0) > 0){
     $eventcontent=$content[0];
 }else{
 
@@ -198,7 +198,7 @@ $mainjs="
 });
 
 ";
-if(count($content) > 0){
+if((is_countable($content) ? count($content) : 0) > 0){
 $content= '<div id="wrap">'.$table->show().'   </div>';
 $content.= "<script type=\"text/javascript\">".$mainjs."</script>";
 

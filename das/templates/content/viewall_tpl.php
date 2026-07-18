@@ -92,7 +92,7 @@ if($this->objUser->inAdminGroup($this->objUser->userId()))
 $outof = '/'.$this->objDbImPres->numOfUserAssigned ($cid);
 $msgs = $this->objDbIm->getMessagesByActiveUser ($cid);
 
-$num = count($msgs);
+$num = (is_countable($msgs) ? count($msgs) : 0);
 $str = "$num$outof users";
 
 

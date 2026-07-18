@@ -29,7 +29,7 @@ class dbClass extends dbTable
     /**
      * Constructor method to define the default table
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_pbl_cases');
     }

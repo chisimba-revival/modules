@@ -152,7 +152,7 @@ class simplebuildmap extends ChisimbaObject
         $validFiles=array("smap", "kml");
 		if (isset($this->smap) && $this->smap !== "") {
 		    $ftArr = explode(".", strtolower($this->smap));
-		    if (count($ftArr) > 0) {
+		    if ((is_countable($ftArr) ? count($ftArr) : 0) > 0) {
 			    $fileType = end($ftArr);
 				if (in_array($fileType, $validFiles)) {
 					return $fileType;

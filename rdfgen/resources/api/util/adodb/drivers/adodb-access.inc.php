@@ -65,7 +65,7 @@ class  ADODB_access extends ADODB_odbc {
 		$arr = &$rs->GetArray();
 		//print_pre($arr);
 		$arr2 = array();
-		for ($i=0; $i < sizeof($arr); $i++) {
+		for ($i=0; $i < (is_countable($arr) ? sizeof($arr) : 0); $i++) {
 			if ($arr[$i][2] && $arr[$i][3] != 'SYSTEM TABLE')
 				$arr2[] = $arr[$i][2];
 		}

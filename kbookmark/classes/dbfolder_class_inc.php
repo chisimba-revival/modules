@@ -15,7 +15,7 @@ class dbfolder extends dbTable
     * Initialise objects used in the module
     */
 
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_bookmarks_folders');
     }
@@ -44,8 +44,8 @@ class dbfolder extends dbTable
 		$res = TRUE;
 		$sql = "SELECT * FROM tbl_bookmarks_folders WHERE fname = '{$fname}' AND parentid = '{$parentid}' AND userid = 			'{$userid}'";
 		$sqlres = $this->getArray($sql);
-		error_log(var_export(count($sqlres), true));
-		if(count($sqlres) == 0)
+		error_log(var_export((is_countable($sqlres) ? count($sqlres) : 0), true));
+		if((is_countable($sqlres) ? count($sqlres) : 0) == 0)
 		{
 			$res = FALSE;
 		}

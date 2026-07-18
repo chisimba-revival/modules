@@ -147,7 +147,7 @@ foreach($submitNumbersArray as $indexOfSubmitNumber=>$thisSubmitNumber){
  $previousSubmitNumber =$submitNumber;
  //print_r($previousSubmitNumber);
 $formElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($previousSubmitNumber);
- $numItems = count($formElementTypesArray);
+ $numItems = (is_countable($formElementTypesArray) ? count($formElementTypesArray) : 0);
  //print_r($formElementTypesArray);
 foreach($formElementTypesArray as $key=>$thisFormElementType){
 
@@ -169,7 +169,7 @@ $CSVFileContent.=$formPartCSVFileHeader.$formFieldNamesAndTypeHeaderCSVField."\n
 
 
    $formElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($submitNumber);
-    $numItems = count($formElementTypesArray);
+    $numItems = (is_countable($formElementTypesArray) ? count($formElementTypesArray) : 0);
 $previousFormElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($previousSubmitNumber);
 if ($formElementTypesArray!=$previousFormElementTypesArray)
 {
@@ -199,7 +199,7 @@ $metaDataResults= "\"".$relativeSubmitNumber."\"~"
         ."\"".$this->objDBFormSubmitResults->getSubmitUsersEmail($userIDOfFormSubmitter)."\"~"
         ."\"".$timeOfSubmission."\"~";
 $resultsContent=null;
-    $numItems = count($submitResultsParameters);
+    $numItems = (is_countable($submitResultsParameters) ? count($submitResultsParameters) : 0);
 foreach ($submitResultsParameters as $key=>$thisSubmitResultParameter) {
             $formNumber = $thisSubmitResultParameter['formnumber'];
             $submitNumber = $thisSubmitResultParameter["submitnumber"];
@@ -232,7 +232,7 @@ $relativeSubmitNumber++;
 //            if ($indexOfSubmitNumber == 0) {
 //                $previousSubmitNumber = $submitNumber;
 //                $formElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($submitNumber);
-//                $numOfFormElements = count($formElementTypesArray);
+//                $numOfFormElements = (is_countable($formElementTypesArray) ? count($formElementTypesArray) : 0);
 //                foreach ($formElementTypesArray as $key => $thisFormElementType) {
 //
 //                    $formElementName = $thisFormElementType["formelementname"];
@@ -250,7 +250,7 @@ $relativeSubmitNumber++;
 //
 //
 ////   $formElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($submitNumber);
-////    $currentumItems = count($formElementTypesArray);
+////    $currentumItems = (is_countable($formElementTypesArray) ? count($formElementTypesArray) : 0);
 ////$previousFormElementTypesArray = $this->objDBFormSubmitResults->getOnlyFormElementTypes($previousSubmitNumber);
 ////if ($formElementTypesArray!=$previousFormElementTypesArray)
 ////{
@@ -287,7 +287,7 @@ $relativeSubmitNumber++;
 //                    . "\"" . $this->objDBFormSubmitResults->getSubmitUsersEmail($userIDOfFormSubmitter) . "\"~"
 //                    . "\"" . $timeOfSubmission . "\"~";
 //            $resultsContent = null;
-//            $numItems = count($submitResultsParameters);
+//            $numItems = (is_countable($submitResultsParameters) ? count($submitResultsParameters) : 0);
 //            $nullFormElements = 0;
 //            foreach ($submitResultsParameters as $key => $thisSubmitResultParameter) {
 //                $formNumber = $thisSubmitResultParameter['formnumber'];

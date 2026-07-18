@@ -211,7 +211,7 @@ class ContentboxTest extends PHPUnit_Framework_TestCase {
     $cb->request_factory = $fake_request_factory;
 
     $triples = $cb->search_to_triple_list( 'scooby' );
-    $this->assertEquals( 38, count( $triples ) );
+    $this->assertEquals( 38, (is_countable($triples) ? count($triples) : 0) );
   }
 
   function test_search_to_resource_list_parses_channel_title() {

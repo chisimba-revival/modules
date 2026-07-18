@@ -96,7 +96,7 @@ class Sabre_DAV_Property_Response extends Sabre_DAV_Property implements Sabre_DA
             if ($httpStatus=='href') continue;
 
             // If there are no properties in this group, we can also just carry on
-            if (!count($propertyGroup)) continue;
+            if (!(is_countable($propertyGroup) ? count($propertyGroup) : 0)) continue;
 
             $xpropstat = $document->createElement('d:propstat');
             $xresponse->appendChild($xpropstat);
@@ -121,7 +121,7 @@ class Sabre_DAV_Property_Response extends Sabre_DAV_Property implements Sabre_DA
                 } else {
 
                     if (!isset($nsList[$propName[1]])) {
-                        $nsList[$propName[1]] = 'x' . count($nsList);
+                        $nsList[$propName[1]] = 'x' . (is_countable($nsList) ? count($nsList) : 0);
                     }
 
                     // If the namespace was defined in the top-level xml namespaces, it means

@@ -105,7 +105,7 @@ class Zend_Feed_Reader_Extension_Atom_Entry
             }
         }
 
-        if (count($authors) == 0) {
+        if ((is_countable($authors) ? count($authors) : 0) == 0) {
             $authors = null;
         } else {
             $authors = new Zend_Feed_Reader_Collection_Author(

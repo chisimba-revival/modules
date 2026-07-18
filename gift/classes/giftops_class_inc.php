@@ -57,7 +57,7 @@ class giftops extends ChisimbaObject {
         $descriplabel = $this->objLanguage->languageText("mod_addedit_description", "gift") . ":";
         $gvaluelabel = $this->objLanguage->languageText("mod_addedit_value", "gift") . ":";
 
-        if (sizeof($data) == 0) {
+        if ((is_countable($data) ? sizeof($data) : 0) == 0) {
             $objForm = new form('contactdetailsform', $this->uri(array('action' => 'submitAdd')));
         } else {
             $objForm = new form('contactdetailsform', $this->uri(array('action' => 'submitEdit', 'id' => $data['id'])));
@@ -225,7 +225,7 @@ class giftops extends ChisimbaObject {
         $menu = new treemenu();
 
 
-        if (count($depts) > 0) {
+        if ((is_countable($depts) ? count($depts) : 0) > 0) {
             foreach ($depts as $dept) {
                 $folderText = $dept['name'];
 
@@ -299,7 +299,7 @@ class giftops extends ChisimbaObject {
 
         $parent = "";
         $parts = explode("/", $path);
-        $count = count($parts);
+        $count = (is_countable($parts) ? count($parts) : 0);
         for ($i = 0; $i < $count - 1; $i++) {
             if ($parent == '') {
                 $parent.= $parts[$i];

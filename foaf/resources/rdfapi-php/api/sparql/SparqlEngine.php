@@ -159,7 +159,7 @@ Class SparqlEngine extends Object_rap{
             if($newGraphList){
                 $qt = $graphPattern->getTriplePattern();
                 $resultSet = $this->findTuplesMatchingOnePattern($qt[0], $newGraphList);
-                for ($i=1; $i<count($qt); $i++) {
+                for ($i=1; $i<(is_countable($qt) ? count($qt) : 0); $i++) {
                     $rs = $this->findTuplesMatchingOnePattern($qt[$i], $newGraphList);
                     $resultSet = $this->joinTuples($resultSet, $rs);
                     if(!$resultSet)
@@ -452,7 +452,7 @@ Class SparqlEngine extends Object_rap{
             }
         }
 
-        $count = count($result);
+        $count = (is_countable($result) ? count($result) : 0);
         foreach($res as $k =>$val){
             if(!in_array($k,$joined)){
                 $result[$count] = $finalRes[0];
@@ -619,7 +619,7 @@ Class SparqlEngine extends Object_rap{
         $joined[0]['patternResult'] = null;
         $joined[0]['outerFilter'] = null;
 
-        while(count($patternlist)>0){
+        while((is_countable($patternlist) ? count($patternlist) : 0)>0){
             foreach($patternlist as $key => $pattern){
                 if($pattern['hasOptional'] == 0 && $pattern['hasUnion'] == 0){
                     if(is_int($pattern['optionalTo'])){
@@ -671,7 +671,7 @@ Class SparqlEngine extends Object_rap{
             // get constraints
             $constraint = $pattern[$filter];
 
-            if(count($constraint)>0){
+            if((is_countable($constraint) ? count($constraint) : 0)>0){
                 foreach($constraint as $constr){
                     if($constr != null){
                         // extract Vars and function calls

@@ -97,14 +97,14 @@ class getschema extends dbTableManager
           . "'utf8_general_ci', 'character_set' => 'utf8');\n\n"
           . "\$fields = array(";
         //Count the number of fields
-        $fldCount = count($structure);
+        $fldCount = (is_countable($structure) ? count($structure) : 0);
         //Initialize counter for looping over fields
         $jCount = 0;
         //Loop over fields
         foreach ($structure as $key=>$valueArray) {
             $jCount++;
             $ret .= "'" . $key . "' => array(\n";
-            $fldProperties = count($valueArray);
+            $fldProperties = (is_countable($valueArray) ? count($valueArray) : 0);
             $iCount = 0;
             //Loop over field properties
             foreach ($valueArray as $key=>$value) {

@@ -50,7 +50,7 @@ class eportfolioBlocks extends dbTable {
      *
      * @return NULL
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         try {
             parent::init('tbl_eportfolio_blocks');
             $this->objUser = $this->getObject('user','security');

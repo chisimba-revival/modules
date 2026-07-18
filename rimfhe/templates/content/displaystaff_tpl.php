@@ -50,7 +50,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if (count($arrDisplayStaff) > 0) {
+if ((is_countable($arrDisplayStaff) ? count($arrDisplayStaff) : 0) > 0) {
 
     //Loop through $arrDisplayStaff and set data in rows
     foreach($arrDisplayStaff as $staffmember) {

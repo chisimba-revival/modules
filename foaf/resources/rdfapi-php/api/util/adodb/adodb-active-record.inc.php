@@ -55,7 +55,7 @@ function ADODB_SetDatabaseAdapter(&$db)
 		
 		$_ADODB_ACTIVE_DBS[] = $obj;
 		
-		return sizeof($_ADODB_ACTIVE_DBS)-1;
+		return (is_countable($_ADODB_ACTIVE_DBS) ? sizeof($_ADODB_ACTIVE_DBS) : 0)-1;
 }
 
 
@@ -97,7 +97,7 @@ class ADODB_Active_Record {
 		if ($db) {
 			$this->_dbat = ADODB_Active_Record::SetDatabaseAdapter($db);
 		} else
-			$this->_dbat = sizeof($_ADODB_ACTIVE_DBS)-1;
+			$this->_dbat = (is_countable($_ADODB_ACTIVE_DBS) ? sizeof($_ADODB_ACTIVE_DBS) : 0)-1;
 		
 		
 		if ($this->_dbat < 0) $this->Error("No database connection set; use ADOdb_Active_Record::SetDatabaseAdapter(\$db)",'ADODB_Active_Record::__constructor');
@@ -332,7 +332,7 @@ class ADODB_Active_Record {
 		$this->_saved = true;
 		
 		$table =& $this->TableInfo();
-		if (sizeof($table->flds) != sizeof($row)) {
+		if (sizeof($table->flds) != (is_countable($row) ? sizeof($row) : 0)) {
 			$this->Error("Table structure of $this->_table has changed","Load");
 			return false;
 		}

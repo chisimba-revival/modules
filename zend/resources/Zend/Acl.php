@@ -617,7 +617,7 @@ class Zend_Acl
         // ensure that all specified Roles exist; normalize input to array of Role objects or null
         if (!is_array($roles)) {
             $roles = array($roles);
-        } else if (0 === count($roles)) {
+        } else if (0 === (is_countable($roles) ? count($roles) : 0)) {
             $roles = array(null);
         }
         $rolesTemp = $roles;
@@ -634,7 +634,7 @@ class Zend_Acl
         // ensure that all specified Resources exist; normalize input to array of Resource objects or null
         if (!is_array($resources)) {
             $resources = array($resources);
-        } else if (0 === count($resources)) {
+        } else if (0 === (is_countable($resources) ? count($resources) : 0)) {
             $resources = array(null);
         }
         $resourcesTemp = $resources;
@@ -662,7 +662,7 @@ class Zend_Acl
                 foreach ($resources as $resource) {
                     foreach ($roles as $role) {
                         $rules =& $this->_getRules($resource, $role, true);
-                        if (0 === count($privileges)) {
+                        if (0 === (is_countable($privileges) ? count($privileges) : 0)) {
                             $rules['allPrivileges']['type']   = $type;
                             $rules['allPrivileges']['assert'] = $assert;
                             if (!isset($rules['byPrivilegeId'])) {
@@ -686,7 +686,7 @@ class Zend_Acl
                         if (null === $rules) {
                             continue;
                         }
-                        if (0 === count($privileges)) {
+                        if (0 === (is_countable($privileges) ? count($privileges) : 0)) {
                             if (null === $resource && null === $role) {
                                 if ($type === $rules['allPrivileges']['type']) {
                                     $rules = array(

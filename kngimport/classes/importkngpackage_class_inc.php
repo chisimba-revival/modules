@@ -68,7 +68,7 @@ class importKNGPackage extends dbTable
 	public $menutitle;
 	public $objError;
 
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		//Load Import Export Utilities class.
 		$this->objIEUtils =  $this->newObject('remoteimportexportutils','kngimport');
@@ -147,18 +147,18 @@ class importKNGPackage extends dbTable
 
 		
 		// Write Html's to specified directory  (resources folder).
-		//if(count($courseContent) > 0)
+		//if((is_countable($courseContent) ? count($courseContent) : 0) > 0)
 		    //var_dump($this->docsLocation);die;
 			//$writeKNGHtmls = $this->objIEUtils->writeFiles($courseContent, $this->docsLocation, '', 'html', 'kng');
 		// Load Html's into Chisimba.
-		//if(count($courseContent) > 0)
+		//if((is_countable($courseContent) ? count($courseContent) : 0) > 0)
 		   
 			//$menutitles = $this->loadToChisimba($courseContent, $courseData, $contextcode);
 		$enterContext = $this->objDBContext->joinContext($this->contextCode);
 
                 // Import Lecturers
                 $staffList=$this->objIEUtils->remoteUsers($contextcode);
-                if (count($staffList)>0){
+                if ((is_countable($staffList) ? count($staffList) : 0)>0){
                     $this->importKngUsers($staffList,$courseData['contextcode']);
                 }
 
@@ -371,7 +371,7 @@ class importKNGPackage extends dbTable
 		{
 			$filter = "WHERE menutitle = '$menutitle'";
 			$result = $this->getAll($filter);
-			if(count($result) > 0)
+			if((is_countable($result) ? count($result) : 0) > 0)
 			{
 				// Retrieve page contents.
 				$fileContents = $result['0']['pagecontent'];
@@ -399,7 +399,7 @@ class importKNGPackage extends dbTable
 		{
 			$filter = "WHERE menutitle = '$menutitle'";
 			$result = $this->getAll($filter);
-			if(count($result) > 0)
+			if((is_countable($result) ? count($result) : 0) > 0)
 			{
 				// Retrieve page contents.
 				$fileContents = $result['0']['pagecontent'];

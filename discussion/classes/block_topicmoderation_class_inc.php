@@ -104,10 +104,10 @@ class block_topicmoderation extends ChisimbaObject {
             //$deleteForm->addToForm('<p>This topic is a tangent to <strong>'.$topicParent['post_title'].'</strong>. This option will only affect this tangent. <br />If you would like to moderate the parent topic, please '.$moderateParent->show().'.</p>');
         }
 
-        if (count($tangents) > 0) {
+        if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
             $str = $this->objLanguage->languageText('mod_discussion_topichasfollwoingtangents', 'discussion', 'This topic has the following [-COUNTTANGENTS-] tangent(s). Please indicate what you would like to happen to them as well?');
 
-            $str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+            $str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
 
             $deleteForm->addToForm($str);
 
@@ -122,7 +122,7 @@ class block_topicmoderation extends ChisimbaObject {
 
         $deleteForm->addToForm('<fieldset><legend>' . $this->objLanguage->languageText('mod_discussion_deleteoptions', 'discussion', 'Delete Options') . '</legend><p>');
 
-        if (count($tangents) > 0) {
+        if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
             $deleteForm->addToForm('a) ');
         }
 
@@ -136,7 +136,7 @@ class block_topicmoderation extends ChisimbaObject {
 
         $deleteForm->addToForm($deleteConfirm->show() . '</p>');
 
-        if (count($tangents) > 0) {
+        if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
             $deleteForm->addToForm('<p>b) ' . $this->objLanguage->languageText('mod_discussion_whathappentotangents', 'discussion', 'What should happen to the tangents?') . '</p>');
 
             $tangentOption = new radio('tangentoption');
@@ -144,7 +144,7 @@ class block_topicmoderation extends ChisimbaObject {
 
             $dropdown = new dropdown('topicmove');
 
-            if (count($otherTopicsInDiscussion) > 0) {
+            if ((is_countable($otherTopicsInDiscussion) ? count($otherTopicsInDiscussion) : 0) > 0) {
                 foreach ($otherTopicsInDiscussion as $discussiontopic) {
                     $dropdown->addOption($discussiontopic['topic_id'], $discussiontopic['post_title']);
                 }
@@ -194,7 +194,7 @@ class block_topicmoderation extends ChisimbaObject {
 
 
         $otherDiscussions = $this->objDiscussion->otherDiscussions($topic['discussion_id'], $this->contextCode);
-        if (count($otherDiscussions) > 0) {
+        if ((is_countable($otherDiscussions) ? count($otherDiscussions) : 0) > 0) {
 
             // Increase Options Count for next item
             $optionsCount++;
@@ -234,7 +234,7 @@ class block_topicmoderation extends ChisimbaObject {
 // You cant move a topic as a tangent to another topic if there aren't any other topics
 
 
-        if (count($otherTopicsInDiscussion) > 0) {
+        if ((is_countable($otherTopicsInDiscussion) ? count($otherTopicsInDiscussion) : 0) > 0) {
 
             // Increase Options Count for next item
             $optionsCount++;
@@ -249,9 +249,9 @@ class block_topicmoderation extends ChisimbaObject {
             }
             $moveToTangentForm->addToForm($this->objLanguage->languageText('mod_discussion_movetopicastangent', 'discussion', 'Move the Topic as a tangent to the following topic') . ': ' . $dropdown->show());
 
-            if (count($tangents) > 0) {
+            if ((is_countable($tangents) ? count($tangents) : 0) > 0) {
                 $str = $this->objLanguage->languageText('mod_discussion_tangentsmovedwithtopic', 'discussion', '<strong>Note</strong> This topic has [-COUNTTANGENTS-] tangent(s). They will automatically become tangents to the selected topic.');
-                $str = str_replace('[-COUNTTANGENTS-]', count($tangents), $str);
+                $str = str_replace('[-COUNTTANGENTS-]', (is_countable($tangents) ? count($tangents) : 0), $str);
                 $moveToTangentForm->addToForm('<p>' . $str . '</p>');
             }
 

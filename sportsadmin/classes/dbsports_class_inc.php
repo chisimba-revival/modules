@@ -23,7 +23,7 @@ class dbsports extends dbTable
     /**
     * Constructor method to define the table
     */
-     function init() 
+     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_sports');
 		$this->table = 'tbl_sports';

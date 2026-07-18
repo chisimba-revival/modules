@@ -89,7 +89,7 @@ class Zend_Gdata_Query
             }
             $queryArray[] = urlencode($name) . '=' . urlencode($value);
         }
-        if (count($queryArray) > 0) {
+        if ((is_countable($queryArray) ? count($queryArray) : 0) > 0) {
             return '?' . implode('&', $queryArray);
         } else {
             return '';

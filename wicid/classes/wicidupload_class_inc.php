@@ -300,7 +300,7 @@ class wicidupload extends ChisimbaObject {
     function moveUploadedFile($docname,$docid) {
 
         $instances=$this->objUploadTable->getFileInstances( $this->fileName, $this->uploadFolder);
-        $instanceNo=count($instances);
+        $instanceNo=(is_countable($instances) ? count($instances) : 0);
 
         $this->fullFilePath = $this->uploadFolder . $this->fileName;
 
@@ -310,7 +310,7 @@ class wicidupload extends ChisimbaObject {
             $this->uploadType = "new";
         }
         $instances=$this->objUploadTable->getFileInstances( $this->fileName, $this->fullFilePath );
-        $instanceNo=count($instances);
+        $instanceNo=(is_countable($instances) ? count($instances) : 0);
         $fn=$this->getFileName($this->fileName);
 
         $ext=$this->getFileExtension();
@@ -333,7 +333,7 @@ class wicidupload extends ChisimbaObject {
         //split the string by the literal dot in the filename
         $pattern = preg_split('/\./', $string, -1, PREG_SPLIT_OFFSET_CAPTURE);
         //get the last dot position
-        $lastdot = $pattern[count($pattern)-1][1];
+        $lastdot = $pattern[(is_countable($pattern) ? count($pattern) : 0)-1][1];
         //now extract the filename using the basename function
         $filename = basename(substr($string, 0, $lastdot-1));
 

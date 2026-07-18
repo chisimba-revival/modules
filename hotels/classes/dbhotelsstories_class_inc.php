@@ -9,7 +9,7 @@ class dbhotelsstories extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_stories');
 
@@ -109,7 +109,7 @@ class dbhotelsstories extends dbtable
     {
         $result = $this->getAll('WHERE storycategory = \''.$category.'\' ORDER BY storyorder DESC LIMIT 1');
 
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return 0;
         } else {
             return $result[0]['storyorder'];
@@ -226,7 +226,7 @@ class dbhotelsstories extends dbtable
 
         $objTrimString = $this->getObject('trimstr', 'strings');
 
-        if (count($stories) > 0) {
+        if ((is_countable($stories) ? count($stories) : 0) > 0) {
             foreach($stories as $story)
             {
                 $str .= '<event start="'.$story['storydate'].'" title="'.htmlentities($story['storytitle']).'">';//image="'.$image.'" // Re add image
@@ -276,7 +276,7 @@ WHERE tbl_hotels_stories.id = \''.$id.'\'';
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -295,7 +295,7 @@ WHERE tbl_hotels_stories.id = \''.$id.'\'';
         
         $stories = $this->getTopStories($numTopStoriesValue);
 
-        if (count($stories) == 0) {
+        if ((is_countable($stories) ? count($stories) : 0) == 0) {
             return array('topstoryids'=>array(), 'stories'=>'');
         } else {
             $output = '';
@@ -356,7 +356,7 @@ WHERE tbl_hotels_stories.id = \''.$id.'\'';
 
         $where = ' WHERE storycategory=\''.$category.'\' ';
 
-        if (count($storyIds) > 0) {
+        if ((is_countable($storyIds) ? count($storyIds) : 0) > 0) {
             $where .= ' AND (';
             $joiner = '';
 
@@ -387,7 +387,7 @@ ORDER BY storydate DESC LIMIT '.$limit;
     {
         $stories = $this->getNonTopStories($category, $storyIds);
 
-        if (count($stories) == 0) {
+        if ((is_countable($stories) ? count($stories) : 0) == 0) {
             return '';
         } else {
             $str = '<ul>';
@@ -414,7 +414,7 @@ ORDER BY storydate DESC LIMIT '.$limit;
     {
         $storyKeywords = $this->objKeywords->getStoryKeywords($id);
 
-        if (count($storyKeywords) == 0) {
+        if ((is_countable($storyKeywords) ? count($storyKeywords) : 0) == 0) {
             return $storyKeywords;
         } else {
             $keywordWhere = '(';
@@ -442,7 +442,7 @@ ORDER BY storydate DESC LIMIT '.$limit;
     {
         $stories = $this->getRelatedStories($id, $storyDate);
 
-        if (count($stories) == 0) {
+        if ((is_countable($stories) ? count($stories) : 0) == 0) {
             return '';
         } else {
             $str = '<h4>'.$this->objLanguage->languageText('mod_hotels_relatedstories', 'hotels', 'Related Hotels').'</h4><ul>';
@@ -637,7 +637,7 @@ ORDER BY storydate DESC';
             }
         }
 
-        if (count($groupItems) > 0) {
+        if ((is_countable($groupItems) ? count($groupItems) : 0) > 0) {
             foreach ($groupItems as $group)
             {
                 $str .= 'var point = new GLatLng('.$group['latitude'].', '.$group['longitude'].');'."\r\n";
@@ -717,7 +717,7 @@ ORDER BY storydate DESC';
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -751,7 +751,7 @@ ORDER BY storydate DESC';
     {
         $stories = $this->getCategoryTitles($categoryId, $categoryOrder);
 
-        if (count($stories) > 0) {
+        if ((is_countable($stories) ? count($stories) : 0) > 0) {
             $counter = 1;
 
             foreach ($stories as $story)
@@ -774,7 +774,7 @@ ORDER BY storydate DESC';
         $results = $this->getArray($sql);
 
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return date('F j Y');
         } else {
             $date = explode('-', $results[0]['storydate']);
@@ -845,7 +845,7 @@ ORDER BY storydate DESC';
         } else {
             $item2 = $this->getAll(' WHERE storyorder < '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY storyorder DESC LIMIT '.$limit);
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 if ($limit == 1) {
@@ -877,7 +877,7 @@ ORDER BY storydate DESC';
         } else {
             $item2 = $this->getAll(' WHERE storyorder > '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY storyorder LIMIT '.$limit);
 
-            if (count($item2) == 0) {
+            if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
             } else {
                 if ($limit == 1) {
@@ -898,7 +898,7 @@ ORDER BY storydate DESC';
     {
         $stories = $this->getCategoryStories($category, $order);
 
-        if (count($stories) > 0) {
+        if ((is_countable($stories) ? count($stories) : 0) > 0) {
             $counter = 1;
             foreach ($stories as $story)
             {

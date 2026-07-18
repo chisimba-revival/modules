@@ -13,7 +13,7 @@ class dbfileshare extends dbtable
     public $objConfig;
     //var $objUser;
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
          parent::init('tbl_fileshare');
          $this->objConfig=$this->getObject('altconfig','config');

@@ -30,7 +30,7 @@ class dbtag extends dbtable {
     public $objUser;
     public $userId;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_tag');
         $this->table = 'tbl_test_tag';
         $this->objUser = &$this->getObject('user', 'security');

@@ -30,7 +30,7 @@ class dbcmscomments extends dbTable
 	 * @param void
 	 * @return void
 	 */
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_cmscomments');
 		$this->objLanguage = $this->getObject('language', 'language');

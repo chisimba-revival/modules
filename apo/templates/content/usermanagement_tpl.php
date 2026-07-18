@@ -32,7 +32,7 @@ $objIcon->alt = $this->objLanguage->languageText('mod_apo_deleteuser', 'apo', 'D
 $objIcon->title = $this->objLanguage->languageText('mod_apo_deleteuser', 'apo', 'Delete User');
 $deleteIcon = $objIcon->show();
 
-if (count($users) > 0) {
+if ((is_countable($users) ? count($users) : 0) > 0) {
     foreach ($users as $user) {
         $table->startRow();
         $table->addCell($user['name']);

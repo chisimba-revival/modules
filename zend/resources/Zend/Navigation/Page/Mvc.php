@@ -157,7 +157,7 @@ class Zend_Navigation_Page_Mvc extends Zend_Navigation_Page
             }
 
             if (count(array_intersect_assoc($reqParams, $myParams)) ==
-                count($myParams)) {
+                (is_countable($myParams) ? count($myParams) : 0)) {
                 $this->_active = true;
                 return true;
             }

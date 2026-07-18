@@ -188,7 +188,7 @@ $formTable->endRow();
 $label = new label ($this->objLanguage->languageText('mod_news_storycategory', 'news', 'Story Category'), ' input_storycategory');
 $storyCategory = new dropdown('storycategory');
 
-if (count($categories) > 0) {
+if ((is_countable($categories) ? count($categories) : 0) > 0) {
 	foreach ($categories as $category)
 	{
 		$storyCategory->addOption($category['id'], $category['categoryname']);
@@ -281,7 +281,7 @@ $formTable->endRow();
 
 $storyTags = new textarea('storytags');
 
-if ($mode == 'edit' && count($tags) > 0 && is_array($tags)) {
+if ($mode == 'edit' && (is_countable($tags) ? count($tags) : 0) > 0 && is_array($tags)) {
     
     $divider = '';
     

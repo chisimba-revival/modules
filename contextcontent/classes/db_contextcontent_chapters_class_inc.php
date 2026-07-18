@@ -57,7 +57,7 @@ class db_contextcontent_chapters extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_chapters');
         $this->objUser =& $this->getObject('user', 'security');
@@ -144,7 +144,7 @@ class db_contextcontent_chapters extends dbtable
         $objChapterContext = $this->getObject('db_contextcontent_contextchapter');
         $contexts = $objChapterContext->getContextsWithChapter($id);
         
-        if (count($contexts) > 0 && is_array($contexts)) {
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0 && is_array($contexts)) {
             
             foreach ($contexts as $context)
             {

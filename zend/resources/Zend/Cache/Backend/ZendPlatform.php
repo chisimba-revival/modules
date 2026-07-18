@@ -135,7 +135,7 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
 
         $lifetime = $this->_directives['lifetime'];
         $result1  = output_cache_put($id, array($data, time()));
-        $result2  = (count($tags) == 0);
+        $result2  = ((is_countable($tags) ? count($tags) : 0) == 0);
 
         foreach ($tags as $tag) {
             $tagid = self::TAGS_PREFIX.$tag;
@@ -203,7 +203,7 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
                     } else {
                         $idlist = $next_idlist;
                     }
-                    if (count($idlist) == 0) {
+                    if ((is_countable($idlist) ? count($idlist) : 0) == 0) {
                         // if ID list is already empty - we may skip checking other IDs
                         $idlist = null;
                         break;
@@ -229,7 +229,7 @@ class Zend_Cache_Backend_ZendPlatform extends Zend_Cache_Backend implements Zend
                     } else {
                         $idlist = $next_idlist;
                     }
-                    if (count($idlist) == 0) {
+                    if ((is_countable($idlist) ? count($idlist) : 0) == 0) {
                         // if ID list is already empty - we may skip checking other IDs
                         $idlist = null;
                         break;

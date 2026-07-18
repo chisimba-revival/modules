@@ -44,7 +44,7 @@ class modulelinks_practical extends ChisimbaObject
         $practicals = $this->objPractical->getPractical($this->contextCode);	 
         
         // Extra Check
-        if (count($practicals) > 0) {
+        if ((is_countable($practicals) ? count($practicals) : 0) > 0) {
             
             // Array for References
             $nodesArray = array();
@@ -82,7 +82,7 @@ class modulelinks_practical extends ChisimbaObject
        	$practicals = $this->objPractical->getPractical($this->contextCode);	   
           $bigArr = array();
 		
-		if(count($practicals) > 1)
+		if((is_countable($practicals) ? count($practicals) : 0) > 1)
 		{
 		 //var_dump($practicals);
           foreach ($practicals as $practical)

@@ -22,7 +22,7 @@ class dbsuggestions extends dbtable
     /**
     * Constructor method
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hivaids_suggestions');
         $this->table = 'tbl_hivaids_suggestions';

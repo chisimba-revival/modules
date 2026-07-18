@@ -238,7 +238,7 @@ class graph {
 	}
 
 	public function __call($name, $args) {
-		if (count($args)!=2) {
+		if ((is_countable($args) ? count($args) : 0)!=2) {
 			$this->error("Method $name not found.",true);
 		}
 
@@ -296,11 +296,11 @@ class graph {
 		}
 
 		if (is_array($d)) {
-			if (count($d)==3)
+			if ((is_countable($d) ? count($d) : 0)==3)
 				return $this->addPoint($d[0],$d[1],$d[2]);
-			elseif (count($d)==2 && isset($d[1]))
+			elseif ((is_countable($d) ? count($d) : 0)==2 && isset($d[1]))
 				return $this->addPoint($d[0],$d[1]);
-			elseif (count($d)==2)
+			elseif ((is_countable($d) ? count($d) : 0)==2)
 				return $this->addPoint($d[0],-5,$d[2]);
 			else
 				return $this->addPoint($d[0]);
@@ -767,7 +767,7 @@ class graph {
 			$sortkeys[] = $da['ansum'][$i-1]; //Create sort array to make sure pie is graphed back to front
 		}
 
-		for($i=1;$i<count($sortkeys)+1;$i++) {
+		for($i=1;$i<(is_countable($sortkeys) ? count($sortkeys) : 0)+1;$i++) {
 			if ($sortkeys[$i-1]<90 && $sortkeys[$i]>90) { // Make sure the one that actually crosses 90 is last
 				$sortkeys[$i] = 90;
 			}
@@ -1019,7 +1019,7 @@ class graph {
 					$format = $this->getProp("dateformat",1);
 				}elseif (is_array($this->getProp("scale","numeric"))) {
 					$scale = $this->getProp("scale");
-					$this->setProp("xincpts",count($scale)-1);
+					$this->setProp("xincpts",(is_countable($scale) ? count($scale) : 0)-1);
 				}
 
 				for($i=0;$i<$this->getProp("xincpts")+1;$i++) { //Create horiz scale
@@ -1088,7 +1088,7 @@ class graph {
 		foreach ($this->xPts as $ex => $ind) {
 			$xPts = $this->xPts[$ex];
 			$yPts = $this->yPts[$ex];
-			$g = $this->width/count($xPts);
+			$g = $this->width/(is_countable($xPts) ? count($xPts) : 0);
 			$color = $this->getProp("color",array(0,0,255,0),$ex);
 
 			$fore = imagecolorallocatealpha($this->img,$color[0],$color[1],$color[2],$color[3]);
@@ -1117,7 +1117,7 @@ class graph {
 				foreach ($xPts as $k => $xpt) {
 					$x = $xPts[$k];
 					$y = $this->height-$yPts[$k];
-					if ($this->getProp("endstyle",0,$ex)!=0 && $k==count($xPts)-1) {
+					if ($this->getProp("endstyle",0,$ex)!=0 && $k==(is_countable($xPts) ? count($xPts) : 0)-1) {
 						continue;
 					}
 
@@ -1242,10 +1242,10 @@ class graph {
 
 			$col = imagecolorallocatealpha($this->img,$arrow[0],$arrow[1],$arrow[2],$arrow[3]);
 
-			$x2 = $xPts[count($xPts)-1];
-			$y2 = $this->height-$yPts[count($yPts)-1];
-			$x1 = $xPts[count($xPts)-2];
-			$y1 = $this->height-$yPts[count($yPts)-2];
+			$x2 = $xPts[(is_countable($xPts) ? count($xPts) : 0)-1];
+			$y2 = $this->height-$yPts[(is_countable($yPts) ? count($yPts) : 0)-1];
+			$x1 = $xPts[(is_countable($xPts) ? count($xPts) : 0)-2];
+			$y1 = $this->height-$yPts[(is_countable($yPts) ? count($yPts) : 0)-2];
 
 			switch ($this->getProp("endstyle",0,$ex)){ //Draw end
 			case 1: //Open arrow
@@ -1388,7 +1388,7 @@ class graph {
 					}
 
 					if (($fd=array_sum($pr))<1) {
-						$pr[count($pr)-1] += 1-$fd;
+						$pr[(is_countable($pr) ? count($pr) : 0)-1] += 1-$fd;
 					}
 
 					foreach ($d as $i => $e) {
@@ -1735,7 +1735,7 @@ class graph {
 			$fname = $graph->getProp("tempfolder","")."imagehistory".basename($_SERVER['PHP_SELF']).".data";
 			$f = @file($fname);
 
-			if (count($f)>$graph->getProp("cachehistory",5)) {
+			if ((is_countable($f) ? count($f) : 0)>$graph->getProp("cachehistory",5)) {
 				unlink($f[0]);
 				unset($f[0]);
 			}
@@ -1894,7 +1894,7 @@ class EvalMath { // By Miles Kaufmann
 				return false;
 			}
 
-			for ($i = 0; $i<count($stack); $i++) {
+			for ($i = 0; $i<(is_countable($stack) ? count($stack) : 0); $i++) {
 				$token = $stack[$i];
 
 				if (preg_match('/^[a-z]\w*$/', $token) and !in_array($token, $args)) {

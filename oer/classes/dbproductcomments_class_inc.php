@@ -32,7 +32,7 @@ class dbproductcomments extends dbTable {
 
     private $tableName = 'tbl_oer_productcomments';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
     
@@ -58,7 +58,7 @@ class dbproductcomments extends dbTable {
     function getComment($Id) {
         $sql = "select * from tbl_oer_productcomments where id = '$Id'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return null;

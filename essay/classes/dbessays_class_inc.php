@@ -24,7 +24,7 @@ class dbessays extends dbTable
     /**
     * Constructor method to define the table.
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_essays');
         //parent::init('tbl_essay_topics');

@@ -254,7 +254,7 @@ class groupmanager extends ChisimbaObject {
             $count++;
         }
 
-        $totalGroups = count($groups);
+        $totalGroups = (is_countable($groups) ? count($groups) : 0);
         $reminder = $totalGroups % $maxCol;
 
         if ($reminder != 0) {
@@ -334,7 +334,7 @@ class groupmanager extends ChisimbaObject {
 
         $str .= '<p><strong>' . ucwords($this->objLanguage->code2Txt('word_lecturers', 'system')) . '</strong></p>';
 
-        if (count($groupEditors) == 0) {
+        if ((is_countable($groupEditors) ? count($groupEditors) : 0) == 0) {
             $str .= '<p>' . $this->objLanguage->code2Txt('mod_contextgroups_nolecturers', 'contextgroups') . '<p>';
         } else {
             $str .= '<p>';
@@ -348,7 +348,7 @@ class groupmanager extends ChisimbaObject {
 
         $str .= '<p><strong>' . ucwords($this->objLanguage->code2Txt('word_students', 'system')) . '</strong></p>';
 
-        if (count($groupReadOnly) == 0) {
+        if ((is_countable($groupReadOnly) ? count($groupReadOnly) : 0) == 0) {
             $str .= '<p>' . $this->objLanguage->code2Txt('mod_groupadmin_nostuds', 'groupadmin') . '<p>';
         } else {
             $str .= '<p>';

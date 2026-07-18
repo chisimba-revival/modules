@@ -435,7 +435,7 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
         $content = '';
 
         $custom = $form->getCustomMessages();
-        if ($this->getShowCustomFormErrors() && count($custom)) {
+        if ($this->getShowCustomFormErrors() && (is_countable($custom) ? count($custom) : 0)) {
             $content .= $this->getMarkupListItemStart()
                      .  $view->formErrors($custom, $this->getOptions())
                      .  $this->getMarkupListItemEnd();
@@ -443,7 +443,7 @@ class Zend_Form_Decorator_FormErrors extends Zend_Form_Decorator_Abstract
         foreach ($form->getElementsAndSubFormsOrdered() as $subitem) {
             if ($subitem instanceof Zend_Form_Element && !$this->getOnlyCustomFormErrors()) {
                 $messages = $subitem->getMessages();
-                if (count($messages)) {
+                if ((is_countable($messages) ? count($messages) : 0)) {
                     $subitem->setView($view);
                     $content .= $this->getMarkupListItemStart()
                              .  $this->renderLabel($subitem, $view)

@@ -72,7 +72,7 @@ class jqueryui_loader extends ChisimbaObject {
         if (is_dir($this->getResourceUri("js/jqueryui/styles/$selectedTheme/"))) {
 
             $cm = $this->fetchFileNames($this->getResourceUri("js/jqueryui/styles/$selectedTheme/", 'formbuilder'), "css");
-            if (count($cm) < 1) {
+            if ((is_countable($cm) ? count($cm) : 0) < 1) {
                 return false;
             }
             $temp_css_head = "";
@@ -91,7 +91,7 @@ class jqueryui_loader extends ChisimbaObject {
      */
     private function setStyle() {
         $cm = $this->fetchFileNames($this->getResourceUri("js/jqueryui/styles/$this->CSS_type/", 'formbuilder'), "css");
-        if (count($cm) < 1){
+        if ((is_countable($cm) ? count($cm) : 0) < 1){
             die("The style <i>".$this->CSS_type."</i> does not exist within jquery UI formbuilder module. Please correct the style settings within the xml config file wthin this module.");
     }
     

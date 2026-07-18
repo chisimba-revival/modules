@@ -60,7 +60,7 @@ class db_learningcontent_activitystreamer extends dbtable
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_learningcontent_sessions');
         $this->objUser =& $this->getObject('user', 'security');

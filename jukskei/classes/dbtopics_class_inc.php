@@ -17,7 +17,7 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class dbtopics  extends dbTable {
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_jukskei_topics');
         $this->table = 'tbl_jukskei_topics';
     }

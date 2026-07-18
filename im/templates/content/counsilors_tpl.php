@@ -2,7 +2,7 @@
 
 $objDBIMUser = $this->getObject('dbimusers', 'im');
 $objLink = $this->getObject('link','htmlelements');
-$numCounsilors = count($users);
+$numCounsilors = (is_countable($users) ? count($users) : 0);
 $numUsers = $this->objDbImPres->getRecordCount();
 
 echo "Number of Counsilors: $numCounsilors<br/>";

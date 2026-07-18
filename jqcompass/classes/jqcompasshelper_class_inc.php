@@ -151,7 +151,7 @@ class jqcompasshelper extends ChisimbaObject
         $ret = '<script type="text/javascript">';
         $ret .= "\n     jQuery(document).ready(function() {\n";
         $ret .= "          jQuery(\".$browseTable\").compassDatagrid({\n";
-        $entries = count($arrayParams);
+        $entries = (is_countable($arrayParams) ? count($arrayParams) : 0);
         $counter = 0;
         foreach ($arrayParams as $key=>$value) {
             $counter++;

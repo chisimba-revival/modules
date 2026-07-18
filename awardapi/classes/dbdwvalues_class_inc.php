@@ -63,7 +63,7 @@ class dbdwvalues extends dbTable
 	    * @access public
 	    * @return void
 	    */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
         	try {
                 parent::init('tbl_award_decent_work_values');

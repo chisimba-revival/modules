@@ -487,7 +487,7 @@ class survey extends controller {
                 $questionId = $arrQuestionData ['question_id'];
                 if ($mode == 'add') {
                     $arrQuestionList = $this->dbQuestion->listQuestions($surveyId);
-                    $questionOrder = !empty($arrQuestionList) ? (count($arrQuestionList) + 1) : '1';
+                    $questionOrder = !empty($arrQuestionList) ? ((is_countable($arrQuestionList) ? count($arrQuestionList) : 0) + 1) : '1';
                     $questionId = $this->dbQuestion->addQuestion($questionOrder);
                     if ($typeId != 'init_7' && $typeId != 'init_9' && $typeId != 'init_10' && $presetOptions != '1') {
                         $this->dbRows->addQuestionRows($surveyId, $questionId);
@@ -542,7 +542,7 @@ class survey extends controller {
 
                     $surveyId = $arrQuestionData ['survey_id'];
                     $arrQuestionList = $this->dbQuestion->listQuestions($surveyId);
-                    $questionOrder = !empty($arrQuestionList) ? (count($arrQuestionList) + 1) : '1';
+                    $questionOrder = !empty($arrQuestionList) ? ((is_countable($arrQuestionList) ? count($arrQuestionList) : 0) + 1) : '1';
                     $newQuestionId = $this->dbQuestion->addQuestion($questionOrder);
 
                     if ($typeId != 'init_7' && $typeId != 'init_9' && $typeId != 'init_10' && $presetOptions != '1') {
@@ -887,7 +887,7 @@ class survey extends controller {
                     } else {
                         if (!empty($arrQuestionId)) {
                             $arrPageQuestionList = $this->dbPageQuestions->listRows($newPageId);
-                            $i = !empty($arrPageQuestionList) ? count($arrPageQuestionList) + 1 : '1';
+                            $i = !empty($arrPageQuestionList) ? (is_countable($arrPageQuestionList) ? count($arrPageQuestionList) : 0) + 1 : '1';
                             foreach ($arrQuestionId as $questionId) {
                                 $arrPageQuestionData = $this->dbPageQuestions->getQuestionRecord($questionId);
                                 $id = $arrPageQuestionData ['0'] ['id'];

@@ -32,7 +32,7 @@ class dbtwits extends dbtable {
      * @access private
      * @return nothing
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_twitsocial');
         $this->objDbTwitLoc = $this->getObject('dbtwitloctags');
         $this->objDbTwitSn = $this->getObject('dbtwitsntags');

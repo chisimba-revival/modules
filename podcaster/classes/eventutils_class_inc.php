@@ -121,7 +121,7 @@ class eventutils extends dbTable {
      * Standard init method
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         // Instantiate the language object.
         $this->objLanguage = $this->getObject('language', 'language');
         // Instantiate the user object.
@@ -817,7 +817,7 @@ class eventutils extends dbTable {
                     'staffnumber'
                         ), $filter);
         $guestsArray = array();
-        if (count($guests) > 0) {
+        if ((is_countable($guests) ? count($guests) : 0) > 0) {
             foreach ($guests as $guest) {
                 $guestsArray[] = $guest['userid'];
             }

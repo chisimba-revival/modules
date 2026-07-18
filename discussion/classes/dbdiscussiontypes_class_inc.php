@@ -19,7 +19,7 @@ class dbDiscussionTypes extends dbTable
 	/**
 	* Constructor method to define the table(default)
 	*/
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_discussion_discussiontype');
     }

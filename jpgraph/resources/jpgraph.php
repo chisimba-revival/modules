@@ -762,7 +762,7 @@ class Graph {
         if( $aPlot == null ) {
             JpGraphError::RaiseL(25010);//("Graph::Add() You tried to add a null plot to the graph.");
         }
-        if( is_array($aPlot) && count($aPlot) > 0 ) {
+        if( is_array($aPlot) && (is_countable($aPlot) ? count($aPlot) : 0) > 0 ) {
             $cl = $aPlot[0];
         }
         else {
@@ -790,7 +790,7 @@ class Graph {
 
     function AddTable($aTable) {
         if( is_array($aTable) ) {
-            for($i=0; $i < count($aTable); ++$i ) {
+            for($i=0; $i < (is_countable($aTable) ? count($aTable) : 0); ++$i ) {
                 $this->iTables[]=$aTable[$i];
             }
         }
@@ -801,7 +801,7 @@ class Graph {
 
     function AddIcon($aIcon) {
         if( is_array($aIcon) ) {
-            for($i=0; $i < count($aIcon); ++$i ) {
+            for($i=0; $i < (is_countable($aIcon) ? count($aIcon) : 0); ++$i ) {
                 $this->iIcons[]=$aIcon[$i];
             }
         }
@@ -816,7 +816,7 @@ class Graph {
             JpGraphError::RaiseL(25011);//("Graph::AddY2() You tried to add a null plot to the graph.");
         }
 
-        if( is_array($aPlot) && count($aPlot) > 0 ) {
+        if( is_array($aPlot) && (is_countable($aPlot) ? count($aPlot) : 0) > 0 ) {
             $cl = $aPlot[0];
         }
         else {
@@ -848,7 +848,7 @@ class Graph {
             JpGraphError::RaiseL(25012);//("Graph::AddYN() You tried to add a null plot to the graph.");
         }
 
-        if( is_array($aPlot) && count($aPlot) > 0 ) {
+        if( is_array($aPlot) && (is_countable($aPlot) ? count($aPlot) : 0) > 0 ) {
             $cl = $aPlot[0];
         }
         else {
@@ -876,7 +876,7 @@ class Graph {
         }
         if( $aToY2 ) {
             if( is_array($aTxt) ) {
-                for($i=0; $i < count($aTxt); ++$i ) {
+                for($i=0; $i < (is_countable($aTxt) ? count($aTxt) : 0); ++$i ) {
                     $this->y2texts[]=$aTxt[$i];
                 }
             }
@@ -886,7 +886,7 @@ class Graph {
         }
         else {
             if( is_array($aTxt) ) {
-                for($i=0; $i < count($aTxt); ++$i ) {
+                for($i=0; $i < (is_countable($aTxt) ? count($aTxt) : 0); ++$i ) {
                     $this->texts[]=$aTxt[$i];
                 }
             }
@@ -904,7 +904,7 @@ class Graph {
 
         if( $aToY2 ) {
             if( is_array($aLine) ) {
-                for($i=0; $i < count($aLine); ++$i ) {
+                for($i=0; $i < (is_countable($aLine) ? count($aLine) : 0); ++$i ) {
                     //$this->y2lines[]=$aLine[$i];
                     $this->y2plots[]=$aLine[$i];
                 }
@@ -916,7 +916,7 @@ class Graph {
         }
         else {
             if( is_array($aLine) ) {
-                for($i=0; $i<count($aLine); ++$i ) {
+                for($i=0; $i<(is_countable($aLine) ? count($aLine) : 0); ++$i ) {
                     //$this->lines[]=$aLine[$i];
                     $this->plots[]=$aLine[$i];
                 }
@@ -936,7 +936,7 @@ class Graph {
 
         if( $aToY2 ) {
             if( is_array($aBand) ) {
-                for($i=0; $i < count($aBand); ++$i ) {
+                for($i=0; $i < (is_countable($aBand) ? count($aBand) : 0); ++$i ) {
                     $this->y2bands[] = $aBand[$i];
                 }
             }
@@ -946,7 +946,7 @@ class Graph {
         }
         else {
             if( is_array($aBand) ) {
-                for($i=0; $i < count($aBand); ++$i ) {
+                for($i=0; $i < (is_countable($aBand) ? count($aBand) : 0); ++$i ) {
                     $this->bands[] = $aBand[$i];
                 }
             }
@@ -995,7 +995,7 @@ class Graph {
             }
 
             $valid_formats = array('png', 'jpg', 'gif');
-            $aImgFormat = strtolower($e[count($e)-1]);
+            $aImgFormat = strtolower($e[(is_countable($e) ? count($e) : 0)-1]);
             if ($aImgFormat == 'jpeg')  {
                 $aImgFormat = 'jpg';
             }
@@ -1489,7 +1489,7 @@ class Graph {
         else {
             $txts = $this->texts;
         }
-        $n = count($txts);
+        $n = (is_countable($txts) ? count($txts) : 0);
         $min=null;
         $max=null;
         for( $i=0; $i < $n; ++$i ) {
@@ -1518,7 +1518,7 @@ class Graph {
         else {
             $txts = $this->texts;
         }
-        $n = count($txts);
+        $n = (is_countable($txts) ? count($txts) : 0);
         $min=null;
         $max=null;
         for( $i=0; $i < $n; ++$i ) {
@@ -2464,7 +2464,7 @@ class Graph {
         // Remove case sensitivity and setup appropriate function to create image
         // Get file extension. This should be the LAST '.' separated part of the filename
         $e = explode('.',$aFile);
-        $ext = strtolower($e[count($e)-1]);
+        $ext = strtolower($e[(is_countable($e) ? count($e) : 0)-1]);
         if ($ext == "jpeg")  {
             $ext = "jpg";
         }
@@ -3018,7 +3018,7 @@ class Graph {
 
     // Get Y min and max values for added lines
     function GetLinesYMinMax( $aLines ) {
-        $n = count($aLines);
+        $n = (is_countable($aLines) ? count($aLines) : 0);
         if( $n == 0 ) return false;
         $min = $aLines[0]->scaleposition ;
         $max = $min ;
@@ -3036,7 +3036,7 @@ class Graph {
 
     // Get X min and max values for added lines
     function GetLinesXMinMax( $aLines ) {
-        $n = count($aLines);
+        $n = (is_countable($aLines) ? count($aLines) : 0);
         if( $n == 0 ) return false ;
         $min = $aLines[0]->scaleposition ;
         $max = $min ;
@@ -3054,7 +3054,7 @@ class Graph {
 
     // Get min and max values for all included plots
     function GetPlotsYMinMax($aPlots) {
-        $n = count($aPlots);
+        $n = (is_countable($aPlots) ? count($aPlots) : 0);
         $i=0;
         do {
             list($xmax,$max) = $aPlots[$i]->Max();
@@ -3577,7 +3577,7 @@ class Grid {
     // Draw the grid
     function DoStroke($aTicksPos,$aType,$aColor,$aWeight) {
         if( !$this->show ) return;
-        $nbrgrids = count($aTicksPos);
+        $nbrgrids = (is_countable($aTicksPos) ? count($aTicksPos) : 0);
 
         if( $this->scale->type == 'y' ) {
             $xl=$this->img->left_margin;
@@ -3639,7 +3639,7 @@ class Grid {
             // to many gridlines
             $i=0;
             $x=$aTicksPos[$i];
-            while( $i<count($aTicksPos) && ($x=$aTicksPos[$i]) <= $limit ) {
+            while( $i<(is_countable($aTicksPos) ? count($aTicksPos) : 0) && ($x=$aTicksPos[$i]) <= $limit ) {
                 if    ( $aType == 'solid' )      $this->img->Line($x,$yl,$x,$yu);
                 elseif( $aType == 'dotted' )     $this->img->DashedLineForGrid($x,$yl,$x,$yu,1,6);
                 elseif( $aType == 'dashed' )     $this->img->DashedLineForGrid($x,$yl,$x,$yu,2,4);
@@ -4322,8 +4322,8 @@ class LinearTicks extends Ticks {
             JpGraphError::RaiseL(25065);//('Tick positions must be specifued as an array()');
             return;
         }
-        $n=count($aMajPos);
-        if( is_array($aLabels) && (count($aLabels) != $n) ) {
+        $n=(is_countable($aMajPos) ? count($aMajPos) : 0);
+        if( is_array($aLabels) && ((is_countable($aLabels) ? count($aLabels) : 0) != $n) ) {
             JpGraphError::RaiseL(25066);//('When manually specifying tick positions and labels the number of labels must be the same as the number of specified ticks.');
         }
         $this->iManualTickPos = $aMajPos;
@@ -5388,7 +5388,7 @@ class Plot {
     protected $isRunningClear = false;
 
     function __construct($aDatay,$aDatax=false) {
-        $this->numpoints = count($aDatay);
+        $this->numpoints = (is_countable($aDatay) ? count($aDatay) : 0);
         if( $this->numpoints==0 ) {
             JpGraphError::RaiseL(25121);//("Empty input data array specified for plot. Must have at least one data point.");
         }
@@ -5402,7 +5402,7 @@ class Plot {
         $this->coords[0]=$aDatay;
         if( is_array($aDatax) ) {
             $this->coords[1]=$aDatax;
-            $n = count($aDatax);
+            $n = (is_countable($aDatax) ? count($aDatax) : 0);
             for( $i=0; $i < $n; ++$i ) {
                 if( !is_numeric($aDatax[$i]) ) {
                     JpGraphError::RaiseL(25070);
@@ -5467,14 +5467,14 @@ class Plot {
         else {
             $x='';
         }
-        if( $x != '' && count($x) > 0 ) {
+        if( $x != '' && (is_countable($x) ? count($x) : 0) > 0 ) {
             $xm=min($x);
         }
         else {
             $xm=0;
         }
         $y=$this->coords[0];
-        $cnt = count($y);
+        $cnt = (is_countable($y) ? count($y) : 0);
         if( $cnt > 0 ) {
             $i=0;
             while( $i<$cnt && !is_numeric($ym=$y[$i]) ) {
@@ -5502,15 +5502,15 @@ class Plot {
             $x='';
         }
 
-        if( $x!='' && count($x) > 0 ) {
+        if( $x!='' && (is_countable($x) ? count($x) : 0) > 0 ) {
             $xm=max($x);
         }
         else {
             $xm = $this->numpoints-1;
         }
         $y=$this->coords[0];
-        if( count($y) > 0 ) {
-            $cnt = count($y);
+        if( (is_countable($y) ? count($y) : 0) > 0 ) {
+            $cnt = (is_countable($y) ? count($y) : 0);
             $i=0;
             while( $i<$cnt && !is_numeric($ym=$y[$i]) ) {
                 $i++;

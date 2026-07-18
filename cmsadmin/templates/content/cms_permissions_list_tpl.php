@@ -233,11 +233,11 @@
             //Will iterate and display one user per line with the access type.
             //Updating Checks for the assigned users
             $usersList = $this->_objSecurity->getAssignedSectionUsers($section['id']);
-            $usersCount = count($usersList);
+            $usersCount = (is_countable($usersList) ? count($usersList) : 0);
                         
             //Preparing a list of GROUP_ID's
             $groupsList = $this->_objSecurity->getAssignedSectionGroups($section['id']);
-            $groupsCount = count($groupsList);
+            $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
                         
             //Reporting on Users and Access
             //$userReport = '<select style="padding:3px">';

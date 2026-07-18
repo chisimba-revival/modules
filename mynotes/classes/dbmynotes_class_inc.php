@@ -69,7 +69,7 @@ class dbmynotes extends dbtable {
      * @return VOID
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->table = 'tbl_mynotes_text';
         //Set the parent table to our demo table
         parent::init($this->table);
@@ -120,7 +120,7 @@ class dbmynotes extends dbtable {
         $sql = 'SELECT tags FROM ' . $this->table
           . ' WHERE id="' . $id . '"';
         $res = $this->getArray($sql);
-        if (count($res) > 0) {
+        if ((is_countable($res) ? count($res) : 0) > 0) {
             return $res[0]['tags'];
         } else {
             return NULL;

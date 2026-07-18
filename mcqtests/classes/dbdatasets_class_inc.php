@@ -35,7 +35,7 @@ class dbdatasets extends dbtable {
      */
     public $objDSDefinitions;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_datasets');
         $this->table = 'tbl_test_datasets';
         $this->objUser = &$this->getObject('user', 'security');

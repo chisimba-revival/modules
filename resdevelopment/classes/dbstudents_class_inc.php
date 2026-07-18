@@ -25,7 +25,7 @@
 class dbstudents extends dbtable {
     private $tablename = "tbl_resdev_student";
     
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tablename);
     }
 

@@ -318,7 +318,7 @@ class viewrender extends ChisimbaObject {
 	private function _formatMessages($msgs)
 	{
 	
-	if (count($msgs) > 0)
+	if ((is_countable($msgs) ? count($msgs) : 0) > 0)
 	{
 	    $prevmessages = "";
 	    foreach ( $msgs as $prevmess )
@@ -354,7 +354,7 @@ class viewrender extends ChisimbaObject {
     */
     public function renderLinkList($msgs)
 	{
-		if(count($msgs) > 0)
+		if((is_countable($msgs) ? count($msgs) : 0) > 0)
 		{
 			
 			$anchor = $this->getObject('link', 'htmlelements');
@@ -408,7 +408,7 @@ class viewrender extends ChisimbaObject {
 		$msgs = $this->objDbIm->getMessagesByActiveUser ($cid);
 		$numConv = $objPres->getRecordCount();
 		
-		$num = count($msgs);
+		$num = (is_countable($msgs) ? count($msgs) : 0);
 		$myMessages = $num.$outof;
 		
 
@@ -521,7 +521,7 @@ class viewrender extends ChisimbaObject {
 		$objUser = $this->getObject('user', 'security');
 		//get all the live counselors
 		$activeCounselors = $objIMUsers->getAll();
-		if(count($activeCounselors) > 0)
+		if((is_countable($activeCounselors) ? count($activeCounselors) : 0) > 0)
 		{
 			$str = '<table>';
 			$myUserId = $objUser->userId();
@@ -573,7 +573,7 @@ class viewrender extends ChisimbaObject {
 	 */
 	public function formatChat($messages)
 	{
-		if(count($messages) > 0)
+		if((is_countable($messages) ? count($messages) : 0) > 0)
 		{
 			$str = "";
 			foreach($messages as $message)

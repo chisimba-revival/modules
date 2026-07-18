@@ -144,7 +144,7 @@ class provider extends ChisimbaObject
         // Explode it into an array, the easiest way to get the file name
         $ar = explode("/", $targetForExplode);
         //There should be two entries
-        if (count($ar) !==2) {
+        if ((is_countable($ar) ? count($ar) : 0) !==2) {
             $this->err = "404 Not Found";
             return FALSE;
         }
@@ -163,8 +163,8 @@ class provider extends ChisimbaObject
     */
     private function getExtenstion($targetUrl) {
         $tmpAr = explode(".", $targetUrl);
-        if (count($tmpAr) > 1) {
-            $extLocation = count($tmpAr)-1;
+        if ((is_countable($tmpAr) ? count($tmpAr) : 0) > 1) {
+            $extLocation = (is_countable($tmpAr) ? count($tmpAr) : 0)-1;
             $ext =  strtolower($tmpAr[$extLocation]);
         } else {
             $ext = FALSE;

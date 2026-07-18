@@ -67,7 +67,7 @@ $table->endHeaderRow();
 $rowcount = 0;
 
 //setup the tables rows  and loop though the records
-if (count($arrTemplates) > 0) {
+if ((is_countable($arrTemplates) ? count($arrTemplates) : 0) > 0) {
 	foreach($arrTemplates as $template) {
 	    //Set odd even row colour
 	    $oddOrEven = ($rowcount == 0) ? "even" : "odd";

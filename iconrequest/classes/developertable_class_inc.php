@@ -17,7 +17,7 @@ class developerTable extends dbTable {
     /**
     * constructor to connect to database
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 	 parent::init('tbl_developer');
     }
     

@@ -52,7 +52,7 @@ class dbhosportal_messages extends dbTable {
      * data members from other classes for this class to use.
      *
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 ///Define the table tbl_hosportal_messages. This can only be done if this class
 ///is inherited by dbTable.
         parent::init('tbl_hosportal_messages');

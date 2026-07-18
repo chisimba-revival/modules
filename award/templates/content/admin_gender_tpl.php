@@ -60,7 +60,7 @@ $class = 'odd';
 foreach ($bcea as $cat) {
 	$cells = $objBCEA->getArray("SELECT * FROM tbl_award_gender_bcea WHERE category LIKE '{$cat['category']}'");
 	$count = 0;
-	$total = count($cells);
+	$total = (is_countable($cells) ? count($cells) : 0);
 	$objTable->startRow($class);
 	// Create edit icon
 	$param = $this->uri(array('action' => 'editgendercat', 'genderCat'=>$cat['category'], 'selected'=>'init_10'));

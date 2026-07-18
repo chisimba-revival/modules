@@ -273,7 +273,7 @@ class PiePlot {
         $n = count($this->data);
 
         if( $this->setslicecolors==null ) {
-            $numcolors=count($ta);
+            $numcolors=(is_countable($ta) ? count($ta) : 0);
             if( class_exists('PiePlot3D',false) && ($this instanceof PiePlot3D) ) {
                 $ta = array_reverse(array_slice($ta,0,$n));
             }
@@ -355,7 +355,7 @@ class PiePlot {
         $tmp = array();
         $result = array();
         $quote_sum=0;
-        $n = count($aData) ;
+        $n = (is_countable($aData) ? count($aData) : 0) ;
         for( $i=0, $sum=0; $i < $n; ++$i )
         $sum+=$aData[$i];
         foreach($aData as $index => $value) {
@@ -415,7 +415,7 @@ class PiePlot {
         $n = count($this->data);
 
         if( $this->setslicecolors==null ) {
-            $numcolors=count($ta);
+            $numcolors=(is_countable($ta) ? count($ta) : 0);
         }
         else {
             // We need to create an array of colors as long as the data
@@ -813,7 +813,7 @@ class PiePlot {
         $this->value->SetMargin(0);
 
         // Number of clusters found
-        $nc = count($clusters);
+        $nc = (is_countable($clusters) ? count($clusters) : 0);
 
         // Walk through all the clusters
         for($i=0; $i < $nc; ++$i) {
@@ -1258,7 +1258,7 @@ class PieGraph extends Graph {
     // PUBLIC METHODS
     function Add($aObj) {
 
-        if( is_array($aObj) && count($aObj) > 0 )
+        if( is_array($aObj) && (is_countable($aObj) ? count($aObj) : 0) > 0 )
         $cl = $aObj[0];
         else
         $cl = $aObj;
@@ -1269,7 +1269,7 @@ class PieGraph extends Graph {
         $this->AddIcon($aObj);
         else {
             if( is_array($aObj) ) {
-                $n = count($aObj);
+                $n = (is_countable($aObj) ? count($aObj) : 0);
                 for($i=0; $i < $n; ++$i ) {
                     //if ($aObj[$i]->theme) {
                     //    $this->ClearTheme();

@@ -817,7 +817,7 @@ class portalimporter extends controller
 												$path_compare = $log['filepath'];
 												if ($back_count > 0){
 													$path_parts = explode('/', $path_compare);
-													$path_parts_count = count($path_parts);
+													$path_parts_count = (is_countable($path_parts) ? count($path_parts) : 0);
 					
 													$new_path = '';
 													//Getting the left part of the path according to the import log
@@ -827,7 +827,7 @@ class portalimporter extends controller
 													
 													//Getting the right part of the path+filename according to the import href
 													$right_path_parts = explode('/', $href);
-                                                    $right_path_parts_count = count($right_path_parts);
+                                                    $right_path_parts_count = (is_countable($right_path_parts) ? count($right_path_parts) : 0);
 													for ($i = $back_count; $i < $right_path_parts_count; $i++){
 														$new_path .= $right_path_parts[$i].'/';
 													}	
@@ -1052,8 +1052,8 @@ class portalimporter extends controller
 
 				function str_first_upper($str, $delim = ' '){
 						$str = explode($delim, strtolower($str));
-						for($i = 0; $i < count($str); $i++){
-								if (count($str) > 1){
+						for($i = 0; $i < (is_countable($str) ? count($str) : 0); $i++){
+								if ((is_countable($str) ? count($str) : 0) > 1){
 										$str[$i] = strtoupper(substr($str[$i], 0, 1)) . substr($str[$i], 1) . ' ';
 								} else {
 										$str[$i] = strtoupper(substr($str[$i], 0, 1)) . substr($str[$i], 1);

@@ -60,7 +60,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_activitystreamer');
         $this->objUser = & $this->getObject('user', 'security');
         //Load content pages
@@ -204,7 +204,7 @@ class db_contextcontent_activitystreamer extends dbtable {
 
 
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;
@@ -222,7 +222,7 @@ class db_contextcontent_activitystreamer extends dbtable {
 
         $sql.=" group by userid order by logincount desc";
         $results = $this->getArray($sql);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
 
@@ -240,7 +240,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     public function getUserSessions($userId) {
         $getDistinct = "SELECT distinct sessionid  FROM tbl_contextcontent_activitystreamer WHERE userid = '$userId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -263,7 +263,7 @@ class db_contextcontent_activitystreamer extends dbtable {
 
         //print_r($results);
         //die();
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results;
@@ -297,7 +297,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     public function getMinSessionTime($sessionId) {
         $getDistinct = "SELECT id, endtime, min(starttime) as minstarttime  FROM tbl_contextcontent_activitystreamer WHERE sessionid = '$sessionId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -314,7 +314,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     public function getMaxSessionTime($sessionId) {
         $getDistinct = "SELECT id, endtime, max(starttime) as maxstarttime  FROM tbl_contextcontent_activitystreamer WHERE sessionid = '$sessionId'";
         $results = $this->getArray($getDistinct);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -622,7 +622,7 @@ class db_contextcontent_activitystreamer extends dbtable {
 
         $results = $this->getArray($sql);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -647,7 +647,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     function jsonContextContextUsage($contextcode, $startdate, $enddate, $studentsonly=TRUE) {
         $logs = $this->getTimeTakenByEachMember($contextcode, $startdate, $enddate);
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $str = '{"logcount":"' . $logCount . '","availableLogs":[';
         $logArray = array();
 
@@ -690,7 +690,7 @@ class db_contextcontent_activitystreamer extends dbtable {
 
         $logs = $this->getContextLogs($contextcode, $where);
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $str = '{"logcount":"' . $logCount . '","availableLogs":[';
         $logArray = array();
 
@@ -847,7 +847,7 @@ class db_contextcontent_activitystreamer extends dbtable {
         $where = "";
         $logs = $this->getContextLogs($contextcode, $where);
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('id,userid,usernames,contextcode,modulecode,contextitemid,type,contextitemtitle,datecreated,description,starttime,endtime');
         $csvFile = "logs.csv";
@@ -895,7 +895,7 @@ class db_contextcontent_activitystreamer extends dbtable {
     function csvContextContentUsage($contextcode, $startdate="", $enddate="") {
         $logs = $this->getTimeTakenByEachMember($contextcode, $startdate, $enddate);
 
-        $logCount = (count($logs));
+        $logCount = ((is_countable($logs) ? count($logs) : 0));
         $list = array();
         $list = array('userid,username,fullname,contextcode,duration');
         $csvFile = $this->contextCode . "-contextcontent-usage.csv";

@@ -85,7 +85,7 @@ foreach($categoryList as $catList)
 	$objCategoryTable->addHeaderCell($edit, '5%');
 	$objCategoryTable->addHeaderCell($delete, '5%');
 	$objCategoryTable->endHeaderRow();
-	if(count($valuesList) > 0)
+	if((is_countable($valuesList) ? count($valuesList) : 0) > 0)
 	{
 		foreach($valuesList as $valList)
 		{

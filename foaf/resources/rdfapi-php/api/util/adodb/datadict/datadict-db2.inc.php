@@ -106,7 +106,7 @@ class ADODB2_db2 extends ADODB_DataDict {
 				// assume that $vargs[0] is the field name.
 				$i=0;
 				// Find the next non-blank value;
-				for ($i=1;$i<sizeof($vargs);$i++)
+				for ($i=1;$i<(is_countable($vargs) ? sizeof($vargs) : 0);$i++)
 					if ($vargs[$i] != '')
 						break;
 				
@@ -122,7 +122,7 @@ class ADODB2_db2 extends ADODB_DataDict {
 				// Now Look for the NOT NULL statement as this is not allowed in
 				// the ALTER table statement. If it is in there, remove it
 				if (in_array('NOT',$vargs) && in_array('NULL',$vargs)) {
-					for ($i=1;$i<sizeof($vargs);$i++)
+					for ($i=1;$i<(is_countable($vargs) ? sizeof($vargs) : 0);$i++)
 					if ($vargs[$i] == 'NOT')
 						break;
 					array_splice($vargs,$i,2,'');

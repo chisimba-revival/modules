@@ -1334,7 +1334,7 @@ class Zend_Pdf
 
         $xrefTableStr = "xref\n";
         foreach ($xrefTable as $sectId => $xrefSection) {
-            $xrefTableStr .= sprintf("%d %d \n", $xrefSectionStartNums[$sectId], count($xrefSection));
+            $xrefTableStr .= sprintf("%d %d \n", $xrefSectionStartNums[$sectId], (is_countable($xrefSection) ? count($xrefSection) : 0));
             foreach ($xrefSection as $xrefTableEntry) {
                 $xrefTableStr .= $xrefTableEntry;
             }

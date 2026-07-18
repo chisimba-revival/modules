@@ -59,7 +59,7 @@ class MYPDF extends TCPDF
             40,
             45
         );
-        for ($i = 0; $i < count($header); $i++) $this->Cell($w[$i], 7, $header[$i], 1, 0, 'C', 1);
+        for ($i = 0; $i < (is_countable($header) ? count($header) : 0); $i++) $this->Cell($w[$i], 7, $header[$i], 1, 0, 'C', 1);
         $this->Ln();
         //Color and font restoration
         $this->SetFillColor(224, 235, 255);

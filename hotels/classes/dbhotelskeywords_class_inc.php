@@ -3,7 +3,7 @@
 class dbhotelskeywords extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_keywords');
 		$this->objUser = $this->getObject('user', 'security');
@@ -19,7 +19,7 @@ class dbhotelskeywords extends dbtable
 		
 		$this->clearStoryKeywords($storyId);
 		
-		if (count($keywords) > 0) {
+		if ((is_countable($keywords) ? count($keywords) : 0) > 0) {
 			foreach ($keywords as $keyword) 
 			{
 				$keyword = trim(stripslashes($keyword));
@@ -57,7 +57,7 @@ class dbhotelskeywords extends dbtable
 		
 		$results = $this->getArray($sql);
 		
-		if (count($results) > 0) {
+		if ((is_countable($results) ? count($results) : 0) > 0) {
 			$tagArray = array();
 			foreach ($results as $result)
 			{
@@ -79,7 +79,7 @@ class dbhotelskeywords extends dbtable
 		$results = $this->getArray($sql);
         
         // Convert to Single Array
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return $results;
         } else {
             $newArray = array();
@@ -100,7 +100,7 @@ class dbhotelskeywords extends dbtable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             
@@ -128,7 +128,7 @@ class dbhotelskeywords extends dbtable
         $results = $this->getArray($sql);
         
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return date('F j Y');
         } else {
             $date = explode('-', $results[0]['storydate']);

@@ -228,7 +228,7 @@
 //    $button->cssClass = 'save';
 //    $button->extra='onclick="saveAttachment(this.parentNode)"';
 //    if (isset($files)) {
-//        if (count($files) > 0) {
+//        if ((is_countable($files) ? count($files) : 0) > 0) {
 //
 //            foreach ($files AS $file)
 //            {

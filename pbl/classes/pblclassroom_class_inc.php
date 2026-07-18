@@ -132,7 +132,7 @@ class pblClassroom extends ChisimbaObject
             $caption = substr($str, 0, $tagStart-1);
             $choices = explode(",", substr($str, $tagStart + 5, $choiceEnd - $tagStart-5));
             $ansstr = substr($str, $choiceEnd + 3, $tagEnd - $choiceEnd-3);
-            $nChoices = count($choices);
+            $nChoices = (is_countable($choices) ? count($choices) : 0);
             $this->setSession('nchoices', $nChoices);
             $this->setSession('ok', $ansstr);
             $html .= '<strong>' . $caption . '</strong>';//<br /><form action=' . $this->uri(array('action' => 'evaluatemcq')) . " method='post'>";

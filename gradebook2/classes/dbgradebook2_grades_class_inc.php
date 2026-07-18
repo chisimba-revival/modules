@@ -22,7 +22,7 @@ class dbgradebook2_grades extends dbTable
    */
    public $objUser;
 
-   function init() 
+   function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_gradebook2_grades');
         $this->objUser = &$this->getObject('user', 'security');

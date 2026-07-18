@@ -54,7 +54,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($minorGroups) > 0){
+if((is_countable($minorGroups) ? count($minorGroups) : 0) > 0){
   foreach($minorGroups as $minorGroup){
      //Get group description
      $minorGroupDesc = $minorGroup['description'];

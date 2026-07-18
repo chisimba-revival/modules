@@ -22,7 +22,7 @@ class dbmastersstudents extends dbtable
     public $mode;
 
     //method to define the table
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_rimfhe_graduatemasters');
         $this->objUrl = $this->getObject('url', 'strings');
@@ -106,7 +106,7 @@ class dbmastersstudents extends dbtable
             //Cheeck if book with same title is already in the database
             $where = "WHERE thesistitle='".$thesis."'";
             $checkRecord = $this->getAll($where);
-            if(count($checkRecord) > 0){
+            if((is_countable($checkRecord) ? count($checkRecord) : 0) > 0){
                 return FALSE;
             }
             else{

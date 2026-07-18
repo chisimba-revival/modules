@@ -27,7 +27,7 @@ class dbquestion_multianswers extends dbtable {
     public $table;
 
 
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_question_multianswers');
         $this->table = 'tbl_test_question_multianswers';
 

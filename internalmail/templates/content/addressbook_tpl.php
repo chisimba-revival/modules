@@ -88,7 +88,7 @@ if ($arrBookList == FALSE && empty($arrContextList)) {
                 'surname',
                 'username'
             ));
-            $entries = count($arrContextUserList);
+            $entries = (is_countable($arrContextUserList) ? count($arrContextUserList) : 0);
 
             // set up link
             if($mode == 'show'){
@@ -120,7 +120,7 @@ if ($arrBookList == FALSE && empty($arrContextList)) {
         foreach($arrBookList as $book) {
             // get number of entries
             $arrBookEntriesList = $this->dbBookEntries->listBookEntries($book['id']);
-            $entries = $arrBookEntriesList != FALSE ? count($arrBookEntriesList) : 0;
+            $entries = $arrBookEntriesList != FALSE ? (is_countable($arrBookEntriesList) ? count($arrBookEntriesList) : 0) : 0;
 
             // set up edit icon
             $objIcon->title = $editBooksLabel;

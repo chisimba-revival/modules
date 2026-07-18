@@ -36,7 +36,7 @@ class dbzip extends dbTable
 	* whatsnew table to be used within the module
 	*/
 	
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		// Set the database table for this class
 		parent::init('tbl_essay_zipfiles');

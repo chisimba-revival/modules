@@ -221,7 +221,7 @@ class viewerutils extends ChisimbaObject {
         $latestFile = $objFiles->getLatestPresentation();
         $preview = '';
         $fileStr = '';
-        if (count($latestFile) == 0) {
+        if ((is_countable($latestFile) ? count($latestFile) : 0) == 0) {
             $latestFileContent = '';
         } else {
             $latestFileContent = '';
@@ -392,7 +392,7 @@ class viewerutils extends ChisimbaObject {
 
         $preview = '';
         $fileStr = '';
-        if (count($latestFile) == 0) {
+        if ((is_countable($latestFile) ? count($latestFile) : 0) == 0) {
             $latestFileContent = '';
         } else {
             $latestFileContent = '';
@@ -474,7 +474,7 @@ class viewerutils extends ChisimbaObject {
         $latest10Str = $objLanguage->languageText("mod_podcaster_latest10str", "podcaster");
         $homepagetitle = $objSysConfig->getValue('HOME_PAGE_TITLE', 'podcaster');
 
-        if (count($latestFiles) == 0) {
+        if ((is_countable($latestFiles) ? count($latestFiles) : 0) == 0) {
             $latestFilesContent = '';
             if ($this->userId == Null) {
                 $msg = "<h1>" . $homepagetitle . "</h1><h3>" . $objLanguage->languageText("mod_podcaster_nopublic", "podcaster", "No public podcasts have been published yet") . "</h3>";
@@ -549,7 +549,7 @@ class viewerutils extends ChisimbaObject {
 
                 $tags = $objTags->getTags($filedata['id']);
                 $tagsStr = '';
-                if (count($tags) == 0) {
+                if ((is_countable($tags) ? count($tags) : 0) == 0) {
                     $tagsStr .= '<em>'
                             . $objLanguage->languageText("mod_podcaster_notags", "podcaster")
                             . ' </em>';
@@ -586,7 +586,7 @@ class viewerutils extends ChisimbaObject {
 
                 $column++;
                 $counter++;
-                if ($column > 1 || count($latestFiles) == 1) {
+                if ($column > 1 || (is_countable($latestFiles) ? count($latestFiles) : 0) == 1) {
                     $row.='</div>';
                     $row.='</div>';
                     $content .=$row;

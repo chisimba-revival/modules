@@ -9,7 +9,7 @@ if ($location != '') {
     echo '<h2>'.$this->objLanguage->languageText('phrase_searchresultsfor', 'geonames', 'Search Results for').': <strong>'.$location.'</strong></h2>';
     $places = $this->objDbGeo->getLocation($location);
     
-    if (count($places) == 0) {
+    if ((is_countable($places) ? count($places) : 0) == 0) {
         
         
         $objCurl = $this->getObject('curl', 'utilities');

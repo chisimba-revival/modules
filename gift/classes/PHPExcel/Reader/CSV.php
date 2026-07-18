@@ -232,7 +232,7 @@ class PHPExcel_Reader_CSV implements PHPExcel_Reader_IReader
 		$rowData = array();
 		while (($rowData = fgetcsv($fileHandle, 0, $this->_delimiter, $this->_enclosure)) !== FALSE) {
 			++$currentRow;
-			$rowDataCount = count($rowData);
+			$rowDataCount = (is_countable($rowData) ? count($rowData) : 0);
 			for ($i = 0; $i < $rowDataCount; ++$i) {
 				$columnLetter = PHPExcel_Cell::stringFromColumnIndex($i);
 				if ($rowData[$i] != '' && $this->_readFilter->readCell($columnLetter, $currentRow)) {

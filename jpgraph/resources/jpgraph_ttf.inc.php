@@ -607,7 +607,7 @@ class  SymChar {
 
         );
 
-        $n = count($iSymbols);
+        $n = (is_countable($iSymbols) ? count($iSymbols) : 0);
         $i=0;
         $found = false;
         $aSymb = strtolower($aSymb);
@@ -616,7 +616,7 @@ class  SymChar {
         }
         if( $found ) {
             $ca = $iSymbols[--$i];
-            if( $aCapital && count($ca)==3 )
+            if( $aCapital && (is_countable($ca) ? count($ca) : 0)==3 )
                 $s = $ca[2];
             else
                 $s = $ca[1];

@@ -2179,7 +2179,7 @@
 
             $selectedGroupInput = new textinput('selectedgroup');
 
-            if (count($group) > 0) {
+            if ((is_countable($group) ? count($group) : 0) > 0) {
                 $selectedGroupInput->value = $groupId;
                 $table = & $this->newObject('htmltable', 'htmlelements');
                 $table->startRow();
@@ -2574,7 +2574,7 @@
             $this->loadClass('windowPop','htmlelements');
             $this->objTreeMenu =  $this->newObject('buildtree', 'cmsadmin');
             $menuNode = $this->objTreeMenu->getNode($parentId);
-            if (count($menuNode) > 0) {
+            if ((is_countable($menuNode) ? count($menuNode) : 0) > 0) {
                 $parentTitle = $menuNode[0]['title'];
             } else {
                 $parentTitle = 'Root';
@@ -3980,11 +3980,11 @@
             //Getting origonal members from DB
             //Preparing a list of USER ID's
             $usersList = $this->_objSecurity->getAssignedSectionUsers($sectionid);
-            $usersCount = count($usersList);
+            $usersCount = (is_countable($usersList) ? count($usersList) : 0);
 
             //Preparing a list of GROUP_ID's
             $groupsList = $this->_objSecurity->getAssignedSectionGroups($sectionid);
-            $groupsCount = count($groupsList);
+            $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
             $globalChkCounter = 0;
 
             //Displaying Groups
@@ -4062,7 +4062,7 @@
 
             $drpOwner = new dropdown('drp_owner');
             $allUsers = $this->_objSecurity->getAllUsers();
-            $allUsersCount = count($allUsers);
+            $allUsersCount = (is_countable($allUsers) ? count($allUsers) : 0);
             //var_dump($allUsers);	
             for ($i = 0; $i < $allUsersCount; $i++){
                 //$drpOwner->addOption($allUsers[$i]['userid'], $allUsers[$i]['firstname'].' '.$allUsers[$i]['surname']);
@@ -4503,11 +4503,11 @@
             //Getting origonal members from DB
             //Preparing a list of USER ID's
             $usersList = $this->_objSecurity->getAssignedContentUsers($contentid);
-            $usersCount = count($usersList);
+            $usersCount = (is_countable($usersList) ? count($usersList) : 0);
 
             //Preparing a list of GROUP_ID's
             $groupsList = $this->_objSecurity->getAssignedContentGroups($contentid);
-            $groupsCount = count($groupsList);
+            $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
             $globalChkCounter = 0;
 
             //Displaying Groups
@@ -4583,7 +4583,7 @@
 
             $drpOwner = new dropdown('drp_owner');
             $allUsers = $this->_objSecurity->getAllUsers();
-            $allUsersCount = count($allUsers);
+            $allUsersCount = (is_countable($allUsers) ? count($allUsers) : 0);
             //var_dump($allUsers);	
             for ($i = 0; $i < $allUsersCount; $i++){
                 //$drpOwner->addOption($allUsers[$i]['userid'], $allUsers[$i]['firstname'].' '.$allUsers[$i]['surname']);
@@ -5102,7 +5102,7 @@
 
                     //Displaying The List Of Menus
                     $menuRows = $this->_objPageMenu->getAll();
-                    if (count($menuRows) > 0){
+                    if ((is_countable($menuRows) ? count($menuRows) : 0) > 0){
                         foreach ($menuRows as $menu){
                             if ($menu['menukey'] != 'default'){
                                 $editLink = $this->getEditLink(array('action' => 'editmenu', 'menutype' => 'page', 'sub' => '1', 'id' => $menu['id']), 'Edit Menu Item');	
@@ -5772,7 +5772,7 @@ $this->appendArrayVar('headerParams', $script);
             }
             $page = $this->_objContent->getContentPage($contentId);
 
-            if (count($page) > 0) {
+            if ((is_countable($page) ? count($page) : 0) > 0) {
                 //Create heading
                 $objHeader = $this->newObject('htmlheading', 'htmlelements');
                 $objHeader->type = '3';

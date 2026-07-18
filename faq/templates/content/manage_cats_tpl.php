@@ -45,7 +45,7 @@ $objTable->addHeaderCell($objLanguage->languageText("mod_faq2_action","faq2"), 1
 $objTable->endHeaderRow();
 $index = 0;
 //check if there are categories
-$count=count($categories);
+$count=(is_countable($categories) ? count($categories) : 0);
 if($count==0)
 $norecords=$this->objLanguage->languageText("faq2_norecords","faq2");
 foreach ($categories as $item) {
@@ -80,7 +80,7 @@ foreach ($categories as $item) {
     // Count no items in category
     $this->objFaqEntries =& $this->getObject('dbfaqentries', 'faq2');
     $list=$this->objFaqEntries->getFaqEntriesCount($item['catid']);
-    $count=count($list);
+    $count=(is_countable($list) ? count($list) : 0);
     
     //get category license
     //print_r($item);

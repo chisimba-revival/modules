@@ -23,7 +23,7 @@ class dbsubjectmodule extends dbTable
 {
 
 
- public function init()
+ public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
  {
 //Set the table in the parent class
 parent::init('tbl_subjects');

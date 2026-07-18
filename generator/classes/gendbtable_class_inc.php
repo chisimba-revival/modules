@@ -88,7 +88,7 @@ class gendbtable extends abgenerator implements ifgenerator
 	    $tableName = $this->getParam('tablename', NULL);
 	    if ($tableName !== NULL) {
 	        $ar = explode("_", $tableName);
-	        $rep = "db" . $ar[count($ar)-1];
+	        $rep = "db" . $ar[(is_countable($ar) ? count($ar) : 0)-1];
 	    } else {
 	        $rep = "db_{UNSPECIFIED}";
 	    }

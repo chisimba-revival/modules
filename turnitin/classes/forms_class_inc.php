@@ -113,9 +113,9 @@ class forms extends ChisimbaObject
     	/*$contexts = $this->objDBContext->getAll("ORDER BY updated DESC limit $start, $limit");
     	$all = $this->objDBContext->getAll();
     	
-    	$contextCount = count($contexts);
+    	$contextCount = (is_countable($contexts) ? count($contexts) : 0);
     	$cnt = 0;
-    	$str = '{"totalCount":"'.count($all).'","courses":[';
+    	$str = '{"totalCount":"'.(is_countable($all) ? count($all) : 0).'","courses":[';
     	if($contextCount > 0)
     	{
     		foreach($contexts as $context)

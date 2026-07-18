@@ -53,7 +53,7 @@ $chapters = $this->objContextChapters->getContextChapters($this->contextCode);
 $todays_date = date('Y-m-d H:i');
 $today = strtotime($todays_date);
 
-if (count($chapters) > 0) {
+if ((is_countable($chapters) ? count($chapters) : 0) > 0) {
     $content .= '<ol>';
     foreach ($chapters as $chapter) {
         $showChapter = TRUE;

@@ -306,7 +306,7 @@ class Zend_Ldap_Dn implements ArrayAccess
      */
     protected static function _assertRdn(array $value)
     {
-        if (count($value)<1) {
+        if ((is_countable($value) ? count($value) : 0)<1) {
             /**
              * Zend_Ldap_Exception
              */
@@ -533,7 +533,7 @@ class Zend_Ldap_Dn implements ArrayAccess
             if (null === $val) $val = '\0';  // apply escaped "null" if string is empty
             $values[$key] = $val;
         }
-        return (count($values) == 1) ? $values[0] : $values;
+        return ((is_countable($values) ? count($values) : 0) == 1) ? $values[0] : $values;
     }
 
     /**
@@ -562,7 +562,7 @@ class Zend_Ldap_Dn implements ArrayAccess
                 array('\\', ',', '+', '"', '<', '>', ';', '#', '=', ), $val);
             $values[$key] = Zend_Ldap_Converter::hex32ToAsc($val);
         }
-        return (count($values) == 1) ? $values[0] : $values;
+        return ((is_countable($values) ? count($values) : 0) == 1) ? $values[0] : $values;
     }
 
     /**
@@ -597,7 +597,7 @@ class Zend_Ldap_Dn implements ArrayAccess
             throw new Zend_Ldap_Exception(null, 'DN is malformed');
         }
         $ret = array();
-        for ($i = 0; $i < count($k); $i++) {
+        for ($i = 0; $i < (is_countable($k) ? count($k) : 0); $i++) {
             if (is_array($k[$i]) && is_array($v[$i]) && (count($k[$i]) === count($v[$i]))) {
                 $multi = array();
                 for ($j = 0; $j < count($k[$i]); $j++) {
@@ -653,7 +653,7 @@ class Zend_Ldap_Dn implements ArrayAccess
                             if (in_array($keyId, $multi)) {
                                 return false;
                             }
-                            $ka[count($ka)-1][] = $key;
+                            $ka[(is_countable($ka) ? count($ka) : 0)-1][] = $key;
                             $multi[] = $keyId;
                         } else {
                             $ka[] = $key;
@@ -670,7 +670,7 @@ class Zend_Ldap_Dn implements ArrayAccess
                     } else if ($ch === ',' || $ch === ';' || $ch === 0 || $ch === '+') {
                         $value = self::unescapeValue(trim(substr($dn, $vo, $di - $vo)));
                         if (is_array($multi)) {
-                            $va[count($va)-1][] = $value;
+                            $va[(is_countable($va) ? count($va) : 0)-1][] = $value;
                         } else {
                             $va[] = $value;
                         }
@@ -784,9 +784,9 @@ class Zend_Ldap_Dn implements ArrayAccess
             return false;
         }
 
-        $startIndex = count($cdn)-count($pdn);
+        $startIndex = (is_countable($cdn) ? count($cdn) : 0)-(is_countable($pdn) ? count($pdn) : 0);
         if ($startIndex<0) return false;
-        for ($i = 0; $i<count($pdn); $i++) {
+        for ($i = 0; $i<(is_countable($pdn) ? count($pdn) : 0); $i++) {
             if ($cdn[$i+$startIndex] != $pdn[$i]) return false;
         }
         return true;

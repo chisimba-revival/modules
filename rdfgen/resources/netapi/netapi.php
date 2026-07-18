@@ -48,7 +48,7 @@ if(!function_exists('getallheaders'))
 				if(is_array($header_array)){
 					foreach($header_array as $header_line){
 						$arr = explode(':',$header_line);
-						if(count($arr) >= 2){
+						if((is_countable($arr) ? count($arr) : 0) >= 2){
 							$headers[trim($arr[0])] = trim($arr[1]);
 						}
 					}

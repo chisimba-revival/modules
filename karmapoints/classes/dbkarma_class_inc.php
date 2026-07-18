@@ -30,7 +30,7 @@ class dbkarma extends dbTable
 	 * @param void
 	 * @return void
 	 */
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		$this->objLanguage = $this->getObject("language", "language");
 		//Set the table in the parent class

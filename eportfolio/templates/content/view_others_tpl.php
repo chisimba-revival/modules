@@ -27,7 +27,7 @@ if (class_exists('groupops', false)) {
 
         $getOwner = explode("^", $grpName);
         //Check if grpName was concatenated by ^
-        if (count($getOwner) == 2) {
+        if ((is_countable($getOwner) ? count($getOwner) : 0) == 2) {
             //Check if $getOwner[0] is a userId
             $nameOfOwner = $this->objUser->userName($getOwner[0]);
             if ($nameOfOwner != "Error: Data Not Found") {

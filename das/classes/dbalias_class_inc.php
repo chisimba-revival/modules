@@ -70,7 +70,7 @@ class dbalias extends dbTable {
      * @access public
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
 		parent::init('tbl_das_alias');
 	}
 	

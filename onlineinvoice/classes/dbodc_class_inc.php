@@ -17,7 +17,7 @@ class dbodc extends dbTable{
 
 	*/
 
-	function init()
+	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_odc');
 		$this->objUser = & $this->getObject('user','security');

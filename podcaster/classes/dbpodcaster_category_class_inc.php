@@ -14,7 +14,7 @@ class dbPodcaster_Category extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_podcaster_category');
         $this->objDbEvents = &$this->getObject('dbpodcaster_events', 'podcaster');

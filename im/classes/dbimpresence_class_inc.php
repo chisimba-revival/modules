@@ -35,7 +35,7 @@ class dbimpresence extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_im_presence');
         $this->objSysConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
@@ -225,7 +225,7 @@ class dbimpresence extends dbTable
 			
 			parent::init('tbl_im');
 			$messages = $this->getAll();
-			if(count($messages))
+			if((is_countable($messages) ? count($messages) : 0))
 			{
 				foreach($messages as $message)
 				{

@@ -51,7 +51,7 @@ class dbtags extends dbtable {
      * @access public
      * @return
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_mynotes_tags');
         $this->table = 'tbl_mynotes_tags';
         $this->objUser = &$this->getObject('user', 'security');
@@ -115,7 +115,7 @@ class dbtags extends dbtable {
     {
         return NULL;
         $tags = explode(",", $existingTags);
-        if (!is_array($tags) || count($tags) == 0) {
+        if (!is_array($tags) || (is_countable($tags) ? count($tags) : 0) == 0) {
             $tags=array($existingTags);
         }
         foreach($tags as $tag) {
@@ -123,7 +123,7 @@ class dbtags extends dbtable {
             $sql = 'SELECT id,name,count FROM ' . $this->table . " WHERE name='" . $tag . '"';
             $res= $this->getArray($sql);
             $id = $res[0]['id'];
-            if (count($res) > 0) {
+            if ((is_countable($res) ? count($res) : 0) > 0) {
                 $num = $res[0]['count'];
                 if($num>1) {
                     // decrement its occurrence

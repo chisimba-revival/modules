@@ -302,7 +302,7 @@ class codeanalyzer extends ChisimbaObject
 
                     $params = "";
                     $ar = $reflectMethod->getParameters();
-                    $prCount = count($ar);
+                    $prCount = (is_countable($ar) ? count($ar) : 0);
                     $counter = 1;
                     foreach($ar as $param) {
                         $params .= "\$" . $param->getName();

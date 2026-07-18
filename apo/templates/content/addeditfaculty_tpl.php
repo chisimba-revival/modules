@@ -98,7 +98,7 @@ $form = new form('registerfaculty', $this->uri(array('action' => $action,'id' =>
 
 $efs = new fieldset();
 $efs->setLegend('Errors');
-if (count($errormessages) > 0) {
+if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
 
     $errorstr = '<ul>';
 

@@ -331,15 +331,15 @@ foreach ($chapters as $chapter) {
                 //$content .= $addPageLink->show();
             }
 
-            if (count($chapters) > 1 && $counter > 1 && $this->isValid('movechapterup')) {
+            if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $counter > 1 && $this->isValid('movechapterup')) {
                 $chapterOptions[] = $moveUpLink->show();
             }
 
-            if ($counter < count($chapters) && $this->isValid('movechapterdown')) {
+            if ($counter < (is_countable($chapters) ? count($chapters) : 0) && $this->isValid('movechapterdown')) {
                 $chapterOptions[] = $moveDownLink->show();
             }
 
-            if (count($chapterOptions) > 0) {
+            if ((is_countable($chapterOptions) ? count($chapterOptions) : 0) > 0) {
 
                 $divider = '';
                 foreach ($chapterOptions as $option) {
@@ -357,7 +357,7 @@ foreach ($chapters as $chapter) {
 $chapterList .= '</div>';
 
 /**
-if (count($chapters) > 1) {
+if ((is_countable($chapters) ? count($chapters) : 0) > 1) {
     $form->addToForm($dropdown->show());
 
     $button = new button('', 'Go');

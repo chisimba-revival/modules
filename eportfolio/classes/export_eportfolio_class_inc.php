@@ -100,7 +100,7 @@ class export_Eportfolio extends ChisimbaObject
             var_dump($addressList);
             //process one row at a time
             //            while ($row = mysql_fetch_assoc($addressList)) {
-            while ($rowcount = count($addressList)) {
+            while ($rowcount = (is_countable($addressList) ? count($addressList) : 0)) {
                 //add node for each row
                 $occ = $doc->createElement($table_id);
                 $occ = $root->appendChild($occ);

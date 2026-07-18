@@ -38,7 +38,7 @@ class podcastdynamicblock extends ChisimbaObject
     {
         $podcasts = $this->objPodcast->getUserPodcasts($userId);
         
-        if (count($podcasts) == 0) {
+        if ((is_countable($podcasts) ? count($podcasts) : 0) == 0) {
             return '';
         } else {
             

@@ -230,7 +230,7 @@ class Sabre_CardDAV_Backend_PDO extends Sabre_CardDAV_Backend_Abstract {
 
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return (count($result)>0?$result[0]:false);
+        return ((is_countable($result) ? count($result) : 0)>0?$result[0]:false);
 
     }
 

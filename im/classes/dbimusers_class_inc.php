@@ -35,7 +35,7 @@ class dbimusers extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_im_users');
         $this->objPresence = $this->getObject('dbimpresence');

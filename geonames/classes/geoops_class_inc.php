@@ -80,7 +80,7 @@ class geoops extends ChisimbaObject
 		// $row = 1;
 		$handle = fopen($csvfile, "r");
 		while (($data = fgetcsv($handle, 1000, "\t")) !== FALSE) {
-    		// $num = count($data);
+    		// $num = (is_countable($data) ? count($data) : 0);
     		// $row++;
     		//var_dump($data); die();
     		@$insarr = array('userid' => $userid, 'geonameid' => $data[0], 'name' => $data[1], 'asciiname' => $data[2], 'alternatenames' => $data[3], 

@@ -37,7 +37,7 @@ class dbquestionrow extends dbTable
     * @access public
     * @return
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_survey_question_rows');
         $this->table='tbl_survey_question_rows';
@@ -58,7 +58,7 @@ class dbquestionrow extends dbTable
     {
         $arrRowData=$this->getSession('row');
         $arrRowList=$this->listQuestionRows($questionId);
-        $i=empty($arrRowList)?'1':count($arrRowList)+1;
+        $i=empty($arrRowList)?'1':(is_countable($arrRowList) ? count($arrRowList) : 0)+1;
         foreach($arrRowData as $row){
             if($row['id']==''){
                 $fields=array();

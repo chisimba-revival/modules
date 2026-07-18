@@ -3,7 +3,7 @@
 class dbhotelstags extends dbtable
 {
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_hotels_tags');
 		$this->objUser = $this->getObject('user', 'security');
@@ -15,7 +15,7 @@ class dbhotelstags extends dbtable
 		
 		$this->clearStoryTags($storyId);
 		
-		if (count($tags) > 0) {
+		if ((is_countable($tags) ? count($tags) : 0) > 0) {
 			foreach ($tags as $tag)
 			{
 				$tag = trim(stripslashes($tag));
@@ -41,7 +41,7 @@ class dbhotelstags extends dbtable
     {
         $results = $this->getAll(' WHERE storyid=\''.$storyId.'\'');
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             $returnArray = array();

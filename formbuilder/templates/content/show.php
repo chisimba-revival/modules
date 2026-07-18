@@ -49,8 +49,8 @@ echo $formDescription = $this->getParam('formCaption',NULL)."<br>";
 //$formElementNameArray = explode(",", $formElementNameList);
 //$formElementTypeArray = explode(",", $formElementTypeList);
 //
-//echo $lengthOfFormElementNameArray= count($formElementNameArray)."<br>";
-//echo $lengthOfFormElementTypeArray= count($formElementTypeArray)."<br>";
+//echo $lengthOfFormElementNameArray= (is_countable($formElementNameArray) ? count($formElementNameArray) : 0)."<br>";
+//echo $lengthOfFormElementTypeArray= (is_countable($formElementTypeArray) ? count($formElementTypeArray) : 0)."<br>";
 //if ($lengthOfFormElementNameArray == $lengthOfFormElementTypeArray)
 //{
 //    for ($i=0; $i<=($lengthOfFormElementNameArray-1); $i++)

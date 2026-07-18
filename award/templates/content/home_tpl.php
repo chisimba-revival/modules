@@ -16,7 +16,7 @@ $buCount = $this->objDbUnit->getAll();
 
 $explanation = $this->objLanguage->languageText('mod_lrs_statsexp', 'award')." <br /><br />".$this->objLanguage->languageText('mod_lrs_statsbu', 'award')."<br /><br />";
 
-$explanation = str_replace('[BUCOUNT]',"<b>".count($buCount)."</b>",$explanation);
+$explanation = str_replace('[BUCOUNT]',"<b>".(is_countable($buCount) ? count($buCount) : 0)."</b>",$explanation);
 
 $objTable = $this->newObject('htmltable','htmlelements');
 $objTable->cellspacing = 2;

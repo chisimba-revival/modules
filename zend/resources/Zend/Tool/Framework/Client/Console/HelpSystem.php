@@ -202,7 +202,7 @@ class Zend_Tool_Framework_Client_Console_HelpSystem
         $displayActionMetadatas = $manifest->getMetadatas($actionMetadatasSearch);
 
         // create index of actionNames
-        for ($i = 0; $i < count($displayActionMetadatas); $i++) {
+        for ($i = 0; $i < (is_countable($displayActionMetadatas) ? count($displayActionMetadatas) : 0); $i++) {
             $displayActionNames[] = $displayActionMetadatas[$i]->getActionName();
         }
 
@@ -266,7 +266,7 @@ class Zend_Tool_Framework_Client_Console_HelpSystem
 
                 // check for providers without a _Global action
                 $isSingleSpecialProviderAction = false;
-                if (!$actionIsGlobal && count($actionableGlobalMetadatas) == 1) {
+                if (!$actionIsGlobal && (is_countable($actionableGlobalMetadatas) ? count($actionableGlobalMetadatas) : 0) == 1) {
                     $isSingleSpecialProviderAction = true;
                     $this->_respondWithProviderName($providerMetadata);
                     $providerNameDisplayed = true;
@@ -307,7 +307,7 @@ class Zend_Tool_Framework_Client_Console_HelpSystem
                 // reset the special flag for single provider action with specialty
                 $isSingleSpecialProviderAction = false;
 
-                if (!$includeAllSpecialties && count($actionableGlobalMetadatas) > 1) {
+                if (!$includeAllSpecialties && (is_countable($actionableGlobalMetadatas) ? count($actionableGlobalMetadatas) : 0) > 1) {
                     $this->_response->appendContent('    Note: There are specialties, use ', array('color' => 'yellow', 'separator' => false));
                     $this->_response->appendContent(
                         'zf ' . $actionMetadata->getValue() . ' ' . $providerMetadata->getValue() . '.?',

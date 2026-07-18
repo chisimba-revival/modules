@@ -59,7 +59,7 @@ class dbcollection extends dbtable
     /**
     * Constructor method
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_etd_collections');
         $this->table = 'tbl_etd_collections';

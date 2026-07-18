@@ -706,7 +706,7 @@ class apo extends controller {
           $errormessages[] = "Please provide an answer for i";
           }
 
-          if (count($errormessages) > 0) {
+          if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
           $this->setVarByRef("errormessages", $errormessages);
           $this->setVarByRef("a1", $a1);
           $this->setVarByRef("a2", $a2);
@@ -1099,7 +1099,7 @@ class apo extends controller {
             $errormessages[] = "Please provide an answer for i";
         }
 
-        if (count($errormessages) > 0) {
+        if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
             $this->setVarByRef("errormessages", $errormessages);
             $this->setVarByRef("a", $a);
             $this->setVarByRef("b", $b);
@@ -1274,7 +1274,7 @@ class apo extends controller {
             $errormessages[] = "Please provide an answer for d7";
         }
 
-        if (count($errormessages) > 0) {
+        if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
             $this->setVarByRef("errormessages", $errormessages);
             $this->setVarByRef("a1", $a1);
             $this->setVarByRef("a2", $a2);
@@ -1509,7 +1509,7 @@ class apo extends controller {
         $from = $this->getParam('from');
         $link = new link($this->uri(array("action" => "showcomments", "id" => $id)));
         /*
-          if (count($users) > 0) {
+          if ((is_countable($users) ? count($users) : 0) > 0) {
           $recipientUserId = $users[0];
           $recipientEmailAddress = $this->objUser->email($recipientUserId);
           $recipientEmailAddress = 'palesa.mokwena@students.wits.ac.za';
@@ -1676,7 +1676,7 @@ class apo extends controller {
         //$documents = $this->documents->getdocuments(0, 20, $this->mode, "N", $myid);
         $createPdf = False;
         $fullnames = $this->objUser->fullName() . "'s Document";
-        if (count($documents) > 1) {
+        if ((is_countable($documents) ? count($documents) : 0) > 1) {
             $fullnames .= "s";
         }
 
@@ -1851,7 +1851,7 @@ class apo extends controller {
         $link = new link($this->uri(array("action" => "showcomments", "id" => $id)));
 
 
-        if (count($users) > 0) {
+        if ((is_countable($users) ? count($users) : 0) > 0) {
             $recipientUserId = $users[0];
             $recipientEmailAddress = $this->objUser->email($recipientUserId);
             $recipientEmailAddress = 'palesa.mokwena@students.wits.ac.za';

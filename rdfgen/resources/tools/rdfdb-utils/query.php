@@ -172,7 +172,7 @@ if ($db->modelExists($muri)) {
       print "<input type='hidden' id='tripleObject' name='tripleObject' />\n";
       print "<input type='hidden' id='op' name='op'/>\n";
       
-      $total=count($triples);
+      $total=(is_countable($triples) ? count($triples) : 0);
       if (!isset($edit)) print "<p>Found ".$total." triples.</p>\n";
 
       if ($_REQUEST["limit"]) {

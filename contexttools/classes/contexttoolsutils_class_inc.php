@@ -64,8 +64,8 @@ class contexttoolsutils extends ChisimbaObject {
                 $defaultvalue=(string)$filter->defaultvalue;
                 $preinputvalue=(string)$filter->preinputvalue;
                 $paramJson="";
-                if(count($params) > 0) {
-                    $paramJson='{"paramcount":"'.count($params).'","params":[';
+                if((is_countable($params) ? count($params) : 0) > 0) {
+                    $paramJson='{"paramcount":"'.(is_countable($params) ? count($params) : 0).'","params":[';
                     foreach($params->param as $p) {
                         foreach($p[0]->attributes() as $a => $b) {
                             $paramJson.='{"name":"'.$b.'","value":"'.$p[0].'"},';
@@ -98,7 +98,7 @@ class contexttoolsutils extends ChisimbaObject {
             }
 
 
-            $json='{"filtercount":"'.count($result).'","filters":[';
+            $json='{"filtercount":"'.(is_countable($result) ? count($result) : 0).'","filters":[';
             foreach($result as $entry) {
                 $json.='{"name":"'.$entry['name'].'",';
                 $json.='"type":"'.$entry['type'].'",';
@@ -135,8 +135,8 @@ class contexttoolsutils extends ChisimbaObject {
             foreach ($entries as $filter) {
                 $params=$filter->params;
                 $paramJson="";
-                if(count($params) > 0) {
-                    $paramJson='{"paramcount":"'.count($params).'","params":[';
+                if((is_countable($params) ? count($params) : 0) > 0) {
+                    $paramJson='{"paramcount":"'.(is_countable($params) ? count($params) : 0).'","params":[';
                     foreach($params->param as $p) {
                         foreach($p[0]->attributes() as $a => $b) {
                             $paramJson.='{"name":"'.$b.'","value":"'.$p[0].'"},';
@@ -170,7 +170,7 @@ class contexttoolsutils extends ChisimbaObject {
             foreach ($entries as $filter) {
                 $params=$filter->input;
                 $paramJson="";
-                if(count($params) > 0) {
+                if((is_countable($params) ? count($params) : 0) > 0) {
 
                     foreach($params->inputparam as $p) {
                         foreach($p[0]->attributes() as $a => $b) {

@@ -193,7 +193,7 @@ class Zend_OpenId_Extension_Sreg extends Zend_OpenId_Extension
             }
         }
 
-        $this->_props = (count($props2) > 0) ? $props2 : null;
+        $this->_props = ((is_countable($props2) ? count($props2) : 0) > 0) ? $props2 : null;
         return true;
     }
 
@@ -248,7 +248,7 @@ class Zend_OpenId_Extension_Sreg extends Zend_OpenId_Extension
                 }
             }
         }
-        $this->_props = (count($props) > 0) ? $props : null;
+        $this->_props = ((is_countable($props) ? count($props) : 0) > 0) ? $props : null;
         return true;
     }
 
@@ -293,7 +293,7 @@ class Zend_OpenId_Extension_Sreg extends Zend_OpenId_Extension
                     $props2[$prop] = $props[$prop];
                 }
             }
-            $this->_props = (count($props2) > 0) ? $props2 : null;
+            $this->_props = ((is_countable($props2) ? count($props2) : 0) > 0) ? $props2 : null;
         }
         return true;
     }

@@ -16,7 +16,7 @@ class dbUsers extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_users');
         //$this->USE_PREPARED_STATEMENTS=True;
@@ -30,7 +30,7 @@ class dbUsers extends dbTable
 	{
 		$sql = "SELECT userid, 'firstName' || ' ' || 'surname' AS fullname FROM {$this->_tableName} ORDER BY fullname";
 		$rows = $this->getArray($sql);
-		$count = count($rows);
+		$count = (is_countable($rows) ? count($rows) : 0);
 		for ($i = 0; $i < $count; $i++) {
 			$rows[$i]['fullname'] = stripslashes($rows[$i]['fullname']);
 		}

@@ -125,7 +125,7 @@ class PlotMark {
 
     function AddCSIMPoly($aPts) {
         $coords = round($aPts[0]).", ".round($aPts[1]);
-        $n = count($aPts)/2;
+        $n = (is_countable($aPts) ? count($aPts) : 0)/2;
         for( $i=1; $i < $n; ++$i){
             $coords .= ", ".round($aPts[2*$i]).", ".round($aPts[2*$i+1]);
         }

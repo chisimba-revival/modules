@@ -126,7 +126,7 @@ abstract class Zend_Ldap_Filter_Abstract
             if (null === $val) $val = '\0';  // apply escaped "null" if string is empty
             $values[$key] = $val;
         }
-        return (count($values) == 1) ? $values[0] : $values;
+        return ((is_countable($values) ? count($values) : 0) == 1) ? $values[0] : $values;
     }
 
     /**
@@ -152,6 +152,6 @@ abstract class Zend_Ldap_Filter_Abstract
             // Translate hex code into ascii
             $values[$key] = Zend_Ldap_Converter::hex32ToAsc($value);
         }
-        return (count($values) == 1) ? $values[0] : $values;
+        return ((is_countable($values) ? count($values) : 0) == 1) ? $values[0] : $values;
     }
 }

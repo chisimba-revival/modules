@@ -22,7 +22,7 @@ class utils extends ChisimbaObject
     /**
      * Constructor
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
        
     }

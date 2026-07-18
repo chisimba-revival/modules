@@ -83,7 +83,7 @@ class dbstatusbar_bridging extends dbtable
     * @access public
     * @return VOID
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();

@@ -77,7 +77,7 @@ class Zend_Dom_Query_Css2Xpath
             }
         }
 
-        if (1 == count($paths)) {
+        if (1 == (is_countable($paths) ? count($paths) : 0)) {
             return $paths[0];
         }
         return implode('|', $paths);

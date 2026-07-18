@@ -110,7 +110,7 @@ class MGraph {
         }
 
         $valid_formats = array('png', 'jpg', 'gif');
-        $aImgFormat = strtolower($e[count($e)-1]);
+        $aImgFormat = strtolower($e[(is_countable($e) ? count($e) : 0)-1]);
         if ($aImgFormat == 'jpeg')  {
             $aImgFormat = 'jpg';
         }

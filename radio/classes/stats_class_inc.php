@@ -225,7 +225,7 @@ class stats extends ChisimbaObject
 				$data = file_get_contents($this->playlist_src.$station."/".$playlist.".data");
 				$stop = "0";
 				$out = explode(";",$data);
-				$total_files = count($out);
+				$total_files = (is_countable($out) ? count($out) : 0);
 				$teller = "0";
 				while($stop == "0")
 				{
@@ -243,7 +243,7 @@ class stats extends ChisimbaObject
 									return "LIVE";
 								}
 								$out3 = explode("/",$file);
-								$laast = count($out3) -1;
+								$laast = (is_countable($out3) ? count($out3) : 0) -1;
 								$song2 = explode(".",$out3[$laast]);
 								$song = $song2[0];
 								return $song;
@@ -344,10 +344,10 @@ class stats extends ChisimbaObject
 								$teller_temp = ($teller) - 1;
 								$out2 = explode("&",$out[$teller_temp]);
 								$file = $out2[0];
-								if($file == ""){ $total = count($out) -2;  $out2= explode("&",$out[$total]);
+								if($file == ""){ $total = (is_countable($out) ? count($out) : 0) -2;  $out2= explode("&",$out[$total]);
 								$file = $out2[0]; }
 								$out3 = explode("/",$file);
-								$laast = count($out3) -1;
+								$laast = (is_countable($out3) ? count($out3) : 0) -1;
 								$song2 = explode(".",$out3[$laast]);
 								$song = $song2[0];
 								return $song;
@@ -402,7 +402,7 @@ class stats extends ChisimbaObject
 								if($file == ""){$out2= explode("&",$out[0]);
 								$file = $out2[0]; }
 								$out3 = explode("/",$file);
-								$laast = count($out3) -1;
+								$laast = (is_countable($out3) ? count($out3) : 0) -1;
 								$song2 = explode(".",$out3[$laast]);
 								$song = $song2[0];
 								return $song;

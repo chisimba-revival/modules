@@ -17,7 +17,7 @@ $editEventUrl = $this->uri(array('action'=>'editevent'));
 
 $events=$this->dbevents->getMyEvents();
 
-$total=count($events);
+$total=(is_countable($events) ? count($events) : 0);
 $data="";
 $index=0;
 

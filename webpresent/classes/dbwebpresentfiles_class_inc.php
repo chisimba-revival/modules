@@ -17,7 +17,7 @@ class dbwebpresentfiles extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_webpresent_files');
         $this->objUser = $this->getObject('user', 'security');
@@ -231,7 +231,7 @@ class dbwebpresentfiles extends dbtable
         //echo '<pre>';
         $files = $this->getFilesForConversion();
 
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return 'allfilesconverted';
         } else {
             foreach ($files as $file)
@@ -525,7 +525,7 @@ class dbwebpresentfiles extends dbtable
         $objBuddies = $this->getObject('dbbuddies', 'buddies');
         $buddies = $objBuddies->getBuddies($userId);
 
-        if (count($buddies) == 0) {
+        if ((is_countable($buddies) ? count($buddies) : 0) == 0) {
             return array();
         } else {
             $where = 'WHERE (';

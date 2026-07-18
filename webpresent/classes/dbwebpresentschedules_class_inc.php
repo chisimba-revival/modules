@@ -15,7 +15,7 @@ class dbwebpresentschedules extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_webpresent_schedules');
         $this->objUser = $this->getObject('user', 'security');

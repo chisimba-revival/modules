@@ -150,8 +150,8 @@ class Zend_Json
         }
 
         //only do post-proccessing to revert back the Zend_Json_Expr if any.
-        if (count($javascriptExpressions) > 0) {
-            $count = count($javascriptExpressions);
+        if ((is_countable($javascriptExpressions) ? count($javascriptExpressions) : 0) > 0) {
+            $count = (is_countable($javascriptExpressions) ? count($javascriptExpressions) : 0);
             for($i = 0; $i < $count; $i++) {
                 $magicKey = $javascriptExpressions[$i]['magicKey'];
                 $value    = $javascriptExpressions[$i]['value'];
@@ -187,7 +187,7 @@ class Zend_Json
     ) {
          if ($value instanceof Zend_Json_Expr) {
             // TODO: Optimize with ascii keys, if performance is bad
-            $magicKey = "____" . $currentKey . "_" . (count($javascriptExpressions));
+            $magicKey = "____" . $currentKey . "_" . ((is_countable($javascriptExpressions) ? count($javascriptExpressions) : 0));
             $javascriptExpressions[] = array(
 
                 //if currentKey is integer, encodeUnicodeString call is not required.
@@ -307,11 +307,11 @@ class Zend_Json
             // Initialize a result array.
             $resultArray = array();
             // Is the input array size 0? Then, we reached the rare CDATA text if any.
-            if (count($simpleXmlElementObject) <= 0) {
+            if ((is_countable($simpleXmlElementObject) ? count($simpleXmlElementObject) : 0) <= 0) {
                 // Let us return the lonely CDATA. It could even be
                 // an empty element or just filled with whitespaces.
                 return (trim(strval($copyOfSimpleXmlElementObject)));
-            } // End of if (count($simpleXmlElementObject) <= 0)
+            } // End of if ((is_countable($simpleXmlElementObject) ? count($simpleXmlElementObject) : 0) <= 0)
 
             // Let us walk through the child elements now.
             foreach($simpleXmlElementObject as $key=>$value) {

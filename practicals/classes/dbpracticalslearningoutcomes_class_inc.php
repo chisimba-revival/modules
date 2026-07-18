@@ -52,7 +52,7 @@ class dbpracticalslearningoutcomes extends dbtable {
      * Initialisation.
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_practicals_learningoutcomes');
         $this->objUser = $this->getObject('user', 'security');
     }

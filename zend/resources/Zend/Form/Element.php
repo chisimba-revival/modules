@@ -952,7 +952,7 @@ class Zend_Form_Element implements Zend_Validate_Interface
             if (false !== ($decorator = $this->getDecorator($decoratorName))) {
                 $decorator->setElement($this);
                 $seed = '';
-                if (0 < count($args)) {
+                if (0 < (is_countable($args) ? count($args) : 0)) {
                     $seed = array_shift($args);
                 }
                 return $decorator->render($seed);
@@ -1166,7 +1166,7 @@ class Zend_Form_Element implements Zend_Validate_Interface
             } elseif ($validatorInfo instanceof Zend_Validate_Interface) {
                 $this->addValidator($validatorInfo);
             } elseif (is_array($validatorInfo)) {
-                $argc                = count($validatorInfo);
+                $argc                = (is_countable($validatorInfo) ? count($validatorInfo) : 0);
                 $breakChainOnFailure = false;
                 $options             = array();
                 if (isset($validatorInfo['validator'])) {
@@ -1632,7 +1632,7 @@ class Zend_Form_Element implements Zend_Validate_Interface
             } elseif ($filterInfo instanceof Zend_Filter_Interface) {
                 $this->addFilter($filterInfo);
             } elseif (is_array($filterInfo)) {
-                $argc                = count($filterInfo);
+                $argc                = (is_countable($filterInfo) ? count($filterInfo) : 0);
                 $options             = array();
                 if (isset($filterInfo['filter'])) {
                     $filter = $filterInfo['filter'];
@@ -1872,7 +1872,7 @@ class Zend_Form_Element implements Zend_Validate_Interface
                     $this->addDecorator($decoratorInfo);
                 }
             } elseif (is_array($decoratorInfo)) {
-                $argc    = count($decoratorInfo);
+                $argc    = (is_countable($decoratorInfo) ? count($decoratorInfo) : 0);
                 $options = array();
                 if (isset($decoratorInfo['decorator'])) {
                     $decorator = $decoratorInfo['decorator'];

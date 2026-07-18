@@ -351,7 +351,7 @@ class webpresent extends controller
 
         $this->_prepareDataForSearch($file);
 
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'process_tpl.php';
@@ -920,7 +920,7 @@ class webpresent extends controller
         //keep the user connection alive, even if browser is closed!
         //$callback = $objBackground->keepAlive();
 
-        if (count($files) > 0)
+        if ((is_countable($files) ? count($files) : 0) > 0)
         {
             $file = $files[0];
             foreach ($files as $file)
@@ -1049,7 +1049,7 @@ class webpresent extends controller
     {
         $results = $this->objFiles->getAll(' ORDER BY dateuploaded DESC');
 
-        if (count($results) > 0)
+        if ((is_countable($results) ? count($results) : 0) > 0)
         {
             $this->loadClass('link', 'htmlelements');
             
@@ -1082,7 +1082,7 @@ class webpresent extends controller
     {
         $results = $this->objFiles->getAll(' ORDER BY dateuploaded DESC');
 
-        if (count($results) > 0)
+        if ((is_countable($results) ? count($results) : 0) > 0)
         {
             
             

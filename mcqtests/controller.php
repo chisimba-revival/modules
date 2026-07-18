@@ -1943,7 +1943,7 @@ class mcqtests extends controller {
         $postEqual = $this->getParam('setequal', '');
         if (isset($postEqual) && !empty($postEqual)) {
             $tests = $this->dbTestadmin->getTests($this->contextCode, 'id, percentage');
-            $num = count($tests);
+            $num = (is_countable($tests) ? count($tests) : 0);
             $percent = round((100 / $num), 2);
             $arrField = array(
                 'percentage' => $percent
@@ -2009,7 +2009,7 @@ class mcqtests extends controller {
         $postEqual = $this->getParam('setequal', '');
         if (isset($postEqual) && !empty($postEqual)) {
             $tests = $this->dbTestadmin->getTests($this->contextCode, 'id, percentage');
-            $num = count($tests);
+            $num = (is_countable($tests) ? count($tests) : 0);
             $percent = round((100 / $num), 2);
             $arrField = array(
                 'percentage' => $percent
@@ -2468,7 +2468,7 @@ class mcqtests extends controller {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, $this->questionsPerPage); //=10
-                $data[0]['count'] = count($qData);
+                $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                 $data[0]['qnum'] = $num;
                 foreach ($data as $key => $line) {
                     if (isset($results) && !empty($results)) {
@@ -2490,7 +2490,7 @@ class mcqtests extends controller {
                     foreach ($qData as $key => $line) {
                         $qData[$key]['questionorder'] = ($key + 1);
                     }
-                    $qData[0]['count'] = count($qData);
+                    $qData[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     foreach ($qData as $key => $line) {
                         $answers = $this->dbAnswers->getAnswers($line['id']);
                         if ($test[0]['asequence'] == 'Scrambled') {
@@ -2500,7 +2500,7 @@ class mcqtests extends controller {
                     }
                     $this->setSession('qData', $qData);
                     $data = array_slice($qData, $num, $this->questionsPerPage); //=10
-                    $data[0]['count'] = count($qData);
+                    $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     $data[0]['qnum'] = $num;
                 }
             }
@@ -2550,7 +2550,7 @@ class mcqtests extends controller {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, 10);
-                $data[0]['count'] = count($qData);
+                $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                 $data[0]['qnum'] = $num;
                 foreach ($data as $key => $line) {
                     if (isset($results) && !empty($results)) {
@@ -2572,7 +2572,7 @@ class mcqtests extends controller {
                     foreach ($qData as $key => $line) {
                         $qData[$key]['questionorder'] = ($key + 1);
                     }
-                    $qData[0]['count'] = count($qData);
+                    $qData[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     foreach ($qData as $key => $line) {
                         $answers = $this->dbAnswers->getAnswers($line['id']);
                         if ($test[0]['asequence'] == 'Scrambled') {
@@ -2582,7 +2582,7 @@ class mcqtests extends controller {
                     }
                     $this->setSession('qData', $qData);
                     $data = array_slice($qData, $num, 10);
-                    $data[0]['count'] = count($qData);
+                    $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     $data[0]['qnum'] = $num;
                 }
             }
@@ -2646,7 +2646,7 @@ class mcqtests extends controller {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, 10);
-                $data[0]['count'] = count($qData);
+                $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                 $data[0]['qnum'] = $num;
                 foreach ($data as $key => $line) {
                     if (isset($results) && !empty($results)) {
@@ -2668,7 +2668,7 @@ class mcqtests extends controller {
                     foreach ($qData as $key => $line) {
                         $qData[$key]['questionorder'] = ($key + 1);
                     }
-                    $qData[0]['count'] = count($qData);
+                    $qData[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     foreach ($qData as $key => $line) {
                         $answers = $this->dbAnswers->getAnswers($line['id']);
                         if ($test[0]['asequence'] == 'Scrambled' && $allowScrambledAnswers) {
@@ -2678,7 +2678,7 @@ class mcqtests extends controller {
                     }
                     $this->setSession('qData', $qData);
                     $data = array_slice($qData, $num, 10);
-                    $data[0]['count'] = count($qData);
+                    $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     $data[0]['qnum'] = $num;
                 }
             }
@@ -2728,7 +2728,7 @@ class mcqtests extends controller {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, 10);
-                $data[0]['count'] = count($qData);
+                $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                 $data[0]['qnum'] = $num;
                 foreach ($data as $key => $line) {
                     if (isset($results) && !empty($results)) {
@@ -2750,7 +2750,7 @@ class mcqtests extends controller {
                     foreach ($qData as $key => $line) {
                         $qData[$key]['questionorder'] = ($key + 1);
                     }
-                    $qData[0]['count'] = count($qData);
+                    $qData[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     foreach ($qData as $key => $line) {
                         $answers = $this->dbAnswers->getAnswers($line['id']);
                         if ($test[0]['asequence'] == 'Scrambled') {
@@ -2760,7 +2760,7 @@ class mcqtests extends controller {
                     }
                     $this->setSession('qData', $qData);
                     $data = array_slice($qData, $num, 10);
-                    $data[0]['count'] = count($qData);
+                    $data[0]['count'] = (is_countable($qData) ? count($qData) : 0);
                     $data[0]['qnum'] = $num;
                 }
             }

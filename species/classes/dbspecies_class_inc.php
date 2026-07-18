@@ -67,7 +67,7 @@ class dbspecies extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         // Set the parent table.
         $table = $this->getSession('speciesgroup', 'birds', 'species');

@@ -16,7 +16,7 @@ $noModComments = $this->objLanguage->languageText('mod_blogcomments_nomodcomment
 
 $html = '<h1>'.$heading.'</h1>';
 
-if (count($comments) > 0) {
+if ((is_countable($comments) ? count($comments) : 0) > 0) {
     $html .= '<form method="post">';
 
     foreach ($comments as $comment) {

@@ -215,7 +215,7 @@ class Zend_Form_Decorator_Label extends Zend_Form_Decorator_Abstract
 
             switch ($head) {
                 case 'set':
-                    if (0 === count($args)) {
+                    if (0 === (is_countable($args) ? count($args) : 0)) {
                         require_once 'Zend/Form/Exception.php';
                         throw new Zend_Form_Exception(sprintf('Method "%s" requires at least one argument; none provided', $method));
                     }

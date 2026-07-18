@@ -9,7 +9,7 @@ class dbfeaturedproduct extends dbtable {
 
     private $productsTableName = 'tbl_oer_featuredproduct';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->productsTableName);
     }
 
@@ -23,7 +23,7 @@ class dbfeaturedproduct extends dbtable {
         $sql =
                 "select * from ".$this->productsTableName." where prodtype='".$prodtype."' and status='active'";
         $data = $this->getArray($sql);        
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0]['productid'];
         } else {
             return NULL;
@@ -47,7 +47,7 @@ class dbfeaturedproduct extends dbtable {
     function batchUpdateFProducts($prodtype, $status) {
         $sql = "UPDATE  tbl_oer_featuredproduct SET status = '".$status."' WHERE  prodtype = '".$prodtype."'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return null;

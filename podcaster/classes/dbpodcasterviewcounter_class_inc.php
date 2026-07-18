@@ -20,7 +20,7 @@ class dbpodcasterviewcounter extends dbtable
     /**
     * Method to construct the class.
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_podcaster_views');
         $this->loadClass('link', 'htmlelements');
@@ -117,13 +117,13 @@ class dbpodcasterviewcounter extends dbtable
         // Check Today
         $files = $this->getMostViewedToday();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->prepContent2($files, 'today');
         }
 
         $files = $this->getMostViewedThisWeek();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->prepContent2($files, 'week');
         }
 
@@ -145,13 +145,13 @@ class dbpodcasterviewcounter extends dbtable
         // Check Today
         $files = $this->getMostViewedToday();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->getDataFormatted($files, 'today');
         }
 
         $files = $this->getMostViewedThisWeek();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             return $this->getDataFormatted($files, 'week');
         }
 
@@ -239,7 +239,7 @@ class dbpodcasterviewcounter extends dbtable
         }
 
         // If no results, return notice to user
-        if (count($data) == 0)
+        if ((is_countable($data) ? count($data) : 0) == 0)
         {
             switch ($period)
             {
@@ -326,7 +326,7 @@ class dbpodcasterviewcounter extends dbtable
         }
 
 
-        if (count($allLinks) > 0) {
+        if ((is_countable($allLinks) ? count($allLinks) : 0) > 0) {
             $linksContent = '<p align="right">';
             $divider = '';
             foreach ($allLinks as $link)
@@ -366,7 +366,7 @@ class dbpodcasterviewcounter extends dbtable
         }
 
         // If no results, return notice to user
-        if (count($data) == 0)
+        if ((is_countable($data) ? count($data) : 0) == 0)
         {
             switch ($period)
             {
@@ -448,7 +448,7 @@ class dbpodcasterviewcounter extends dbtable
         }
 
 
-        if (count($allLinks) > 0) {
+        if ((is_countable($allLinks) ? count($allLinks) : 0) > 0) {
             $linksContent = '<p align="right">';
             $divider = '';
             foreach ($allLinks as $link)

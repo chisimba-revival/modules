@@ -203,7 +203,7 @@ if ($doccount > 0) {
     $table->endHeaderRow();
 
     foreach ($documents as $document) {
-        if (count($document) > 1) {
+        if ((is_countable($document) ? count($document) : 0) > 1) {
             $astatus = $document['attachmentstatus'];            
             //$topic=  substr($document['topic'], strlen($this->baseDir));
             $link = new link($this->uri(array("action" => "editdocument", "id" => $document['id'], 'mode' => $mode, 'active' => 'N', 'rcount' => $rows, 'rowcount' => $documents['count'], 'start' => $start, 'astatus' => $astatus)));

@@ -103,7 +103,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
         }
 
         $result = $this->_sxml->xpath("//$name");
-        $count  = count($result);
+        $count  = (is_countable($result) ? count($result) : 0);
 
         if ($count == 0) {
             return null;
@@ -155,7 +155,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
 
         $result = $this->_sxml->xpath("//$name");
 
-        if (sizeof($result) > 0) {
+        if ((is_countable($result) ? sizeof($result) : 0) > 0) {
             return true;
         }
 
@@ -226,7 +226,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
             return (string) $message[0];
         } else {
             $result = $this->_sxml->xpath('//response');
-            if (sizeof($result) > 1) {
+            if ((is_countable($result) ? sizeof($result) : 0) > 1) {
                 return (string) "An error occured.";
             } else {
                 return (string) $result[0];

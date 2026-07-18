@@ -77,7 +77,7 @@ function adodb_unserialize( $serialized_string )
 {
 	$variables = array( );
 	$a = preg_split( "/(\w+)\|/", $serialized_string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
-	for( $i = 0; $i < count( $a ); $i = $i+2 ) {
+	for( $i = 0; $i < (is_countable($a) ? count($a) : 0); $i = $i+2 ) {
 		$variables[$a[$i]] = unserialize( $a[$i+1] );
 	}
 	return( $variables );

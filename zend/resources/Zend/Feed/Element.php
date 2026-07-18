@@ -188,7 +188,7 @@ class Zend_Feed_Element implements ArrayAccess
     public function __get($var)
     {
         $nodes = $this->_children($var);
-        $length = count($nodes);
+        $length = (is_countable($nodes) ? count($nodes) : 0);
 
         if ($length == 1) {
             return new Zend_Feed_Element($nodes[0]);
@@ -238,7 +238,7 @@ class Zend_Feed_Element implements ArrayAccess
                     htmlspecialchars($val, ENT_NOQUOTES, $this->getEncoding()));
                 $this->_element->appendChild($node);
             }
-        } elseif (count($nodes) > 1) {
+        } elseif ((is_countable($nodes) ? count($nodes) : 0) > 1) {
             /**
              * @see Zend_Feed_Exception
              */
@@ -295,7 +295,7 @@ class Zend_Feed_Element implements ArrayAccess
 
         if (!$nodes) {
             return null;
-        } elseif (count($nodes) > 1) {
+        } elseif ((is_countable($nodes) ? count($nodes) : 0) > 1) {
             return $nodes;
         } else {
             return $nodes[0]->nodeValue;

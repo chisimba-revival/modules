@@ -117,7 +117,7 @@ $form->addToForm($hiddenId->show());
 
 $objElement =new multitabbedbox('75%','95%');
 
-if (count($files) > 0) {
+if ((is_countable($files) ? count($files) : 0) > 0) {
     $objElement->addTab(array('name'=>$this->objLanguage->languageText('mod_discussion_selectattachment'),'content' => $attachmentForm->show(),'default' => true));
     
     $objElement->addTab(array('name'=>$this->objLanguage->languageText('mod_discussion_uploadfile'),'content' => $form->show()));

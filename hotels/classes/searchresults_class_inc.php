@@ -79,7 +79,7 @@ class searchresults extends ChisimbaObject
 	    	if (strlen($query) > 0) {
 				$hits = $this->search->find($query);
 					//print_r($hits);
-				$numHits = count($hits);
+				$numHits = (is_countable($hits) ? count($hits) : 0);
 			}
             
 			return $this->_displayResults($hits);
@@ -104,17 +104,17 @@ class searchresults extends ChisimbaObject
 	private function _displayResults($arrResults=null)
 	{
         
-        if(count($arrResults) == 0)
+        if((is_countable($arrResults) ? count($arrResults) : 0) == 0)
 		{
 			$str ='<h1>Search Results</h1>
-						<h5>'.count($arrResults).' Hits found</h5>
+						<h5>'.(is_countable($arrResults) ? count($arrResults) : 0).' Hits found</h5>
 					<div id="resultslist-wrap"></div>
 						';
 			return $str;
 		}
 		$str = '<hr />';
 		$hitsPerPage = 10;
-		$pagesPerSlide = ceil(count($arrResults)/5);
+		$pagesPerSlide = ceil((is_countable($arrResults) ? count($arrResults) : 0)/5);
 
 		//get the page number
 		$pageno = (!$this->getParam('pageno') == '') ? $this->getParam('pageno') : 1;
@@ -158,7 +158,7 @@ $pno = $pageno+1;
 						<hr />
 
 						<h1>Search Results</h1>
-						<h5>'.count($arrResults).' Hits found</h5>
+						<h5>'.(is_countable($arrResults) ? count($arrResults) : 0).' Hits found</h5>
 					<div id="resultslist-wrap"><ul>
 						';
 

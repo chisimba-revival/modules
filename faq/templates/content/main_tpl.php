@@ -66,13 +66,13 @@ if ($this->isValid('add'))
 	$addLink = "";
 }
 $objHeading->str .='&nbsp;&nbsp;&nbsp;&nbsp;' . $addLink;
-if (count($categories) > 0 && $this->userHasModifyAccess()) {
+if ((is_countable($categories) ? count($categories) : 0) > 0 && $this->userHasModifyAccess()) {
     $ret .= $objHeading->show() . '<br/>' . $tagCloudContent;
 }
 
 //$ret .= $objHeading->show();
 
-if (count($categories) == 0) {
+if ((is_countable($categories) ? count($categories) : 0) == 0) {
     $ret .= '<div class="noRecordsMessage">No FAQ Categories available</div>';
 } else {
     $ret .= '<ol>';

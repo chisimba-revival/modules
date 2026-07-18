@@ -106,7 +106,7 @@ class block_latestannouncement extends ChisimbaObject
         
         $announcements = $this->objBlocks->getSiteAnnouncements(5, 0);
         
-        if (count($announcements) > 0) {
+        if ((is_countable($announcements) ? count($announcements) : 0) > 0) {
             $str .= '<ul>';
             
             foreach ($announcements as $announcement)

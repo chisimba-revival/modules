@@ -61,7 +61,7 @@ class dbcalendar extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_calendar');
         $this->loadClass('link', 'htmlelements');
         $this->objDateFunctions = $this->getObject('dateandtime','utilities');
@@ -579,7 +579,7 @@ class dbcalendar extends dbTable
 
 
         // Array of Total Number of Events
-        $arrayTotal = count($events);
+        $arrayTotal = (is_countable($events) ? count($events) : 0);
 
 
         if ($arrayTotal > 0) {
@@ -656,7 +656,7 @@ class dbcalendar extends dbTable
                     //$files = $this->objEventAttachments->getListAttachments($eventId);
                     $files = $this->objEventAttachments->listFiles($eventId);
                     $nextLine = '';
-                    if (count($files) > 0) {
+                    if ((is_countable($files) ? count($files) : 0) > 0) {
                         //$cellContent .= '<hr width="50%" align="left" size="1" />';
                         $cellContent .= '<br /><p><em>'.$this->objLanguage->languageText('word_attachments','calendar').':</em></p>';
                         $cellContent .= '<div style="padding-left: 20px;">';
@@ -760,7 +760,7 @@ class dbcalendar extends dbTable
         $eventsTable->addHeaderCell($this->objLanguage->languageText('word_event'));
         $eventsTable->endHeaderRow();
 
-        if (count($events) > 0) {
+        if ((is_countable($events) ? count($events) : 0) > 0) {
             foreach ($events as $event)
             {
                 $eventsTable->startRow();
@@ -875,7 +875,7 @@ class dbcalendar extends dbTable
         $filterSQL = ' ';
         $dateSQL = ' ';
 
-        if (count($sqlArray) > 0) {
+        if ((is_countable($sqlArray) ? count($sqlArray) : 0) > 0) {
 
             foreach ($sqlArray AS $sqlStatement)
             {

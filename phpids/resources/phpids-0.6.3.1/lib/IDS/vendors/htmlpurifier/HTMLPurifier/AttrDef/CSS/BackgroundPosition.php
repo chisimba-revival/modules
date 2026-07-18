@@ -106,14 +106,14 @@ class HTMLPurifier_AttrDef_CSS_BackgroundPosition extends HTMLPurifier_AttrDef
 
         // first keyword
         if     ($keywords['h'])     $ret[] = $keywords['h'];
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        elseif ((is_countable($measures) ? count($measures) : 0))   $ret[] = array_shift($measures);
         elseif ($keywords['c']) {
             $ret[] = $keywords['c'];
             $keywords['c'] = false; // prevent re-use: center = center center
         }
 
         if     ($keywords['v'])     $ret[] = $keywords['v'];
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        elseif ((is_countable($measures) ? count($measures) : 0))   $ret[] = array_shift($measures);
         elseif ($keywords['c'])     $ret[] = $keywords['c'];
 
         if (empty($ret)) return false;

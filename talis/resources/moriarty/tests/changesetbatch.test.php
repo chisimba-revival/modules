@@ -158,7 +158,7 @@ class ChangeSetBatchTest extends PHPUnit_Framework_TestCase {
     $objects = $index[$changesetResource]["http://purl.org/vocab/changeset/schema#addition"];
 
     // $this->assertEquals("foo",  $cs->to_rdfxml() );
-    $this->assertEquals(1,  count( $objects ));
+    $this->assertEquals(1,  (is_countable($objects) ? count($objects) : 0));
   }
 
 

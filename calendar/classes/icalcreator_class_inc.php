@@ -680,11 +680,11 @@ class vcalendar {
       $input['tz']  = ( isset( $year['tz'] )) ? $year['tz'] : null;
       $utc = ( TRUE === $month ) ? TRUE : FALSE;
     }
-    elseif( is_array( $year ) && ( in_array( count( $year ), array( 3, 4, 6, 7 )))) {
-      if( isset( $year['tz'] ) || ( 4 == count( $year )) || ( 7 == count( $year )))
+    elseif( is_array( $year ) && ( in_array( (is_countable($year) ? count($year) : 0), array( 3, 4, 6, 7 )))) {
+      if( isset( $year['tz'] ) || ( 4 == (is_countable($year) ? count($year) : 0)) || ( 7 == (is_countable($year) ? count($year) : 0)))
         $parno = 7;
       elseif( isset( $year['hour'] ) || isset( $year['min'] ) || isset( $year['sec'] ) ||
-            ( 6 == count( $year )))
+            ( 6 == (is_countable($year) ? count($year) : 0)))
         $parno = 6;
       else
         $parno = 3;
@@ -929,7 +929,7 @@ class vcalendar {
     }
     else
       $cType = $validTypes;
-    if( 0 >= count( $cType ))
+    if( 0 >= (is_countable($cType) ? count($cType) : 0))
       $cType = $validTypes;
             /* iterate components */
     $result = array();
@@ -999,7 +999,7 @@ class vcalendar {
           $recurlist[$recurkey] = $rdurWsecs; // add duration in seconds
         while( FALSE !== ( $rdate = $component->getProperty( 'rdate' ))) {  // check rdate
           foreach( $rdate as $theRdate ) {
-            if( is_array( $theRdate ) && ( 2 == count( $theRdate )) &&  // PERIOD
+            if( is_array( $theRdate ) && ( 2 == (is_countable($theRdate) ? count($theRdate) : 0)) &&  // PERIOD
                    array_key_exists( '0', $theRdate ) &&  array_key_exists( '1', $theRdate )) {
               $rstart = $component->_date2timestamp( $theRdate[0] );
               if(( $rstart < ( $startDate - $rdurWsecs )) || ( $rstart > $endDate ))
@@ -1020,7 +1020,7 @@ class vcalendar {
             }
           }
         }
-        if( 0 < count( $recurlist )) {
+        if( 0 < (is_countable($recurlist) ? count($recurlist) : 0)) {
           ksort( $recurlist );
           foreach( $recurlist as $recurkey => $durvalue ) {
             if((( $startDate - $rdurWsecs ) > $recurkey ) || ( $endDate < $recurkey )) // not within period
@@ -1115,7 +1115,7 @@ class vcalendar {
         $result[$wd['year']][$wd['mon']][$wd['mday']][] = $component->copy(); // copy to output
       }
     }
-    if( 0 >= count( $result ))
+    if( 0 >= (is_countable($result) ? count($result) : 0))
       return FALSE;
    elseif( !$flat ) {
       foreach( $result as $y => $yeararr ) {
@@ -1312,15 +1312,15 @@ class vcalendar {
     if( 'BEGIN:VCALENDAR' != strtoupper( trim( $rows[0] )))
       return FALSE;                   /* err 8 */
             /* remove empty trailing lines */
-    while( '' == trim( $rows[count( $rows ) - 1] )) {
-      unset( $rows[count( $rows ) - 1] );
+    while( '' == trim( $rows[(is_countable($rows) ? count($rows) : 0) - 1] )) {
+      unset( $rows[(is_countable($rows) ? count($rows) : 0) - 1] );
       $rows  = array_values( $rows );
     }
             /* identify ending END:VCALENDAR row */
-    if( 'END:VCALENDAR'   != strtoupper( trim( $rows[count( $rows ) - 1] ))) {
+    if( 'END:VCALENDAR'   != strtoupper( trim( $rows[(is_countable($rows) ? count($rows) : 0) - 1] ))) {
       return FALSE;                   /* err 9 */
     }
-    if( 3 > count( $rows ))
+    if( 3 > (is_countable($rows) ? count($rows) : 0))
       return FALSE;                   /* err 10 */
     $comp    = $subcomp = null;
     $actcomp = & $this;
@@ -1477,7 +1477,7 @@ class vcalendar {
         $propattr = array();
         foreach( $attr as $attribute ) {
           $attrsplit = explode( '=', $attribute, 2 );
-          if( 1 < count( $attrsplit ))
+          if( 1 < (is_countable($attrsplit) ? count($attrsplit) : 0))
             $propattr[$attrsplit[0]] = $attrsplit[1];
           else
             $propattr[] = $attribute;
@@ -1485,7 +1485,7 @@ class vcalendar {
             /* update Property */
         if( FALSE !== strpos( $line, ',' )) {
           $content  = explode( ',', $line );
-          $clen     = count( $content );
+          $clen     = (is_countable($content) ? count($content) : 0);
           for( $cix = 0; $cix < $clen; $cix++ ) {
             if( "\\" == substr( $content[$cix], -1 )) {
               $content[$cix] .= ','.$content[$cix + 1];
@@ -1493,7 +1493,7 @@ class vcalendar {
               $cix++;
             }
           }
-          if( 1 < count( $content )) {
+          if( 1 < (is_countable($content) ? count($content) : 0)) {
             foreach( $content as $cix => $contentPart )
               $content[$cix] = $toolbox->_strunrep( $contentPart );
             $this->setProperty( $propname, $content, $propattr );
@@ -1564,7 +1564,7 @@ class vcalendar {
       $calendarInit1 .= $this->nl.'['.$this->nl;
       $old_xcaldecl = array();
       foreach( $this->xcaldecl as $declix => $declPart ) {
-        if(( 0 < count( $old_xcaldecl)) &&
+        if(( 0 < (is_countable($old_xcaldecl) ? count($old_xcaldecl) : 0)) &&
            ( in_array( $declPart['uri'],      $old_xcaldecl['uri'] )) &&
            ( in_array( $declPart['external'], $old_xcaldecl['external'] )))
           continue; // no duplicate uri and ext. references
@@ -2623,11 +2623,11 @@ class calendarComponent {
     if( !isset( $parno )) $parno = $this->_existRem( $exdate['params'], 'VALUE', 'DATE', 3 );
     foreach( $exdates as $eix => $theExdate ) {
       if(  is_array( $theExdate ) &&
-         ( in_array( count( $theExdate ), array( 3, 4, 6, 7 )))) {
+         ( in_array( (is_countable($theExdate) ? count($theExdate) : 0), array( 3, 4, 6, 7 )))) {
         if( isset( $exdate['params']['TZID'] ))
           $theExdate['tz'] = $exdate['params']['TZID'];
         if( !isset( $parno )) {
-          if( 4 < count( $theExdate ))
+          if( 4 < (is_countable($theExdate) ? count($theExdate) : 0))
             $parno = 7;
           else
             $parno = 3;
@@ -2648,7 +2648,7 @@ class calendarComponent {
           $exdatea['tz'] = $exdate['params']['TZID'];
       }
       if( !isset( $parno )) {
-        $parno     = count( $exdatea );
+        $parno     = (is_countable($exdatea) ? count($exdatea) : 0);
         if( 6 == $parno )
           $parno   = 7;
       }
@@ -2717,13 +2717,13 @@ class calendarComponent {
       if( 'UNTIL'  != $exrulelabel )
         $exrule['value'][$exrulelabel] = $exrulevalue;
       elseif( is_array( $exrulevalue ) &&
-            (( 3 == count( $exrulevalue )) ||
-             ( 6 == count( $exrulevalue )) ||
-             ( 7 == count( $exrulevalue )) ||
+            (( 3 == (is_countable($exrulevalue) ? count($exrulevalue) : 0)) ||
+             ( 6 == (is_countable($exrulevalue) ? count($exrulevalue) : 0)) ||
+             ( 7 == (is_countable($exrulevalue) ? count($exrulevalue) : 0)) ||
              ( array_key_exists( 'year', $exrulevalue )))) {
-        $parno = ( 3 < count( $exrulevalue )) ? 7 : 3 ;
+        $parno = ( 3 < (is_countable($exrulevalue) ? count($exrulevalue) : 0)) ? 7 : 3 ;
         $date  = $this->_date_time_array( $exrulevalue, $parno );
-        if(( 3 < count( $date )) && !isset( $date['tz'] ))
+        if(( 3 < (is_countable($date) ? count($date) : 0)) && !isset( $date['tz'] ))
           $date['tz'] = 'Z';
         $exrule['value'][$exrulelabel] = $date;
       }
@@ -2734,7 +2734,7 @@ class calendarComponent {
       }
       elseif( 8 <= strlen( trim( $exrulevalue ))) { // ex. 2006-08-03 10:12:18
         $date = $this->_date_time_string( $exrulevalue );
-        if(( 3 < count( $date )) && !isset( $date['tz'] ))
+        if(( 3 < (is_countable($date) ? count($date) : 0)) && !isset( $date['tz'] ))
           $date['tz'] = 'Z';
         $exrule['value'][$exrulelabel] = $date;
       }
@@ -2817,7 +2817,7 @@ class calendarComponent {
       foreach( $fbPeriod as $fbMember ) { // pairs => singlepart
         $freebusyPairMember = array();
         if( is_array( $fbMember )) {
-          $cnt = count( $fbMember );
+          $cnt = (is_countable($fbMember) ? count($fbMember) : 0);
           if(( 6 == $cnt ) || ( 7 == $cnt ) || ( array_key_exists( 'year', $fbMember ))) { // date-time value
             $date = $this->_date_time_array( $fbMember, 7 );
             $date['tz'] = ( !isset( $date['tz'] )) ? 'Z' : $date['tz'];
@@ -3091,7 +3091,7 @@ class calendarComponent {
       foreach( $theRdate['value'] as $rpix =>$rdatePart ) {
         $contentPart = null;
         if( is_array( $rdatePart ) &&
-           ( 2 == count( $rdatePart )) &&
+           ( 2 == (is_countable($rdatePart) ? count($rdatePart) : 0)) &&
              array_key_exists( '0', $rdatePart ) &&
              array_key_exists( '1', $rdatePart )) { // PERIOD
           if( $localtime  )
@@ -3195,7 +3195,7 @@ class calendarComponent {
  //   echo 'setRdate in '; print_r ( $theRdate ); echo "<br />\n"; // test ##
       $inputa = null;
       if( is_array( $theRdate )) {
-        if(( 2 == count( $theRdate )) &&
+        if(( 2 == (is_countable($theRdate) ? count($theRdate) : 0)) &&
              array_key_exists( '0', $theRdate ) &&
              array_key_exists( '1', $theRdate ) &&
             !array_key_exists( 'timestamp', $theRdate )) { // PERIOD
@@ -3203,7 +3203,7 @@ class calendarComponent {
  //   echo 'setRdate i2 '; print_r ( $rPeriod ); echo "<br />\n"; // test ##
             if( is_array( $rPeriod )) {
  //   echo 'setRdate i3 '; print_r ( $rPeriod ); echo "<br />\n"; // test ##
-              if (( 1 == count( $rPeriod )) &&
+              if (( 1 == (is_countable($rPeriod) ? count($rPeriod) : 0)) &&
                   ( 8 <= strlen( reset( $rPeriod )))) { // text-date
  //   echo 'setRdate i4 '; print_r ( $rPeriod ); echo "<br />\n"; // test ##
                 $inputab       = $this->_date_time_string( reset( $rPeriod ), $parno );
@@ -3213,18 +3213,18 @@ class calendarComponent {
                   $inputab['tz'] = (string) $inputab['tz'];
                 else
                   unset( $inputab['tz'] );
-                $parno         = ( !isset( $parno )) ? count( $inputab ) : $parno;
+                $parno         = ( !isset( $parno )) ? (is_countable($inputab) ? count($inputab) : 0) : $parno;
                 if(( 7 == $parno ) && !isset( $inputab['tz'] ))
                   $inputab['tz'] = 'Z';
                 if( isset( $inputab['tz'] ))
                   $inputab['tz'] = (string) $inputab['tz'];
                 $inputa[] = $inputab;
               }
-              elseif (((3 == count( $rPeriod )) && ( $rix < 1 )) ||
-                      ( 6 == count( $rPeriod )) ||
-                      ( 7 == count( $rPeriod )) ||
+              elseif (((3 == (is_countable($rPeriod) ? count($rPeriod) : 0)) && ( $rix < 1 )) ||
+                      ( 6 == (is_countable($rPeriod) ? count($rPeriod) : 0)) ||
+                      ( 7 == (is_countable($rPeriod) ? count($rPeriod) : 0)) ||
                       ( array_key_exists( 'year', $rPeriod ))) { // date[-time] (only 1st rperiod)
-                if( !isset( $parno ) && 3 < count( $rPeriod ))
+                if( !isset( $parno ) && 3 < (is_countable($rPeriod) ? count($rPeriod) : 0))
                   $parno = 7;
                 $inputab       = $this->_date_time_array( $rPeriod, $parno );
                 if ( isset( $input['params']['TZID'] ))
@@ -3233,7 +3233,7 @@ class calendarComponent {
                   $inputab['tz'] = (string) $inputab['tz'];
                 else
                   unset( $inputab['tz'] );
-                $parno         = ( !isset( $parno )) ? count( $inputab ) : $parno;
+                $parno         = ( !isset( $parno )) ? (is_countable($inputab) ? count($inputab) : 0) : $parno;
                 if(( 7 == $parno ) && !isset( $inputab['tz'] ))
                   $inputab['tz'] = 'Z';
                 if( isset( $inputab['tz'] ))
@@ -3271,7 +3271,7 @@ class calendarComponent {
               else
                 unset( $inputab['tz'] );
               $inputa[]      = $inputab;
-              $parno         = ( !isset( $parno )) ? count( $inputab ) : $parno;
+              $parno         = ( !isset( $parno )) ? (is_countable($inputab) ? count($inputab) : 0) : $parno;
             }
           }
         }
@@ -3286,22 +3286,22 @@ class calendarComponent {
             $inputab['tz'] = (string) $inputab['tz'];
           $inputa = $inputab;
         }
-        elseif (( in_array( count( $theRdate ), array( 3, 4, 6, 7 ))) ||
+        elseif (( in_array( (is_countable($theRdate) ? count($theRdate) : 0), array( 3, 4, 6, 7 ))) ||
                 ( array_key_exists( 'year', $theRdate ))) {  // date[-time]
           if( isset( $input['params']['TZID'] ))
             $theRdate['tz'] = $input['params']['TZID'];
           elseif( !isset( $theRdate['tz'] )) {
-            if(( 7 == count( $theRdate )) && isset( $theRdate[6] )) {
+            if(( 7 == (is_countable($theRdate) ? count($theRdate) : 0)) && isset( $theRdate[6] )) {
               $theRdate['tz'] = $theRdate[6];
               unset( $theRdate[6] );
             }
-            elseif(( 4 == count( $theRdate )) && isset( $theRdate[3] )) {
+            elseif(( 4 == (is_countable($theRdate) ? count($theRdate) : 0)) && isset( $theRdate[3] )) {
               $theRdate['tz'] = $theRdate[3];
               unset( $theRdate[3] );
             }
           }
-          if( !isset( $parno ) && 3 < count( $theRdate ))
-            $parno = ( isset( $theRdate['tz'] )) ? 7 : count( $theRdate );
+          if( !isset( $parno ) && 3 < (is_countable($theRdate) ? count($theRdate) : 0))
+            $parno = ( isset( $theRdate['tz'] )) ? 7 : (is_countable($theRdate) ? count($theRdate) : 0);
           elseif( !isset( $parno ))
             $parno = 3;
           $inputa = $this->_date_time_array( $theRdate, $parno );
@@ -3319,7 +3319,7 @@ class calendarComponent {
           $inputa['tz'] = (string) $inputa['tz'];
         else
           unset( $inputa['tz'] );
-        $parno = ( !isset( $parno )) ? count( $inputa ) : $parno;
+        $parno = ( !isset( $parno )) ? (is_countable($inputa) ? count($inputa) : 0) : $parno;
         if(( 7 == $parno ) && !isset( $inputa['tz'] ))
           $inputa['tz'] = 'Z';
         if( isset( $inputa['tz'] ))
@@ -3595,13 +3595,13 @@ class calendarComponent {
       if( 'UNTIL'  != $rrulelabel )
         $rrule['value'][$rrulelabel] = $rrulevalue;
       elseif( is_array( $rrulevalue ) &&
-            (( 3 == count( $rrulevalue )) ||
-             ( 6 == count( $rrulevalue )) ||
-             ( 7 == count( $rrulevalue )) ||
+            (( 3 == (is_countable($rrulevalue) ? count($rrulevalue) : 0)) ||
+             ( 6 == (is_countable($rrulevalue) ? count($rrulevalue) : 0)) ||
+             ( 7 == (is_countable($rrulevalue) ? count($rrulevalue) : 0)) ||
              ( array_key_exists( 'year', $rrulevalue )))) {
-        $parno = ( 3 < count( $rrulevalue )) ? 7 : 3 ; // datetime / date
+        $parno = ( 3 < (is_countable($rrulevalue) ? count($rrulevalue) : 0)) ? 7 : 3 ; // datetime / date
         $date  = $this->_date_time_array( $rrulevalue, $parno );
-        if(( 3 < count( $date )) && !isset( $date['tz'] ))
+        if(( 3 < (is_countable($date) ? count($date) : 0)) && !isset( $date['tz'] ))
           $date['tz'] = 'Z';
         $rrule['value'][$rrulelabel] = $date;
       }
@@ -3612,7 +3612,7 @@ class calendarComponent {
       }
       elseif( 8 <= strlen( trim( $rrulevalue ))) { // ex. 2006-08-03 10:12:18
         $date = $this->_date_time_string( $rrulevalue );
-        if(( 3 < count( $date )) && !isset( $date['tz'] ))
+        if(( 3 < (is_countable($date) ? count($date) : 0)) && !isset( $date['tz'] ))
           $date['tz'] = 'Z';
         $rrule['value'][$rrulelabel] = $date;
       }
@@ -4275,7 +4275,7 @@ class calendarComponent {
             $attrValue = $attrKVarr[0];
             $attrKey   = null;
           }
-          elseif( 2 == count( $attrKVarr)) {
+          elseif( 2 == (is_countable($attrKVarr) ? count($attrKVarr) : 0)) {
             $attrKey   = strtolower( $attrKVarr[0] );
             $attrValue = $attrKVarr[1];
           }
@@ -4632,7 +4632,7 @@ class calendarComponent {
   function _duration_array( $duration ) {
     $output = array();
     if(    is_array( $duration )        &&
-       ( 1 == count( $duration ))       &&
+       ( 1 == (is_countable($duration) ? count($duration) : 0))       &&
               isset( $duration['sec'] ) &&
               ( 60 < $duration['sec'] )) {
       $durseconds  = $duration['sec'];
@@ -4787,7 +4787,7 @@ class calendarComponent {
  * @return int
  */
   function _existRem( &$array, $expkey, $expval=FALSE, $hitval=null ) {
-    if( !is_array( $array ) || ( 0 == count( $array )))
+    if( !is_array( $array ) || ( 0 == (is_countable($array) ? count($array) : 0)))
       return null;
     if( !isset( $array[$expkey] ))
       return null;
@@ -5348,7 +5348,7 @@ class calendarComponent {
           }
           foreach( $recur['BYSETPOS'] as $ix ) {
             if( 0 > $ix ) // both positive and negative BYSETPOS allowed
-              $ix = ( count( $bysetposarr1 ) + $ix + 1);
+              $ix = ( (is_countable($bysetposarr1) ? count($bysetposarr1) : 0) + $ix + 1);
             $ix--;
             if( isset( $bysetposarr1[$ix] )) {
               if( $startdatets <= $bysetposarr1[$ix] ) { // only output within period
@@ -5411,16 +5411,16 @@ class calendarComponent {
  */
   function _setDate( $year, $month=FALSE, $day=FALSE, $hour=FALSE, $min=FALSE, $sec=FALSE, $tz=FALSE, $params=FALSE ) {
     $input = $parno = null;
-    if( is_array( $year ) && ( in_array( count( $year ), array( 3, 4, 6, 7 )))) {
+    if( is_array( $year ) && ( in_array( (is_countable($year) ? count($year) : 0), array( 3, 4, 6, 7 )))) {
       $input['params'] = $this->_setParams( $month, array( 'VALUE' => 'DATE-TIME' ));
       if( isset( $input['params']['TZID'] ))
         $year['tz']    = $input['params']['TZID'];
-      $hitval = ( !empty( $year['tz'] ) || !empty( $year[6] ) || ( 4 == count( $year ))) ? 7 : 6;
+      $hitval = ( !empty( $year['tz'] ) || !empty( $year[6] ) || ( 4 == (is_countable($year) ? count($year) : 0))) ? 7 : 6;
       $parno           = $this->_existRem( $input['params'], 'VALUE', 'DATE-TIME', $hitval );
       if( !isset( $parno ))
         $parno         = $this->_existRem( $input['params'], 'VALUE', 'DATE', 3 );
       if( !isset( $parno ))
-        $parno         = count( $year );
+        $parno         = (is_countable($year) ? count($year) : 0);
       $input['value']  = $this->_date_time_array( $year, $parno );
     }
     elseif( is_array( $year ) && isset( $year['timestamp'] )) {
@@ -5498,7 +5498,7 @@ class calendarComponent {
   function _setDate2(  $year, $month=FALSE, $day=FALSE, $hour=FALSE, $min=FALSE, $sec=FALSE, $params=FALSE ) {
     $input = null;
     if( is_array( $year ) &&
-      (( 6 == count( $year )) ||
+      (( 6 == (is_countable($year) ? count($year) : 0)) ||
        ( array_key_exists( 'year', $year )))) {
       $input['value']  = $this->_date_time_array( $year, 7 );
       $input['params'] = $this->_setParams( $month );
@@ -5564,7 +5564,7 @@ class calendarComponent {
           $input[$paramKey] = $paramValue;
       }
     }
-    return (0 < count( $input )) ? $input : null;
+    return (0 < (is_countable($input) ? count($input) : 0)) ? $input : null;
   }
 /**
  * step date, return updated date, array and timpstamp
@@ -6557,7 +6557,7 @@ class calendarComponent {
       $propattr = array();
       foreach( $attr as $attribute ) {
         $attrsplit = explode( '=', $attribute, 2 );
-        if( 1 < count( $attrsplit ))
+        if( 1 < (is_countable($attrsplit) ? count($attrsplit) : 0))
           $propattr[$attrsplit[0]] = $attrsplit[1];
         else
           $propattr[] = $attribute;
@@ -6567,7 +6567,7 @@ class calendarComponent {
         case 'ATTENDEE':
           foreach( $propattr as $pix => $attr ) {
             $attr2 = explode( ',', $attr );
-              if( 1 < count( $attr2 ))
+              if( 1 < (is_countable($attr2) ? count($attr2) : 0))
                 $propattr[$pix] = $attr2;
           }
           $this->setProperty( $propname, $line, $propattr );
@@ -6576,7 +6576,7 @@ class calendarComponent {
         case 'RESOURCES':
           if( FALSE !== strpos( $line, ',' )) {
             $content  = explode( ',', $line );
-            $clen     = count( $content );
+            $clen     = (is_countable($content) ? count($content) : 0);
             for( $cix = 0; $cix < $clen; $cix++ ) {
               if( "\\" == substr($content[$cix], -1)) {
                 $content[$cix] .= ','.$content[$cix + 1];
@@ -6584,7 +6584,7 @@ class calendarComponent {
                 $cix++;
               }
             }
-            if( 1 < count( $content )) {
+            if( 1 < (is_countable($content) ? count($content) : 0)) {
               foreach( $content as $cix => $contentPart )
                 $content[$cix] = $this->_strunrep( $contentPart );
               $this->setProperty( $propname, $content, $propattr );
@@ -6619,7 +6619,7 @@ class calendarComponent {
           $values = explode( ',', $line );
           foreach( $values as $vix => $value ) {
             $value2 = explode( '/', $value );
-            if( 1 < count( $value2 ))
+            if( 1 < (is_countable($value2) ? count($value2) : 0))
               $values[$vix] = $value2;
           }
           $this->setProperty( $propname, $fbtype, $values, $propattr );
@@ -6636,7 +6636,7 @@ class calendarComponent {
           $values = explode( ',', $line );
           foreach( $values as $vix => $value ) {
             $value2 = explode( '/', $value );
-            if( 1 < count( $value2 ))
+            if( 1 < (is_countable($value2) ? count($value2) : 0))
               $values[$vix] = $value2;
           }
           $this->setProperty( $propname, $values, $propattr );
@@ -6653,7 +6653,7 @@ class calendarComponent {
             switch( $rulelabel ) {
               case 'BYDAY': {
                 $value4 = explode( ',', $value3[1] );
-                if( 1 < count( $value4 )) {
+                if( 1 < (is_countable($value4) ? count($value4) : 0)) {
                   foreach( $value4 as $v5ix => $value5 ) {
                     $value6 = array();
                     $dayno = $dayname = null;
@@ -6691,7 +6691,7 @@ class calendarComponent {
               }
               default: {
                 $value4 = explode( ',', $value3[1] );
-                if( 1 < count( $value4 ))
+                if( 1 < (is_countable($value4) ? count($value4) : 0))
                   $value3[1] = $value4;
                 $recur[$rulelabel] = $value3[1];
                 break;

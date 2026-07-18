@@ -25,7 +25,7 @@ if ($this->isValid('add')) {
 
 echo $header->show();
 
-if (count($worksheets) == 0) {
+if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
     echo '<div class="noRecordsMessage">No Worksheets at present</div>';
 } else {
     $table = $this->newObject('htmltable', 'htmlelements');

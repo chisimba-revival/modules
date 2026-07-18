@@ -783,8 +783,8 @@ class formbuilder extends controller {
         $formElementTypeArray = explode(",", $formElementTypeList);
 
 ///Get the number for form element types and names
-        $lengthOfFormElementNameArray = count($formElementNameArray);
-        $lengthOfFormElementTypeArray = count($formElementTypeArray);
+        $lengthOfFormElementNameArray = (is_countable($formElementNameArray) ? count($formElementNameArray) : 0);
+        $lengthOfFormElementTypeArray = (is_countable($formElementTypeArray) ? count($formElementTypeArray) : 0);
 
 
         if ($lengthOfFormElementNameArray == $lengthOfFormElementTypeArray) {
@@ -888,8 +888,8 @@ class formbuilder extends controller {
         $formElementNameArray = explode(",", $formElementNameList);
         $formElementTypeArray = explode(",", $formElementTypeList);
 
-        $lengthOfFormElementNameArray = count($formElementNameArray);
-        $lengthOfFormElementTypeArray = count($formElementTypeArray);
+        $lengthOfFormElementNameArray = (is_countable($formElementNameArray) ? count($formElementNameArray) : 0);
+        $lengthOfFormElementTypeArray = (is_countable($formElementTypeArray) ? count($formElementTypeArray) : 0);
 
         if ($lengthOfFormElementNameArray == $lengthOfFormElementTypeArray) {
 ///loop through all the form element names and types and store the values of
@@ -1012,8 +1012,8 @@ class formbuilder extends controller {
         $formElementNameArray = explode(",", $formElementNameList);
         $formElementTypeArray = explode(",", $formElementTypeList);
 
-        $lengthOfFormElementNameArray = count($formElementNameArray);
-        $lengthOfFormElementTypeArray = count($formElementTypeArray);
+        $lengthOfFormElementNameArray = (is_countable($formElementNameArray) ? count($formElementNameArray) : 0);
+        $lengthOfFormElementTypeArray = (is_countable($formElementTypeArray) ? count($formElementTypeArray) : 0);
 
         if ($lengthOfFormElementNameArray == $lengthOfFormElementTypeArray) {
             for ($i = 0; $i <= ($lengthOfFormElementNameArray - 1); $i++) {

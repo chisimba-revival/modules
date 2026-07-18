@@ -26,7 +26,7 @@ $freeformLabel=$this->objLanguage->languageText('mod_mcqtests_freeformlabel','mc
 $selectLabel=$this->objLanguage->languageText('mod_mcqtests_selectlabel','mcqtests');
 //get the addicon
 $objIcon=$this->newObject('geticon', 'htmlelements');
-$count = count($questions);
+$count = (is_countable($questions) ? count($questions) : 0);
 if (empty($questions)) {
     $count = 0;
 }

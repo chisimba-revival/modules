@@ -925,7 +925,7 @@ class foafui extends ChisimbaObject {
             //addRow($content, $tdClass = null, $row_attributes = null)
             $table->startRow('controlrow');
             $pages = '';
-            for($page = 1 ; $page <= count($images); $page++){
+            for($page = 1 ; $page <= (is_countable($images) ? count($images) : 0); $page++){
                 $link = new href($this->uri(array('action' =>'fields', 'content' => 'gallery' , 'page' => $page)) , $page , 'class="pagelink" title="'.$this->objLanguage->languageText('mod_foaf_goto' , 'foaf').' '.strtolower($this->objLanguage->languageText('mod_foaf_page' , 'foaf')).' '.$page.'"');
                 if($page != 1)
                 {

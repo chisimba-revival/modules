@@ -45,7 +45,7 @@ class SparqlEngineDb_Offsetter
             $nCount += $nCurrentCount;
         }
         //nothing found - no results for this offset
-        return array(count($arSqls), 0);
+        return array((is_countable($arSqls) ? count($arSqls) : 0), 0);
     }//public function determineOffset($arSql)
 
 

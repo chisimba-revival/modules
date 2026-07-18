@@ -42,13 +42,13 @@ $objTable->addHeaderCell(ucfirst($this->objLanguage->code2Txt('mod_assignment_le
 $objTable->addHeaderCell($this->objLanguage->languageText('mod_assignment_closingdate', 'assignment', 'Closing Date'), '15%');
 $objTable->addHeaderCell($this->objLanguage->languageText('word_status', 'system', 'Status'), '8%');
 
-if ($this->isValid('edit') && count($assignments) > 0) {
+if ($this->isValid('edit') && (is_countable($assignments) ? count($assignments) : 0) > 0) {
     $objTable->addHeaderCell('&nbsp;', '60');
 }
 
 $objTable->endHeaderRow();
 
-if (count($assignments) == 0) {
+if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
 
 

@@ -789,7 +789,7 @@ class openaris extends controller {
                         //csv
                         $csv = $this->objViewReport->generateCSV($year, $month, $reportType);
                         header("Content-Type: application/csv"); 
-                        header("Content-length: " . sizeof($csv)); 
+                        header("Content-length: " . (is_countable($csv) ? sizeof($csv) : 0)); 
                         header("Content-Disposition: attachment; filename=$fileName.csv"); 
                         echo $csv;
                         break;
@@ -1029,7 +1029,7 @@ class openaris extends controller {
                $this->setVar('data',$data);
                $this->setVar('datan',$datan);
 	            $this->setVar('number',$this->getSession('ps_number'));
-	            $this->setVar('i',count($data));
+	            $this->setVar('i',(is_countable($data) ? count($data) : 0));
                return 'active_sampleview_tpl.php';
                
             case 'active_addsample':

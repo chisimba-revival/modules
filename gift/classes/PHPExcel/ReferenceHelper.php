@@ -203,7 +203,7 @@ class PHPExcel_ReferenceHelper
 
 		// Update worksheet: column dimensions
 		$aColumnDimensions = array_reverse($pSheet->getColumnDimensions(), true);
-		if (count($aColumnDimensions) > 0) {
+		if ((is_countable($aColumnDimensions) ? count($aColumnDimensions) : 0) > 0) {
 			foreach ($aColumnDimensions as $objColumnDimension) {
 				$newReference = $this->updateCellReference($objColumnDimension->getColumnIndex() . '1', $pBefore, $pNumCols, $pNumRows);
 				list($newReference) = PHPExcel_Cell::coordinateFromString($newReference);
@@ -217,7 +217,7 @@ class PHPExcel_ReferenceHelper
 
 		// Update worksheet: row dimensions
 		$aRowDimensions = array_reverse($pSheet->getRowDimensions(), true);
-		if (count($aRowDimensions) > 0) {
+		if ((is_countable($aRowDimensions) ? count($aRowDimensions) : 0) > 0) {
 			foreach ($aRowDimensions as $objRowDimension) {
 				$newReference = $this->updateCellReference('A' . $objRowDimension->getRowIndex(), $pBefore, $pNumCols, $pNumRows);
 				list(, $newReference) = PHPExcel_Cell::coordinateFromString($newReference);
@@ -536,7 +536,7 @@ class PHPExcel_ReferenceHelper
 		if (strpos($pCellRange,':') !== false || strpos($pCellRange, ',') !== false) {
 			// Update range
 			$range = PHPExcel_Cell::splitRange($pCellRange);
-			for ($i = 0; $i < count($range); ++$i) {
+			for ($i = 0; $i < (is_countable($range) ? count($range) : 0); ++$i) {
 				for ($j = 0; $j < count($range[$i]); ++$j) {
 					$range[$i][$j] = $this->_updateSingleCellReference($range[$i][$j], $pBefore, $pNumCols, $pNumRows);
 				}

@@ -69,7 +69,7 @@ GLOBAL $ADODB_version,$ADODB_FETCH_MODE;
 	
 	  //  print_r($arr);
 	$total = $end[0]+trim($end[1]) - $start[0]-trim($start[1]);
-	printf ("<p>seconds = %8.2f for %d iterations each with %d records</p>",$total,$max, sizeof($arr));
+	printf ("<p>seconds = %8.2f for %d iterations each with %d records</p>",$total,$max, (is_countable($arr) ? sizeof($arr) : 0));
 	flush();
 
 

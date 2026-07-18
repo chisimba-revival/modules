@@ -266,7 +266,7 @@ class questions extends ChisimbaObject
             $this->objInput->size=82;
             $textText=$this->objInput->show();
 
-            if(count($arrRowData)>'2'){
+            if((is_countable($arrRowData) ? count($arrRowData) : 0)>'2'){
                 $deleteRow='deleterow_'.$rowKey;
 
                 $this->objIcon->title=$deleteRowLabel;
@@ -348,7 +348,7 @@ class questions extends ChisimbaObject
             $this->objInput->size=82;
             $textText=$this->objInput->show();
 
-            if(count($arrColumnData)>'2'){
+            if((is_countable($arrColumnData) ? count($arrColumnData) : 0)>'2'){
                 $deleteColumn='deletecolumn_'.$columnKey;
 
                 $this->objIcon->title=$deleteColumnLabel;

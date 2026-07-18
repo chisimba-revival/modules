@@ -8,7 +8,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 }
 class dbregistration extends dbTable{
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_simpleregistrationmembers');  //super
         $this->table = 'tbl_simpleregistrationmembers';
@@ -61,7 +61,7 @@ class dbregistration extends dbTable{
     {
         $sql="select * from " .$this->table." where email = '".$email."' and event_id ='".$eventid."'";
         $rows=$this->getArray($sql);
-        return count($rows) > 0 ? TRUE:FALSE;
+        return (is_countable($rows) ? count($rows) : 0) > 0 ? TRUE:FALSE;
     }
     public function deletemember($id)
     {
@@ -81,7 +81,7 @@ class dbregistration extends dbTable{
     public  function getRegistrationCount($eventid){
             $sql="select count(id) as totalregistrations from ".$this->table." where event_id ='".$eventid."'";
             $rows=$this->getArray($sql);
-            if(count($rows) > 0){
+            if((is_countable($rows) ? count($rows) : 0) > 0){
                 $row=$rows[0];
                 return $row['totalregistrations'];
             }

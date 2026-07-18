@@ -726,7 +726,7 @@ class Zend_Paginator implements Countable, IteratorAggregate
         $itemCount = 0;
 
         if (is_array($items) || $items instanceof Countable) {
-            $itemCount = count($items);
+            $itemCount = (is_countable($items) ? count($items) : 0);
         } else { // $items is something like LimitIterator
             $itemCount = iterator_count($items);
         }

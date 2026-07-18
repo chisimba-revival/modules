@@ -17,7 +17,7 @@ class dbReadingList_links extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_readinglist_links');
         //$this->USE_PREPARED_STATEMENTS=True;

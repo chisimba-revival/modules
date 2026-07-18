@@ -21,7 +21,7 @@ class dbcontentblocks extends dbTable {
     /**
      * Constructor method to define the table
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contentblocks');
 
         $this->objModule = $this->getObject('modules', 'modulecatalogue');
@@ -197,7 +197,7 @@ class dbcontentblocks extends dbTable {
                 $arrData = array('id' => $id, 'moduleid' => $moduleid, 'blockname' => $title, 'blockwidth' => $blockwidth, 'blocktype' => $type);
                 $exists = $this->objDbModuleBlocks->getAll(" WHERE id = '$id'");
                 
-                if (count($exists) < 1) {
+                if ((is_countable($exists) ? count($exists) : 0) < 1) {
                     $this->objDbModuleBlocks->insert($arrData); 
                 }
             }//if

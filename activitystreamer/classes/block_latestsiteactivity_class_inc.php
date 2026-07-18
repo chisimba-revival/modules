@@ -100,7 +100,7 @@ class block_latestsiteactivity extends ChisimbaObject
     	$recs = $this->objDBActivities->getSiteActivities();
     	//var_dump($recs);
     	$str = "";
-    	if(count($recs) > 0)
+    	if((is_countable($recs) ? count($recs) : 0) > 0)
     	{
     		foreach($recs as $rec)
     		{

@@ -30,7 +30,7 @@ class turnitinsubmittedassignments extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_turnitin_assignments_submitted');
         $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
         $this->objUser=$this->getObject("user","security");
@@ -76,7 +76,7 @@ class turnitinsubmittedassignments extends dbTable {
 
     public function getTotalSubmissions($contextcode, $title){
         $recs = $this->getAll("where contextcode='$contextcode' and assigntitle = '$title' and submitted='Y'");
-        return count($recs);
+        return (is_countable($recs) ? count($recs) : 0);
     }
     public function submissionExists($userid,$contextcode,$assigtitle) {
         $sql="select submitted from tbl_turnitin_assignments_submitted where userid='$userid' and contextcode= '$contextcode'

@@ -169,7 +169,7 @@ $table->endRow();
 
 $efs = new fieldset();
 $efs->setLegend('Errors');
-if (count($errormessages) > 0) {
+if ((is_countable($errormessages) ? count($errormessages) : 0) > 0) {
 
     $errorstr = '<ul>';
 

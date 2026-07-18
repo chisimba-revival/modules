@@ -96,7 +96,7 @@ class userutils extends ChisimbaObject {
         $this->objUploadTable->setUserId($userid);
         $myData = $this->objUploadTable->getAllFiles();
         $count = 1;
-        $numRows = count($myData);
+        $numRows = (is_countable($myData) ? count($myData) : 0);
         $detailsLink = new link();
         $deleteLink = new link();
         $fileData = "[";
@@ -178,7 +178,7 @@ class userutils extends ChisimbaObject {
         $distinctFT = $this->objUploadTable->getFileTypes();
 
         $count = 1;
-        $numTypes = count($distinctFT);
+        $numTypes = (is_countable($distinctFT) ? count($distinctFT) : 0);
         $JSONstr = "[";
         foreach ($distinctFT as $data) {
             $docs = $this->objUploadTable->getDocs($data['filetype']);
@@ -186,10 +186,10 @@ class userutils extends ChisimbaObject {
             // get the file type description from the permittedtypes table
             $fileDesc = $this->objPermittedTypes->getFileDesc($data['filetype']);
 
-            $numRows = count($txtDocs);
+            $numRows = (is_countable($txtDocs) ? count($txtDocs) : 0);
             $JSONstr .= "{";
 
-            $numRows = count($docs);
+            $numRows = (is_countable($docs) ? count($docs) : 0);
             $JSONstr .= "
             filename:'" . $fileDesc . "',";
             $JSONstr .= "
@@ -422,7 +422,7 @@ class userutils extends ChisimbaObject {
             default : $bB = "B";
                 break;
         }
-        for ($i = 0; $i < count($symbols) - 1 && $val >= $factor; $i++)
+        for ($i = 0; $i < (is_countable($symbols) ? count($symbols) : 0) - 1 && $val >= $factor; $i++)
             $val /= $factor;
         $p = strpos($val, ".");
         if ($p !== false && $p > $digits)
@@ -524,7 +524,7 @@ class userutils extends ChisimbaObject {
     function findexts($filename) {
         $filename = strtolower($filename);
         $exts = split("[/\\.]", $filename);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         //check if icon for this exists, else return unknown
@@ -565,11 +565,11 @@ class userutils extends ChisimbaObject {
         //split the string by the literal dot in the filename
         $pattern = preg_split('/\./', $string, -1, PREG_SPLIT_OFFSET_CAPTURE);
         //get the last dot position
-        $lastdot = $pattern[count($pattern) - 1][1];
+        $lastdot = $pattern[(is_countable($pattern) ? count($pattern) : 0) - 1][1];
         //now extract the filename using the basename function
         $filename = basename(substr($string, 0, $lastdot - 1));
         $exts = split("[/\\.]", $filepath);
-        $n = count($exts) - 1;
+        $n = (is_countable($exts) ? count($exts) : 0) - 1;
         $ext = $exts[$n];
 
         return $filename . '.' . $ext;

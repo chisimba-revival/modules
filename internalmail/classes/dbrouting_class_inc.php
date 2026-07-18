@@ -22,7 +22,7 @@ class dbrouting extends dbTable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_internalmail_routing');
         $this->table = 'tbl_internalmail_routing';
@@ -319,7 +319,7 @@ class dbrouting extends dbTable
 
         $data = $this->getArray($sql);
         if (!empty($data)) {
-            return count($data);
+            return (is_countable($data) ? count($data) : 0);
         }
         return NULL;
     }

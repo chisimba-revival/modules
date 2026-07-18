@@ -99,7 +99,7 @@ class generate extends ChisimbaObject
                     $editMethods = $this->objCodeAnalyzer->getDataEditMethods($fpath, $moduleName);
 
                     //Logical Add Data Management
-                    if (count($addMethods)  >= 1) {
+                    if ((is_countable($addMethods) ? count($addMethods) : 0)  >= 1) {
 
                         $templateCode .= '
 
@@ -111,7 +111,7 @@ class generate extends ChisimbaObject
                     }
                     
                     //Logical Edit Data Management
-                    if (count($editMethods)  >= 1) {
+                    if ((is_countable($editMethods) ? count($editMethods) : 0)  >= 1) {
                         $templateCode .= '
 
     /*
@@ -162,7 +162,7 @@ class generate extends ChisimbaObject
 
         $className = $this->objCodeAnalyzer->getClassName($fpath);
 
-        if (count($methods) >= 1) {
+        if ((is_countable($methods) ? count($methods) : 0) >= 1) {
             foreach ($methods as $method=>$params) {
                 $decl = "    public function $moduleName".'_'."$className".'_'."$method($params) {";
                 $templateCode .= $decl . "\n";

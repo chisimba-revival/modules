@@ -15,7 +15,7 @@ class dbsearch extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() 
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_websearch');
         $this->objUser = & $this->getObject('user', 'security');
@@ -69,11 +69,11 @@ class dbsearch extends dbTable
           ."' AND searchengine='" 
           . $searchengine . "' ORDER BY datecreated DESC";
         $ar = $this->getArray($sql);
-        if ( count($ar) > 0 ) {
+        if ( (is_countable($ar) ? count($ar) : 0) > 0 ) {
             return $ar;
         } else {
             return NULL;
-        } #if ( count($ar) > 0 )
+        } #if ( (is_countable($ar) ? count($ar) : 0) > 0 )
     } #function _getLastSearch
 
 } #end of class

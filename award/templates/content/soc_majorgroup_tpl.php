@@ -58,7 +58,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($majorGroups) > '0'){
+if((is_countable($majorGroups) ? count($majorGroups) : 0) > '0'){
   foreach($majorGroups as $majorGroup){
      $majorGroupDesc = $majorGroup['description'];
      //Get group id

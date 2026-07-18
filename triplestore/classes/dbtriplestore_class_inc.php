@@ -66,7 +66,7 @@ class dbtriplestore extends dbTable {
     /**
      * Initialises the instance of the triplestore data access class.
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         // Set the associated database table name.
         parent::init('tbl_triplestore');
 
@@ -297,9 +297,9 @@ class dbtriplestore extends dbTable {
         //Convert xml to a php array
         $triplesArray = $this->objXMLSerial->readXML($file);
         //Loop through array and insert triples
-        if(is_array($triplesArray) && count($triplesArray)>0){
+        if(is_array($triplesArray) && (is_countable($triplesArray) ? count($triplesArray) : 0)>0){
             foreach($triplesArray as $triple){
-                if(is_array($triple) && count($triple)>0){
+                if(is_array($triple) && (is_countable($triple) ? count($triple) : 0)>0){
                     foreach($triple as $trip){
                         $id = $this->insert($trip['subject'], $trip['predicate'], $trip['object']);
                     }

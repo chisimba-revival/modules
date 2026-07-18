@@ -507,7 +507,7 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
 
         // Check input against DNS hostname schema
         $domainParts = explode('.', $value);
-        if ((count($domainParts) > 1) && (strlen($value) >= 4) && (strlen($value) <= 254)) {
+        if (((is_countable($domainParts) ? count($domainParts) : 0) > 1) && (strlen($value) >= 4) && (strlen($value) <= 254)) {
             $status = false;
 
             $origenc = iconv_get_encoding('internal_encoding');
@@ -596,7 +596,7 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
                     }
 
                     // If one of the labels doesn't match, the hostname is invalid
-                    if ($check !== count($domainParts)) {
+                    if ($check !== (is_countable($domainParts) ? count($domainParts) : 0)) {
                         $this->_error(self::INVALID_HOSTNAME_SCHEMA);
                         $status = false;
                     }
@@ -668,7 +668,7 @@ class Zend_Validate_Hostname extends Zend_Validate_Abstract
             return false;
         }
 
-        $lengthd = count($decoded);
+        $lengthd = (is_countable($decoded) ? count($decoded) : 0);
         $lengthe = strlen($encoded);
 
         // decoding

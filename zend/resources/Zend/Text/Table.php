@@ -187,7 +187,7 @@ class Zend_Text_Table
      */
     public function setColumnWidths(array $columnWidths)
     {
-        if (count($columnWidths) === 0) {
+        if ((is_countable($columnWidths) ? count($columnWidths) : 0) === 0) {
             require_once 'Zend/Text/Table/Exception.php';
             throw new Zend_Text_Table_Exception('You must supply at least one column');
         }
@@ -335,7 +335,7 @@ class Zend_Text_Table
         }
 
         if (is_array($row)) {
-            if (count($row) > count($this->_columnWidths)) {
+            if ((is_countable($row) ? count($row) : 0) > count($this->_columnWidths)) {
                 require_once 'Zend/Text/Table/Exception.php';
                 throw new Zend_Text_Table_Exception('Row contains too many columns');
             }
@@ -392,7 +392,7 @@ class Zend_Text_Table
 
             $renderedRow  = $row->render($this->_columnWidths, $this->_decorator, $this->_padding);
             $columnWidths = $row->getColumnWidths();
-            $numColumns   = count($columnWidths);
+            $numColumns   = (is_countable($columnWidths) ? count($columnWidths) : 0);
 
             // Check what we have to draw
             if ($rowNum === 0) {

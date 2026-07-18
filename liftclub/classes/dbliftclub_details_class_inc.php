@@ -14,7 +14,7 @@ class dbLiftclub_details extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_liftclub_details');
         $this->objUser = &$this->getObject('user', 'security');

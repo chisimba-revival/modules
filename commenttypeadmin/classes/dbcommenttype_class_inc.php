@@ -38,7 +38,7 @@ class dbcommenttype extends dbTable
     /**
     * Constructor method to define the table
     */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_commenttype');
         $this->objUser = & $this->getObject("user", "security");
         //Create an instance of the language object

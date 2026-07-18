@@ -535,7 +535,7 @@ class RGB {
             return $aColor;
         }
         else {
-            JpGraphError::RaiseL(25079,$aColor,count($aColor));//(" Unknown color specification: $aColor , size=".count($aColor));
+            JpGraphError::RaiseL(25079,$aColor,(is_countable($aColor) ? count($aColor) : 0));//(" Unknown color specification: $aColor , size=".(is_countable($aColor) ? count($aColor) : 0));
         }
     }
 
@@ -569,7 +569,7 @@ class RGB {
     // a single color (specifeid as an RGB triple)
     static function tryHexConversion($aColor) {
         if( is_array( $aColor ) ) {
-            if( count( $aColor ) == 3 ) {
+            if( (is_countable($aColor) ? count($aColor) : 0) == 3 ) {
                 if( is_numeric($aColor[0]) && is_numeric($aColor[1]) && is_numeric($aColor[2]) ) {
                     if( ($aColor[0] >= 0 && $aColor[0] <= 255) &&
                         ($aColor[1] >= 0 && $aColor[1] <= 255) &&

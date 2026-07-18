@@ -276,7 +276,7 @@ class buscard extends ChisimbaObject
     private function setUserProperties($userId)
     {
         $userDetails = $this->objUser->getUserDetails($userId);
-        if (count($userDetails) > 0) {
+        if ((is_countable($userDetails) ? count($userDetails) : 0) > 0) {
             foreach ($userDetails as $property=>$value) {
                 $this->$property = $value;
             }
@@ -556,7 +556,7 @@ class buscard extends ChisimbaObject
             $tagsAr = explode("-", $tags);
             $ret = "";
             $terms="";
-            $tagNo = count($tagsAr);
+            $tagNo = (is_countable($tagsAr) ? count($tagsAr) : 0);
             $counter = 1;
             foreach ($tagsAr as $tag) {
                 if ($counter == $tagNo) {

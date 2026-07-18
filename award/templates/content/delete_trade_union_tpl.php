@@ -99,7 +99,7 @@ $branches = $this->objDbBranch->getAll("WHERE partyid = '$unionId' ORDER BY name
 
 $class = '';
 
-if(count($branches) > '0'){
+if((is_countable($branches) ? count($branches) : 0) > '0'){
   foreach($branches as $branch){ 
      //Get group description
      $branchName = $branch['name'];

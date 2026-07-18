@@ -153,17 +153,17 @@ if(!$GLOBALS['kewl_entry_point_run']){
             $objTable->cellpadding='2';
 
             if($type=='1' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='2' && $booleanType!='1' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='2' && $booleanType=='1' && $verticalAlignment=='1'){
                 $colspan='colspan="3"';
             }elseif($type>='3' && $type<='5'){
-                $colspan='colspan="'.(count($arrColumnList)+1).'"';
+                $colspan='colspan="'.((is_countable($arrColumnList) ? count($arrColumnList) : 0)+1).'"';
             }elseif($type=='6'){
                 $colspan='colspan="'.($ratingScale+1).'"';
             }elseif($type<='8' && $verticalAlignment=='1'){
-                $colspan='colspan="'.count($arrRowList).'"';
+                $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
             }elseif($type=='8' && $verticalAlignment!='1'){
                 $colspan='colspan="2"';
             }else{
@@ -561,7 +561,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
         "';
         $nextButton=$objButton->show();
         $buttons=$nextButton;
-    }elseif($pageNo==count($arrQuestionList)){
+    }elseif($pageNo==(is_countable($arrQuestionList) ? count($arrQuestionList) : 0)){
         $objButton=new button('backButton',$backLabel);
         $objButton->extra=' onclick="javascript:
             this.disabled=\'disabled\';

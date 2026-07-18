@@ -24,7 +24,7 @@ class viewDepartment extends dbthesis
     /**
     * Class constructor extends dbthesis constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init();
         

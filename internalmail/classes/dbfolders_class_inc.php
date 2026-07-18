@@ -22,7 +22,7 @@ class dbfolders extends dbTable
      * @access public
      * @return
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_internalmail_folders');
         $this->table = 'tbl_internalmail_folders';
@@ -95,9 +95,9 @@ class dbfolders extends dbTable
                     1 => 3,
                     2 => 'DESC'
                 ) , NULL);
-                $data[$key]['allmail'] = !empty($emails) ? count($emails) : 0;
+                $data[$key]['allmail'] = !empty($emails) ? (is_countable($emails) ? count($emails) : 0) : 0;
                 $unreadMail = $this->dbRouting->getUnreadMail($line['id']);
-                $data[$key]['unreadmail'] = !empty($unreadMail) ? count($unreadMail) : 0;
+                $data[$key]['unreadmail'] = !empty($unreadMail) ? (is_countable($unreadMail) ? count($unreadMail) : 0) : 0;
             }
             return $data;
         }
@@ -122,9 +122,9 @@ class dbfolders extends dbTable
                     1 => 3,
                     2 => 'DESC'
                 ) , NULL);
-                $data[$key]['allmail'] = !empty($emails) ? count($emails) : 0;
+                $data[$key]['allmail'] = !empty($emails) ? (is_countable($emails) ? count($emails) : 0) : 0;
                 $unreadMail = $this->dbRouting->getUnreadMail($line['id']);
-                $data[$key]['unreadmail'] = !empty($unreadMail) ? count($unreadMail) : 0;
+                $data[$key]['unreadmail'] = !empty($unreadMail) ? (is_countable($unreadMail) ? count($unreadMail) : 0) : 0;
             }
             $data = $data[0];
             return $data;
@@ -151,9 +151,9 @@ class dbfolders extends dbTable
                     1 => 3,
                     2 => 'DESC'
                 ) , NULL);
-                $data[$key]['allmail'] = !empty($emails) ? count($emails) : 0;
+                $data[$key]['allmail'] = !empty($emails) ? (is_countable($emails) ? count($emails) : 0) : 0;
                 $unreadMail = $this->dbRouting->getUnreadMail($line['id']);
-                $data[$key]['unreadmail'] = !empty($unreadMail) ? count($unreadMail) : 0;
+                $data[$key]['unreadmail'] = !empty($unreadMail) ? (is_countable($unreadMail) ? count($unreadMail) : 0) : 0;
             }
             return $data;
         }

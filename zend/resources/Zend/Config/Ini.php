@@ -204,7 +204,7 @@ class Zend_Config_Ini extends Zend_Config
         {
             $pieces = explode($this->_sectionSeparator, $key);
             $thisSection = trim($pieces[0]);
-            switch (count($pieces)) {
+            switch ((is_countable($pieces) ? count($pieces) : 0)) {
                 case 1:
                     $iniArray[$thisSection] = $data;
                     break;

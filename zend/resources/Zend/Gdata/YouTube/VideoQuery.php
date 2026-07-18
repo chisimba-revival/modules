@@ -129,7 +129,7 @@ class Zend_Gdata_YouTube_VideoQuery extends Zend_Gdata_Query
                 unset($this->_params['location']);
             default:
                 $parameters = explode(',', $value);
-                if (count($parameters) != 2) {
+                if ((is_countable($parameters) ? count($parameters) : 0) != 2) {
                     require_once 'Zend/Gdata/App/InvalidArgumentException.php';
                     throw new Zend_Gdata_App_InvalidArgumentException(
                         'You must provide 2 coordinates to the location ' .
@@ -506,7 +506,7 @@ class Zend_Gdata_YouTube_VideoQuery extends Zend_Gdata_Query
             $queryArray[] = urlencode($name) . '=' . urlencode($value);
 
         }
-        if (count($queryArray) > 0) {
+        if ((is_countable($queryArray) ? count($queryArray) : 0) > 0) {
             return '?' . implode('&', $queryArray);
         } else {
             return '';

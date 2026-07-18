@@ -144,7 +144,7 @@ class Zend_Service_ReCaptcha_Response
 
         $parts = explode("\n", $body, 2);
 
-        if (count($parts) !== 2) {
+        if ((is_countable($parts) ? count($parts) : 0) !== 2) {
             $status = 'false';
             $errorCode = '';
         } else {

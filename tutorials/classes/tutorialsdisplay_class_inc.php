@@ -292,7 +292,7 @@ class tutorialsdisplay extends ChisimbaObject
                 if(empty($questions)){
                     $count = 0;
                 }else{
-                    $count = count($questions);
+                    $count = (is_countable($questions) ? count($questions) : 0);
                 }
 
                 // set up view link
@@ -964,10 +964,10 @@ class tutorialsdisplay extends ChisimbaObject
                     'dir' => 'up',
                 )), 'mvup');
 
-                if(count($questions) > 1){
+                if((is_countable($questions) ? count($questions) : 0) > 1){
                     if($question['question_order'] == 1){
                         $icoMove = $icoDown.'&#160;&#160;&#160;';
-                    }elseif($question['question_order'] == count($questions)){
+                    }elseif($question['question_order'] == (is_countable($questions) ? count($questions) : 0)){
                         $icoMove = $icoUp;
                     }else{
                         $icoMove = $icoDown.'&#160;'.$icoUp;
@@ -1043,7 +1043,7 @@ class tutorialsdisplay extends ChisimbaObject
     {
         // get data
         $questions = $this->objDbTutorials->getQuestions($tutId);
-        $count = ($questions == FALSE) ? 1: count($questions) + 1;
+        $count = ($questions == FALSE) ? 1: (is_countable($questions) ? count($questions) : 0) + 1;
         if(empty($id)){
             $question = '';
             $model = '';
@@ -1285,7 +1285,7 @@ class tutorialsdisplay extends ChisimbaObject
                     $lecturer = $this->objDbTutorials->checkLecturerMarked($tutorial['id'], $this->userId);
                     $modComplete = $this->objDbTutorials->moderationComplete($tutorial['id']);
 
-                    $qCount = empty($questions) ? 0 : count($questions);
+                    $qCount = empty($questions) ? 0 : (is_countable($questions) ? count($questions) : 0);
 
                     // set up view link
                     $this->objLink = new link($this->uri(array(
@@ -1448,7 +1448,7 @@ class tutorialsdisplay extends ChisimbaObject
         $tblDisplay = $this->objTable->show();
 
         // tabbed box
-        $label = '<b>'.$lblQuestion.'  '.$order.'  '.strtolower($lblOf).'  '.count($questions).'</b>';
+        $label = '<b>'.$lblQuestion.'  '.$order.'  '.strtolower($lblOf).'  '.(is_countable($questions) ? count($questions) : 0).'</b>';
         $this->objTabbedbox=new tabbedbox();
         $this->objTabbedbox->addTabLabel($label);
         $this->objTabbedbox->addBoxContent($tblDisplay);
@@ -1489,11 +1489,11 @@ class tutorialsdisplay extends ChisimbaObject
         $this->objLabel = new label($lblConfirm, 'input_inpConfirm');
         $lblCheck = $this->objLabel->show();
 
-        if(count($questions) == 1){
+        if((is_countable($questions) ? count($questions) : 0) == 1){
             $buttons = $btnSubmit.'&#160;'.$btnExit.'&#160;'.$btnCancel;
         }elseif($order == 1){
             $buttons = $btnNext.'&#160;'.$btnExit.'&#160;'.$btnCancel;
-        }elseif($order == count($questions)){
+        }elseif($order == (is_countable($questions) ? count($questions) : 0)){
             $buttons = $btnPrevious.'&#160;'.$btnSubmit.'&#160;'.$btnExit.'&#160;'.$btnCancel;
         }else{
             $buttons = $btnNext.'&#160;'.$btnPrevious.'&#160;'.$btnExit.'&#160;'.$btnCancel;
@@ -1513,7 +1513,7 @@ class tutorialsdisplay extends ChisimbaObject
         $this->objTable->addCell('&#160;', '', '', '', '', 'colspan="2"');
         $this->objTable->endRow();
         $this->objTable->startRow();
-        if($order == count($questions)){
+        if($order == (is_countable($questions) ? count($questions) : 0)){
             $this->objTable->startRow();
             $this->objTable->addCell($chkConfirm.'&#160;'.$lblCheck, '', '', '', '', 'colspan="2"');
             $this->objTable->endRow();
@@ -1577,7 +1577,7 @@ class tutorialsdisplay extends ChisimbaObject
                 ), 'tutorials'));
                 $this->objLink->link = $line['question_order'];
                 $links .= $this->objLink->show();
-                if(count($data) != ($key + 1)){
+                if((is_countable($data) ? count($data) : 0) != ($key + 1)){
                     $links .= '&#160;|&#160;';
                 }
             }
@@ -1621,7 +1621,7 @@ class tutorialsdisplay extends ChisimbaObject
                 }
                 $this->objLink->link = $line['question_order'];
                 $links .= $this->objLink->show();
-                if(count($data) != ($key + 1)){
+                if((is_countable($data) ? count($data) : 0) != ($key + 1)){
                     $links .= '&#160;|&#160;';
                 }
             }
@@ -2069,11 +2069,11 @@ class tutorialsdisplay extends ChisimbaObject
         $this->objLabel = new label($lblConfirm, 'input_inpConfirm');
         $lblCheck = $this->objLabel->show();
 
-        if(count($questions) == 1){
+        if((is_countable($questions) ? count($questions) : 0) == 1){
             $buttons = $btnSubmit.'&#160;'.$btnExit.'&#160;'.$btnCancel;
         }elseif($order == 1){
             $buttons = $btnNext.'&#160;'.$btnExit.'&#160;'.$btnCancel;
-        }elseif($order == count($questions)){
+        }elseif($order == (is_countable($questions) ? count($questions) : 0)){
             $buttons = $btnPrevious.'&#160;'.$btnSubmit.'&#160;'.$btnExit.'&#160;'.$btnCancel;
         }else{
             $buttons = $btnNext.'&#160;'.$btnPrevious.'&#160;'.$btnExit.'&#160;'.$btnCancel;
@@ -2095,7 +2095,7 @@ class tutorialsdisplay extends ChisimbaObject
         $this->objTable->startRow();
         $this->objTable->addCell('&#160;', '', '', '', '', 'colspan="2"');
         $this->objTable->endRow();
-        if($order == count($questions)){
+        if($order == (is_countable($questions) ? count($questions) : 0)){
             $this->objTable->startRow();
             $this->objTable->addCell($chkConfirm.'&#160;'.$lblCheck, '', '', '', '', 'colspan="2"');
             $this->objTable->endRow();
@@ -2257,7 +2257,7 @@ class tutorialsdisplay extends ChisimbaObject
         $tblDisplay = $this->objTable->show();
 
         // tabbed box
-        $label = '<b>'.$lblQuestion.'  '.$order.'  '.strtolower($lblOf).'  '.count($questions).'</b>';
+        $label = '<b>'.$lblQuestion.'  '.$order.'  '.strtolower($lblOf).'  '.(is_countable($questions) ? count($questions) : 0).'</b>';
         $this->objTabbedbox=new tabbedbox();
         $this->objTabbedbox->addTabLabel($label);
         $this->objTabbedbox->addBoxContent($tblDisplay);
@@ -2834,7 +2834,7 @@ class tutorialsdisplay extends ChisimbaObject
 
         // set up page heading
         if($moderation != FALSE){
-            $heading = $lblModerate.' - '.$lblLeft.': '.count($moderation);
+            $heading = $lblModerate.' - '.$lblLeft.': '.(is_countable($moderation) ? count($moderation) : 0);
         }else{
             $heading = $lblModerate;
         }
@@ -2930,7 +2930,7 @@ class tutorialsdisplay extends ChisimbaObject
                 $name = $this->objUser->fullName($line['marker_id']);
                 $students .= $line['marker_id'];
                 $marks .= $line['mark'];
-                if(count($marking) != ($key + 1)){
+                if((is_countable($marking) ? count($marking) : 0) != ($key + 1)){
                     $students .= '|';
                     $marks .= '|';
                 }
@@ -3168,10 +3168,10 @@ class tutorialsdisplay extends ChisimbaObject
                 $icoLast = $this->objIcon->getLinkedIcon($this->uri(array(
                     'action' => 'answerlist',
                     'id' => $id,
-                    'order' => count($questions),
+                    'order' => (is_countable($questions) ? count($questions) : 0),
                 )), 'last');
                 $icons .= '&#160;'.$icoLast;
-            }elseif($order == count($questions)){
+            }elseif($order == (is_countable($questions) ? count($questions) : 0)){
                 // first
                 $this->objIcon->title = $lblFirst;
                 $this->objIcon->extra = '';
@@ -3240,7 +3240,7 @@ class tutorialsdisplay extends ChisimbaObject
                 $icoLast = $this->objIcon->getLinkedIcon($this->uri(array(
                     'action' => 'answerlist',
                     'id' => $id,
-                    'order' => count($questions),
+                    'order' => (is_countable($questions) ? count($questions) : 0),
                 )), 'last');
                 $icons .= '&#160;'.$icoLast;
             }
@@ -3266,7 +3266,7 @@ class tutorialsdisplay extends ChisimbaObject
             $tblDisplay = $this->objTable->show();
 
             // tabbed box
-            $label = '<b>'.$lblQuestion.'&#160;'.$order.'&#160;'.strtolower($lblOf).'&#160;'.count($questions).'</b>';
+            $label = '<b>'.$lblQuestion.'&#160;'.$order.'&#160;'.strtolower($lblOf).'&#160;'.(is_countable($questions) ? count($questions) : 0).'</b>';
             $this->objTabbedbox=new tabbedbox();
             $this->objTabbedbox->addTabLabel($label);
             $this->objTabbedbox->addBoxContent($tblDisplay);

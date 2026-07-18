@@ -115,7 +115,7 @@ class block_personalblog extends ChisimbaObject
         $tbl = $doc->createElement('table');
         $retDiv->setAttribute('class', 'simpleblog_bloggers');
         
-        if (count($bloggers) > 0) {
+        if ((is_countable($bloggers) ? count($bloggers) : 0) > 0) {
             foreach ($bloggers as $blogger) {
                 $tr = $doc->createElement('tr');
                 $userImg =  $this->objUser->getSmallUserImage($blogger['userid']);

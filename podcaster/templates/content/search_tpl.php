@@ -46,7 +46,7 @@ if (trim($query) != '') {
 
     $results = $this->objMediaFileData->searchFileInAllFields("all", $query, '1');
 
-    $numHits = count($results);
+    $numHits = (is_countable($results) ? count($results) : 0);
 
     $displayResults = $this->objViewer->displayAsTable($results);
 

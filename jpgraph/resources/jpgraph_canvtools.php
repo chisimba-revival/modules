@@ -94,7 +94,7 @@ class Shape {
     }
 
     function Polygon($p,$aClosed=false) {
-        $n=count($p);
+        $n=(is_countable($p) ? count($p) : 0);
         for($i=0; $i < $n; $i+=2 ) {
             $p[$i]   = $this->scale->TranslateX($p[$i]);
             $p[$i+1] = $this->scale->TranslateY($p[$i+1]);
@@ -103,7 +103,7 @@ class Shape {
     }
 
     function FilledPolygon($p) {
-        $n=count($p);
+        $n=(is_countable($p) ? count($p) : 0);
         for($i=0; $i < $n; $i+=2 ) {
             $p[$i]   = $this->scale->TranslateX($p[$i]);
             $p[$i+1] = $this->scale->TranslateY($p[$i+1]);

@@ -79,7 +79,7 @@ class dbcontent extends dbtable
     * method, and instantiates required objects.
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_portalimporter_content');

@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class dbgameinfo extends dbtable{
 
-	 function init(){
+	 function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler'){
 		parent::init('tbl_gameinfo');
 		$this->table = 'tbl_gameinfo';
 

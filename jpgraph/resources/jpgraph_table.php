@@ -607,7 +607,7 @@ class GTextTable {
         if( $aArg2===NULL && $aArg3===NULL ) {
             if( is_array($aArg1) ) {
                 if( is_array($aArg1[0]) ) {
-                    $m = count($aArg1);
+                    $m = (is_countable($aArg1) ? count($aArg1) : 0);
                     // Find the longest row
                     $n=0;
                     for($i=0; $i < $m; ++$i)

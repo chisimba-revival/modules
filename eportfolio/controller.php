@@ -682,14 +682,14 @@ class eportfolio extends controller {
                         // Get the deleted member ids
                         $delList = array_diff($group_define_name, $selectedParts);
                         // Delete these members
-                        if (count($delList) > 0) {
+                        if ((is_countable($delList) ? count($delList) : 0) > 0) {
                             foreach ($delList as $partPid) {
                                 $grpId = $this->_objGroupAdmin->getId($partPid);
                                 $this->_objGroupAdmin->deleteGroup($grpId);
                             }
                         }
                         // Add these members
-                        if (count($addList) > 0) {
+                        if ((is_countable($addList) ? count($addList) : 0) > 0) {
                             $this->manageEportfolioViewers($addList, $groupId);
                         }
                         //Empty array
@@ -715,7 +715,7 @@ class eportfolio extends controller {
                             $this->_objGroupAdmin->deleteGroupUser($partPid['group_id'], $groupId);
                         }
                         // Add these members
-                        if (count($addList) > 0) {
+                        if ((is_countable($addList) ? count($addList) : 0) > 0) {
                             $this->manageEportfolioViewersOld($addList, $groupId);
                         }
                         //Empty array
@@ -1858,7 +1858,7 @@ class eportfolio extends controller {
                     'staffnumber'
                         ), $filter);
         $guestsArray = array();
-        if (count($guests) > 0) {
+        if ((is_countable($guests) ? count($guests) : 0) > 0) {
             foreach ($guests as $guest) {
                 $guestsArray[] = $guest['userid'];
             }
@@ -2041,7 +2041,7 @@ class eportfolio extends controller {
         $results['detailschanged'] = TRUE;
         // Process Update
         $update = $this->objUserAdmin->updateUserDetails($this->user['id'], $this->user['username'], $firstname, $surname, $title, $this->user['emailaddress'], $this->user['sex'], $this->user['country'], $this->user['cellnumber'], $this->user['staffnumber'], $password);
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             $results['change'] = 'details';
         }
         $this->setSession('showconfirmation', TRUE);
@@ -2593,7 +2593,7 @@ class eportfolio extends controller {
                     $membersList = $this->_objGroupAdmin->getGroupUsers($groupId, $fields);
                     $groupName = $this->_objGroupAdmin->getName($groupId);
                     $groupName = explode("^", $groupName);
-                    if (count($groupName) == 2) {
+                    if ((is_countable($groupName) ? count($groupName) : 0) == 2) {
                         $groupName = $groupName[1];
                         foreach ($membersList as $users) {
                             if ($users) {

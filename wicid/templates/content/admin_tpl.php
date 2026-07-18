@@ -38,7 +38,7 @@
 
     $count = 1;
     $ret = $this->objPermitted->getFileTypeData();
-    $numRows = count($ret);
+    $numRows = (is_countable($ret) ? count($ret) : 0);
     $data = "[";
 
     $deleteFileType=new link();

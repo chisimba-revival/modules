@@ -117,7 +117,7 @@ class block_flickrbylocation extends ChisimbaObject
     
     public function build_photos($photos) {
         $html = NULL; //'<ul>';
-        if (count($photos) > 0){
+        if ((is_countable($photos) ? count($photos) : 0) > 0){
             foreach ($photos as $photo){
                 $html .= '<a href="http://www.flickr.com/photos/'.
                          $photo['owner'].'/'.$photo['id'].

@@ -306,7 +306,7 @@ class Sabre_DAV_Client {
         $headerBlob = explode("\r\n\r\n", trim($headerBlob, "\r\n"));
 
         // We only care about the last set of headers
-        $headerBlob = $headerBlob[count($headerBlob)-1];
+        $headerBlob = $headerBlob[(is_countable($headerBlob) ? count($headerBlob) : 0)-1];
 
         // Splitting headers
         $headerBlob = explode("\r\n", $headerBlob);
@@ -314,7 +314,7 @@ class Sabre_DAV_Client {
         $headers = array();
         foreach($headerBlob as $header) {
             $parts = explode(':', $header, 2);
-            if (count($parts)==2) {
+            if ((is_countable($parts) ? count($parts) : 0)==2) {
                 $headers[strtolower(trim($parts[0]))] = trim($parts[1]);
             }
         }

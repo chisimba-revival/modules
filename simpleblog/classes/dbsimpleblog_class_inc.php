@@ -69,7 +69,7 @@ class dbsimpleblog extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         // Instantiate the user object
         $this->objUser = $this->getObject('user', 'security');

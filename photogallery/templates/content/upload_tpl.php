@@ -35,7 +35,7 @@ if(isset($errmsg))
 }
 echo $str;
 
-$cnt = count($albumbsArr);
+$cnt = (is_countable($albumbsArr) ? count($albumbsArr) : 0);
 $i = 0;
 
 foreach ($albumbsArr as $album)

@@ -85,13 +85,13 @@ class workgroupops extends ChisimbaObject
 	{
 		$files = $this->objFiles->getWorkgroupFiles($workgroupId);
 		
-		if(count($files) > 0)
+		if((is_countable($files) ? count($files) : 0) > 0)
 		{
 			$objFile = $this->getObject('dbfile', 'filemanager');
 			$objIcon = $this->getObject('geticon', 'htmlelements');
 			$objLink =  $this->getObject('link', 'htmlelements');
 			$objFileSize = new formatfilesize();
-			$str = '<span class="subdued">'.count($files) .' Files Found </div><table id="workgrouptable" width="80%">';
+			$str = '<span class="subdued">'.(is_countable($files) ? count($files) : 0) .' Files Found </div><table id="workgrouptable" width="80%">';
 			foreach ($files as $file)
 			{
 				

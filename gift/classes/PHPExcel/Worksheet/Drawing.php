@@ -81,7 +81,7 @@ class PHPExcel_Worksheet_Drawing extends PHPExcel_Worksheet_BaseDrawing implemen
      */
     public function getExtension() {
     	$exploded = explode(".", basename($this->_path));
-    	return $exploded[count($exploded) - 1];
+    	return $exploded[(is_countable($exploded) ? count($exploded) : 0) - 1];
     }
 
     /**

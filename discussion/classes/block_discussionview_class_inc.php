@@ -170,7 +170,7 @@ class block_discussionview extends ChisimbaObject {
         $paging = $this->objTopic->prepareTopicPagingLinks($this->discussionid, $page, $limitPerPage);
         $allTopics = $this->objTopic->showTopicsInDiscussion($this->discussionid, $this->objUser->userId($this->objUser->userName()), NULL, $order, $direction, NULL, NULL);
 //        echo $order;
-        $topicsNum = count($allTopics);
+        $topicsNum = (is_countable($allTopics) ? count($allTopics) : 0);
 //                if ($topicsNum > 0) {
 //                        /**
 //                         * @todo Append the number of topics to object

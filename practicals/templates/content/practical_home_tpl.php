@@ -42,13 +42,13 @@ $objTable->addHeaderCell(ucfirst($this->objLanguage->code2Txt('mod_practicals_le
 $objTable->addHeaderCell($this->objLanguage->languageText('mod_practicals_closingdate', 'practicals', 'Closing Date'), '15%');
 $objTable->addHeaderCell($this->objLanguage->languageText('word_status', 'system', 'Status'), '8%');
 
-if ($this->isValid('edit') && count($practicals) > 0) {
+if ($this->isValid('edit') && (is_countable($practicals) ? count($practicals) : 0) > 0) {
     $objTable->addHeaderCell('&nbsp;', '60');
 }
 
 $objTable->endHeaderRow();
 
-if (count($practicals) == 0) {
+if ((is_countable($practicals) ? count($practicals) : 0) == 0) {
 
 
 

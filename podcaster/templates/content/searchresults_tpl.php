@@ -67,7 +67,7 @@ $groups = array(
     "Students",
     "Guest"
 );
-for ($i = 0; $i < count($groups); $i++) {
+for ($i = 0; $i < (is_countable($groups) ? count($groups) : 0); $i++) {
     $groupDropdown->addOption($groups[$i], $groups[$i]);
 }
 $groupDropdown->setSelected($resultsArr['group']);

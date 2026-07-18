@@ -29,7 +29,7 @@ class dbproducts extends dbtable {
 
     private $productsTableName = 'tbl_oer_products';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->productsTableName);
     }
 
@@ -236,10 +236,10 @@ class dbproducts extends dbtable {
         //Fetch parent id of the adaptation
         $sql = "select * from $this->productsTableName where id = '$id'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             $sql = "select * from $this->productsTableName where id = '" . $data[0]["parent_id"] . "'";
             $data = $this->getArray($sql);
-            if (count($data) > 0) {
+            if ((is_countable($data) ? count($data) : 0) > 0) {
                 return $data[0];
             } else {
                 return NULL;
@@ -257,7 +257,7 @@ class dbproducts extends dbtable {
     function getProduct($id) {
         $sql = "select * from $this->productsTableName where id = '$id'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0];
         } else {
             return NULL;
@@ -397,7 +397,7 @@ class dbproducts extends dbtable {
     function getProductTitle($id) {
         $sql = "select * from $this->productsTableName where id = '$id'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             return $data[0]['title'];
         } else {
             return NULL;
@@ -412,7 +412,7 @@ class dbproducts extends dbtable {
     function isOriginalProduct($id) {
         $sql = "select * from $this->productsTableName where id = '$id'";
         $data = $this->getArray($sql);
-        if (count($data) > 0) {
+        if ((is_countable($data) ? count($data) : 0) > 0) {
             if (!empty($data[0]['parent_id'])) {
                 return False;
             } else {

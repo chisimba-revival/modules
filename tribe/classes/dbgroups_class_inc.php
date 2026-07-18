@@ -36,7 +36,7 @@ class dbgroups extends dbTable {
      * Constructor
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init ( 'tbl_tribe_groups' );
         $this->objUser = $this->getObject('user', 'security');
         $this->objMembers = $this->getObject('dbgroupmembers');

@@ -46,7 +46,7 @@ class block_adaptationslisting extends ChisimbaObject {
         $mode = $modeParts[0];
         $filter = "";
         $filterOptions = "";
-        if (count($modeParts) == 3) {
+        if ((is_countable($modeParts) ? count($modeParts) : 0) == 3) {
             $filter = $modeParts[1];
             $filterOptions = $modeParts[2];
         }

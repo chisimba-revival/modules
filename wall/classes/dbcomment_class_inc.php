@@ -70,7 +70,7 @@ class dbcomment extends dbtable
     * @access public
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         //Set the parent table here
         parent::init('tbl_wall_comments');

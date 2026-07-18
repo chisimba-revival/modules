@@ -34,7 +34,7 @@ class turnitinemails extends dbTable
      * Constructor
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_turnitin_email');
         
@@ -65,7 +65,7 @@ class turnitinemails extends dbTable
     public function emailExists($email, $contextCode)
     {
     	$rec = $this->getAll("WHERE contextcode='$contextCode' AND email='$email'");
-    	if(count($rec) > 0)
+    	if((is_countable($rec) ? count($rec) : 0) > 0)
     	{
     		return TRUE;
     	}else{

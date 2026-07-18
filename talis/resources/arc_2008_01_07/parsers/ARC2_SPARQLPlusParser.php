@@ -201,7 +201,7 @@ class ARC2_SPARQLPlusParser extends ARC2_SPARQLParser {
           }
         }
       } while ($proceed);
-      if (count($r)) {
+      if ((is_countable($r) ? count($r) : 0)) {
         return array($r, $sub_v);
       }
       else {

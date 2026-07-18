@@ -297,7 +297,7 @@ class Zend_Measure_Number extends Zend_Measure_Abstract
 
             $split = preg_split('//', strrev($input), -1, PREG_SPLIT_NO_EMPTY);
 
-            for ($x =0; $x < sizeof($split); $x++) {
+            for ($x =0; $x < (is_countable($split) ? sizeof($split) : 0); $x++) {
                 if ($split[$x] == '/') {
                     continue;
                 }

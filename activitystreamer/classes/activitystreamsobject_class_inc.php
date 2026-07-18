@@ -124,7 +124,7 @@ class activitystreamsobject extends ChisimbaObject
                     default:	$attr = '';
                     break;
                 }
-                if (sizeof($value))
+                if ((is_countable($value) ? sizeof($value) : 0))
                 foreach($value as $val) {
                     if (empty($val))
                         $string .=  "\n\t<{$property} {$attr} />";

@@ -22,7 +22,7 @@ class dbcollectsubmit extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_etd_collection_submission');
         $this->table = 'tbl_etd_collection_submission';

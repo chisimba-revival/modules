@@ -16,7 +16,7 @@ class dbUsers extends dbTable
     /**
     * Constructor method to define the table
     */
-    public function init() 
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') 
     {
         parent::init('tbl_users');
         //$this->USE_PREPARED_STATEMENTS=True;

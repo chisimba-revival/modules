@@ -368,8 +368,8 @@ class TestMatrix {
   * @param float $y[]
   */
   function checkVectors($x, $y) {
-    $nx = count($x);
-    $ny = count($y);
+    $nx = (is_countable($x) ? count($x) : 0);
+    $ny = (is_countable($y) ? count($y) : 0);
     if ($nx == $ny)
       for($i=0; $i < $nx; ++$i)
         $this->checkScalars($x[$i],$y[$i]);

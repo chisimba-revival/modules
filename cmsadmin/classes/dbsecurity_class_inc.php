@@ -54,7 +54,7 @@
      * @access public
      * @return void
      */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
         {
             try {        
                 parent::init('tbl_cms_sections');
@@ -274,11 +274,11 @@
 
             //Preparing a list of USER ID's
             $usersList = $this->getAssignedContentUsers($contentid);
-            $usersCount = count($usersList);
+            $usersCount = (is_countable($usersList) ? count($usersList) : 0);
 
             //Preparing a list of GROUP_ID's
             $groupsList = $this->getAssignedContentGroups($contentid);
-            $groupsCount = count($groupsList);
+            $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
 
             //Default READ Policy (If there aren't any users/groups defined then the user can read)
             if ($usersCount == 0 && $groupsCount == 0){
@@ -446,11 +446,11 @@ return true;
 
             //Preparing a list of USER ID's
             $usersList = $this->getAssignedSectionUsers($sectionid);
-            $usersCount = count($usersList);
+            $usersCount = (is_countable($usersList) ? count($usersList) : 0);
 
             //Preparing a list of GROUP_ID's
             $groupsList = $this->getAssignedSectionGroups($sectionid);
-            $groupsCount = count($groupsList);
+            $groupsCount = (is_countable($groupsList) ? count($groupsList) : 0);
 
             //Default READ Policy (If there aren't any users/groups defined then the user can read)
             if ($usersCount == 0 && $groupsCount == 0){
@@ -552,7 +552,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){		
+            if ((is_countable($data) ? count($data) : 0) > 0){		
                 if (isset($data[0])) {
                     $id = $data[0]['id'];
                 }
@@ -585,7 +585,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){
+            if ((is_countable($data) ? count($data) : 0) > 0){
                 if (isset($data[0])) {
                     $id = $data[0]['id'];
                 }
@@ -954,7 +954,7 @@ return true;
         {
             $nodes = $this->getAll("WHERE parentid = '$id' AND trash = 0");
 
-            if (count($nodes) > 0) {
+            if ((is_countable($nodes) ? count($nodes) : 0) > 0) {
                 $hasNodes = True;
             } else {
                 $hasNodes = False;
@@ -1041,7 +1041,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){		
+            if ((is_countable($data) ? count($data) : 0) > 0){		
                 if (isset($data[0])) {
                     $id = $data[0]['id'];
                 }
@@ -1072,7 +1072,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){
+            if ((is_countable($data) ? count($data) : 0) > 0){
                 if (isset($data[0])) {
                     $id = $data[0]['id'];
                 }
@@ -1102,7 +1102,7 @@ return true;
             $in_part = '';
 
             //var_dump($userMemberIds);
-            $id_count =  count($userMemberIds);
+            $id_count =  (is_countable($userMemberIds) ? count($userMemberIds) : 0);
 
             for ($i = 0; $i < $id_count; $i++){
                 $id = $userMemberIds[$i];
@@ -1123,7 +1123,7 @@ return true;
             $groupMemberIds = $this->getArray($sql);
 
             //Building a comma separated list of id's to be used in the IN sql statement
-            $id_count = count($groupMemberIds);
+            $id_count = (is_countable($groupMemberIds) ? count($groupMemberIds) : 0);
             $in_part = '';
             for ($i = 0; $i < $id_count; $i++){
                 $id = $groupMemberIds[$i];
@@ -1178,7 +1178,7 @@ return true;
             $in_part = '';
 
             //var_dump($userMemberIds);
-            $id_count =  count($userMemberIds);
+            $id_count =  (is_countable($userMemberIds) ? count($userMemberIds) : 0);
 
             for ($i = 0; $i < $id_count; $i++){
                 $id = $userMemberIds[$i];
@@ -1199,7 +1199,7 @@ return true;
             $groupMemberIds = $this->getArray($sql);
 
             //Building a comma separated list of id's to be used in the IN sql statement
-            $id_count = count($groupMemberIds);
+            $id_count = (is_countable($groupMemberIds) ? count($groupMemberIds) : 0);
             $in_part = '';
             for ($i = 0; $i < $id_count; $i++){
                 $id = $groupMemberIds[$i];
@@ -1360,7 +1360,7 @@ return true;
 
             //Building a comma separated list of id's to be used in the IN sql statement
             $in_part = '';
-            $id_count = count($userMemberIds);
+            $id_count = (is_countable($userMemberIds) ? count($userMemberIds) : 0);
             for ($i = 0; $i < $id_count; $i++){
                 $id = $userMemberIds[$i];
                 if ($id != ''){
@@ -1386,7 +1386,7 @@ return true;
 
             //Building a comma separated list of id's to be used in the IN sql statement
             $in_part = '';
-            $id_count = count($groupMemberIds);
+            $id_count = (is_countable($groupMemberIds) ? count($groupMemberIds) : 0);
             for ($i = 0; $i < $id_count; $i++){
                 $id = $groupMemberIds[$i];
                 if ($id != ''){
@@ -1446,7 +1446,7 @@ return true;
 
             //Building a comma separated list of id's to be used in the IN sql statement
             $in_part = '';
-            $id_count = count($userMemberIds);
+            $id_count = (is_countable($userMemberIds) ? count($userMemberIds) : 0);
             for ($i = 0; $i < $id_count; $i++){
                 $id = $userMemberIds[$i];
                 if ($id != ''){
@@ -1472,7 +1472,7 @@ return true;
 
             //Building a comma separated list of id's to be used in the IN sql statement
             $in_part = '';
-            $id_count = count($groupMemberIds);
+            $id_count = (is_countable($groupMemberIds) ? count($groupMemberIds) : 0);
             for ($i = 0; $i < $id_count; $i++){
                 $id = $groupMemberIds[$i];
                 if ($id != ''){
@@ -1591,7 +1591,7 @@ return true;
             $sql = "SELECT id from tbl_cms_content_user WHERE content_id = '$contentid' AND user_id = '$userid'";
 
             $res = $this->getArray($sql);
-            if (count($res) > 0){
+            if ((is_countable($res) ? count($res) : 0) > 0){
                 //The content to group mapping already exists so it's as if it's been added
                 if ($do_update) {
                     $this->setContentPermissionsUser($contentid, $userid, $read_access, $write_access);
@@ -1670,7 +1670,7 @@ return true;
             //if exists update it
             $sql = "SELECT id from tbl_cms_content_group WHERE content_id = '$contentid' AND group_id = '$groupid'";
             $res = $this->getArray($sql);
-            if (count($res) > 0){
+            if ((is_countable($res) ? count($res) : 0) > 0){
                 //The content to group mapping already exists so update it
                 if ($do_update){
                     $this->setContentPermissionsGroup($contentid, $groupid, $read_access, $write_access);
@@ -1749,7 +1749,7 @@ return true;
             //if exists return true
             $sql = "SELECT id from tbl_cms_section_user WHERE section_id = '$sectionid' AND user_id = '$userid'";
             $res = $this->getArray($sql);
-            if (count($res) > 0){
+            if ((is_countable($res) ? count($res) : 0) > 0){
                 //The section to group mapping already exists so it's as if it's been added
                 if ($do_update){
                     $this->setPermissionsUser($sectionid, $userid, $read_access, $write_access);
@@ -1825,7 +1825,7 @@ return true;
             $sql = "SELECT id from tbl_cms_section_group WHERE section_id = '$sectionid' AND group_id = '$groupid'";
             $res = $this->getArray($sql);
 
-            if (count($res) > 0){
+            if ((is_countable($res) ? count($res) : 0) > 0){
                 //The section to group mapping already exists so updating here
                 if ($do_update){
                     $this->setPermissionsGroup($sectionid, $groupid, $read_access, $write_access);
@@ -2134,7 +2134,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){		
+            if ((is_countable($data) ? count($data) : 0) > 0){		
                 if (isset($data[0])) {
                     $id = $data[0]['id'];
                 }
@@ -2170,7 +2170,7 @@ return true;
 
             $data = $this->getArray($sql);
 
-            if (count($data) > 0){
+            if ((is_countable($data) ? count($data) : 0) > 0){
                 if (isset($data[0])) {
                     $id = $data[0]['content_id'];
                 }

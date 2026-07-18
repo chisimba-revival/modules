@@ -46,7 +46,7 @@ class PolarPlot {
     private $coord=null;
 
     function __construct($aData) {
-        $n = count($aData);
+        $n = (is_countable($aData) ? count($aData) : 0);
         if( $n & 1 ) {
             JpGraphError::RaiseL(17001);
             //('Polar plots must have an even number of data point. Each data point is a tuple (angle,radius).');
@@ -223,7 +223,7 @@ class PolarAxis extends Axis {
         // Stroke the minor arcs
         $pmin = array();
         $p = $this->scale->ticks->ticks_pos;
-        $n = count($p);
+        $n = (is_countable($p) ? count($p) : 0);
         $i = 0;
         $this->img->SetColor($this->gridminor_color);
         while( $i < $n ) {
@@ -265,7 +265,7 @@ class PolarAxis extends Axis {
             else {
                 $step=9;
             }
-            $n = round(count($pmin)/$step);
+            $n = round((is_countable($pmin) ? count($pmin) : 0)/$step);
             $i = 0;
             $this->img->SetColor($this->gridmajor_color);
             $limit = max($this->img->plotwidth,$this->img->plotheight)*1.4 ;

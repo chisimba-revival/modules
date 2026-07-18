@@ -143,7 +143,7 @@ $table->addCell('&nbsp;&nbsp;&nbsp;', '3%');
 
 
 
-if (count($latestFiles) == 0) {
+if ((is_countable($latestFiles) ? count($latestFiles) : 0) == 0) {
     $latestFilesContent = '';
 } else {
     $latestFilesContent = '';
@@ -193,7 +193,7 @@ if ($objUser->isLoggedIn() && $buddiesRegistered) {
 
     //print_r($buddiesFiles);
 
-    if (count($buddiesFiles) == 0) {
+    if ((is_countable($buddiesFiles) ? count($buddiesFiles) : 0) == 0) {
         $buddiesFilesContent = '';
     } else {
         $buddiesFilesContent = '';

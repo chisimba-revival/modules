@@ -31,7 +31,7 @@ class dbformbuilder_submit_results extends dbTable {
     /*!
      * \brief Constructor method to define the table
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_formbuilder_submit_results');
         $this->objUser = &$this->getObject('user', 'security');
     }

@@ -38,7 +38,7 @@ $icon = $this->newObject('geticon', 'htmlelements');
 /*
 if (isset($contextList))
 {
-//var_dump(	count($contextList));
+//var_dump(	(is_countable($contextList) ? count($contextList) : 0));
 	foreach ($contextList as $context)
 	{
 		if ($i < 100){
@@ -55,7 +55,7 @@ if (isset($contextList))
 			{
 			    $c++;
 				$lects .= $this->_objUser->fullname($lecturer['userid']);
-				$lects .= ($c < count($lecturers)) ? ', ' : '';
+				$lects .= ($c < (is_countable($lecturers) ? count($lecturers) : 0)) ? ', ' : '';
 				
 				
 			}
@@ -130,7 +130,7 @@ if($this->_objUser->isAdmin())
 	
 	$other = $featureBox->show('Browse Courses', $filter);
 	
-	if(count($otherCourses) > 0)
+	if((is_countable($otherCourses) ? count($otherCourses) : 0) > 0)
 	{
 		
 		$table->width = '60%';
@@ -212,7 +212,7 @@ if($this->_objUser->isAdmin())
 
 //Archived context
 
-if(count($archivedCourses) > 0)
+if((is_countable($archivedCourses) ? count($archivedCourses) : 0) > 0)
 {
  	$str = '';
  	
@@ -228,7 +228,7 @@ if(count($archivedCourses) > 0)
 			{
 			    $c++;
 				$lects .= $this->_objUser->fullname($lecturer['userid']);
-				$lects .= ($c < count($lecturers)) ? ', ' : '';
+				$lects .= ($c < (is_countable($lecturers) ? count($lecturers) : 0)) ? ', ' : '';
 				
 				
 			}

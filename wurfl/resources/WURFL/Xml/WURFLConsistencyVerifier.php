@@ -72,7 +72,7 @@ class WURFL_Xml_WURFLConsistencyVerifier {
 		$deviceGroupIdCapabilitiesNameMap = $device->groupIdCapabilitiesNameMap;
 		foreach ( $deviceGroupIdCapabilitiesNameMap as $groupId => $capabilitiesName ) {
 			$diff = array_diff ( $capabilitiesName, $genericDeviceGroupIdCapabilitiesNameMap [$groupId] );
-			if (count ( $diff ) > 0) {
+			if ((is_countable($diff) ? count($diff) : 0) > 0) {
 				$values = implode ( " ", $diff );
 				throw new WURFL_WURFLException ( "The device $device->id defines new capabilities [$values] in group $groupId not defined in the Generic Device" );
 			}
@@ -92,7 +92,7 @@ class WURFL_Xml_WURFLConsistencyVerifier {
 		
 		$diff = array_diff_key ( $deviceGroupIdCapabilitiesNameMap, $genericDeviceGroupIdCapabilitiesNameMap );
 		
-		if (count ( $diff ) > 0) {
+		if ((is_countable($diff) ? count($diff) : 0) > 0) {
 			$values = implode ( " ", array_keys ( $diff ) );
 			throw new WURFL_WURFLException ( "The device $device->id defines new Groups [$values] not defined in the Generic Device" );
 		}

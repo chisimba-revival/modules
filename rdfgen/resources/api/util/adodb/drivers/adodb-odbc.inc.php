@@ -256,7 +256,7 @@ class ADODB_odbc extends ADOConnection {
 		$rs->Close();
 		//print_r($arr);
 		$arr2 = array();
-		for ($i=0; $i < sizeof($arr); $i++) {
+		for ($i=0; $i < (is_countable($arr) ? sizeof($arr) : 0); $i++) {
 			if ($arr[$i][3]) $arr2[] = $arr[$i][3];
 		}
 		return $arr2;
@@ -290,7 +290,7 @@ class ADODB_odbc extends ADOConnection {
 		if ($ttype) {
 			$isview = strncmp($ttype,'V',1) === 0;
 		}
-		for ($i=0; $i < sizeof($arr); $i++) {
+		for ($i=0; $i < (is_countable($arr) ? sizeof($arr) : 0); $i++) {
 			if (!$arr[$i][2]) continue;
 			$type = $arr[$i][3];
 			if ($ttype) { 
@@ -467,7 +467,7 @@ See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbc/htm/od
 				$fld->not_null = !empty($rs->fields[10]);
 				$fld->scale = $rs->fields[8];
 				$retarr[strtoupper($fld->name)] = $fld;	
-			} else if (sizeof($retarr)>0)
+			} else if ((is_countable($retarr) ? sizeof($retarr) : 0)>0)
 				break;
 			$rs->MoveNext();
 		}

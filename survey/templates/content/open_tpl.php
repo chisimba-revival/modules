@@ -61,9 +61,9 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 // set up colspan
     if($typeId=='init_4'){
-        $colspan='colspan="'.(count($arrColumnList)+1).'"';
+        $colspan='colspan="'.((is_countable($arrColumnList) ? count($arrColumnList) : 0)+1).'"';
     }elseif($typeId=='init_8'){
-        $colspan='colspan="'.count($arrRowList).'"';
+        $colspan='colspan="'.(is_countable($arrRowList) ? count($arrRowList) : 0).'"';
     }else{
         $colspan='';
     }
@@ -79,7 +79,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
     switch($typeId){
         case 'init_4':
-            $arrItemData=array_chunk($arrItemsList,count($arrRowList)*count($arrColumnList));
+            $arrItemData=array_chunk($arrItemsList,(is_countable($arrRowList) ? count($arrRowList) : 0)*(is_countable($arrColumnList) ? count($arrColumnList) : 0));
             $i=0;
             foreach($arrItemData as $key=>$arrItems){
                 $class=(($i++%2)==0)?'odd':'even';
@@ -121,7 +121,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
             break;
 
         case 'init_8':
-            $arrItemData=array_chunk($arrItemsList,count($arrRowList));
+            $arrItemData=array_chunk($arrItemsList,(is_countable($arrRowList) ? count($arrRowList) : 0));
             $i=0;
             foreach($arrItemData as $key=>$arrItems){
                 $class=(($i++%2)==0)?'odd':'even';
@@ -151,7 +151,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
         default:
             $i=0;
-            $total=count($arrItemsList);
+            $total=(is_countable($arrItemsList) ? count($arrItemsList) : 0);
             foreach($arrItemsList as $key=>$item){
                 $class=(($i++%2)==0)?'odd':'even';
                 $itemValue=$item['item_value'];

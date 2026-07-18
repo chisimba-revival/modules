@@ -92,7 +92,7 @@ if(empty($insarr))
 }
 //-----------------------------------------------------------------------------------------------------------------
 	if($questions_array != null){
-        $question_array_size = count($questions_array);
+        $question_array_size = (is_countable($questions_array) ? count($questions_array) : 0);
         for ($i = 0; $i < $question_array_size; $i ++){
             $question_label = "Question ".($i + 1).": ";
             $objForm_save_edit_questions->addToForm($question_label);
@@ -144,7 +144,7 @@ if(empty($insarr))
 		));
 		$editLink = $objIcon->getEditIcon($editUrl);
          
-        for($i = 0; $i < count($questions); $i ++){
+        for($i = 0; $i < (is_countable($questions) ? count($questions) : 0); $i ++){
                 $deleteArray= array('action' => 'delete_question','delete_id' => $questions[$i]['puid']);
                 $deleteIcon=$objIcon->getDeleteIconWithConfirm('', $deleteArray,'feedback','Are you sure you want to delete this question?
 ');
@@ -156,7 +156,7 @@ if(empty($insarr))
         //$objCheck = new checkbox('lecturers',NULL,true);
        // echo  "here is the checkbox ->".$objCheck->show();
         $objForm_add_questions = new form('question_to_save_form', $editUrl);
-        if(count($questions) == 0){
+        if((is_countable($questions) ? count($questions) : 0) == 0){
              $editUrl = $this->uri(array(
     		'action' => 'insert_questions'
     		//'id' => 
@@ -174,8 +174,8 @@ if(empty($insarr))
     		//'id' => 
 		     ));
             $editLink = $objIcon->getEditIcon($editUrl);
-           // $tableRow  = array(count($questions),"Plese select the edit button to add new questions", $editLink);
-            //$table->addRow($tableRow, count($questions));
+           // $tableRow  = array((is_countable($questions) ? count($questions) : 0),"Plese select the edit button to add new questions", $editLink);
+            //$table->addRow($tableRow, (is_countable($questions) ? count($questions) : 0));
             $objForm_add_questions = new form('question_to_save_form', $editUrl);
             $objForm_add_questions ->displayType= 1; 
             $objElement = new button('submit');
@@ -251,7 +251,7 @@ if(empty($insarr))
 		//$objIcon->title = $listLabel;
 		//$objIcon->setIcon('edit');
 		//echo $questions[0]['question'];
-        $length = count($return_arr);
+        $length = (is_countable($return_arr) ? count($return_arr) : 0);
         //echo "length = ".$length;
         //$response = "question_# ";
         $tmp_email = ''; $tmp_name = '';

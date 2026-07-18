@@ -26,7 +26,7 @@ if ($this->objUser->isCourseAdmin($this->contextCode)) {
     $table->addHeaderCell($this->objLanguage->languageText('mod_assignment_datesubmitted', 'assignment', 'Date Submitted'));
     $table->endHeaderRow();
 
-    if (count($submissions) == 0) {
+    if ((is_countable($submissions) ? count($submissions) : 0) == 0) {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_assignment_noassignmentssubmitted', 'assignment', 'No Assignments Submitted Yet'), NULL, NULL, NULL, 'noRecordsMessage', ' colspan="4"');
         $table->endRow();

@@ -78,7 +78,7 @@ $bargainingUnits = $this->objDbUnitBranches->getAll("WHERE id = '$branchId'");
 
 $class = '';
 
-if(count($bargainingUnits) > '0'){
+if((is_countable($bargainingUnits) ? count($bargainingUnits) : 0) > '0'){
   foreach($bargainingUnits as $unit){ 
   	 $unitRow = $this->objDbUnit->getRow('id', $unit['id']);
      //Get group description

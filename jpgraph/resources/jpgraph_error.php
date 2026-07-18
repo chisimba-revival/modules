@@ -91,7 +91,7 @@ class ErrorLinePlot extends ErrorPlot {
     function __construct($datay,$datax=false) {
         parent::__construct($datay,$datax);
         // Calculate line coordinates as the average of the error limits
-        $n = count($datay);
+        $n = (is_countable($datay) ? count($datay) : 0);
         for($i=0; $i < $n; $i+=2 ) {
             $ly[]=($datay[$i]+$datay[$i+1])/2;
         }
@@ -124,7 +124,7 @@ class LineErrorPlot extends ErrorPlot {
     // Data is (val, errdeltamin, errdeltamax)
     function __construct($datay,$datax=false) {
         $ly=array(); $ey=array();
-        $n = count($datay);
+        $n = (is_countable($datay) ? count($datay) : 0);
         if( $n % 3 != 0 ) {
             JpGraphError::RaiseL(4002);
             //('Error in input data to LineErrorPlot. Number of data points must be a multiple of 3');

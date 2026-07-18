@@ -304,7 +304,7 @@ class OAuthRequest {/*{{{*/
     $keys = array_map(array('OAuthUtil', 'urlencodeRFC3986'), array_keys($params));
     $values = array_map(array('OAuthUtil', 'urlencodeRFC3986'), array_values($params));
     $params = array();
-    for($i = 0; $i < count($keys); $i++) {
+    for($i = 0; $i < (is_countable($keys) ? count($keys) : 0); $i++) {
         $params[$keys[$i]] = $values[$i];
     }
 

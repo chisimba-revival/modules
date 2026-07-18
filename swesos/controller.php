@@ -63,7 +63,7 @@ class swesos extends controller
             	$handle = fopen($fpath, 'r');
             	while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
             		//print_r($data);
-            		if(count($data) < 5)
+            		if((is_countable($data) ? count($data) : 0) < 5)
             		{
             			//invaid data row
             			unset($data);

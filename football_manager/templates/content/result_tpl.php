@@ -29,7 +29,7 @@ foreach ($info as $data)
 	
 	$str = $str."<tr><td>".$fn."</td><td>".$ln."</td><td>".$age."</td><td>".$pos."</td><td>".$fee."</td><td>".$other."</td><td>".$status."</td><td></tr>";
 }
-if (sizeof($info)==0)
+if ((is_countable($info) ? sizeof($info) : 0)==0)
 {
 	$str=$str."<tr><td colspan=\"7\">There are no results for your search</td></tr>";
 }

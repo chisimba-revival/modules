@@ -67,7 +67,7 @@ foreach($_DB as $k=>$v) {
 
 <?php } 
 
-if (count($_DB)==0) print "<li>No databases configured.</li>\n";
+if ((is_countable($_DB) ? count($_DB) : 0)==0) print "<li>No databases configured.</li>\n";
 
 ?>
 

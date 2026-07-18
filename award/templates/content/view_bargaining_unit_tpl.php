@@ -71,7 +71,7 @@ $objSelectTable->endHeaderRow();
 
 $class = '';
 
-if(count($bargainingUnits) > 0){
+if((is_countable($bargainingUnits) ? count($bargainingUnits) : 0) > 0){
   foreach($bargainingUnits as $unit){ 
   	 $unitRow = $this->objDbUnit->getRow('id', $unit['unitid']);
      //Get group description

@@ -139,7 +139,7 @@ class ckeditorcontextpluginops extends ChisimbaObject
         $applyLabel = $this->objLanguage->languageText('mod_ckeditorcontextplugin_applyfilter', 'ckeditorcontextplugin', 'ERROR: mod_ckeditorcontextplugin_applyfilter');
         
         $contexts = $this->objUserContext->getUserContext($this->userId);
-        if (count($contexts) > 0)
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0)
         {
             $contextTab = array();
             $contextArray = array();
@@ -253,7 +253,7 @@ class ckeditorcontextpluginops extends ChisimbaObject
         );
 
         $objTabs = $this->newObject('tabs', 'jquerycore');
-        if (count($contexts) > 0)
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0)
         {
             $objTabs->addTab($contextTab);
         }

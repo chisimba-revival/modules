@@ -20,7 +20,7 @@ $heading->type = 1;
 
 echo $heading->show();
 
-if (count($podcasts) == 0) {
+if ((is_countable($podcasts) ? count($podcasts) : 0) == 0) {
     
     if (isset($id)) {
         echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_podcast_userhasnotaddedanypodcasts', 'podcast').'</div>';

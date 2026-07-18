@@ -45,7 +45,7 @@ $objTable->endRow();
 //Get tags
 $tags = $this->objTags->getTags($filedata['id']);
 $tagsStr = '';
-if (count($tags) == 0) {
+if ((is_countable($tags) ? count($tags) : 0) == 0) {
     $tagsStr .= '';
 } else {
     $divider = '';

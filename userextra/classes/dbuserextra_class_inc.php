@@ -9,7 +9,7 @@ class dbuserextra extends dbtable {
 
     private $tablename;
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_users');
         $this->tablename = 'tbl_users';
     }
@@ -41,7 +41,7 @@ class dbuserextra extends dbtable {
         $sql =
                 "select userid from tbl_userextra_activation where userid = '$userid'";
         $rows = $this->getArray($sql);
-        if (count($rows) > 0) {
+        if ((is_countable($rows) ? count($rows) : 0) > 0) {
             return TRUE;
         } else {
             return FALSE;

@@ -78,7 +78,7 @@ class Zend_Locale_Format
      */
     private static function _checkOptions(array $options = array())
     {
-        if (count($options) == 0) {
+        if ((is_countable($options) ? count($options) : 0) == 0) {
             return self::$_options;
         }
         foreach ($options as $name => $value) {
@@ -529,7 +529,7 @@ class Zend_Locale_Format
         $decimal  = preg_replace('/[^#0,;\.\-Ee]/u', '',$decimal);
         $patterns = explode(';', $decimal);
 
-        if (count($patterns) == 1) {
+        if ((is_countable($patterns) ? count($patterns) : 0) == 1) {
             $patterns[1] = '-' . $patterns[0];
         }
 
@@ -546,7 +546,7 @@ class Zend_Locale_Format
 
             if (strpos($pattern, ',') !== false) {
                 $parts = explode(',', $pattern);
-                $count = count($parts);
+                $count = (is_countable($parts) ? count($parts) : 0);
                 foreach($parts as $key => $part) {
                     switch ($part) {
                         case '#':

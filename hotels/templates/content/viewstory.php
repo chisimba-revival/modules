@@ -46,7 +46,7 @@ if ($this->isValid('editmenuitem') && $menuId != FALSE) {
 }
 
 // Loop through permissions and add page.
-if (count($editOptions) > 0) {
+if ((is_countable($editOptions) ? count($editOptions) : 0) > 0) {
     $divider = '';
     $middleContent .= '<p>';
     foreach ($editOptions as $editOption)

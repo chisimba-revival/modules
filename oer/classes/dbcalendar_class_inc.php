@@ -9,7 +9,7 @@ class dbcalendar extends dbTable {
 
     private $tableName = 'tbl_oer_calendar';
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init($this->tableName);
     }
 
@@ -23,7 +23,7 @@ class dbcalendar extends dbTable {
                 "select * from tbl_oer_calendar where product_id = '$productId'";
         $result = $this->getArray($sql);
 
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             return $result[0];
         } else {
             return NULL;

@@ -166,7 +166,7 @@ class ADODB_ODBC_DB2 extends ADODB_odbc {
 		if ($ttype) {
 			$isview = strncmp($ttype,'V',1) === 0;
 		}
-		for ($i=0; $i < sizeof($arr); $i++) {
+		for ($i=0; $i < (is_countable($arr) ? sizeof($arr) : 0); $i++) {
 		
 			if (!$arr[$i][2]) continue;
 			if (strncmp($arr[$i][1],'SYS',3) === 0) continue;

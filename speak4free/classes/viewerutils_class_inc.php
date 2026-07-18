@@ -128,7 +128,7 @@ class viewerutils extends ChisimbaObject {
         }
         $defaulttopicid=$topics[0]['id'];
 
-        if(count($topics) < 1) {
+        if((is_countable($topics) ? count($topics) : 0) < 1) {
             $defaulttopicid=$id;
         }
         $parentdata=$objStories->getParent($defaulttopicid);
