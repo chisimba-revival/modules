@@ -84,7 +84,7 @@ class dbgrades extends dbtable
      * @return array $result An array of all the grades
      *
      */
-    public function getAll()
+    public function getAll($filter = NULL)
     {
         $result = $this->fetchAll();
         

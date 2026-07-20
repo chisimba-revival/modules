@@ -171,7 +171,7 @@ class dbpersonalspaceblocks extends dbTable
                 'side' => $side,
                 'module' => $module,
                 'position' => $this->getLastOrder($side, $userId)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
     

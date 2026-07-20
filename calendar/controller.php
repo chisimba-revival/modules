@@ -184,7 +184,7 @@ class calendar extends controller {
 
         $this->setVar('mode', 'add');
 
-        $temporaryId = $this->objUser->userId() . '_' . mktime();
+        $temporaryId = $this->objUser->userId() . '_' . time();
         $this->setVarByRef('temporaryId', $temporaryId);
         $this->setVarByRef('groupid', $this->getParam("groupid"));
 

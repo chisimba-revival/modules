@@ -8,7 +8,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class dbmanagerdb extends dbTableManager
 {
-    public function init()
+    public function init($dbName = NULL, $pearDbManager = NULL, $errorCallback = "globalPearErrorCallback")
     {
         parent::init();
     }

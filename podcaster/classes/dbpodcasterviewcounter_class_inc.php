@@ -38,7 +38,7 @@ class dbpodcasterviewcounter extends dbtable
         return $this->insert(array(
                 'fileid' => $id,
                 'dateviewed' => date('Y-m-d'),
-                'datetimeviewed' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datetimeviewed' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

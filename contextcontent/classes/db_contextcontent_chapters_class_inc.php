@@ -109,7 +109,7 @@ class db_contextcontent_chapters extends dbtable
         $row = array();
         $row['id'] = $id;
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
 
         return $this->insert($row);
     }
@@ -124,7 +124,7 @@ class db_contextcontent_chapters extends dbtable
     {
         return $this->insert(array(
                 'creatorid' => $this->objUser->userId(),
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
     }
     

@@ -30,7 +30,7 @@ class feedbk extends dbTable {
     public $objLanguage;
     public $required;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $this->objLanguage = $this->getObject('language', 'language');
         parent::init('tbl_feedbackform');
     }

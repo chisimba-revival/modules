@@ -29,7 +29,7 @@ class editform extends dbTable {
 
     public $objLanguage;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $this->objLanguage = $this->getObject('language', 'language');
         parent::init('tbl_distanceform');
     }

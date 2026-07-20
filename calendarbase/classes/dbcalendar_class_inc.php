@@ -163,7 +163,7 @@ class dbcalendar extends dbTable
             } else {
                 // Multiday Event Processing
 
-                $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', time());
 
                 $this->beginTransaction();
 

@@ -59,9 +59,9 @@ if($mode == 'edit')
     }
     $objTextField->value = '';
     $objEditor->value = '';
-    $objDatePicker->value = mktime ();
-    $startTime->value =  mktime();
-    $endTime->value = mktime();
+    $objDatePicker->value = time ();
+    $startTime->value =  time();
+    $endTime->value = time();
     $location->value = '';
 }
 

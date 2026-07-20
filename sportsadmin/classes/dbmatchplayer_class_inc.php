@@ -19,7 +19,7 @@ class dbmatchplayer extends dbtable{
 
 }
 
- function getAll(){
+ function getAll($filter = NULL){
 $sql = "select * from ".$this->table;
 
 $ar = $this->getArray($sql);

@@ -81,7 +81,7 @@ class dbWorkgroup extends dbTable {
      * @param string The context code
      * @return array Workgroups for a context
      */
-    function getAll($contextCode) {
+    function getAll($contextCode = null) {
         if ($contextCode == NULL) {
             return parent::getAll("WHERE contextcode IS NULL ORDER BY description");
         } else {

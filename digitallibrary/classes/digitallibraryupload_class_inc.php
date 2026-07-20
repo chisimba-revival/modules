@@ -63,7 +63,7 @@ class digitallibraryupload extends filemanagerobject {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         $this->name = 'fileupload';
         $this->formaction = $this->uri(array('action' => 'upload'));
 
@@ -668,7 +668,7 @@ class digitallibraryupload extends filemanagerobject {
                 $url=$viewlink->href;
               
                 $objLucene = $this->getObject('indexdata', 'search');
-                $objLucene->luceneIndex($fileId, strftime('%Y-%m-%d', mktime()), $url, $filename, NULL, NULL, digitallibrary, $this->objUser->userId(), NULL, NULL, NULL);
+                $objLucene->luceneIndex($fileId, strftime('%Y-%m-%d', time()), $url, $filename, NULL, NULL, digitallibrary, $this->objUser->userId(), NULL, NULL, NULL);
                  }
 
             // Update Standard File Details

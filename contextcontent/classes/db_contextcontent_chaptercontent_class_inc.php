@@ -105,7 +105,7 @@ class db_contextcontent_chaptercontent extends dbtable
                     'language' => $language,
                     'original' => 'Y',
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
         } else {
             return FALSE;
@@ -180,7 +180,7 @@ class db_contextcontent_chaptercontent extends dbtable
                 'chaptertitle'=>(stripslashes($title)), 
                 'introduction'=>(stripslashes($intro)), 
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
         
         if ($result) {

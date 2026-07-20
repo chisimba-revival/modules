@@ -35,7 +35,7 @@ class PEAR_Sniffs_ControlStructures_ControlSignatureSniff extends PHP_CodeSniffe
     /**
      * Constructs a PEAR_Sniffs_ControlStructures_ControlSignatureSniff.
      */
-    public function __construct()
+    public function __construct($ignoreComments=false)
     {
         parent::__construct(true);
 

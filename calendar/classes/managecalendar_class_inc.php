@@ -86,8 +86,8 @@ class managecalendar extends ChisimbaObject
                 0, // show users
                 $user, // Use First Entry
                 NULL, // User Last Modified
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date first entry
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date of last entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date first entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date of last entry
                 $timeFrom,
                 $timeTo
             );
@@ -123,8 +123,8 @@ class managecalendar extends ChisimbaObject
                 0, // show users
                 $userFirstEntry, // Use First Entry
                 NULL, // User Last Modified
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date first entry
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date of last entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date first entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date of last entry
                 $timeFrom,
                 $timeTo
             );
@@ -159,8 +159,8 @@ class managecalendar extends ChisimbaObject
                 0, // show users
                 $userFirstEntry, // Use First Entry
                 NULL, // User Last Modified
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date first entry
-                strftime('%Y-%m-%d %H:%M:%S', mktime()), // date of last entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date first entry
+                strftime('%Y-%m-%d %H:%M:%S', time()), // date of last entry
                 $timeFrom,
                 $timeTo
             );
@@ -185,11 +185,11 @@ class managecalendar extends ChisimbaObject
     function insertMultiDayUserEvent ($date, $date2, $eventtitle, $eventdetails, $eventurl, $user, $userLastModified = NULL, $dateFirstEntry = NULL, $dateLastModified = NULL, $eventStartId=NULL, $timeFrom = NULL, $timeTo = NULL)
     {
         if ($dateFirstEntry == NULL) {
-            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         if ($dateLastModified == NULL) {
-            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         $lastInsert = $this->objCalendar->insertMultiDayEvent(
@@ -232,11 +232,11 @@ class managecalendar extends ChisimbaObject
     {
 
         if ($dateFirstEntry == NULL) {
-            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         if ($dateLastModified == NULL) {
-            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         $lastInsert = $this->objCalendar->insertMultiDayEvent(
@@ -266,11 +266,11 @@ class managecalendar extends ChisimbaObject
     {
 
         if ($dateFirstEntry == NULL) {
-            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateFirstEntry = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         if ($dateLastModified == NULL) {
-            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $dateLastModified = strftime('%Y-%m-%d %H:%M:%S', time());
         }
 
         $lastInsert = $this->objCalendar->insertMultiDayEvent(
@@ -326,7 +326,7 @@ class managecalendar extends ChisimbaObject
                 NULL, // workgroup
                 0, // show users
                 $user,
-                strftime('%Y-%m-%d %H:%M:%S', mktime()) // date LAST entry
+                strftime('%Y-%m-%d %H:%M:%S', time()) // date LAST entry
             );
 
         return;
@@ -365,7 +365,7 @@ class managecalendar extends ChisimbaObject
                 NULL, // workgroup
                 0, // show users
                 $user,
-                strftime('%Y-%m-%d %H:%M:%S', mktime()) // date LAST entry
+                strftime('%Y-%m-%d %H:%M:%S', time()) // date LAST entry
             );
 
         return;

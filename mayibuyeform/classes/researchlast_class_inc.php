@@ -6,7 +6,7 @@ class researchlast extends dbTable
 	
 
 
- public function init()
+ public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
 
 {
  $this->objLanguage = $this->getObject('language', 'language');

@@ -100,7 +100,7 @@ class db_learningcontent_activitystreamer extends dbtable
         $row['userid'] = $userId;
         $row['contextcode'] = $contextCode;
         $row['contextitemid'] = $contextItemId;
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
         $row['sessionid'] = $sessionid;
         $row['modulecode'] = $modulecode;
         $row['pageorchapter'] = $pageorchapter;

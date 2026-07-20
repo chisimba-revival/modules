@@ -83,11 +83,11 @@ $fields = array(
         'type'=>'timestamp'
         ),
     'createdby' => array(
-        'type'=>integer,
+        'type'=>'integer',
         'length' =>20
         ),
     'modifiedby'=> array(
-        'type'=>integer,
+        'type'=>'integer',
         'length' =>20
         )
 );

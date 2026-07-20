@@ -29,7 +29,7 @@ $this->objLanguage =& $this->getObject('language','language');
 }
 
 
-public function getAll(){
+public function getAll($filter = NULL){
  $sql = "SELECT * FROM ".$this->table;
  
  $ar = $this->getArray( $sql);

@@ -39,7 +39,7 @@ class dbeventattachments extends dbTable
                 'attachment_id' => $fileId,
 				'event_id' => $event,
                 'userId' => $userId,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()))
+                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time()))
 		);
 
         return $this->getLastInsertId();

@@ -240,7 +240,7 @@ class dbForum extends dbTable {
 
                 foreach ($defaultRatings as $rating) {
                         $objForumRatings->insertSingle(
-                                $newForumId, $rating['rating_description'], $rating['rating_point'], $userId, mktime()
+                                $newForumId, $rating['rating_description'], $rating['rating_point'], $userId, time()
                         );
                 }
 
@@ -259,7 +259,7 @@ class dbForum extends dbTable {
 
                 // Prep Data
                 $docId = 'forum_entry_' . $newForumId;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
                 $url = $this->uri(array('action' => 'forum', 'id' => $newForumId), 'forum');
                 $title = $forum_name;
                 $contents = $forum_name . ': ' . $forum_description;
@@ -357,7 +357,7 @@ class dbForum extends dbTable {
 
                 // Prep Data
                 $docId = 'forum_entry_' . $forum_id;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
                 $url = $this->uri(array('action' => 'forum', 'id' => $forum_id), 'forum');
                 $title = $forum_name;
                 $contents = $forum_name . ': ' . $forum_description;

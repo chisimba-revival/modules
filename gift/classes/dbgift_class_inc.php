@@ -39,7 +39,7 @@ class dbgift extends dbtable {
             "division" => $division,
             "deleted" => 'N',
             "date_recieved" => $date_recieved,
-            "tran_date" => strftime('%Y-%m-%d %H:%M:%S', mktime()));
+            "tran_date" => strftime('%Y-%m-%d %H:%M:%S', time()));
         $result = $this->insert($data);
         return $result;
     }

@@ -47,17 +47,17 @@ class dbworksheetanswers extends dbTable
                 $this->insert(array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
-                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
                         'answer' => $answer,
-                        'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                        'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     ));
             } else {
                 $this->update('id', $id, array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
-                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
                         'answer' => $answer,
-                        'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                        'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     ));
             }
         }
@@ -75,7 +75,7 @@ class dbworksheetanswers extends dbTable
                 'mark' => $this->getParam($answer['id'], 0),
                 'comments' => $this->getParam('comment_'.$answer['id']),
                 'lecturer_id' => $lecturer,
-                'datemarked' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datemarked' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
             if ($result) {
                 $finalMark += $this->getParam($answer['id'], 0);

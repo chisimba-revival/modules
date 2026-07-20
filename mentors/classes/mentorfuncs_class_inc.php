@@ -133,7 +133,7 @@ class mentorfuncs extends dbTable
     * @param string $mentorId: The user id of the users mentor
     * @return bool
     */
-    public function delete($mentorId, $userId)
+    public function delete($mentorId, $userId, $tablename = '')
     {
 	//Check if relationship exists
         $results = $this->objDbTripleStore->getTriples(array('subject'=>$mentorId, 'predicate'=>'isMentorOf', 'object'=>$userId), array('id'));

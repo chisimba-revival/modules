@@ -37,7 +37,7 @@ class dbarchiveskeywords extends dbtable
 				'storyid'=>$storyId, 
 				'keyword'=>$keyword, 
 				'creatorid' => $this->objUser->userId(),
-				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
 			));
 	}
 	

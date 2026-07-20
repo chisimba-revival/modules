@@ -78,7 +78,7 @@ class dbtopic extends dbTable {
                 'lft'                => $leftPointer,
                 'rght'                => $rightPointer,
                 'userId'          => $userID,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
 
         return $this->getLastInsertId();
@@ -100,7 +100,7 @@ class dbtopic extends dbTable {
 
         // Prep Data
         $docId = 'discussion_topic_'.$topicId;
-        $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
         $url = $this->uri(array('action'=>'viewtopic', 'id'=>$topicId), 'discussion');
         $title = $postTitle;
         $contents = $discussion['discussion_name'].': '.$postTitle;
@@ -466,7 +466,7 @@ GROUP BY tbl_discussion_topic.id                ';
                 array('status' => $status,
                 'lockReason'=> $reason,
                 'lockuser'=>$userId,
-                'lockdate'=>strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'lockdate'=>strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 
@@ -726,7 +726,7 @@ GROUP BY tbl_discussion_topic.id                ';
                 'lft'                => null,
                 'rght'                => null,
                 'userId'          => $userID,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
 
     }

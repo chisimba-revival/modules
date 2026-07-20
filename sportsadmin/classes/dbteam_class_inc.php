@@ -25,7 +25,7 @@ $this->objLanguage = & $this->getObject('language','language');
 /*  function to find pick the teams registered
 *   @param $id - sportid for which the item belongs 
 */
- function getAll($sportid){
+ function getAll($sportid = null){
 
 $sql = "SELECT tbl_team.* FROM ".$this->table;
 $sql .=" WHERE sportId='".$sportid."' ";

@@ -74,7 +74,7 @@ if ((is_countable($stories) ? count($stories) : 0) == 0) {
         $table->startRow();
         $table->addCell($story['storydate'], 100);
 		
-		if ($story['dateavailable'] <= strftime('%Y-%m-%d %H:%M:%S', mktime())) {
+		if ($story['dateavailable'] <= strftime('%Y-%m-%d %H:%M:%S', time())) {
 			$table->addCell('&nbsp;');
 		} else {
 			$table->addCell($clockIcon);

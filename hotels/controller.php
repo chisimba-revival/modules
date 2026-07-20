@@ -454,7 +454,7 @@ class hotels extends controller
         $publishdate = $this->getParam('publishon');
         
         if ($publishdate == 'now')  {
-            $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
         } else {
             $publishdate = $this->getParam('storydatepublish').' '.$this->getParam('time');
         }
@@ -499,7 +499,7 @@ class hotels extends controller
                 $this->setVarByRef('currentCategory', $category['id']);
                 
                 // Check whether story is available to be viewed
-                if (($story['dateavailable'] > strftime('%Y-%m-%d %H:%M:%S', mktime())) && !$this->isValid('viewfuturestory')) {
+                if (($story['dateavailable'] > strftime('%Y-%m-%d %H:%M:%S', time())) && !$this->isValid('viewfuturestory')) {
                     return $this->nextAction('home', array('error'=>'nostory'));
                 } else {
                     
@@ -588,7 +588,7 @@ class hotels extends controller
         $publishdate = $this->getParam('publishon');
         
         if ($publishdate == 'now')  {
-            $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
         } else {
             $publishdate = $this->getParam('storydatepublish').' '.$this->getParam('time');
         }

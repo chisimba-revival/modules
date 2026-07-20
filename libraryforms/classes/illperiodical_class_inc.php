@@ -30,7 +30,7 @@ class ILLperiodical extends dbTable {
     public $objLanguage;
     var $required;
 
-    public function init() {
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $this->objLanguage = $this->getObject('language', 'language');
         parent::init('tbl_illperiodical');
     }

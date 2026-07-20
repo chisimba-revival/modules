@@ -310,7 +310,7 @@ class contextcontent extends controller {
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         $courseDetails = $this->objContext->getField('access', $this->contextCode);
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
@@ -1477,7 +1477,7 @@ class contextcontent extends controller {
         //check which format was chosen and output according to that
         $feed = $this->objFeedCreator->output(); //defaults to RSS2.0
         echo htmlentities($feed);
-        break;
+        return;
     }
 
     /**

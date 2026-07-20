@@ -33,7 +33,7 @@ class dbpodcastertagviewcounter extends dbtable
         return $this->insert(array(
                 'tag' => $tag,
                 'dateviewed' => date('Y-m-d'),
-                'datetimeviewed' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datetimeviewed' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

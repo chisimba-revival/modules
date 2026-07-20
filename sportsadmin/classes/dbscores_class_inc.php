@@ -29,7 +29,7 @@ $this->objUser  =& $this->getObject('user','security');
 *   function to get the scores
 *  
 */
- function getAll(){
+ function getAll($filter = NULL){
 
 $sql = "SELECT * FROM ".$this->table;
 $sql .=" WHERE sportId='".$sportid."' ";

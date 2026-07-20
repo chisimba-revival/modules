@@ -37,7 +37,7 @@ class ajaxsendmail extends ChisimbaObject {
      */
     public function showForm($useremail, $createcheck, $path, $folderid) {
         // Generate an ID - In case multiple uploads occur on one page
-        $id = mktime() . rand();
+        $id = time() . rand();
 
         // Generate Iframe
         $objIframe = $this->newObject('iframe', 'htmlelements');

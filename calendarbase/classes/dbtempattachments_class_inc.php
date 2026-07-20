@@ -72,7 +72,7 @@ class dbtempattachments extends dbTable
                 'temp_id' => $temp_id,
                 'attachment_id' => $attachment_id,
                 'userId' => $userId,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())));
+                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())));
     }
 
     /**

@@ -36,8 +36,8 @@ class dbworksheetresults extends dbtable
                 'worksheet_id' => $worksheet,
                 'completed' => 'Y',
                 'userid' => $userId,
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

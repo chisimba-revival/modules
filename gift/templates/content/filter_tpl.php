@@ -21,7 +21,7 @@ $userOptLabel = $this->objLanguage->languageText('mod_contextcontent_onlystudent
 $selectModuleLabel = $this->objLanguage->languageText('mod_contextcontent_selectmodule', 'contextcontent', "Select module");
 /* * ** start date & time *** */
 // Set start date of test
-$startField = $objPopupcal->show('startdate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', mktime()));
+$startField = $objPopupcal->show('startdate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', time()));
 $objLabel = new label($startLabel . ':', 'input_start');
 $objTable->addRow(array(
     $objLabel->show(),
@@ -29,7 +29,7 @@ $objTable->addRow(array(
 ));
 // Set closing date of test
 
-$closeField = $objPopupcal->show('enddate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', mktime()));
+$closeField = $objPopupcal->show('enddate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', time()));
 $objLabel = new label($closeLabel . ':', 'input_close');
 $objTable->addRow(array(
     $objLabel->show(),

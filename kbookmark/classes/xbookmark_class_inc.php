@@ -210,7 +210,7 @@ class xbookmark extends ChisimbaObject
 		    if (isset($attrs['VISITED'])) {
                 $this->newBookmark['visted']=$attrs['VISITED'];
             } else {
-                 $this->newBookmark['visted']=mktime();
+                 $this->newBookmark['visted']=time();
             }
 			break;
 		case "ALIAS":

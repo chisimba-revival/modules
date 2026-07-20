@@ -101,7 +101,7 @@ if ($mode == 'edit') {
 	
     $objTimePicker->setSelected($publishDate[1]);
 	
-	if ($story['dateavailable'] <= strftime('%Y-%m-%d %H:%M:%S', mktime())) {
+	if ($story['dateavailable'] <= strftime('%Y-%m-%d %H:%M:%S', time())) {
 		$radio->setSelected('now');
 	} else {
 		$radio1->setSelected('wait');

@@ -84,7 +84,7 @@ class dbsubjects extends dbtable
      * @return array $result An array of all the subjects
      *
      */
-    public function getAll()
+    public function getAll($filter = NULL)
     {
         $result = $this->fetchAll();
         

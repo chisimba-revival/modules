@@ -44,7 +44,7 @@ class dbstudentessays extends dbtable {
             'userid' =>$userid,
             'essayid' => $essayid,
             'content' => $content,
-            'submitdate' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'submitdate' => strftime('%Y-%m-%d %H:%M:%S', time())
         );
 
         return $this->insert($data);

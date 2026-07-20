@@ -32,7 +32,7 @@ class dbwebpresentdownloadcounter extends dbtable
                 'fileid' => $id,
                 'filetype' => $type,
                 'datedownloaded' => date('Y-m-d'),
-                'datetimedownloaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datetimedownloaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

@@ -121,7 +121,7 @@ class db_learningcontent_titles extends dbtable
         $row = array();
         $row['id'] = $id;
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
 
         return $this->insert($row);
     }
@@ -136,7 +136,7 @@ class db_learningcontent_titles extends dbtable
     {
         $row = array();
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
 
         return $this->insert($row);
     }

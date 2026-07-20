@@ -188,7 +188,7 @@ class dbPost extends dbTable {
                     'lft' => $leftPointer,
                     'rght' => $rightPointer,
                     'level' => $level,
-                    'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
 
                 return $this->getLastInsertId();
@@ -705,7 +705,7 @@ class dbPost extends dbTable {
                                 return NULL;
                         } else {
                                 // Generate Temporary Id
-                                $temporaryId = $this->objUser->userId() . '_' . mktime();
+                                $temporaryId = $this->objUser->userId() . '_' . time();
 
                                 // Set Mode to New
                                 $mode = 'new';
@@ -1124,7 +1124,7 @@ class dbPost extends dbTable {
          * @return boolean True if it is ok to edit| False
          */
         function checkOkToEdit($postDate, $postUser) {
-                $diff = $this->objDateFunctions->dateDifference($postDate, strftime('%Y-%m-%d %H:%M:%S', mktime()));
+                $diff = $this->objDateFunctions->dateDifference($postDate, strftime('%Y-%m-%d %H:%M:%S', time()));
 
                 if ($diff['d'] == 0 && $diff['h'] == 0 && $diff['m'] < 30 && $postUser == $this->userId) {
                         return TRUE;
@@ -1424,7 +1424,7 @@ class dbPost extends dbTable {
                         return NULL;
                 } else {
                         // Generate Temporary Id
-                        $temporaryId = $this->objUser->userId() . '_' . mktime();
+                        $temporaryId = $this->objUser->userId() . '_' . time();
 
                         // Set Mode to New
                         $mode = 'new';
@@ -2083,7 +2083,7 @@ function loadTranslation(post, lang) {
                     'lft' => null,
                     'rght' => null,
                     'level' => $level,
-                    'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
 
                 return $this->getLastInsertId();

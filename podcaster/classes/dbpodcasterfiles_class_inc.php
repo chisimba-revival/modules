@@ -139,7 +139,7 @@ class dbpodcasterfiles extends dbtable
         return $this->insert(array(
                 'processstage'=>'uploadedraw',
                 'creatorid' => $this->objUser->userId(),
-                'dateuploaded' => strftime('%Y-%m-%d', mktime())            
+                'dateuploaded' => strftime('%Y-%m-%d', time())            
             ));
     }
 
@@ -163,7 +163,7 @@ class dbpodcasterfiles extends dbtable
         return $this->update('id', $id, array(
                 'processstage' => 'uploadedfinal',
                 'creatorid' => $this->objUser->userId(),
-                'dateuploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'dateuploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

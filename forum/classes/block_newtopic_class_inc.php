@@ -82,7 +82,7 @@ class block_newtopic extends ChisimbaObject {
             $this->setVar('mode', 'fix');
             $mode = 'fix';
         } else {
-            $temporaryId = $this->objUser->userId() . '_' . mktime();
+            $temporaryId = $this->objUser->userId() . '_' . time();
             $this->setVar('mode', 'new');
             $mode = "new";
         }

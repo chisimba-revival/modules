@@ -270,7 +270,7 @@ class dbbridging extends dbtable
      * 
      * @return array The array of links 
      */
-    public function getAll()
+    public function getAll($filter = NULL)
     {
         return $this->fetchAll();
     }

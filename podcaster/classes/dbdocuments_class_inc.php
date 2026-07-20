@@ -461,7 +461,7 @@ class dbdocuments extends dbtable {
                     $data = array(
                         'filename' => $doc['docname'] . $ext,
                         'filetype' => 'txt',
-                        'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                        'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
                         'userid' => $userid,
                         'parent' => $doc['topic'],
                         'docid' => $id,

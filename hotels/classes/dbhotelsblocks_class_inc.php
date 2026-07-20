@@ -190,7 +190,7 @@ class dbhotelsblocks extends dbTable
                 'module' => $module,
                 'position' => $this->getLastOrder($side, $pageType, $pageId)+1,
                 'updatedby' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
     

@@ -239,7 +239,7 @@ class dbdiscussion extends dbTable {
 
                 foreach ($defaultRatings as $rating) {
                         $objDiscussionRatings->insertSingle(
-                                $newDiscussionId, $rating['rating_description'], $rating['rating_point'], $userId, mktime()
+                                $newDiscussionId, $rating['rating_description'], $rating['rating_point'], $userId, time()
                         );
                 }
 
@@ -258,7 +258,7 @@ class dbdiscussion extends dbTable {
 
                 // Prep Data
                 $docId = 'discussion_entry_' . $newDiscussionId;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
                 $url = $this->uri(array('action' => 'discussion', 'id' => $newDiscussionId), 'discussion');
                 $title = $discussion_name;
                 $contents = $discussion_name . ': ' . $discussion_description;
@@ -356,7 +356,7 @@ class dbdiscussion extends dbTable {
 
                 // Prep Data
                 $docId = 'discussion_entry_' . $discussion_id;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
                 $url = $this->uri(array('action' => 'discussion', 'id' => $discussion_id), 'discussion');
                 $title = $discussion_name;
                 $contents = $discussion_name . ': ' . $discussion_description;

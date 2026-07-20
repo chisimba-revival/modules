@@ -45,7 +45,7 @@ class ajaxuploader extends ChisimbaObject
     public function showForm($path, $pathid)
     {
         // Generate an ID - In case multiple uploads occur on one page
-        $id = mktime().rand();
+        $id = time().rand();
 
         // Generate Iframe
         $objIframe = $this->newObject('iframe', 'htmlelements');

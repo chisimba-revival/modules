@@ -169,7 +169,7 @@ class faq extends controller {
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         if(!$this->objUser->isLoggedIn()){
             return FALSE;
         }
@@ -244,7 +244,7 @@ class faq extends controller {
                 $question,
                 $answer,
                 $this->objUser->userId(),
-                mktime(),
+                time(),
                 $tags
         );
 
@@ -285,7 +285,7 @@ class faq extends controller {
                 $answer,
                 $category,
                 $this->objUser->userId(),
-                mktime()
+                time()
         );
 
 
@@ -373,7 +373,7 @@ class faq extends controller {
                 $id,
                 $categoryId,
                 $this->objUser->userId(),
-                mktime()
+                time()
         );
         return $this->nextAction(NULL);
     }

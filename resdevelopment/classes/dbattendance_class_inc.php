@@ -30,12 +30,12 @@ class dbattendance extends dbtable {
     }
 
     public function saveAttendanceInfo($attendance) {
-        $data = array("attendance"=>$attendance,  "date_created"=>strftime('%Y-%m-%d %H:%M:%S',mktime()));
+        $data = array("attendance"=>$attendance,  "date_created"=>strftime('%Y-%m-%d %H:%M:%S',time()));
         $this->insert($data);
     }
 
     public function editAttendanceInfo($captureattendance, $id) {
-        $data = array("saveattendance"=>$saveattendance, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',mktime()));
+        $data = array("saveattendance"=>$saveattendance, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',time()));
         $this->update('id', $id, $data);
     }
 

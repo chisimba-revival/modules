@@ -72,7 +72,7 @@ class dbspeak4freefiles extends dbtable
                 'filetype' => $this->getFileType($filename),
                 'processstage' => 'readyforconversion',
                 'creatorid' => $this->objUser->userId(),
-                'dateuploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'dateuploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 

@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         // 'save' post method validates all form data and saves.
 	} elseif (isset($_POST['method']) && $_POST['method'] == 'save') {
 		// Check that the session was started via a GET, and that the referrer is ourselves
-		$honeyCatch = ($_SESSION['REMOTE_ADDR'] != $_SERVER['REMOTE_ADDR']) || (mktime() - $_SESSION['StartTime'] <= $minPostWindow) || empty($_SERVER['HTTP_REFERER']);
+		$honeyCatch = ($_SESSION['REMOTE_ADDR'] != $_SERVER['REMOTE_ADDR']) || (time() - $_SESSION['StartTime'] <= $minPostWindow) || empty($_SERVER['HTTP_REFERER']);
 
                 // 'url' will be a hidden field which should always remain empty,
                 // and is not shown to the user.  This will serve as the honeypot

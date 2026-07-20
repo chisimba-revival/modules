@@ -12,7 +12,7 @@ class dblivechat extends dbtable {
                     "user_from" => $from,
                     "user_to" => $to,
                     "message" => $message,
-                    "message_time" => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    "message_time" => strftime('%Y-%m-%d %H:%M:%S', time())
         );
         return $this->insert($fields);
     }

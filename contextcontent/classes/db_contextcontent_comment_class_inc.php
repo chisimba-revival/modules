@@ -83,7 +83,7 @@ class db_contextcontent_comment extends dbtable
 			'userid' => $userid,
 			'pageid' => $pageid,
             'comment' => $comment,
-			'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+			'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
         );
 
         return $this->insert($arrayOfRecords, 'tbl_contextcontent_page_comment');

@@ -75,8 +75,8 @@ class dbmediafiledata extends dbTable {
 
         $infoArray['filename'] = $filename;
         $infoArray['uploadpathid'] = $pathId;
-        $infoArray['datecreated'] = strftime('%Y-%m-%d', mktime());
-        $infoArray['timecreated'] = strftime('%H:%M:%S', mktime());
+        $infoArray['datecreated'] = strftime('%Y-%m-%d', time());
+        $infoArray['timecreated'] = strftime('%H:%M:%S', time());
 
         //Check if file is already recorded, if it is do an update
         $existCheck = $this->getFileByNameAndPathId($filename, $pathId);

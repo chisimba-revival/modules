@@ -240,7 +240,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         'visibility' => $visibility,
         'scorm' => $scorm,
         'creatorid' => $this->objUser->userId(),
-        'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+        'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 

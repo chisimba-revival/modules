@@ -54,7 +54,7 @@ class dbdiscussionsubscriptions extends dbtable
             'discussion_id'=>$discussion_id, 
             'userid'=>$userId, 
             'external'=>'Y', 
-            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
     

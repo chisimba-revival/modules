@@ -334,7 +334,7 @@ class worksheetadmin extends controller
         $closing_date = $this->getParam('closing_date', date('Y-m-d'));
         $description = $this->getParam('description', '');
         $userId = $this->objUser->userId();
-        $LastModified = mktime();
+        $LastModified = time();
 
         $id = $this->objWorksheet->insertWorkSheet($context, $chapter, $worksheet_name, $activity_status, $percentage, $closing_date, $description, $userId, $LastModified);
 
@@ -357,7 +357,7 @@ class worksheetadmin extends controller
         $closing_date = $this->getParam('closing_date', date('Y-m-d'));
         $description = $this->getParam('description', '');
         $userId = $this->objUser->userId();
-        $LastModified = mktime();
+        $LastModified = time();
 
         $this->objWorksheet->updateWorkSheet($id, $chapter, $worksheet_name, $activity_status, $percentage, $closing_date, $description, $userId, $LastModified);
 

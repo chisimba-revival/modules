@@ -50,7 +50,7 @@ class dbpodcast extends dbTable
 
         $podcastInfo['fileid'] = $fileId;
         $podcastInfo['creatorid'] = $userId;
-        $podcastInfo['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $podcastInfo['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
         
         $podcastId = $this->insert($podcastInfo);
         
@@ -103,7 +103,7 @@ class dbpodcast extends dbTable
                 'title' => $title, 
                 'description' => $description,
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
         
         $podcast = $this->getRow('id', $id);
@@ -113,7 +113,7 @@ class dbpodcast extends dbTable
         
         // Prep Data
         $docId = 'podcast_entry_'.$id;
-        $docDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
         $url = $this->uri(array('action'=>'viewpodcast', 'id'=>$id), 'podcast');
         $title = $title;
         $contents = $title.' '.$description;

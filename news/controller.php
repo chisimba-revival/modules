@@ -461,7 +461,7 @@ class news extends controller {
         $publishdate = $this->getParam('publishon');
 
         if ($publishdate == 'now') {
-            $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
         } else {
             $publishdate = $this->getParam('storydatepublish') . ' ' . $this->getParam('time');
         }
@@ -510,7 +510,7 @@ class news extends controller {
                 $this->setVarByRef('currentCategory', $category['id']);
 
                 // Check whether story is available to be viewed
-                if (($story['dateavailable'] > strftime('%Y-%m-%d %H:%M:%S', mktime())) && !$this->isValid('viewfuturestory')) {
+                if (($story['dateavailable'] > strftime('%Y-%m-%d %H:%M:%S', time())) && !$this->isValid('viewfuturestory')) {
                     return $this->nextAction('home', array('error' => 'nostory'));
                 } else {
 
@@ -585,7 +585,7 @@ class news extends controller {
             $publishdate = $story['dateavailable'];
 
             if ($publishdate == 'now') {
-                $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
             } else {
                 $publishdate = $this->getParam('storydatepublish') . ' ' . $this->getParam('time');
             }
@@ -668,7 +668,7 @@ class news extends controller {
                 //$keyTags =  array($tags['keytag1'], $tags['keytag2'], $tags['keytag3']);
                 $keyTags = $this->objArchivesKeywords->getStoryKeywords($id);
                 //$publishdate = $story['publishon'];
-                $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+                $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
                 $status = 'restored';
 //	$this->objNewsMenu->updateText($id, $text);
 
@@ -734,7 +734,7 @@ class news extends controller {
         $publishdate = $this->getParam('publishon');
 
         if ($publishdate == 'now') {
-            $publishdate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $publishdate = strftime('%Y-%m-%d %H:%M:%S', time());
         } else {
             $publishdate = $this->getParam('storydatepublish') . ' ' . $this->getParam('time');
         }

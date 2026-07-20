@@ -23,7 +23,7 @@ class wikipagelock extends dbeditlock
 	* Init method
 	*
 	*/
-	public function init()
+	public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
 	{
 		parent::init();
 		$this->table = 'tbl_wiki_pages';

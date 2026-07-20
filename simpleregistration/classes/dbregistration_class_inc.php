@@ -30,7 +30,7 @@ class dbregistration extends dbTable{
             'first_name' => $firstname,
             'last_name' => $lastname,
             'event_id' => $eventid,
-            'registration_date' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+            'registration_date' => strftime('%Y-%m-%d %H:%M:%S', time()),
             'email'=>$email,
             'company'=>$company,
         );

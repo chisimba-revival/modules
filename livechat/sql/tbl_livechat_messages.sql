@@ -26,7 +26,7 @@ $fields = array(
 		'length' => 255,
 		),
          'message_time'=>array(
-              'type'=>timestamp)
+              'type'=>'timestamp')
 
 	);
 ?>

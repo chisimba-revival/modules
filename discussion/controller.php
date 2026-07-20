@@ -565,7 +565,7 @@ class discussion extends controller {
                         $temporaryId = $details['temporaryId'];
                         $this->setVar('mode', 'fix');
                 } else {
-                        $temporaryId = $this->objUser->userId() . '_' . mktime();
+                        $temporaryId = $this->objUser->userId() . '_' . time();
                         $this->setVar('mode', 'new');
                 }
                 $this->setVarByRef('temporaryId', $temporaryId);
@@ -1008,7 +1008,7 @@ class discussion extends controller {
                                 $temporaryId = $details['temporaryId'];
                                 $this->setVar('mode', 'fix');
                         } else {
-                                $temporaryId = $this->objUser->userId() . '_' . mktime();
+                                $temporaryId = $this->objUser->userId() . '_' . time();
                                 $this->setVar('mode', 'new');
                         }
                         $this->setVarByRef('temporaryId', $temporaryId);
@@ -1030,7 +1030,7 @@ class discussion extends controller {
          */
         public function saveReply() {
 
-                $tempPostId = $this->objUser->userId() . '_' . mktime()/* $_POST['temporaryId'] */;
+                $tempPostId = $this->objUser->userId() . '_' . time()/* $_POST['temporaryId'] */;
                 //set the temporary ID so it can be used by other functions
                 $this->setVarByref('attachment_tempid', $tempPostId);
                 //get the attachment id
@@ -1374,7 +1374,7 @@ class discussion extends controller {
          */
         public function saveTempAttachmentIfAny($temp_id, $attachment_id) {
                 $userId = $this->objUser->userId();
-                $dateLastUpdated = mktime();
+                $dateLastUpdated = time();
 //                $attachment_id = $this->getVar('attachment_id');
                 if ($attachment_id != '') {
                         $this->objTempAttachments->insertSingle($temp_id, $attachment_id, $userId, $dateLastUpdated);
@@ -1392,7 +1392,7 @@ class discussion extends controller {
 
 //                $temp_id = $this->getVar('attachment_tempid');
                 $userId = $this->objUser->userId();
-                $dateLastUpdated = mktime();
+                $dateLastUpdated = time();
 //                $attachment_id = $this->getVar('attachment_id');
 //                if ($attachment_id != '') {
                 echo $this->objTempAttachments->insertSingle($temp_id, $attachment_id, $userId, $dateLastUpdated);
@@ -1425,7 +1425,7 @@ class discussion extends controller {
                 $files = $this->objTempAttachments->getQuickList($postId);
 //                print_r($this->objTempAttachments->getQuickList($temporaryId));
                 foreach ($files AS $file) {
-                        $this->objPostAttachments->insertSingle($postId, $file['attachment_id'], $this->userId, mktime());
+                        $this->objPostAttachments->insertSingle($postId, $file['attachment_id'], $this->userId, time());
                 }
                 $this->objTempAttachments->deleteTemps($temporaryId);
 //                return;

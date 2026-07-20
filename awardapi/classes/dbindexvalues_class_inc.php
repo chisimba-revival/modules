@@ -129,7 +129,7 @@ class dbindexvalues extends dbTable
          * @param string $date the date to check
          * @return false or the id of the entry
          */
-        public function valueExists($indexId,$date) {
+        public function valueExists($indexId,$date, $table = NULL) {
             $rs = $this->getAll("WHERE typeid='$indexId' AND indexdate='$date'");
             if (empty($rs)) {
                 return false;

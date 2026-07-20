@@ -75,7 +75,7 @@ class homepage extends controller {
                     $contents = $list['contents'];
                     $contents = stripslashes($contents);
                     // Update log
-                    $this->objdBHomePagesLog->insertSingle($list['id'], date("w"), $_SERVER['REMOTE_ADDR'], mktime());
+                    $this->objdBHomePagesLog->insertSingle($list['id'], date("w"), $_SERVER['REMOTE_ADDR'], time());
                 }
                 //parse content
                 $objWashOut=$this->getObject("washout","utilities");

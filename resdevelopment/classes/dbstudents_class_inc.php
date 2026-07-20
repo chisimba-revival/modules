@@ -30,7 +30,7 @@ class dbstudents extends dbtable {
     }
 
     public function saveStudentInfo($firstname, $lastname) {
-        $data = array("firstname"=>$firstname, "lastname"=>$lastname, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',mktime()));
+        $data = array("firstname"=>$firstname, "lastname"=>$lastname, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',time()));
         $this->insert($data);
     }
 

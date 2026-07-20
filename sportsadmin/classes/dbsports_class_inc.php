@@ -69,7 +69,7 @@ class dbsports extends dbTable
 		'userId' => $this->objUser->fullName(),
 		'evaluationMode'=>$evaluation,
 		'description' => $description,
-		'dateCreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())));
+		'dateCreated' => strftime('%Y-%m-%d %H:%M:%S', time())));
 	}
 	
 	/**

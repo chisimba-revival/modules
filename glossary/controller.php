@@ -408,7 +408,7 @@ class glossary extends controller {
 
         // Insert the term into the database
         $this->objGlossary->insertSingle(
-                $term, $definition, $this->contextCode, $this->objUser->userId(), mktime()
+                $term, $definition, $this->contextCode, $this->objUser->userId(), time()
         );
 
         // Get the Last Insert ID
@@ -418,7 +418,7 @@ class glossary extends controller {
 
         if ($seeAlso != '') {
             $this->objGlossarySeeAlso->insertSingle(
-                    $seeAlso, $id, $this->objUser->userId(), mktime()
+                    $seeAlso, $id, $this->objUser->userId(), time()
             );
         }
 
@@ -429,7 +429,7 @@ class glossary extends controller {
 
         if ($url != '') {
             $this->objGlossaryUrls->insertSingle(
-                    $url, $id, $this->objUser->userId(), mktime()
+                    $url, $id, $this->objUser->userId(), time()
             );
         }
 
@@ -569,7 +569,7 @@ class glossary extends controller {
         // Variables to use in update method:
         // $term, $definition, $context, $userID, $dateLastUpdated
         $this->objGlossary->updateSingle(
-                $id, $term, $definition, $this->contextCode, $this->objUser->userId(), mktime()
+                $id, $term, $definition, $this->contextCode, $this->objUser->userId(), time()
         );
 
         // Redirect back to the edit page
@@ -588,7 +588,7 @@ class glossary extends controller {
         // Parameters for method:
         // $item_id, $item_id2, $userId, $dateLastUpdated
         $this->objGlossarySeeAlso->insertSingle(
-                $seeAlso, $id, $this->objUser->userId(), mktime()
+                $seeAlso, $id, $this->objUser->userId(), time()
         );
 
         // Redirect to edit page
@@ -609,7 +609,7 @@ class glossary extends controller {
 
 
         $this->objGlossaryUrls->insertSingle(
-                $url, $id, $this->objUser->userId(), mktime()
+                $url, $id, $this->objUser->userId(), time()
         );
 
         // Redirect to edit page
@@ -844,7 +844,7 @@ class glossary extends controller {
         //$result = array();
         //$result = $this->objUploader->uploadFile('userFile');//$_FILES['userFile'],$this->contextCode);
         $userId = $this->objUser->userId();
-        $dateLastUpdated = mktime();
+        $dateLastUpdated = time();
         $this->objGlossaryImages->insertImage($item_id, $_POST['userFile'], $caption, $userId, $dateLastUpdated);
         //}
         //return $this->nextAction('listimages', array('id' => $item_id));

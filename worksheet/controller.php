@@ -286,7 +286,7 @@ class worksheet extends controller
 
         $activity_status = $this->getParam('activity_status');
         $closing_date = $date.' '.$time;
-		$lastUpdated = strftime('%Y-%m-%d %H:%M:%S', mktime());
+		$lastUpdated = strftime('%Y-%m-%d %H:%M:%S', time());
 
         $id = $this->objWorksheet->updateWorkSheet($id, $this->contextCode, $title, $activity_status, $percentage, $closing_date, $description, $this->objUser->userId(), $lastUpdated);
 

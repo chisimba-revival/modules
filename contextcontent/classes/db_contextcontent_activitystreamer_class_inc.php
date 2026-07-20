@@ -99,7 +99,7 @@ class db_contextcontent_activitystreamer extends dbtable {
         $row['userid'] = $userId;
         $row['contextcode'] = $contextCode;
         $row['contextitemid'] = $contextItemId;
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
         $row['sessionid'] = $this->sessionId;
         $row['modulecode'] = $modulecode;
         $row['pageorchapter'] = $pageorchapter;
@@ -108,7 +108,7 @@ class db_contextcontent_activitystreamer extends dbtable {
         } else {
             $row['description'] = $description;
         }
-        $row['starttime'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['starttime'] = strftime('%Y-%m-%d %H:%M:%S', time());
         $row['endtime'] = $sessionendtime;
         return $this->insert($row);
     }
@@ -271,13 +271,17 @@ class db_contextcontent_activitystreamer extends dbtable {
     }
 
     /**
-     * Method to get all the records for a particular session
+     * Determine whether activity-stream records exist for a session.
+     *
+     * This method was formerly named getSession(), which collided with the
+     * ChisimbaObject session API on PHP 8. The distinct name preserves the
+     * database-specific meaning and avoids overriding the framework method.
      *
      * @access public
-     * @param string $sessionId Session Id
-     * @return TRUE
+     * @param string $sessionId Session identifier
+     * @return bool TRUE when at least one matching record exists
      */
-    public function getSession($sessionId) {
+    public function hasSessionRecords($sessionId) {
         $where = "WHERE sessionid = '$sessionId'";
         $results = $this->getAll($where);
         if (isset($results[0])) {

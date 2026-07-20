@@ -102,8 +102,8 @@ class db_contextcontent_pages extends dbtable
                     'original' => 'Y',
                     'scorm' => $scorm,
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
-                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
         } else {
             return FALSE;
@@ -141,7 +141,7 @@ class db_contextcontent_pages extends dbtable
     {
         $row = array();
         $row['modifierid'] = $this->objUser->userId();
-        $row['datemodified'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datemodified'] = strftime('%Y-%m-%d %H:%M:%S', time());
 
         if ($title !== false) {
             $row['menutitle'] = stripslashes($title);

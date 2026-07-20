@@ -55,7 +55,7 @@ class dbforumsubscriptions extends dbtable
             'forum_id'=>$forum_id, 
             'userid'=>$userId, 
             'external'=>'Y', 
-            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
     

@@ -88,7 +88,7 @@ class dbfileshare extends dbtable
 			'title'=>$title,
 			'description'=>$description,
 			'version'=>$version,
-			'uploadtime'=>mktime()
+			'uploadtime'=>time()
 		);
         $this->insert($sql);
     }

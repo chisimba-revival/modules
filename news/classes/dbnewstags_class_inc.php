@@ -33,7 +33,7 @@ class dbnewstags extends dbtable
 				'storyid'=>$storyId, 
 				'tag'=>$tag, 
 				'creatorid' => $this->objUser->userId(),
-				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
 			));
 	}
     

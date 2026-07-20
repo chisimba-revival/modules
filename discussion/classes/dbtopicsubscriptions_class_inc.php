@@ -53,7 +53,7 @@ class dbtopicsubscriptions extends dbtable
             'topic_id'=>$topic_id, 
             'userid'=>$userId, 
             'external'=>'Y', 
-            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'datecreated'=>strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
     

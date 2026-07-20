@@ -172,7 +172,7 @@ class dbworksheet extends dbTable
                 'closing_date' => $closing_date,
                 'description' => $description,
                 'userid' => $this->objUser->userId(),
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', mktime())));
+                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time())));
         return $id;
     }
 

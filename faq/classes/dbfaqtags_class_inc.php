@@ -105,7 +105,7 @@ FROM tbl_faq_tags,tbl_faq_entries  where tbl_faq_tags.faqid=tbl_faq_entries.id  
                 'tag'=>$tag,
                 'creatorid' => $this->objUser->userId(),
                
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 

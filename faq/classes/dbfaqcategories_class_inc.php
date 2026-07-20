@@ -104,7 +104,7 @@ class dbfaqcategories extends dbTable
             'contextid' => $contextId, 
             'categoryname' => $categoryName,
             'userid' => $userId,
-            'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
         
         if ($id != FALSE) {

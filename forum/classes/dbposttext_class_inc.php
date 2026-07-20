@@ -57,7 +57,7 @@ class dbPostText extends dbTable {
                     'original_post' => $original_post,
                     'userId' => $userId,
                     'wordcount' => $this->objTextStats->count_words(strip_tags($post_text)),
-                    'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
 
                 return $this->getLastInsertId();

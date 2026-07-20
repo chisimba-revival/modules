@@ -25,7 +25,7 @@ class dbgameinfo extends dbtable{
 /*  function to find out if there are fixtures for a certain sport
 *   @param $id - sportid for which the item belongs 
 */
-	 function getAll($sportid){
+	 function getAll($sportid = null){
 
 		$sql = "SELECT * FROM ".$this->table;
 		$sql .=" WHERE sportId='".$sportid."' ";

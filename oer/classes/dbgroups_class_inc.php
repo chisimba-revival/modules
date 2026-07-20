@@ -392,7 +392,7 @@ class dbgroups extends dbtable {
         return $this->getArray($sql);
     }
 
-    function getLastEntry() {
+    function getLastEntry($filter = NULL, $orderField = "id") {
         $sql = "SELECT id FROM tbl_oer_institutions order by id desc limit 1";
         return $this->getArray($sql);
     }

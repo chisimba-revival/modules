@@ -694,7 +694,7 @@ class practicals extends controller {
         $practicalid = $this->getParam('practicalid');
         $practical = $this->objPractical->getPractical($practicalid);
         $submissions = $this->objPracticalSubmit->getStudentSubmissions($practicalid);
-        $id = mktime() . rand();
+        $id = time() . rand();
         $filename = $practicalid; //.'-'.$id;
 
         $objMkDir = $this->getObject('mkdir', 'files');

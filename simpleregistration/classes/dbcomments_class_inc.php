@@ -30,7 +30,7 @@ class dbcomments extends dbTable{
     ){
         $data = array(
             'comments' => $comments,
-            'comment_date' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+            'comment_date' => strftime('%Y-%m-%d %H:%M:%S', time()),
             'userid' => $this->objUser->userid()
         );
         return $this->insert($data);

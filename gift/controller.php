@@ -594,7 +594,7 @@ class gift extends controller {
     function __saveUser() {
         $this->clickedAdd = "true";
         //save the user info in the database
-        $data = array('userid' => $this->objUser->userId(), 'time' => strftime('%Y-%m-%d %H:%M:%S', mktime()));
+        $data = array('userid' => $this->objUser->userId(), 'time' => strftime('%Y-%m-%d %H:%M:%S', time()));
         $this->objGiftUser->addUser($data);
         if ($this->objGiftUser->policyAccepted() == 'Y') {
             $this->nextAction('home');

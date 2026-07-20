@@ -22,7 +22,7 @@ class getschema extends dbTableManager
     /**
     * Constructor method to define the table
     */
-    public function init()
+    public function init($dbName = NULL, $pearDbManager = NULL, $errorCallback = "globalPearErrorCallback")
     {
         parent::init();
     }

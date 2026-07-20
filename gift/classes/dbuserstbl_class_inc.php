@@ -18,7 +18,7 @@ class dbuserstbl extends dbtable {
     }
 
     function acceptPolicy() {
-        $udata = array('userid' => $this->objUser->userId(), 'time' => strftime('%Y-%m-%d %H:%M:%S', mktime()));
+        $udata = array('userid' => $this->objUser->userId(), 'time' => strftime('%Y-%m-%d %H:%M:%S', time()));
         $this->addUser($udata);
         $data = array('accepted' => 'Y');
         return $this->update('userid', $this->objUser->userid(), $data);

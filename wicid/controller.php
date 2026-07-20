@@ -880,7 +880,7 @@ class wicid extends controller {
         $data = array(
             'filename' => $title . '.' . $ext,
             'filetype' => $ext,
-            'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+            'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
             'userid' => $this->userutils->getUserId(),
             'parent' => "/",
             'refno' => $refno,
@@ -1176,7 +1176,7 @@ class wicid extends controller {
             $data = array(
                 'filename' => $docname . '.' . $ext,
                 'filetype' => $ext,
-                'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
                 'userid' => $this->objUtils->getUserId(),
                 'parent' => "/",
                 'refno' => $this->objUtils->getRefNo($docid),

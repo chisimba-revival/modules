@@ -44,7 +44,7 @@ class db_smssentmessages extends dbTable
             'message' => $message,
             'messageid' => $messageid,
             'result' => $result,
-            'datesent' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+            'datesent' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
     

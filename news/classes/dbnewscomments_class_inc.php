@@ -19,7 +19,7 @@ class dbnewscomments extends dbtable
 				'comment'=>strip_tags($comment), 
 				'commentdate'=>date('Y-m-d'), 
 				'creatorid' => '1',
-				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+				'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
 			));
 	}
     

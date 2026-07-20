@@ -109,7 +109,7 @@ class db_learningcontent_chaptercontent extends dbtable
                     'language' => $language,
                     'original' => 'Y',
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
         } else {
             return FALSE;
@@ -185,7 +185,7 @@ class db_learningcontent_chaptercontent extends dbtable
                 'chapterpicture'=>(stripslashes($picture)), 
                 'chapterformula'=>(stripslashes($formula)), 
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
         
         if ($result) {

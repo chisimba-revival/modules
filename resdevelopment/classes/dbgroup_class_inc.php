@@ -30,12 +30,12 @@ class dbgroup extends dbtable {
     }
 
     public function saveGroupInfo($groupname) {
-        $data = array("groupname"=>$groupname,  "date_created"=>strftime('%Y-%m-%d %H:%M:%S',mktime()));
+        $data = array("groupname"=>$groupname,  "date_created"=>strftime('%Y-%m-%d %H:%M:%S',time()));
         $this->insert($data);
     }
 
         public function editGroupInfo($groupname, $id) {
-        $data = array("groupname"=>$groupname, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',mktime()));
+        $data = array("groupname"=>$groupname, "date_created"=>strftime('%Y-%m-%d %H:%M:%S',time()));
         $this->update('id', $id, $data);
     }
 

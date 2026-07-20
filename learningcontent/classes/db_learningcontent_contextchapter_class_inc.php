@@ -219,7 +219,7 @@ WHERE (tbl_learningcontent_chaptercontent.chapterid = tbl_learningcontent_chapte
         'visibility' => $visibility,
         'scorm' => $scorm,
         'creatorid' => $this->objUser->userId(),
-        'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+        'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 

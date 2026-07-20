@@ -602,7 +602,7 @@ class dbblog extends dbTable
             $postarr['postcontent'] = str_ireplace("<br />", " <br /> ", $postarr['postcontent']);
             $insarr = array(
                 'userid' => $userid,
-                'post_date' => strftime('%Y-%m-%d %H:%M:%S', mktime()) ,
+                'post_date' => strftime('%Y-%m-%d %H:%M:%S', time()) ,
                 'post_content' => addslashes($postarr['postcontent']) , //$pc), //$this->pcleaner->cleanHtml($this->objblogOps->html2txt($postarr['postcontent'])),
                 'post_title' => htmlentities($postarr['posttitle']) ,
                 'post_category' => $postarr['postcat'],
@@ -658,7 +658,7 @@ class dbblog extends dbTable
 
             $edarr = array(
                 'userid' => $userid,
-                'post_date' => strftime('%Y-%m-%d %H:%M:%S', mktime()) ,
+                'post_date' => strftime('%Y-%m-%d %H:%M:%S', time()) ,
                 'post_content' => addslashes($pc) ,
                 'post_title' => htmlentities($postarr['posttitle']) ,
                 'post_category' => $postarr['postcat'],

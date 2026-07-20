@@ -84,7 +84,7 @@ class dbstrands extends dbtable
      * @return array $result An array of all the strands
      *
      */
-    public function getAll()
+    public function getAll($filter = NULL)
     {
         $result = $this->fetchAll();
         

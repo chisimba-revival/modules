@@ -39,7 +39,7 @@ class dbarchivesstories extends dbtable
     {
 
         if ($publishDate == NULL) {
-            $publishDate = strftime('%Y-%m-%d %H:%M:%S', mktime());
+            $publishDate = strftime('%Y-%m-%d %H:%M:%S', time());
         }
         
         $userId = $this->objUser->userId();
@@ -54,7 +54,7 @@ class dbarchivesstories extends dbtable
             'storyimage' => $storyImage,
             'creatorid' => $userId,
             'storyorder' => $this->getLastCategoryOrder($storyCategory)+1,
-            'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+            'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             'dateavailable' => $publishDate,
             'sticky' => $sticky,
             'status' => $status,
@@ -220,7 +220,7 @@ class dbarchivesstories extends dbtable
     */
     public function generateTimeline()
     {
-        return $this->generateTimelineCode($this->getAll('WHERE dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY storydate'));
+        return $this->generateTimelineCode($this->getAll('WHERE dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ORDER BY storydate'));
     }
 
     /**
@@ -263,7 +263,7 @@ class dbarchivesstories extends dbtable
 LEFT JOIN tbl_news_categories ON (tbl_news_stories.storycategory=tbl_news_categories.id)
 LEFT JOIN tbl_geonames ON (tbl_news_stories.storylocation=tbl_geonames.geonameid)
 LEFT JOIN tbl_files ON (tbl_news_stories.storyimage=tbl_files.id)
-WHERE sticky=\'Y\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\'
+WHERE sticky=\'Y\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\'
 ORDER BY storydate DESC, datecreated DESC LIMIT '.$limit;
 
         return $this->getArray($sql);
@@ -380,7 +380,7 @@ WHERE tbl_news_stories.id = \''.$id.'\'';
         }
 
         $sql = 'SELECT tbl_news_stories.* FROM tbl_news_stories '.$where.'
- AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\'
+ AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\'
 ORDER BY storydate DESC LIMIT '.$limit;
 
 //echo $sql;
@@ -519,7 +519,7 @@ WHERE tbl_news_stories.storycategory = \''.$category.'\' ';
         
         
         if ($includeFutureStories == FALSE) {
-            $sql .=  ' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ';
+            $sql .=  ' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ';
         }
         
         $sql .= ' ORDER BY '.$orderby;
@@ -700,7 +700,7 @@ ORDER BY storydate DESC';
     */
     public function generateNewsSmapSQL()
     {
-        $sql = 'SELECT tbl_news_stories.*, tbl_news_stories.id as storyid, latitude, longitude, name as location FROM tbl_news_stories INNER JOIN tbl_geonames ON (tbl_news_stories.storylocation = tbl_geonames.geonameid) WHERE dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\'';
+        $sql = 'SELECT tbl_news_stories.*, tbl_news_stories.id as storyid, latitude, longitude, name as location FROM tbl_news_stories INNER JOIN tbl_geonames ON (tbl_news_stories.storylocation = tbl_geonames.geonameid) WHERE dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\'';
 
         return $this->getArray($sql);
     }
@@ -721,7 +721,7 @@ ORDER BY storydate DESC';
         $sql = 'SELECT tbl_news_stories.*, categoryname, name as location FROM tbl_news_stories
         INNER JOIN tbl_news_categories ON (tbl_news_stories.storycategory=tbl_news_categories.id)
         LEFT JOIN tbl_geonames ON (tbl_news_stories.storylocation=tbl_geonames.geonameid)
-        WHERE tbl_news_stories.storycategory = \''.$category.'\'  AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' 
+        WHERE tbl_news_stories.storycategory = \''.$category.'\'  AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' 
         AND storydate >= \''.$startPeriod.'\'  AND storydate <= \''.$endPeriod.'\' ORDER BY storydate';
         
         return $this->getArray($sql);
@@ -740,7 +740,7 @@ ORDER BY storydate DESC';
             $order .= ', datecreated desc';
         }
 
-        $sql = 'SELECT tbl_news_stories.*, tbl_news_stories.id as storyid, latitude, longitude FROM tbl_news_stories LEFT JOIN tbl_geonames ON (tbl_news_stories.storylocation = tbl_geonames.geonameid) WHERE storycategory=\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY '.$order.' LIMIT 1';
+        $sql = 'SELECT tbl_news_stories.*, tbl_news_stories.id as storyid, latitude, longitude FROM tbl_news_stories LEFT JOIN tbl_geonames ON (tbl_news_stories.storylocation = tbl_geonames.geonameid) WHERE storycategory=\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ORDER BY '.$order.' LIMIT 1';
 
         $results = $this->getArray($sql);
 
@@ -764,7 +764,7 @@ ORDER BY storydate DESC';
             $order .= ', datecreated desc';
         }
 
-        $sql = 'SELECT tbl_news_stories.id as storyid, storytitle FROM tbl_news_stories WHERE storycategory=\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY '.$order;
+        $sql = 'SELECT tbl_news_stories.id as storyid, storytitle FROM tbl_news_stories WHERE storycategory=\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ORDER BY '.$order;
 
         return $this->getArray($sql);
     }
@@ -870,7 +870,7 @@ ORDER BY storydate DESC';
         if ($item == FALSE) {
             return FALSE;
         } else {
-            $item2 = $this->getAll(' WHERE storyorder < '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY storyorder DESC LIMIT '.$limit);
+            $item2 = $this->getAll(' WHERE storyorder < '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ORDER BY storyorder DESC LIMIT '.$limit);
 
             if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;
@@ -902,7 +902,7 @@ ORDER BY storydate DESC';
         if ($item == FALSE) {
             return FALSE;
         } else {
-            $item2 = $this->getAll(' WHERE storyorder > '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', mktime()).'\' ORDER BY storyorder LIMIT '.$limit);
+            $item2 = $this->getAll(' WHERE storyorder > '.$item['storyorder'].' AND storycategory =\''.$category.'\' AND dateavailable <= \''.strftime('%Y-%m-%d %H:%M:%S', time()).'\' ORDER BY storyorder LIMIT '.$limit);
 
             if ((is_countable($item2) ? count($item2) : 0) == 0) {
                 return FALSE;

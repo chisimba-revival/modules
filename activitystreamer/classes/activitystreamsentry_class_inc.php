@@ -62,7 +62,7 @@ class activitystreamsentry extends ChisimbaObject
     public $verbs = array();
     public $published;
 		
-    function __construct() {
+    function __construct($objEngine = null, $moduleName = null) {
         $this->published = time();
     }
 		

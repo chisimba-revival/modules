@@ -44,7 +44,7 @@ class dbpost_ratings extends dbTable
     		'post_id'                 => $post_id,
     		'rating'                   => $rating,
     		'userId'                  => $userId,
-    		'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+    		'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())
     	));
         
         return;

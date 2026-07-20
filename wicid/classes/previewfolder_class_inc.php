@@ -9,7 +9,7 @@ class previewfolder extends filemanagerobject {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         $this->objFileIcons = $this->getObject('fileicons', 'files');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objAltConfig = $this->getObject("altconfig", "config");

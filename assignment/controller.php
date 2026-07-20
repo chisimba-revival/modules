@@ -714,7 +714,7 @@ class assignment extends controller {
         $assignmentid = $this->getParam('assignmentid');
         $assignment = $this->objAssignment->getAssignment($assignmentid);
         $submissions = $this->objAssignmentSubmit->getStudentSubmissions($assignmentid);
-        $id = mktime() . rand();
+        $id = time() . rand();
         $filename = $assignmentid; //.'-'.$id;
 
         $objMkDir = $this->getObject('mkdir', 'files');

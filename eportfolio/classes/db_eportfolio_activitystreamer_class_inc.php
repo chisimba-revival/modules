@@ -118,10 +118,10 @@ class db_eportfolio_activitystreamer extends dbtable
         $row['modulecode'] = $moduleCode;
         $row['partname'] = $partName;
         $row['recordid'] = $recordId;
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
         $row['description'] = $description;
-        $row['starttime'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
-        $row['endtime'] = strftime('%Y-%m-%d %H:%M:%S', mktime());
+        $row['starttime'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['endtime'] = strftime('%Y-%m-%d %H:%M:%S', time());
 
         return $this->insert($row);
     }

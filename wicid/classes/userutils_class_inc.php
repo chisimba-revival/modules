@@ -173,7 +173,7 @@ class userutils extends ChisimbaObject {
             $data = array(
                 'filename' => $docname . '.' . $ext,
                 'filetype' => $ext,
-                'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'date_uploaded' => strftime('%Y-%m-%d %H:%M:%S', time()),
                 'userid' => $userid,
                 'parent' => $parent,
                 'refno' => '1234',

@@ -55,8 +55,8 @@ class dbworksheetquestions extends dbTable
                 'question_worth' => $question_worth,
                 'question_order' => $this->getLastOrder($worksheet_id)+1,
                 'userid' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
 
         if ($result != FALSE) {
@@ -74,8 +74,8 @@ class dbworksheetquestions extends dbTable
                 'model_answer' => $answer,
                 'question_worth' => $question_worth,
                 'userid' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())
             ));
 
         if ($result != FALSE) {
