@@ -4,12 +4,6 @@
 $objEditor = $this->getObject('htmlarea', 'htmlelements');
 echo $objEditor->showTinyMCE();
 
-echo "
-<script type='text/javascript'>
-tinyMCE.get('tinymce_editor').show();
-</script>
-";
-
 /*Testing jQuery Corners*/
 /*
 $jQuery = $this->newObject('jquery', 'htmlelements');
