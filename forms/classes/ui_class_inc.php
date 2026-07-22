@@ -420,18 +420,10 @@
             // of any FCK instance with id of 'body'
             $script = "<script type='text/javascript'>
                 function FCKPreview(fckEditorInstance) {
-                    try
-                    {
-                        var oEditor = FCKeditorAPI.GetInstance(fckEditorInstance);
-                        try
-                        {
-                            oEditor.Commands.GetCommand('Preview').Execute();
-                        }
-                            catch (e) {}
-                        //oEditor.Focus();
+                    if (window.ChisimbaEditor) {
+                        return window.ChisimbaEditor.preview(fckEditorInstance);
                     }
-                        catch (e) {}
-
+                    return false;
                 }
 
                 jQuery(document).ready(function(){

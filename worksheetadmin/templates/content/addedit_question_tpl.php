@@ -133,15 +133,12 @@ if($type == 'plaintext'){
 }
 
 $fixscript = "
-               <script type=\"text/javascript\">function wakeUpFireFoxFckeditor()
+               <script type=\"text/javascript\">
+               function wakeUpFireFoxFckeditor()
                {
-               var oEditor = FCKeditorAPI.GetInstance('question') ;
-               try
-               {
-               oEditor.MakeEditable();
-               }
-               catch (e) {}
-               oEditor.Focus();
+                   if (window.ChisimbaEditor) {
+                       window.ChisimbaEditor.focus('question');
+                   }
                }
                </script>";
        $this->appendArrayVar('headerParams', $fixscript);
