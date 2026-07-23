@@ -139,7 +139,7 @@ class worksheet extends controller
      * @param string $action Name of the Action to be run
      * @return boolean Whether user has permission to access action or not
      */
-    public function isValid($action)
+    public function isValid($action, $default = true)
     {
         $lecturerActions = array('add', 'deleteworksheet', 'saveworksheet', 'worksheetinfo', 'managequestions', 'savequestion', 'activate', 'updatestatus', 'viewstudentworksheet', 'editquestion', 'preview');
 

@@ -129,7 +129,7 @@ class assignment extends controller {
         }
     }
 
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         $restrictedActions = array('add', 'edit', 'saveassignment', 'updateassignment', 'delete', 'markassignments', 'saveuploadmark', 'saveonlinemark');
 
         if (in_array($action, $restrictedActions)) {

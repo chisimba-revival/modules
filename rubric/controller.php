@@ -69,7 +69,7 @@ class rubric extends controller
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
 
     	$validActions = array('viewtable', 'assessments', 'viewassessment');
 

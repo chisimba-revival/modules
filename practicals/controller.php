@@ -130,7 +130,7 @@ class practicals extends controller {
         }
     }
 
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         $restrictedActions = array('add', 'edit', 'savepractical', 'updatepractical', 'delete', 'markpracticals', 'saveuploadmark', 'saveonlinemark');
 
         if (in_array($action, $restrictedActions)) {

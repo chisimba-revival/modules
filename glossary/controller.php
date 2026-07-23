@@ -672,7 +672,7 @@ class glossary extends controller {
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
         } else {

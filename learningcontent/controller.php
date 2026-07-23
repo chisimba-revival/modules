@@ -333,7 +333,7 @@ class learningcontent extends controller {
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {        
+    public function isValid($action, $default = true) {
         $courseDetails = $this->objContext->getField('access',$this->contextCode);        
         if ($this->objUser->isAdmin () || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
