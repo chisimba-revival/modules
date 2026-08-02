@@ -13,9 +13,37 @@ var URL = "index.php";
 */
 function jsBuildCal(xDay, xMonth, xYear)
 {
-    var target = "calDiv";
-    var pars = "module=popupcalendar&action=buildcal&day="+xDay+"&month="+xMonth+"&year="+xYear;
-    var myAjax = new Ajax.Updater(target, URL, {method: "post", parameters: pars});
+    var target = document.getElementById("calDiv");
+    var parameters = new URLSearchParams({
+        module: "popupcalendar",
+        action: "buildcal",
+        day: xDay,
+        month: xMonth,
+        year: xYear
+    });
+
+    fetch(URL, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"},
+        body: parameters.toString()
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error("Calendar request failed with status " + response.status);
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            if (target) {
+                target.innerHTML = html;
+            }
+        })
+        .catch(function (error) {
+            if (window.console && typeof window.console.error === "function") {
+                window.console.error("Unable to update the calendar", error);
+            }
+        });
 }
 
 /**

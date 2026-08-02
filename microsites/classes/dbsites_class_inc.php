@@ -95,7 +95,7 @@ class dbsites extends dbTable{
     }
     
     
-    public function delete($id){
+    public function delete($id, $pkvalue = null, $tablename = ''){
     
     }
     

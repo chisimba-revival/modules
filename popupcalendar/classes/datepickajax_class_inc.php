@@ -64,9 +64,6 @@ class datepickajax extends ChisimbaObject
         $this->loadClass('textinput', 'htmlelements');
         $this->loadClass('dropdown', 'htmlelements');
         $this->loadClass('button', 'htmlelements');
-        // Load scriptaclous since we can no longer guarantee it is there
-        $scriptaculous = $this->getObject('scriptaculous', 'prototype');
-        $this->appendArrayVar('headerParams', $scriptaculous->show('text/javascript'));
     }
 
     /**
@@ -209,17 +206,17 @@ class datepickajax extends ChisimbaObject
             $objInput->fldType = 'hidden';
             $objForm->addToForm($objInput->show());
             $javaScriptTime = '
-                var hrSelect = $F(\'input_hour\');
-                var mnSelect = $F(\'input_min\');
+                var hrSelect = document.getElementById(\'input_hour\').value;
+                var mnSelect = document.getElementById(\'input_min\').value;
                 jsInsertTime(hrSelect, mnSelect);
             ';
-            $timeValue = '+\' \'+$F(\'input_time\')';
+            $timeValue = '+\' \'+document.getElementById(\'input_time\').value';
         }
         $objButton = new button('save', $save);
         $objButton->extra = ' onclick="javascript:
             '.$javaScriptTime.'
-            window.opener.document.getElementById(\'input_'.$field.'\').value = $F(\'input_date\')'.$timeValue.';
-            $(\'form_select\').submit();
+            window.opener.document.getElementById(\'input_'.$field.'\').value = document.getElementById(\'input_date\').value'.$timeValue.';
+            document.getElementById(\'form_select\').submit();
             window.close();
         "';
         $saveButton = $objButton->show();
@@ -383,7 +380,7 @@ class datepickajax extends ChisimbaObject
             $objDrop->addOption($i, $i.'&#160;');
         }
         $objDrop->setSelected($hour);
-        $objDrop->extra = 'onchange="javascript:var hrSelect = $F(\'input_hour\');var mnSelect = $F(\'input_min\'); jsInsertTime(hrSelect, mnSelect);"';
+        $objDrop->extra = 'onchange="javascript:var hrSelect = document.getElementById(\'input_hour\').value;var mnSelect = document.getElementById(\'input_min\').value; jsInsertTime(hrSelect, mnSelect);"';
         $timeStr.= $objDrop->show();
 
         $objDrop = new dropdown('min');
@@ -394,7 +391,7 @@ class datepickajax extends ChisimbaObject
             $objDrop->addOption($i, $i.'&#160;');
         }
         $objDrop->setSelected($min);
-        $objDrop->extra = 'onchange="javascript:var hrSelect = $F(\'input_hour\');var mnSelect = $F(\'input_min\'); jsInsertTime(hrSelect, mnSelect);"';
+        $objDrop->extra = 'onchange="javascript:var hrSelect = document.getElementById(\'input_hour\').value;var mnSelect = document.getElementById(\'input_min\').value; jsInsertTime(hrSelect, mnSelect);"';
         $timeStr.= '<b>:</b>&#160;&#160;'.$objDrop->show();
 
         $objForm = new form('seltime', $this->uri(NULL));

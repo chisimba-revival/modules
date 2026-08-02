@@ -40,7 +40,7 @@ class dbClass extends dbTable
      * @param string $filter the filter on the delete
      * @param string $tablename the table if different from the default table
      */
-    public function delete($filter, $tablename = '')
+    public function delete($filter, $tablename = '', $parentTablename = '')
     {
         $sql = 'SELECT id FROM '.$this->table;
         $sql .= " WHERE ";
