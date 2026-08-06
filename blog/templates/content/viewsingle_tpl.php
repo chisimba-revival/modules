@@ -1,31 +1,9 @@
-<script type="text/javascript">
-//<![CDATA[
-function init () {
-	$('input_redraw').onclick = function () {
-		redraw();
-	}
-}
-function redraw () {
-	var url = 'index.php';
-	var pars = 'module=security&action=generatenewcaptcha';
-	var myAjax = new Ajax.Request( url, {method: 'get', parameters: pars, onComplete: showResponse} );
-}
-function showLoad () {
-	$('load').style.display = 'block';
-}
-function showResponse (originalRequest) {
-	var newData = originalRequest.responseText;
-	$('captchaDiv').innerHTML = newData;
-}
-//]]>
-</script>
 <?php
 $middleColumn = NULL;
 if (!isset($cats)) {
     $cats = NULL;
 }
 if (isset($comment) && isset($useremail)) {
-    //$middleColumn = "CAPTCHA was kakka";
     $comment = urldecode($comment);
     $useremail = urldecode($useremail);
 } else {
@@ -53,9 +31,9 @@ $middleColumn.= $tracks;
 
 if ($this->commentsEnabled) {
     if ($this->objUser->isLoggedIn() == TRUE) {
-        $middleColumn.= $this->objblogPosts->addCommentForm($postid, $userid, $captcha = FALSE, $comment, $useremail);
+        $middleColumn.= $this->objblogPosts->addCommentForm($postid, $userid, FALSE, $comment, $useremail);
     } else {
-        $middleColumn.= $this->objblogPosts->addCommentForm($postid, $userid, $captcha = TRUE, $comment, $useremail);
+        $middleColumn.= $this->objblogPosts->addCommentForm($postid, $userid, TRUE, $comment, $useremail);
     }
 }
 */

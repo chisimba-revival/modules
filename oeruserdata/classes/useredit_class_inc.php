@@ -162,7 +162,7 @@ class useredit extends ChisimbaObject {
     private function showForNotLoggedIn() {
         $userId = $this->objUser->userId();
 
-        $objGa = $this->getObject('gamodel', 'groupadmin');
+        $objGa = $this->getObject('groupadminmodel', 'groupadmin');
         $edGroup = $objGa->isGroupMember($userId, "Usermanagers");
         if ($this->objUser->isLoggedIn()) {
             if (!$this->objUser->isAdmin() && !$edGroup) {

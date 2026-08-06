@@ -516,7 +516,7 @@ class simpletalkops extends ChisimbaObject
         $ret=FALSE;
         $userId = $this->objUser->userId();
         // Admins can make blogs
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $groupId = $objGa->getId("SimpleTalkReviewers");
         $objGroupOps = $this->getObject("groupops", "groupadmin");
         $edGroup = $objGroupOps->isGroupMember($groupId, $userId);     

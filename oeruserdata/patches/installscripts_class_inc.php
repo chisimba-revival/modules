@@ -88,7 +88,7 @@ class oeruserdata_installscripts extends dbtable
      */
     public function postinstall()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("Usermanagers", "Manages userdata in the oeruserdata module");
     }
 

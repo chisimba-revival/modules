@@ -102,7 +102,7 @@ class bannerhelper_installscripts extends dbtable
      */
     public function createAuthorGroup()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("BannerHelper", "Can edit the banner files.");
     }
 

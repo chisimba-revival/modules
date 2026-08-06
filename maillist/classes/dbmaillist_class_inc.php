@@ -19,7 +19,7 @@ class dbmaillist extends dbTable
     * @param void
     * @return object resource ID
     */
-    public function init()
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         parent::init('tbl_maillist_mail');
         $this->objUser =  $this->getObject("user", "security");
@@ -205,7 +205,7 @@ class dbmaillist extends dbTable
 
     }
     
-    public public function checkValidUser() 
+    public function checkValidUser() 
     {
         $this->_changeTable('tbl_users');
         $val = $this->getAll();

@@ -81,7 +81,6 @@ class eportfolio extends controller {
         $this->objContextUser = $this->getObject('usercontext', 'context');
         $this->objPopupcal = $this->newObject('datepickajax', 'popupcalendar');
         $this->objUrl = $this->getObject('url', 'strings');
-        $this->_objGAModel = $this->newObject('gamodel', 'groupadmin');
         $this->_objGroupAdmin = $this->newObject('groupadminmodel', 'groupadmin');
         $this->_objManageGroups = &$this->newObject('managegroups', 'contextgroups');
         //TEMPORARY Check if class groupops exists

@@ -84,11 +84,6 @@ class db_contextcontent_order extends dbtable {
         // Store Context Code
         $this->contextCode = $this->objContext->getContextCode();
 
-        // @Todo Make this code less crappy
-        // @Todo Remove dependency on Scriptaculous
-        // Load scriptaclous since we can no longer guarantee it is there
-        $scriptaculous = $this->getObject('scriptaculous', 'prototype');
-        $this->appendArrayVar('headerParams', $scriptaculous->show('text/javascript'));
     }
 
     /**
@@ -316,11 +311,20 @@ class db_contextcontent_order extends dbtable {
             $nodeDetails = array('text' => htmlentities($treeItem['menutitle']) . $showImg, 'link' => $this->uri(array('action' => 'viewpage', 'id' => $treeItem['id']), $module), 'icon' => $showImg);
 
             if ($treeItem['id'] == $defaultSelected) {
-                $nodeDetails['cssClass'] = 'confirm';
+                // CHISIMBA_CONTEXTCONTENT_CURRENT_PAGE_MARKER
+                $currentPageIcon = $this->getObject('iconservice', 'ui')->render(
+                    'pin',
+                    array(
+                        'decorative' => TRUE,
+                        'class' => 'chisimba-current-page-icon',
+                    )
+                );
+                $nodeDetails['text'] = $currentPageIcon . $nodeDetails['text'];
+                $nodeDetails['cssClass'] = 'chisimba-current-page';
             }
 
             $node = new treenode($nodeDetails);
-            $nodeArray[$treeItem['id']] = & $node;
+            $nodeArray[$treeItem['id']] = $node;
 
             //if($treeItem['isbookmarked'] == 'Y'){
             if ($treeItem['parentid'] == 'root') {
@@ -377,7 +381,7 @@ class db_contextcontent_order extends dbtable {
             }
 
             $node = new treenode($nodeDetails);
-            $nodeArray[$treeItem['id']] = & $node;
+            $nodeArray[$treeItem['id']] = $node;
 
             //if($treeItem['isbookmarked'] == 'Y'){
             if ($treeItem['parentid'] == 'root') {
@@ -435,7 +439,7 @@ class db_contextcontent_order extends dbtable {
             }
 
             $node = new treenode($nodeDetails);
-            $nodeArray[$treeItem['id']] = & $node;
+            $nodeArray[$treeItem['id']] = $node;
             //var_dump($treeItem);die;
             //if($treeItem['isbookmarked'] == 'Y'){
             if ($treeItem['parentid'] == 'root') {
@@ -1244,7 +1248,7 @@ class db_contextcontent_order extends dbtable {
                 // Add to Menu
                 $treeMenu->addItem($node);
 
-                $nodeArray[$treeItem['id']] = & $node;
+                $nodeArray[$treeItem['id']] = $node;
             }
 
             // Get immediate Children

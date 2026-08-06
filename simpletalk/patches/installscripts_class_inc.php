@@ -100,7 +100,7 @@ class simpletalk_installscripts extends dbtable
      */
     public function createGroup()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("SimpleTalkReviewers", "Can review and accept or reject abstract submissions.");
     }
 }

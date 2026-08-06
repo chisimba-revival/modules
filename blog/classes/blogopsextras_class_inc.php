@@ -116,7 +116,6 @@ class blogopsextras extends ChisimbaObject
         // do a sanity check on the array of params...
         if (!isset($params['place']) || !isset($params['countrycode'])) {
             return FALSE;
-            break;
         }
         $wsurl = "http:// ws.geonames.org/search?";
         $searchparams = "q=" . $params['place'] . "&country=" . $params['countrycode'] . "&maxRows=" . $limit;

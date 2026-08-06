@@ -73,14 +73,6 @@ class blogposts extends ChisimbaObject
     public $objConfig;
 
     /**
-     * Instance of the tweetbutton class of the twitter module.
-     *
-     * @access private
-     * @var    object
-     */
-    private $objTweetButton;
-
-    /**
      * Standard init function called by the constructor call of Object
      *
      * @access public
@@ -92,7 +84,6 @@ class blogposts extends ChisimbaObject
             $this->objCC = $this->getObject('displaylicense', 'creativecommons');
             $this->objLanguage = $this->getObject('language', 'language');
             $this->objDbBlog = $this->getObject('dbblog');
-            $this->objTweetButton = $this->getObject('tweetbutton', 'twitter');
             $this->loadClass('href', 'htmlelements');
             $this->sysConfig = $this->getObject('dbsysconfig', 'sysconfig');
             $this->showfullname = $this->sysConfig->getValue('show_fullname', 'blog');
@@ -179,7 +170,6 @@ class blogposts extends ChisimbaObject
         );
         $ret = NULL;
         // Middle column (posts)!
-        $this->objJqTwitter = $this->getObject('jqtwitter', 'twitter');
         // break out the ol featurebox...
         if (!empty($posts)) {
             // get the washout class and parse for all the bits and pieces
@@ -194,26 +184,6 @@ class blogposts extends ChisimbaObject
                         'postid' => $post['id'],
                         'userid' => $post['userid']
                     	));
-                $related = $this->sysConfig->getValue('retweet_related', 'blog');
-                $status = $this->sysConfig->getValue('retweet_status', 'blog');
-                $style = $this->sysConfig->getValue('retweet_style', 'blog');
-                $text = $this->sysConfig->getValue('retweet_text', 'blog');
-                $type = $this->sysConfig->getValue('retweet_type', 'blog');
-                $via = $this->sysConfig->getValue('retweet_via', 'blog');
-                if($status == NULL){
-                    $status = "Interesting read ";
-                }
-                if($style == NULL) {
-                    $style = 'retweet vert';
-                }
-                if ($type == 'jquery') {
-                    $rt = $this->objJqTwitter->retweetCounter($url, $status, $style);
-                } else {
-                    if (strpos($style, 'vert') !== FALSE) {
-                        $style = 'vertical';
-                    }
-                    $rt = $this->objTweetButton->getButton($post['post_title'], $style, $via, $related, htmlspecialchars_decode($url));
-                }
                 $post['post_content'] = $cleanpost;
                 if($cleanPost  == 'true'){
                     $post['post_content'] = $this->cleanPost($post['post_content']);
@@ -267,7 +237,7 @@ class blogposts extends ChisimbaObject
                     	)) , stripslashes($post['post_title']) , NULL);
                     }
                     $head = $objStickyIcon->show() . $headLink->show()
-                      . " $rt $icons<br /><span class='blog-head-date'>$dt</span>";
+                      . " $icons<br /><span class='blog-head-date'>$dt</span>";
                 } else {
                     if($post['post_status'] == 1) {
                         $headLink = new href($this->uri(array(
@@ -285,7 +255,7 @@ class blogposts extends ChisimbaObject
                     )) , stripslashes($post['post_title']) , NULL);
                     }
                     $head = $headLink->show()
-                      . " $rt $icons<br /><span class='blog-head-date'>$dt</span><br />";
+                      . " $icons<br /><span class='blog-head-date'>$dt</span><br />";
                 }
                 // dump in the post content and voila! you have it...
                 // build the post content plus comment count and stats???

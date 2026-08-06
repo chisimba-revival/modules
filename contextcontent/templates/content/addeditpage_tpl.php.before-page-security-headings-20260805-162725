@@ -66,10 +66,19 @@ $formTable->addCell($label->show());
 $formTable->addCell($htmlarea->show());
 $formTable->endRow();
 
-/* CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
- * Course authors may no longer attach page-specific JavaScript or CSS.
- */
-$saveButtonText = '<span class=\'save\'>'
+$headerScripts = $this->newObject('multifileselect', 'filemanager');
+$headerScripts->name = 'headerscripts';
+$headerScripts->restrictFileList = array('js', 'css');
+$headerScripts->context = TRUE;
+if ($mode=='edit') {
+    $headerScripts->setDefaultFiles($page['headerscripts']);
+}
+
+$label = new label ('<strong class="metatagstrong">'.$this->objLanguage->languageText('mod_contextcontent_metatags_javascript','contextcontent').'</strong>', 'input_headerscripts');
+$jsForHeader = $this->objLanguage->languageText('mod_contextcontent_enterjavascriptmetatags','contextcontent', 'Enter any JavaScript or Meta Tags that you need to be loaded into the [-HEAD-] tags');
+$jsForHeader = str_replace('[-HEAD-]', '&lt;head&gt;', $jsForHeader);
+
+$saveButtonText = '<span class=\'save\'>' 
    . $this->objLanguage->languageText('mod_contextcontent_savepage','contextcontent')
    . '</span>';
 $button = new button('submitform', $saveButtonText);
@@ -77,8 +86,8 @@ $button->cssId = 'ctxtcnt-add-submit';
 $button->setToSubmit();
 
 $formTable->startRow();
-$formTable->addCell('', '240');
-$formTable->addCell($button->show());
+$formTable->addCell($label->show().'<br /><span class="jsforheader">'.$jsForHeader.'</span>', '240');
+$formTable->addCell($headerScripts->show(). $button->show());
 $formTable->endRow();
 
 $form->addToForm($formTable->show());

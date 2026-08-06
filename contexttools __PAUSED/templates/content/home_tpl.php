@@ -19,14 +19,8 @@ $uxjs = '<script language="JavaScript" src="'.$this->getResourceUri('ext-3.0-rc2
  *
  */
 $tools = '<script language="JavaScript" src="'.$this->getResourceUri('contexttools.js').'" type="text/javascript"></script>';
-/*$ckeditorbase = '<script language="JavaScript" src="'.$this->getResourceUri('ckeditor/ckeditor.js','htmlelements').'" type="text/javascript"></script>';
-*/
-
 $objExtjs=$this->getObject("extjs","ext");
 $objExtjs->show();
-$ckeditorbase = '<script language="JavaScript" src="'.$this->getResourceUri('ckeditor/ckeditor.js','ckeditor').'" type="text/javascript"></script>';
-
-
 $initVars='
        <script type="text/javascript">
         var instancename=\''.$instancename.'\';
@@ -44,7 +38,6 @@ $this->appendArrayVar('headerParams', $extallcss);
 $this->appendArrayVar('headerParams', $uxcss);
 $this->appendArrayVar('headerParams', $uxjs);*/
 $this->appendArrayVar('headerParams', $tools);
-$this->appendArrayVar('headerParams', $ckeditorbase);
 
 $contextlisturl = $this->uri(array('action'=>'jsonusercontexts'));
 $contexturl = $this->uri(array('action'=>'joincontext'),'context');

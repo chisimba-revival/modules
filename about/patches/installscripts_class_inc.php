@@ -102,7 +102,7 @@ class about_installscripts extends dbtable
      */
     public function createAuthorGroup()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("AboutContact", "Can edit the about and contact information for the site.");
     }
 

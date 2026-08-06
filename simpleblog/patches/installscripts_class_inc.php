@@ -99,7 +99,7 @@ class simpleblog_installscripts extends dbtable
      */
     public function createGroup()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("SimpleBloggers", "Can create and author simple blogs.");
     }
 }

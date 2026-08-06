@@ -3,3 +3,40 @@
 .contexttools {
 	background-image:url(img/package_link.png) ! important;
 }
+
+
+/* Numbered structural marker for chapters. Content-type markers may extend this pattern. */
+.chisimba-chapter-heading-text {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.chisimba-chapter-marker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--chisimba-color-text-muted, #52635b);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.chisimba-chapter-marker-icon {
+    display: inline-flex;
+    width: 1rem;
+    height: 1rem;
+}
+
+.chisimba-chapter-marker-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.chisimba-chapter-name {
+    display: block;
+}

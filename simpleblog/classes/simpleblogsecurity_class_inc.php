@@ -125,7 +125,7 @@ class simpleblogsecurity extends ChisimbaObject
         $objUser = $this->getObject('user', 'security');
         $userId = $objUser->userId();
         // Admins can make blogs
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $groupId = $objGa->getId("SimpleBloggers");
         $objGroupOps = $this->getObject("groupops", "groupadmin");
         $edGroup = $objGroupOps->isGroupMember($groupId, $userId);     

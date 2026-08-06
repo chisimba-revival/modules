@@ -13,43 +13,29 @@ $pdfHtmlDoc = $objModules->checkIfRegistered('htmldoc');
 
 
 
-// CHISIMBA NATIVE CHAPTER UI
-$objIconService = $this->getObject('iconservice', 'ui');
-$editLabel = $this->objLanguage->languageText(
-    'mod_contextcontent_editchapter',
-    'contextcontent',
-    'Edit Chapter'
-);
-$deleteLabel = $this->objLanguage->languageText(
-    'mod_contextcontent_deletechapter',
-    'contextcontent',
-    'Delete Chapter'
-);
-$addChapterLabel = $this->objLanguage->languageText(
-    'mod_contextcontent_addanewchapter',
-    'contextcontent',
-    'Add a New Chapter'
-);
-$addPageLabel = $this->objLanguage->languageText(
-    'mod_contextcontent_addapagetothischapter',
-    'contextcontent',
-    'Add a Page to this Chapter'
-);
-
-$editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
-$deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
-$addIcon = $objIconService->render('plus', array('decorative' => TRUE));
-$addPageIcon = $objIconService->render('plus', array('decorative' => TRUE));
-$chapterIcon = $objIconService->render('book-open', array('decorative' => TRUE));
-
-// Retain the legacy icon object only for auxiliary actions not yet migrated.
 $objIcon = $this->newObject('geticon', 'htmlelements');
 $objIcon->align = 'absmiddle';
+
+$objIcon->setIcon('edit');
+$editIcon = $objIcon->show();
+
+$objIcon->setIcon('delete');
+$deleteIcon = $objIcon->show();
+
+$objIcon->setIcon('add');
+$objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_addanewchapter', 'contextcontent');
+$objIcon->title = $this->objLanguage->languageText('mod_contextcontent_addanewchapter', 'contextcontent');
+$addIcon = $objIcon->show();
 
 $objIcon->setIcon('add_multiple');
 $objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile', 'contextcontent', 'Create page from file');
 $objIcon->title = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile', 'contextcontent', 'Create page from file');
 $addPageFromFileIcon = $objIcon->show();
+
+$objIcon->setIcon('create_page');
+$objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter', 'contextcontent');
+$objIcon->title = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter', 'contextcontent');
+$addPageIcon = $objIcon->show();
 
 if ($this->objModuleCatalogue->checkIfRegistered('scorm')) {
     $objIcon->setIcon('scm');
@@ -73,8 +59,6 @@ $streamerimg = '<img  class="newcontentimg" src="' . $imgPath . '">';
 if ($this->isValid('addchapter')) {
     $link = new link($this->uri(array('action' => 'addchapter')));
     $link->link = $addIcon;
-    $link->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
-    $link->extra = ' aria-label="' . htmlspecialchars($addChapterLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($addChapterLabel, ENT_QUOTES, 'UTF-8') . '"';
 
     $addChapter = $link->show();
 } else {
@@ -90,7 +74,7 @@ if ($this->objModuleCatalogue->checkIfRegistered('scorm') && $this->isValid('add
 } else {
     $addScormChapter = '';
 }
-echo '<div class="chisimba-page-title-row"><h1>' . $this->objContext->getTitle() . '</h1>' . '<div class="chisimba-page-title-actions">' . $addChapter . ' ' . $addScormChapter . '</div></div>';
+echo '<h1>' . $this->objContext->getTitle() . ' ' . $addChapter . ' ' . $addScormChapter . '</h1>';
 
 $counter = 1;
 $notVisibleCounter = 0;
@@ -154,16 +138,6 @@ foreach ($chapters as $chapter) {
 
     if ($showChapter) {
         $addedCounter++;
-        $chapterLabel = $this->objLanguage->languageText(
-            'mod_contextcontent_chaptermarker',
-            'contextcontent',
-            'CHAPTER'
-        );
-        $chapterMarker = '<span class="chisimba-chapter-marker">'
-            . '<span class="chisimba-chapter-marker-icon">' . $chapterIcon . '</span>'
-            . '<span class="chisimba-chapter-marker-text">'
-            . htmlspecialchars($chapterLabel, ENT_QUOTES, 'UTF-8') . ' ' . $addedCounter
-            . '</span></span>';
         if ($chapter['scorm'] == 'Y') {
 
             // Get List of Pages in the Chapter
@@ -180,18 +154,12 @@ foreach ($chapters as $chapter) {
 
             $editLink = new link($this->uri(array('action' => 'editscorm', 'id' => $chapter['chapterid'])));
             $editLink->link = $editIcon;
-            $editLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-edit';
-            $editLink->extra = ' aria-label="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '"';
 
             $deleteLink = new link($this->uri(array('action' => 'deletechapter', 'id' => $chapter['chapterid'])));
             $deleteLink->link = $deleteIcon;
-            $deleteLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-delete';
-            $deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
 
             $addPageLink = new link($this->uri(array('action' => 'addpage', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $addPageIcon;
-            $addPageLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
-            $addPageLink->extra = ' aria-label="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '"';
 
 
 
@@ -203,14 +171,19 @@ foreach ($chapters as $chapter) {
                 $ischapterlogged = FALSE;
                 $streamerimg = "";
             }
-            $chapterHeading = $chapterLink->show();
-            if ($ischapterlogged == FALSE) {
-                $chapterHeading = $streamerimg . ' ' . $chapterHeading;
+            if (trim($chapterPages) == '<ul class="htmlliststyle"></ul>') {
+                if ($ischapterlogged == FALSE) {
+                    $content = '<h1 class="streamerimg"> ' . $streamerimg . " " . $chapterLink->show();
+                } else {
+                    $content = '<h1 class="chapterlink">' . $chapterLink->show();
+                }
+            } else {
+                if ($ischapterlogged == FALSE) {
+                    $content = '<h1 class="streamerimg"> ' . $streamerimg . " " . $chapterLink->show();
+                } else {
+                    $content = '<h1 class="chapterlink">' . $chapterLink->show();
+                }
             }
-            $content = '<h2 class="chisimba-chapter-title"><span class="chisimba-chapter-heading-text">'
-                . $chapterMarker
-                . '<span class="chisimba-chapter-name">' . $chapterHeading . '</span>'
-                . '</span></span><span class="chisimba-chapter-actions">';
 
             if ($this->isValid('editchapter')) {
                 $content .= ' ' . $editLink->show();
@@ -225,7 +198,7 @@ foreach ($chapters as $chapter) {
               $content .= ' '.$addPageLink->show();
               }
              */
-            $content .= '</span></h2><hr />';
+            $content .= '</h1><hr />';
         } else {
 
 
@@ -243,18 +216,12 @@ foreach ($chapters as $chapter) {
 
             $editLink = new link($this->uri(array('action' => 'editchapter', 'id' => $chapter['chapterid'])));
             $editLink->link = $editIcon;
-            $editLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-edit';
-            $editLink->extra = ' aria-label="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '"';
 
             $deleteLink = new link($this->uri(array('action' => 'deletechapter', 'id' => $chapter['chapterid'])));
             $deleteLink->link = $deleteIcon;
-            $deleteLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-delete';
-            $deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
 
             $addPageLink = new link($this->uri(array('action' => 'addpage', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $addPageIcon;
-            $addPageLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
-            $addPageLink->extra = ' aria-label="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '"';
 
             $addPageFromFileLink = new link($this->uri(array('action' => 'addpagefromfile', 'chapterid' => $chapter['chapterid'])));
             $addPageFromFileLink->link = $addPageFromFileIcon;
@@ -269,17 +236,19 @@ foreach ($chapters as $chapter) {
                 $streamerimg = "";
             }
             if (trim($chapterPages) == '<ul class="htmlliststyle"></ul>') {
-                $chapterHeading = $chapter['chaptertitle'];
+                if ($ischapterlogged == FALSE) {
+                    $content = '<h1> ' . $streamerimg . " " . $chapter['chaptertitle'];
+                } else {
+                    $content = '<h1>' . $chapter['chaptertitle'];
+                }
             } else {
-                $chapterHeading = $chapterLink->show();
+                if ($ischapterlogged == FALSE) {
+                    $content = '<h1> ' . $streamerimg . " " . $chapterLink->show();
+                    ;
+                } else {
+                    $content = '<h1>' . $chapterLink->show();
+                }
             }
-            if ($ischapterlogged == FALSE) {
-                $chapterHeading = $streamerimg . ' ' . $chapterHeading;
-            }
-            $content = '<h2 class="chisimba-chapter-title"><span class="chisimba-chapter-heading-text">'
-                . $chapterMarker
-                . '<span class="chisimba-chapter-name">' . $chapterHeading . '</span>'
-                . '</span></span><span class="chisimba-chapter-actions">';
 
             if ($this->isValid('editchapter')) {
                 $content .= ' ' . $editLink->show();
@@ -303,7 +272,7 @@ foreach ($chapters as $chapter) {
                 $content .= ' ' . $pdfLink->show();
             }
 
-            $content .= '</span></h2>';
+            $content .= '</h1>';
 
             //print_r($chapter);
 
@@ -323,7 +292,6 @@ foreach ($chapters as $chapter) {
             $content .= $objWashout->parseText($chapter['introduction']);
 
             $chapterOptions = array();
-            $chapterContents = '';
 
             if ($chapter['visibility'] == 'I' && !$this->isValid('viewhiddencontent')) {
                 $content .= '<p class="warning">' . ucfirst($this->objLanguage->code2Txt('mod_contextcontent_studentscannotaccesscontent', 'contextcontent')) . '.</p>';
@@ -343,19 +311,7 @@ foreach ($chapters as $chapter) {
                     // Empty variable for use later on
                     $chapterPages = '';
                 } else {
-                    $tocId = 'toc_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $chapter['chapterid']);
-                    $toggleLabel = $this->objLanguage->languageText(
-                        'mod_contextcontent_showhidecontents',
-                        'contextcontent',
-                        'Show/Hide Contents'
-                    );
-                    $chapterContents = '<button type="button" class="chisimba-chapter-contents-toggle"'
-                        . ' aria-expanded="false" aria-controls="' . $tocId . '">'
-                        . htmlspecialchars($toggleLabel, ENT_QUOTES, 'UTF-8')
-                        . '</button>'
-                        . '<div id="' . $tocId . '" class="chisimba-chapter-contents" hidden>'
-                        . $chapterPages
-                        . '</div>';
+                    $chapterOptions[] = '<div id="toc_' . $chapter['chapterid'] . '"  style="display:none">' . $chapterPages . '</div><a href="#" onclick="Effect.toggle(\'toc_' . $chapter['chapterid'] . '\', \'slide\'); return false;"><strong>' . $this->objLanguage->languageText('mod_contextcontent_showhidecontents', 'contextcontent') . ' ...</strong></a>';
                 }
             }
 
@@ -383,18 +339,13 @@ foreach ($chapters as $chapter) {
                 $chapterOptions[] = $moveDownLink->show();
             }
 
-            if ($chapterContents !== '') {
-                $content .= $chapterContents;
-            }
-
             if ((is_countable($chapterOptions) ? count($chapterOptions) : 0) > 0) {
-                $content .= '<div class="chisimba-chapter-order-actions">';
+
                 $divider = '';
                 foreach ($chapterOptions as $option) {
                     $content .= $divider . $option;
                     $divider = ' / ';
                 }
-                $content .= '</div>';
             }
         }
         $chapterList .= '<div class="chapterlisting">' . $content . '</div><hr />';
@@ -423,35 +374,6 @@ if ((is_countable($chapters) ? count($chapters) : 0) > 1) {
 **/
 
 echo $chapterList;
-?>
-<script>
-(function () {
-    'use strict';
-
-    var chapterList = document.getElementById('allchapters');
-    if (!chapterList || chapterList.dataset.contentsToggleReady === 'true') {
-        return;
-    }
-
-    chapterList.dataset.contentsToggleReady = 'true';
-    chapterList.addEventListener('click', function (event) {
-        var button = event.target.closest('.chisimba-chapter-contents-toggle');
-        if (!button || !chapterList.contains(button)) {
-            return;
-        }
-
-        var contents = document.getElementById(button.getAttribute('aria-controls'));
-        if (!contents) {
-            return;
-        }
-
-        var expanded = button.getAttribute('aria-expanded') === 'true';
-        button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        contents.hidden = expanded;
-    });
-}());
-</script>
-<?php
 
 if ($this->isValid('addchapter')) {
     $link = new link($this->uri(array('action' => 'addchapter')));

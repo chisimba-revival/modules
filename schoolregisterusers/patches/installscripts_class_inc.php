@@ -88,7 +88,7 @@ class schoolregisterusers_installscripts extends dbtable
      */
     public function postinstall()
     {
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $objGa->addGroup("SchoolUserManagers", "Has permissions to manage users via the schoolregisterusers module");
     }
 

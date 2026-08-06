@@ -766,9 +766,7 @@ class contextcontent extends controller {
         if ($menutitle == null) {
             $menutitle = "Untitled";
         }
-        // CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
-        // Ignore submitted page-specific JavaScript/CSS at the save boundary.
-        $headerscripts = '';
+        $headerscripts = stripslashes($this->getParam('headerscripts'));
         $language = 'en'; //@GOOD HEAVENS @TODO FIX THIS - DWK 2012 05 29
         $pagecontent = stripslashes($this->getParam('pagecontent'));
         $parent = stripslashes($this->getParam('parentnode'));
@@ -809,9 +807,7 @@ class contextcontent extends controller {
     protected function autoSavePage() {
 
         $menutitle = stripslashes($this->getParam('menutitle'));
-        // CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
-        // Ignore submitted page-specific JavaScript/CSS at the save boundary.
-        $headerscripts = '';
+        $headerscripts = stripslashes($this->getParam('headerscripts'));
         $language = 'en';
         $pagecontent = stripslashes($this->getParam('pagecontent'));
         $parent = stripslashes($this->getParam('parentnode'));
@@ -831,9 +827,7 @@ class contextcontent extends controller {
     protected function saveScormPage() {
 
         $menutitle = stripslashes($this->getParam('menutitle'));
-        // CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
-        // Ignore submitted page-specific JavaScript/CSS at the save boundary.
-        $headerscripts = '';
+        $headerscripts = stripslashes($this->getParam('headerscripts'));
         $language = 'en';
         $pagecontent = $this->getParam('parentfolder');
         $parent = stripslashes($this->getParam('parentnode'));
@@ -968,7 +962,7 @@ class contextcontent extends controller {
         $pageId = $this->getParam('id');
         $contextCode = $this->getParam('context');
         $menutitle = stripslashes($this->getParam('menutitle'));
-        // Ignore submitted header scripts; an edit preserves any legacy value.
+        $headerScripts = stripslashes($this->getParam('headerscripts'));
         $pagecontent = stripslashes($this->getParam('pagecontent'));
         $parentnode = stripslashes($this->getParam('parentnode'));
 
@@ -985,7 +979,7 @@ class contextcontent extends controller {
             if ($page == FALSE) {
                 return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
             } else {
-                $this->objContentPages->updatePage($page['pageid'], $menutitle, $pagecontent, $page['headerscripts']);
+                $this->objContentPages->updatePage($page['pageid'], $menutitle, $pagecontent, $headerScripts);
 
                 if ($parentnode != $page['parentid']) {
                     //if ($parentnode != $page['parentid'] && ($page['lft'] > $parentPage['lft']) && ($page['rght'] < $parentPage['rght'])) {
@@ -1316,7 +1310,6 @@ class contextcontent extends controller {
      * @param string $pageId Record Id of the Page
      */
     private function changeNavigation($type, $pageId='') {
-        // CHISIMBA_CONTEXTCONTENT_NAVIGATION_LINKS
 
         $page = $this->objContentOrder->getPage($pageId, $this->contextCode);
 
@@ -1326,18 +1319,18 @@ class contextcontent extends controller {
             if ($type == 'twolevel') {
                 $this->setSession('navigationType', 'twolevel');
                 echo $this->objContentOrder->getTwoLevelNav($this->contextCode, $page['chapterid'], $pageId);
-                echo '<p><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="tree" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewastree', 'contextcontent', 'View as Tree') . '...</a>';
-                echo '<br /><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="bookmarks" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewbookmarkedpages', 'contextcontent', 'View Bookmarked Pages') . '</a></p>';
+                echo '<p><a href="javascript:changeNav(\'tree\');">' . $this->objLanguage->languageText('mod_contextcontent_viewastree', 'contextcontent', 'View as Tree') . '...</a>';
+                echo '<br /><a href="javascript:changeNav(\'bookmarks\');">' . $this->objLanguage->languageText('mod_contextcontent_viewbookmarkedpages', 'contextcontent', 'View Bookmarked Pages') . '</a></p>';
             } else if ($type == 'tree') {
                 $this->setSession('navigationType', 'tree');
                 echo $this->objContentOrder->getTree($this->contextCode, $page['chapterid'], 'htmllist', $pageId, 'contextcontent');
-                echo '<p><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="twolevel" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewtwolevels', 'contextcontent', 'View Two Levels at a time') . ' ...</a><br /><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="bookmarks" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewbookmarkedpages', 'contextcontent', 'View Bookmarked Pages') . '</a></p>';
+                echo '<p><a href="javascript:changeNav(\'twolevel\');">' . $this->objLanguage->languageText('mod_contextcontent_viewtwolevels', 'contextcontent', 'View Two Levels at a time') . ' ...</a><br /><a href="javascript:changeNav(\'bookmarks\');">' . $this->objLanguage->languageText('mod_contextcontent_viewbookmarkedpages', 'contextcontent', 'View Bookmarked Pages') . '</a></p>';
             } else if ($type == 'bookmarks') {
                 $this->setSession('navigationType', 'bookmarks');
 
                 echo $this->objContentOrder->getBookmarkedPages($this->contextCode, $page['chapterid'], $pageId, 'contextcontent');
 
-                echo '<p><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="twolevel" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewtwolevels', 'contextcontent', 'View Two Levels at a time') . ' ...</a><br /><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="tree" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewastree', 'contextcontent', 'View as Tree') . '...</a></p>';
+                echo '<p><a href="javascript:changeNav(\'twolevel\');">' . $this->objLanguage->languageText('mod_contextcontent_viewtwolevels', 'contextcontent', 'View Two Levels at a time') . ' ...</a><br /><a href="javascript:changeNav(\'tree\');">' . $this->objLanguage->languageText('mod_contextcontent_viewastree', 'contextcontent', 'View as Tree') . '...</a></p>';
             } else {
                 echo ''; // Unknown Type - Return Nothing - AJAX won't do anything
             }

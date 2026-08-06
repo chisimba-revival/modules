@@ -12,6 +12,23 @@ var preinputValue;
 
 var conn = new Ext.data.Connection();
 
+function editorApi(){
+    if(!window.opener || !window.opener.ChisimbaEditor){
+        throw new Error('Chisimba editor API is unavailable');
+    }
+    return window.opener.ChisimbaEditor;
+}
+
+function selectedEditorHtml(){
+    return editorApi().getSelection(instancename);
+}
+
+function insertEditorHtml(html){
+    if(!editorApi().insertHtml(instancename, html)){
+        throw new Error('Chisimba editor insertion failed');
+    }
+}
+
 function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
 
     var tabs = new Ext.TabPanel({
@@ -106,18 +123,9 @@ function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
 
             handler: function(){
                 var contextcode=contextlistfield.value;
-                var selectedText="";
-                if(CKEDITOR.env.ie)
-                {
-                    CKEDITOR.instances[instancename].getSelection().unlock(true);
-                    selectedText = CKEDITOR.instances[instancename].getSelection().getNative().createRange().text;
-                }
-                else
-                {
-                    selectedText=window.opener.CKEDITOR.instances[instancename].getSelection().getNative();
-                }
+                var selectedText=selectedEditorHtml();
                 var link='<a href="'+contexturl+"&contextcode="+contextcode+'">'+selectedText+'</a>';
-                window.opener.CKEDITOR.instances[instancename].insertHtml(link);
+                insertEditorHtml(link);
                 window.close();
             }
         },        {
@@ -251,8 +259,8 @@ function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
                     if(paramList.endsWith(",")){
                         paramList=paramList.substring(0,paramList.length-1);
                     }
-                    filter='['+filterTag+':'+paramList+']' +selectedText+'[/'+filterTag+']';
-                    window.opener.CKEDITOR.instances[instancename].insertHtml(filter);
+                    filter='['+filterTag+':'+paramList+']' +selectedEditorHtml()+'[/'+filterTag+']';
+                    insertEditorHtml(filter);
                     window.close();
                 }
 
@@ -337,16 +345,7 @@ function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
 
             handler: function(){
                 
-                var selectedText="";
-
-                if(CKEDITOR.env.ie)
-                {
-                    CKEDITOR.instances[instancename].getSelection().unlock(true);
-                   
-                    selectedText = CKEDITOR.instances[instancename].getSelection().getNative().createRange().text;
-                }else{
-                    selectedText=  window.opener.CKEDITOR.instances[instancename].getSelection().getNative();
-                }
+                var selectedText=selectedEditorHtml();
                 var filter='';
                 if(filterType=='parametized'){
                     filter='['+filterTag+':'+filterParamName+'='+filterParamValue+']' +selectedText+'[/'+filterTag+']';
@@ -361,7 +360,7 @@ function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
                         paramList=paramList.substring(0,paramList.length-1);
                     }
                     filter='['+filterTag+':'+paramList+']' +selectedText+'[/'+filterTag+']';
-                    window.opener.CKEDITOR.instances[instancename].insertHtml(filter);
+                    insertEditorHtml(filter);
                     window.close();
 
 
@@ -371,7 +370,7 @@ function initContextTools(url,contexturl,filtersurl,baseurl,storyurl,inputurl){
                 else{
                     filter='['+filterTag+']' +selectedText+'[/'+filterTag+']';
                 }
-                window.opener.CKEDITOR.instances[instancename].insertHtml(filter);
+                insertEditorHtml(filter);
                 window.close();
             }
         },        {
@@ -418,7 +417,7 @@ function showResult(btn,text){
         if(filterType == 'pasteinput_singletag'){
             filter='['+filterTag+': '+preinputValue+filterInputValue+', '+defaultValue+"]";
         }
-        window.opener.CKEDITOR.instances[instancename].insertHtml(filter);
+        insertEditorHtml(filter);
         window.close();
     }else{
         filterInputValue=null;

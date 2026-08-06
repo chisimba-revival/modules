@@ -47,6 +47,9 @@ class commentapi extends ChisimbaObject
             $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser =  $this->getObject("user", "security");
             $this->sysConfig = $this->getObject('dbsysconfig', 'sysconfig');
+            $this->objAbuseProtection = $this->getObject(
+                'abuseprotectionprovider', 'abuseprotection'
+            );
             $this->showfullname = $this->sysConfig->getValue('show_fullname', 'blog');
         }
         catch (customException $e)
@@ -68,7 +71,7 @@ class commentapi extends ChisimbaObject
 	 * @param Do we want to show the types dropdown? $showtypes
 	 * @return string form
 	 */
-	public function commentAddForm($postid, $module, $table, $postuserid = NULL, $editor = TRUE, $featurebox = TRUE, $showtypes = TRUE, $captcha = FALSE, $comment = NULL, $useremail = NULL)
+	public function commentAddForm($postid, $module, $table, $postuserid = NULL, $editor = TRUE, $featurebox = TRUE, $showtypes = TRUE, $protectAnonymous = FALSE, $comment = NULL, $useremail = NULL)
 	{
 		try {
 			$this->loadClass('form', 'htmlelements');
@@ -78,7 +81,6 @@ class commentapi extends ChisimbaObject
 			//$this->loadClass('htmlarea', 'htmlelements');
 			$this->loadClass('dropdown', 'htmlelements');
 			$this->loadClass('label', 'htmlelements');
-			$objCaptcha = $this->getObject('captcha', 'utilities');
 		}
 		catch (customException $e)
 		{
@@ -186,16 +188,19 @@ class commentapi extends ChisimbaObject
 			$ctbl->addCell($ctype->show());
 			$ctbl->endRow();
 		}
-		$ctbl->startRow();
-		if(!$this->objUser->isLoggedIn())
+		if (!$this->objUser->isLoggedIn())
 		{
-			$captcha = new textinput('request_captcha');
-			$captchaLabel = new label($this->objLanguage->languageText('phrase_verifyrequest', 'security', 'Verify Request'), 'input_request_captcha');
-			$ctbl->addCell(stripslashes($this->objLanguage->languageText('mod_security_explaincaptcha', 'security', 'To prevent abuse, please enter the code as shown below. If you are unable to view the code, click on "Redraw" for a new one.')).'<br /><div id="captchaDiv">'.$objCaptcha->show().'</div>'.$captcha->show().$required.'  <a href="javascript:redraw();">'.$this->objLanguage->languageText('word_redraw', 'security', 'Redraw').'</a>');
-			$ctbl->endRow();
-			//$cform->addRule('comment', $this->objLanguage->languageText("mod_blogcomments_commentval",'blogcomments'), 'required');
+            $evidence = $this->objAbuseProtection->issueFormEvidence('blog.comment');
+            foreach (array('issued_at', 'nonce', 'signature') as $field) {
+                $cform->addToForm('<input type="hidden" name="abuse_' . $field
+                    . '" value="' . htmlspecialchars((string) $evidence[$field],
+                        ENT_QUOTES, 'UTF-8') . '" />');
+            }
+            $cform->addToForm('<div aria-hidden="true" style="position:absolute;left:-10000px">'
+                . '<label for="abuse_website">Website</label>'
+                . '<input type="text" id="abuse_website" name="website" value="" '
+                . 'tabindex="-1" autocomplete="off" /></div>');
 			$cform->addRule('email', $this->objLanguage->languageText("mod_blogcomments_emailval",'blogcomments'), 'required');
-			$cform->addRule('request_captcha', $this->objLanguage->languageText("mod_blogcomments_captchaval",'blogcomments'), 'required');
 		}
 
  		//end off the form and add the buttons

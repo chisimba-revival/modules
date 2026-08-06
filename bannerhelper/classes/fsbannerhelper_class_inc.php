@@ -229,7 +229,7 @@ class fsbannerhelper extends ChisimbaObject
         $objUser = $this->getObject('user', 'security');
         $userId = $objUser->userId();
         // Admins can edit.
-        $objGa = $this->getObject('gamodel','groupadmin');
+        $objGa = $this->getObject('groupadminmodel','groupadmin');
         $edGroup = $objGa->isGroupMember($userId, "BannerHelper");
         if ($objUser->isLoggedIn()) {
             if ($objUser->isAdmin() || $edGroup ) {

@@ -54,7 +54,7 @@ class dbcmsadmin extends dbTable
 	 * initialise the objects that we need.
 	 *
 	 */
-	public function init()
+	public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
 	{
 		try {
 			$this->objUser = $this->getObject('user', 'security');
@@ -682,7 +682,7 @@ class dbcmsadmin extends dbTable
          * @access public
          * @return bool
          */
-	public function editContent($id = NULL, $title = NULL, $sectionid = NULL, $published = 0, $access = NULL, $introText = NULL, $fullText = NULL, $override_date = NULL, $start_publish = NULL, $access = NULL, $introText = NULL, $fullText = NULL, $metakey = NULL, $metadesc = NULL, $ccLicence = NULL, $hide_title = 0, $creatorid = NULL, $isFrontPage = 0)
+	public function editContent($id = NULL, $title = NULL, $sectionid = NULL, $published = 0, $access = NULL, $introText = NULL, $fullText = NULL, $override_date = NULL, $start_publish = NULL, $metakey = NULL, $metadesc = NULL, $ccLicence = NULL, $hide_title = 0, $creatorid = NULL, $isFrontPage = 0)
 	{
 		$this->_changeTable('tbl_cms_content');
 		if($published == 1 && empty($start_publish)){

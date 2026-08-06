@@ -53,7 +53,7 @@ class lrsdataimport extends dbTable
     *
     * @access public
     */
-    function init()
+    function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         $this->_objUser = $this->getObject('user','security');
         $this->_objDBConfig = $this->getObject('dbconfig','config');
@@ -170,7 +170,7 @@ class lrsdataimport extends dbTable
      * @param object $objDB The DB connection object of the database to connect to
      */
     function _changeTable($tableName,$objDB = null) {
-        (!isset($objDB))? parent::init($tableName) : parent::init($tableName,FALSE,&$objDB);
+        (!isset($objDB))? parent::init($tableName) : parent::init($tableName,FALSE,$objDB);
     }
 
     /**
@@ -194,7 +194,7 @@ class lrsdataimport extends dbTable
      * @return PEAR Result|false
      */
     function checkDatabase() {
-        $this->_changeTable('agree', &$this->_awardDB);
+        $this->_changeTable('agree', $this->_awardDB);
         $result = $this->query('SELECT * FROM agree');
         return $result;
     }
@@ -216,7 +216,7 @@ class lrsdataimport extends dbTable
      * @return TRUE|FALSE
      */
     function importUnits() {
-        $this->_changeTable('barg_unit',&$this->_awardDB);
+        $this->_changeTable('barg_unit',$this->_awardDB);
         $units = $this->getAll('ORDER BY barg_unit_id ASC');
         $this->_changeTable('tbl_award_unit');
         $success = true;
@@ -239,7 +239,7 @@ class lrsdataimport extends dbTable
     * @access public
     */
     function importAgreements() {
-        $this->_changeTable('agree',&$this->_awardDB);
+        $this->_changeTable('agree',$this->_awardDB);
         $agreements = $this->getAll("ORDER BY agree_id ASC");
         $this->_changeTable('tbl_award_agree');
         $success = true;
@@ -250,7 +250,7 @@ class lrsdataimport extends dbTable
             //check barg unit is set, if not try find the actual one
             if ($agree['barg_unit_id'] == 0) {
             	$str = substr($agree['agree_name'],0,strlen($agree['agree_name']-16));
-            	$this->_changeTable('barg_unit',&$this->_awardDB);
+            	$this->_changeTable('barg_unit',$this->_awardDB);
             	$actualUnitArr = $this->getAll("WHERE barg_unit_name LIKE '$str%'");
             	$actualUnit = current($actualUnitArr);
             	$agree['barg_unit_id'] = $actualUnit['barg_unit_id'];
@@ -297,7 +297,7 @@ class lrsdataimport extends dbTable
      * @return true|false
      */
     function importIndexes() {
-        $this->_changeTable('index_type', &$this->_awardDB);
+        $this->_changeTable('index_type', $this->_awardDB);
         $indexes = array('CPI','CPIX','FPI');
         $indexTypes = $this->getAll("ORDER BY index_type_id ASC");
         $this->_changeTable('tbl_award_indexes');
@@ -325,7 +325,7 @@ class lrsdataimport extends dbTable
      * @return true|false
      */
      function importIndexValues() {
-        $this->_changeTable('index_type_index_capture_index', &$this->_awardDB);
+        $this->_changeTable('index_type_index_capture_index', $this->_awardDB);
         $indexValues = $this->getAll("ORDER BY index_type_id ASC");
         $this->_changeTable('tbl_award_indexes');
         $indexes = $this->getAll();
@@ -355,7 +355,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importRegions() {
-         $this->_changeTable('region', &$this->_awardDB);
+         $this->_changeTable('region', $this->_awardDB);
          $indexValues = $this->getAll("ORDER BY region_id ASC");
          $this->_changeTable('tbl_award_region');
          $success = true;
@@ -382,7 +382,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importDistricts() {
-         $this->_changeTable('district', &$this->_awardDB);
+         $this->_changeTable('district', $this->_awardDB);
          $indexValues = $this->getAll("ORDER BY district_id ASC");
          $this->_changeTable('tbl_award_district');
          $success = true;
@@ -410,7 +410,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicMajorDivs() {
-         $this->_changeTable('sic_major_div', &$this->_awardDB);
+         $this->_changeTable('sic_major_div', $this->_awardDB);
          $indexValues = $this->getAll("ORDER BY sic_major_div_id ASC");
          $this->_changeTable('tbl_award_sicmajordiv');
          $success = true;
@@ -443,7 +443,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
     function importOrgArea() {
-        $this->_changeTable("barg_unit_region", &$this->_awardDB);
+        $this->_changeTable("barg_unit_region", $this->_awardDB);
         $indexValues = $this->getAll("ORDER BY barg_unit_id ASC");
         $this->_changeTable('tbl_award_unit_region');
         $success = true;
@@ -465,7 +465,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importOrgParty() {
-         $this->_changeTable('party', &$this->_awardDB);
+         $this->_changeTable('party', $this->_awardDB);
          $values = $this->getAll("WHERE party_type_id = 1 ORDER BY party_id");
          $this->_changeTable('tbl_award_party');
          $success = true;
@@ -489,7 +489,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importWages() {
-         $this->_changeTable('wage', &$this->_awardDB);
+         $this->_changeTable('wage', $this->_awardDB);
          $values = $this->getAll("ORDER BY wage_id");
          $this->_changeTable('tbl_award_wage');
          $success = true;
@@ -514,7 +514,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importOrgType() {
-         $this->_changeTable('party_type', &$this->_awardDB);
+         $this->_changeTable('party_type', $this->_awardDB);
          $values = $this->getAll("ORDER BY party_type_id");
          $this->_changeTable('tbl_lrs_org_type');
          $success = true;
@@ -538,7 +538,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocOld() {
-         $this->_changeTable('soc_old', &$this->_awardDB);
+         $this->_changeTable('soc_old', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_old_id");
          $this->_changeTable('tbl_lrs_soc_old');
          $success = true;
@@ -571,7 +571,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocMajorGroup() {
-         $this->_changeTable('soc_maj_grp', &$this->_awardDB);
+         $this->_changeTable('soc_maj_grp', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_maj_grp_id");
          $this->_changeTable('tbl_lrs_soc_major_group');
          $success = true;
@@ -595,7 +595,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importJobCodes() {
-         $this->_changeTable('job_codes', &$this->_awardDB);
+         $this->_changeTable('job_codes', $this->_awardDB);
          $values = $this->getAll("ORDER BY job_code_id");
          $this->_changeTable('tbl_lrs_job_codes');
          $success = true;
@@ -621,7 +621,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importGrades() {
-         $this->_changeTable('grade', &$this->_awardDB);
+         $this->_changeTable('grade', $this->_awardDB);
          $values = $this->getAll("ORDER BY grade_id");
          $this->_changeTable('tbl_lrs_grades');
          $success = true;
@@ -645,7 +645,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocSubMajorGroup() {
-         $this->_changeTable('soc_sub_maj_grp', &$this->_awardDB);
+         $this->_changeTable('soc_sub_maj_grp', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_maj_grp_id");
          $this->_changeTable('tbl_lrs_soc_sub_major_group');
          $success = true;
@@ -676,7 +676,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocMinorGroup() {
-         $this->_changeTable('soc_min_grp', &$this->_awardDB);
+         $this->_changeTable('soc_min_grp', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_maj_grp_id");
          $this->_changeTable('tbl_lrs_soc_minor_group');
          $success = true;
@@ -709,7 +709,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocUnitGroup() {
-         $this->_changeTable('soc_unit_grp', &$this->_awardDB);
+         $this->_changeTable('soc_unit_grp', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_maj_grp_id");
          $this->_changeTable('tbl_lrs_soc_unit_group');
          $success = true;
@@ -744,7 +744,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSocName() {
-         $this->_changeTable('soc_name', &$this->_awardDB);
+         $this->_changeTable('soc_name', $this->_awardDB);
          $values = $this->getAll("ORDER BY soc_name_id");
          $this->_changeTable('tbl_lrs_soc_name');
          $success = true;
@@ -783,7 +783,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importWageSocName() {
-         $this->_changeTable('wage_soc_name', &$this->_awardDB);
+         $this->_changeTable('wage_soc_name', $this->_awardDB);
          $values = $this->getAll("ORDER BY wage_id");
          //$this->_changeTable('tbl_lrs_job_codes');
          //$rec = $this->getRow("description",'unknown');
@@ -812,7 +812,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importOrgBranch() {
-         $this->_changeTable('party_branch', &$this->_awardDB);
+         $this->_changeTable('party_branch', $this->_awardDB);
          $values = $this->getAll("ORDER BY party_branch_id");
          $this->_changeTable('tbl_award_branch');
          $success = true;
@@ -845,7 +845,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importOrgUnitBranch() {
-         $this->_changeTable('barg_unit_party_branch', &$this->_awardDB);
+         $this->_changeTable('barg_unit_party_branch', $this->_awardDB);
          $values = $this->getAll("ORDER BY party_branch_id");
          $this->_changeTable('tbl_award_unit_branch');
          $success = true;
@@ -868,7 +868,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicDiv() {
-         $this->_changeTable('sic_div', &$this->_awardDB);
+         $this->_changeTable('sic_div', $this->_awardDB);
          $values = $this->getAll("ORDER BY sic_div_id");
          $this->_changeTable('tbl_lrs_sic_div');
          $success = true;
@@ -903,7 +903,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicMajorGroup() {
-         $this->_changeTable('sic_major_group', &$this->_awardDB);
+         $this->_changeTable('sic_major_group', $this->_awardDB);
          $values = $this->getAll("ORDER BY sic_major_group_id");
          $this->_changeTable('tbl_lrs_sic_major_group');
          $success = true;
@@ -938,7 +938,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicGroup() {
-         $this->_changeTable('sic_group', &$this->_awardDB);
+         $this->_changeTable('sic_group', $this->_awardDB);
          $values = $this->getAll("ORDER BY sic_group_id");
          $this->_changeTable('tbl_lrs_sic_group');
          $success = true;
@@ -973,7 +973,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicSubGroup() {
-         $this->_changeTable('sic_sub_group', &$this->_awardDB);
+         $this->_changeTable('sic_sub_group', $this->_awardDB);
          $values = $this->getAll("ORDER BY sic_sub_group_id");
          $this->_changeTable('tbl_lrs_sic_sub_group');
          $success = true;
@@ -1008,7 +1008,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importSicOld() {
-         $this->_changeTable('sic_old', &$this->_awardDB);
+         $this->_changeTable('sic_old', $this->_awardDB);
          $values = $this->getAll("ORDER BY sic_old_id");
          $this->_changeTable('tbl_lrs_sic_old');
          $success = true;
@@ -1037,7 +1037,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importPartySic() {
-         $this->_changeTable('party_sic', &$this->_awardDB);
+         $this->_changeTable('party_sic', $this->_awardDB);
          $values = $this->getAll("ORDER BY party_id");
          $this->_changeTable('tbl_award_unit_sic');
          $success = true;
@@ -1063,7 +1063,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importBargUnitSic() {
-         $this->_changeTable('barg_unit_sic', &$this->_awardDB);
+         $this->_changeTable('barg_unit_sic', $this->_awardDB);
          $values = $this->getAll("ORDER BY barg_unit_id");
          $this->_changeTable('tbl_lrs_barg_unit_sic');
          $success = true;
@@ -1089,7 +1089,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importAgreeAllowance() {
-         $this->_changeTable('agree_allowance_type', &$this->_awardDB);
+         $this->_changeTable('agree_allowance_type', $this->_awardDB);
          $values = $this->getAll("ORDER BY agree_id");
          $this->_changeTable('tbl_award_benefits');
          $success = true;
@@ -1129,7 +1129,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importAgreeChildcare() {
-         $this->_changeTable('agree_childcare_type', &$this->_awardDB);
+         $this->_changeTable('agree_childcare_type', $this->_awardDB);
          $values = $this->getAll("ORDER BY agree_id");
          $this->_changeTable('tbl_award_benefits');
          $success = true;
@@ -1155,7 +1155,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importAgreeHour() {
-         $this->_changeTable('agree_hour_type', &$this->_awardDB);
+         $this->_changeTable('agree_hour_type', $this->_awardDB);
          $values = $this->getAll("ORDER BY agree_id");
          $this->_changeTable('tbl_award_benefits');
          $success = true;
@@ -1181,7 +1181,7 @@ class lrsdataimport extends dbTable
       * @return true|false
       */
      function importAgreeLeave() {
-         $this->_changeTable('agree_leave_type', &$this->_awardDB);
+         $this->_changeTable('agree_leave_type', $this->_awardDB);
          $values = $this->getAll("ORDER BY agree_id");
          $this->_changeTable('tbl_award_benefits');
          $success = true;

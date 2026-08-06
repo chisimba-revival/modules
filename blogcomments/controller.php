@@ -55,30 +55,6 @@ class blogcomments extends controller
     private $objDbBlog;
 
     /**
-     * Instance of the modules class of the modulecatalogue module.
-     *
-     * @access private
-     * @var    object
-     */
-    private $objModules;
-
-    /**
-     * Instance of the akismetops class of the akismet module.
-     *
-     * @access private
-     * @var    object
-     */
-    private $objAkiset;
-
-    /**
-     * Instance of the mollomops class of the mollom module.
-     *
-     * @access private
-     * @var    object
-     */
-    private $objMollom;
-
-    /**
      * Instance of the dbsysconfig class of the sysconfig module.
      *
      * @access private
@@ -98,24 +74,17 @@ class blogcomments extends controller
             $this->objDbcomm = $this->getObject('dbblogcomments');
             $this->objDbBlog = $this->getObject('dbblog', 'blog');
             $this->objComm = $this->getObject('commentapi');
+            $this->objAbuseProtection = $this->getObject(
+                'abuseprotectionprovider', 'abuseprotection'
+            );
             //Retrieve the action parameter from the querystring
             $this->action = $this->getParam('action', Null);
             //Create an instance of the User object
             $this->objUser =  & $this->getObject("user", "security");
             //Create an instance of the language object
             $this->objLanguage = &$this->getObject("language", "language");
-            // Retrieve a reference to the modules object.
-            $this->objModules = $this->getObject('modules', 'modulecatalogue');
             // Retrieve a reference to the dbsysconfig object.
             $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
-            // Retrieve a reference to the akismetops object.
-            if ($this->objModules->checkIfRegistered('akismet')) {
-                $this->objAkismet = $this->getObject('akismetops', 'akismet');
-            }
-            // Retrieve a reference to the mollom object.
-            if ($this->objModules->checkIfRegistered('mollom')) {
-                $this->objMollom = $this->getObject('mollomops', 'mollom');
-            }
         }
         catch (customException $e)
         {
@@ -163,9 +132,32 @@ class blogcomments extends controller
                     exit;
                 }
 
-                if(!$this->objUser->isLoggedIn())
-                {
-                    $captcha = $this->getParam('request_captcha');
+                $anonymous = !$this->objUser->isLoggedIn();
+                $abuseContext = array(
+                    'ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
+                    'account' => $this->getParam('email')
+                );
+                if ($anonymous) {
+                    $evidence = array(
+                        'issued_at' => $this->getParam('abuse_issued_at'),
+                        'nonce' => $this->getParam('abuse_nonce'),
+                        'signature' => $this->getParam('abuse_signature'),
+                        'website' => $this->getParam('website')
+                    );
+                    $decision = $this->objAbuseProtection->evaluate(
+                        'blog.comment', $abuseContext, $evidence
+                    );
+                    if (!$decision->isAllowed()) {
+                        $this->objAbuseProtection->record(
+                            'blog.comment', $abuseContext, false
+                        );
+                        $this->nextAction('viewsingle', array(
+                            'postid' => $this->getParam('postid'),
+                            'userid' => $this->objUser->userId(),
+                            'commentrejected' => 1
+                        ), $this->getParam('mod'));
+                        exit;
+                    }
                 }
                 $addinfo['useremail'] = $this->getParam('email');
                 $addinfo['postuserid'] = $this->getParam('userid');
@@ -177,37 +169,12 @@ class blogcomments extends controller
                 $addinfo['ctype'] = $this->getParam('type');
                 $addinfo['comment'] = $this->getParam('comment');
                 $addinfo = $this->objComm->addToDb($addinfo);
-                //print_r($addinfo);
-                //check that the captcha is correct
-                if(!$this->objUser->isLoggedIn())
-                {
-                      if (md5(strtoupper($captcha)) != $this->getParam('captcha') || empty($captcha))
-                      {
-                          //get a timeoutmessage and display it...
-                          $tmsg = $this->getObject('timeoutmessage', 'htmlelements');
-                          $tmsg->setMessage = $this->objLanguage->languageText("mod_blogcomments_badcaptcha", "blogcomments");
-                          $msg = $tmsg->show();
-                          $this->setVarByRef('msg', $msg);
-                          $this->nextAction('viewsingle',array('postid' => $addinfo['postid'], 'userid' => $this->objUser->userId(), 'comment' => $addinfo['comment'], 'useremail' => $addinfo['useremail']), $addinfo['mod']);
-                          exit;
-                      }
-
-                      if (is_object($this->objAkismet)) {
-                          if ($this->objAkismet->isSpam($addinfo['comment'], $addinfo['commentauthor'], $addinfo['aurl'], $addinfo['useremail'])) {
-                              $addinfo['approved'] = 0;
-                          }
-                      }
-                      if (is_object($this->objMollom)) {
-                          try {
-                              $rating = $this->objMollom->rate($addinfo['comment'], $addinfo['commentauthor'], $addinfo['aurl'], $addinfo['useremail']);
-                              if ($rating['spam'] == 'spam') {
-                                  $addinfo['approved'] = 0;
-                              }
-                          } catch (Exception $e) {}
-                      }
-                  }
-                //print_r($addinfo);die();
-                $this->objDbcomm->addComm2Db($addinfo);
+                $stored = $this->objDbcomm->addComm2Db($addinfo);
+                if ($anonymous) {
+                    $this->objAbuseProtection->record(
+                        'blog.comment', $abuseContext, (bool) $stored
+                    );
+                }
 
                 $this->nextAction('viewsingle',array('postid' => $addinfo['postid'], 'userid' => $this->objUser->userId()), $addinfo['mod']);
 

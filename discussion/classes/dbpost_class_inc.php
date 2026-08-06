@@ -1063,10 +1063,6 @@ class dbPost extends dbTable {
                         $this->numOpenThreadDisplayDivs +=1;
                 }
 
-                // Load scriptaclous since we can no longer guarantee it is there
-                $scriptaculous = $this->getObject('scriptaculous', 'prototype');
-                $this->appendArrayVar('headerParams', $scriptaculous->show('text/javascript'));
-
                 // Show Discussion Subscriptions if enabled
 //                if ($discussion['subscriptions'] == 'Y') {
 //                        // Get the number of topics a user is subscribed to
@@ -1998,18 +1994,43 @@ function clearForTangent()
 //<![CDATA[
 
 function loadTranslation(post, lang) {
-    var url = \'index.php\';
-    var pars = \'module=discussion&action=loadtranslation&id=\'+post+\'&lang=\'+lang;
-    var myAjax = new Ajax.Request( url, {method: \'get\', parameters: pars, onLoading:function(response)
-    {
-        Effect.SlideUp($(\'text_\'+post));
-        $(\'loading_\'+post).innerHTML = \'<span class="dim"><img src="skins/_common/icons/loader.gif" /> Loading Translation</span><br /><br />\';
-        Effect.Appear($(\'loading_\'+post), {queue:\'end\'});
-    } , onComplete: function(response) {
-        Effect.Appear($(\'text_\'+post), {queue:\'end\'});
-        $(\'text_\'+post).innerHTML = response.responseText;
-        Effect.SlideUp($(\'loading_\'+post));
-    }} );
+    var textElement = document.getElementById(\'text_\' + post);
+    var loadingElement = document.getElementById(\'loading_\' + post);
+    if (!textElement || !loadingElement) {
+        return;
+    }
+
+    var parameters = new URLSearchParams({
+        module: \'discussion\',
+        action: \'loadtranslation\',
+        id: post,
+        lang: lang
+    });
+
+    textElement.style.display = \'none\';
+    loadingElement.textContent = \'Loading translation…\';
+    loadingElement.style.display = \'block\';
+
+    fetch(\'index.php?\' + parameters.toString(), {
+        method: \'GET\',
+        credentials: \'same-origin\',
+        headers: {\'X-Requested-With\': \'XMLHttpRequest\'}
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error(\'Translation request failed\');
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            textElement.innerHTML = html;
+            textElement.style.display = \'block\';
+            loadingElement.style.display = \'none\';
+        })
+        .catch(function () {
+            textElement.style.display = \'block\';
+            loadingElement.textContent = \'Unable to load translation.\';
+        });
 }
 
 //]]>
