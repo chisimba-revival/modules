@@ -691,6 +691,13 @@ class contextcontent extends controller {
             return $this->nextAction('switchcontext');
         }
 
+        if (
+            $chapter == ''
+            || !$this->objContextChapters->isContextChapter($this->contextCode, $chapter)
+        ) {
+            return $this->nextAction(NULL, array('error' => 'chapternotincontext'));
+        }
+
         $this->setLayoutTemplate(NULL);
 
         $this->setVar('mode', 'add');
@@ -780,11 +787,33 @@ class contextcontent extends controller {
         $parent = stripslashes($this->getParam('parentnode'));
         $chapter = stripslashes($this->getParam('chapter'));
 
+        if (
+            $chapter == ''
+            || !$this->objContextChapters->isContextChapter($this->contextCode, $chapter)
+        ) {
+            return $this->nextAction(NULL, array('error' => 'chapternotincontext'));
+        }
+
+        if ($parent != '' && $parent != 'root') {
+            $parentPage = $this->objContentOrder->getPage($parent, $this->contextCode);
+            if ($parentPage == FALSE || $parentPage['chapterid'] != $chapter) {
+                return $this->nextAction(NULL, array('error' => 'invalididprovided'));
+            }
+        }
+
         $chapterTitle = $this->objContextChapters->getContextChapterTitle($chapter);
         $titleId = $this->objContentTitles->addTitle('', $menutitle, $pagecontent, $language, $headerscripts);
+        $pageId = $this->objContentOrder->addPageToContext(
+            $titleId,
+            $parent,
+            $this->contextCode,
+            $chapter
+        );
 
-
-        $pageId = $this->objContentOrder->addPageToContext($titleId, $parent, $this->contextCode, $chapter);
+        if ($pageId == FALSE) {
+            $this->objContentTitles->deleteTitle($titleId);
+            return $this->nextAction(NULL, array('error' => 'couldnotcreatepage'));
+        }
 
         $this->setVar('mode', 'add');
         $this->setVar('formaction', 'savepage');
