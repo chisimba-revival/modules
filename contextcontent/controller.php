@@ -405,14 +405,20 @@ class contextcontent extends controller {
         $endDate = $this->getParam('enddate');
 
         $chapterId = $this->objChapters->addChapter('', $title, $intro);
-        $this->objContextChapters->updateChapterReleaseDate($chapterId, $startdate);
-        $this->objContextChapters->updateChapterEndDate($chapterId, $enddate);
-
-        $result = $this->objContextChapters->addChapterToContext($chapterId, $this->contextCode, $visibility);
+        $result = $this->objContextChapters->addChapterToContext(
+            $chapterId,
+            $this->contextCode,
+            $visibility
+        );
 
         if ($result == FALSE) {
             return $this->nextAction(NULL, array('error' => 'couldnotcreatechapter'));
         } else {
+            // Release dates belong to the context-chapter placement record, not
+            // to the reusable chapter record.
+            $this->objContextChapters->updateChapterReleaseDate($result, $startDate);
+            $this->objContextChapters->updateChapterEndDate($result, $endDate);
+
             //add to activity log
             $contextinfo = $this->objContext->getContext($this->contextCode);
             if ($this->eventsEnabled) {
@@ -871,6 +877,10 @@ class contextcontent extends controller {
         }
 
         $page = $this->objContentOrder->getPage($pageId, $this->contextCode);
+        if ($page == FALSE) {
+            return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
+        }
+
         if ($page['scorm'] == 'Y') {
             return $this->nextAction('viewscorm',
                     array(
@@ -894,11 +904,6 @@ class contextcontent extends controller {
             }
         }
 
-
-        if ($page == FALSE) {
-            //echo 'page does not exist';
-            return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
-        }
 
         $this->setVar('page', $page);
         $this->setVar('currentPage', $pageId);
