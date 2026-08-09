@@ -18,7 +18,7 @@ $fields = array(
         ),
     'userid' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => TRUE
         )
     );

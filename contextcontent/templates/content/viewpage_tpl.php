@@ -25,20 +25,14 @@ $middle .= ' <br /> ';
 
 
 //A link to adding a page
-$addLink = new link($this->uri(array('action' => 'addpage', 'id' => $page['id'], 'context' => $this->contextCode, 'chapter' => $page['chapterid'])));
-$addLink->link = $this->objLanguage->languageText('mod_contextcontent_addcontextpages', 'contextcontent');
+$addLink = new link($this->uri(array('action' => 'addcontent', 'id' => $page['id'], 'context' => $this->contextCode, 'chapter' => $page['chapterid'])));
+$addLink->link = $this->objLanguage->languageText('mod_contextcontent_addpage', 'contextcontent');
 
 $addPageFromFileLink = new link($this->uri(array('action' => 'addpagefromfile', 'id' => $page['id'], 'context' => $this->contextCode, 'chapterid' => $page['chapterid'])));
 $addPageFromFileLink->link = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile', 'contextcontent', 'Create page from file');
 
-$scormInstalled = $objModule->checkIfRegistered("scorm");
-if ($scormInstalled) {
-    $addScormLink = new link($this->uri(array('action' => 'addscormpage', 'id' => $page['id'], 'context' => $this->contextCode, 'chapter' => $page['chapterid'])));
-    $addScormLink->link = $this->objLanguage->languageText('mod_contextcontent_addcontextscormpages', 'contextcontent');
-    $scormLink = $addScormLink->show();
-} else {
-    $scormLink = NULL;
-}
+$scormInstalled = false;
+$scormLink = NULL;
 
 //A link to editing a page
 $editLink = new link($this->uri(array('action' => 'editpage', 'id' => $page['id'], 'context' => $this->contextCode)));
@@ -88,9 +82,7 @@ if ($this->isValid('movepageup')) {
     if ($isFirstPageOnLevel) {
         $middle .= '<span style="color:grey;" title="' . $this->objLanguage->languageText('mod_contextcontent_isfirstpageonlevel', 'contextcontent') . '">' . $this->objLanguage->languageText('mod_contextcontent_movepageup', 'contextcontent') . '</span>';
     } else {
-        $link = new link($this->uri(array('action' => 'movepageup', 'id' => $page['id'])));
-        $link->link = $this->objLanguage->languageText('mod_contextcontent_movepageup', 'contextcontent');
-        $middle .= $link->show();
+        $middle .= '<span class="contextcontent-secure-action-note">Reorder from the content manager</span>';
     }
 
     $middle .= ' / ';
@@ -98,9 +90,7 @@ if ($this->isValid('movepageup')) {
     if ($isLastPageOnLevel) {
         $middle .= '<span style="color:grey;" title="' . $this->objLanguage->languageText('mod_contextcontent_islastpageonlevel', 'contextcontent') . '">' . $this->objLanguage->languageText('mod_contextcontent_movepagedown', 'contextcontent') . '</span>';
     } else {
-        $link = new link($this->uri(array('action' => 'movepagedown', 'id' => $page['id'])));
-        $link->link = $this->objLanguage->languageText('mod_contextcontent_movepagedown', 'contextcontent');
-        $middle .= $link->show();
+        $middle .= '<span class="contextcontent-secure-action-note">Reorder from the content manager</span>';
     }
 }
 
@@ -135,33 +125,6 @@ $this->loadClass('link', 'htmlelements');
 
 $this->setVar('pageTitle', htmlentities($this->objContext->getTitle() . ' - ' . $page['menutitle']));
 
-if (trim($page['headerscripts']) != '') {
-
-    // Explode into array
-    $scripts = explode(',', $page['headerscripts']);
-
-    // Loop through array
-    foreach ($scripts as $script) {
-        // Check if valid
-        if (trim($script) != '') {
-
-            // Get Path
-            $fileInfo = $objFile->getFilePath($script);
-
-            // If Valid
-            if ($fileInfo != FALSE) {
-
-                // Check if Script or CSS, and display
-                if (substr($fileInfo, -2, 2) == 'js') {
-                    $this->appendArrayVar('headerParams', '<script type="text/javascript" src="' . $fileInfo . '"></script>');
-                } else {
-                    $this->appendArrayVar('headerParams', '<link rel="stylesheet" type="text/css" href="' . $fileInfo . '"');
-                }
-            }
-        }
-    }
-}
-
 $objWashout = $this->getObject('washout', 'utilities');
 
 $content = "";
@@ -179,7 +142,69 @@ $pageintroheader = new htmlheading();
 $pageintroheader->type = 1;
 $pageintroheader->cssClass = "pagetitle";
 $pageintroheader->str = $page['menutitle'];
-$content.= $pageintroheader->show() . $objWashout->parseText($page['pagecontent']);
+$typeClass = $page['contenttype'] === 'short_text' ? ' contextcontent-short-text' : ($page['contenttype'] === 'image_audio' ? ' contextcontent-image-audio' : ($page['contenttype'] === 'video' ? ' contextcontent-video' : (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true) ? ' contextcontent-resource' : ' contextcontent-rich-text')));
+$shortTextOpen = $page['contenttype'] === 'short_text' ? '<div class="contextcontent-phone-reading"><div class="contextcontent-phone-reading-speaker" aria-hidden="true"></div><div class="contextcontent-phone-reading-screen">' : '';
+$shortTextClose = $page['contenttype'] === 'short_text' ? '</div><div class="contextcontent-phone-reading-gesture" aria-hidden="true"></div></div>' : '';
+if ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="([A-Za-z0-9_-]+)"\\s+comment="([^"\\r\\n]+\\.zip)"\\s*\\/\\]/i', $page['pagecontent'], $zipToken)) {
+    $objFilePreview = $this->getObject('filepreview', 'filemanager');
+    $zipPreview = $objFilePreview->previewFile($zipToken[1]);
+    $zipDownload = '';
+    if (isset($objFilePreview->file['fullurl']) && $objFilePreview->file['fullurl'] !== '') {
+        $zipUrl = htmlspecialchars($objFilePreview->file['fullurl'], ENT_QUOTES, 'UTF-8');
+        $zipName = isset($objFilePreview->file['filename'])
+            ? htmlspecialchars($objFilePreview->file['filename'], ENT_QUOTES, 'UTF-8')
+            : htmlspecialchars($zipToken[2], ENT_QUOTES, 'UTF-8');
+        $zipLabel = htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_download_files', 'contextcontent', 'Download files'), ENT_QUOTES, 'UTF-8');
+        $zipDownload = '<p class="contextcontent-resource-action"><a class="contextcontent-resource-link contextcontent-resource-download" href="' . $zipUrl . '" download>' . $zipLabel . ' <span class="contextcontent-resource-filename">(' . $zipName . ')</span></a></p>';
+    }
+    $renderedZip = '<div class="contextcontent-resource-archive-preview">' . $zipPreview . '</div>' . $zipDownload;
+    $renderedPageContent = str_replace($zipToken[0], $renderedZip, $page['pagecontent']);
+} elseif ($page['contenttype'] === 'zip_bundle') {
+    $renderedPageContent = $objWashout->parseText($page['pagecontent']);
+} else {
+    $renderedPageContent = in_array($page['contenttype'], array('image_audio', 'video', 'pdf', 'external_reading'), true)
+        ? $page['pagecontent']
+        : $objWashout->parseText($page['pagecontent']);
+}
+$content .= '<article class="contextcontent-native-page' . $typeClass . '">'
+    . $shortTextOpen . $pageintroheader->show() . $renderedPageContent
+    . $shortTextClose . '</article>';
+
+if (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true)) {
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource{max-width:820px;margin:1.5rem auto}.contextcontent-resource-body{margin-top:1rem;padding:1.4rem;border:1px solid #cfd8dc;border-left:5px solid #1976d2;border-radius:10px;background:#f7fafb}.contextcontent-resource-description{font-size:1.08rem;line-height:1.6}.contextcontent-resource-source{color:#546e7a;font-weight:700}.contextcontent-resource-action a{display:inline-block;padding:.7rem 1rem;border-radius:6px;background:#1565c0;color:#fff;text-decoration:none;font-weight:700}.contextcontent-resource-action a:hover,.contextcontent-resource-action a:focus{background:#0d47a1;color:#fff}.contextcontent-external-notice{font-size:.9rem;color:#546e7a}</style>');
+}
+
+if ($page['contenttype'] === 'video') {
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-video{max-width:1000px;margin:1rem auto}.contextcontent-video-body figure{margin:0 auto}.contextcontent-video-body video{display:block;width:100%;height:auto;max-height:78vh;margin:0 auto;border-radius:12px;background:#101416}.contextcontent-video-embed{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#101416}.contextcontent-video-portrait .contextcontent-video-embed{padding-top:177.78%}.contextcontent-video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.contextcontent-video-portrait figure{max-width:430px}.contextcontent-video-landscape figure{max-width:960px}.contextcontent-video-landscape video{aspect-ratio:16/9;height:auto;min-height:0;object-fit:contain}.contextcontent-video-body figcaption{padding:.65rem 0;color:#455a64}.contextcontent-video-transcript{margin:1rem auto 0;max-width:960px;padding:1rem;border:1px solid #cfd8dc;border-radius:8px}@media(max-width:560px){.contextcontent-video-body video{max-height:72vh;border-radius:8px}}</style>');
+}
+
+if ($page['contenttype'] === 'image_audio') {
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-image-audio{max-width:900px;margin:1rem auto}.contextcontent-image-audio-body figure{margin:0}.contextcontent-image-audio-body img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;border-radius:12px;background:#eef2f3}.contextcontent-image-audio-body figcaption{padding:.65rem 0;color:#455a64}.contextcontent-image-audio-body audio{display:block;width:100%;margin:1rem 0}.contextcontent-audio-transcript{margin-top:1rem;padding:1rem;border:1px solid #cfd8dc;border-radius:8px}</style>');
+}
+
+if ($page['contenttype'] === 'short_text') {
+    $this->appendArrayVar('headerParams', '<style type="text/css">'
+        . '.contextcontent-short-text{width:360px;max-width:100%;margin:1.5rem auto} '
+        . '.contextcontent-phone-reading{box-sizing:border-box;padding:12px 10px 10px;border:5px solid #263238;border-radius:38px;background:#263238;box-shadow:0 14px 34px rgba(0,0,0,.22)}'
+        . '.contextcontent-phone-reading-speaker{width:54px;height:5px;margin:0 auto 10px;border-radius:4px;background:#78909c}'
+        . '.contextcontent-phone-reading-screen{min-height:500px;padding:1.25rem;border-radius:25px;background:#fff;font-size:1.08rem;line-height:1.62}'
+        . '.contextcontent-phone-reading-gesture{width:92px;height:4px;margin:9px auto 2px;border-radius:4px;background:#b0bec5}'
+        . '.contextcontent-phone-reading-screen .pagetitle{font-size:1.65rem;line-height:1.2;margin-top:0}'
+        . '.contextcontent-phone-reading-screen img,.contextcontent-phone-reading-screen video{max-width:100%;height:auto}'
+        . '@media(max-width:560px){.contextcontent-short-text{max-width:100%;margin:1rem 0}.contextcontent-phone-reading{border-width:2px;border-radius:20px}.contextcontent-phone-reading-screen{min-height:0;padding:1.1rem}}'
+        . '</style>');
+}
+
+if ($this->objUser->isLoggedIn()) {
+    $bookmarkLabel = $contextContentBookmarked ? 'Remove bookmark' : 'Bookmark page';
+    $bookmarkType = $contextContentBookmarked ? 'off' : 'on';
+    $content .= '<form method="post" class="contextcontent-bookmark-form" action="'
+        . htmlspecialchars($this->uri(array('action' => 'changebookmark')), ENT_QUOTES, 'UTF-8') . '">'
+        . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($contextContentCsrf, ENT_QUOTES, 'UTF-8') . '" />'
+        . '<input type="hidden" name="id" value="' . htmlspecialchars($page['id'], ENT_QUOTES, 'UTF-8') . '" />'
+        . '<input type="hidden" name="type" value="' . $bookmarkType . '" />'
+        . '<button type="submit">' . htmlspecialchars($bookmarkLabel, ENT_QUOTES, 'UTF-8') . '</button></form>';
+}
 
 
 $pageNotes = $objModule->checkIfRegistered("pagenotes");
@@ -205,6 +230,7 @@ if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $this->isValid('move
     $this->loadClass('label', 'htmlelements');
 
     $form = new form('movetochapter', $this->uri(array('action' => 'movetochapter')));
+    $form->addToForm((new hiddeninput('csrf_token', $contextContentCsrf))->show());
     $hiddenInput = new hiddeninput('id', $page['id']);
 
     $dropdown = new dropdown('chapter');
@@ -267,6 +293,7 @@ if ($showcomment == 1) {
     }
     $this->loadClass('textarea', 'htmlelements');
     $cform = new form('contextcontent', $this->uri(array('action' => 'addcomment', 'pageid' => $currentPage)));
+    $cform->addToForm((new hiddeninput('csrf_token', $contextContentCsrf))->show());
 
     //start a fieldset
     $cfieldset = $this->getObject('fieldset', 'htmlelements');

@@ -101,7 +101,7 @@ if ((is_countable($chapters) ? count($chapters) : 0) > 0) {
             //    $content .= '<li title="Chapter has no content pages">'.$chapter['chaptertitle'];
             //} else {
 
-            if ($chapter['scorm'] == 'Y') {
+            if (false) {
                 $link = new link($this->uri(array('action' => 'viewscorm', 'mode' => 'chapter', 'folderId' => $chapter['introduction'], 'chapterid' => $chapter['chapterid']), $module = 'scorm'));
                 $link->link = $chapter['chaptertitle'] . $showImg;
                 $content .= '<li>' . $link->show();

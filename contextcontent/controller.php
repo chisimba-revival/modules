@@ -56,6 +56,8 @@ if (!
  */
 class contextcontent extends controller {
 
+    const CSRF_CONTEXT = 'contextcontent_authoring';
+
     /**
      * @var string $contextCode Context Code of Current Context
      */
@@ -84,6 +86,11 @@ class contextcontent extends controller {
 
             // Load Context Object
             $this->objContext = $this->getObject('dbcontext', 'context');
+            $this->objAuthoring = $this->getObject('contentauthoringservice', 'contextcontent');
+            $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
+            $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
+            $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $this->csrf = $stack['csrf'];
 
             // Store Context Code
             $this->contextCode = $this->objContext->getContextCode();
@@ -155,9 +162,27 @@ class contextcontent extends controller {
         if ($this->contextCode == '' && $action != 'notincontext') {
             $action = 'notincontext';
         }
+        $this->validateRequestIdentifiers();
 
         $this->setLayoutTemplate('layout_chapter_tpl.php');
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
+        if ($this->isMutation($action)) {
+            if (in_array($action, array('changebookmark', 'addcomment'), true)) {
+                $this->requireAuthenticatedMutation($action);
+            } else {
+                $this->requireAuthorisedMutation($action);
+            }
+        }
+        if (in_array($action, array('addcontent', 'addpage', 'editpage', 'deletepage',
+            'addchapter', 'editchapter', 'deletechapter', 'exportcontent',
+            'useractivity', 'showuseractivity', 'viewlogs', 'viewlogdetails',
+            'viewcontextcontentusage', 'viewcontextcontentusagedetails', 'addpagefromfile'), true)) {
+            $this->requireCourseManager();
+        }
+        if (in_array($action, array('addscorm', 'addscormpage', 'editscorm', 'savescormpage',
+            'savescormchapter', 'updatescormchapter', 'addpagefromfile', 'uploadfile',
+            'createpagefromfile'), true)) {
+            throw new RuntimeException('This legacy authoring path has been retired from contextcontent');
+        }
 
         switch ($action) {
 
@@ -171,6 +196,8 @@ class contextcontent extends controller {
                 die('Switch Context'); // Fix Up
             case 'addpage':
                 return $this->addPage($this->getParam('chapter'), $this->getParam('id', ''), $this->getParam('context', ''));
+            case 'addcontent':
+                return $this->addContent($this->getParam('chapter'), $this->getParam('id', ''));
             case 'savepage':
                 return $this->savePage();
             case 'useractivity':
@@ -304,6 +331,72 @@ class contextcontent extends controller {
         }
     }
 
+    private function isPost()
+    {
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST';
+    }
+
+    private function validateRequestIdentifiers()
+    {
+        if ($this->contextCode !== ''
+            && !preg_match('/^[A-Za-z0-9._-]{1,255}$/', (string) $this->contextCode)) {
+            throw new InvalidArgumentException('Invalid course code');
+        }
+        foreach (array('id', 'chapter', 'chapterid', 'pageid', 'parentnode') as $name) {
+            $value = (string) $this->getParam($name, '');
+            if ($value !== '' && $value !== 'root'
+                && !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $value)) {
+                throw new InvalidArgumentException('Invalid content identifier');
+            }
+        }
+    }
+
+    private function isMutation($action)
+    {
+        return in_array($action, array(
+            'savepage', 'updatepage', 'deletepageconfirm', 'fixleftright',
+            'movepageup', 'movepagedown', 'savechapter', 'updatechapter',
+            'deletechapterconfirm', 'movechapterup', 'movechapterdown',
+            'movetochapter', 'changebookmark', 'addcomment', 'uploadfile',
+            'createpagefromfile'
+        ), true);
+    }
+
+    private function requireAuthorisedMutation($action)
+    {
+        $this->requireAuthenticatedMutation($action);
+        if (!($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer())) {
+            throw new RuntimeException('You may not manage content in this course');
+        }
+    }
+
+    private function requireAuthenticatedMutation($action)
+    {
+        if (!$this->isPost()) {
+            throw new RuntimeException('POST is required for ' . $action);
+        }
+        if (!$this->objUser->isLoggedIn()) {
+            throw new RuntimeException('Sign in is required');
+        }
+        $token = (string) $this->getParam('csrf_token', '');
+        if (!$this->csrf->consume(self::CSRF_CONTEXT, $token)) {
+            throw new RuntimeException('The form has expired. Please reload and try again.');
+        }
+    }
+
+    private function requireCourseManager()
+    {
+        if (!$this->objUser->isLoggedIn()
+            || !($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer())) {
+            throw new RuntimeException('You may not manage content in this course');
+        }
+    }
+
+    private function prepareMutationForm()
+    {
+        $this->setVar('contextContentCsrf', $this->csrf->issue(self::CSRF_CONTEXT));
+    }
+
     /**
      * Method to override isValid to enable administrators to perform certain action
      *
@@ -353,6 +446,7 @@ class contextcontent extends controller {
 
             // If user can create chapter, show create chapter form
             if ($this->isValid('savechapter')) {
+                $this->prepareMutationForm();
                 return 'nochapters_tpl.php';
             } else { // Else notify user there is no content
                 return 'nocontent_tpl.php';
@@ -372,6 +466,7 @@ class contextcontent extends controller {
      * Method to add a new chapter
      */
     protected function addChapter() {
+        $this->prepareMutationForm();
         $this->setVar('mode', 'add');
 
         $this->setLayoutTemplate(Null);
@@ -395,20 +490,29 @@ class contextcontent extends controller {
      * Method to save a newly create chapter
      */
     protected function saveChapter() {
-        $title = $this->getParam('chapter');
-        if ($title == null) {
-            $title = "Unknown";
+        $title = trim((string) $this->getParam('chaptertitle'));
+        if ($title === '' || mb_strlen($title) > 255) {
+            throw new InvalidArgumentException('A chapter title of at most 255 characters is required');
         }
-        $intro = $this->getParam('intro');
-        $visibility = $this->getParam('visibility');
+        $intro = (string) $this->getParam('intro');
+        $visibility = (string) $this->getParam('visibility');
+        if (!in_array($visibility, array('Y', 'N', 'I'), true)) {
+            throw new InvalidArgumentException('Invalid chapter visibility');
+        }
         $startDate = $this->getParam('startdate');
         $endDate = $this->getParam('enddate');
-
-        $chapterId = $this->objChapters->addChapter('', $title, $intro);
-        $this->objContextChapters->updateChapterReleaseDate($chapterId, $startdate);
-        $this->objContextChapters->updateChapterEndDate($chapterId, $enddate);
-
-        $result = $this->objContextChapters->addChapterToContext($chapterId, $this->contextCode, $visibility);
+        $this->objChapters->beginTransaction();
+        try {
+            $chapterId = $this->objChapters->addChapter('', $title, $intro);
+            $result = $this->objContextChapters->addChapterToContext($chapterId, $this->contextCode, $visibility);
+            if (!$result) { throw new RuntimeException('Could not create chapter'); }
+            $this->objContextChapters->updateChapterReleaseDate($result, $startDate);
+            $this->objContextChapters->updateChapterEndDate($result, $endDate);
+            $this->objChapters->commitTransaction();
+        } catch (Throwable $error) {
+            $this->objChapters->rollbackTransaction();
+            throw $error;
+        }
 
         if ($result == FALSE) {
             return $this->nextAction(NULL, array('error' => 'couldnotcreatechapter'));
@@ -471,6 +575,7 @@ class contextcontent extends controller {
      * @param string $id Record Id of the Chapter
      */
     protected function editChapter($id) {
+        $this->prepareMutationForm();
         $chapter = $this->objContextChapters->getChapter($id);
 
         if ($chapter == FALSE) {
@@ -522,7 +627,10 @@ class contextcontent extends controller {
         $id = $this->getParam('id');
         $chaptercontentid = $this->getParam('chaptercontentid');
         $contextchapterid = $this->getParam('contextchapterid');
-        $title = $this->getParam('chapter');
+        $title = trim((string) $this->getParam('chaptertitle'));
+        if ($title === '' || mb_strlen($title) > 255) {
+            throw new InvalidArgumentException('A chapter title of at most 255 characters is required');
+        }
         $intro = $this->getParam('intro');
         $visibility = $this->getParam('visibility');
 
@@ -594,6 +702,7 @@ class contextcontent extends controller {
      * @param string $id Record Id of the Chapter
      */
     protected function deleteChapter($id) {
+        $this->prepareMutationForm();
         $chapter = $this->objContextChapters->getChapter($id);
 
         if ($chapter == FALSE) {
@@ -681,21 +790,40 @@ class contextcontent extends controller {
      * @param string $contextCode Context Code
      */
     protected function addPage($chapter, $parent='', $contextCode='') {
+        $this->prepareMutationForm();
         if ($contextCode != '' && $contextCode != $this->contextCode) {
             return $this->nextAction('switchcontext');
         }
 
         $this->setLayoutTemplate(NULL);
 
+        $contentType = trim((string) $this->getParam('contenttype', ''));
+        if ($contentType === '') {
+            $course = $this->objContext->getContext($this->contextCode);
+            $format = isset($course['delivery_format']) ? $course['delivery_format'] : 'standard';
+            $this->setVar('contentTypes', $this->objContentTypes->all($format));
+            $this->setVar('parent', '');
+            $this->setVar('selectedContentType', '');
+            $this->setVarByRef('chapter', $chapter);
+            return 'contenttypepicker_tpl.php';
+        }
+        $this->objContentTypes->get($contentType);
+        $this->setVar('contentType', $contentType);
         $this->setVar('mode', 'add');
         $this->setVar('formaction', 'savepage');
         $this->setVarByRef('chapter', $chapter);
         $this->setVarByRef('currentChapter', $chapter);
 
-        $tree = $this->objContentOrder->getTree($this->contextCode, $chapter, 'dropdown');
-        $this->setVarByRef('tree', $tree);
+        $chapterTitle = $this->objContextChapters->getContextChapterTitle($chapter);
+        $this->setVar('chapterTitle', $chapterTitle);
 
-        return 'addeditpage_tpl.php';
+        $course = $this->objContext->getContext($this->contextCode);
+        $format = isset($course['delivery_format']) ? $course['delivery_format'] : 'standard';
+        $this->setVar('contentTypes', $this->objContentTypes->all($format));
+        $this->setVar('parent', $parent);
+        $this->setVar('selectedContentType', $contentType);
+
+        return 'contenttypepicker_tpl.php';
     }
 
     /**
@@ -760,25 +888,164 @@ class contextcontent extends controller {
         return $this->nextAction('viewpage', array('id' => $pageId, 'message' => 'pagesaved'));
     }
 
+    private function imageAudioBodyFromRequest()
+    {
+        $imageUrl = trim((string) $this->getParam('image_url'));
+        $audioUrl = trim((string) $this->getParam('audio_url'));
+        $alt = trim((string) $this->getParam('image_alt'));
+        $caption = trim((string) $this->getParam('media_caption'));
+        $transcript = trim((string) $this->getParam('audio_transcript'));
+        if (!$this->isSafeMediaUrl($imageUrl) || ($audioUrl !== '' && !$this->isSafeMediaUrl($audioUrl))) {
+            throw new InvalidArgumentException('Invalid media URL');
+        }
+        $e = function ($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); };
+        $body = '<div class="contextcontent-image-audio-body"><figure>'
+            . '<img src="' . $e($imageUrl) . '" alt="' . $e($alt) . '" loading="lazy" />';
+        if ($caption !== '') { $body .= '<figcaption>' . $e($caption) . '</figcaption>'; }
+        $body .= '</figure>';
+        if ($audioUrl !== '') {
+            $body .= '<audio controls preload="metadata" src="' . $e($audioUrl) . '"></audio>';
+        }
+        if ($transcript !== '') {
+            $body .= '<details class="contextcontent-audio-transcript"><summary>'
+                . $e($this->objLanguage->languageText('mod_contextcontent_audio_transcript', 'contextcontent'))
+                . '</summary><p>' . nl2br($e($transcript)) . '</p></details>';
+        }
+        return $body . '</div>';
+    }
+
+    private function isSafeMediaUrl($url)
+    {
+        if ($url === '' || preg_match('/[\\x00-\\x1F\\x7F]/', $url)) { return false; }
+        if (preg_match('/^(?:javascript|data|vbscript):/i', $url) || strpos($url, '//') === 0) { return false; }
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        return $scheme === null || $scheme === '' || in_array(strtolower($scheme), array('http', 'https'), true);
+    }
+
+    private function videoBodyFromRequest()
+    {
+        $videoUrl = trim((string) $this->getParam('video_url'));
+        $posterUrl = trim((string) $this->getParam('video_poster_url'));
+        $caption = trim((string) $this->getParam('video_caption'));
+        $transcript = trim((string) $this->getParam('video_transcript'));
+        $orientation = (string) $this->getParam('video_orientation', 'portrait');
+        if (!$this->isSafeMediaUrl($videoUrl) || ($posterUrl !== '' && !$this->isSafeMediaUrl($posterUrl))) {
+            throw new InvalidArgumentException('Invalid media URL');
+        }
+        if (!in_array($orientation, array('portrait', 'landscape'), true)) { $orientation = 'portrait'; }
+        $e = function ($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); };
+        $embedUrl = $this->recognisedVideoEmbedUrl($videoUrl);
+        $body = '<div class="contextcontent-video-body contextcontent-video-' . $orientation . '"><figure>';
+        if ($embedUrl !== null) {
+            $body .= '<div class="contextcontent-video-embed"><iframe src="' . $e($embedUrl)
+                . '" title="' . $e($caption !== '' ? $caption : $this->objLanguage->languageText('mod_contextcontent_type_video', 'contextcontent'))
+                . '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+        } else {
+            $body .= '<video controls playsinline preload="metadata" src="' . $e($videoUrl) . '"'
+                . ($posterUrl !== '' ? ' poster="' . $e($posterUrl) . '"' : '') . '>'
+                . $e($this->objLanguage->languageText('mod_contextcontent_video_not_supported', 'contextcontent'))
+                . '</video>';
+        }
+        if ($caption !== '') { $body .= '<figcaption>' . $e($caption) . '</figcaption>'; }
+        $body .= '</figure>';
+        if ($transcript !== '') {
+            $body .= '<details class="contextcontent-video-transcript"><summary>'
+                . $e($this->objLanguage->languageText('mod_contextcontent_video_transcript', 'contextcontent'))
+                . '</summary><p>' . nl2br($e($transcript)) . '</p></details>';
+        }
+        return $body . '</div>';
+    }
+
+    private function recognisedVideoEmbedUrl($url)
+    {
+        $parts = parse_url($url);
+        $host = strtolower(isset($parts['host']) ? $parts['host'] : '');
+        $host = preg_replace('/^www\\./', '', $host);
+        $path = isset($parts['path']) ? trim($parts['path'], '/') : '';
+        if ($host === 'youtu.be' && preg_match('/^[A-Za-z0-9_-]{6,20}$/', $path)) {
+            return 'https://www.youtube-nocookie.com/embed/' . $path;
+        }
+        if (in_array($host, array('youtube.com', 'm.youtube.com'), true)) {
+            parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
+            $id = isset($query['v']) ? $query['v'] : (preg_match('#^(?:shorts|embed)/([A-Za-z0-9_-]{6,20})#', $path, $match) ? $match[1] : '');
+            if (preg_match('/^[A-Za-z0-9_-]{6,20}$/', $id)) { return 'https://www.youtube-nocookie.com/embed/' . $id; }
+        }
+        if (in_array($host, array('vimeo.com', 'player.vimeo.com'), true)
+            && preg_match('#(?:video/)?([0-9]{6,12})#', $path, $match)) {
+            return 'https://player.vimeo.com/video/' . $match[1];
+        }
+        return null;
+    }
+
+    private function resourceBodyFromRequest($contentType)
+    {
+        $supported = array('pdf', 'zip_bundle', 'external_reading');
+        if (!in_array($contentType, $supported, true)) {
+            throw new InvalidArgumentException('Unsupported resource content type');
+        }
+        $description = trim((string) $this->getParam('resource_description'));
+        $source = trim((string) $this->getParam('resource_source'));
+        $e = function ($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); };
+        if ($contentType === 'zip_bundle') {
+            $token = trim((string) $this->getParam('resource_filepreview'));
+            if (!preg_match('/^\[FILEPREVIEW\s+id="([A-Za-z0-9_-]+)"\s+comment="([^"\r\n]+\.zip)"\s*\/\]$/i', $token)) {
+                throw new InvalidArgumentException('Invalid File Manager ZIP token');
+            }
+            $body = '<div class="contextcontent-resource-body contextcontent-resource-zip_bundle">';
+            if ($description !== '') {
+                $body .= '<p class="contextcontent-resource-description">' . nl2br($e($description)) . '</p>';
+            }
+            if ($source !== '') {
+                $body .= '<p class="contextcontent-resource-source">' . $e($source) . '</p>';
+            }
+            return $body . '<div class="contextcontent-resource-filepreview">' . $token . '</div></div>';
+        }
+        $url = trim((string) $this->getParam('resource_url'));
+        if (!$this->isSafeMediaUrl($url)) {
+            throw new InvalidArgumentException('Invalid resource URL');
+        }
+        $actionKey = $contentType === 'pdf' ? 'mod_contextcontent_download_pdf'
+            : 'mod_contextcontent_open_external';
+        $body = '<div class="contextcontent-resource-body contextcontent-resource-' . $e($contentType) . '">';
+        if ($description !== '') {
+            $body .= '<p class="contextcontent-resource-description">' . nl2br($e($description)) . '</p>';
+        }
+        if ($source !== '') {
+            $body .= '<p class="contextcontent-resource-source">' . $e($source) . '</p>';
+        }
+        $external = $contentType === 'external_reading';
+        $body .= '<p class="contextcontent-resource-action"><a href="' . $e($url) . '"'
+            . ($external ? ' target="_blank" rel="noopener noreferrer"' : ' download') . '>'
+            . $e($this->objLanguage->languageText($actionKey, 'contextcontent')) . '</a></p>';
+        if ($external) {
+            $body .= '<p class="contextcontent-external-notice">'
+                . $e($this->objLanguage->languageText('mod_contextcontent_external_notice', 'contextcontent')) . '</p>';
+        }
+        return $body . '</div>';
+    }
+
     protected function savePage() {
 
-        $menutitle = stripslashes($this->getParam('menutitle'));
-        if ($menutitle == null) {
-            $menutitle = "Untitled";
-        }
-        // CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
-        // Ignore submitted page-specific JavaScript/CSS at the save boundary.
-        $headerscripts = '';
-        $language = 'en'; //@GOOD HEAVENS @TODO FIX THIS - DWK 2012 05 29
-        $pagecontent = stripslashes($this->getParam('pagecontent'));
-        $parent = stripslashes($this->getParam('parentnode'));
-        $chapter = stripslashes($this->getParam('chapter'));
+        $menutitle = trim((string) $this->getParam('menutitle'));
+        $language = 'en';
+        $pagecontent = (string) $this->getParam('pagecontent');
+        $parent = (string) $this->getParam('parentnode');
+        $chapter = (string) $this->getParam('chapter');
+        $contentType = (string) $this->getParam('contenttype', 'rich_text');
+        if ($contentType === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
+        if ($contentType === 'video') { $pagecontent = $this->videoBodyFromRequest(); }
+        if (in_array($contentType, array('pdf', 'zip_bundle', 'external_reading'), true)) { $pagecontent = $this->resourceBodyFromRequest($contentType); }
 
         $chapterTitle = $this->objContextChapters->getContextChapterTitle($chapter);
-        $titleId = $this->objContentTitles->addTitle('', $menutitle, $pagecontent, $language, $headerscripts);
-
-
-        $pageId = $this->objContentOrder->addPageToContext($titleId, $parent, $this->contextCode, $chapter);
+        $pageId = $this->objAuthoring->createNativePage(array(
+            'contextcode' => $this->contextCode,
+            'chapterid' => $chapter,
+            'parentid' => $parent,
+            'contenttype' => $contentType,
+            'title' => $menutitle,
+            'body' => $pagecontent,
+            'language' => $language
+        ));
 
         $this->setVar('mode', 'add');
         $this->setVar('formaction', 'savepage');
@@ -808,19 +1075,18 @@ class contextcontent extends controller {
      */
     protected function autoSavePage() {
 
-        $menutitle = stripslashes($this->getParam('menutitle'));
-        // CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
-        // Ignore submitted page-specific JavaScript/CSS at the save boundary.
-        $headerscripts = '';
+        $menutitle = (string) $this->getParam('menutitle');
         $language = 'en';
-        $pagecontent = stripslashes($this->getParam('pagecontent'));
-        $parent = stripslashes($this->getParam('parentnode'));
-        $chapter = stripslashes($this->getParam('chapter'));
+        $pagecontent = (string) $this->getParam('pagecontent');
+        $parent = (string) $this->getParam('parentnode');
+        $chapter = (string) $this->getParam('chapter');
+        $contentType = (string) $this->getParam('contenttype', 'rich_text');
         $chapterTitle = $this->objContextChapters->getContextChapterTitle($chapter);
-        $titleId = $this->objContentTitles->addTitle('', $menutitle, $pagecontent, $language, $headerscripts);
-
-
-        $pageId = $this->objContentOrder->addPageToContext($titleId, $parent, $this->contextCode, $chapter);
+        $pageId = $this->objAuthoring->createNativePage(array(
+            'contextcode' => $this->contextCode, 'chapterid' => $chapter,
+            'parentid' => $parent, 'contenttype' => $contentType,
+            'title' => $menutitle, 'body' => $pagecontent, 'language' => $language
+        ));
         echo $pageId;
         die();
     }
@@ -871,19 +1137,9 @@ class contextcontent extends controller {
         }
 
         $page = $this->objContentOrder->getPage($pageId, $this->contextCode);
-        if ($page['scorm'] == 'Y') {
-            return $this->nextAction('viewscorm',
-                    array(
-                        'folderId' => $page['pagecontent'],
-                        'chapterid' => $page['chapterid'],
-                        'id' => $page['id'],
-                        'rght' => $page['rght'],
-                        'lft' => $page['lft'],
-                        'mode' => 'page'
-                    ),
-                    'scorm');
+        if ($page == FALSE) {
+            return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
         }
-
         //Log in activity streamer only if logged in (Public courses dont need login)
         if (!empty($this->userId)) {
             if ($this->eventsEnabled) {
@@ -895,12 +1151,15 @@ class contextcontent extends controller {
         }
 
 
-        if ($page == FALSE) {
-            //echo 'page does not exist';
-            return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
-        }
-
         $this->setVar('page', $page);
+        if ($this->objUser->isLoggedIn()) {
+            $this->prepareMutationForm();
+            $bookmarkIds = $this->objBookmarks->idsForUser($this->contextCode, $this->userId);
+            $this->setVar('contextContentBookmarked', in_array($pageId, $bookmarkIds, true));
+        } else {
+            $this->setVar('contextContentCsrf', '');
+            $this->setVar('contextContentBookmarked', false);
+        }
         $this->setVar('currentPage', $pageId);
         $this->setVar('currentChapter', $page['chapterid']);
         $this->setVar('pagelft', $page['lft']);
@@ -938,6 +1197,7 @@ class contextcontent extends controller {
      * @param string $pageId Record Id of the Page
      */
     protected function editPage($pageId) {
+        $this->prepareMutationForm();
         if ($pageId == '') {
             return $this->nextAction(NULL);
         }
@@ -950,10 +1210,11 @@ class contextcontent extends controller {
         $this->setLayoutTemplate(NULL);
 
         $this->setVarByRef('page', $page);
+        $this->setVar('contentType', $page['contenttype']);
         $this->setVarByRef('currentChapter', $page['chapterid']);
 
-        $tree = $this->objContentOrder->getTree($this->contextCode, $page['chapterid'], 'dropdown', $page['parentid'], 'contextcontent', $page['id']);
-        $this->setVarByRef('tree', $tree);
+        $chapterTitle = $this->objContextChapters->getContextChapterTitle($page['chapterid']);
+        $this->setVar('chapterTitle', $chapterTitle);
 
         $this->setVar('mode', 'edit');
         $this->setVar('formaction', 'updatepage');
@@ -985,14 +1246,15 @@ class contextcontent extends controller {
             if ($page == FALSE) {
                 return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
             } else {
-                $this->objContentPages->updatePage($page['pageid'], $menutitle, $pagecontent, $page['headerscripts']);
-
-                if ($parentnode != $page['parentid']) {
-                    //if ($parentnode != $page['parentid'] && ($page['lft'] > $parentPage['lft']) && ($page['rght'] < $parentPage['rght'])) {
-
-
-                    $this->objContentOrder->changeParent($this->contextCode, $page['chapterid'], $pageId, $parentnode);
-                }
+                if ($page['contenttype'] === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
+                if ($page['contenttype'] === 'video') { $pagecontent = $this->videoBodyFromRequest(); }
+                if (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true)) { $pagecontent = $this->resourceBodyFromRequest($page['contenttype']); }
+                $this->objAuthoring->updateNativePage(array(
+                    'contextcode' => $this->contextCode, 'chapterid' => $page['chapterid'],
+                    'placementid' => $pageId, 'parentid' => $parentnode,
+                    'contenttype' => $page['contenttype'], 'title' => $menutitle,
+                    'body' => $pagecontent, 'language' => $page['language']
+                ));
 
                 return $this->nextAction('viewpage', array('id' => $pageId, 'message' => 'pageupdated'));
             }
@@ -1007,6 +1269,7 @@ class contextcontent extends controller {
      * @param string $pageId Record Id of the Page
      */
     protected function deletePage($pageId) {
+        $this->prepareMutationForm();
         if ($pageId == '') {
             return $this->nextAction(NULL);
         }
@@ -1335,7 +1598,7 @@ class contextcontent extends controller {
             } else if ($type == 'bookmarks') {
                 $this->setSession('navigationType', 'bookmarks');
 
-                echo $this->objContentOrder->getBookmarkedPages($this->contextCode, $page['chapterid'], $pageId, 'contextcontent');
+                echo $this->renderBookmarkedNavigation($page['chapterid']);
 
                 echo '<p><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="twolevel" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewtwolevels', 'contextcontent', 'View Two Levels at a time') . ' ...</a><br /><a href="#contentnav" class="chisimba-content-nav-switch" data-contextcontent-navigation="tree" aria-controls="contentnav">' . $this->objLanguage->languageText('mod_contextcontent_viewastree', 'contextcontent', 'View as Tree') . '...</a></p>';
             } else {
@@ -1362,13 +1625,39 @@ class contextcontent extends controller {
         $id = $this->getParam('id');
         $type = $this->getParam('type', 'on');
 
-        if ($type == 'on') {
-            $this->objContentOrder->bookmarkPage($id);
-            echo '<a href="javascript:changeBookmark(\'off\');">' . $this->objLanguage->languageText('mod_contextcontent_removebookmark', 'contextcontent', 'Remove Bookmark') . '</a>';
-        } else {
-            $this->objContentOrder->removeBookmark($id);
-            echo '<a href="javascript:changeBookmark(\'on\');">' . $this->objLanguage->languageText('mod_contextcontent_bookmarkpage', 'contextcontent', 'Bookmark Page') . '</a>';
+        $page = $this->objContentOrder->getPage($id, $this->contextCode);
+        if (!$page) { throw new InvalidArgumentException('Page does not exist in this course'); }
+        $this->objBookmarks->setBookmark($this->contextCode, $id, $this->userId, $type === 'on');
+        return $this->nextAction('viewpage', array('id' => $id));
+    }
+
+    private function renderBookmarkedNavigation($chapterId)
+    {
+        if (!$this->objUser->isLoggedIn()) { return '<p>Sign in to use bookmarks.</p>'; }
+        $wanted = array_flip($this->objBookmarks->idsForUser($this->contextCode, $this->userId));
+        $pages = $this->objContentOrder->getContextPages($this->contextCode, $chapterId);
+        $html = '<ul class="bookmarkedpages">';
+        foreach ($pages as $page) {
+            if (!isset($wanted[$page['id']])) { continue; }
+            $url = $this->uri(array('action' => 'viewpage', 'id' => $page['id']));
+            $html .= '<li><a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">'
+                . htmlspecialchars($page['menutitle'], ENT_QUOTES, 'UTF-8') . '</a></li>';
         }
+        return $html . '</ul>';
+    }
+
+    protected function addContent($chapter, $parent = '')
+    {
+        if (!$this->objContextChapters->getChapter($chapter)) {
+            throw new InvalidArgumentException('Chapter does not exist');
+        }
+        $course = $this->objContext->getContext($this->contextCode);
+        $format = isset($course['delivery_format']) ? $course['delivery_format'] : 'standard';
+        $this->setVar('contentTypes', $this->objContentTypes->all($format));
+        $this->setVar('chapter', $chapter);
+        $this->setVar('parent', $parent);
+        $this->setLayoutTemplate(NULL);
+        return 'contenttypepicker_tpl.php';
     }
 
     /**
@@ -1431,11 +1720,19 @@ class contextcontent extends controller {
      *
      */
     public function addComment() {
-        $comment = htmlentities($this->getParam('comment'), ENT_QUOTES);
+        $comment = trim((string) $this->getParam('comment'));
         $userid = $this->objUser->userId();
-        $pageid = $this->getParam('pageid');
+        $pageid = (string) $this->getParam('pageid');
+        if (!$this->objContentOrder->getPage($pageid, $this->contextCode)) {
+            throw new InvalidArgumentException('Page does not exist in this course');
+        }
+        if (mb_strlen($comment) > 5000) {
+            throw new InvalidArgumentException('Comment is too long');
+        }
         if (!empty($comment) && !empty($userid) && !empty($pageid)) {
-            $id = $this->objContextComments->addPageComment($userid, $pageid, $comment);
+            $id = $this->objContextComments->addPageComment(
+                $userid, $pageid, htmlspecialchars($comment, ENT_QUOTES, 'UTF-8')
+            );
         }
         return $this->nextAction('viewpage', array('id' => $pageid));
     }

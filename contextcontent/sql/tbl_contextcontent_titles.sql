@@ -11,9 +11,23 @@ $fields = array(
         'length' => 32,
         'notnull' => TRUE
         ),
+    'contenttype' => array(
+        'type' => 'text',
+        'length' => 64,
+        'notnull' => TRUE,
+        'default' => 'rich_text'
+        ),
+    'providermodule' => array(
+        'type' => 'text',
+        'length' => 64
+        ),
+    'provideritemid' => array(
+        'type' => 'text',
+        'length' => 64
+        ),
     'creatorid' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => TRUE
         ),
     'datecreated' => array(
@@ -22,7 +36,7 @@ $fields = array(
         ),
     'modifierid' => array(
         'type' => 'text',
-        'length' => 25
+        'length' => 64
         ),
     'datemodified' => array(
         'type' => 'timestamp'

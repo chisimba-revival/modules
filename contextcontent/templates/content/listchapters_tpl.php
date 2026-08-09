@@ -51,7 +51,7 @@ $objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_createpagef
 $objIcon->title = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile', 'contextcontent', 'Create page from file');
 $addPageFromFileIcon = $objIcon->show();
 
-if ($this->objModuleCatalogue->checkIfRegistered('scorm')) {
+if (false) {
     $objIcon->setIcon('scm');
     $objIcon->alt = $this->objLanguage->languageText('mod_scorm_addscormchapter', 'scorm');
     $objIcon->title = $this->objLanguage->languageText('mod_scorm_addscormchapter', 'scorm');
@@ -80,7 +80,7 @@ if ($this->isValid('addchapter')) {
 } else {
     $addChapter = '';
 }
-if ($this->objModuleCatalogue->checkIfRegistered('scorm') && $this->isValid('addchapter')) {
+if (false) {
     $link = new link($this->uri(array('action' => 'addscorm')));
     $link->link = $addScormIcon;
     $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
@@ -164,7 +164,7 @@ foreach ($chapters as $chapter) {
             . '<span class="chisimba-chapter-marker-text">'
             . htmlspecialchars($chapterLabel, ENT_QUOTES, 'UTF-8') . ' ' . $addedCounter
             . '</span></span>';
-        if ($chapter['scorm'] == 'Y') {
+        if (false) {
 
             // Get List of Pages in the Chapter
             $chapterPages = $this->objContentOrder->getTree($this->contextCode, $chapter['chapterid'], 'htmllist');
@@ -188,7 +188,7 @@ foreach ($chapters as $chapter) {
             $deleteLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-delete';
             $deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
 
-            $addPageLink = new link($this->uri(array('action' => 'addpage', 'chapter' => $chapter['chapterid'])));
+            $addPageLink = new link($this->uri(array('action' => 'addcontent', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $addPageIcon;
             $addPageLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
             $addPageLink->extra = ' aria-label="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '"';
@@ -251,7 +251,7 @@ foreach ($chapters as $chapter) {
             $deleteLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-delete';
             $deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
 
-            $addPageLink = new link($this->uri(array('action' => 'addpage', 'chapter' => $chapter['chapterid'])));
+            $addPageLink = new link($this->uri(array('action' => 'addcontent', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $addPageIcon;
             $addPageLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
             $addPageLink->extra = ' aria-label="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '"';
@@ -360,14 +360,13 @@ foreach ($chapters as $chapter) {
             }
 
 
-            $addPageLink = new link($this->uri(array('action' => 'addpage', 'chapter' => $chapter['chapterid'])));
+            $addPageLink = new link($this->uri(array('action' => 'addcontent', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter', 'contextcontent');
 
-            $moveUpLink = new link($this->uri(array('action' => 'movechapterup', 'id' => $chapter['contextchapterid'])));
-            $moveUpLink->link = $this->objLanguage->languageText('mod_contextcontent_movechapterup', 'contextcontent');
-
-            $moveDownLink = new link($this->uri(array('action' => 'movechapterdown', 'id' => $chapter['contextchapterid'])));
-            $moveDownLink->link = $this->objLanguage->languageText('mod_contextcontent_movechapterdown', 'contextcontent');
+            $moveUpLink = new stdClass();
+            $moveUpLink->show = function () { return ''; };
+            $moveDownLink = new stdClass();
+            $moveDownLink->show = function () { return ''; };
 
             //$content .= '<br />';
 
@@ -376,11 +375,11 @@ foreach ($chapters as $chapter) {
             }
 
             if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $counter > 1 && $this->isValid('movechapterup')) {
-                $chapterOptions[] = $moveUpLink->show();
+                // Reordering is exposed only through a POST form in the content manager.
             }
 
             if ($counter < (is_countable($chapters) ? count($chapters) : 0) && $this->isValid('movechapterdown')) {
-                $chapterOptions[] = $moveDownLink->show();
+                // Reordering is exposed only through a POST form in the content manager.
             }
 
             if ($chapterContents !== '') {

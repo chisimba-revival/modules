@@ -54,8 +54,11 @@ class db_contextcontent_order extends dbtable {
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_order');
+        $this->_db = $this->objEngine->getDbObj();
         $this->objUser = & $this->getObject('user', 'security');
         $this->objLanguage = $this->getObject('language', 'language');
+        $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
+        $this->objIconService = $this->getObject('iconservice', 'ui');
         $this->objConfig = & $this->getObject('altconfig', 'config');
         //Load Module Catalogue Class
         $this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
@@ -100,11 +103,12 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getFirstPage($contextCode) {
-        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, headerscripts, lft, rght
+        $contextCode = $this->_db->quote((string) $contextCode);
+        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_titles.contenttype, lft, rght
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE contextcode=\'' . $contextCode . '\' AND parentid = \'root\'
+        WHERE contextcode=' . $contextCode . ' AND parentid = \'root\'
         ORDER BY lft, pageorder LIMIT 1';
 
         $results = $this->getArray($sql);
@@ -122,11 +126,13 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getFirstChapterPage($contextCode, $chapter) {
-        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, headerscripts, lft, rght
+        $contextCode = $this->_db->quote((string) $contextCode);
+        $chapter = $this->_db->quote((string) $chapter);
+        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_titles.contenttype, lft, rght
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE tbl_contextcontent_order.chapterid=\'' . $chapter . '\' AND contextcode=\'' . $contextCode . '\' AND parentid = \'root\'
+        WHERE tbl_contextcontent_order.chapterid=' . $chapter . ' AND contextcode=' . $contextCode . ' AND parentid = \'root\'
         ORDER BY lft, pageorder LIMIT 1';
 
         $results = $this->getArray($sql);
@@ -146,11 +152,13 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getPage($pageId, $contextCode) {
-        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.chapterid, tbl_contextcontent_order.parentid,tbl_contextcontent_pages.scorm, tbl_contextcontent_pages.menutitle, pagecontent, headerscripts, lft, rght, tbl_contextcontent_pages.id as pageid, tbl_contextcontent_order.titleid, isbookmarked
+        $pageId = $this->_db->quote((string) $pageId);
+        $contextCode = $this->_db->quote((string) $contextCode);
+        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.chapterid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_pages.language, tbl_contextcontent_titles.contenttype, tbl_contextcontent_titles.providermodule, tbl_contextcontent_titles.provideritemid, lft, rght, tbl_contextcontent_pages.id as pageid, tbl_contextcontent_order.titleid
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE tbl_contextcontent_order.id=\'' . $pageId . '\' AND contextcode=\'' . $contextCode . '\'
+        WHERE tbl_contextcontent_order.id=' . $pageId . ' AND contextcode=' . $contextCode . '
         ORDER BY lft LIMIT 1';
 
         $results = $this->getArray($sql);
@@ -169,60 +177,19 @@ class db_contextcontent_order extends dbtable {
      * @return array
      */
     public function getContextPages($context, $chapter='') {
-        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.titleid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, lft, rght, tbl_contextcontent_order.bookmark, tbl_contextcontent_order.isbookmarked FROM tbl_contextcontent_order
+        $context = $this->_db->quote((string) $context);
+        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.titleid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, tbl_contextcontent_titles.contenttype, lft, rght FROM tbl_contextcontent_order
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id) 
-        WHERE tbl_contextcontent_order.contextcode= \'' . $context . '\'  ';
+        WHERE tbl_contextcontent_order.contextcode= ' . $context . '  ';
 
         if ($chapter != '') {
-            $sql .= ' AND tbl_contextcontent_order.chapterid= \'' . $chapter . '\'';
+            $sql .= ' AND tbl_contextcontent_order.chapterid= ' . $this->_db->quote((string) $chapter);
         }
 
         $sql .= ' ORDER BY lft';
 
         return $this->getArray($sql);
-    }
-
-    /**
-     * Method to bookmark a page
-     * @param string $id Record Id of the Page
-     * @return boolean
-     */
-    public function bookmarkPage($id) {
-        return $this->update('id', $id, array('isbookmarked' => 'Y'));
-    }
-
-    /**
-     * Method to remove a page bookmark
-     * @param string $id Record Id of the Page
-     * @return boolean
-     */
-    public function removeBookmark($id) {
-        return $this->update('id', $id, array('isbookmarked' => 'N'));
-    }
-
-    /**
-     * Method to get the list of bookmarked pages
-     * @param string $context Context Code
-     * @param string $chapter Chapter Id
-     * @param string $defaultSelected Default selected bookmark
-     * @param string $module Module to point links to
-     * @return string
-     */
-    public function getBookmarkedPages($context, $chapter='', $defaultSelected='', $module='contextcontent') {
-        $results = $this->getContextPages($context, $chapter);
-
-        $str = '<ul class="bookmarkedpages">';
-        foreach ($results as $page) {
-            if ($page['isbookmarked'] == 'Y') {
-                $link = new link($this->uri(array('action' => 'viewpage', 'id' => $page['id'])));
-                $link->link = $page['menutitle'];
-                $str .= '<li>' . $link->show() . '</li>';
-            }
-        }
-        $str .= '</ul>';
-
-        return $str;
     }
 
     /**
@@ -296,6 +263,13 @@ class db_contextcontent_order extends dbtable {
         $newimg = '<img src="' . $newImgPath . '">';
 
         foreach ($results as $treeItem) {
+            $pageIcon = $this->objIconService->render(
+                $this->objContentTypes->iconName(isset($treeItem['contenttype']) ? $treeItem['contenttype'] : ''),
+                array(
+                    'decorative' => TRUE,
+                    'class' => 'contextcontent-page-icon',
+                )
+            );
             $showImg = "";
             if ($this->eventsEnabled) {
                 //Check if logged, works if config ENABLE_ACTIVITYSTREAMER is true
@@ -308,7 +282,12 @@ class db_contextcontent_order extends dbtable {
                     $showImg = "";
                 }
             }
-            $nodeDetails = array('text' => htmlentities($treeItem['menutitle']) . $showImg, 'link' => $this->uri(array('action' => 'viewpage', 'id' => $treeItem['id']), $module), 'icon' => $showImg);
+            $nodeDetails = array(
+                'text' => '<span class="contextcontent-page-title">' . $pageIcon
+                    . '<span>' . htmlentities($treeItem['menutitle']) . '</span></span>' . $showImg,
+                'link' => $this->uri(array('action' => 'viewpage', 'id' => $treeItem['id']), $module),
+                'icon' => $showImg,
+            );
 
             if ($treeItem['id'] == $defaultSelected) {
                 // CHISIMBA_CONTEXTCONTENT_CURRENT_PAGE_MARKER
@@ -536,9 +515,7 @@ class db_contextcontent_order extends dbtable {
                     'pageorder' => $pageOrder,
                     'visibility' => $visibility,
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                    'bookmark' => $bookmark,
-                    'isbookmarked' => $isBookmark
+                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
                 ));
 
         // Extra Step to Prevent Null Values
@@ -1289,7 +1266,7 @@ class db_contextcontent_order extends dbtable {
     }
 
     function getPages($chapter, $contextCode, $where='', $order='lft') {
-        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.chapterid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, lft, rght, tbl_contextcontent_pages.id as pageid, tbl_contextcontent_order.titleid, tbl_contextcontent_order.bookmark, tbl_contextcontent_order.isbookmarked
+        $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.chapterid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, tbl_contextcontent_titles.contenttype, lft, rght, tbl_contextcontent_pages.id as pageid, tbl_contextcontent_order.titleid
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 

@@ -24,9 +24,6 @@ $fields = array(
     'pagecontent' => array(
         'type' => 'text'
         ),
-    'headerscripts' => array(
-        'type' => 'text'
-        ),
     'license' => array(
         'type' => 'text',
         'length' => 32
@@ -43,13 +40,9 @@ $fields = array(
         'notnull' => TRUE,
         'default' => 'N'
         ),
-    'lockuser' => array(
-        'type' => 'text',
-        'length' => 25
-        ),
     'creatorid' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => TRUE
         ),
     'datecreated' => array(
@@ -58,16 +51,10 @@ $fields = array(
         ),
     'modifierid' => array(
         'type' => 'text',
-        'length' => 25
+        'length' => 64
         ),
     'datemodified' => array(
         'type' => 'timestamp'
-        ),
-    'scorm' => array(
-        'type' => 'text',
-        'length' => 1,
-        'notnull' => TRUE,
-        'default' => 'N'
         ),
     );
     

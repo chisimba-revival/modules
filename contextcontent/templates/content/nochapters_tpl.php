@@ -5,6 +5,7 @@ $this->loadClass('textinput', 'htmlelements');
 $this->loadClass('radio', 'htmlelements');
 $this->loadClass('label', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
+$this->loadClass('hiddeninput', 'htmlelements');
 
 //Width of the label column
 $tWidth=150;
@@ -15,11 +16,12 @@ $tWidth=150;
     echo '<p class="createchapterexplanation">'.$this->objLanguage->code2Txt('mod_contextcontent_createchapterexplanation','contextcontent').'</p>';
     
 $form = new form ('addchapter', $this->uri(array('action'=>'savechapter')));
+$form->addToForm((new hiddeninput('csrf_token', $contextContentCsrf))->show());
 $table = $this->newObject('htmltable', 'htmlelements');
 
-$title = new textinput('chapter');
+$title = new textinput('chaptertitle');
 $title->size = 90;
-$label = new label ($this->objLanguage->languageText('mod_contextcontent_chaptertitle','contextcontent'), 'input_chapter');
+$label = new label ($this->objLanguage->languageText('mod_contextcontent_chaptertitle','contextcontent'), 'input_chaptertitle');
 $table->startRow();
 $table->addCell($label->show(), $tWidth, 'top', 'left');
 $table->addCell($title->show());

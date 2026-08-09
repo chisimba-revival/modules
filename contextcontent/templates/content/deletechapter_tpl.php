@@ -15,7 +15,9 @@ $htmlheading->str = $this->objLanguage->languageText('mod_contextcontent_deletec
 
 echo $htmlheading->show();
 
-$form = new form('deletepage', $this->uri(array('action'=>'deletechapterconfirm')));
+$form = new form('deletechapter', $this->uri(array('action'=>'deletechapterconfirm', 'module'=>'contextcontent')));
+$form->method = 'POST';
+$form->addToForm((new hiddeninput('csrf_token', $contextContentCsrf))->show());
 
 
 if ($numPages > 0) {
@@ -35,13 +37,11 @@ $form->addToForm('<p>'.$radio->show().'</p>');
 
 $button = new button ('confirm', $this->objLanguage->languageText('mod_contextcontent_confirmdelcontextpages','contextcontent', 'Confirm Delete'));
 $button->setToSubmit();
+$button->cssClass = 'contextcontent-danger-action';
 
 $hiddeninput = new hiddeninput('id', $id);
 
 $form->addToForm('<p>'.$button->show().$hiddeninput->show().'</p>');
-
-$hiddeninput = new hiddeninput('context', $this->contextCode);
-$form->addToForm($hiddeninput->show().'</p>');
 
 $hiddeninput = new hiddeninput('context', $this->contextCode);
 $form->addToForm($hiddeninput->show());

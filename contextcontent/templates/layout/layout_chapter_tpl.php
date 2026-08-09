@@ -68,7 +68,7 @@ if (isset($currentChapter)) {
     // CHISIMBA_CONTEXTCONTENT_TREE_ONLY: the unambiguous tree is the
     // only current course-content navigation. Legacy renderers and data remain
     // available for a later content-model review, but are not exposed here.
-    $left .= '<div id="contentnav">';
+    $left .= '<div id="contentnav" class="contextcontent-page-list">';
     $left .= $this->objContentOrder->getTree(
         $this->contextCode,
         $currentChapter,
@@ -79,19 +79,12 @@ if (isset($currentChapter)) {
     $left .= '</div>';
 
     if ($this->isValid('addpage')) {
-        $addLink = new link ($this->uri(array('action'=>'addpage', 'chapter'=>$currentChapter, 'id'=>$currentPage)));
-        $addLink->link = 'Add a Page';
+        $addLink = new link ($this->uri(array('action'=>'addcontent', 'chapter'=>$currentChapter, 'id'=>$currentPage)));
+        $addLink->link = $this->objLanguage->languageText('mod_contextcontent_addpage', 'contextcontent');
 
         $addPageFromFileLink = new link($this->uri(array('action'=>'addpagefromfile', 'chapterid'=>$currentChapter)));
         $addPageFromFileLink->link = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile', 'contextcontent', 'Create page from file');
-        $scormInstalled = $objModule->checkIfRegistered("scorm");
-        if ($scormInstalled) {
-            $addScormLink = new link ($this->uri(array('action'=>'addscormpage', 'id'=>$id, 'context'=>$this->contextCode, 'chapter'=>$currentChapter)));
-            $addScormLink->link = $this->objLanguage->languageText('mod_contextcontent_addcontextscormpages','contextcontent');
-            $scormLink = $addScormLink->show();
-        } else {
-            $scormLink = NULL;
-        }
+        $scormLink = NULL;
         $left .= '<hr /><p>'.$addLink->show().'&nbsp;&nbsp;'.$scormLink.'</p>';
     }
 

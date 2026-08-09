@@ -13,6 +13,7 @@ $title = $this->objLanguage->languageText('mod_contextcontent_delcontextpages','
 
 
 $form = new form('deletepage', $this->uri(array('action'=>'deletepageconfirm')));
+$form->addToForm((new hiddeninput('csrf_token', $contextContentCsrf))->show());
 
 $form->addToForm('<p><strong class="deletecontent">'.$this->objLanguage->languageText('mod_contextcontent_delconf','contextcontent').'</strong></p>');
 

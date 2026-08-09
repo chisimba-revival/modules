@@ -24,16 +24,18 @@ $header->str=$areaTitle;
 //echo '<p>Todo: Allow User to place order of chapter</p>';
 
 $form = new form ('addchapter', $this->uri(array('action'=>$formaction)));
+$csrfInput = new hiddeninput('csrf_token', $contextContentCsrf);
+$form->addToForm($csrfInput->show());
 $table = $this->newObject('htmltable', 'htmlelements');
 
-$title = new textinput('chapter');
+$title = new textinput('chaptertitle');
 $title->size = 60;
 
 if ($mode == 'edit') {
     $title->value = $chapter['chaptertitle'];
 }
 
-$label = new label ($this->objLanguage->languageText('mod_contextcontent_chaptertitle','contextcontent'), 'input_chapter');
+$label = new label ($this->objLanguage->languageText('mod_contextcontent_chaptertitle','contextcontent'), 'input_chaptertitle');
 $table->startRow();
 $table->addCell($label->show(), 150);
 $table->addCell($title->show());

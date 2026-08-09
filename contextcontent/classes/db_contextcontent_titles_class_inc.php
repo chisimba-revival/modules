@@ -96,6 +96,17 @@ class db_contextcontent_titles extends dbtable
         return $titleId;
     }
 
+    public function createTypedTitle($contentType, $providerModule = null, $providerItemId = null)
+    {
+        return $this->insert(array(
+            'contenttype' => $contentType,
+            'providermodule' => $providerModule,
+            'provideritemid' => $providerItemId,
+            'creatorid' => $this->objUser->userId(),
+            'datecreated' => date('Y-m-d H:i:s')
+        ));
+    }
+
     /**
      * Checks if translation group id exists.
      *
@@ -134,6 +145,7 @@ class db_contextcontent_titles extends dbtable
     private function autoCreateTitle()
     {
         $row = array();
+        $row['contenttype'] = 'rich_text';
         $row['creatorid'] = $this->objUser->userId();
         $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
 

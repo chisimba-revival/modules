@@ -109,6 +109,33 @@ class db_contextcontent_pages extends dbtable
             return FALSE;
         }
     }
+
+    public function createNativeBody($titleId, $menuTitle, $content, $language)
+    {
+        if ($this->checkPageExists($titleId, $language)) {
+            throw new LogicException('A body already exists for this language');
+        }
+        return $this->insert(array(
+            'titleid' => $titleId,
+            'menutitle' => $menuTitle,
+            'pagecontent' => $content,
+            'language' => $language,
+            'original' => 'Y',
+            'creatorid' => $this->objUser->userId(),
+            'datecreated' => date('Y-m-d H:i:s'),
+            'datemodified' => date('Y-m-d H:i:s')
+        ));
+    }
+
+    public function updateNativeBody($id, $title, $content)
+    {
+        return $this->update('id', $id, array(
+            'menutitle' => $title,
+            'pagecontent' => $content,
+            'modifierid' => $this->objUser->userId(),
+            'datemodified' => date('Y-m-d H:i:s')
+        ));
+    }
     
     /**
      * Method to Check whether a Page exists for a title

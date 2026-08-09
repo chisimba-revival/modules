@@ -83,7 +83,7 @@ class db_contextcontent_contextchapter extends dbtable {
      * @return string SQL statement
      */
     public function getContextChaptersSQL($context) {
-        $sql = 'SELECT tbl_contextcontent_chaptercontext.releasedate,tbl_contextcontent_chaptercontext.enddate, tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontext.scorm, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid, (Select count(id) FROM  tbl_contextcontent_order WHERE tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_order.chapterid) as pagecount
+        $sql = 'SELECT tbl_contextcontent_chaptercontext.releasedate,tbl_contextcontent_chaptercontext.enddate, tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid, (Select count(id) FROM  tbl_contextcontent_order WHERE tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_order.chapterid) as pagecount
 FROM tbl_contextcontent_chaptercontext, tbl_contextcontent_chaptercontent
 WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chaptercontext.chapterid) AND tbl_contextcontent_chaptercontext.contextcode=\''.$context.'\' ORDER BY tbl_contextcontent_chaptercontext.chapterorder';
 
@@ -163,7 +163,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         } else {
             $order = $this->getLastOrder($context)+1;
 
-            $result = $this->insertTitle($context, $chapterId, $order, $visibility, $scorm);
+            $result = $this->insertTitle($context, $chapterId, $order, $visibility);
 
             // If Successfully Added, Index Chapter
             if ($result != FALSE) {
@@ -232,13 +232,12 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
      * @param int $order Order of the Item
      * @param string $visibility Visibility status of chapter within a context
      */
-    private function insertTitle($context, $chapterId, $order, $visibility='Y', $scorm = 'N') {
+    private function insertTitle($context, $chapterId, $order, $visibility='Y') {
         return $this->insert(array(
         'contextcode' => $context,
         'chapterid' => $chapterId,
         'chapterorder' => $order,
         'visibility' => $visibility,
-        'scorm' => $scorm,
         'creatorid' => $this->objUser->userId(),
         'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));

@@ -13,7 +13,7 @@ $fields = array(
         ),
     'userid' => array(
         'type' => 'text',
-        'length' => 32
+        'length' => 64
         ),
     'datecreated' => array(
         'type' => 'timestamp',

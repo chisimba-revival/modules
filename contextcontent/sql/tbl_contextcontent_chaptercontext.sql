@@ -32,14 +32,9 @@ $fields = array(
         'length' => 1,
         'default' => 'Y'
         ),
-    'scorm' => array(
-        'type' => 'text',
-        'length' => 1,
-        'default' => 'N'
-        ),
     'creatorid' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => TRUE
         ),
     'datecreated' => array(
@@ -48,7 +43,7 @@ $fields = array(
         ),
     'modifierid' => array(
         'type' => 'text',
-        'length' => 25
+        'length' => 64
         ),
     'datemodified' => array(
         'type' => 'timestamp'

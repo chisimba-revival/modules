@@ -55,7 +55,7 @@ $fields = array(
         ),
     'creatorid' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => TRUE
         ),
     'datecreated' => array(
@@ -64,18 +64,10 @@ $fields = array(
         ),
     'modifierid' => array(
         'type' => 'text',
-        'length' => 25
+        'length' => 64
         ),
     'datemodified' => array(
         'type' => 'timestamp'
-        ),
-    'bookmark' => array(
-        'type' => 'text',
-        'length' => 32,
-        ),
-    'isbookmarked' => array(
-        'type' => 'text',
-        'length' => 32,
         )
     );
     

@@ -22,19 +22,27 @@ $header->type = 1;
 echo $header->show();
 
 $form = new form('addpage', $this->uri(array('action'=>$formaction)));
+$csrfInput = new hiddeninput('csrf_token', $contextContentCsrf);
+$form->addToForm($csrfInput->show());
+$typeInput = new hiddeninput('contenttype', $contentType);
+$form->addToForm($typeInput->show());
 $formTable = $this->newObject('htmltable', 'htmlelements');
 $formTable->cssClass = 'ctxtcnt-add-table';
 
-//if ($mode=='add') {
-    $label = new label ($this->objLanguage->languageText('mod_contextcontent_parent','contextcontent'), 'input_parentnode');
-
-    $formTable->startRow();
-    $formTable->addCell($label->show());
-    $formTable->addCell($tree);
-    $formTable->endRow();
-//}
+$chapterLabel = $this->objLanguage->languageText('mod_contextcontent_chapter', 'contextcontent');
+$chapterValue = isset($chapterTitle) && trim((string) $chapterTitle) !== ''
+    ? $chapterTitle
+    : $this->objLanguage->languageText('mod_contextcontent_currentchapter', 'contextcontent');
+$formTable->startRow();
+$formTable->addCell('<strong>' . htmlentities($chapterLabel, ENT_QUOTES, 'UTF-8') . '</strong>');
+$formTable->addCell('<p class="contextcontent-chapter-context">'
+    . htmlentities($chapterValue, ENT_QUOTES, 'UTF-8') . '<br /><span>'
+    . htmlentities($this->objLanguage->languageText('mod_contextcontent_pageaddedtochapter', 'contextcontent'), ENT_QUOTES, 'UTF-8')
+    . '</span></p>' . (new hiddeninput('parentnode', 'root'))->show());
+$formTable->endRow();
 $menuTitle = new textinput('menutitle');
 $menuTitle->size = '80%';
+$menuTitle->extra = 'required="required" aria-required="true"';
 
 if ($mode=='edit') {
     $menuTitle->value = htmlentities($page['menutitle']);
@@ -54,26 +62,174 @@ $contenttitleheader = new htmlheading();
 $contenttitleheader->type=1;
 $contenttitleheader->str=$this->objLanguage->languageText('mod_contextcontent_addtitle','contextcontent');
 if ($mode == 'add') {
-    $htmlarea->setContent($contenttitleheader->show().'<p class="startcontent">'.$this->objLanguage->languageText('mod_contextcontent_startcontent','contextcontent').'</p>');
+    $htmlarea->setContent('');
 } else {
     $htmlarea->setContent($page['pagecontent']);
 }
 
 $label = new label ($this->objLanguage->languageText('mod_contextcontent_pagecontent','contextcontent'), 'input_htmlarea');
 
+if ($contentType === 'short_text') {
+    $shortTextGuidance = $this->objLanguage->languageText('mod_contextcontent_shorttext_guidance', 'contextcontent');
+    $shortTextCount = $this->objLanguage->languageText('mod_contextcontent_shorttext_count', 'contextcontent');
+    $shortTextLimit = $this->objLanguage->languageText('mod_contextcontent_shorttext_limit', 'contextcontent');
+    $formTable->startRow();
+    $formTable->addCell('');
+    $formTable->addCell('<p class="contextcontent-authoring-guidance">'
+        . htmlentities($shortTextGuidance, ENT_QUOTES, 'UTF-8') . '</p>');
+    $formTable->endRow();
+}
+
 $formTable->startRow();
 $formTable->addCell($label->show());
-$formTable->addCell($htmlarea->show());
+if ($contentType === 'image_audio') {
+    $values = array('image_url'=>'', 'audio_url'=>'', 'image_alt'=>'', 'media_caption'=>'', 'audio_transcript'=>'');
+    if ($mode === 'edit' && !empty($page['pagecontent'])) {
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $page['pagecontent']);
+        libxml_clear_errors();
+        $images = $doc->getElementsByTagName('img');
+        $audios = $doc->getElementsByTagName('audio');
+        $captions = $doc->getElementsByTagName('figcaption');
+        $details = $doc->getElementsByTagName('details');
+        if ($images->length) { $values['image_url']=$images->item(0)->getAttribute('src'); $values['image_alt']=$images->item(0)->getAttribute('alt'); }
+        if ($audios->length) { $values['audio_url']=$audios->item(0)->getAttribute('src'); }
+        if ($captions->length) { $values['media_caption']=$captions->item(0)->textContent; }
+        if ($details->length) { $values['audio_transcript']=preg_replace('/^\s*Transcript \(optional\)\s*/u', '', trim($details->item(0)->textContent)); }
+    }
+    $field = function ($name, $labelKey, $value, $textarea = false) {
+        $labelText = $this->objLanguage->languageText($labelKey, 'contextcontent');
+        $inputType = in_array($name, array('image_url', 'audio_url'), true) ? 'url' : 'text';
+        $control = $textarea
+            ? '<textarea name="'.$name.'" id="input_'.$name.'" rows="5">'.htmlentities($value, ENT_QUOTES, 'UTF-8').'</textarea>'
+            : '<input type="'.$inputType.'" name="'.$name.'" id="input_'.$name.'" value="'.htmlentities($value, ENT_QUOTES, 'UTF-8').'"'.($name==='image_url'?' required="required"':'').' />';
+        return '<div class="contextcontent-media-field"><label for="input_'.$name.'">'.htmlentities($labelText, ENT_QUOTES, 'UTF-8').'</label>'.$control.'</div>';
+    };
+    $editorMarkup = '<section class="contextcontent-image-audio-authoring"><p>'
+        . htmlentities($this->objLanguage->languageText('mod_contextcontent_imageaudio_guidance', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</p>'
+        . $field('image_url','mod_contextcontent_image_url',$values['image_url'])
+        . $field('image_alt','mod_contextcontent_image_alt',$values['image_alt'])
+        . $field('media_caption','mod_contextcontent_media_caption',$values['media_caption'],true)
+        . $field('audio_url','mod_contextcontent_audio_url',$values['audio_url'])
+        . $field('audio_transcript','mod_contextcontent_audio_transcript',$values['audio_transcript'],true) . '</section>';
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-image-audio-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-media-field{margin:1rem 0}.contextcontent-media-field label{display:block;margin-bottom:.35rem;font-weight:700}.contextcontent-media-field input,.contextcontent-media-field textarea{box-sizing:border-box;width:100%;max-width:100%}</style>');
+} elseif ($contentType === 'video') {
+    $values = array('video_url'=>'', 'video_poster_url'=>'', 'video_caption'=>'', 'video_transcript'=>'', 'video_orientation'=>'portrait');
+    if ($mode === 'edit' && !empty($page['pagecontent'])) {
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $page['pagecontent']);
+        libxml_clear_errors();
+        $videos = $doc->getElementsByTagName('video');
+        $iframes = $doc->getElementsByTagName('iframe');
+        $captions = $doc->getElementsByTagName('figcaption');
+        $details = $doc->getElementsByTagName('details');
+        if ($videos->length) { $values['video_url']=$videos->item(0)->getAttribute('src'); $values['video_poster_url']=$videos->item(0)->getAttribute('poster'); }
+        if ($iframes->length) { $values['video_url']=$iframes->item(0)->getAttribute('src'); }
+        if ($captions->length) { $values['video_caption']=$captions->item(0)->textContent; }
+        if ($details->length) { $values['video_transcript']=trim(preg_replace('/^\s*[^\n]+\s*/u', '', trim($details->item(0)->textContent))); }
+        if (strpos($page['pagecontent'], 'contextcontent-video-landscape') !== false) { $values['video_orientation']='landscape'; }
+    }
+    $videoLabel = function ($key) { return htmlentities($this->objLanguage->languageText($key, 'contextcontent'), ENT_QUOTES, 'UTF-8'); };
+    $videoField = function ($name, $key, $value, $textarea = false, $required = false) use ($videoLabel) {
+        $escaped = htmlentities($value, ENT_QUOTES, 'UTF-8');
+        $control = $textarea ? '<textarea name="'.$name.'" id="input_'.$name.'" rows="6">'.$escaped.'</textarea>'
+            : '<input type="url" name="'.$name.'" id="input_'.$name.'" value="'.$escaped.'"'.($required?' required="required" aria-required="true"':'').' />';
+        return '<div class="contextcontent-media-field"><label for="input_'.$name.'">'.$videoLabel($key).'</label>'.$control.'</div>';
+    };
+    $portraitChecked = $values['video_orientation'] === 'portrait' ? ' checked="checked"' : '';
+    $landscapeChecked = $values['video_orientation'] === 'landscape' ? ' checked="checked"' : '';
+    $orientation = '<fieldset class="contextcontent-video-orientation"><legend>'.$videoLabel('mod_contextcontent_video_orientation').'</legend>'
+        . '<label><input type="radio" name="video_orientation" value="portrait"'.$portraitChecked.' /> '.$videoLabel('mod_contextcontent_video_portrait').'</label> '
+        . '<label><input type="radio" name="video_orientation" value="landscape"'.$landscapeChecked.' /> '.$videoLabel('mod_contextcontent_video_landscape').'</label></fieldset>';
+    $editorMarkup = '<section class="contextcontent-video-authoring"><p>'.$videoLabel('mod_contextcontent_video_guidance').'</p>'
+        . $videoField('video_url','mod_contextcontent_video_url',$values['video_url'],false,true)
+        . $videoField('video_poster_url','mod_contextcontent_video_poster_url',$values['video_poster_url'])
+        . $orientation
+        . $videoField('video_caption','mod_contextcontent_video_caption',$values['video_caption'],true)
+        . $videoField('video_transcript','mod_contextcontent_video_transcript',$values['video_transcript'],true) . '</section>';
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-video-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-video-authoring .contextcontent-media-field{margin:1rem 0}.contextcontent-video-authoring label{font-weight:700}.contextcontent-video-authoring .contextcontent-media-field label{display:block;margin-bottom:.35rem}.contextcontent-video-authoring input[type=url],.contextcontent-video-authoring textarea{box-sizing:border-box;width:100%;max-width:100%}.contextcontent-video-orientation{margin:1rem 0;padding:.75rem 1rem}.contextcontent-video-orientation label{display:inline-block;margin:.25rem 1.5rem .25rem 0}</style>');
+} elseif (in_array($contentType, array('pdf', 'zip_bundle', 'external_reading'), true)) {
+    $values = array('resource_url'=>'', 'resource_filepreview'=>'', 'resource_description'=>'', 'resource_source'=>'');
+    if ($mode === 'edit' && !empty($page['pagecontent'])) {
+        if ($contentType === 'zip_bundle' && preg_match('/\[FILEPREVIEW\s+id="[A-Za-z0-9_-]+"\s+comment="[^"\r\n]+\.zip"\s*\/\]/i', $page['pagecontent'], $tokenMatch)) {
+            $values['resource_filepreview'] = $tokenMatch[0];
+        }
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $page['pagecontent']);
+        libxml_clear_errors();
+        $links = $doc->getElementsByTagName('a');
+        if ($links->length) { $values['resource_url'] = $links->item(0)->getAttribute('href'); }
+        $finder = new DOMXPath($doc);
+        foreach (array('resource_description'=>'contextcontent-resource-description', 'resource_source'=>'contextcontent-resource-source') as $key=>$class) {
+            $nodes = $finder->query("//*[contains(concat(' ', normalize-space(@class), ' '), ' ".$class." ')]");
+            if ($nodes->length) { $values[$key] = trim($nodes->item(0)->textContent); }
+        }
+    }
+    $resourceLabel = function ($key) { return htmlentities($this->objLanguage->languageText($key, 'contextcontent'), ENT_QUOTES, 'UTF-8'); };
+    $guidanceKey = $contentType === 'pdf' ? 'mod_contextcontent_pdf_guidance'
+        : ($contentType === 'zip_bundle' ? 'mod_contextcontent_zip_guidance' : 'mod_contextcontent_external_guidance');
+    $resourceField = function ($name, $key, $value, $textarea = false, $required = false) use ($resourceLabel) {
+        $escaped = htmlentities($value, ENT_QUOTES, 'UTF-8');
+        $control = $textarea ? '<textarea name="'.$name.'" id="input_'.$name.'" rows="5">'.$escaped.'</textarea>'
+            : '<input type="url" name="'.$name.'" id="input_'.$name.'" value="'.$escaped.'"'.($required?' required="required" aria-required="true"':'').' />';
+        return '<div class="contextcontent-media-field"><label for="input_'.$name.'">'.$resourceLabel($key).'</label>'.$control.'</div>';
+    };
+    $primaryField = $contentType === 'zip_bundle'
+        ? $resourceField('resource_filepreview','mod_contextcontent_zip_filepreview',$values['resource_filepreview'],true,true)
+        : $resourceField('resource_url','mod_contextcontent_resource_url',$values['resource_url'],false,true);
+    $editorMarkup = '<section class="contextcontent-resource-authoring"><p>'.$resourceLabel($guidanceKey).'</p>'
+        . $primaryField
+        . $resourceField('resource_description','mod_contextcontent_resource_description',$values['resource_description'],true)
+        . $resourceField('resource_source','mod_contextcontent_resource_source',$values['resource_source'],true) . '</section>';
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-resource-authoring .contextcontent-media-field{margin:1rem 0}.contextcontent-resource-authoring .contextcontent-media-field label{display:block;margin-bottom:.35rem;font-weight:700}.contextcontent-resource-authoring input[type=url],.contextcontent-resource-authoring textarea{box-sizing:border-box;width:100%;max-width:100%}</style>');
+} else {
+    $editorMarkup = $htmlarea->show();
+}
+if ($contentType === 'short_text') {
+    $editorMarkup = '<section class="contextcontent-phone-authoring">'
+        . '<div class="contextcontent-phone-speaker" aria-hidden="true"></div>'
+        . '<div class="contextcontent-phone-screen">' . $editorMarkup . '</div>'
+        . '<p class="contextcontent-short-text-counter" aria-live="polite">'
+        . '<strong id="contextcontent-short-text-count">0</strong> '
+        . htmlentities($shortTextCount, ENT_QUOTES, 'UTF-8') . ' &middot; '
+        . htmlentities($shortTextLimit, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<div class="contextcontent-phone-gesture" aria-hidden="true"></div></section>';
+}
+$formTable->addCell($editorMarkup);
 $formTable->endRow();
+
+if ($contentType === 'short_text') {
+    $this->appendArrayVar('headerParams', '<style type="text/css">'
+        . '.contextcontent-phone-authoring{box-sizing:border-box;width:360px;max-width:100%;margin:1rem auto;padding:12px 10px 10px;border:5px solid #263238;border-radius:38px;background:#263238;box-shadow:0 14px 34px rgba(0,0,0,.22)}'
+        . '.contextcontent-phone-speaker{width:54px;height:5px;margin:0 auto 10px;border-radius:4px;background:#78909c}'
+        . '.contextcontent-phone-screen{overflow:hidden;min-height:500px;padding:8px;border-radius:25px;background:#fff}'
+        . '.contextcontent-phone-screen .tox-tinymce{border:0!important;border-radius:17px!important;min-height:480px!important}'
+        . '.contextcontent-phone-screen .tox-edit-area iframe{min-height:390px!important}'
+        . '.contextcontent-short-text-counter{margin:.65rem .25rem .45rem;color:#eceff1;text-align:center;font-size:.86rem}'
+        . '.contextcontent-phone-gesture{width:92px;height:4px;margin:0 auto 2px;border-radius:4px;background:#b0bec5}'
+        . '.contextcontent-short-text-counter.is-over-limit{color:#ffab91;font-weight:700}'
+        . '@media(max-width:560px){.ctxtcnt-add-table,.ctxtcnt-add-table tbody,.ctxtcnt-add-table tr,.ctxtcnt-add-table td{display:block;width:100%!important}.contextcontent-phone-authoring{width:100%;border-width:3px;border-radius:28px}.contextcontent-phone-screen{min-height:420px}.contextcontent-phone-screen .tox-tinymce{min-height:400px!important}.contextcontent-phone-screen .tox-edit-area iframe{min-height:310px!important}}'
+        . '</style>');
+    $this->appendArrayVar('headerParams', '<script type="text/javascript">'
+        . '(function(){function visibleLength(value){var node=document.createElement("div");node.innerHTML=value||"";return (node.textContent||node.innerText||"").trim().length;}'
+        . 'function update(value){var output=document.getElementById("contextcontent-short-text-count");if(!output){return;}var count=visibleLength(value);output.textContent=count;var status=output.parentNode;status.className="contextcontent-short-text-counter"+(count>1200?" is-over-limit":"");}'
+        . 'function connect(){var field=document.querySelector("textarea[name=pagecontent]");if(!field){return;}field.setAttribute("maxlength","1600");field.addEventListener("input",function(){update(field.value);});update(field.value);'
+        . 'if(window.tinymce){var attach=function(editor){if(editor.targetElm===field){editor.on("init input change keyup undo redo",function(){update(editor.getContent());});update(editor.getContent());}};tinymce.on("AddEditor",function(event){attach(event.editor);});tinymce.editors.forEach(attach);}}'
+        . 'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",connect);}else{connect();}}());'
+        . '</script>');
+}
 
 /* CHISIMBA_CONTEXTCONTENT_HEADER_SCRIPT_AUTHORING_RETIRED
  * Course authors may no longer attach page-specific JavaScript or CSS.
  */
-$saveButtonText = '<span class=\'save\'>'
-   . $this->objLanguage->languageText('mod_contextcontent_savepage','contextcontent')
-   . '</span>';
+$saveButtonText = $this->objLanguage->languageText('mod_contextcontent_savepage','contextcontent');
 $button = new button('submitform', $saveButtonText);
 $button->cssId = 'ctxtcnt-add-submit';
+$button->cssClass = 'contextcontent-primary-action';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 
 $formTable->startRow();
@@ -98,31 +254,4 @@ if ($mode == 'edit') {
 $form->addRule('menutitle', $this->objLanguage->languageText('mod_contextcontent_pleaseenterpagetitle','contextcontent'), 'required');
 
 echo $form->show();
-$autosave = 'jQuery(document).ready(function() {
-var saved=false;
-var id="";
- window.setInterval(
-   function(){
-     var url;
-     if(saved){
-      url=\''.str_replace("amp;", "",$this->uri(array('action'=>'updatepage'))).'\';
-     }else{
-      url=\''.str_replace("amp;", "",$this->uri(array('action'=>'savepage'))).'\';
-     }
-    data = jQuery("form").serialize();
-    menutitle="";
-     jQuery.ajax({
-        type: "POST",
-        url: url,
-        data: data,
-        success: function(msg) {
-                saved=true;
-        }
-    });
-}, 10000);
-
-});
-';
-
-
 ?>
