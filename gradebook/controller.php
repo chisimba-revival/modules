@@ -109,6 +109,13 @@ class gradebook extends controller {
                     return "main_user_tpl.php";
                 }
                 break;
+            //show the course assessment-plan provider catalogue
+            case 'assessmentPlan':
+                if($this->objUser->isAdmin() || $this->objPerm->isContextMember('Lecturers')) {
+                    return "assessment_plan_tpl.php";
+                }
+                return $this->nextAction(NULL, array('error'=>'noaccess'));
+                break;
             //view the details of the assessment
             case 'assessmentDetails':
                 return "assignment_details_tpl.php";

@@ -56,6 +56,10 @@ if($dropdownAssessments && $dropdownAssessments!="View All") {
 }
 echo $this->objH->show();
 
+$objAssessmentPlanLink = new link($this->uri(array('action'=>'assessmentPlan')));
+$objAssessmentPlanLink->link = $objLanguage->languageText('mod_gradebook_assessmentplan', 'gradebook');
+echo '<p>'.$objAssessmentPlanLink->show().'</p>';
+
 //select assignment, essays, onlineworksheets, MCQ tests etc
 $this->TableOptions = $this->newObject('htmltable', 'htmlelements');
 $this->TableOptions->cellspacing="2";
