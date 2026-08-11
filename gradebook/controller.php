@@ -114,6 +114,7 @@ class gradebook extends controller {
             case 'assessmentPlan':
                 if($this->objUser->isAdmin() || $this->objPerm->isContextMember('Lecturers')) {
                     $this->setVar('assessmentPlanCsrf', $this->issuePlanCsrf());
+                    $this->setVar('assessmentPlanRows', $this->assessmentPlanRows());
                     return "assessment_plan_tpl.php";
                 }
                 return $this->nextAction(NULL, array('error'=>'noaccess'));
@@ -136,6 +137,32 @@ class gradebook extends controller {
                     return $this->nextAction('assessmentPlan', array('planerror'=>'invalidcsrf'));
                 }
                 return $this->saveMcqAssessmentPlanItem();
+                break;
+            case 'assessmentPlanRemoveItem':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                if (!$this->consumePlanCsrf((string) $this->getParam('csrf_token', ''))) {
+                    return $this->nextAction('assessmentPlan', array('planerror'=>'invalidcsrf'));
+                }
+                return $this->removeAssessmentPlanItem();
+                break;
+            case 'assessmentSheet':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                $this->setVar('assessmentPlanCsrf', $this->issuePlanCsrf());
+                $this->setVar('assessmentPlanRows', $this->assessmentPlanRows());
+                return 'assessment_sheet_tpl.php';
+                break;
+            case 'assessmentSheetSave':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                if (!$this->consumePlanCsrf((string) $this->getParam('csrf_token', ''))) {
+                    return $this->nextAction('assessmentSheet', array('planerror'=>'invalidcsrf'));
+                }
+                return $this->saveAssessmentSheet();
                 break;
             //view the details of the assessment
             case 'assessmentDetails':
@@ -297,17 +324,9 @@ class gradebook extends controller {
     private function saveMcqAssessmentPlanItem()
     {
         $testId = trim((string) $this->getParam('activity_id', ''));
-        $title = trim((string) $this->getParam('title', ''));
-        $weight = trim((string) $this->getParam('weight', ''));
-        $openingDate = trim((string) $this->getParam('opening_date', ''));
-        $closingDate = trim((string) $this->getParam('closing_date', ''));
 
-        if ($testId === '' || !is_numeric($weight) || (float) $weight < 0 || (float) $weight > 100) {
+        if ($testId === '') {
             return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliditem'));
-        }
-        if (!$this->isPlanDate($openingDate) || !$this->isPlanDate($closingDate)
-            || ($openingDate !== '' && $closingDate !== '' && $openingDate > $closingDate)) {
-            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliddates'));
         }
 
         $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
@@ -330,27 +349,77 @@ class gradebook extends controller {
             'provider_key' => 'mcqtests',
             'provider_module' => $provider['module_id'],
             'activity_id' => $testId,
-            'name' => $title === '' ? $activity['name'] : $title,
-            'weight' => number_format((float) $weight, 3, '.', ''),
-            'include_in_course_mark' => $this->getParam('include_in_course_mark', '') === 'Y' ? 'Y' : 'N',
-            'required_for_completion' => $this->getParam('required_for_completion', '') === 'Y' ? 'Y' : 'N',
+            'name' => $activity['name'],
+            'weight' => '0.000',
+            'include_in_course_mark' => 'Y',
+            'required_for_completion' => 'N',
             'result_rule' => 'latest_completed',
-            'opening_enabled' => $openingDate === '' ? 'N' : 'Y',
-            'opening_date' => $openingDate === '' ? null : $openingDate.' 00:00:00',
-            'closing_enabled' => $closingDate === '' ? 'N' : 'Y',
-            'closing_date' => $closingDate === '' ? null : $closingDate.' 23:59:59',
+            'opening_enabled' => 'N',
+            'opening_date' => null,
+            'closing_enabled' => 'N',
+            'closing_date' => null,
             'created_by' => $this->objUser->userId()
         ));
         return $this->nextAction('assessmentPlan', $saved ? array('planmessage'=>'saved') : array('planerror'=>'savefailed'));
     }
 
-    private function isPlanDate($date)
+    private function removeAssessmentPlanItem()
     {
-        if ($date === '') {
-            return true;
+        $itemId = trim((string) $this->getParam('item_id', ''));
+        $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+        $plan = $plans->findForContext($this->contextCode);
+        $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+        $removed = $plan && $itemId !== '' && $items->removeItem($plan['id'], $itemId);
+        return $this->nextAction('assessmentPlan', $removed ? array('planmessage'=>'removed') : array('planerror'=>'removefailed'));
+    }
+
+    private function saveAssessmentSheet()
+    {
+        $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+        $plan = $plans->findForContext($this->contextCode);
+        if (!$plan) {
+            return $this->nextAction('assessmentSheet');
         }
-        $parsed = DateTime::createFromFormat('!Y-m-d', $date);
-        return $parsed && $parsed->format('Y-m-d') === $date;
+        $submitted = $this->getParam('weight', array());
+        if (!is_array($submitted)) {
+            return $this->nextAction('assessmentSheet', array('planerror'=>'invalidweights'));
+        }
+        $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+        foreach ($submitted as $itemId => $weight) {
+            if (!preg_match('/^[A-Za-z0-9_]+$/', (string) $itemId) || !is_numeric($weight)
+                || (float) $weight < 0 || (float) $weight > 100) {
+                return $this->nextAction('assessmentSheet', array('planerror'=>'invalidweights'));
+            }
+            if (!$items->saveWeight($plan['id'], $itemId, $weight)) {
+                return $this->nextAction('assessmentSheet', array('planerror'=>'savefailed'));
+            }
+        }
+        return $this->nextAction('assessmentSheet', array('planmessage'=>'weights_saved'));
+    }
+
+    private function assessmentPlanRows()
+    {
+        $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+        $plan = $plans->findForContext($this->contextCode);
+        if (!$plan) {
+            return array();
+        }
+        $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook')->getForPlan($plan['id']);
+        $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
+        $rows = array();
+        foreach ($items as $item) {
+            $provider = $registry->get($item['provider_key']);
+            $adapter = $provider ? $registry->adapter($item['provider_key']) : false;
+            $activity = is_object($adapter) ? $adapter->getActivity($this->contextCode, $item['activity_id']) : false;
+            $rows[] = array(
+                'item' => $item,
+                'title' => is_array($activity) && isset($activity['name']) ? $activity['name'] : $item['name'],
+                'provider' => $provider ? $provider['label'] : $item['provider_module'],
+                'classification' => is_array($activity) && !empty($activity['classification']) ? $activity['classification'] : 'unclassified',
+                'available' => is_array($activity)
+            );
+        }
+        return $rows;
     }
 }
 ?>
