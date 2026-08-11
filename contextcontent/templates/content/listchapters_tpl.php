@@ -114,7 +114,9 @@ $dropdown = new dropdown('id');
 
 // End Form
 **/
-$chapterList = '<div id="allchapters">';
+$chapterList = '<div id="allchapters" data-toggle-storage-key="'
+    . htmlspecialchars('chisimba-contextcontent-open-' . (string) $this->contextCode, ENT_QUOTES, 'UTF-8')
+    . '">';
 
 $objWashout = $this->getObject('washout', 'utilities');
 $todays_date = date('Y-m-d H:i');
@@ -433,20 +435,53 @@ echo $chapterList;
     }
 
     chapterList.dataset.contentsToggleReady = 'true';
+    var storageKey = chapterList.dataset.toggleStorageKey;
+
+    function setExpanded(button, expanded) {
+        var contents = document.getElementById(button.getAttribute('aria-controls'));
+        if (!contents) {
+            return;
+        }
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        contents.hidden = !expanded;
+    }
+
+    function saveExpandedChapters() {
+        if (!storageKey) {
+            return;
+        }
+        var expanded = Array.prototype.map.call(
+            chapterList.querySelectorAll('.chisimba-chapter-contents-toggle[aria-expanded="true"]'),
+            function (button) { return button.getAttribute('aria-controls'); }
+        );
+        try {
+            window.localStorage.setItem(storageKey, JSON.stringify(expanded));
+        } catch (ignore) {}
+    }
+
+    if (storageKey) {
+        try {
+            var stored = JSON.parse(window.localStorage.getItem(storageKey) || '[]');
+            if (Array.isArray(stored)) {
+                stored.forEach(function (contentsId) {
+                    var button = chapterList.querySelector(
+                        '.chisimba-chapter-contents-toggle[aria-controls="' + CSS.escape(contentsId) + '"]'
+                    );
+                    if (button) {
+                        setExpanded(button, true);
+                    }
+                });
+            }
+        } catch (ignore) {}
+    }
+
     chapterList.addEventListener('click', function (event) {
         var button = event.target.closest('.chisimba-chapter-contents-toggle');
         if (!button || !chapterList.contains(button)) {
             return;
         }
-
-        var contents = document.getElementById(button.getAttribute('aria-controls'));
-        if (!contents) {
-            return;
-        }
-
-        var expanded = button.getAttribute('aria-expanded') === 'true';
-        button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        contents.hidden = expanded;
+        setExpanded(button, button.getAttribute('aria-expanded') !== 'true');
+        saveExpandedChapters();
     });
 }());
 </script>

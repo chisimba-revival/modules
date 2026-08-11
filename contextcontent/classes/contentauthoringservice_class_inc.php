@@ -22,7 +22,8 @@ class contentauthoringservice extends ChisimbaObject
             $titleId = $this->titles->createTypedTitle($data['contenttype']);
             $this->pages->createNativeBody($titleId, $data['title'], $data['body'], $data['language']);
             $placementId = $this->order->addPageToContext(
-                $titleId, $data['parentid'], $data['contextcode'], $data['chapterid']
+                $titleId, $data['parentid'], $data['contextcode'], $data['chapterid'], '', '',
+                $data['insert_after']
             );
             if (!$placementId) { throw new RuntimeException('Could not create content placement'); }
             $this->titles->commitTransaction();
@@ -58,6 +59,7 @@ class contentauthoringservice extends ChisimbaObject
             'contextcode' => trim((string) ($input['contextcode'] ?? '')),
             'chapterid' => trim((string) ($input['chapterid'] ?? '')),
             'parentid' => trim((string) ($input['parentid'] ?? '')),
+            'insert_after' => trim((string) ($input['insert_after'] ?? '')),
             'placementid' => trim((string) ($input['placementid'] ?? '')),
             'contenttype' => trim((string) ($input['contenttype'] ?? 'rich_text')),
             'title' => trim((string) ($input['title'] ?? '')),
@@ -67,7 +69,7 @@ class contentauthoringservice extends ChisimbaObject
         if ($data['contextcode'] === '' || $data['chapterid'] === '' || $data['title'] === '') {
             throw new InvalidArgumentException('Course, chapter and title are required');
         }
-        foreach (array('chapterid', 'placementid') as $identifierField) {
+        foreach (array('chapterid', 'placementid', 'insert_after') as $identifierField) {
             if ($data[$identifierField] !== ''
                 && !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $data[$identifierField])) {
                 throw new InvalidArgumentException('Invalid content identifier');

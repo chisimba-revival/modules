@@ -89,21 +89,18 @@ $this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradeboo
 $this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_percentyearmark','gradebook'),"13%");
 $this->TableInstructions->endHeaderRow();
 
-$numberAssignments=0;
-$numberAssignments=count($objAssignment->getAssignment($contextCode));
+$assignmentRecords = $objAssignment->getAssignment($contextCode);
+$numberAssignments = is_countable($assignmentRecords) ? count($assignmentRecords) : 0;
 $totalMark=0;
 $totalPercentMark=0;
 $totalAvgMark=0;
 $totalPercentYrMark=0;
 $count=0;
 
-if(!$numberAssignments) {
-    $this->TableInstructions->startRow();
-    $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_noassignments','gradebook'),NULL,NULL,NULL,NULL," colspan=\"4\"");
-    $this->TableInstructions->endRow();
-} else {
-    $iassignment=array();
-    switch($assessment) {
+// Each provider is independent. A course with no legacy assignments may still
+// have MCQ tests, essays, or worksheets to show on this learner detail page.
+$iassignment=array();
+switch($assessment) {
         case 'Essays':
         case 'Online Worksheets':
         case 'MCQ Tests':
@@ -368,7 +365,20 @@ if(!$numberAssignments) {
                            // $mark=($sMark[0]["studentMark"]!=NULL?$sMark[0]["studentMark"]:0);
                             $totalAvgMark+=$ca;
                             if(!empty($xstudentResult)) {
-                                foreach($xstudentResult as $studentResult) {
+                                // Gradebook policy: exactly one completed MCQ result per learner/test.
+// Result rows are written at completion; use newest known timestamps, then id.
+usort($xstudentResult, function ($left, $right) {
+    foreach (array('starttime', 'updated', 'datecompleted', 'id') as $field) {
+        $leftValue = isset($left[$field]) ? (string)$left[$field] : '';
+        $rightValue = isset($right[$field]) ? (string)$right[$field] : '';
+        if ($leftValue !== $rightValue) {
+            return strcmp($leftValue, $rightValue);
+        }
+    }
+    return 0;
+});
+$studentResult = end($xstudentResult);
+if ($studentResult !== false) {
                                     $mark=($studentResult['mark']/$iassignment['totalmark'])*100;
                                     $this->TableInstructions->addCell(round($mark,2));
                                     $this->TableInstructions->addCell(round($ca,2));
@@ -416,7 +426,20 @@ if(!$numberAssignments) {
                         //  $mark = isset($sMark[0]['studentMark']) ? $sMark[0]['studentMark'] : 0;
                         $totalAvgMark+=$ca;
                         if(!empty($xstudentResult)) {
-                            foreach($xstudentResult as $studentResult) {
+                            // Gradebook policy: exactly one completed MCQ result per learner/test.
+// Result rows are written at completion; use newest known timestamps, then id.
+usort($xstudentResult, function ($left, $right) {
+    foreach (array('starttime', 'updated', 'datecompleted', 'id') as $field) {
+        $leftValue = isset($left[$field]) ? (string)$left[$field] : '';
+        $rightValue = isset($right[$field]) ? (string)$right[$field] : '';
+        if ($leftValue !== $rightValue) {
+            return strcmp($leftValue, $rightValue);
+        }
+    }
+    return 0;
+});
+$studentResult = end($xstudentResult);
+if ($studentResult !== false) {
                                 $mark=($studentResult['mark']/$iassignment['totalmark'])*100;
                                 $this->TableInstructions->addCell(round($mark,2));
                                 $this->TableInstructions->addCell(round($ca,2));
@@ -557,7 +580,6 @@ if(!$numberAssignments) {
                 $this->TableInstructions->endRow();
             }
             break;
-    }
 }
 
 if($checkCount || !$check) {

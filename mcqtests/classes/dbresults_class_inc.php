@@ -90,11 +90,36 @@ class dbresults extends dbtable {
     public function getResult($userId, $testId) {
         $sql = 'SELECT * FROM '.$this->table;
         $sql.= " WHERE studentid='$userId' AND testid='$testId'";
+        $sql.= ' ORDER BY starttime DESC, updated DESC';
         $data = $this->getArray($sql);
         if (!empty($data)) {
             return $data;
         }
         return FALSE;
+    }
+
+    /**
+     * Return one attempt only when it belongs to the specified learner and test.
+     */
+    public function getAttempt($resultId, $userId, $testId) {
+        $resultId = addslashes((string) $resultId);
+        $userId = addslashes((string) $userId);
+        $testId = addslashes((string) $testId);
+        $sql = 'SELECT * FROM '.$this->table;
+        $sql .= " WHERE id='$resultId' AND studentid='$userId' AND testid='$testId' LIMIT 1";
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data[0];
+    }
+
+    /** Return the most recent attempt for the learner and test. */
+    public function getLatestAttempt($userId, $testId) {
+        $userId = addslashes((string) $userId);
+        $testId = addslashes((string) $testId);
+        $sql = 'SELECT * FROM '.$this->table;
+        $sql .= " WHERE studentid='$userId' AND testid='$testId'";
+        $sql .= ' ORDER BY starttime DESC, updated DESC LIMIT 1';
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data[0];
     }
 
     /**
@@ -106,7 +131,7 @@ class dbresults extends dbtable {
      */
     public function getResults($testId,$flag=0) {
         $sql = 'SELECT * FROM '.$this->table;
-        $sql.= " WHERE testid='$testId'";
+        $sql.= " WHERE testid='$testId' ORDER BY studentid ASC, starttime ASC, updated ASC, id ASC";
         $data = $this->getArray($sql);
         if (!empty($data)) {
             return $this->cleanUp($data,$flag);

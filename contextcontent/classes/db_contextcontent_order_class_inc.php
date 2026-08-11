@@ -453,40 +453,48 @@ class db_contextcontent_order extends dbtable {
      * @return Record Id
      * @access private
      */
-    public function addPageToContext($titleId, $parentId, $context, $chapter='', $bookmark='', $isBookmark='') {
-        // Adjust left right
-        $lastRight = $this->getLastRight($context, $parentId, $chapter);
-        $leftPointer = $lastRight;
+    public function addPageToContext($titleId, $parentId, $context, $chapter='', $bookmark='', $isBookmark='', $insertAfterId='') {
+        $isRoot = ($parentId === '' || $parentId === 'root');
+        $storedParentId = $isRoot ? 'root' : $parentId;
 
-        if ($parentId == '') {
-            $leftPointer++;
-        }
-        $rightPointer = $leftPointer + 1;
-
-        if ($parentId == '') {
-            $pageOrder = 1;
+        if ($insertAfterId !== '') {
+            if (!$isRoot) {
+                throw new InvalidArgumentException('Insertion anchors are supported only for chapter pages');
+            }
+            $anchor = $this->getRow('id', $insertAfterId);
+            if (!$anchor || $anchor['contextcode'] !== $context || $anchor['chapterid'] !== $chapter
+                || $anchor['parentid'] !== 'root') {
+                throw new InvalidArgumentException('Invalid page insertion anchor');
+            }
+            $leftPointer = (int) $anchor['rght'] + 1;
+            $rightPointer = $leftPointer + 1;
+            $pageOrder = (int) $anchor['pageorder'] + 1;
+            $this->updateLeftRightPointers($context, $chapter, (int) $anchor['rght']);
+            $contextQuoted = $this->_db->quote((string) $context);
+            $chapterQuoted = $this->_db->quote((string) $chapter);
+            $this->query('UPDATE tbl_contextcontent_order SET pageorder=pageorder+1'
+                . ' WHERE contextcode=' . $contextQuoted . ' AND chapterid=' . $chapterQuoted
+                . " AND parentid='root' AND pageorder >= " . $pageOrder);
+        } elseif ($isRoot) {
+            $leftPointer = $this->getLastRight($context, '', $chapter) + 1;
+            $rightPointer = $leftPointer + 1;
+            $pageOrder = $this->getLastOrder($chapter, 'root') + 1;
         } else {
-            $this->updateLeftRightPointers($chapter, $lastRight - 1);
+            $lastRight = $this->getLastRight($context, $parentId, $chapter);
+            $leftPointer = $lastRight;
+            $rightPointer = $leftPointer + 1;
+            $this->updateLeftRightPointers($context, $chapter, $lastRight - 1);
+            $pageOrder = $this->getLastOrder($chapter, $parentId) + 1;
         }
 
-        // get last order
-        $pageOrder = $this->getLastOrder($chapter, $parentId) + 1;
-
-        // clear pdf
         $this->clearChapterPDF($chapter, $context);
-
-        // insert
-        $result = $this->insertTitle($context, $chapter, $titleId, $parentId, $leftPointer, $rightPointer, $pageOrder, 'Y', $bookmark, $isBookmark);
+        $result = $this->insertTitle($context, $chapter, $titleId, $storedParentId,
+            $leftPointer, $rightPointer, $pageOrder, 'Y', $bookmark, $isBookmark);
 
         if ($result != FALSE) {
-            // if successful, add to search
             $page = $this->getPage($result, $context);
-
-            if ($page != FALSE) {
-                $this->indexData($context, $page);
-            }
+            if ($page != FALSE) { $this->indexData($context, $page); }
         }
-
         return $result;
     }
 
@@ -615,9 +623,11 @@ class db_contextcontent_order extends dbtable {
         }
     }
 
-    private function updateLeftRightPointers($chapter, $base, $amount=2) {
-        $sqlLeft = 'UPDATE tbl_contextcontent_order SET rght=rght+' . $amount . ' WHERE rght > ' . $base . ' AND chapterid=\'' . $chapter . '\'';
-        $sqlRight = 'UPDATE tbl_contextcontent_order SET lft=lft+' . $amount . ' WHERE lft > ' . $base . ' AND chapterid=\'' . $chapter . '\'';
+    private function updateLeftRightPointers($context, $chapter, $base, $amount=2) {
+        $context = $this->_db->quote((string) $context);
+        $chapter = $this->_db->quote((string) $chapter);
+        $sqlLeft = 'UPDATE tbl_contextcontent_order SET rght=rght+' . $amount . ' WHERE rght > ' . $base . ' AND contextcode=' . $context . ' AND chapterid=' . $chapter;
+        $sqlRight = 'UPDATE tbl_contextcontent_order SET lft=lft+' . $amount . ' WHERE lft > ' . $base . ' AND contextcode=' . $context . ' AND chapterid=' . $chapter;
 
         $this->query($sqlLeft);
         $this->query($sqlRight);

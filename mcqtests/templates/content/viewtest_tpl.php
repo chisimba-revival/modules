@@ -80,18 +80,20 @@ $editUrl = $this->uri(array(
 ));
 $editLink = $objIcon->getEditIcon($editUrl);
 $objIcon->title = $listLabel;
-$objIcon->setIcon('comment');
+$resultsIcon = '<img src="'.$this->getResourceUri('icons/lucide/list-checks.svg', 'ui').'" width="20" height="20" alt="" aria-hidden="true" />';
 
 $objLink = new link($this->uri(array(
     'action' => 'liststudents',
     'id' => $data['id']
 )));
-$objLink->link = $objIcon->show();
+$objLink->link = '<span class="mcq-results-action" style="display:inline-flex;align-items:center;gap:.45rem;white-space:nowrap">'.$resultsIcon.'<span class="mcq-results-action-label">'.$this->objLanguage->languageText('mod_mcqtests_testresults', 'mcqtests').'</span></span>';
 $editLink.= '&nbsp;'.$objLink->show();
 
 // Show Heading
-$heading = $head.': '.$data['name'].'&nbsp;&nbsp;'.$editLink;
-$this->setVarByRef('heading', $heading);
+$heading = '<span class="mcq-test-heading">'.$head.': '.$data['name'].' '.$editLink.'</span>';
+$emptyHeading = '';
+$this->setVarByRef('heading', $emptyHeading);
+echo '<style type="text/css">.mcq-lecturer-panel{border:1px solid rgba(15,23,42,.14);border-radius:.65rem;background:rgba(248,250,252,.72);padding:1rem 1.15rem;margin:0 0 1rem;box-sizing:border-box}.mcq-lecturer-panel h1,.mcq-lecturer-panel h2{margin-top:0}.mcq-lecturer-questions{background:#fff}.mcq-lecturer-home{margin:1rem 0 0}.mcq-test-heading{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;margin:0 0 .65rem}.mcq-lecturer-summary .mcq_overview{margin-bottom:0}</style>';
 
 // Create Table for the test information
 $objTable = new htmltable();
@@ -184,10 +186,11 @@ $objTable->addCell($data['description'], NULL, "top", NULL, NULL, ' colspan="3"'
 $objTable->endRow();
 
 // Show Table
-echo $objTable->show();
+echo '<section class="mcq-lecturer-panel mcq-lecturer-summary">'.$heading.$objTable->show().'</section>';
 
 
 
+$questionEditingLocked = isset($data['status']) && $data['status'] === 'open';
 $count = (is_countable($questions) ? count($questions) : 0);
 if (empty($questions)) {
     $count = 0;
@@ -200,7 +203,11 @@ $addQUrl = $this->uri(array(
     'id' => $data['id'],
     'count' => $count
 ));
-$addQ = $objIcon->getAddIcon($addQUrl);
+$addIcon = '<img src="'.$this->getResourceUri('icons/lucide/circle-plus.svg', 'ui').'" width="20" height="20" alt="" aria-hidden="true" />';
+$objLink = new link($addQUrl);
+$objLink->title = $addLabel;
+$objLink->link = $addIcon;
+$addQ = $questionEditingLocked ? '' : $objLink->show();
 
 
 //=======================================================SPLIT=========================================================================
@@ -214,6 +221,9 @@ $objHeading->str = $questionsLabel.' ('.$count.'):
 	&nbsp;&nbsp;&nbsp;&nbsp;'.$addQ;
 $qHeading = $objHeading->show();
 $str.= $qHeading;
+if ($questionEditingLocked) {
+    $str.= '<p class="mcq-edit-lock-notice" style="margin:.25rem 0 1rem;color:#555">'.$this->objLanguage->languageText('mod_mcqtests_activeeditdisabled', 'mcqtests').'</p>';
+}
 
 
 // Confirmation message on saving a question
@@ -244,6 +254,11 @@ if (!empty($questions)) {
     $i = 0;
     foreach($questions AS $line) {
         $class = (($i++%2) == 0) ? "odd" : "even";
+        if ($questionEditingLocked) {
+            $iconsUD = '';
+            $icons = '';
+            $editUrl = '';
+        }
         // move a question up in the order
         if ($i > 1) {
             $objIcon->title = $upLabel;
@@ -275,7 +290,7 @@ if (!empty($questions)) {
         ));
         $icons = $objIcon->getEditIcon($editUrl);
         $objIcon->title = $deleteLabel;
-        $objIcon->setIcon('delete');
+        $deleteIcon = '<img src="'.$this->getResourceUri('icons/lucide/trash-2.svg', 'ui').'" width="18" height="18" alt="" aria-hidden="true" />';
         $pos = FALSE;
         $len = strlen($line['question']);
         $conQuestion = $line['question'];
@@ -288,13 +303,17 @@ if (!empty($questions)) {
         $conQuestion = substr($line['question'], 0, $pos) .'...';
 
         $objConfirm = new confirm();
-        $objConfirm->setConfirm($objIcon->show() , $this->uri(array(
+        $objConfirm->setConfirm($deleteIcon , $this->uri(array(
             'action' => 'deletequestion',
             'questionId' => $line['id'],
             'id' => $data['id'],
             'mark' => $line['mark']
             )) , $lbConfirm);
         $icons.= $objConfirm->show();
+        if ($questionEditingLocked) {
+            $iconsUD = '';
+            $icons = '';
+        }
         // link name to edit question - shorten the question to 100 characters or the first line break
         $pos = FALSE;
         if ($len > 10) {
@@ -336,7 +355,8 @@ if (!empty($questions)) {
 }
 $objLink = new link($addQUrl);
 $objLink->link = $addLabel;
-$homeLink = '<p>'.$objLink->show() .'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+$homeLink = $questionEditingLocked ? '<p>' : '<p>'.$objLink->show() .'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
 $objLink = new link($this->uri(array(
     ''
 )));
@@ -346,7 +366,7 @@ $homeLink.= $objLink->show() .'</p>';
 $objLayer = new layer();
 $objLayer->cssClass = '';
 $objLayer->align = 'center';
-$objLayer->str = $homeLink;
+$objLayer->str = '';
 $back = $objLayer->show();
 $str.= $back;
 
@@ -364,12 +384,19 @@ $objHeading = new htmlheading();
 $objHeading->type = 1;
 $objHeading->str = $addqestionslabel;
 
+echo '<section class="mcq-lecturer-panel mcq-lecturer-questions">';
 echo $objHeading->show();
-
 echo $str;
+echo '</section>';
 
+echo '<section class="mcq-lecturer-panel mcq-lecturer-activation">';
 $objHeading = new htmlheading();
 $objHeading->type = 1;
+$objLink = new link($this->uri(array(
+    ''
+)));
+$objLink->link = $backLabel;
+$mcqHomeNavigation = '<p class="mcq-lecturer-home">'.$objLink->show().'</p>';
 $objHeading->str = $this->objLanguage->languageText('mod_mcqtests_activatetest', 'mcqtests', 'Activate Test');
 
 echo $objHeading->show();
@@ -406,4 +433,6 @@ $previewButton->setOnClick(  "window.open('".$this->uri(array(
 $form->addToForm($button->show().$previewButton->show());
 
 echo $form->show();
+echo '</section>';
+echo $mcqHomeNavigation;
 ?>

@@ -166,12 +166,21 @@ if ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="
         ? $page['pagecontent']
         : $objWashout->parseText($page['pagecontent']);
 }
+if ($page['contenttype'] === 'pdf') {
+    $pdfActionIcon = '<svg class="contextcontent-resource-type-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4 4V21H6z"/><path d="M14 2.5v4h4"/><path d="M8.5 16.5h7M8.5 13h7M8.5 9.5h2.5"/></svg>';
+    $renderedPageContent = preg_replace(
+        '/(<p class="contextcontent-resource-action"><a\b[^>]*>)/',
+        '$1' . $pdfActionIcon,
+        $renderedPageContent,
+        1
+    );
+}
 $content .= '<article class="contextcontent-native-page' . $typeClass . '">'
     . $shortTextOpen . $pageintroheader->show() . $renderedPageContent
     . $shortTextClose . '</article>';
 
 if (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true)) {
-    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource{max-width:820px;margin:1.5rem auto}.contextcontent-resource-body{margin-top:1rem;padding:1.4rem;border:1px solid #cfd8dc;border-left:5px solid #1976d2;border-radius:10px;background:#f7fafb}.contextcontent-resource-description{font-size:1.08rem;line-height:1.6}.contextcontent-resource-source{color:#546e7a;font-weight:700}.contextcontent-resource-action a{display:inline-block;padding:.7rem 1rem;border-radius:6px;background:#1565c0;color:#fff;text-decoration:none;font-weight:700}.contextcontent-resource-action a:hover,.contextcontent-resource-action a:focus{background:#0d47a1;color:#fff}.contextcontent-external-notice{font-size:.9rem;color:#546e7a}</style>');
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource{max-width:820px;margin:1.5rem auto}.contextcontent-resource-body{margin-top:1rem;padding:1.4rem;border:1px solid #cfd8dc;border-left:5px solid #1976d2;border-radius:10px;background:#f7fafb}.contextcontent-resource-description{font-size:1.08rem;line-height:1.6}.contextcontent-resource-source{color:#546e7a;font-weight:700}.contextcontent-resource-action a{display:inline-flex;gap:.55rem;align-items:center;padding:.7rem 1rem;border-radius:6px;background:#1565c0;color:#fff;text-decoration:none;font-weight:700}.contextcontent-resource-type-icon{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.contextcontent-resource-action a:hover,.contextcontent-resource-action a:focus{background:#0d47a1;color:#fff}.contextcontent-external-notice{font-size:.9rem;color:#546e7a}</style>');
 }
 
 if ($page['contenttype'] === 'video') {

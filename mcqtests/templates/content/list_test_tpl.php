@@ -22,9 +22,11 @@ $testLabel = $this->objLanguage->languageText('mod_mcqtests_test', 'mcqtests');
 $studentLabel = ucwords($this->objLanguage->languageText('mod_context_readonly', 'mcqtests'));
 $markLabel = $this->objLanguage->languageText('mod_mcqtests_mark', 'mcqtests');
 $reopenLabel = $this->objLanguage->languageText('mod_mcqtests_reopen', 'mcqtests');
+$notStartedLabel = $this->objLanguage->languageText('mod_mcqtests_notstarted', 'mcqtests');
 $assignLabel = $this->objLanguage->languageText('mod_assignmentadmin_name', 'assignmentadmin');
-$startLabel = $this->objLanguage->languageText('mod_mcqtests_startdate', 'mcqtests');
-$endLabel = $this->objLanguage->languageText('mod_mcqtests_closingdate', 'mcqtests');
+$takenLabel = $this->objLanguage->languageText('mod_mcqtests_datetaken', 'mcqtests');
+$attemptsLabel = $this->objLanguage->languageText('mod_mcqtests_attempts', 'mcqtests');
+$historyLabel = $this->objLanguage->languageText('mod_mcqtests_history', 'mcqtests');
 $this->setVarByRef('heading', $heading);
 $str = '<font size="3"><b>'.$testLabel.':</b>&nbsp;&nbsp;&nbsp;'.$test['name'].'<p /></font>';
 
@@ -35,8 +37,8 @@ $objTable->width = '99%';
 $tableHd = array();
 $tableHd[] = $studentLabel;
 $tableHd[] = $markLabel.' (%)';
-$tableHd[] = $startLabel;
-$tableHd[] = $endLabel;
+$tableHd[] = $takenLabel;
+$tableHd[] = $attemptsLabel;
 $tableHd[] = '';
 $objTable->addHeader($tableHd, 'heading');
 
@@ -44,7 +46,11 @@ if (!empty($data)) {
     $i = 0;
     foreach($data as $line) {
         $class = (($i++%2) == 0) ? 'even' : 'odd';
-        if ($totalmark != 0) {
+        $isNotStarted = isset($line['attemptstatus'])
+            && $line['attemptstatus'] === 'notstarted';
+        if ($isNotStarted) {
+            $mark = '<span class="subdued">'.$notStartedLabel.'</span>';
+        } else if ($totalmark != 0) {
             //trigger_error('$line::'.var_export($line, true));
             //trigger_error('isset($line[\'endtime\'])::'.var_export(isset($line['endtime']), true));
             //trigger_error('endtime::'.var_export($line['endtime'], true));
@@ -67,18 +73,18 @@ if (!empty($data)) {
                 $mark = $line['mark'];
             }
         }
-        if (isset($line['starttime']) && !empty($line['starttime'])) {
-            $start = $this->formatDate($line['starttime']);
-        } else {
-            $start = '';
-        }
+        // Use submission time for completed attempts. Interrupted attempts
+        // have no submission time, so show when they began.
+        $taken = '';
         if (isset($line['endtime']) && !empty($line['endtime'])) {
-            $end = $this->formatDate($line['endtime']);
-        } else {
-            $end = '';
+            $taken = $this->formatDate($line['endtime']);
+        } else if (!$isNotStarted && isset($line['starttime']) && !empty($line['starttime'])) {
+            $taken = $this->formatDate($line['starttime']);
         }
         $objConfirm = new confirm();
-        if($this->getParam('action') == 'liststudents2') {
+        if ($isNotStarted) {
+            $openLink = '';
+        } else if($this->getParam('action') == 'liststudents2') {
             $objConfirm->setConfirm($reopenLabel, $this->uri(array(
                 'action' => 'reopen',
                 'id' => $test['id'],
@@ -86,35 +92,47 @@ if (!empty($data)) {
                 'testtype' => 'advanced'
             )) , 'reopen?');
         }
-        else {
+        else if (!$isNotStarted) {
             $objConfirm->setConfirm($reopenLabel, $this->uri(array(
                 'action' => 'reopen',
                 'id' => $test['id'],
                 'studentId' => $line['studentid']
             )) , 'reopen?');
         }
-        $openLink = $objConfirm->show();
+        if (!$isNotStarted) {
+            $openLink = $objConfirm->show();
+        }
         //         $objLink = new link($this->uri(array('action'=>'reopen', 'id'=>$test['id'],
         //             'studentId'=>$line['studentId'])));
         //         $objLink->link = $reopenLabel;
         //         $openLink = $objLink->show();
-        $objLink = new link($this->uri(array(
-            'action' => 'showtest',
-            'id' => $test['id'],
-            'studentId' => $line['studentid']
-        )));
-        if (!isset($line['fullname'])){
-            $objLink->link = $this->objUser->fullname($line['studentid']);
+        $studentName = !empty($line['fullname'])
+            ? $line['fullname']
+            : $this->objUser->fullname($line['studentid']);
+        if ($isNotStarted) {
+            $studentLink = htmlspecialchars($studentName, ENT_QUOTES, 'UTF-8');
         } else {
-            // full name is now sent in the array
-            $objLink->link = $line['fullname'];
+            $objLink = new link($this->uri(array(
+                'action' => 'showtest',
+                'id' => $test['id'],
+                'studentId' => $line['studentid']
+            )));
+            $objLink->link = $studentName;
+            $studentLink = $objLink->show();
         }
-        $studentLink = $objLink->show();
         $row = array();
         $row[] = $studentLink;
         $row[] = $mark;
-        $row[] = $start;
-        $row[] = $end;
+        $row[] = $taken;
+        $attemptCount = isset($line['attemptcount']) ? (int) $line['attemptcount'] : 0;
+        $attemptNumber = isset($line['attemptnumber']) ? (int) $line['attemptnumber'] : 0;
+        $attemptInfo = $attemptCount > 0 ? $attemptNumber . ' / ' . $attemptCount : '';
+        if ($attemptCount > 0) {
+            $historyLink = new link($this->uri(array('action' => 'attempthistory', 'id' => $test['id'], 'studentId' => $line['studentid'])));
+            $historyLink->link = $historyLabel . ' (' . $attemptCount . ')';
+            $attemptInfo .= '<br />' . $historyLink->show();
+        }
+        $row[] = $attemptInfo;
         $row[] = $openLink;
         $objTable->addRow($row, $class);
     }

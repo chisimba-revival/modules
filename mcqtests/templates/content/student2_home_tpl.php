@@ -87,8 +87,10 @@ if (!empty($data)) {
                         $mark = round($line['mark']/$line['totalmark']*100,2);
                     }
                     
+                } else if ($line['mark'] == 0) {
+                    $mark = 0;
                 } else {
-                    $mark = $completedLabel;
+                    $mark = round($line['mark']/$line['totalmark']*100,2);
                 }
                 $action = 'showstudenttest2';
                 $title = $viewLabel;

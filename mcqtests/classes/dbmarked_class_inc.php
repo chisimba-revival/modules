@@ -44,6 +44,93 @@ class dbmarked extends dbtable
      * @param array $id The id of a previously selected answer to be updated.
      * @return
      */
+    /** Store or update an answer inside one immutable attempt boundary. */
+    public function addMarkedForAttempt($fields)
+    {
+        if (empty($fields['resultid'])) {
+            return FALSE;
+        }
+        $resultId = addslashes((string) $fields['resultid']);
+        $questionId = addslashes((string) $fields['questionid']);
+        $sql = "SELECT id FROM {$this->table} WHERE resultid='{$resultId}' AND questionid='{$questionId}' LIMIT 1";
+        $data = $this->getArray($sql);
+        if (!empty($data)) {
+            $this->update('id', $data[0]['id'], $fields);
+            return $data[0]['id'];
+        }
+        return $this->insert($fields);
+    }
+
+    public function getSelectedAnswersForAttempt($resultId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $data = $this->getArray("SELECT * FROM {$this->table} WHERE resultid='{$resultId}'");
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getCorrectAnswersForAttempt($resultId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $sql = "SELECT ans.correct, quest.mark FROM {$this->table} AS marked, tbl_test_answers AS ans, tbl_test_questions AS quest";
+        $sql .= " WHERE marked.answerid=ans.id AND marked.questionid=quest.id AND marked.resultid='{$resultId}'";
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getFreeformAnswersForAttempt($resultId, $testId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $testId = addslashes((string) $testId);
+        $sql = "SELECT DISTINCT questions.id AS questionid, questions.mark, marked.answered";
+        $sql .= " FROM tbl_test_questions AS questions, {$this->table} AS marked, tbl_test_answers AS answers";
+        $sql .= " WHERE questions.testid='{$testId}' AND questions.questiontype='freeform'";
+        $sql .= " AND answers.testid='{$testId}' AND answers.questionid=questions.id";
+        $sql .= " AND marked.resultid='{$resultId}' AND marked.questionid=questions.id";
+        $sql .= " AND marked.answered=answers.answer";
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getMarkedForAttempt($resultId, $questionId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $questionId = addslashes((string) $questionId);
+        $sql = "SELECT answers.* FROM {$this->table} AS marked, tbl_test_answers AS answers";
+        $sql .= " WHERE marked.answerid=answers.id AND marked.resultid='{$resultId}' AND marked.questionid='{$questionId}'";
+        $sql .= ' ORDER BY marked.updated DESC';
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getMarkedFreeFormForAttempt($resultId, $questionId, $testId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $questionId = addslashes((string) $questionId);
+        $testId = addslashes((string) $testId);
+        $sql = "SELECT DISTINCT answers.* FROM {$this->table} AS marked, tbl_test_answers AS answers";
+        $sql .= " WHERE marked.resultid='{$resultId}' AND marked.questionid='{$questionId}'";
+        $sql .= " AND answers.testid='{$testId}' AND answers.questionid='{$questionId}' AND marked.answered=answers.answer";
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getMarkedFreeFormAnswerForAttempt($resultId, $questionId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $questionId = addslashes((string) $questionId);
+        $data = $this->getArray("SELECT answered FROM {$this->table} WHERE resultid='{$resultId}' AND questionid='{$questionId}'");
+        return empty($data) ? FALSE : $data;
+    }
+
+    public function getAllMarkedForAttempt($resultId, $questionId)
+    {
+        $resultId = addslashes((string) $resultId);
+        $questionId = addslashes((string) $questionId);
+        $sql = "SELECT * FROM {$this->table} WHERE resultid='{$resultId}' AND questionid='{$questionId}' ORDER BY updated DESC";
+        $data = $this->getArray($sql);
+        return empty($data) ? FALSE : $data;
+    }
+
     public function addMarked($fields, $id = NULL)
     {
         $sql = "SELECT * FROM ".$this->table;

@@ -166,10 +166,18 @@ class contextcontent extends controller {
 
         $this->setLayoutTemplate('layout_chapter_tpl.php');
         if ($this->isMutation($action)) {
-            if (in_array($action, array('changebookmark', 'addcomment'), true)) {
-                $this->requireAuthenticatedMutation($action);
-            } else {
-                $this->requireAuthorisedMutation($action);
+            try {
+                if (in_array($action, array('changebookmark', 'addcomment'), true)) {
+                    $this->requireAuthenticatedMutation($action);
+                } else {
+                    $this->requireAuthorisedMutation($action);
+                }
+            } catch (RuntimeException $exception) {
+                if ($exception->getMessage() === 'The form has expired. Please reload and try again.' &&
+                        in_array($action, array('savepage', 'updatepage'), true)) {
+                    return $this->recoverExpiredPageForm($action);
+                }
+                throw $exception;
             }
         }
         if (in_array($action, array('addcontent', 'addpage', 'editpage', 'deletepage',
@@ -342,13 +350,32 @@ class contextcontent extends controller {
             && !preg_match('/^[A-Za-z0-9._-]{1,255}$/', (string) $this->contextCode)) {
             throw new InvalidArgumentException('Invalid course code');
         }
-        foreach (array('id', 'chapter', 'chapterid', 'pageid', 'parentnode') as $name) {
+        foreach (array('id', 'chapter', 'chapterid', 'pageid', 'parentnode', 'insert_after') as $name) {
             $value = (string) $this->getParam($name, '');
             if ($value !== '' && $value !== 'root'
                 && !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $value)) {
                 throw new InvalidArgumentException('Invalid content identifier');
             }
         }
+    }
+
+    private function recoverExpiredPageForm($action)
+    {
+        // Authentication already passed before CSRF verification. Re-check the
+        // course-manager boundary, then render the same form with a fresh token.
+        $this->requireCourseManager();
+        $this->setVar('preserveSubmittedPageForm', true);
+        $this->setVar('pageFormError', $this->objLanguage->languageText(
+            'mod_contextcontent_form_expired_preserved', 'contextcontent'));
+
+        if ($action === 'updatepage') {
+            return $this->editPage((string) $this->getParam('id', ''));
+        }
+        return $this->addPage(
+            (string) $this->getParam('chapter', ''),
+            (string) $this->getParam('insert_after', ''),
+            (string) $this->getParam('context', '')
+        );
     }
 
     private function isMutation($action)
@@ -925,11 +952,10 @@ class contextcontent extends controller {
     private function videoBodyFromRequest()
     {
         $videoUrl = trim((string) $this->getParam('video_url'));
-        $posterUrl = trim((string) $this->getParam('video_poster_url'));
         $caption = trim((string) $this->getParam('video_caption'));
         $transcript = trim((string) $this->getParam('video_transcript'));
         $orientation = (string) $this->getParam('video_orientation', 'portrait');
-        if (!$this->isSafeMediaUrl($videoUrl) || ($posterUrl !== '' && !$this->isSafeMediaUrl($posterUrl))) {
+        if (!$this->isSafeMediaUrl($videoUrl)) {
             throw new InvalidArgumentException('Invalid media URL');
         }
         if (!in_array($orientation, array('portrait', 'landscape'), true)) { $orientation = 'portrait'; }
@@ -941,8 +967,7 @@ class contextcontent extends controller {
                 . '" title="' . $e($caption !== '' ? $caption : $this->objLanguage->languageText('mod_contextcontent_type_video', 'contextcontent'))
                 . '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
         } else {
-            $body .= '<video controls playsinline preload="metadata" src="' . $e($videoUrl) . '"'
-                . ($posterUrl !== '' ? ' poster="' . $e($posterUrl) . '"' : '') . '>'
+            $body .= '<video controls playsinline preload="metadata" src="' . $e($videoUrl) . '">'
                 . $e($this->objLanguage->languageText('mod_contextcontent_video_not_supported', 'contextcontent'))
                 . '</video>';
         }
@@ -965,7 +990,7 @@ class contextcontent extends controller {
         if ($host === 'youtu.be' && preg_match('/^[A-Za-z0-9_-]{6,20}$/', $path)) {
             return 'https://www.youtube-nocookie.com/embed/' . $path;
         }
-        if (in_array($host, array('youtube.com', 'm.youtube.com'), true)) {
+        if (in_array($host, array('youtube.com', 'm.youtube.com', 'youtube-nocookie.com'), true)) {
             parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
             $id = isset($query['v']) ? $query['v'] : (preg_match('#^(?:shorts|embed)/([A-Za-z0-9_-]{6,20})#', $path, $match) ? $match[1] : '');
             if (preg_match('/^[A-Za-z0-9_-]{6,20}$/', $id)) { return 'https://www.youtube-nocookie.com/embed/' . $id; }
@@ -1030,6 +1055,7 @@ class contextcontent extends controller {
         $language = 'en';
         $pagecontent = (string) $this->getParam('pagecontent');
         $parent = (string) $this->getParam('parentnode');
+        $insertAfter = (string) $this->getParam('insert_after');
         $chapter = (string) $this->getParam('chapter');
         $contentType = (string) $this->getParam('contenttype', 'rich_text');
         if ($contentType === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
@@ -1041,6 +1067,7 @@ class contextcontent extends controller {
             'contextcode' => $this->contextCode,
             'chapterid' => $chapter,
             'parentid' => $parent,
+            'insert_after' => $insertAfter,
             'contenttype' => $contentType,
             'title' => $menutitle,
             'body' => $pagecontent,

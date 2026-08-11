@@ -121,22 +121,26 @@ if (!empty($data)) {
                     } else {
                         $mark = round($line['mark']/$line['totalmark']*100,2);
                     }
+                } else if ($line['mark'] == 0) {
+                    $mark = 0;
                 } else {
-                    $mark = $completedLabel;
+                    $mark = round($line['mark']/$line['totalmark']*100,2);
                 }
                 //$action = 'showstudenttest';
                 //$title = $viewLabel;
                 $startDate = $completedLabel;
                 //$dispZero = TRUE;
                 //$completedTest = TRUE;
-                if (!$closed) {
-                    $openLink = $line['name'];
+                if (!$closed && $line['testtype'] == 'Formative' && !is_null($line['endtime'])) {
+                    $objLink = new link('#');
+                    $objLink->extra = "onclick=\"javascript:window.open('".$this->uri(array(
+                        'action' => 'answertest', 'id' => $line['id'], 'retry' => '1', 'mode' => 'notoolbar'
+                    )) ."', 'showtest', 'fullscreen,scrollbars')\"";
+                    $objLink->link = $line['name'].' <span class="mcq-retry-label">'.$this->objLanguage->languageText('mod_mcqtests_tryagain', 'mcqtests').'</span>';
+                    $openLink = $objLink->show();
                 } else {
-                    // Closed
-                    //$openLink = $line['name'];
                     $objLink = new link($this->uri(array(
-                        'action' => 'showtest',
-                        'id' => $line['id'],
+                        'action' => 'showtest', 'id' => $line['id'],
                         'studentId' => $this->objUser->userId(),
                     )));
                     $objLink->link = $line['name'];

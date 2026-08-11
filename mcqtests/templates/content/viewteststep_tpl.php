@@ -66,13 +66,13 @@
 	));
 	$editLink = $objIcon->getEditIcon($editUrl);
 	$objIcon->title = $listLabel;
-	$objIcon->setIcon('comment');
+	$objIcon->setIcon('chart-no-axes-column-increasing');
 
 	$objLink = new link($this->uri(array(
 		'action' => 'liststudents',
 		'id' => $data['id']
 	)));
-	$objLink->link = $objIcon->show();
+	$objLink->link = '<span class="mcq-results-action" style="display:inline-flex;align-items:center;gap:.45rem;white-space:nowrap">'.$objIcon->show().'<span class="mcq-results-action-label">'.$this->objLanguage->languageText('mod_mcqtests_testresults', 'mcqtests').'</span></span>';
 	$editLink.= '&nbsp;'.$objLink->show();
 
 // Show Heading

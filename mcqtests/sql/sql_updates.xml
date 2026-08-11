@@ -220,4 +220,16 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_test_marked</table>
+        <version>4.142</version>
+        <description>Add attempt result identity to stored answers</description>
+        <data>
+            <add>
+                <name>resultid</name>
+                <type>text</type>
+                <length>32</length>
+            </add>
+        </data>
+    </update>
 </updates>

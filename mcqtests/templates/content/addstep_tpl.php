@@ -133,7 +133,7 @@ $objTable->cellpadding = 5;
 
 //current will tell us which step we processing
 $currentstep = $this->getParam('currentstep');
-if($currentstep==null || $currentstep>3) {
+if (!in_array($currentstep, array('1', '2a', '3a'), true)) {
     $currentstep = 1;
 }else {
 

@@ -47,6 +47,10 @@ $fields = array(
         'type' => 'text',
         'length' => 120,
         ),
+    'resultid' => array(
+        'type' => 'text',
+        'length' => 32,
+        ),
     'updated' => array(
         'type' => 'timestamp',
         ),
@@ -61,6 +65,7 @@ $indexes = array(
                     'questionid' => array(),
                     'answerid' => array(),
                     'studentid' => array(),
+                    'resultid' => array(),
                 ),
         );
 ?>

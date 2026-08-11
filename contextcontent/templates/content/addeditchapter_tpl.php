@@ -121,10 +121,13 @@ $table->endRow();
 $form->addToForm($table->show());
 
 
-$button = new button('submitbutton', $this->objLanguage->languageText('mod_contextcontent_chapter','contextcontent'));
-$button->setToSubmit();
-$button->setIconClass("save");
-$form->addToForm($button->show());
+$buttonLabel = $mode == 'edit'
+    ? $this->objLanguage->languageText('mod_contextcontent_savechanges', 'contextcontent')
+    : $this->objLanguage->languageText('mod_contextcontent_createchapter', 'contextcontent');
+$escapedButtonLabel = htmlspecialchars($buttonLabel, ENT_QUOTES, 'UTF-8');
+$buttonMarkup = '<button type="submit" name="submitbutton" class="button primary contextcontent-action-button" aria-label="'.$escapedButtonLabel.'">'
+    .'<i data-lucide="save" aria-hidden="true"></i><span>'.$escapedButtonLabel.'</span></button>';
+$form->addToForm($buttonMarkup);
 
 if ($mode == 'edit') {
     $hiddeninput = new hiddeninput('id', $id);

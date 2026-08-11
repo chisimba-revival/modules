@@ -40,6 +40,13 @@ class mcqtests extends controller {
      */
     protected $email;
     /**
+     * Optional legacy mail services used only to deliver CSV exports.
+     *
+     * @var object|null
+     */
+    protected $objMail = null;
+    protected $objEmailFiles = null;
+    /**
      * @var array $arrComLabs Array containg all computer laboratory files
      */
     protected $arrComLabs;
@@ -137,8 +144,6 @@ class mcqtests extends controller {
         $this->user = $this->objUser->fullname();
         $this->userId = $this->objUser->userId();
         $this->email = $this->objUser->email($this->userId);
-        $this->objMail = $this->newObject('dbemail', 'internalmail');
-        $this->objEmailFiles = $this->newObject('emailfiles', 'internalmail');
         $this->objWashout = $this->getObject('washout', 'utilities');
         $this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
         $this->objQuestionMatching = $this->newObject('dbquestion_matching');
@@ -191,6 +196,17 @@ class mcqtests extends controller {
         if ($this->contextCode == '') {
             return $this->nextAction(NULL, NULL, '_default');
         }
+        // Tests that are open to learners are immutable. Enforce this before
+        // dispatch so hand-crafted URLs cannot bypass the lecturer templates.
+        $lockedTestId = $this->getQuestionMutationTestId($action);
+        if ($lockedTestId !== NULL && $this->isOpenTest($lockedTestId)) {
+            $this->setSession('confirm', $this->objLanguage->languageText(
+                'mod_mcqtests_openeditlocked',
+                'mcqtests'
+            ));
+            return $this->nextAction('view', array('id' => $lockedTestId, 'confirm' => 'yes'));
+        }
+
         // Now the main switch for $action
         switch ($action) {
             //case '_':
@@ -935,7 +951,74 @@ class mcqtests extends controller {
             case 'mark':
             case 'liststudents':
                 $test = $this->dbTestadmin->getTests($this->contextCode, 'id, name, totalmark', $this->getParam('id'));
-                $data = $this->dbResults->getResults($this->getParam('id'));
+                $results = $this->dbResults->getResults($this->getParam('id'));
+                $results = is_array($results) ? $results : array();
+                $resultsByStudent = array();
+                $attemptCounts = array();
+                foreach ($results as $result) {
+                    if (!is_array($result) || !isset($result['studentid'])) {
+                        continue;
+                    }
+                    $resultStudentId = (string) $result['studentid'];
+                    $attemptCounts[$resultStudentId] = isset($attemptCounts[$resultStudentId])
+                        ? $attemptCounts[$resultStudentId] + 1 : 1;
+                    // getResults() is ordered oldest to newest, including id as tie-breaker.
+                    $resultsByStudent[$resultStudentId] = $result;
+                    $resultsByStudent[$resultStudentId]['attemptnumber'] = $attemptCounts[$resultStudentId];
+                    $resultsByStudent[$resultStudentId]['attemptcount'] = $attemptCounts[$resultStudentId];
+                }
+
+                // A lecturer results page is a course-roster view, not merely
+                // a list of learners for whom an attempt record already exists.
+                $objGroupService = $this->getObject('groupservice', 'groupadmin');
+                $studentGroupId = $objGroupService->groupIdForName(
+                    $this->contextCode . '^Students'
+                );
+                $roster = $studentGroupId === false
+                    ? array()
+                    : $objGroupService->getMembers($studentGroupId);
+
+                if (is_array($roster)) {
+                    foreach ($roster as $member) {
+                        if (!is_array($member) || !isset($member['userId'])) {
+                            continue;
+                        }
+                        $studentId = (string) $member['userId'];
+                        if ($studentId === '') {
+                            continue;
+                        }
+                        $firstName = isset($member['firstName'])
+                            ? (string) $member['firstName']
+                            : (isset($member['firstname']) ? (string) $member['firstname'] : '');
+                        $surname = isset($member['surname']) ? (string) $member['surname'] : '';
+                        $fullName = trim($firstName . ' ' . $surname);
+                        if (isset($resultsByStudent[$studentId])) {
+                            if ($fullName !== '') {
+                                $resultsByStudent[$studentId]['fullname'] = $fullName;
+                            }
+                            continue;
+                        }
+                        $resultsByStudent[$studentId] = array(
+                            'studentid' => $studentId,
+                            'fullname' => $fullName,
+                            'attemptstatus' => 'notstarted',
+                            'mark' => null,
+                            'starttime' => null,
+                            'endtime' => null
+                        );
+                    }
+                }
+
+                $data = array_values($resultsByStudent);
+                usort($data, function ($left, $right) {
+                    $leftName = isset($left['fullname']) && $left['fullname'] !== ''
+                        ? $left['fullname']
+                        : $this->objUser->fullname($left['studentid']);
+                    $rightName = isset($right['fullname']) && $right['fullname'] !== ''
+                        ? $right['fullname']
+                        : $this->objUser->fullname($right['studentid']);
+                    return strcasecmp((string) $leftName, (string) $rightName);
+                });
                 $totalmark = $this->dbQuestions->sumTotalmark($this->getParam('id'));
                 $this->setVarByRef('test', $test[0]);
                 $this->setVarByRef('data', $data);
@@ -943,19 +1026,104 @@ class mcqtests extends controller {
                 return 'list_test_tpl.php';
             case 'liststudents2':
                 $test = $this->dbTestadmin->getTests2($this->contextCode, 'id, name, totalmark', $this->getParam('id'));
-                $data = $this->dbResults->getResults($this->getParam('id'));
+                $results = $this->dbResults->getResults($this->getParam('id'));
+                $results = is_array($results) ? $results : array();
+                $resultsByStudent = array();
+                $attemptCounts = array();
+                foreach ($results as $result) {
+                    if (!is_array($result) || !isset($result['studentid'])) {
+                        continue;
+                    }
+                    $resultStudentId = (string) $result['studentid'];
+                    $attemptCounts[$resultStudentId] = isset($attemptCounts[$resultStudentId])
+                        ? $attemptCounts[$resultStudentId] + 1 : 1;
+                    // getResults() is ordered oldest to newest, including id as tie-breaker.
+                    $resultsByStudent[$resultStudentId] = $result;
+                    $resultsByStudent[$resultStudentId]['attemptnumber'] = $attemptCounts[$resultStudentId];
+                    $resultsByStudent[$resultStudentId]['attemptcount'] = $attemptCounts[$resultStudentId];
+                }
+
+                // A lecturer results page is a course-roster view, not merely
+                // a list of learners for whom an attempt record already exists.
+                $objGroupService = $this->getObject('groupservice', 'groupadmin');
+                $studentGroupId = $objGroupService->groupIdForName(
+                    $this->contextCode . '^Students'
+                );
+                $roster = $studentGroupId === false
+                    ? array()
+                    : $objGroupService->getMembers($studentGroupId);
+
+                if (is_array($roster)) {
+                    foreach ($roster as $member) {
+                        if (!is_array($member) || !isset($member['userId'])) {
+                            continue;
+                        }
+                        $studentId = (string) $member['userId'];
+                        if ($studentId === '') {
+                            continue;
+                        }
+                        $firstName = isset($member['firstName'])
+                            ? (string) $member['firstName']
+                            : (isset($member['firstname']) ? (string) $member['firstname'] : '');
+                        $surname = isset($member['surname']) ? (string) $member['surname'] : '';
+                        $fullName = trim($firstName . ' ' . $surname);
+                        if (isset($resultsByStudent[$studentId])) {
+                            if ($fullName !== '') {
+                                $resultsByStudent[$studentId]['fullname'] = $fullName;
+                            }
+                            continue;
+                        }
+                        $resultsByStudent[$studentId] = array(
+                            'studentid' => $studentId,
+                            'fullname' => $fullName,
+                            'attemptstatus' => 'notstarted',
+                            'mark' => null,
+                            'starttime' => null,
+                            'endtime' => null
+                        );
+                    }
+                }
+
+                $data = array_values($resultsByStudent);
+                usort($data, function ($left, $right) {
+                    $leftName = isset($left['fullname']) && $left['fullname'] !== ''
+                        ? $left['fullname']
+                        : $this->objUser->fullname($left['studentid']);
+                    $rightName = isset($right['fullname']) && $right['fullname'] !== ''
+                        ? $right['fullname']
+                        : $this->objUser->fullname($right['studentid']);
+                    return strcasecmp((string) $leftName, (string) $rightName);
+                });
                 $totalmark = $this->dbQuestions->sumTotalmark($this->getParam('id'));
                 $this->setVarByRef('test', $test[0]);
                 $this->setVarByRef('data', $data);
                 $this->setVarByRef('totalmark', $totalmark);
                 return 'list_test_tpl.php';
+            case 'attempthistory':
+                if ($this->objCond->isContextMember('Students')) {
+                    return $this->nextAction('newhome');
+                }
+                $testId = $this->getParam('id');
+                $studentId = $this->getParam('studentId');
+                $history = $this->dbResults->getResult($studentId, $testId);
+                if ($history === FALSE) {
+                    return $this->nextAction('liststudents', array('id' => $testId));
+                }
+                $test = $this->dbTestadmin->getTests($this->contextCode, 'id, name, totalmark', $testId);
+                $this->setVarByRef('test', $test[0]);
+                $this->setVarByRef('data', $history);
+                $this->setVar('studentId', $studentId);
+                $this->setVar('studentName', $this->objUser->fullname($studentId));
+                return 'attempt_history_tpl.php';
             case 'showtest':
                 return $this->showTest();
             case 'reopen':
                 $testId = $this->getParam('id');
                 $studentId = $this->getParam('studentId');
-                $this->dbMarked->deleteMarked($studentId, $testId);
-                $this->dbResults->deleteResult($testId, $studentId);
+                $latestAttempt = $this->dbResults->getLatestAttempt($studentId, $testId);
+                if ($latestAttempt === FALSE || (int) $latestAttempt['mark'] !== -1) {
+                    $this->dbResults->addResult(array('testid' => $testId, 'studentid' => $studentId, 'mark' => -1));
+                }
                 if ($this->getParam('testtype') == 'advanced') {
                     return $this->nextAction('liststudents2', array(
                         'id' => $testId
@@ -974,7 +1142,10 @@ class mcqtests extends controller {
             case 'doexport':
                 $na = $this->objLanguage->languageText('mod_mcqtests_na','mcqtests');
                 $testId = $this->getParam('testId');
-                $testData = $this->dbTestadmin->getTests('', 'totalmark', $testId);
+                $testData = $this->dbTestadmin->getTests($this->contextCode, 'totalmark', $testId);
+                if (empty($testData)) {
+                    return $this->nextAction('');
+                }
                 $totalmark = (int)$testData[0]['totalmark'];
                 //$exportType = $this->getParam('exporttype');
                 $contentRoot = $this->objConfig->getcontentBasePath();
@@ -1055,8 +1226,11 @@ class mcqtests extends controller {
                         fwrite($outputFile, $line . "\n");
                     }
                     fclose($outputFile);
+                    if (!$this->objModules->checkIfRegistered('internalmail')) {
+                        $this->downloadExportFile($file);
+                        return null;
+                    }
                     return $this->nextAction('emailresults', array(
-                        'file' => $file,
                         'testId' => $testId
                     ));
                 }
@@ -1107,8 +1281,19 @@ class mcqtests extends controller {
                     */
             case 'emailresults':
                 $testId = $this->getParam('testId');
-                $file = $this->getParam('file');
-                $testData = $this->dbTestadmin->getTests('', 'name', $testId);
+                $testData = $this->dbTestadmin->getTests($this->contextCode, 'name', $testId);
+                if (empty($testData)) {
+                    return $this->nextAction('');
+                }
+                $file = $this->getExportFilePath($testId);
+                if (!is_file($file) || !is_readable($file)) {
+                    return $this->home($testId);
+                }
+                if (!$this->objModules->checkIfRegistered('internalmail')) {
+                    return $this->home($testId);
+                }
+                $this->objMail = $this->newObject('dbemail', 'internalmail');
+                $this->objEmailFiles = $this->newObject('emailfiles', 'internalmail');
                 $emailSubject = $this->objLanguage->languageText('mod_mcqtests_emailsubject', 'mcqtests');
                 $array = array(
                     'filename' => 'results.csv',
@@ -1162,6 +1347,11 @@ class mcqtests extends controller {
 
             case 'answertest':
                 $testId = $this->getParam('id');
+                // A formative retry must never reuse the completed attempt held in session.
+                if ($this->getParam('retry', '0') === '1') {
+                    $this->unsetSession('qData');
+                    $this->unsetSession('taketest');
+                }
                 $check = $this->getSession('taketest', NULL);
                 if ($check != 'open') {
                     $this->unsetSession('qData');
@@ -1179,13 +1369,14 @@ class mcqtests extends controller {
                         $fields = array();
                         $fields['testid'] = $testId;
                         $fields['studentid'] = $this->userId;
+                    $fields['resultid'] = $resultId;
                         $fields['mark'] = -1;
                         $resultId = $this->dbResults->addResult($fields);
                     }
                 }
                 $this->setVarByRef('check', $check);
                 $this->setVarByRef('resultId', $resultId);
-                return $this->setTest($testId);
+                return $this->setTest($testId, 0, $resultId);
             case 'answertest2':
                 $testId = $this->getParam('id');
                 $check = $this->getSession('taketest', NULL);
@@ -1199,7 +1390,7 @@ class mcqtests extends controller {
                 }
                 $this->setVarByRef('check', $check);
                 $this->setVarByRef('resultId', $resultId);
-                return $this->setTest2($testId);
+                return $this->setTest2($testId, 0, $resultId);
             case 'previewtest':
                 $testId = $this->getParam('id');
                 $num = $this->getParam('num');
@@ -1223,7 +1414,7 @@ class mcqtests extends controller {
                 $this->setVarByRef('testDuration', $testDuration);
                 $this->setVarByRef('resultId', $resultId);
                 $this->setVarByRef('mode', $mode);
-                return $this->setTest($this->getParam('id'), $this->getParam('qnum', ''));
+                return $this->setTest($this->getParam('id'), $this->getParam('qnum', ''), $resultId);
             case 'continuetest2':
                 $this->unsetSession('taketest');
                 $resultId = $this->getParam('resultId', NULL);
@@ -1233,21 +1424,26 @@ class mcqtests extends controller {
                 $this->setVarByRef('testDuration', $testDuration);
                 $this->setVarByRef('resultId', $resultId);
                 $this->setVarByRef('mode', $mode);
-                return $this->setTest2($this->getParam('id'), $this->getParam('qnum', ''));
+                return $this->setTest2($this->getParam('id'), $this->getParam('qnum', ''), $resultId);
             case 'marktest':
+                $resultId = $this->getParam('resultId', NULL);
+                $this->saveTest($resultId);
+                $this->markTest($resultId);
+                $this->unsetSession('qData');
+                $this->unsetSession('taketest');
+
+                // Final submission belongs on this learner's completed results page.
+                // The old blank answertest template had no test/result data after marking.
+                return $this->nextAction('showtest', array(
+                    'id' => $this->getParam('id'),
+                    'studentId' => $this->userId
+                ));
+            case 'marktest2':
                 $this->unsetSession('qData');
                 $this->unsetSession('taketest');
                 $resultId = $this->getParam('resultId', NULL);
                 $this->saveTest($resultId);
                 $this->markTest($resultId);
-                $this->setVar('closeWin', TRUE);
-                $this->setVar('qnum', NULL);
-                $this->setVar('resultId', NULL);
-                $this->setVar('test', NULL);
-                $this->setVar('data', NULL);
-                return 'answertest_tpl.php';
-            case 'marktest2':
-                $this->markTest($this->getParam('resultId', NULL));
                 return 'answertest2_tpl.php';
                 //print_r($_POST);
                 break; //die();
@@ -1326,6 +1522,38 @@ class mcqtests extends controller {
                     return $this->home();
                 }
         }
+    }
+
+    /**
+     * Send a generated results CSV directly to the current lecturer when the
+     * optional Internal Mail delivery service is unavailable.
+     *
+     * @param string $file Absolute path generated by the doexport action.
+     * @return void
+     */
+    private function downloadExportFile($file) {
+        if (!is_string($file) || !is_file($file) || !is_readable($file)) {
+            return;
+        }
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="results.csv"');
+        header('Content-Length: ' . filesize($file));
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        readfile($file);
+        exit;
+    }
+
+    /**
+     * Resolve the server-owned results export path for a test.
+     *
+     * @param string $testId Test identifier already verified in this context.
+     * @return string
+     */
+    private function getExportFilePath($testId) {
+        $contentRoot = $this->objConfig->getcontentBasePath();
+        return $contentRoot . 'modules/mcqtests/' . basename($testId) . '.csv';
     }
 
     /*
@@ -2234,6 +2462,28 @@ class mcqtests extends controller {
         $testId = $this->getParam('id');
         $studentId = $this->getParam('studentId');
         $result = $this->dbResults->getResult($studentId, $testId);
+        $latestAttempt = $this->dbResults->getLatestAttempt($studentId, $testId);
+        $requestedResultId = $this->getParam('resultId', NULL);
+        $selectedAttempt = $latestAttempt;
+        if (!empty($requestedResultId)) {
+            $selectedAttempt = $this->dbResults->getAttempt($requestedResultId, $studentId, $testId);
+        }
+
+        // showTest renders correct answers. An unfinished attempt must never reach it.
+        if ($selectedAttempt === FALSE) {
+            return $this->nextAction('');
+        }
+        if ((int) $selectedAttempt['mark'] === -1) {
+            if ((string) $studentId === (string) $this->userId) {
+                $this->unsetSession('qData');
+                $this->unsetSession('taketest');
+                return $this->nextAction('answertest', array('id' => $testId));
+            }
+            return $this->nextAction('liststudents', array('id' => $testId));
+        }
+
+        $resultId = $selectedAttempt['id'];
+        $result = array($selectedAttempt);
         $test = $this->dbTestadmin->getTests($this->contextCode, 'name, totalmark', $testId);
         $result = array_merge($result[0], $test[0]);
         $totalmark = $this->dbQuestions->sumTotalmark($testId);
@@ -2260,7 +2510,7 @@ class mcqtests extends controller {
                 switch ($_questiontype) {
                     case 'mcq':
                     case 'tf':
-                        $marked = $this->dbMarked->getMarked($studentId, $line['questionid'], $testId);
+                        $marked = $this->dbMarked->getMarkedForAttempt($resultId, $line['questionid']);
                         $data[$key]['studcorrect'] = $marked[0]['correct'];
                         $data[$key]['studans'] = $marked[0]['answer'];
                         $data[$key]['studorder'] = $marked[0]['answerorder'];
@@ -2273,14 +2523,14 @@ class mcqtests extends controller {
                         //                            continue;
                         //                        }
                         $data[$key]['alternativeanswers'] = $this->dbAnswers->getAlternativeAnswers($testId, $line['questionid']);
-                        $marked = $this->dbMarked->getMarkedFreeForm($studentId, $line['questionid'], $testId);
+                        $marked = $this->dbMarked->getMarkedFreeFormForAttempt($resultId, $line['questionid'], $testId);
                         if ($marked !== FALSE) {
                             $data[$key]['studcorrect'] = $marked[0]['correct'];
                             $data[$key]['studans'] = $marked[0]['answer'];
                             $data[$key]['studorder'] = $marked[0]['answerorder'];
                             $data[$key]['studcomment'] = $marked[0]['commenttext'];
                         }
-                        $markedAnswer = $this->dbMarked->getMarkedFreeFormAnswer($studentId, $line['questionid'], $testId);
+                        $markedAnswer = $this->dbMarked->getMarkedFreeFormAnswerForAttempt($resultId, $line['questionid']);
                         if ($markedAnswer === FALSE) {
                             $data[$key]['answered'] = NULL;
                         } else {
@@ -2438,17 +2688,14 @@ class mcqtests extends controller {
      * @return
      */
     private function closeTest($testId) {
-        // Check if result exists, if not return to main page
-        $result = $this->dbResults->getResult($this->userId, $testId);
-        if ($result === FALSE) {
-            $fields = array();
-            $fields['testid'] = $testId;
-            $fields['studentid'] = $this->userId;
-            $fields['mark'] = -1;
-            return $this->dbResults->addResult($fields);
-        } else {
-            return NULL;
+        $latestAttempt = $this->dbResults->getLatestAttempt($this->userId, $testId);
+        if ($latestAttempt !== FALSE && (int) $latestAttempt['mark'] === -1) return $latestAttempt['id'];
+        if ($latestAttempt === FALSE) return $this->dbResults->addResult(array('testid' => $testId, 'studentid' => $this->userId, 'mark' => -1));
+        $test = $this->dbTestadmin->getTests('', 'testtype', $testId);
+        if (!empty($test) && $test[0]['testtype'] === 'Formative' && $this->getParam('retry', '0') === '1') {
+            return $this->dbResults->addResult(array('testid' => $testId, 'studentid' => $this->userId, 'mark' => -1));
         }
+        return NULL;
     }
 
     /**
@@ -2458,11 +2705,11 @@ class mcqtests extends controller {
      * @param string $testId The id of the test to be answered.
      * @return The template displaying the test.
      */
-    private function setTest($testId, $num = 0) {
+    private function setTest($testId, $num = 0, $resultId = NULL) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests('', $fieldlist, $this->getParam('id'));
-        $results = $this->dbMarked->getSelectedAnswers($this->userId, $testId);
+        $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
             $qData = $this->getSession('qData');
@@ -2539,11 +2786,11 @@ class mcqtests extends controller {
      * @param string $testId The id of the test to be answered.
      * @return The template displaying the test.
      */
-    private function setTest2($testId, $num = 0) {
+    private function setTest2($testId, $num = 0, $resultId = NULL) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests2('', $fieldlist, $this->getParam('id'));
-        $results = $this->dbMarked->getSelectedAnswers($this->userId, $testId);
+        $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
 
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
@@ -2633,7 +2880,7 @@ class mcqtests extends controller {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests('', $fieldlist, $this->getParam('id'));
-        $results = $this->dbMarked->getSelectedAnswers($this->userId, $testId);
+        $results = FALSE; // Preview is not a learner attempt.
         //
         $allowScrambledQuestions = strtoupper($this->objSysConfig->getValue('PREVIEW_SCRAMBLED_QUESTIONS', 'mcqtests', 'TRUE'))==='TRUE';
         $allowScrambledAnswers = strtoupper($this->objSysConfig->getValue('PREVIEW_SCRAMBLED_ANSWERS', 'mcqtests', 'TRUE'))==='TRUE';
@@ -2722,7 +2969,7 @@ class mcqtests extends controller {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests2('', $fieldlist, $this->getParam('id'));
-        $results = $this->dbMarked->getSelectedAnswers($this->userId, $testId);
+        $results = FALSE; // Preview is not a learner attempt.
         // new code for scrambling tests
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
             $qData = $this->getSession('qData');
@@ -2807,6 +3054,11 @@ class mcqtests extends controller {
      */
     private function saveTest($resultId) {
         $total = 0;
+        $testId = $this->getParam('id', '');
+        $attempt = $this->dbResults->getAttempt($resultId, $this->userId, $testId);
+        if ($attempt === FALSE || (int) $attempt['mark'] !== -1) {
+            return FALSE;
+        }
         $postCount = $this->getParam('count', NULL);
         if ($postCount) {
             for ($i = $this->getParam('first', 0); $i <= $postCount; $i++) {
@@ -2822,6 +3074,7 @@ class mcqtests extends controller {
                     $fields['questionid'] = $questId;
                     $postAns = $this->getParam('ans' . $i);
                     $fields['studentid'] = $this->userId;
+                    $fields['resultid'] = $resultId;
                     if ($questType == 'freeform') {
                         $fields['answerid'] = '';
                         $fields['answered'] = $postAns;
@@ -2830,7 +3083,7 @@ class mcqtests extends controller {
                         $fields['answered'] = '';
                     }
 
-                    $this->dbMarked->addMarked($fields, $postSelected);
+                    $this->dbMarked->addMarkedForAttempt($fields);
                 }
             }
         }
@@ -2847,10 +3100,14 @@ class mcqtests extends controller {
     private function markTest($resultId) {
         $total = 0;
         $testId = $this->getParam('id', '');
+        $attempt = $this->dbResults->getAttempt($resultId, $this->userId, $testId);
+        if ($attempt === FALSE || (int) $attempt['mark'] !== -1) {
+            return FALSE;
+        }
         //$j = $this->getParam('first', 0);
         // $questType = $this->getParam('qtype'.$j,'');
         if (!empty($testId)) {
-            $data = $this->dbMarked->getfreeformAnswers($this->userId, $testId);
+            $data = $this->dbMarked->getFreeformAnswersForAttempt($resultId, $testId);
 
             if (!empty($data)) {
                 foreach ($data as $val) {
@@ -2865,7 +3122,7 @@ class mcqtests extends controller {
 
 
         if (!empty($testId)) {
-            $data = $this->dbMarked->getCorrectAnswers($this->userId, $testId);
+            $data = $this->dbMarked->getCorrectAnswersForAttempt($resultId);
             if (!empty($data)) {
                 foreach ($data as $item) { //$b++;
                     if ($item['correct']) {
@@ -2890,6 +3147,7 @@ class mcqtests extends controller {
     private function showStudentTest() {
         $testId = $this->getParam('id');
         $result = $this->dbResults->getResult($this->userId, $testId);
+        $resultId = ($result !== FALSE && !empty($result)) ? $result[0]['id'] : NULL;
         $test = $this->dbTestadmin->getTests($this->contextCode, 'name, totalmark', $testId);
         $result = array_merge($result[0], $test[0]);
         $qNum = $this->getParam('qnum');
@@ -2901,8 +3159,8 @@ class mcqtests extends controller {
         }
         if (!empty($data)) {
             foreach ($data as $key => $line) {
-                $marked = $this->dbMarked->getMarked($this->userId, $line['questionid'], $testId);
-                $ffmarked = $this->dbMarked->getAllMarked($this->userId, $line['questionid'], $testId);
+                $marked = $this->dbMarked->getMarkedForAttempt($resultId, $line['questionid']);
+                $ffmarked = $this->dbMarked->getAllMarkedForAttempt($resultId, $line['questionid']);
                 $correctans = $this->dbAnswers->getAnswers($line['questionid']);
                 if ($line['questiontype'] == 'freeform') {
                     $simple = array();
@@ -2991,6 +3249,39 @@ class mcqtests extends controller {
      * @param string $comLab The computer lab name
      * @return array $arrIpAddresses The array of ip addresses
      */
+    /** Resolve the owning test for any question-structure action. */
+    private function getQuestionMutationTestId($action) {
+        $byId = array('addnewquestion', 'choosequestiontype', 'choosequestiontype2',
+            'addquestion', 'addfreeform', 'deletequestion', 'deletequestion2',
+            'questionup', 'questiondown');
+        $byTestId = array('applyaddquestion', 'addanswers', 'addfreeformanswers',
+            'saveanswer', 'applyaddanswer', 'applyfreeformanswer');
+        $byQuestion = array('editquestion', 'editanswer', 'deleteanswer');
+        if (in_array($action, $byId, TRUE)) {
+            return $this->getParam('id', NULL);
+        }
+        if (in_array($action, $byTestId, TRUE)) {
+            return $this->getParam('testId', NULL);
+        }
+        if (in_array($action, $byQuestion, TRUE)) {
+            $questionId = $this->getParam('questionId', NULL);
+            if (!empty($questionId)) {
+                $question = $this->dbQuestions->getQuestion($questionId);
+                return empty($question) ? NULL : $question[0]['testid'];
+            }
+        }
+        return NULL;
+    }
+
+    /** Re-read current state; never trust a page or submitted status value. */
+    private function isOpenTest($testId) {
+        if (empty($testId)) {
+            return FALSE;
+        }
+        $test = $this->dbTestadmin->getTests($this->contextCode, 'id,status', $testId);
+        return !empty($test) && $test[0]['status'] === 'open';
+    }
+
     public function getIps($comLab) {
         $contentRoot = $this->objConfig->getcontentBasePath();
         $fileLocation = $contentRoot . '/modules/mcqtests/';

@@ -489,14 +489,32 @@ class datepickajax extends ChisimbaObject
     * @param string $defaultDate The default date to use
     * @return string $str The html string
     */
+    private function normaliseDefaultDate($defaultDate)
+    {
+        if ($defaultDate === NULL) {
+            return NULL;
+        }
+        $value = trim((string) $defaultDate);
+        if ($value === '' || $value === '0' || preg_match('/^0000-00-00/', $value)) {
+            return NULL;
+        }
+        $timestamp = strtotime($value);
+        if ($timestamp === FALSE || $timestamp <= 0) {
+            return NULL;
+        }
+        return $timestamp;
+    }
+
     public function show($field, $showTime = 'no', $showMonths = 'no', $defaultDate = NULL)
     {
-        $selectLabel = $this->objLanguage->languageText('phrase_selectdate');
+        $selectLabel = $this->objLanguage->languageText('mod_popupcalendar_selectdate', 'popupcalendar', 'Select date');
+        $defaultTimestamp = $this->normaliseDefaultDate($defaultDate);
+        $defaultDate = NULL;
 
         //set the height of the popup window
         if (strtolower($showTime) == 'no' || strtolower($showTime) == 'false') {
-            if($defaultDate != NULL){
-                $defaultDate = date("Y-m-d", strtotime($defaultDate));
+            if ($defaultTimestamp !== NULL) {
+                $defaultDate = date("Y-m-d", $defaultTimestamp);
             }
             $length = 10;
             if (strtolower($showMonths) == 'no' || strtolower($showMonths) == 'false') {
@@ -505,8 +523,8 @@ class datepickajax extends ChisimbaObject
                 $height = 'height=383';
             }
         } else {
-            if($defaultDate != NULL){
-                $defaultDate = date("Y-m-d H:i", strtotime($defaultDate));
+            if ($defaultTimestamp !== NULL) {
+                $defaultDate = date("Y-m-d H:i", $defaultTimestamp);
             }
             $length = 16;
             if (strtolower($showMonths) == 'no' || strtolower($showMonths) == 'false') {

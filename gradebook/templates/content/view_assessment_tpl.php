@@ -11,7 +11,7 @@ $this->setLayoutTemplate('gradebook_layout_tpl.php');
 
 //has the nature of the assessment been determined?
 $dropdownAssessments = 0;
-$dropdownAssessments = $this->getParam('dropdownAssessments', NULL);
+$dropdownAssessments = $this->getParam('dropdownAssessments', $objLanguage->languageText('mod_gradebook_viewAll','gradebook'));
 //die($dropdownAssessments);
 //load required form elements
 $this->loadClass('form','htmlelements');
@@ -109,26 +109,30 @@ $this->TableInstructions->width=($dropdownAssessments && $dropdownAssessments!="
 $this->TableInstructions->startHeaderRow();//starthead1 
 $this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_studentNumber','gradebook'),"17%");
 $this->TableInstructions->addHeaderCell('&nbsp;&nbsp;'.$objLanguage->languageText('mod_gradebook_student','gradebook'),($dropdownAssessments&& $dropdownAssessments!="View All"?"70%":"33%"));
+// PHP 8: legacy providers return false when no records exist.
+$countAssessments = function ($items) {
+	return is_countable($items) ? count($items) : 0;
+};
 //get the number of assessments
 $numberAssessments=0;
 switch($dropdownAssessments) {
 	case 'Essays':
-		$numberAssessments=count($objEssaytopics->getTopic(NULL,NULL,"context='$contextCode'"));
+		$numberAssessments=$countAssessments($objEssaytopics->getTopic(NULL,NULL,"context='$contextCode'"));
 	break;
 	case 'MCQ Tests':
-		$numberAssessments=count($objTestadmin->getTests($contextCode));
+		$numberAssessments=$countAssessments($objTestadmin->getTests($contextCode));
 	break;
 	case 'Online Worksheets':
-		$numberAssessments=count($objWorksheet->getWorksheetsInContext($contextCode));
+		$numberAssessments=$countAssessments($objWorksheet->getWorksheetsInContext($contextCode));
 	break;
 	case 'Assignments':
-		$numberAssessments=count($objAssignment->getAssignment($contextCode));
+		$numberAssessments=$countAssessments($objAssignment->getAssignment($contextCode));
 	break;
 	default:
-		$numberAssessments=count($objAssignment->getAssignment($contextCode));
-		$numberAssessments+=count($objWorksheet->getWorksheetsInContext($contextCode));
-		$numberAssessments+=count($objTestadmin->getTests($contextCode));
-		$numberAssessments+=count($objEssaytopics->getTopic(NULL,NULL,"context='$contextCode'"));
+		$numberAssessments=$countAssessments($objAssignment->getAssignment($contextCode));
+		$numberAssessments+=$countAssessments($objWorksheet->getWorksheetsInContext($contextCode));
+		$numberAssessments+=$countAssessments($objTestadmin->getTests($contextCode));
+		$numberAssessments+=$countAssessments($objEssaytopics->getTopic(NULL,NULL,"context='$contextCode'"));
 	break;
 }
 if(!$numberAssessments) {
@@ -300,9 +304,9 @@ if(!$numberStudents) {
 							$annualResult2=array();
 							$iTestresults=array();
 							$iTestresults=$objTestresults->getAnnualResults(
-								"tbl_test_results.studentid='".$userId[$i-1]."' and 
-                                                                tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]'
-                                                                and tbl_tests.context='$contextCode'",
+								"tbl_test_results.studentid='".$userId[$i-1]."' and tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]' and tbl_tests.context='$contextCode'
+                                                                and tbl_test_results.mark >= 0
+                                                                and tbl_test_results.id=(select latest_result.id from tbl_test_results as latest_result where latest_result.studentid=tbl_test_results.studentid and latest_result.testid=tbl_test_results.testid and latest_result.mark >= 0 order by latest_result.starttime desc, latest_result.updated desc, latest_result.id desc limit 1)",
 								"(tbl_test_results.mark/tbl_tests.totalMark)*tbl_tests.percentage result",
 								"tbl_test_results,tbl_tests");
 							if(!empty($iTestresults)) {
@@ -417,7 +421,6 @@ if(!$numberStudents) {
 							}
 						}
 					}
-			$this->TableInstructions->endRow();		
 					//retrieve grades from MCQ Tests
 					$as=array();
 					$testsArray=array();
@@ -428,7 +431,9 @@ if(!$numberStudents) {
 							$annualResult2=array();
 							$iTestresults=array();
 							$iTestresults=$objTestresults->getAnnualResults(
-								"tbl_test_results.studentId='".$userId[$i-1]."' and tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]' and tbl_tests.context='$contextCode'",
+								"tbl_test_results.studentid='".$userId[$i-1]."' and tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]' and tbl_tests.context='$contextCode'
+                                                                and tbl_test_results.mark >= 0
+                                                                and tbl_test_results.id=(select latest_result.id from tbl_test_results as latest_result where latest_result.studentid=tbl_test_results.studentid and latest_result.testid=tbl_test_results.testid and latest_result.mark >= 0 order by latest_result.starttime desc, latest_result.updated desc, latest_result.id desc limit 1)",
 								"(tbl_test_results.mark/tbl_tests.totalMark)*tbl_tests.percentage result",
 								"tbl_test_results,tbl_tests");
 							if(!empty($iTestresults)) {
@@ -548,7 +553,9 @@ if(!$numberStudents) {
 					$annualResult2=array();
 					$iTestresults=array();
 					$iTestresults=$objTestresults->getAnnualResults(
-						"tbl_test_results.studentId='".$userId[$i-1]."' and tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]' and tbl_tests.context='$contextCode'",
+						"tbl_test_results.studentid='".$userId[$i-1]."' and tbl_test_results.testId=tbl_tests.id and tbl_tests.id='$as[id]' and tbl_tests.context='$contextCode'
+                                                                and tbl_test_results.mark >= 0
+                                                                and tbl_test_results.id=(select latest_result.id from tbl_test_results as latest_result where latest_result.studentid=tbl_test_results.studentid and latest_result.testid=tbl_test_results.testid and latest_result.mark >= 0 order by latest_result.starttime desc, latest_result.updated desc, latest_result.id desc limit 1)",
 						"(tbl_test_results.mark/tbl_tests.totalMark)*tbl_tests.percentage result",
 						"tbl_test_results,tbl_tests");
 					if(!empty($iTestresults)) {

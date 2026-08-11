@@ -158,9 +158,6 @@ if ($test['timed']) {
     echo $javascript;
     $body = 'onload="timeOut(); window.opener.location.reload();"
     onkeypress="javascript:return disableCtrlKeyCombination(event);"
-    ondragstart="javascript:alert(\'All editing functionality has been disabled\');return false;"
-    onsave="javascript:alert(\'All editing functionality has been disabled\');return false;"
-    onselectstart="javascript:alert(\'All editing functionality has been disabled\');return false;"
     onunload="opener.location.reload();"';
     $this->setVarByRef('bodyParams', $body);
 } else {
@@ -209,9 +206,6 @@ if ($test['timed']) {
     echo $javascript;
     $body = 'onload="javascript:window.opener.location.reload();"
     onkeypress="javascript:return disableCtrlKeyCombination(event);"
-    ondragstart="javascript:alert(\'All editing functionality has been disabled\');return false;"
-    onsave="javascript:alert(\'All editing functionality has been disabled\');return false;"
-    onselectstart="javascript:alert(\'All editing functionality has been disabled\');return false;"
     onunload="opener.location.reload();"';
     $this->setVarByRef('bodyParams', $body);
 }
