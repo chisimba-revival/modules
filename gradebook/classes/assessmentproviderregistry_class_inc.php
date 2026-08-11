@@ -63,6 +63,21 @@ class assessmentproviderregistry extends ChisimbaObject
         return false;
     }
 
+    /**
+     * Load the provider-owned adapter declared in the manifest.  Gradebook
+     * uses this only to browse and validate activities; it never writes to a
+     * provider's activity or result tables.
+     */
+    public function adapter($key)
+    {
+        $provider = $this->get($key);
+        if ($provider === false
+            || !preg_match('/^[a-z][a-z0-9_]{1,63}$/', $provider['adapter_class'])) {
+            return false;
+        }
+        return $this->getObject($provider['adapter_class'], $provider['module_id']);
+    }
+
     private function normalise($moduleId, array $definition)
     {
         $key = isset($definition['ASSESSMENT_PROVIDER']) ? trim($definition['ASSESSMENT_PROVIDER']) : '';

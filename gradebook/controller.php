@@ -12,6 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 
 class gradebook extends controller {
+    const PLAN_CSRF_SESSION_KEY = 'gradebook_assessment_plan_csrf';
     //user object - security and access rights validation
     public $objUser;
 
@@ -112,9 +113,29 @@ class gradebook extends controller {
             //show the course assessment-plan provider catalogue
             case 'assessmentPlan':
                 if($this->objUser->isAdmin() || $this->objPerm->isContextMember('Lecturers')) {
+                    $this->setVar('assessmentPlanCsrf', $this->issuePlanCsrf());
                     return "assessment_plan_tpl.php";
                 }
                 return $this->nextAction(NULL, array('error'=>'noaccess'));
+                break;
+            case 'assessmentPlanAddMcq':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
+                $adapter = $registry->adapter('mcqtests');
+                $this->setVar('assessmentPlanMcqTests', is_object($adapter) ? $adapter->listActivities($this->contextCode) : array());
+                $this->setVar('assessmentPlanCsrf', $this->issuePlanCsrf());
+                return 'assessment_plan_add_mcq_tpl.php';
+                break;
+            case 'assessmentPlanSaveMcq':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                if (!$this->consumePlanCsrf((string) $this->getParam('csrf_token', ''))) {
+                    return $this->nextAction('assessmentPlan', array('planerror'=>'invalidcsrf'));
+                }
+                return $this->saveMcqAssessmentPlanItem();
                 break;
             //view the details of the assessment
             case 'assessmentDetails':
@@ -252,6 +273,84 @@ class gradebook extends controller {
                 return $this->nextAction('viewByAssessment',array('dropdownAssessments'=>$assessmentType));
                 break;
         }
+    }
+
+    private function mayManageAssessmentPlan()
+    {
+        return $this->objUser->isAdmin() || $this->objPerm->isContextMember('Lecturers');
+    }
+
+    private function issuePlanCsrf()
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->setSession(self::PLAN_CSRF_SESSION_KEY, $token);
+        return $token;
+    }
+
+    private function consumePlanCsrf($token)
+    {
+        $expected = (string) $this->getSession(self::PLAN_CSRF_SESSION_KEY, '');
+        $this->setSession(self::PLAN_CSRF_SESSION_KEY, '');
+        return $expected !== '' && hash_equals($expected, $token);
+    }
+
+    private function saveMcqAssessmentPlanItem()
+    {
+        $testId = trim((string) $this->getParam('activity_id', ''));
+        $title = trim((string) $this->getParam('title', ''));
+        $weight = trim((string) $this->getParam('weight', ''));
+        $openingDate = trim((string) $this->getParam('opening_date', ''));
+        $closingDate = trim((string) $this->getParam('closing_date', ''));
+
+        if ($testId === '' || !is_numeric($weight) || (float) $weight < 0 || (float) $weight > 100) {
+            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliditem'));
+        }
+        if (!$this->isPlanDate($openingDate) || !$this->isPlanDate($closingDate)
+            || ($openingDate !== '' && $closingDate !== '' && $openingDate > $closingDate)) {
+            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliddates'));
+        }
+
+        $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
+        $provider = $registry->get('mcqtests');
+        $adapter = $registry->adapter('mcqtests');
+        $activity = is_object($adapter) ? $adapter->getActivity($this->contextCode, $testId) : false;
+        if ($provider === false || !is_array($activity)) {
+            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliditem'));
+        }
+
+        $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+        $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+        $planId = $plans->ensureForContext($this->contextCode, $this->objUser->userId());
+        if (!$planId || $items->findByActivity($planId, 'mcqtests', $testId)) {
+            return $this->nextAction('assessmentPlan', array('planerror'=>'duplicateitem'));
+        }
+
+        $saved = $items->addItem(array(
+            'plan_id' => $planId,
+            'provider_key' => 'mcqtests',
+            'provider_module' => $provider['module_id'],
+            'activity_id' => $testId,
+            'name' => $title === '' ? $activity['name'] : $title,
+            'weight' => number_format((float) $weight, 3, '.', ''),
+            'include_in_course_mark' => $this->getParam('include_in_course_mark', '') === 'Y' ? 'Y' : 'N',
+            'required_for_completion' => $this->getParam('required_for_completion', '') === 'Y' ? 'Y' : 'N',
+            'result_rule' => 'latest_completed',
+            'opening_enabled' => $openingDate === '' ? 'N' : 'Y',
+            'opening_date' => $openingDate === '' ? null : $openingDate.' 00:00:00',
+            'closing_enabled' => $closingDate === '' ? 'N' : 'Y',
+            'closing_date' => $closingDate === '' ? null : $closingDate.' 23:59:59',
+            'created_by' => $this->objUser->userId()
+        ));
+        return $this->nextAction('assessmentPlan', $saved ? array('planmessage'=>'saved') : array('planerror'=>'savefailed'));
+    }
+
+    private function isPlanDate($date)
+    {
+        if ($date === '') {
+            return true;
+        }
+        $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+        return $parsed && $parsed->format('Y-m-d') === $date;
     }
 }
 ?>

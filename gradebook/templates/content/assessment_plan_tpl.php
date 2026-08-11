@@ -15,6 +15,39 @@ echo $objHeading->show();
 
 echo '<p>'.$this->objLanguage->languageText('mod_gradebook_assessmentplan_description', 'gradebook').'</p>';
 
+$planStore = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+$itemStore = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+$plan = $planStore->findForContext($this->contextCode);
+$planItems = $plan ? $itemStore->getForPlan($plan['id']) : array();
+$message = (string) $this->getParam('planmessage', '');
+$error = (string) $this->getParam('planerror', '');
+if ($message !== '') { echo '<p class="confirm">'.$this->objLanguage->languageText('mod_gradebook_planmessage_'.$message, 'gradebook').'</p>'; }
+if ($error !== '') { echo '<p class="error">'.$this->objLanguage->languageText('mod_gradebook_planerror_'.$error, 'gradebook').'</p>'; }
+
+$objAdd = new link($this->uri(array('action'=>'assessmentPlanAddMcq')));
+$objAdd->link = $this->objLanguage->languageText('mod_gradebook_addmcqassessment', 'gradebook');
+echo '<p>'.$objAdd->show().'</p>';
+
+if (!empty($planItems)) {
+    $planTable = new htmltable(); $planTable->width = '100%'; $planTable->cellspacing = 2;
+    $planTable->startHeaderRow();
+    $planTable->addHeaderCell($this->objLanguage->languageText('mod_gradebook_assessment', 'gradebook'));
+    $planTable->addHeaderCell($this->objLanguage->languageText('mod_gradebook_provider', 'gradebook'));
+    $planTable->addHeaderCell($this->objLanguage->languageText('mod_gradebook_planitemweight', 'gradebook'));
+    $planTable->addHeaderCell($this->objLanguage->languageText('mod_gradebook_planstatus', 'gradebook'));
+    $planTable->endHeaderRow();
+    $row = 0;
+    foreach ($planItems as $item) {
+        $planTable->startRow(($row++ % 2) ? 'odd' : 'even');
+        $planTable->addCell(htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'));
+        $planTable->addCell(htmlspecialchars($item['provider_module'], ENT_QUOTES, 'UTF-8'));
+        $planTable->addCell(htmlspecialchars($item['weight'], ENT_QUOTES, 'UTF-8').'%');
+        $planTable->addCell(htmlspecialchars($item['status'], ENT_QUOTES, 'UTF-8'));
+        $planTable->endRow();
+    }
+    echo $planTable->show();
+}
+
 $objProviders = $this->getObject('assessmentproviderregistry', 'gradebook');
 $providers = $objProviders->all();
 
