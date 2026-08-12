@@ -31,6 +31,7 @@ $this->setVarByRef('heading', $heading);
 $str = '<font size="3"><b>'.$testLabel.':</b>&nbsp;&nbsp;&nbsp;'.$test['name'].'<p /></font>';
 
 $objTable = new htmltable();
+$objTable->cssClass = 'mcq-student-list';
 $objTable->cellpadding = 5;
 $objTable->cellspacing = 2;
 $objTable->width = '99%';

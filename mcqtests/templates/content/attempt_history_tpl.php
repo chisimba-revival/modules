@@ -1,5 +1,6 @@
 <?php
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
+$objLink = $this->loadClass('link', 'htmlelements');
 $objTable = new htmltable(); $objTable->cellpadding=5; $objTable->cellspacing=2; $objTable->width='99%';
 $attempt=$this->objLanguage->languageText('mod_mcqtests_attempt','mcqtests');
 $mark=$this->objLanguage->languageText('mod_mcqtests_mark','mcqtests');
