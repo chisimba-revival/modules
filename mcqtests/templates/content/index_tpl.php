@@ -95,7 +95,7 @@ if ($addOkay==TRUE){
             'id' => $line['id']
         )));
         $objLink->title = $editLabel;
-        $objLink->link = '<img src="'.$iconBase.'square-pen.svg" width="18" height="18" alt="" aria-hidden="true" />';
+        $objLink->link = '<img src="'.$iconBase.'pencil.svg" width="18" height="18" alt="" aria-hidden="true" />';
         $icons = '<span class="mcq-icon-action">'.$objLink->show().'</span>';
 
         $objConfirm = new confirm();
@@ -125,7 +125,8 @@ if ($addOkay==TRUE){
         $tableRow = array();
         $tableRow[] = $viewLink;
         $tableRow[] = $line['node'];
-        $tableRow[] = $this->objLanguage->languageText('mod_mcqtests_'.$line['status'], 'mcqtests');
+        $statusText = $this->objLanguage->languageText('mod_mcqtests_'.$line['status'], 'mcqtests');
+        $tableRow[] = '<span class="mcq-test-status">'.$statusText.'</span>';
         $tableRow[] = $this->formatDate($line['closingdate']);
         $tableRow[] = '<span class="mcq-action-group">'.$icons.'</span>';
         $objTable->addRow($tableRow, $class);
