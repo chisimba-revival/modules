@@ -1341,6 +1341,12 @@ class mcqtests extends controller {
 
             case 'answertest':
                 $testId = $this->getParam('id');
+                $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
+                if ($stageGateReturnChapter === '') {
+                    $this->unsetSession('stage_gate_return_chapter');
+                } else {
+                    $this->setSession('stage_gate_return_chapter', $stageGateReturnChapter);
+                }
                 // A formative retry must never reuse the completed attempt held in session.
                 if ($this->getParam('retry', '0') === '1') {
                     $this->unsetSession('qData');
@@ -1425,6 +1431,12 @@ class mcqtests extends controller {
                 $this->markTest($resultId);
                 $this->unsetSession('qData');
                 $this->unsetSession('taketest');
+
+                $stageGateReturnChapter = $this->getSession('stage_gate_return_chapter', NULL);
+                $this->unsetSession('stage_gate_return_chapter');
+                if (!empty($stageGateReturnChapter)) {
+                    return $this->nextAction('viewchapter', array('id' => $stageGateReturnChapter), 'contextcontent');
+                }
 
                 // Final submission belongs on this learner's completed results page.
                 // The old blank answertest template had no test/result data after marking.
