@@ -1477,7 +1477,10 @@ class contextcontent extends controller {
         if ($gate === FALSE || !$this->objChapterStageGates->isGatedProgression($this->contextCode)) {
             return $this->nextAction('viewchapter', array('id' => $chapterId));
         }
-        $params = array('id' => $gate['testid']);
+        $params = array(
+            'id' => $gate['testid'],
+            'stage_gate_passmark' => $gate['passmark']
+        );
         $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $chapterId);
         if (!empty($nextChapterId)) {
             $params['stage_gate_return_chapter'] = $nextChapterId;
