@@ -84,6 +84,17 @@ $objTable->endRow();
 
 $str = '<div style="width:450px; border: 1px solid black;">' . $objTable->show() . '</div>';
 
+if (!empty($stageGateReturnChapter) && !empty($stageGatePassMark)) {
+    $stageGatePassed = $percent >= (float) $stageGatePassMark;
+    $stageGateUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
+    $stageGateLabel = $stageGatePassed
+        ? $this->objLanguage->languageText('mod_mcqtests_stage_gate_next_chapter', 'mcqtests')
+        : $this->objLanguage->languageText('mod_mcqtests_stage_gate_return_chapter', 'mcqtests');
+    $str .= '<p class="mcqtests-stage-gate-result-action"><a href="'
+        . htmlspecialchars($stageGateUrl, ENT_QUOTES, 'UTF-8') . '">'
+        . htmlspecialchars($stageGateLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
+}
+
 $objTable = new htmltable();
 $objTable->cellpadding = 5;
 $objTable->width = '99%';
