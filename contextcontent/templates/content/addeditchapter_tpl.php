@@ -107,6 +107,11 @@ $table->endRow();
 
 if ($mode == 'edit') {
     $stageGateTests = isset($stageGateTests) && is_array($stageGateTests) ? $stageGateTests : array();
+    if (!empty($selectedStageGateIsInvalid)) {
+        echo '<div class="error contextcontent-stage-gate-validation">'
+            . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_existing_summative', 'contextcontent'), ENT_QUOTES, 'UTF-8')
+            . '</div>';
+    }
     $stageGate = new radio('stage_gate_enabled');
     $stageGate->addOption('0', ' '.$this->objLanguage->languageText('word_no', 'system', 'No'));
     $stageGate->addOption('1', ' '.$this->objLanguage->languageText('word_yes', 'system', 'Yes'));
