@@ -1342,10 +1342,13 @@ class mcqtests extends controller {
             case 'answertest':
                 $testId = $this->getParam('id');
                 $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
+                $stageGatePassMark = (int) $this->getParam('stage_gate_passmark', 0);
                 if ($stageGateReturnChapter === '') {
                     $this->unsetSession('stage_gate_return_chapter');
+                    $this->unsetSession('stage_gate_passmark');
                 } else {
                     $this->setSession('stage_gate_return_chapter', $stageGateReturnChapter);
+                    $this->setSession('stage_gate_passmark', $stageGatePassMark);
                 }
                 // A formative retry must never reuse the completed attempt held in session.
                 if ($this->getParam('retry', '0') === '1') {
@@ -1433,17 +1436,22 @@ class mcqtests extends controller {
                 $this->unsetSession('taketest');
 
                 $stageGateReturnChapter = $this->getSession('stage_gate_return_chapter', NULL);
+                $stageGatePassMark = (int) $this->getSession('stage_gate_passmark', 0);
                 $this->unsetSession('stage_gate_return_chapter');
-                if (!empty($stageGateReturnChapter)) {
-                    return $this->nextAction('viewchapter', array('id' => $stageGateReturnChapter), 'contextcontent');
-                }
+                $this->unsetSession('stage_gate_passmark');
 
-                // Final submission belongs on this learner's completed results page.
-                // The old blank answertest template had no test/result data after marking.
-                return $this->nextAction('showtest', array(
+                // A stage-gate learner must see the completed result before choosing
+                // whether to continue. Contextcontent remains the owner of progression.
+                $resultParams = array(
                     'id' => $this->getParam('id'),
-                    'studentId' => $this->userId
-                ));
+                    'studentId' => $this->userId,
+                    'resultId' => $resultId
+                );
+                if (!empty($stageGateReturnChapter) && $stageGatePassMark >= 1 && $stageGatePassMark <= 100) {
+                    $resultParams['stage_gate_return_chapter'] = $stageGateReturnChapter;
+                    $resultParams['stage_gate_passmark'] = $stageGatePassMark;
+                }
+                return $this->nextAction('showtest', $resultParams);
             case 'marktest2':
                 $this->unsetSession('qData');
                 $this->unsetSession('taketest');
@@ -2522,6 +2530,12 @@ class mcqtests extends controller {
             }
         }
 
+        $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
+        $stageGatePassMark = (int) $this->getParam('stage_gate_passmark', 0);
+        if ($stageGateReturnChapter !== '' && $stageGatePassMark >= 1 && $stageGatePassMark <= 100) {
+            $this->setVar('stageGateReturnChapter', $stageGateReturnChapter);
+            $this->setVar('stageGatePassMark', $stageGatePassMark);
+        }
         $this->setVarByRef('data', $data);
         $this->setVarByRef('result', $result);
         $this->setVarByRef('totalmark', $totalmark);
