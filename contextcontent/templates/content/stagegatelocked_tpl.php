@@ -4,11 +4,7 @@ $passMark = (int) $stageGateLocked['passmark'];
 $best = $stageGateLockedBestPercentage === NULL ? '' : ' ' . htmlspecialchars(
     $this->objLanguage->languageText('mod_contextcontent_stage_gate_best_score', 'contextcontent')
     . ': ' . number_format($stageGateLockedBestPercentage, 1) . '%', ENT_QUOTES, 'UTF-8');
-$quizUrl = $this->uri(array(
-    'action' => 'answertest',
-    'id' => $stageGateLocked['testid'],
-    'stage_gate_return_chapter' => $stageGateLocked['returnchapterid']
-), 'mcqtests');
+$quizUrl = $this->uri(array('action' => 'startstagegatequiz', 'id' => $stageGateLocked['chapterid']));
 $chapterUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateLocked['chapterid']));
 $quizLabel = htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_open_quiz', 'contextcontent'), ENT_QUOTES, 'UTF-8');
 $chapterLabel = htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_return_course', 'contextcontent'), ENT_QUOTES, 'UTF-8');
