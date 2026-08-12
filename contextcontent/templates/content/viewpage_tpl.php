@@ -219,11 +219,7 @@ if ($this->objUser->isLoggedIn()) {
 if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
     $stageGatePassed = $chapterStageGateBestPercentage !== NULL
         && $chapterStageGateBestPercentage >= $chapterStageGate['passmark'];
-    $stageGateUrl = $this->uri(array(
-        'action' => 'answertest',
-        'id' => $chapterStageGate['testid'],
-        'stage_gate_return_chapter' => $chapterStageGateNextChapterId
-    ), 'mcqtests');
+    $stageGateUrl = $this->uri(array('action' => 'startstagegatequiz', 'id' => $chapterStageGate['chapterid']));
     $stageGateTitle = htmlspecialchars($chapterStageGate['testname'], ENT_QUOTES, 'UTF-8');
     $stageGatePassMark = (int) $chapterStageGate['passmark'];
     $stageGateStatus = $stageGatePassed
