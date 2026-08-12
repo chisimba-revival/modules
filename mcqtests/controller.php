@@ -658,9 +658,6 @@ class mcqtests extends controller {
                         break;
                     case '3':
                         $StepMenuArr2 = array();
-                        $StepMenuArr2['percent'] = $this->getParam('mark');
-                        $StepMenuArr2['decimal'] = $this->getParam('decimal');
-                        $StepMenuArr2['setequal'] = $this->getParam('setequal');
                         $StepMenuArr2['start'] = $this->getParam('start');
                         $StepMenuArr2['close'] = $this->getParam('close');
                         $StepMenuArr2['timed'] = $this->getParam('timed');
@@ -696,9 +693,6 @@ class mcqtests extends controller {
                         $fields['testType'] = $step_data1['testType'];
                         $fields['qSequence'] = $step_data1['qSequence'];
                         $fields['aSequence'] = $step_data1['aSequence'];
-                        $fields['percent'] = $step_data2['percent'];
-                        $fields['decimal'] = $step_data2['decimal'];
-                        $fields['setequal'] = $step_data2['setequal'];
                         $fields['start'] = $step_data2['start'];
                         $fields['close'] = $step_data2['close'];
                         $fields['timed'] = $step_data2['timed'];
@@ -2145,9 +2139,8 @@ class mcqtests extends controller {
         $fields['userid'] = $this->userId;
         // $fields['chapter'] = $this->getParam('chapter', '');
         $fields['status'] = $data['status'];
-        $percent = $data['percent'];
-        $decimal = $data['decimal'];
-        $fields['percentage'] = $percent . '.' . $decimal;
+        // Legacy column retained for compatibility; course weighting belongs to Gradebook.
+        $fields['percentage'] = 0;
         $postTimed = $data['timed'];
         if (!empty($postTimed)) {
             $fields['timed'] = 1;
@@ -2167,19 +2160,6 @@ class mcqtests extends controller {
         $fields['updated'] = date('Y-m-d H:i:s');
         $fields['coursePermissions'] = $data['coursePermissions'];
         $id = $this->dbTestadmin->addTest($fields, $id);
-        // set all tests to equal percentages
-        $postEqual = $this->getParam('setequal', '');
-        if (isset($postEqual) && !empty($postEqual)) {
-            $tests = $this->dbTestadmin->getTests($this->contextCode, 'id, percentage');
-            $num = (is_countable($tests) ? count($tests) : 0);
-            $percent = round((100 / $num), 2);
-            $arrField = array(
-                'percentage' => $percent
-            );
-            foreach ($tests as $item) {
-                $this->dbTestadmin->addTest($arrField, $item['id']);
-            }
-        }
         return $id;
     }
 
@@ -2212,9 +2192,8 @@ class mcqtests extends controller {
         $fields['userid'] = $this->userId;
         // $fields['chapter'] = $this->getParam('chapter', '');
         $fields['status'] = $this->getParam('status', '');
-        $percent = $this->getParam('percent', 0);
-        $decimal = $this->getParam('decimal', 0);
-        $fields['percentage'] = $percent . '.' . $decimal;
+        // Legacy column retained for compatibility; course weighting belongs to Gradebook.
+        $fields['percentage'] = 0;
         $postTimed = $this->getParam('timed', '');
         if (!empty($postTimed)) {
             $fields['timed'] = 1;
@@ -2233,19 +2212,6 @@ class mcqtests extends controller {
         $fields['description'] = $this->getParam('description', '');
         $fields['updated'] = date('Y-m-d H:i:s');
         $id = $this->dbTestadmin->addTest($fields, $id);
-        // set all tests to equal percentages
-        $postEqual = $this->getParam('setequal', '');
-        if (isset($postEqual) && !empty($postEqual)) {
-            $tests = $this->dbTestadmin->getTests($this->contextCode, 'id, percentage');
-            $num = (is_countable($tests) ? count($tests) : 0);
-            $percent = round((100 / $num), 2);
-            $arrField = array(
-                'percentage' => $percent
-            );
-            foreach ($tests as $item) {
-                $this->dbTestadmin->addTest($arrField, $item['id']);
-            }
-        }
         return $id;
     }
 

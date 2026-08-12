@@ -28,7 +28,6 @@ $head = $objLanguage->languageText('mod_mcqtests_test', 'mcqtests');
 $editLabel = $objLanguage->languageText('word_edit');
 $chapterLabel = $objLanguage->languageText('mod_mcqtests_chapter', 'mcqtests');
 $statusLabel = $objLanguage->languageText('mod_mcqtests_status', 'mcqtests');
-$percentLabel = $objLanguage->languageText('mod_mcqtests_finalmark', 'mcqtests');
 $startdateLabel = $objLanguage->languageText('mod_mcqtests_startdate', 'mcqtests');
 $dateLabel = $objLanguage->languageText('mod_mcqtests_closingdate', 'mcqtests');
 $totalLabel = $objLanguage->languageText('mod_mcqtests_totalmarks', 'mcqtests');
@@ -105,7 +104,9 @@ $objTable->cssClass="mcq_overview";
 // Add Activity Status and percentage of mark
 $objTable->startRow();
 $objTable->addCell('<b>'.$statusLabel.'</b>: '.$objLanguage->languageText('mod_mcqtests_'.$data['status'], 'mcqtests'));
-$objTable->addCell('<b>% '.$percentLabel.'</b>: '.$data['percentage']);
+$assessmentSheetLink = new link($this->uri(array('action' => 'assessmentSheet'), 'gradebook'));
+$assessmentSheetLink->link = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet', 'mcqtests');
+$objTable->addCell($assessmentSheetLink->show());
 $objTable->addCell("");
 $objTable->endRow();
 

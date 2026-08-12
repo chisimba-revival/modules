@@ -45,7 +45,6 @@ $chapterLabel = $this->objLanguage->languageText('mod_mcqtests_contentchapter', 
 $statusLabel = $this->objLanguage->languageText('mod_mcqtests_status', 'mcqtests');
 $notactiveLabel = $this->objLanguage->languageText('mod_mcqtests_inactive', 'mcqtests');
 $openLabel = $this->objLanguage->languageText('mod_mcqtests_openforentry', 'mcqtests');
-$percentLabel = $this->objLanguage->languageText('mod_mcqtests_finalmark', 'mcqtests');
 $startLabel = $this->objLanguage->languageText('mod_mcqtests_startdate', 'mcqtests');
 $closeLabel = $this->objLanguage->languageText('mod_mcqtests_closingdate', 'mcqtests');
 $descriptionLabel = $this->objLanguage->languageText('mod_mcqtests_description', 'mcqtests');
@@ -55,9 +54,8 @@ $setTimedLabel = $this->objLanguage->languageText('mod_mcqtests_settimed', 'mcqt
 $setDurationLabel = $this->objLanguage->languageText('mod_mcqtests_setduration', 'mcqtests');
 $hourLabel = $this->objLanguage->languageText('mod_mcqtests_hours', 'mcqtests');
 $minLabel = $this->objLanguage->languageText('mod_mcqtests_minutes', 'mcqtests');
-$lbTotalPercent = $this->objLanguage->languageText('mod_mcqtests_totalpercentfortests', 'mcqtests');
-$percentExplanation = $this->objLanguage->languageText('mod_mcqtests_percentxplanation', 'mcqtests');
-$lbEqualPercent = $this->objLanguage->languageText('mod_mcqtests_settoequalpercent', 'mcqtests');
+$assessmentSheetLabel = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet', 'mcqtests');
+$assessmentSheetNote = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet_note', 'mcqtests');
 $testTypeLabel = $this->objLanguage->languageText('mod_mcqtests_testtype', 'mcqtests');
 $formativeLabel = $this->objLanguage->languageText('word_formative');
 $summativeLabel = $this->objLanguage->languageText('word_summative');
@@ -80,12 +78,6 @@ if (!empty($data)) {
     $id = $data[0]['id'];
     $name = $data[0]['name'];
     $status = $data[0]['status'];
-    $px = explode('.', $data[0]['percentage']);
-    $percent = $px[0];
-    $decimal = 0;
-    if (isset($px[1])) {
-        $decimal = $px[1];
-    }
     $start = $data[0]['startdate'];
     $close = $data[0]['closingdate'];
     $timed = $data[0]['timed'];
@@ -108,8 +100,6 @@ if (!empty($data)) {
     $name = '';
     $chapter = '';
     $status = '';
-    $percent = 0;
-    $decimal = 0;
     $start = date('Y-m-d H:i:s');
     $close = date('Y-m-d H:i:s');
     $timed = '';
@@ -274,35 +264,11 @@ switch($currentstep) {
 
 
     case '2a':
-    // Set percentage of final mark
-        $objLabel = new label('<b>% '.$percentLabel.':</b>', 'input_percent');
-        $objDropDown = new dropdown('percent');
-        for ($x = 0 ; $x <= 100 ; $x++) {
-            $objDropDown->addOption($x, $x);
-        }
-        $markfield=new textinput("mark",$percent);
-
-
-        $objDropDown->setSelected($percent);
-        $dropStr = $objDropDown->show();
-        $objDropDown = new dropdown('decimal');
-        for ($x = 0 ; $x < 100 ; $x++) {
-            $objDropDown->addOption($x, $x);
-        }
-        $objDropDown->setSelected($decimal);
-       // $dropStr.= '&nbsp;<b>.</b>&nbsp;&nbsp;';//.$objDropDown->show() .'&nbsp;%&nbsp;&nbsp;&nbsp;';
-       // $dropStr.= '<font class="warning">'.$percentExplanation.'&nbsp;%</font>';
+        $assessmentSheetLink = new link($this->uri(array('action' => 'assessmentSheet'), 'gradebook'));
+        $assessmentSheetLink->link = $assessmentSheetLabel;
         $objTable->addRow(array(
-            $objLabel->show() ,
-            $markfield->show()
-        ));
-        // Set tests to equal percentage
-        $objLabel = new label('<b>'.$lbEqualPercent.':</b>', 'input_setequal');
-        $check = FALSE;
-        $objCheck = new checkbox('setequal', '', $check);
-        $objTable->addRow(array(
-            $objLabel->show() ,
-            $objCheck->show()
+            '<b>'.$assessmentSheetLabel.':</b>',
+            '<span class="mcq-assessment-sheet-note">'.$assessmentSheetNote.' '.$assessmentSheetLink->show().'</span>'
         ));
 /* *** start date & time *** */
         // Set start date of test

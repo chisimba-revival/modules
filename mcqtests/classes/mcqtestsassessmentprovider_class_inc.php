@@ -20,7 +20,14 @@ class mcqtestsassessmentprovider extends ChisimbaObject
         $activities = array();
         foreach ((array) $records as $record) {
             if (!empty($record['id']) && isset($record['name'])) {
-                $activities[] = array('id' => $record['id'], 'name' => $record['name']);
+                $testType = isset($record['testtype']) ? strtolower(trim($record['testtype'])) : '';
+                $classification = ($testType === 'formative' || $testType === 'summative')
+                    ? $testType : 'unclassified';
+                $activities[] = array(
+                    'id' => $record['id'],
+                    'name' => $record['name'],
+                    'classification' => $classification
+                );
             }
         }
         return $activities;
