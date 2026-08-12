@@ -46,7 +46,8 @@ class chapterstagegateservice extends controller
             'testid' => $test['id'],
             'testname' => $test['name'],
             'passmark' => max(1, min(100, (int) $chapter['stage_gate_passmark'])),
-            'totalmark' => (float) $test['totalmark']
+            'totalmark' => (float) $test['totalmark'],
+            'testtype' => isset($test['testtype']) ? $test['testtype'] : ''
         );
     }
 
@@ -118,7 +119,7 @@ class chapterstagegateservice extends controller
 
     private function testInContext($contextCode, $testId)
     {
-        $tests = $this->objTests->getTests($contextCode, 'id,name,totalmark,context', $testId);
+        $tests = $this->objTests->getTests($contextCode, 'id,name,totalmark,context,testtype', $testId);
         if (!is_array($tests) || empty($tests[0]) || $tests[0]['context'] !== $contextCode) {
             return FALSE;
         }
