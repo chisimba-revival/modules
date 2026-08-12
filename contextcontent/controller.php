@@ -1230,6 +1230,9 @@ class contextcontent extends controller {
         $this->setVar('chapterStageGate', $chapterStageGate);
         $this->setVar('chapterStageGateBestPercentage', $chapterStageGate === FALSE ? NULL : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']));
         $this->setVar('isLastPageInChapter', $this->objContentOrder->getNextPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL);
+        $this->setVar('chapterStageGateNextChapterId', $chapterStageGate === FALSE
+            ? NULL
+            : $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']));
 
 
         $breadcrumbs = $this->objContentOrder->getBreadcrumbs($this->contextCode, $page['chapterid'], $page['lft'], $page['rght']);
