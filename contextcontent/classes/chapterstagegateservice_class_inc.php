@@ -65,6 +65,7 @@ class chapterstagegateservice extends controller
             }
             $gate = $this->chapterGate($contextCode, $chapter['chapterid']);
             if ($gate !== FALSE && !$this->hasPassed($gate)) {
+                $gate['returnchapterid'] = $targetChapterId;
                 return array('allowed' => FALSE, 'gate' => $gate);
             }
         }
