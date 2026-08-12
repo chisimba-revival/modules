@@ -37,11 +37,15 @@ $assessmentSheetLabel = $this->objLanguage->languageText('mod_mcqtests_assessmen
 $addUrl = $this->uri(array(
     'action' => 'addstep'
 ));
-$addIcon = $objIcon->getAddIcon($addUrl);
+$iconBase = $this->getResourceUri('icons/lucide/', 'ui');
+$addIcon = '<img src="'.$iconBase.'circle-plus.svg" width="20" height="20" alt="" aria-hidden="true" />';
 if ($this->isValid('add'))
 {
         $addOkay=TRUE;
-	$heading.= '<span class="mcq-heading-actions">'.$addIcon.'</span>';
+        $objLink = new link($addUrl);
+        $objLink->title = $addLabel;
+        $objLink->link = $addIcon;
+	$heading.= '<span class="mcq-heading-actions">'.$objLink->show().'</span>';
 } else {
        $addOkay=FALSE;
 }
@@ -86,35 +90,36 @@ if ($addOkay==TRUE){
 $icons='';
 if ($addOkay==TRUE){
         // edit, mark and delete icons
-        $objIcon->title = $editLabel;
-        $icons = $objIcon->getEditIcon($this->uri(array(
+        $objLink = new link($this->uri(array(
             'action' => 'edit',
             'id' => $line['id']
         )));
-        $objIcon->setIcon('delete');
-        $objIcon->title = $deleteLabel;
+        $objLink->title = $editLabel;
+        $objLink->link = '<img src="'.$iconBase.'square-pen.svg" width="18" height="18" alt="" aria-hidden="true" />';
+        $icons = '<span class="mcq-icon-action">'.$objLink->show().'</span>';
 
         $objConfirm = new confirm();
-        $objConfirm->setConfirm($objIcon->show() , $this->uri(array(
+        $deleteIcon = '<img src="'.$iconBase.'trash-2.svg" width="18" height="18" alt="" aria-hidden="true" />';
+        $objConfirm->setConfirm($deleteIcon, $this->uri(array(
             'action' => 'delete',
             'id' => $line['id']
         )) , $confirmLabel.' '.$line['name'].'?');
         $icons.= '<span class="mcq-icon-action">'.$objConfirm->show().'</span>';
-        $objIcon->setIcon('chart-no-axes-column-increasing');
-        $objIcon->title = $listLabel;
         $objLink = new link($this->uri(array(
             'action' => 'liststudents',
             'id' => $line['id']
         )));
-        $objLink->link = '<span class="mcq-results-action" style="display:inline-flex;align-items:center;gap:.45rem;white-space:nowrap">'.$objIcon->show().'<span class="mcq-results-action-label">'.$this->objLanguage->languageText('mod_mcqtests_testresults', 'mcqtests').'</span></span>';
+        $objLink->title = $listLabel;
+        $objLink->link = '<span class="mcq-results-action"><img src="'.$iconBase.'list-checks.svg" width="19" height="19" alt="" aria-hidden="true" /><span class="mcq-results-action-label">'.$this->objLanguage->languageText('mod_mcqtests_testresults', 'mcqtests').'</span></span>';
         $icons.= '<span class="mcq-icon-action mcq-icon-action-results">'.$objLink->show().'</span>';
         // set up export results icon
-        $objIcon->title = $exportLabel;
-        $exportIcon = $objIcon->getLinkedIcon($this->uri(array(
+        $objLink = new link($this->uri(array(
             'action' => 'doexport',
             'testId' => $line['id']
-        )) , 'exportcvs');
-        $icons.= '<span class="mcq-icon-action">'.$exportIcon.'</span>';
+        )));
+        $objLink->title = $exportLabel;
+        $objLink->link = '<img src="'.$iconBase.'download.svg" width="18" height="18" alt="" aria-hidden="true" />';
+        $icons.= '<span class="mcq-icon-action">'.$objLink->show().'</span>';
 }
         // set up table rows
         $tableRow = array();
@@ -136,12 +141,11 @@ $advanced->link = $this->objLanguage->languageText('mod_mcqtest_advanced', 'mcqt
 $advanced->extra  =  "style='color:#000099;'";
 echo "<h2>".$advanced->show()."</h2>";
 */
-echo '<style type="text/css">.mcq-heading-actions{display:inline-flex;align-items:center;margin-left:.6rem}.mcq-test-list{border-collapse:separate;border-spacing:0 .35rem}.mcq-test-list td,.mcq-test-list th{padding:.7rem .8rem;vertical-align:middle}.mcq-test-list td:last-child{white-space:nowrap}.mcq-action-group{display:inline-flex;align-items:center;gap:.7rem;flex-wrap:wrap}.mcq-icon-action{display:inline-flex;align-items:center;line-height:1}.mcq-icon-action img{display:block}.mcq-icon-action-results a{display:inline-flex;align-items:center;gap:.45rem}.mcq-assessment-sheet-note{display:inline-block;line-height:1.5}</style>';
 echo $objTable->show();
 if ($this->isValid('add'))
 {
 	$objLink = new link($addUrl);
-	$objLink->link = '<span class="mcq-results-action">'.$addIcon.'<span>'.$addLabel.'</span></span>';
+	$objLink->link = $addLabel;
 	$links = $objLink->show();
 }else {
 	$links = "";
