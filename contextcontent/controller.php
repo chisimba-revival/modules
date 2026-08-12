@@ -282,6 +282,8 @@ class contextcontent extends controller {
                 return $this->moveChapterDown($this->getParam('id'));
             case 'viewchapter':
                 return $this->viewChapter($this->getParam('id'));
+            case 'startstagegatequiz':
+                return $this->startStageGateQuiz($this->getParam('id'));
             case 'viewprintchapter':
                 return $this->viewPrintChapter($this->getParam('id'));
             case 'changenavigation':
@@ -1444,6 +1446,24 @@ class contextcontent extends controller {
      *
      * @param string $id Record Id of the Chapter
      */
+    /** Launch a configured chapter-end MCQ through its verified Contextcontent placement. */
+    protected function startStageGateQuiz($chapterId) {
+        $gate = $this->objChapterStageGates->chapterGate($this->contextCode, $chapterId);
+        if ($gate === FALSE || !$this->objChapterStageGates->isGatedProgression($this->contextCode)) {
+            return $this->nextAction('viewchapter', array('id' => $chapterId));
+        }
+        $params = array('id' => $gate['testid']);
+        $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $chapterId);
+        if (!empty($nextChapterId)) {
+            $params['stage_gate_return_chapter'] = $nextChapterId;
+        }
+        $best = $this->objChapterStageGates->bestPercentage($gate['testid'], $gate['totalmark']);
+        if ($best !== NULL && $best < $gate['passmark'] && strtolower((string) $gate['testtype']) === 'formative') {
+            $params['retry'] = '1';
+        }
+        return $this->nextAction('answertest', $params, 'mcqtests');
+    }
+
     protected function viewChapter($id) {
 
         $entryDecision = $this->objChapterStageGates->entryDecision($this->contextCode, $id);
