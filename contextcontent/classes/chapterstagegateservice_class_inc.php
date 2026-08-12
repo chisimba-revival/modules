@@ -96,6 +96,25 @@ class chapterstagegateservice extends controller
         return $best;
     }
 
+    /** Return the chapter immediately following the supplied chapter, if any. */
+    public function nextChapterId($contextCode, $chapterId)
+    {
+        $chapters = $this->objContextChapters->getContextChapters($contextCode);
+        if (!is_array($chapters)) {
+            return NULL;
+        }
+        $currentFound = FALSE;
+        foreach ($chapters as $chapter) {
+            if ($currentFound) {
+                return $chapter['chapterid'];
+            }
+            if ($chapter['chapterid'] === $chapterId) {
+                $currentFound = TRUE;
+            }
+        }
+        return NULL;
+    }
+
     private function testInContext($contextCode, $testId)
     {
         $tests = $this->objTests->getTests($contextCode, 'id,name,totalmark,context', $testId);
