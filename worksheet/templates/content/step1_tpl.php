@@ -19,12 +19,14 @@ if ($mode == 'add') {
     $formAction = 'saveworksheet';
 	$id = "";
 	$activity_status = "";
+	$classification = 'unclassified';
 } else {
 
     $header->str = 'Edit Worksheet';
     $formAction = 'updateworksheet';
 	$formAction = 'saveworksheetedit';
 	$activity_status = $worksheet['activity_status'];
+	$classification = isset($worksheet['classification']) ? $worksheet['classification'] : 'unclassified';
 	$id = $worksheet['id'];
 }
 
@@ -33,7 +35,7 @@ $objStepMenu->addStep($this->objLanguage->languageText('mod_worksheet_worksheeti
 $objStepMenu->addStep($this->objLanguage->languageText('mod_worksheet_addquestions', 'worksheet', 'Add Questions'), $this->objLanguage->languageText('mod_worksheet_addquestions_desc', 'worksheet', 'Add Questions and Mark Allocation to the worksheet'));
 $objStepMenu->addStep($this->objLanguage->languageText('mod_worksheet_activateworksheet', 'worksheet', 'Activate Worksheet'), $this->objLanguage->code2Txt('mod_worksheet_activateworksheet_desc', 'worksheet', NULL, 'Allow [-readonlys-] to start answering worksheet'));
 
-echo $objStepMenu->show();
+echo '<div class="worksheet-authoring-steps">'.$objStepMenu->show().'</div>';
 
 echo '<br />'.$header->show();
 
@@ -67,10 +69,10 @@ $objTimePicker = $this->newObject('timepicker', 'htmlelements');
 
 if($mode == 'edit')
 {
-	$dt = split(" ", $worksheet['closing_date']);
-	$date = split(":", $dt[0]);
+	$dt = explode(" ", $worksheet['closing_date']);
+	$date = explode(":", $dt[0]);
 	$datestr = $date[0]."-".$date[1]."-".$date[2];
-	$time = split(":", $dt[1]);
+	$time = explode(":", $dt[1]);
 
 	$objDatePicker->setDefaultDate($dt[0]);
 	$objTimePicker->setSelected($dt[1]);
@@ -79,14 +81,16 @@ $table->addCell($objDatePicker->show(), 250);
 $table->addCell($objTimePicker->show());
 $table->endRow();
 
+
 $table->startRow();
-$table->addCell($this->objLanguage->languageText('mod_worksheet_percfinalmark', 'worksheet', 'Percentage Final Mark'));
-
-$textinput = new textinput('percentage');
-($mode == 'edit') ? $textinput->value = $worksheet['percentage'] : "";
-$table->addCell($textinput->show(), NULL, NULL, NULL, NULL, 'colspan="2"');
+$table->addCell($this->objLanguage->languageText('mod_worksheet_assessmentclassification', 'worksheet'));
+$classificationSelect = new dropdown('classification');
+$classificationSelect->addOption('unclassified', $this->objLanguage->languageText('mod_worksheet_assessmentclassification_unclassified', 'worksheet'));
+$classificationSelect->addOption('formative', $this->objLanguage->languageText('word_formative'));
+$classificationSelect->addOption('summative', $this->objLanguage->languageText('word_summative'));
+$classificationSelect->setSelected($classification);
+$table->addCell($classificationSelect->show(), NULL, NULL, NULL, NULL, 'colspan="2"');
 $table->endRow();
-
 
 $table->startRow();
 $table->addCell('&nbsp;');
@@ -104,8 +108,6 @@ $table->endRow();
 $form->addToForm($table->show());
 
 $form->addRule('title', $this->objLanguage->languageText('mod_worksheet_validation_name', 'worksheet', 'Please enter the name of the worksheet'), 'required');
-$form->addRule('percentage', $this->objLanguage->languageText('mod_worksheet_finalmark_num', 'worksheet', 'Percentage Final Mark should be a number'), 'numeric');
-$form->addRule('percentage', $this->objLanguage->languageText('mod_worksheet_validation_finalmark', 'worksheet', 'Please enter Percentage Final Mark'), 'required');
 
 echo $form->show();
 

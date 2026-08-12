@@ -216,6 +216,30 @@ if ($this->objUser->isLoggedIn()) {
 }
 
 
+if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
+    $stageGatePassed = $chapterStageGateBestPercentage !== NULL
+        && $chapterStageGateBestPercentage >= $chapterStageGate['passmark'];
+    $stageGateUrl = $this->uri(array('action' => 'answertest', 'id' => $chapterStageGate['testid']), 'mcqtests');
+    $stageGateTitle = htmlspecialchars($chapterStageGate['testname'], ENT_QUOTES, 'UTF-8');
+    $stageGatePassMark = (int) $chapterStageGate['passmark'];
+    $stageGateStatus = $stageGatePassed
+        ? $this->objLanguage->languageText('mod_contextcontent_stage_gate_passed', 'contextcontent')
+        : ($chapterStageGateBestPercentage === NULL
+            ? $this->objLanguage->languageText('mod_contextcontent_stage_gate_not_attempted', 'contextcontent')
+            : $this->objLanguage->languageText('mod_contextcontent_stage_gate_not_yet_passed', 'contextcontent'));
+    $stageGateBest = $chapterStageGateBestPercentage === NULL ? '' : ' ' . htmlspecialchars(
+        $this->objLanguage->languageText('mod_contextcontent_stage_gate_best_score', 'contextcontent')
+        . ': ' . number_format($chapterStageGateBestPercentage, 1) . '%', ENT_QUOTES, 'UTF-8');
+    $content .= '<section class="contextcontent-stage-gate ' . ($stageGatePassed ? 'contextcontent-stage-gate-passed' : 'contextcontent-stage-gate-pending') . '" aria-labelledby="contextcontent-stage-gate-title">'
+        . '<h2 id="contextcontent-stage-gate-title">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_heading', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</h2>'
+        . '<p><strong>' . $stageGateTitle . '</strong></p>'
+        . '<p>' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_requirement', 'contextcontent') . ': ' . $stageGatePassMark . '%', ENT_QUOTES, 'UTF-8') . $stageGateBest . '</p>'
+        . '<p class="contextcontent-stage-gate-status">' . htmlspecialchars($stageGateStatus, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p><a class="contextcontent-stage-gate-action" href="' . $stageGateUrl . '">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_open_quiz', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</a></p>'
+        . '</section>';
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-stage-gate{margin:2rem 0 1rem;padding:1.25rem 1.4rem;border:1px solid #e0b45b;border-left:6px solid #b7791f;border-radius:10px;background:#fffaf0}.contextcontent-stage-gate-passed{border-color:#76b88a;border-left-color:#2f855a;background:#f0fff4}.contextcontent-stage-gate h2{margin:.05rem 0 .75rem;font-size:1.25rem}.contextcontent-stage-gate-status{font-weight:700}.contextcontent-stage-gate-action{display:inline-block;padding:.7rem 1rem;border-radius:6px;background:#1565c0;color:#fff!important;text-decoration:none;font-weight:700}.contextcontent-stage-gate-action:hover,.contextcontent-stage-gate-action:focus{background:#0d47a1}</style>');
+}
+
 $pageNotes = $objModule->checkIfRegistered("pagenotes");
 if ($pageNotes) {
     $objContextModules =  $this->getObject('dbcontextmodules', 'context');

@@ -176,10 +176,6 @@ class functions_worksheet extends ChisimbaObject
 							$mytable->addCell((is_countable($questions) ? count($questions) : 0),"400","","","","bgcolor='#FFFFFF'");
 							$mytable->endRow();
 							$mytable->startRow();
-							$mytable->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_percentage', 'worksheet', 'Percentage').'</strong>: ',"100","","","","bgcolor='#D3D3D3'");
-							$mytable->addCell($worksheet['percentage'].'%',"400","","","","bgcolor='#FFFFFF'");
-							$mytable->endRow();
-							$mytable->startRow();
 							$mytable->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_totalmark', 'worksheet', 'Total Mark').'</strong>: ',"100","","","","bgcolor='#D3D3D3'");
 							$mytable->addCell($worksheet['total_mark'],"400","","","","bgcolor='#FFFFFF'");
 							$mytable->endRow();

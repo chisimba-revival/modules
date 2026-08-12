@@ -282,13 +282,13 @@ class worksheet extends controller
         $description = $this->getParam('description');
         $date = $this->getParam('calendardate');
         $time = $this->getParam('time');
-        $percentage = $this->getParam('percentage');
-
         $activity_status = $this->getParam('activity_status');
+        $classification = $this->getParam('classification', 'unclassified');
+        if (!in_array($classification, array('formative', 'summative'), true)) { $classification = 'unclassified'; }
         $closing_date = $date.' '.$time;
 		$lastUpdated = strftime('%Y-%m-%d %H:%M:%S', time());
 
-        $id = $this->objWorksheet->updateWorkSheet($id, $this->contextCode, $title, $activity_status, $percentage, $closing_date, $description, $this->objUser->userId(), $lastUpdated);
+        $id = $this->objWorksheet->updateWorkSheet($id, $this->contextCode, $title, $activity_status, $classification, $closing_date, $description, $this->objUser->userId(), $lastUpdated);
 
         return $this->nextAction('home');
     }
@@ -305,19 +305,24 @@ class worksheet extends controller
         $description = $this->getParam('description');
         $date = $this->getParam('calendardate');
         $time = $this->getParam('time');
-        $percentage = $this->getParam('percentage');
-
         $activity_status = 'inactive';
+        $classification = $this->getParam('classification', 'unclassified');
+        if (!in_array($classification, array('formative', 'summative'), true)) { $classification = 'unclassified'; }
         $closing_date = $date.' '.$time;
-								//activity streamer, create message and post it
-      		$message = $this->objUser->getSurname()." ".$this->objLanguage->languageText('mod_worksheet_newalert', 'worksheet')." ".$this->contextCode;
-      	 $this->eventDispatcher->post($this->objActivityStreamer, "context", array('title'=> $message,
-																		'link'=> $this->uri(array()),
-																		'contextcode' => $this->objContext->getContextCode(),
-																		'author' => $this->objUser->fullname(),
-																		'description'=>$message));
+        // Activity Streamer was optional and is no longer installed in the PHP 8 runtime.
+        // Post only when the optional observer was loaded during init().
+        if ($this->eventsEnabled) {
+            $message = $this->objUser->getSurname()." ".$this->objLanguage->languageText('mod_worksheet_newalert', 'worksheet')." ".$this->contextCode;
+            $this->eventDispatcher->post($this->objActivityStreamer, "context", array(
+                'title' => $message,
+                'link' => $this->uri(array()),
+                'contextcode' => $this->objContext->getContextCode(),
+                'author' => $this->objUser->fullname(),
+                'description' => $message
+            ));
+        }
 
-        $id = $this->objWorksheet->insertWorkSheet($this->contextCode, NULL, $title, $activity_status, $percentage, $closing_date, $description );
+        $id = $this->objWorksheet->insertWorkSheet($this->contextCode, NULL, $title, $activity_status, $classification, $closing_date, $description );
 
         return $this->nextAction('managequestions', array('id'=>$id));
     }

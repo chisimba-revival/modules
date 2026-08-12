@@ -341,7 +341,7 @@ if(!$numberStudents) {
 							$iWorksheetresults=array();
 							$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 									"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-									"(tbl_worksheet_results.mark/100)*tbl_worksheet.percentage result",
+									"tbl_worksheet_results.mark result",
 									"tbl_worksheet_results,tbl_worksheet");
 							if(!empty($iWorksheetresults)) {
 								foreach($iWorksheetresults as $annualResult3) {
@@ -461,7 +461,7 @@ if(!$numberStudents) {
 							$iWorksheetresults=array();
 							$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 									"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-									"(tbl_worksheet_results.mark/100)*tbl_worksheet.percentage result",
+									"tbl_worksheet_results.mark result",
 									"tbl_worksheet_results,tbl_worksheet");
 							if(!empty($iWorksheetresults)) {
 								foreach($iWorksheetresults as $annualResult3) {
@@ -583,7 +583,7 @@ if(!$numberStudents) {
 					$iWorksheetresults=array();
 					$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 							"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-							"(tbl_worksheet_results.mark/100)*tbl_worksheet.percentage result",
+							"tbl_worksheet_results.mark result",
 							"tbl_worksheet_results,tbl_worksheet");
 					if(!empty($iWorksheetresults)) {
 						foreach($iWorksheetresults as $annualResult3) {
@@ -695,7 +695,7 @@ switch($dropdownAssessments) {
 				$maxWorksheetArray=array();
 				$maxWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"max((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) maxmark",
+						"max(tbl_worksheet_results.mark) maxmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($maxWorksheetArray)) {
 					foreach($maxWorksheetArray as $max) {
@@ -788,7 +788,7 @@ switch($dropdownAssessments) {
 				$maxWorksheetArray=array();
 				$maxWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"max((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) maxmark",
+						"max(tbl_worksheet_results.mark) maxmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($maxWorksheetArray)) {
 					foreach($maxWorksheetArray as $max) {
@@ -888,7 +888,7 @@ switch($dropdownAssessments) {
 				$minWorksheetArray=array();
 				$minWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"min((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) minmark",
+						"min(tbl_worksheet_results.mark) minmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($minWorksheetArray)) {
 					foreach($minWorksheetArray as $min) {
@@ -981,7 +981,7 @@ switch($dropdownAssessments) {
 				$minWorksheetArray=array();
 				$minWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"min((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) minmark",
+						"min(tbl_worksheet_results.mark) minmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($minWorksheetArray)) {
 					foreach($minWorksheetArray as $min) {
@@ -1081,7 +1081,7 @@ switch($dropdownAssessments) {
 				$avgWorksheetArray=array();
 				$avgWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"avg((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) avgmark",
+						"avg(tbl_worksheet_results.mark) avgmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($avgWorksheetArray)) {
 					foreach($avgWorksheetArray as $avg) {
@@ -1175,7 +1175,7 @@ switch($dropdownAssessments) {
 				$avgWorksheetArray=array();
 				$avgWorksheetArray=$objWorksheetresults->getAnnualResults(
 						"tbl_worksheet.context='$contextCode' and tbl_worksheet.id='$as[id]' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id",
-						"avg((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) avgmark",
+						"avg(tbl_worksheet_results.mark) avgmark",
 						"tbl_worksheet_results,tbl_worksheet");
 				if(!empty($avgWorksheetArray)) {
 					foreach($avgWorksheetArray as $avg) {

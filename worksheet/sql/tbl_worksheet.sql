@@ -34,11 +34,11 @@ $fields = array(
 		'notnull' => 1,
 		'default' => 'inactive'
 		),
-	'percentage' => array(
-		'type' => 'integer',
-		'length' => 11,
+	'classification' => array(
+		'type' => 'text',
+		'length' => 16,
 		'notnull' => 1,
-		'default' => '0'
+		'default' => 'unclassified'
 		),
 	'total_mark' => array(
 		'type' => 'integer',

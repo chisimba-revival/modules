@@ -53,6 +53,23 @@ $fields = array(
         ),
    'enddate' => array(
         'type' => 'timestamp'
+        ),
+   'stage_gate_testid' => array(
+        'type' => 'text',
+        'length' => 32,
+        'default' => ''
+        ),
+   'stage_gate_passmark' => array(
+        'type' => 'integer',
+        'length' => 3,
+        'notnull' => TRUE,
+        'default' => 70
+        ),
+   'stage_gate_enabled' => array(
+        'type' => 'integer',
+        'length' => 1,
+        'notnull' => TRUE,
+        'default' => 0
         )
     );
     

@@ -23,7 +23,6 @@ $viewLabel = $objLanguage->languageText('mod_worksheet_viewmarked','worksheet');
 $worksheetLabel = $objLanguage->languageText('mod_worksheet_worksheet','worksheet');
 $chapterLabel = $objLanguage->languageText('mod_worksheet_chapter','worksheet');
 $totalLabel = $objLanguage->languageText('mod_worksheet_totalmarks','worksheet');
-$percentLabel = $objLanguage->languageText('mod_worksheet_percentageoffinalmark','worksheet');
 $markLabel = $objLanguage->languageText('mod_worksheet_mark','worksheet');
 $questionLabel = $objLanguage->languageText('mod_worksheet_question','worksheet');
 $answerLabel = $objLanguage->languageText('mod_worksheet_answer','worksheet');
@@ -43,7 +42,6 @@ $objTable->row_attributes='height="20"';
 $objTable->startRow();
 $objTable->addCell('<b>'.$chapterLabel.':</b> '.$worksheet['node'],'35%');
 $objTable->addCell('<b>'.$totalLabel.':</b> '.$worksheet['total_mark'],'30%');
-$objTable->addCell('<b>'.$percentLabel.':</b> '.$worksheet['percentage'].'%','35%');
 $objTable->endRow();
 
 $total=$data[0]['totalmark'];

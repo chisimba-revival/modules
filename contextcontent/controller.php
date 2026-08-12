@@ -72,6 +72,8 @@ class contextcontent extends controller {
             $this->objChapters = $this->getObject('db_contextcontent_chapters');
             $this->objContextChapters = $this->getObject('db_contextcontent_contextchapter');
             $this->objContentOrder = $this->getObject('db_contextcontent_order');
+            $this->objMcqTests = $this->getObject('dbtestadmin', 'mcqtests');
+            $this->objChapterStageGates = $this->getObject('chapterstagegateservice', 'contextcontent');
             // $this->objContentTitles = $this->getObject('db_contextcontent_titles');
             $this->objFiles = $this->getObject('dbfile', 'filemanager');
             $this->objFolders = $this->getObject('dbfolder', 'filemanager');
@@ -603,7 +605,7 @@ class contextcontent extends controller {
      */
     protected function editChapter($id) {
         $this->prepareMutationForm();
-        $chapter = $this->objContextChapters->getChapter($id);
+        $chapter = $this->objContextChapters->getChapter($id, $this->contextCode);
 
         if ($chapter == FALSE) {
             return $this->nextAction(NULL, array('error' => 'editchapterdoesnotexist'));
@@ -613,6 +615,7 @@ class contextcontent extends controller {
             $this->setVarByRef('chapter', $chapter);
             $this->setVarByRef('id', $id);
             $this->setVarByRef('currentChapter', $id);
+            $this->setVar('stageGateTests', $this->objMcqTests->getTests($this->contextCode));
 
             $this->setVar('hideNavSwitch', TRUE);
             $this->setVar('currentPage', NULL);
@@ -663,6 +666,17 @@ class contextcontent extends controller {
 
         $startdate = $this->getParam('startdate');
         $enddate = $this->getParam('enddate');
+        $stageGateTestId = trim((string) $this->getParam('stage_gate_testid', ''));
+        $stageGatePassMarkValue = trim((string) $this->getParam('stage_gate_passmark', ''));
+        $stageGatePassMark = $stageGatePassMarkValue === '' ? 70 : (int) $stageGatePassMarkValue;
+
+        // The selected quiz is the durable authoring intent.  Do not discard it
+        // because a legacy radio helper omitted or reformatted its companion value.
+        $stageGateEnabled = $stageGateTestId === '' ? 0 : 1;
+        if ($stageGateEnabled && ($stageGatePassMark < 1 || $stageGatePassMark > 100)) {
+            throw new InvalidArgumentException($this->objLanguage->languageText('mod_contextcontent_stage_gate_invalid', 'contextcontent'));
+        }
+        if (!$stageGateEnabled) { $stageGatePassMark = 0; }
         if ($id == '' || $chaptercontentid == '' || $contextchapterid == '') {
             return $this->nextAction(NULL, array('error' => 'noidprovided'));
         } else {
@@ -683,8 +697,20 @@ class contextcontent extends controller {
                 $this->objContextChapters->updateChapterVisibility($contextchapterid, $visibility);
                 $this->objContextChapters->updateChapterReleaseDate($contextchapterid, $startdate);
                 $this->objContextChapters->updateChapterEndDate($contextchapterid, $enddate);
+                $stageGateSaved = $this->objContextChapters->updateChapterStageGate($contextchapterid, $stageGateTestId, $stageGatePassMark, $stageGateEnabled);
+                if ($stageGateSaved === FALSE) {
+                    throw new RuntimeException('The chapter stage gate could not be saved');
+                }
+                $savedChapter = $this->objContextChapters->getChapter($id, $this->contextCode);
+                $savedCorrectly = $savedChapter !== FALSE
+                    && (string) $savedChapter['stage_gate_testid'] === (string) $stageGateTestId
+                    && (int) $savedChapter['stage_gate_passmark'] === (int) $stageGatePassMark
+                    && (int) $savedChapter['stage_gate_enabled'] === (int) $stageGateEnabled;
+                if (!$savedCorrectly) {
+                    throw new RuntimeException('The chapter stage gate was not persisted in the current course');
+                }
 
-                return $this->nextAction(NULL, array('message' => 'chapterupdated', 'id' => $id));
+                return $this->nextAction('editchapter', array('message' => 'chapterupdated', 'id' => $id, 'stage_gate_saved' => '1'));
             }
         }
     }
@@ -1167,6 +1193,10 @@ class contextcontent extends controller {
         if ($page == FALSE) {
             return $this->nextAction(NULL, array('error' => 'pagedoesnotexist'));
         }
+        $entryDecision = $this->objChapterStageGates->entryDecision($this->contextCode, $page['chapterid']);
+        if (!$entryDecision['allowed']) {
+            return $this->showStageGateLocked($entryDecision['gate']);
+        }
         //Log in activity streamer only if logged in (Public courses dont need login)
         if (!empty($this->userId)) {
             if ($this->eventsEnabled) {
@@ -1196,6 +1226,10 @@ class contextcontent extends controller {
         $this->setVar('prevPage', $this->objContentOrder->getPreviousPage($this->contextCode, $page['chapterid'], $page['lft']));
         $this->setVar('isFirstPageOnLevel', $this->objContentOrder->isFirstPageOnLevel($page['id']));
         $this->setVar('isLastPageOnLevel', $this->objContentOrder->isLastPageOnLevel($page['id']));
+        $chapterStageGate = $this->objChapterStageGates->chapterGate($this->contextCode, $page['chapterid']);
+        $this->setVar('chapterStageGate', $chapterStageGate);
+        $this->setVar('chapterStageGateBestPercentage', $chapterStageGate === FALSE ? NULL : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']));
+        $this->setVar('isLastPageInChapter', $this->objContentOrder->getNextPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL);
 
 
         $breadcrumbs = $this->objContentOrder->getBreadcrumbs($this->contextCode, $page['chapterid'], $page['lft'], $page['rght']);
@@ -1409,6 +1443,11 @@ class contextcontent extends controller {
      */
     protected function viewChapter($id) {
 
+        $entryDecision = $this->objChapterStageGates->entryDecision($this->contextCode, $id);
+        if (!$entryDecision['allowed']) {
+            return $this->showStageGateLocked($entryDecision['gate']);
+        }
+
         $firstPage = $this->objContentOrder->getFirstChapterPage($this->contextCode, $id);
         if ($this->eventsEnabled) {
             $ischapterlogged = $this->objContextActivityStreamer->getRecord($this->userId, $id);
@@ -1447,6 +1486,14 @@ class contextcontent extends controller {
             **/
             //   return $this->nextAction('viewpage', array('id' => $firstPage['id'], 'message' => $this->getParam('message')));
         }
+    }
+
+    /** Render a translated learner-facing message when a configured gate is not passed. */
+    protected function showStageGateLocked($gate) {
+        $this->setLayoutTemplate('layout_firstpage_tpl.php');
+        $this->setVar('stageGateLocked', $gate);
+        $this->setVar('stageGateLockedBestPercentage', $this->objChapterStageGates->bestPercentage($gate['testid'], $gate['totalmark']));
+        return 'stagegatelocked_tpl.php';
     }
 
     /**

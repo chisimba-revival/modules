@@ -183,7 +183,7 @@ if(!$numberStudents) {
 					$iWorksheetresults=array();
 					$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 							"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id and tbl_worksheet.context='$contextCode'",
-							"sum((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) result",
+							"avg(tbl_worksheet_results.mark) result",
 							"tbl_worksheet_results,tbl_worksheet");
 					
 					if(!empty($iWorksheetresults)) {
@@ -249,7 +249,7 @@ if(!$numberStudents) {
 					$iWorksheetresults=array();
 					$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 							"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id and tbl_worksheet.context='$contextCode'",
-							"sum((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) result",
+							"avg(tbl_worksheet_results.mark) result",
 							"tbl_worksheet_results,tbl_worksheet");
 					if(!empty($iWorksheetresults)) {
 						foreach($iWorksheetresults as $annualResult3) {
@@ -320,7 +320,7 @@ if(!$numberStudents) {
 			$iWorksheetresults=array();
 			$iWorksheetresults=$objWorksheetresults->getAnnualResults(
 					"tbl_worksheet_results.userid='".$userId[$i-1]."' and tbl_worksheet_results.worksheet_id=tbl_worksheet.id and tbl_worksheet.context='$contextCode'",
-					"sum((tbl_worksheet_results.mark/100)*tbl_worksheet.percentage) result",
+					"avg(tbl_worksheet_results.mark) result",
 					"tbl_worksheet_results,tbl_worksheet");
 			if(!empty($iWorksheetresults)) {
 				foreach($iWorksheetresults as $annualResult3) {

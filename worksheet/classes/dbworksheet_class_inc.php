@@ -40,12 +40,12 @@ class dbworksheet extends dbTable
     public function getWorksheetsInContext($context)
     {
 
-        $sql = 'SELECT ws.id, ws.context, ws.chapter, ws.name, ws.activity_status, ws.percentage, ws.total_mark, ';
-        $sql .='ws.closing_date, ws. description, count(quest.worksheet_id) AS questions ';
+        $sql = 'SELECT ws.id, ws.context, ws.chapter, ws.name, ws.activity_status, ws.classification, ws.total_mark, ';
+        $sql .= 'ws.closing_date, ws.description, ';
+        $sql .= '(SELECT COUNT(*) FROM tbl_worksheet_questions AS quest WHERE quest.worksheet_id = ws.id) AS questions ';
         $sql .= 'FROM tbl_worksheet AS ws ';
-        $sql .= 'LEFT JOIN tbl_worksheet_questions AS quest ON (quest.worksheet_id = ws.id) ';
         $sql .= "WHERE ws.context='{$context}' ";
-        $sql .= "GROUP BY quest.worksheet_id, ws.activity_status, ws.context, ws.name, ws.id";
+        $sql .= 'ORDER BY ws.closing_date, ws.name';
 
         $result = $this->getArray($sql);
         return $result;
@@ -154,25 +154,25 @@ class dbworksheet extends dbTable
     * @param string $chapter The chapter or context node to add the worksheet to.
     * @param string $worksheet_name The name of the worksheet.
     * @param string $activity_status The status of the worksheet.
-    * @param string $percentage The percentage of the final mark that the worksheet counts.
-    * @param string $closing_date The closing date for submitted worksheets.
+       * @param string $closing_date The closing date for submitted worksheets.
     * @param string $description A description of the worksheet content.
     * @param string $userId The user id of the creator.
     * @param string $lastModified The time of creation.
     * @return
     */
-    public function insertWorkSheet($context, $chapter, $worksheet_name, $activity_status, $percentage, $closing_date, $description)
+    public function insertWorkSheet($context, $chapter, $worksheet_name, $activity_status, $classification, $closing_date, $description)
     {
         $id = $this->insert(array(
                 'context' => $context,
                 'chapter' => $chapter,
                 'name' => $worksheet_name,
                 'activity_status' => $activity_status,
-                'percentage' => $percentage,
+                'classification' => $classification,
                 'closing_date' => $closing_date,
                 'description' => $description,
                 'userid' => $this->objUser->userId(),
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time())));
+                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())));
         return $id;
     }
 
@@ -182,20 +182,19 @@ class dbworksheet extends dbTable
     * @param string $chapter The chapter or context node to add the worksheet to.
     * @param string $worksheet_name The name of the worksheet.
     * @param string $activity_status The status of the worksheet.
-    * @param string $percentage The percentage of the final mark that the worksheet counts.
-    * @param string $closing_date The closing date for submitted worksheets.
+       * @param string $closing_date The closing date for submitted worksheets.
     * @param string $description A description of the worksheet content.
     * @param string $userId The user id of the creator.
     * @param string $lastModified The time of creation.
     * @return
     */
-    public function updateWorkSheet($id, $chapter, $worksheet_name, $activity_status, $percentage, $closing_date, $description, $userId, $lastModified)
+    public function updateWorkSheet($id, $chapter, $worksheet_name, $activity_status, $classification, $closing_date, $description, $userId, $lastModified)
     {
         $this->update("id", $id, array(
                 'chapter' => $chapter,
                 'name' => $worksheet_name,
                 'activity_status' => $activity_status,
-                'percentage' => $percentage,
+                'classification' => $classification,
                 'closing_date' => $closing_date,
                 'description' => $description,
                 'userid' => $userId,

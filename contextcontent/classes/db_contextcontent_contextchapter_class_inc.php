@@ -83,7 +83,7 @@ class db_contextcontent_contextchapter extends dbtable {
      * @return string SQL statement
      */
     public function getContextChaptersSQL($context) {
-        $sql = 'SELECT tbl_contextcontent_chaptercontext.releasedate,tbl_contextcontent_chaptercontext.enddate, tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid, (Select count(id) FROM  tbl_contextcontent_order WHERE tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_order.chapterid) as pagecount
+        $sql = 'SELECT tbl_contextcontent_chaptercontext.releasedate,tbl_contextcontent_chaptercontext.enddate, tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontext.stage_gate_testid, tbl_contextcontent_chaptercontext.stage_gate_passmark, tbl_contextcontent_chaptercontext.stage_gate_enabled, tbl_contextcontent_chaptercontext.contextcode, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid, (Select count(id) FROM  tbl_contextcontent_order WHERE tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_order.chapterid) as pagecount
 FROM tbl_contextcontent_chaptercontext, tbl_contextcontent_chaptercontent
 WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chaptercontext.chapterid) AND tbl_contextcontent_chaptercontext.contextcode=\''.$context.'\' ORDER BY tbl_contextcontent_chaptercontext.chapterorder';
 
@@ -126,16 +126,26 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
     public function updateChapterEndDate($id,$enddate){
         return $this->update('id', $id, array('enddate'=>$enddate));
     }
+
+    /** Save the Contextcontent-owned placement rule for a chapter-end MCQ. */
+    public function updateChapterStageGate($id, $testId, $passMark, $enabled) {
+        return $this->update('id', $id, array(
+            'stage_gate_testid' => $testId,
+            'stage_gate_passmark' => $passMark,
+            'stage_gate_enabled' => $enabled
+        ));
+    }
     /**
      * Method to get the details of a chapter
      * @param string $chapterid Record Id of the Chapter
      * @return array Details of the chapter
      */
-    public function getChapter($chapterid) {
+    public function getChapter($chapterid, $contextcode = NULL) {
+        $contextFilter = $contextcode === NULL ? '' : ' AND tbl_contextcontent_chaptercontext.contextcode=\''.$contextcode.'\'';
         $sql = 'SELECT tbl_contextcontent_chaptercontext.releasedate,tbl_contextcontent_chaptercontext.enddate,
-            tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid
+            tbl_contextcontent_chaptercontext.visibility, tbl_contextcontent_chaptercontext.stage_gate_testid, tbl_contextcontent_chaptercontext.stage_gate_passmark, tbl_contextcontent_chaptercontext.stage_gate_enabled, tbl_contextcontent_chaptercontext.contextcode, tbl_contextcontent_chaptercontent. *, tbl_contextcontent_chaptercontext.id as contextchapterid
 FROM tbl_contextcontent_chaptercontext, tbl_contextcontent_chaptercontent, tbl_contextcontent_chapters
-WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chaptercontext.chapterid AND tbl_contextcontent_chaptercontext.chapterid = tbl_contextcontent_chapters.id) AND tbl_contextcontent_chapters.id=\''.$chapterid.'\' LIMIT 1';
+WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chaptercontext.chapterid AND tbl_contextcontent_chaptercontext.chapterid = tbl_contextcontent_chapters.id) AND tbl_contextcontent_chapters.id=\''.$chapterid.'\''.$contextFilter.' LIMIT 1';
 
         $results = $this->getArray($sql);
 

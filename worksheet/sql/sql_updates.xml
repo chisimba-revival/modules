@@ -1,16 +1,15 @@
-<DATA>
-<UPDATE>
-  <TABLE>
-       tbl_worksheet_questions
-  </TABLE>
-  <SQL>
-    ALTER TABLE tbl_worksheet_questions CHANGE question question text NOT NULL
-  </SQL>
-  <MODULE>
-    worksheet
-  </MODULE>
-  <VERSION>
-    1.1
-  </VERSION>
-</UPDATE>
-</DATA>
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<updates>
+    <update>
+        <table>tbl_worksheet</table>
+        <version>1.330</version>
+        <description>Add the missing Worksheet assessment classification field.</description>
+        <data>
+            <add>
+                <name>classification</name>
+                <type>text</type>
+                <length>16</length>
+            </add>
+        </data>
+    </update>
+</updates>

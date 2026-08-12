@@ -162,4 +162,14 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_contextcontent_chaptercontext</table>
+        <version>2.041</version>
+        <description>Add Contextcontent-owned chapter-end MCQ stage-gate placement fields</description>
+        <data>
+            <add><name>stage_gate_testid</name><type>text</type><length>32</length></add>
+            <add><name>stage_gate_passmark</name><type>integer</type><length>3</length></add>
+            <add><name>stage_gate_enabled</name><type>integer</type><length>1</length></add>
+        </data>
+    </update>
 </updates>

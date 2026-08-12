@@ -119,24 +119,30 @@ class gradebook extends controller {
                 }
                 return $this->nextAction(NULL, array('error'=>'noaccess'));
                 break;
-            case 'assessmentPlanAddMcq':
+            case 'assessmentPlanAddProvider':
                 if (!$this->mayManageAssessmentPlan()) {
                     return $this->nextAction(NULL, array('error'=>'noaccess'));
                 }
+                $providerKey = trim((string) $this->getParam('provider_key', ''));
                 $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
-                $adapter = $registry->adapter('mcqtests');
-                $this->setVar('assessmentPlanMcqTests', is_object($adapter) ? $adapter->listActivities($this->contextCode) : array());
+                $provider = $registry->get($providerKey);
+                $adapter = $this->assessmentPlanProviderAdapter($registry, $provider);
+                if ($provider === false || $adapter === false) {
+                    return $this->nextAction('assessmentPlan', array('planerror'=>'invalidprovider'));
+                }
+                $this->setVar('assessmentPlanProvider', $provider);
+                $this->setVar('assessmentPlanActivities', $adapter->listActivities($this->contextCode));
                 $this->setVar('assessmentPlanCsrf', $this->issuePlanCsrf());
-                return 'assessment_plan_add_mcq_tpl.php';
+                return 'assessment_plan_add_provider_tpl.php';
                 break;
-            case 'assessmentPlanSaveMcq':
+            case 'assessmentPlanSaveProvider':
                 if (!$this->mayManageAssessmentPlan()) {
                     return $this->nextAction(NULL, array('error'=>'noaccess'));
                 }
                 if (!$this->consumePlanCsrf((string) $this->getParam('csrf_token', ''))) {
                     return $this->nextAction('assessmentPlan', array('planerror'=>'invalidcsrf'));
                 }
-                return $this->saveMcqAssessmentPlanItem();
+                return $this->saveProviderAssessmentPlanItem();
                 break;
             case 'assessmentPlanRemoveItem':
                 if (!$this->mayManageAssessmentPlan()) {
@@ -321,34 +327,49 @@ class gradebook extends controller {
         return $expected !== '' && hash_equals($expected, $token);
     }
 
-    private function saveMcqAssessmentPlanItem()
+    /**
+     * A selectable provider must declare activity_selection and expose the
+     * two read-only adapter methods. This is the single add-button contract.
+     */
+    private function assessmentPlanProviderAdapter($registry, $provider)
     {
-        $testId = trim((string) $this->getParam('activity_id', ''));
-
-        if ($testId === '') {
-            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliditem'));
+        if (!is_array($provider)
+            || !in_array('activity_selection', (array) $provider['capabilities'], true)) {
+            return false;
         }
+        $adapter = $registry->adapter($provider['key']);
+        return is_object($adapter)
+            && is_callable(array($adapter, 'listActivities'))
+            && is_callable(array($adapter, 'getActivity')) ? $adapter : false;
+    }
 
+    private function saveProviderAssessmentPlanItem()
+    {
+        $providerKey = trim((string) $this->getParam('provider_key', ''));
+        $activityId = trim((string) $this->getParam('activity_id', ''));
         $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
-        $provider = $registry->get('mcqtests');
-        $adapter = $registry->adapter('mcqtests');
-        $activity = is_object($adapter) ? $adapter->getActivity($this->contextCode, $testId) : false;
-        if ($provider === false || !is_array($activity)) {
-            return $this->nextAction('assessmentPlanAddMcq', array('planerror'=>'invaliditem'));
+        $provider = $registry->get($providerKey);
+        $adapter = $this->assessmentPlanProviderAdapter($registry, $provider);
+        if ($activityId === '' || $provider === false || $adapter === false) {
+            return $this->nextAction('assessmentPlan', array('planerror'=>'invaliditem'));
+        }
+        $activity = $adapter->getActivity($this->contextCode, $activityId);
+        if (!is_array($activity) || empty($activity['name'])) {
+            return $this->nextAction('assessmentPlanAddProvider', array('provider_key'=>$providerKey, 'planerror'=>'invaliditem'));
         }
 
         $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
         $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
         $planId = $plans->ensureForContext($this->contextCode, $this->objUser->userId());
-        if (!$planId || $items->findByActivity($planId, 'mcqtests', $testId)) {
+        if (!$planId || $items->findByActivity($planId, $providerKey, $activityId)) {
             return $this->nextAction('assessmentPlan', array('planerror'=>'duplicateitem'));
         }
 
         $saved = $items->addItem(array(
             'plan_id' => $planId,
-            'provider_key' => 'mcqtests',
+            'provider_key' => $providerKey,
             'provider_module' => $provider['module_id'],
-            'activity_id' => $testId,
+            'activity_id' => $activityId,
             'name' => $activity['name'],
             'weight' => '0.000',
             'include_in_course_mark' => 'Y',

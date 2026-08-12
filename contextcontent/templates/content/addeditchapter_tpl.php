@@ -8,6 +8,7 @@ $this->loadClass('label', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
 $this->loadClass('htmlHeading','htmlelements');
 $this->loadClass('fieldset','htmlelements');
+$this->loadClass('dropdown', 'htmlelements');
 
 $header=new htmlheading();
 $header->type=1;
@@ -21,6 +22,10 @@ if ($mode == 'edit') {
 }
 
 $header->str=$areaTitle;
+if ($this->getParam('stage_gate_saved', '') === '1') {
+    echo '<div class="confirmation contextcontent-stage-gate-confirmation">'
+        .$this->objLanguage->languageText('mod_contextcontent_stage_gate_saved', 'contextcontent', 'Stage gate saved.').'</div>';
+}
 //echo '<p>Todo: Allow User to place order of chapter</p>';
 
 $form = new form ('addchapter', $this->uri(array('action'=>$formaction)));
@@ -99,6 +104,29 @@ $table->addRow(array(
 $table->startRow();
 $table->addCell("<br/>");
 $table->endRow();
+
+if ($mode == 'edit') {
+    $stageGateTests = isset($stageGateTests) && is_array($stageGateTests) ? $stageGateTests : array();
+    $stageGate = new radio('stage_gate_enabled');
+    $stageGate->addOption('0', ' '.$this->objLanguage->languageText('word_no', 'system', 'No'));
+    $stageGate->addOption('1', ' '.$this->objLanguage->languageText('word_yes', 'system', 'Yes'));
+    $stageGate->setSelected(!empty($chapter['stage_gate_enabled']) ? '1' : '0');
+    $stageGate->setBreakSpace(' &nbsp; ');
+    $testSelect = new dropdown('stage_gate_testid');
+    $testSelect->addOption('', $this->objLanguage->languageText('mod_contextcontent_stage_gate_choose_test', 'contextcontent'));
+    foreach ($stageGateTests as $stageGateTest) {
+        if (!empty($stageGateTest['id']) && isset($stageGateTest['name'])) {
+            $testSelect->addOption($stageGateTest['id'], $stageGateTest['name']);
+        }
+    }
+    $testSelect->setSelected(isset($chapter['stage_gate_testid']) ? $chapter['stage_gate_testid'] : '');
+    $passMark = new textinput('stage_gate_passmark');
+    $passMark->size = 3;
+    $passMark->value = !empty($chapter['stage_gate_passmark']) ? $chapter['stage_gate_passmark'] : '70';
+    $table->addRow(array($this->objLanguage->languageText('mod_contextcontent_stage_gate_enabled', 'contextcontent'), $stageGate->show()));
+    $table->addRow(array($this->objLanguage->languageText('mod_contextcontent_stage_gate_test', 'contextcontent'), $testSelect->show()));
+    $table->addRow(array($this->objLanguage->languageText('mod_contextcontent_stage_gate_passmark', 'contextcontent'), $passMark->show()));
+}
 
 
 //$label = new label ($this->objLanguage->languageText('mod_contextcontent_aboutchapter_introduction','contextcontent'), 'input_aboutchapter');

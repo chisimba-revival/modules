@@ -9,6 +9,7 @@ $this->loadClass('textarea', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
 $this->loadClass('hiddeninput', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
+$this->loadClass('confirm', 'utilities');
 
 /*
 $js = $this->getJavascriptFile('jquery/jquery.form.js', 'htmlelements');
@@ -21,7 +22,7 @@ $this->appendArrayVar('bodyOnLoad', $script);
 
 $preview = new link($this->uri(array('action'=>'preview', 'id'=>$worksheet['id'])));
 $preview->link = $this->objLanguage->languageText('mod_worksheet_preview', 'worksheet', 'Preview');
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$iconBase = $this->getResourceUri('icons/lucide/', 'ui');
 
 $header = new htmlheading();
 $header->type = 1;
@@ -33,7 +34,7 @@ $objStepMenu->addStep($this->objLanguage->languageText('mod_worksheet_addquestio
 $objStepMenu->addStep($this->objLanguage->languageText('mod_worksheet_activateworksheet', 'worksheet', 'Activate Worksheet'), $this->objLanguage->code2Txt('mod_worksheet_activateworksheet_desc', 'worksheet', NULL, 'Allow [-readonlys-] to start answering worksheet'), $this->uri(array('action'=>'activate', 'id'=>$id)));
 $objStepMenu->setCurrent(2);
 
-echo $objStepMenu->show();
+echo '<div class="worksheet-authoring-steps">'.$objStepMenu->show().'</div>';
 
 echo '<br />'.$header->show();
 if ($worksheet['activity_status'] != 'inactive') {
@@ -47,7 +48,6 @@ $table = $this->newObject('htmltable', 'htmlelements');
 $table->startRow();
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_closingdate', 'worksheet', 'Closing Date').'</strong>: '.$objDateTime->formatDate($worksheet['closing_date']), '55%');
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_questions', 'worksheet', 'Questions').'</strong>: '.(is_countable($questions) ? count($questions) : 0), '15%');
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_percentage', 'worksheet', 'Percentage').'</strong>: '.$worksheet['percentage'].'%', '15%');
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_totalmark', 'worksheet', 'Total Mark').'</strong>: '.$worksheet['total_mark'], '15%');
 $table->endRow();
 
@@ -61,8 +61,7 @@ echo '<div id="worksheetquestions">';
 if ((is_countable($questions) ? count($questions) : 0) > 0) {
     $counter = 1;
 
-    $objIcon->setIcon('edit');
-    $editIcon = $objIcon->show();
+    $editIcon = '<img src="'.$iconBase.'pencil.svg" width="18" height="18" alt="" aria-hidden="true" />';
 
     $deletephrase = $this->objLanguage->languageText('mod_worksheet_confirmdeletequestion', 'worksheet');
 
@@ -74,12 +73,14 @@ if ((is_countable($questions) ? count($questions) : 0) > 0) {
                     $questionLink = new link($this->uri(array('action'=>'editquestion', 'id'=>$question['id'])));
                     $questionLink->link = $editIcon;
 
-                    $deleteArray = array('action'=>'deletequestion', 'question'=>$question['id'], 'worksheet'=>$id);
+                    $deleteConfirm = new confirm();
+                    $deleteConfirm->setConfirm(
+                        '<img src="'.$iconBase.'trash-2.svg" width="18" height="18" alt="" aria-hidden="true" />',
+                        $this->uri(array('action'=>'deletequestion', 'question'=>$question['id'], 'worksheet'=>$id)),
+                        $deletephrase
+                    );
 
-
-                    $deleteIcon = $objIcon->getDeleteIconWithConfirm($question['id'], $deleteArray, 'worksheet', $deletephrase);
-
-                    echo '<div style="float:right;">'.$questionLink->show().' '.$deleteIcon.'</div>';
+                    echo '<div class="worksheet-question-actions"><span class="worksheet-icon-action">'.$questionLink->show().'</span><span class="worksheet-icon-action">'.$deleteConfirm->show().'</span></div>';
                 }
                 echo '<strong>'.$this->objLanguage->languageText('mod_worksheet_question', 'worksheet', 'Question').' '.$counter.':</strong><br />';
                 echo $this->objWashout->parseText($question['question']);

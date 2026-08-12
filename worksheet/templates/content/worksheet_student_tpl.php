@@ -23,8 +23,6 @@ $tableHd[]=$worksheet.' '.$objLanguage->languageText('mod_worksheet_wordname','w
 $tableHd[]=$objLanguage->languageText('mod_worksheet_chapter','worksheet');
 $tableHd[]=$objLanguage->languageText('mod_worksheet_questions','worksheet');
 $tableHd[]=$objLanguage->languageText('mod_worksheet_activitystatus','worksheet');
-$tableHd[]=$objLanguage->languageText('mod_worksheet_percentage','worksheet').' '.$objLanguage->languageText('mod_worksheet_of','worksheet')
-.' '.$objLanguage->languageText('mod_worksheet_yearmark','worksheet');
 $tableHd[]=$objLanguage->languageText('mod_worksheet_total','worksheet').' '
 .$objLanguage->languageText('mod_worksheet_mark','worksheet');
 $tableHd[]=$objLanguage->languageText('mod_worksheet_closingdate','worksheet');
@@ -84,7 +82,6 @@ foreach($ar as $line){
         $rows[] = $line['node'];
         $rows[] = $line['questions'];
         $rows[] = $objLanguage->languageText('mod_worksheet_activity'.$line['activity_status'],'worksheet');
-        $rows[] = $line['percentage'];
         $rows[] = $line['total_mark'];
         $rows[] = $date;
 
