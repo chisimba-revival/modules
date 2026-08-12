@@ -617,7 +617,22 @@ class contextcontent extends controller {
             $this->setVarByRef('chapter', $chapter);
             $this->setVarByRef('id', $id);
             $this->setVarByRef('currentChapter', $id);
-            $this->setVar('stageGateTests', $this->objMcqTests->getTests($this->contextCode));
+            $allStageGateTests = $this->objMcqTests->getTests($this->contextCode);
+            $stageGateTests = array();
+            $selectedStageGateIsInvalid = FALSE;
+            if (is_array($allStageGateTests)) {
+                foreach ($allStageGateTests as $stageGateTest) {
+                    if (isset($stageGateTest['testtype']) && $stageGateTest['testtype'] === 'Formative') {
+                        $stageGateTests[] = $stageGateTest;
+                    } elseif (!empty($chapter['stage_gate_testid'])
+                        && isset($stageGateTest['id'])
+                        && $stageGateTest['id'] === $chapter['stage_gate_testid']) {
+                        $selectedStageGateIsInvalid = TRUE;
+                    }
+                }
+            }
+            $this->setVar('stageGateTests', $stageGateTests);
+            $this->setVar('selectedStageGateIsInvalid', $selectedStageGateIsInvalid);
 
             $this->setVar('hideNavSwitch', TRUE);
             $this->setVar('currentPage', NULL);
@@ -677,6 +692,16 @@ class contextcontent extends controller {
         $stageGateEnabled = $stageGateTestId === '' ? 0 : 1;
         if ($stageGateEnabled && ($stageGatePassMark < 1 || $stageGatePassMark > 100)) {
             throw new InvalidArgumentException($this->objLanguage->languageText('mod_contextcontent_stage_gate_invalid', 'contextcontent'));
+        }
+        if ($stageGateEnabled) {
+            $stageGateTest = $this->objMcqTests->getTests($this->contextCode, 'id,testtype', $stageGateTestId);
+            if (!is_array($stageGateTest) || empty($stageGateTest[0])
+                || !isset($stageGateTest[0]['testtype'])
+                || $stageGateTest[0]['testtype'] !== 'Formative') {
+                throw new InvalidArgumentException(
+                    $this->objLanguage->languageText('mod_contextcontent_stage_gate_formative_required', 'contextcontent')
+                );
+            }
         }
         if (!$stageGateEnabled) { $stageGatePassMark = 0; }
         if ($id == '' || $chaptercontentid == '' || $contextchapterid == '') {
