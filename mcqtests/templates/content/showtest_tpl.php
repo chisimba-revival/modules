@@ -84,12 +84,20 @@ $objTable->endRow();
 
 $str = '<div style="width:450px; border: 1px solid black;">' . $objTable->show() . '</div>';
 
-if (!empty($stageGateReturnChapter) && !empty($stageGatePassMark)) {
+if ((!empty($stageGateReturnChapter) || !empty($stageGateCourseCompletion))
+    && !empty($stageGatePassMark)) {
     $stageGatePassed = $percent >= (float) $stageGatePassMark;
-    $stageGateUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
-    $stageGateLabel = $stageGatePassed
-        ? $this->objLanguage->languageText('mod_mcqtests_stage_gate_next_chapter', 'mcqtests')
-        : $this->objLanguage->languageText('mod_mcqtests_stage_gate_return_chapter', 'mcqtests');
+    if ($stageGatePassed && !empty($stageGateCourseCompletion)) {
+        $stageGateUrl = $this->uri(array('action' => 'coursecompletion'), 'contextcontent');
+        $stageGateLabel = $this->objLanguage->languageText('mod_mcqtests_stage_gate_course_completion', 'mcqtests');
+    } elseif ($stageGatePassed) {
+        $stageGateUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
+        $stageGateLabel = $this->objLanguage->languageText('mod_mcqtests_stage_gate_next_chapter', 'mcqtests');
+    } else {
+        $returnChapter = !empty($stageGateOriginChapter) ? $stageGateOriginChapter : $stageGateReturnChapter;
+        $stageGateUrl = $this->uri(array('action' => 'viewchapter', 'id' => $returnChapter), 'contextcontent');
+        $stageGateLabel = $this->objLanguage->languageText('mod_mcqtests_stage_gate_return_chapter', 'mcqtests');
+    }
     $str .= '<p class="mcqtests-stage-gate-result-action"><a href="'
         . htmlspecialchars($stageGateUrl, ENT_QUOTES, 'UTF-8') . '">'
         . htmlspecialchars($stageGateLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
