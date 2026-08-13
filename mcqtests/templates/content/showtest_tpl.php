@@ -237,9 +237,22 @@ $links = '';
 }
 else
 {
-    $objLink = new link($this->uri(array(
-        'action' => 'newhome',
-    ), 'mcqtests'));
+    $exitUrl = $this->uri(array('action' => 'newhome'), 'mcqtests');
+    if ((!empty($stageGateReturnChapter) || !empty($stageGateCourseCompletion))
+        && !empty($stageGatePassMark)) {
+        $stageGatePassed = $percent >= (float) $stageGatePassMark;
+        if ($stageGatePassed && !empty($stageGateCourseCompletion)) {
+            $exitUrl = $this->uri(array('action' => 'coursecompletion'), 'contextcontent');
+        } elseif ($stageGatePassed && !empty($stageGateReturnChapter)) {
+            $exitUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
+        } else {
+            $returnChapter = !empty($stageGateOriginChapter) ? $stageGateOriginChapter : $stageGateReturnChapter;
+            if (!empty($returnChapter)) {
+                $exitUrl = $this->uri(array('action' => 'viewchapter', 'id' => $returnChapter), 'contextcontent');
+            }
+        }
+    }
+    $objLink = new link($exitUrl);
     $objLink->link = $exitLabel;
     $links = $objLink->show();
 }
