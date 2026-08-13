@@ -98,6 +98,45 @@ class chapterstagegateservice extends controller
         return $best;
     }
 
+    /**
+     * Summarise chapter stage-gate progress for the current learner.  This is
+     * deliberately limited to Contextcontent-owned chapter progression; formal
+     * assessment completion belongs to the Gradebook assessment plan.
+     */
+    public function courseCompletionSummary($contextCode)
+    {
+        if (!$this->isGatedProgression($contextCode)) {
+            return array('complete' => FALSE, 'chapters' => array());
+        }
+        $chapters = $this->objContextChapters->getContextChapters($contextCode);
+        if (!is_array($chapters) || empty($chapters)) {
+            return array('complete' => FALSE, 'chapters' => array());
+        }
+        $summary = array();
+        $complete = TRUE;
+        foreach ($chapters as $chapter) {
+            $gate = $this->chapterGate($contextCode, $chapter['chapterid']);
+            if ($gate === FALSE) {
+                $summary[] = array(
+                    'chaptertitle' => $chapter['chaptertitle'],
+                    'gate' => FALSE,
+                    'bestpercentage' => NULL
+                );
+                continue;
+            }
+            $best = $this->bestPercentage($gate['testid'], $gate['totalmark']);
+            if ($best === NULL || $best < $gate['passmark']) {
+                $complete = FALSE;
+            }
+            $summary[] = array(
+                'chaptertitle' => $chapter['chaptertitle'],
+                'gate' => TRUE,
+                'bestpercentage' => $best === NULL ? 0 : $best
+            );
+        }
+        return array('complete' => $complete, 'chapters' => $summary);
+    }
+
     /** Return the chapter immediately following the supplied chapter, if any. */
     public function nextChapterId($contextCode, $chapterId)
     {
