@@ -284,6 +284,8 @@ class contextcontent extends controller {
                 return $this->viewChapter($this->getParam('id'));
             case 'startstagegatequiz':
                 return $this->startStageGateQuiz($this->getParam('id'));
+            case 'coursecompletion':
+                return $this->courseCompletion();
             case 'viewprintchapter':
                 return $this->viewPrintChapter($this->getParam('id'));
             case 'changenavigation':
@@ -1472,6 +1474,16 @@ class contextcontent extends controller {
      * @param string $id Record Id of the Chapter
      */
     /** Launch a configured chapter-end MCQ through its verified Contextcontent placement. */
+    protected function courseCompletion()
+    {
+        $summary = $this->objChapterStageGates->courseCompletionSummary($this->contextCode);
+        if (empty($summary['complete'])) {
+            return $this->nextAction('showcontextchapters');
+        }
+        $this->setVar('courseCompletionChapters', $summary['chapters']);
+        return 'coursecompletion_tpl.php';
+    }
+
     protected function startStageGateQuiz($chapterId) {
         $gate = $this->objChapterStageGates->chapterGate($this->contextCode, $chapterId);
         if ($gate === FALSE || !$this->objChapterStageGates->isGatedProgression($this->contextCode)) {
@@ -1479,11 +1491,14 @@ class contextcontent extends controller {
         }
         $params = array(
             'id' => $gate['testid'],
-            'stage_gate_passmark' => $gate['passmark']
+            'stage_gate_passmark' => $gate['passmark'],
+            'stage_gate_origin_chapter' => $chapterId
         );
         $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $chapterId);
         if (!empty($nextChapterId)) {
             $params['stage_gate_return_chapter'] = $nextChapterId;
+        } else {
+            $params['stage_gate_course_completion'] = '1';
         }
         $best = $this->objChapterStageGates->bestPercentage($gate['testid'], $gate['totalmark']);
         if ($best !== NULL && $best < $gate['passmark'] && strtolower((string) $gate['testtype']) === 'formative') {
