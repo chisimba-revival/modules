@@ -114,6 +114,7 @@ class chapterstagegateservice extends controller
         }
         $summary = array();
         $complete = TRUE;
+        $hasGate = FALSE;
         foreach ($chapters as $chapter) {
             $gate = $this->chapterGate($contextCode, $chapter['chapterid']);
             if ($gate === FALSE) {
@@ -124,6 +125,7 @@ class chapterstagegateservice extends controller
                 );
                 continue;
             }
+            $hasGate = TRUE;
             $best = $this->bestPercentage($gate['testid'], $gate['totalmark']);
             if ($best === NULL || $best < $gate['passmark']) {
                 $complete = FALSE;
@@ -134,7 +136,7 @@ class chapterstagegateservice extends controller
                 'bestpercentage' => $best === NULL ? 0 : $best
             );
         }
-        return array('complete' => $complete, 'chapters' => $summary);
+        return array('complete' => $complete && $hasGate, 'chapters' => $summary);
     }
 
     /** Return the chapter immediately following the supplied chapter, if any. */
