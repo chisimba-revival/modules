@@ -544,12 +544,14 @@ class mcqtests extends controller {
             case 'applyaddquestion':
                 $postSave = $this->getParam('save');
                 $id = $this->getParam('testId', '');
-                if ($postSave == $this->objLanguage->languageText('word_cancel')) {
+                // Stable machine intents form the controller contract; translated
+                // button labels remain accepted for existing browser consumers.
+                if ($postSave === 'cancel' || $postSave == $this->objLanguage->languageText('word_cancel')) {
                     return $this->nextAction('view', array(
                         'id' => $id
                     ));
                 }
-                if ($postSave == $this->objLanguage->languageText('word_save')) {
+                if ($postSave === 'save' || $postSave == $this->objLanguage->languageText('word_save')) {
                     $imgConfirm = $this->getParam('imageconfirm', '');
                     $hintConfirm = $this->getParam('enablehint', '');
                     $postMark = $this->getParam('mark', 0);
@@ -2641,7 +2643,15 @@ class mcqtests extends controller {
                 } else {
                     $data[$key]['totalmark'] = 'none';
                 }
-                if ($line['comlab'] != NULL) {
+                /*
+                 * CHISIMBA_MCQ_UNRESTRICTED_LAB_PHP85
+                 *
+                 * The persisted value 0 denotes no laboratory restriction.
+                 * Do not interpret it as a CSV filename.
+                 *
+                 * @author Derek Keats
+                 */
+                if (!empty($line['comlab']) && (string) $line['comlab'] !== '0') {
                     $arrLabIps = $this->getIps($line['comlab']);
                     $ipAddress = $_SERVER['REMOTE_ADDR'];
                     if (in_array($ipAddress, $arrLabIps)) {
@@ -2685,7 +2695,15 @@ class mcqtests extends controller {
                 } else {
                     $data[$key]['totalmark'] = 'none';
                 }
-                if ($line['comlab'] != NULL) {
+                /*
+                 * CHISIMBA_MCQ_UNRESTRICTED_LAB_PHP85
+                 *
+                 * The persisted value 0 denotes no laboratory restriction.
+                 * Do not interpret it as a CSV filename.
+                 *
+                 * @author Derek Keats
+                 */
+                if (!empty($line['comlab']) && (string) $line['comlab'] !== '0') {
                     $arrLabIps = $this->getIps($line['comlab']);
                     $ipAddress = $_SERVER['REMOTE_ADDR'];
                     if (in_array($ipAddress, $arrLabIps)) {
@@ -3316,9 +3334,22 @@ class mcqtests extends controller {
         }
         $file = $fileLocation . $comLab . '.csv';
         $arrIpAddresses = array();
-        $fp = fopen($file, 'r');
-        while ($line = fgetcsv($fp, 1024, ",")) {
-            $arrIpAddresses[] = $line[0];
+        /*
+         * CHISIMBA_MCQ_LAB_FILE_GUARD_PHP85
+         *
+         * A configured laboratory file may be absent or temporarily unreadable.
+         * Return an empty allow-list instead of passing false to fgetcsv().
+         *
+         * @author Derek Keats
+         */
+        $fp = @fopen($file, 'r');
+        if (!is_resource($fp)) {
+            return $arrIpAddresses;
+        }
+        while (($line = fgetcsv($fp, 1024, ",")) !== FALSE) {
+            if (isset($line[0]) && $line[0] !== '') {
+                $arrIpAddresses[] = $line[0];
+            }
         }
         fclose($fp);
         return $arrIpAddresses;
