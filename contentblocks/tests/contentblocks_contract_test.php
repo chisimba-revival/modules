@@ -26,6 +26,7 @@ $root = dirname(__DIR__);
 $register = file_get_contents($root . '/register.conf');
 $base = file_get_contents($root . '/classes/contentblockbase_class_inc.php');
 $controller = file_get_contents($root . '/controller.php');
+$template = file_get_contents($root . '/templates/content/manage_tpl.php');
 $db = file_get_contents($root . '/classes/dbcontentblocks_class_inc.php');
 $checks = array(
     'context aware' => str_contains($register, 'CONTEXT_AWARE: 1'),
@@ -39,6 +40,10 @@ $checks = array(
     'manifest author' => str_contains($register, 'MODULE_AUTHORS: Derek Keats'),
     'clear placement labels' => str_contains($register, 'TEXT: mod_contentblocks_wide|Wide main-content label|Wide (main content)')
         && str_contains($register, 'TEXT: mod_contentblocks_normal|Side-column label|Side column'),
+    'single-encoded action routes' => str_contains($template, 'html_entity_decode') && str_contains($template, '$moduleUrl(') && !str_contains($template, '$e($this->uri'),
+    'File Manager image picker' => str_contains($template, 'ChisimbaFilePickerReceive') && str_contains($template, '\'policy\' => \'image\'') && str_contains($template, 'readonly id="contentblocks-image-url"'),
+    'failed save is reported' => str_contains($controller, 'if (!$row)') && str_contains($controller, 'text(\'savefailed\')'),
+    'distinct block types' => str_contains($controller, 'if ($type === \'hero\')') && str_contains($template, 'contentblocks-hero-only') && str_contains($template, 'contentblocks-type-help'),
     'context plugin declaration' => str_contains($register, 'ISCONTEXTPLUGIN: 1'),
     'lecturer manifest rule' => str_contains($register, 'CONDITION: iscontextlecturer|Lecturers')
         && str_contains($register, 'RULE: manage,save,delete|iscontextlecturer'),

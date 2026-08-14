@@ -82,6 +82,68 @@ class dbcontentblocks extends dbTable
         return $rows;
     }
 
+    /**
+     * Return one block using the legacy Content blocks contract.
+     *
+     * @param string $id Content block identifier
+     *
+     * @return array|false Block row or false when it does not exist
+     */
+    public function getBlock($id)
+    {
+        $rows = $this->getBlockById($id);
+        return $rows ? $rows[0] : false;
+    }
+
+    /**
+     * Return a block in the array shape expected by legacy consumers.
+     *
+     * @param string $id Content block identifier
+     *
+     * @return array List containing zero or one block
+     */
+    public function getBlockById($id)
+    {
+        $row = $this->find($id);
+        return $row ? array($this->legacyRow($row)) : array();
+    }
+
+    /**
+     * Return site blocks in the array shape expected by prelogin/postlogin.
+     *
+     * @param string $blockType Legacy type: content_text or content_widetext
+     *
+     * @return array|null Matching blocks, or null when none exist
+     */
+    public function getBlocksArr($blockType)
+    {
+        $width = $blockType === 'content_widetext' ? 'wide' : 'side';
+        $rows = array();
+        foreach ($this->forScope('site') as $row) {
+            $rowWidth = ($row['blockwidth'] ?? '') === 'normal' ? 'side' : ($row['blockwidth'] ?? '');
+            if ($rowWidth === $width) {
+                $rows[] = $this->legacyRow($row);
+            }
+        }
+        return $rows ?: null;
+    }
+
+    /**
+     * Add legacy aliases without changing the new database schema.
+     *
+     * @param array $row New Content blocks row
+     *
+     * @return array Row with legacy aliases
+     */
+    private function legacyRow(array $row)
+    {
+        $wide = ($row['blockwidth'] ?? '') === 'wide';
+        $row['blockid'] = $wide ? 'content_widetext' : 'content_text';
+        $row['blocktext'] = $row['body_html'] ?? '';
+        $row['css_id'] = '';
+        $row['css_class'] = '';
+        return $row;
+    }
     public function saveBlock(array $data, $userId, $id = '')
     {
         $now = date('Y-m-d H:i:s');

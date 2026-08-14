@@ -76,7 +76,7 @@ class contentblockbase extends ChisimbaObject
         $tag = $kind === 'hero' ? 'section' : 'article';
         $heading = $kind === 'hero' ? 'h1' : 'h2';
         $html = '<' . $tag . ' class="content-block content-block--' . $kind . '">';
-        if ($image !== '') {
+        if ($kind === 'hero' && $image !== '') {
             $html .= '<img class="content-block__image" src="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '" alt="">';
         }
         $html .= '<div class="content-block__inner">';
@@ -84,7 +84,7 @@ class contentblockbase extends ChisimbaObject
             $html .= '<' . $heading . ' class="content-block__title">' . $title . '</' . $heading . '>';
         }
         $html .= '<div class="content-block__body">' . $body . '</div>';
-        if ($actionUrl !== '' && $actionLabel !== '') {
+        if ($kind === 'hero' && $actionUrl !== '' && $actionLabel !== '') {
             $html .= '<a class="content-block__action" href="' . htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8') . '">' . $actionLabel . '</a>';
         }
         $html .= '</div></' . $tag . '>';

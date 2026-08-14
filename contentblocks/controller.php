@@ -147,7 +147,7 @@ class contentblocks extends controller
             }
         }
         $labels = array();
-        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','information','width','wide','normal','blocktitle','showtitle','body','imageurl','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
+        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','herodesc','information','informationdesc','width','wide','normal','blocktitle','showtitle','body','imageurl','imagehelp','chooseimage','removeimage','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
             $labels[$key] = $this->text($key);
         }
         $this->setVar('contentblocksLabels', $labels);
@@ -182,6 +182,14 @@ class contentblocks extends controller
         $title = trim((string)$this->getParam('title', ''));
         $image = $this->safeUrl($this->getParam('image_url', ''));
         $action = $this->safeUrl($this->getParam('action_url', ''));
+        $actionLabel = trim((string)$this->getParam('action_label', ''));
+        if ($type === 'hero') {
+            $width = 'wide';
+        } else {
+            $image = '';
+            $actionLabel = '';
+            $action = '';
+        }
         if ($title === '' || !in_array($type, array('hero','information'), true) || !in_array($width, array('wide','normal'), true) || $image === false || $action === false) {
             $this->flash($this->text('invalid'));
             return $this->redirectManage($scope);
@@ -194,11 +202,15 @@ class contentblocks extends controller
             'title' => $title,
             'body_html' => (string)$this->getParam('body_html', ''),
             'image_url' => $image,
-            'action_label' => trim((string)$this->getParam('action_label', '')),
+            'action_label' => $actionLabel,
             'action_url' => $action,
             'show_title' => $this->getParam('show_title', '') === '1' ? '1' : '0',
         ), $this->user->userId(), $id);
-        if ($row && !$old) {
+        if (!$row) {
+            $this->flash($this->text('savefailed'));
+            return $this->redirectManage($scope);
+        }
+        if (!$old) {
             $registry = $this->getObject('dbmoduleblocks', 'modulecatalogue');
             $registry->addBlock('contentblocks', $row['blockkey'], $row['blockwidth'], $row['scope'] === 'context' ? 'context' : 'site');
         }
