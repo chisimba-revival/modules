@@ -25,15 +25,26 @@
 /**
  * Database gateway for reusable content blocks.
  *
- *  Chisimba
- *   contentblocks
- *    Derek Keats
+ * @category Chisimba
+ * @package  contentblocks
+ * @author   Derek Keats
  */
 class dbcontentblocks extends dbTable
 {
-    public function init()
+    /**
+     * Initialise the content-block database gateway.
+     *
+     * The signature deliberately matches dbTable::init() for PHP 8 compatibility.
+     *
+     * @param string|null     $tableName     Parent-compatible table-name argument
+     * @param mixed           $pearDb        Existing database connection, when supplied
+     * @param callable|string $errorCallback Database error callback
+     *
+     * @return void
+     */
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
-        parent::init('tbl_contentblocks');
+        parent::init('tbl_contentblocks', $pearDb, $errorCallback);
     }
 
     public function find($id)

@@ -25,9 +25,9 @@
 /**
  * Controls site and course content-block administration.
  *
- *  Chisimba
- *   contentblocks
- *    Derek Keats
+ * @category Chisimba
+ * @package  contentblocks
+ * @author   Derek Keats
  */
 class contentblocks extends controller
 {

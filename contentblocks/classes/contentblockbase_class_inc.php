@@ -25,9 +25,9 @@
 /**
  * Renders database-backed Hero and Information blocks.
  *
- *  Chisimba
- *   contentblocks
- *    Derek Keats
+ * @category Chisimba
+ * @package  contentblocks
+ * @author   Derek Keats
  */
 class contentblockbase extends ChisimbaObject
 {
