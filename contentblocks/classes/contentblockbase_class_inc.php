@@ -1,139 +1,71 @@
 <?php
-// security check - must be included in all scripts
-if (!$GLOBALS['kewl_entry_point_run'])
-{
-	die("You cannot view this page directly");
-}
-// end security check
-
-/**
-* 
-* The class provides a base content block for use by all
-* contentblocks to render their contents
-*
-* @author Paul Mungai
-*
-*/
 class contentblockbase extends ChisimbaObject
 {
-    public $title;
-    private $objDb;
-    private $objLanguage;
-    public $blockContents;
-    
-    /**
-    * Constructor for the class
-    */
+    private $db;
+    private $washout;
+
     public function init()
     {
-    	//Create an instance of the contentblocks DBtable object
-        $this->objDb = $this->getObject("dbcontentblocks", "contentblocks");
-        //Create an instance of the language object
-        $this->objLanguage = &$this->getObject("language", "language");
-        // Don't wrap content block titles.
-        $this->wrapStr = FALSE;
+        $this->db = $this->getObject('dbcontentblocks', 'contentblocks');
+        $this->washout = $this->getObject('washout', 'utilities');
+        $href = htmlspecialchars($this->getResourceUri('contentblocks.css', 'contentblocks'), ENT_QUOTES, 'UTF-8');
+        $this->appendArrayVar('headerParams', '<link rel="stylesheet" href="' . $href . '">');
     }
-    
-    /**
-    * Method to render the block with the text item
-    * @param string $textItem The content to render
-    * @access public
-    *
-    */
-    public function setData($textItem)
+
+    private function currentContext()
     {
-        $ar = $this->objDb->getRow("blockid", $textItem);
-        
-        if ((is_countable($ar) ? count($ar) : 0) > 0 ) {
-            $this->showTitle = $ar['show_title'];
-            if ($this->showTitle=="1") {
-                $this->title = $ar['title'];
-            } else {
-                $this->title = FALSE;
-            }
-            $cssId="";
-            $cssClass="";
-            $divEnd ="";
-            $divStart = "";
-            $useDiv = FALSE;
-            $this->cssId = $ar['css_id'];
-            if ($this->cssId !== "" && $this->cssId !== NULL) {
-                $cssId = " id='$this->cssId' ";
-                $useDiv = TRUE;
-            }
-            $this->cssClass = $ar['css_class'];
-            if ($this->cssClass !==""  && $this->cssClass !== NULL) {
-                $cssClass=" class='$this->cssClass'";
-                $useDiv = TRUE;
-            }
-            $objWashout = $this->getObject("washout", "utilities");
-            $ret = $objWashout->parseText($ar['blocktext']);
-            if ($useDiv) {
-                $ret = "<div $cssClass>$ret</div>";
-            }
-            $this->blockContents = $ret;
-        } else {
-            $this->title = $textItem;
-            $this->blockContents = $this->objLanguage->languageText("mod_contentblocks_nocontent", "contentblocks");
+        try {
+            return (string)$this->getObject('dbcontext', 'context')->getContextCode();
+        } catch (Throwable $e) {
+            return '';
         }
-        return TRUE;
     }
-    /**
-     * Method to render the block with the text item
-     * @param string $id Unique identifier of the content to render
-     * @access public
-     *
-     */
-    public function setDataArr($id) {
-        $arrData = array();
-        $arrData = $this->objDb->getBlockById($id);        
-        
-        if ((is_countable($arrData) ? count($arrData) : 0) > 0) {
-            $ar = $arrData[0];
-            $this->showTitle = $ar['show_title'];
-            if ($this->showTitle == "1") {
-                $this->title = $ar['title'];
-            } else {
-                $this->title = FALSE;
-            }
-            $cssId = "";
-            $cssClass = "";
-            $divEnd = "";
-            $divStart = "";
-            $useDiv = FALSE;
-            $this->cssId = $ar['css_id'];
-            if ($this->cssId !== "" && $this->cssId !== NULL) {
-                $cssId = " id='$this->cssId' ";
-                $useDiv = TRUE;
-            }
-            $this->cssClass = $ar['css_class'];
-            if ($this->cssClass !== "" && $this->cssClass !== NULL) {
-                $cssClass = " class='$this->cssClass'";
-                $useDiv = TRUE;
-            }
-            $objWashout = $this->getObject("washout", "utilities");
-            $ret = $objWashout->parseText($ar['blocktext']);
-            if ($useDiv) {
-                $ret = "<div $cssClass>$ret</div>";
-            }
-            $this->blockContents = $ret;
-            $dataArr = array(
-                "cssId" => $this->cssId,
-                "cssClass" => $this->cssClass,
-                "title" => $this->title,
-                "blockContents" => $this->blockContents,
-                "show_title" => $ar["show_title"],
-                "blockType" => $ar["show_title"],
-            );
-        } else {
-            $this->title = $id;
-            $this->blockContents = $this->objLanguage->languageText("mod_contentblocks_nocontent", "contentblocks");
-            $dataArr = array(
-                "title" => $this->title,
-                "blockContents" => $this->blockContents
-            );
+
+    private function safeUrl($url)
+    {
+        $url = trim((string)$url);
+        if ($url === '' || str_starts_with($url, '/')) {
+            return $url;
         }
-        return $dataArr;
+        $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
+        return in_array($scheme, array('http', 'https'), true) ? $url : '';
+    }
+
+    public function setDataArr($blockKey)
+    {
+        $row = $this->db->findByKey($blockKey);
+        if (!$row || (($row['scope'] ?? '') === 'context' && ($row['contextcode'] ?? '') !== $this->currentContext())) {
+            return array('title' => $blockKey, 'blockContents' => '');
+        }
+        $title = htmlspecialchars((string)$row['title'], ENT_QUOTES, 'UTF-8');
+        $body = $this->washout->parseText((string)($row['body_html'] ?? ''));
+        $image = $this->safeUrl($row['image_url'] ?? '');
+        $actionUrl = $this->safeUrl($row['action_url'] ?? '');
+        $actionLabel = htmlspecialchars((string)($row['action_label'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $kind = ($row['blocktype'] ?? '') === 'hero' ? 'hero' : 'information';
+        $tag = $kind === 'hero' ? 'section' : 'article';
+        $heading = $kind === 'hero' ? 'h1' : 'h2';
+        $html = '<' . $tag . ' class="content-block content-block--' . $kind . '">';
+        if ($image !== '') {
+            $html .= '<img class="content-block__image" src="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '" alt="">';
+        }
+        $html .= '<div class="content-block__inner">';
+        if (($row['show_title'] ?? '1') === '1') {
+            $html .= '<' . $heading . ' class="content-block__title">' . $title . '</' . $heading . '>';
+        }
+        $html .= '<div class="content-block__body">' . $body . '</div>';
+        if ($actionUrl !== '' && $actionLabel !== '') {
+            $html .= '<a class="content-block__action" href="' . htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8') . '">' . $actionLabel . '</a>';
+        }
+        $html .= '</div></' . $tag . '>';
+        return array(
+            'title' => false,
+            'blockContents' => $html,
+            'blockType' => 'none',
+            'cssClass' => '',
+            'cssId' => '',
+            'show_title' => 0,
+        );
     }
 }
 ?>
