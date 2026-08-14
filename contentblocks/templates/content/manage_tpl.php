@@ -62,14 +62,13 @@ $this->appendArrayVar('headerParams', $pickerScript);
           <div><strong><?= $e($row['title']) ?></strong><br><small><?= $e($l['key']) ?>: <code><?= $e($row['blockkey']) ?></code></small></div>
           <div class="contentblocks-actions">
             <a href="<?= $e($moduleUrl(array('action'=>'manage','scope'=>$contentblocksScope,'id'=>$row['id']))) ?>"><?= $e($l['edit']) ?></a>
-            <form method="post" action="<?= $e($moduleUrl(array('action'=>'delete','scope'=>$contentblocksScope))) ?>" onsubmit="return confirm(<?= $e(json_encode($l['confirmdelete'])) ?>
+            <form method="post" action="<?= $e($moduleUrl(array())) ?>" onsubmit="return confirm(<?= $e(json_encode($l['confirmdelete'])) ?>)">
               <input type="hidden" name="action" value="delete">
-              <input type="hidden" name="scope" value="<?= $e($contentblocksScope) ?>">)">
+              <input type="hidden" name="scope" value="<?= $e($contentblocksScope) ?>">
               <input type="hidden" name="csrf_token" value="<?= $e($contentblocksCsrf) ?>">
               <input type="hidden" name="id" value="<?= $e($row['id']) ?>">
               <button type="submit"><?= $e($l['delete']) ?></button>
-            </form>
-          </div>
+            </form>          </div>
         </article>
       <?php endforeach; ?>
     </section>

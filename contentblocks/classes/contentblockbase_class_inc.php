@@ -64,6 +64,11 @@ class contentblockbase extends ChisimbaObject
     public function setDataArr($blockKey)
     {
         $row = $this->db->findByKey($blockKey);
+        if (!$row) {
+            // Legacy page editors store the content row id, while newer
+            // registrations store blockkey. Both identify the same block.
+            $row = $this->db->find($blockKey);
+        }
         if (!$row || (($row['scope'] ?? '') === 'context' && ($row['contextcode'] ?? '') !== $this->currentContext())) {
             return array('title' => $blockKey, 'blockContents' => '');
         }
