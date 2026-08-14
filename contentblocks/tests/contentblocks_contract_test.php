@@ -37,6 +37,8 @@ $checks = array(
     'dbTable init signature' => str_contains($db, 'public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")')
         && str_contains($db, 'parent::init(\'tbl_contentblocks\', $pearDb, $errorCallback)'),
     'manifest author' => str_contains($register, 'MODULE_AUTHORS: Derek Keats'),
+    'clear placement labels' => str_contains($register, 'TEXT: mod_contentblocks_wide|Wide main-content label|Wide (main content)')
+        && str_contains($register, 'TEXT: mod_contentblocks_normal|Side-column label|Side column'),
     'context plugin declaration' => str_contains($register, 'ISCONTEXTPLUGIN: 1'),
     'lecturer manifest rule' => str_contains($register, 'CONDITION: iscontextlecturer|Lecturers')
         && str_contains($register, 'RULE: manage,save,delete|iscontextlecturer'),
