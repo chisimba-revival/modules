@@ -35,6 +35,10 @@ $checks = array(
         && !str_contains($template, "</div><hr />';"),
     'icon buttons are accessible' => str_contains($template, 'chisimba-chapter-order-button')
         && str_contains($template, 'aria-label='),
+    'ordering uses registered icons' => str_contains($template, "render('chevron-left'")
+        && str_contains($template, "render('chevron-right'")
+        && !str_contains($template, "render('arrow-up'")
+        && !str_contains($template, "render('arrow-down'"),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: $name\n"); exit(1); }

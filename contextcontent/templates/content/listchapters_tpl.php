@@ -42,8 +42,8 @@ $addIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $addPageIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $chapterIcon = $objIconService->render('book-open', array('decorative' => TRUE));
 $contextContentCsrf = isset($contextContentCsrf) ? (string) $contextContentCsrf : '';
-$moveUpIcon = $objIconService->render('arrow-up', array('decorative' => TRUE));
-$moveDownIcon = $objIconService->render('arrow-down', array('decorative' => TRUE));
+$moveUpIcon = $objIconService->render('chevron-left', array('decorative' => TRUE));
+$moveDownIcon = $objIconService->render('chevron-right', array('decorative' => TRUE));
 $moveUpLabel = $this->objLanguage->languageText(
     'mod_contextcontent_movechapterup',
     'contextcontent',
