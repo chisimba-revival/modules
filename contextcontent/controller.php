@@ -488,6 +488,9 @@ class contextcontent extends controller {
         } else {
             $chapters = $this->objContextChapters->getContextChapters($this->contextCode);
             $this->setVarByRef('chapters', $chapters);
+            if ($this->isValid('movechapterup') || $this->isValid('movechapterdown')) {
+                $this->prepareMutationForm();
+            }
 
             $this->setVar('showScrollLinks', TRUE);
 

@@ -41,6 +41,32 @@ $deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
 $addIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $addPageIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $chapterIcon = $objIconService->render('book-open', array('decorative' => TRUE));
+$contextContentCsrf = isset($contextContentCsrf) ? (string) $contextContentCsrf : '';
+$moveUpIcon = $objIconService->render('arrow-up', array('decorative' => TRUE));
+$moveDownIcon = $objIconService->render('arrow-down', array('decorative' => TRUE));
+$moveUpLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_movechapterup',
+    'contextcontent',
+    'Move Chapter Up'
+);
+$moveDownLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_movechapterdown',
+    'contextcontent',
+    'Move Chapter Down'
+);
+$chapterOrderForm = function ($action, $chapterId, $label, $icon) use ($contextContentCsrf) {
+    $escape = function ($value) {
+        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    };
+    return '<form method="post" class="chisimba-chapter-order-form" action="'
+        . $escape($this->uri(array('action' => $action))) . '">'
+        . '<input type="hidden" name="csrf_token" value="'
+        . $escape($contextContentCsrf) . '" />'
+        . '<input type="hidden" name="id" value="' . $escape($chapterId) . '" />'
+        . '<button type="submit" class="chisimba-chapter-order-button" aria-label="'
+        . $escape($label) . '" title="' . $escape($label) . '">'
+        . $icon . '</button></form>';
+};
 
 // Retain the legacy icon object only for auxiliary actions not yet migrated.
 $objIcon = $this->newObject('geticon', 'htmlelements');
@@ -365,23 +391,24 @@ foreach ($chapters as $chapter) {
             $addPageLink = new link($this->uri(array('action' => 'addcontent', 'chapter' => $chapter['chapterid'])));
             $addPageLink->link = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter', 'contextcontent');
 
-            $moveUpLink = new stdClass();
-            $moveUpLink->show = function () { return ''; };
-            $moveDownLink = new stdClass();
-            $moveDownLink->show = function () { return ''; };
-
-            //$content .= '<br />';
-
-            if ($this->isValid('addpage')) {
-                //$content .= $addPageLink->show();
+            if ((is_countable($chapters) ? count($chapters) : 0) > 1
+                && $counter > 1 && $this->isValid('movechapterup')) {
+                $chapterOptions[] = $chapterOrderForm(
+                    'movechapterup',
+                    $chapter['chapterid'],
+                    $moveUpLabel,
+                    $moveUpIcon
+                );
             }
 
-            if ((is_countable($chapters) ? count($chapters) : 0) > 1 && $counter > 1 && $this->isValid('movechapterup')) {
-                // Reordering is exposed only through a POST form in the content manager.
-            }
-
-            if ($counter < (is_countable($chapters) ? count($chapters) : 0) && $this->isValid('movechapterdown')) {
-                // Reordering is exposed only through a POST form in the content manager.
+            if ($counter < (is_countable($chapters) ? count($chapters) : 0)
+                && $this->isValid('movechapterdown')) {
+                $chapterOptions[] = $chapterOrderForm(
+                    'movechapterdown',
+                    $chapter['chapterid'],
+                    $moveDownLabel,
+                    $moveDownIcon
+                );
             }
 
             if ($chapterContents !== '') {
@@ -390,15 +417,13 @@ foreach ($chapters as $chapter) {
 
             if ((is_countable($chapterOptions) ? count($chapterOptions) : 0) > 0) {
                 $content .= '<div class="chisimba-chapter-order-actions">';
-                $divider = '';
                 foreach ($chapterOptions as $option) {
-                    $content .= $divider . $option;
-                    $divider = ' / ';
+                    $content .= $option;
                 }
                 $content .= '</div>';
             }
         }
-        $chapterList .= '<div class="chapterlisting">' . $content . '</div><hr />';
+        $chapterList .= '<section class="chapterlisting">' . $content . '</section>';
     }
 
     $counter++;
