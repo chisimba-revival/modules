@@ -2,28 +2,41 @@
 $ret ="";
 $this->loadClass('link', 'htmlelements');
 $this->loadClass('htmlheading', 'htmlelements');
-$objIcon = $this->newObject('geticon', 'htmlelements');
-$objIcon->align = 'absmiddle';
-$objIcon->setIcon('edit');
-$editIcon = $objIcon->show();
-$objIcon->setIcon('delete');
-$deleteIcon = $objIcon->show();
-$objIcon->setIcon('create_page');
-$objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter','contextcontent');
-$objIcon->title = $this->objLanguage->languageText('mod_contextcontent_addapagetothischapter','contextcontent');
-$addPageIcon = $objIcon->show();
-$objIcon->setIcon('add_multiple');
-$objIcon->alt = $this->objLanguage->languageText('mod_contextcontent_createpagefromfile','contextcontent','Create page from file');
-$objIcon->title =$this->objLanguage->languageText('mod_contextcontent_createpagefromfile','contextcontent','Create page from file');
-$addPageFromFileIcon = $objIcon->show();
+/* CHISIMBA NATIVE EMPTY-CHAPTER ACTIONS */
+$objIconService = $this->getObject('iconservice', 'ui');
+$editLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_editchapter',
+    'contextcontent',
+    'Edit Chapter'
+);
+$deleteLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_deletechapter',
+    'contextcontent',
+    'Delete Chapter'
+);
+$addPageLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_addapagetothischapter',
+    'contextcontent',
+    'Add a Page to this Chapter'
+);
+$editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
+$deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
+$addPageIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $editLink = new link($this->uri(array('action'=>'editchapter', 'id'=>$chapter['chapterid'])));
 $editLink->link = $editIcon;
+$editLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-edit';
+$editLink->extra = ' aria-label="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8')
+    . '" title="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '"';
 $deleteLink = new link($this->uri(array('action'=>'deletechapter', 'id'=>$chapter['chapterid'])));
 $deleteLink->link = $deleteIcon;
+$deleteLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-delete';
+$deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8')
+    . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
 $addPageLink = new link($this->uri(array('action'=>'addpage', 'chapter'=>$chapter['chapterid'])));
 $addPageLink->link = $addPageIcon;
-$addPageFromFileLink = new link($this->uri(array('action'=>'addpagefromfile', 'chapterid'=>$chapter['chapterid'])));
-$addPageFromFileLink->link = $addPageFromFileIcon;
+$addPageLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-add';
+$addPageLink->extra = ' aria-label="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8')
+    . '" title="' . htmlspecialchars($addPageLabel, ENT_QUOTES, 'UTF-8') . '"';
 $chapters = $this->objContextChapters->getContextChapters($this->contextCode);
 $this->setVarByRef('chapters', $chapters);
 $this->setLayoutTemplate('layout_firstpage_tpl.php');

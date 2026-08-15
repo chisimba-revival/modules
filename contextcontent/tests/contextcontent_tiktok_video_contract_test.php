@@ -21,7 +21,10 @@ $view = file_get_contents($root . '/templates/content/viewpage_tpl.php');
 $register = file_get_contents($root . '/register.conf');
 
 $checks = array(
-    'version records the new page type' => str_contains($register, 'MODULE_VERSION: 2.052'),
+    'manifest records the new page type' => str_contains(
+        $register,
+        'UPDATE_DESCRIPTION: Added dedicated portrait TikTok learning-content pages'
+    ),
     'TikTok is an independent registered page type' => str_contains($registry, "'key' => 'tiktok_video'"),
     'palette uses an available semantic icon' => str_contains($registry, "'icon' => 'smartphone'"),
     'service accepts canonical post URLs' => str_contains($service, "video/([0-9]{10,24})"),
