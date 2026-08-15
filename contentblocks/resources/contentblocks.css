@@ -30,3 +30,17 @@
 .content-block.content-block--hero .content-block__body {
     color: inherit;
 }
+
+/**
+ * Preserve a small rhythm between adjacent semantic Content blocks.
+ *
+ * Canvas placement rules remove legacy block margins. This important logical
+ * margin restores spacing only when one Content block immediately follows
+ * another, without changing either component's width or internal layout.
+ *
+ * @author Derek Keats
+ */
+.content-block.content-block--hero + .content-block,
+.content-block.content-block--information + .content-block {
+    margin-block-start: 0.75rem !important;
+}
