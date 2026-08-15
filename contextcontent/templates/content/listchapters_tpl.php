@@ -395,7 +395,7 @@ foreach ($chapters as $chapter) {
                 && $counter > 1 && $this->isValid('movechapterup')) {
                 $chapterOptions[] = $chapterOrderForm(
                     'movechapterup',
-                    $chapter['chapterid'],
+                    $chapter['contextchapterid'],
                     $moveUpLabel,
                     $moveUpIcon
                 );
@@ -405,7 +405,7 @@ foreach ($chapters as $chapter) {
                 && $this->isValid('movechapterdown')) {
                 $chapterOptions[] = $chapterOrderForm(
                     'movechapterdown',
-                    $chapter['chapterid'],
+                    $chapter['contextchapterid'],
                     $moveDownLabel,
                     $moveDownIcon
                 );

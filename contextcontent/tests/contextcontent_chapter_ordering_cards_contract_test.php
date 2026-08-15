@@ -27,6 +27,9 @@ $checks = array(
         && str_contains($template, 'chisimba-chapter-order-actions'),
     'both directions are restored' => str_contains($template, "'movechapterup'")
         && str_contains($template, "'movechapterdown'"),
+    'ordering submits placement IDs' => substr_count($template, "\$chapter['contextchapterid']") === 2
+        && !str_contains($template, "'movechapterup',\n                    \$chapter['chapterid']")
+        && !str_contains($template, "'movechapterdown',\n                    \$chapter['chapterid']"),
     'boundary checks remain' => str_contains($template, '$counter > 1')
         && str_contains($template, '$counter < (is_countable($chapters)'),
     'empty ordering stubs are gone' => !str_contains($template, 'new stdClass()')
