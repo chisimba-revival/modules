@@ -23,6 +23,8 @@ $checks = array(
     'ordering uses POST forms' => str_contains($template, 'method="post"')
         && str_contains($template, "name=\"csrf_token\"")
         && str_contains($template, "name=\"id\""),
+    'ordering action is encoded exactly once' => str_contains($template, "\$this->uri(array('action' => \$action))")
+        && !str_contains($template, '$escape($this->uri'),
     'ordering controls have no legacy slash divider' => !str_contains($template, '$divider = \' / \'')
         && str_contains($template, 'chisimba-chapter-order-actions'),
     'both directions are restored' => str_contains($template, "'movechapterup'")

@@ -59,7 +59,7 @@ $chapterOrderForm = function ($action, $chapterId, $label, $icon) use ($contextC
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     };
     return '<form method="post" class="chisimba-chapter-order-form" action="'
-        . $escape($this->uri(array('action' => $action))) . '">'
+        . $this->uri(array('action' => $action)) . '">'
         . '<input type="hidden" name="csrf_token" value="'
         . $escape($contextContentCsrf) . '" />'
         . '<input type="hidden" name="id" value="' . $escape($chapterId) . '" />'
