@@ -35,8 +35,10 @@ ccCheck(strpos($registry, "'key' => 'rich_text'") !== false
     && strpos($registry, "'key' => 'short_text'") !== false, 'native page types are incomplete');
 ccCheck(strpos($registry, 'extends ChisimbaObject') !== false && strpos($service, 'extends ChisimbaObject') !== false, 'service classes must extend the PHP 8-compatible ChisimbaObject base');
 ccCheck(strpos($registry, 'extends object') === false && strpos($service, 'extends object') === false, 'obsolete object base class remains');
-ccCheck(strpos($registry, 'preferred_for') !== false && strpos($picker, 'Course format changes') !== false,
-    'picker defaults are not format-aware and non-restrictive');
+ccCheck(strpos($registry, 'preferred_for') !== false
+    && strpos($registry, 'array_values($this->types)') !== false
+    && strpos($picker, 'foreach ($contentTypes as $type)') !== false,
+    'picker must sort preferences without filtering available page types');
 ccCheck(strpos($service, 'beginTransaction()') !== false
     && strpos($service, 'commitTransaction()') !== false
     && strpos($service, 'rollbackTransaction()') !== false, 'native authoring is not transactional');
@@ -58,10 +60,9 @@ ccCheck(strpos($emptyChapterForm, "new textinput('chaptertitle')") !== false
 ccCheck(strpos($controller, "getJavaScriptFile('jquery.livequery.js'") === false,
     'livequery is still loaded');
 
-ccCheck(strpos($picker, 'new link($url)') !== false
-    && strpos($picker, '$chooseLink->show()') !== false
-    && !preg_match('/html(?:entities|specialchars)\s*\(\s*\$url/', $picker),
-    'type-picker links must use the framework link renderer without re-escaping generated URIs');
+ccCheck(strpos($picker, "str_replace('&amp;', '&', \$this->uri") !== false
+    && strpos($picker, "htmlspecialchars(\$url, ENT_QUOTES, 'UTF-8')") !== false,
+    'type-picker links must normalise generated URIs and escape them exactly once');
 if ($failures) {
     foreach ($failures as $failure) { fwrite(STDERR, "FAIL: $failure\n"); }
     exit(1);

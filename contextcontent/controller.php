@@ -90,6 +90,7 @@ class contextcontent extends controller {
             $this->objContext = $this->getObject('dbcontext', 'context');
             $this->objAuthoring = $this->getObject('contentauthoringservice', 'contextcontent');
             $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
+            $this->objTikTokVideo = $this->getObject('tiktokvideoservice', 'contextcontent');
             $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
             $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $this->csrf = $stack['csrf'];
@@ -1036,6 +1037,20 @@ class contextcontent extends controller {
         return $body . '</div>';
     }
 
+    /**
+     * Build a TikTok page body from the dedicated authoring controls.
+     *
+     * @return string Trusted provider markup.
+     */
+    private function tiktokBodyFromRequest()
+    {
+        return $this->objTikTokVideo->buildBody(
+            trim((string) $this->getParam('tiktok_url')),
+            trim((string) $this->getParam('tiktok_caption')),
+            trim((string) $this->getParam('tiktok_transcript'))
+        );
+    }
+
     private function recognisedVideoEmbedUrl($url)
     {
         $parts = parse_url($url);
@@ -1115,6 +1130,7 @@ class contextcontent extends controller {
         $contentType = (string) $this->getParam('contenttype', 'rich_text');
         if ($contentType === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
         if ($contentType === 'video') { $pagecontent = $this->videoBodyFromRequest(); }
+        if ($contentType === 'tiktok_video') { $pagecontent = $this->tiktokBodyFromRequest(); }
         if (in_array($contentType, array('pdf', 'zip_bundle', 'external_reading'), true)) { $pagecontent = $this->resourceBodyFromRequest($contentType); }
 
         $chapterTitle = $this->objContextChapters->getContextChapterTitle($chapter);
@@ -1341,6 +1357,7 @@ class contextcontent extends controller {
             } else {
                 if ($page['contenttype'] === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
                 if ($page['contenttype'] === 'video') { $pagecontent = $this->videoBodyFromRequest(); }
+                if ($page['contenttype'] === 'tiktok_video') { $pagecontent = $this->tiktokBodyFromRequest(); }
                 if (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true)) { $pagecontent = $this->resourceBodyFromRequest($page['contenttype']); }
                 $this->objAuthoring->updateNativePage(array(
                     'contextcode' => $this->contextCode, 'chapterid' => $page['chapterid'],

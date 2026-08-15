@@ -142,7 +142,18 @@ $pageintroheader = new htmlheading();
 $pageintroheader->type = 1;
 $pageintroheader->cssClass = "pagetitle";
 $pageintroheader->str = $page['menutitle'];
-$typeClass = $page['contenttype'] === 'short_text' ? ' contextcontent-short-text' : ($page['contenttype'] === 'image_audio' ? ' contextcontent-image-audio' : ($page['contenttype'] === 'video' ? ' contextcontent-video' : (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true) ? ' contextcontent-resource' : ' contextcontent-rich-text')));
+$contentTypeClasses = array(
+    'short_text' => ' contextcontent-short-text',
+    'image_audio' => ' contextcontent-image-audio',
+    'video' => ' contextcontent-video',
+    'tiktok_video' => ' contextcontent-tiktok',
+    'pdf' => ' contextcontent-resource',
+    'zip_bundle' => ' contextcontent-resource',
+    'external_reading' => ' contextcontent-resource',
+);
+$typeClass = isset($contentTypeClasses[$page['contenttype']])
+    ? $contentTypeClasses[$page['contenttype']]
+    : ' contextcontent-rich-text';
 $shortTextOpen = $page['contenttype'] === 'short_text' ? '<div class="contextcontent-phone-reading"><div class="contextcontent-phone-reading-speaker" aria-hidden="true"></div><div class="contextcontent-phone-reading-screen">' : '';
 $shortTextClose = $page['contenttype'] === 'short_text' ? '</div><div class="contextcontent-phone-reading-gesture" aria-hidden="true"></div></div>' : '';
 if ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="([A-Za-z0-9_-]+)"\\s+comment="([^"\\r\\n]+\\.zip)"\\s*\\/\\]/i', $page['pagecontent'], $zipToken)) {
@@ -162,7 +173,7 @@ if ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="
 } elseif ($page['contenttype'] === 'zip_bundle') {
     $renderedPageContent = $objWashout->parseText($page['pagecontent']);
 } else {
-    $renderedPageContent = in_array($page['contenttype'], array('image_audio', 'video', 'pdf', 'external_reading'), true)
+    $renderedPageContent = in_array($page['contenttype'], array('image_audio', 'video', 'tiktok_video', 'pdf', 'external_reading'), true)
         ? $page['pagecontent']
         : $objWashout->parseText($page['pagecontent']);
 }
@@ -181,6 +192,10 @@ $content .= '<article class="contextcontent-native-page' . $typeClass . '">'
 
 if (in_array($page['contenttype'], array('pdf', 'zip_bundle', 'external_reading'), true)) {
     $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource{max-width:820px;margin:1.5rem auto}.contextcontent-resource-body{margin-top:1rem;padding:1.4rem;border:1px solid #cfd8dc;border-left:5px solid #1976d2;border-radius:10px;background:#f7fafb}.contextcontent-resource-description{font-size:1.08rem;line-height:1.6}.contextcontent-resource-source{color:#546e7a;font-weight:700}.contextcontent-resource-action a{display:inline-flex;gap:.55rem;align-items:center;padding:.7rem 1rem;border-radius:6px;background:#1565c0;color:#fff;text-decoration:none;font-weight:700}.contextcontent-resource-type-icon{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.contextcontent-resource-action a:hover,.contextcontent-resource-action a:focus{background:#0d47a1;color:#fff}.contextcontent-external-notice{font-size:.9rem;color:#546e7a}</style>');
+}
+
+if ($page['contenttype'] === 'tiktok_video') {
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-tiktok{width:430px;max-width:100%;margin:1.5rem auto}.contextcontent-tiktok-body figure{margin:0 auto}.contextcontent-tiktok-embed{position:relative;width:100%;aspect-ratio:9/16;overflow:hidden;border-radius:12px;background:#101416}.contextcontent-tiktok-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.contextcontent-tiktok-body figcaption{padding:.65rem 0;color:#455a64}.contextcontent-tiktok-transcript{margin:1rem 0 0;padding:1rem;border:1px solid #cfd8dc;border-radius:8px}@media(max-width:560px){.contextcontent-tiktok{margin:1rem auto}.contextcontent-tiktok-embed{border-radius:8px}}</style>');
 }
 
 if ($page['contenttype'] === 'video') {

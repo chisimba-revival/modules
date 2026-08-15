@@ -137,6 +137,35 @@ if ($contentType === 'image_audio') {
     $pickerBaseUrl = html_entity_decode($this->uri(array('action'=>'filepicker'),'filemanager'), ENT_QUOTES, 'UTF-8');
     $this->appendArrayVar('headerParams', '<script type="text/javascript">(function(){"use strict";window.ChisimbaFilePickerReceive=function(target,file){var field=document.getElementById(target);if(field&&file&&file.url){field.value=file.url;field.dispatchEvent(new Event("change",{bubbles:true}));}};document.addEventListener("DOMContentLoaded",function(){Array.prototype.forEach.call(document.querySelectorAll(".contextcontent-media-picker"),function(button){button.addEventListener("click",function(){var separator='.json_encode(strpos($pickerBaseUrl, '?') === false ? '?' : '&').' ,url='.json_encode($pickerBaseUrl).'+separator+"policy="+encodeURIComponent(button.getAttribute("data-policy"))+"&target="+encodeURIComponent(button.getAttribute("data-target"));window.open(url,"chisimbaFilePicker","width=920,height=720,resizable=yes,scrollbars=yes");});});});}());</script>');
     $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-image-audio-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-media-field{margin:1rem 0}.contextcontent-media-field label{display:block;margin-bottom:.35rem;font-weight:700}.contextcontent-media-field input,.contextcontent-media-field textarea{box-sizing:border-box;width:100%;max-width:100%}.contextcontent-media-picker{margin-top:.15rem}</style>');
+} elseif ($contentType === 'tiktok_video') {
+    $values = array('tiktok_url'=>'', 'tiktok_caption'=>'', 'tiktok_transcript'=>'');
+    if ($mode === 'edit' && !empty($page['pagecontent'])) {
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="utf-8" ?>' . $page['pagecontent']);
+        libxml_clear_errors();
+        $iframes = $doc->getElementsByTagName('iframe');
+        $captions = $doc->getElementsByTagName('figcaption');
+        $details = $doc->getElementsByTagName('details');
+        if ($iframes->length) { $values['tiktok_url']=$iframes->item(0)->getAttribute('src'); }
+        if ($captions->length) { $values['tiktok_caption']=$captions->item(0)->textContent; }
+        if ($details->length) { $values['tiktok_transcript']=trim(preg_replace('/^\s*[^\n]+\s*/u', '', trim($details->item(0)->textContent))); }
+    }
+    if ($preserveSubmittedPageForm) { $values['tiktok_url'] = (string) $this->getParam('tiktok_url', $values['tiktok_url']); }
+    if ($preserveSubmittedPageForm) { $values['tiktok_caption'] = (string) $this->getParam('tiktok_caption', $values['tiktok_caption']); }
+    if ($preserveSubmittedPageForm) { $values['tiktok_transcript'] = (string) $this->getParam('tiktok_transcript', $values['tiktok_transcript']); }
+    $tiktokLabel = function ($key) { return htmlentities($this->objLanguage->languageText($key, 'contextcontent'), ENT_QUOTES, 'UTF-8'); };
+    $tiktokField = function ($name, $key, $value, $textarea = false, $required = false) use ($tiktokLabel) {
+        $escaped = htmlentities($value, ENT_QUOTES, 'UTF-8');
+        $control = $textarea ? '<textarea name="'.$name.'" id="input_'.$name.'" rows="6">'.$escaped.'</textarea>'
+            : '<input type="url" name="'.$name.'" id="input_'.$name.'" value="'.$escaped.'"'.($required?' required="required" aria-required="true"':'').' />';
+        return '<div class="contextcontent-media-field"><label for="input_'.$name.'">'.$tiktokLabel($key).'</label>'.$control.'</div>';
+    };
+    $editorMarkup = '<section class="contextcontent-tiktok-authoring"><p>'.$tiktokLabel('mod_contextcontent_tiktok_guidance').'</p>'
+        . $tiktokField('tiktok_url','mod_contextcontent_tiktok_url',$values['tiktok_url'],false,true)
+        . $tiktokField('tiktok_caption','mod_contextcontent_tiktok_caption',$values['tiktok_caption'],true)
+        . $tiktokField('tiktok_transcript','mod_contextcontent_tiktok_transcript',$values['tiktok_transcript'],true) . '</section>';
+    $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-tiktok-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-tiktok-authoring .contextcontent-media-field{margin:1rem 0}.contextcontent-tiktok-authoring label{font-weight:700}.contextcontent-tiktok-authoring .contextcontent-media-field label{display:block;margin-bottom:.35rem}.contextcontent-tiktok-authoring input[type=url],.contextcontent-tiktok-authoring textarea{box-sizing:border-box;width:100%;max-width:100%}</style>');
 } elseif ($contentType === 'video') {
     $values = array('video_url'=>'', 'video_caption'=>'', 'video_transcript'=>'', 'video_orientation'=>'portrait');
     if ($mode === 'edit' && !empty($page['pagecontent'])) {

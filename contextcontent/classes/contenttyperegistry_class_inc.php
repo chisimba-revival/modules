@@ -33,6 +33,14 @@ class contenttyperegistry extends ChisimbaObject
             'preferred_for' => 'microlearning'
         ));
         $this->register(array(
+            'key' => 'tiktok_video',
+            'icon' => 'smartphone',
+            'label' => $this->language->languageText('mod_contextcontent_type_tiktok_video', 'contextcontent'),
+            'description' => $this->language->languageText('mod_contextcontent_type_tiktok_video_desc', 'contextcontent'),
+            'native' => true,
+            'preferred_for' => 'microlearning'
+        ));
+        $this->register(array(
             'key' => 'video',
             'icon' => 'video',
             'label' => $this->language->languageText('mod_contextcontent_type_video', 'contextcontent'),
