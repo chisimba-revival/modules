@@ -253,15 +253,20 @@ class assignment extends controller {
         //echo '</pre>';
         //die("<br />----------------------------");
         $name = $this->getParam('name');
-        $type = $this->getParam('type');
-        $resubmit = $this->getParam('resubmit');
+        $type = $this->getParam('type', '0');
+        $resubmit = $this->getParam('resubmit', '0');
         $mark = $this->getParam('mark');
-        $yearmark = $this->getParam('yearmark');
+        // Course-mark weighting is owned by Gradebook's assessment plan.
+        $yearmark = 0;
         $openingDate = $this->getParam('openingdate') . ' ' . $this->getParam('openingtime');
         $closingDate = $this->getParam('closingdate') . ' ' . $this->getParam('closingtime');
         $description = $this->getParam('description');
-        $assesment_type = $this->getParam('assesment_type');
-        $emailAlert = $this->getParam('emailalert');
+        $assesment_type = $this->getParam('assesment_type', '0');
+        $assessmentClassification = strtolower(trim((string) $this->getParam('assessment_classification', 'summative')));
+        if (!in_array($assessmentClassification, array('formative', 'summative'), true)) {
+            $assessmentClassification = 'summative';
+        }
+        $emailAlert = $this->getParam('emailalert', '0');
         $filetypes = $this->getParam('filetypes', array());
         $filenameConversion = $this->getParam('filenameconversion','1');
         $visibility = $this->getParam('visibility');
@@ -271,7 +276,7 @@ class assignment extends controller {
         $usegroups = $this->getParam('groups_radio');
         $usegoals = $this->getParam('goals_radio');
 
-        $result = $this->objAssignment->addAssignment($name, $this->contextCode, $description, $resubmit, $type, $mark, $yearmark, $openingDate, $closingDate, $assesment_type, $emailAlert, $filenameConversion, $visibility, $emailalertonsubmit,$usegroups,$usegoals);
+        $result = $this->objAssignment->addAssignment($name, $this->contextCode, $description, $resubmit, $type, $mark, $yearmark, $openingDate, $closingDate, $assesment_type, $assessmentClassification, $emailAlert, $filenameConversion, $visibility, $emailalertonsubmit,$usegroups,$usegoals);
 
         if ($result == FALSE) {
             return $this->nextAction(NULL, array('error' => 'unabletosaveassignment'));
@@ -403,17 +408,24 @@ class assignment extends controller {
         $id = $this->getParam('id');
         $name = $this->getParam('name');
 
-        $resubmit = $this->getParam('resubmit');
-        $type = $this->getParam('type');
+        $existingAssignment = $this->objAssignment->getAssignment($id);
+        $resubmit = $this->getParam('resubmit', '0');
+        $type = $this->getParam('type', '0');
         $mark = $this->getParam('mark');
-        $yearmark = $this->getParam('yearmark');
+        // Preserve legacy data; Gradebook owns all new weighting changes.
+        $yearmark = is_array($existingAssignment) && isset($existingAssignment['percentage'])
+            ? $existingAssignment['percentage'] : 0;
 
         $openingDate = $this->getParam('openingdate') . ' ' . $this->getParam('openingtime');
         $closingDate = $this->getParam('closingdate') . ' ' . $this->getParam('closingtime');
 
         $description = $this->getParam('description');
-        $assesment_type = $this->getParam('assesment_type');
-        $emailAlert = $this->getParam('emailalert');
+        $assesment_type = $this->getParam('assesment_type', '0');
+        $assessmentClassification = strtolower(trim((string) $this->getParam('assessment_classification', 'summative')));
+        if (!in_array($assessmentClassification, array('formative', 'summative'), true)) {
+            $assessmentClassification = 'summative';
+        }
+        $emailAlert = $this->getParam('emailalert', '0');
         $filetypes = $this->getParam('filetypes', array());
         $filenameConversion = $this->getParam('filenameconversion','1');
         $visibility = $this->getParam('visibility');
@@ -421,7 +433,7 @@ class assignment extends controller {
         $usegroups = $this->getParam('groups_radio');
         $usegoals = $this->getParam('goals_radio');
 
-        $result = $this->objAssignment->updateAssignment($id, $name, $description, $resubmit, $type, $mark, $yearmark, $openingDate, $closingDate, $assesment_type, $emailAlert, $filenameConversion, $visibility, $emailalertonsubmit,$usegroups,$usegoals);
+        $result = $this->objAssignment->updateAssignment($id, $name, $description, $resubmit, $type, $mark, $yearmark, $openingDate, $closingDate, $assesment_type, $assessmentClassification, $emailAlert, $filenameConversion, $visibility, $emailalertonsubmit,$usegroups,$usegoals);
         $this->objAssignmentUploadablefiletypes->deleteFiletypes($id);
         $this->objAssignmentUploadablefiletypes->addFiletypes($id, $filetypes);
         $groups = $this->getParam('groups');

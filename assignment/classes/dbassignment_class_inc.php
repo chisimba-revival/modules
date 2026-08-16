@@ -128,7 +128,7 @@ class dbassignment extends dbtable {
      * @return <type>
      */
     public function addAssignment(
-    $name, $context, $description, $resubmit, $format, $mark, $percentage, $opening_date, $closing_date, $assesment_type, $emailAlert, $filename_conversion, $visibility, $emailalert_onsubmit,$usegroups,$usegoals
+    $name, $context, $description, $resubmit, $format, $mark, $percentage, $opening_date, $closing_date, $assesment_type, $assessment_classification, $emailAlert, $filename_conversion, $visibility, $emailalert_onsubmit,$usegroups,$usegoals
     ) {
 
         $id = $this->insert(array(
@@ -142,6 +142,7 @@ class dbassignment extends dbtable {
                     'opening_date' => $opening_date,
                     'closing_date' => $closing_date,
                     'assesment_type' => $assesment_type,
+                    'assessment_classification' => $assessment_classification,
                     'email_alert' => $emailAlert,
                     'email_alert_onsubmit' => $emailalert_onsubmit,
                     'visibility' => $visibility,
@@ -152,6 +153,10 @@ class dbassignment extends dbtable {
                     'last_modified' => date('Y-m-d H:i:s', time()),
                     'updated' => date('Y-m-d H:i:s', time())
                 ));
+        if ($id === false) {
+            return false;
+        }
+        try {
         if ($emailAlert == '1') {
             $subject = "'".$name."' " . $this->objLanguage->languageText('mod_assignment_emailsubject', 'assignment', " assignment has been created in") . ' \'' . $this->objContext->getTitle($context) . '\'';
             $contextredirecturi = html_entity_decode($this->uri(array('action'=>'view', 'id'=>$id), 'assignment'));
@@ -160,12 +165,19 @@ class dbassignment extends dbtable {
                     $link->href;
             $this->sendEmail($subject, $message, $this->getContextRecipients($context));
         }
-        $this->addReminderToCalendar(
-                $name,
-                $description,
-                $opening_date,
-                $closing_date, 
-                $id);
+        } catch (Throwable $failure) {
+            error_log('Assignment notification failed after save: ' . $failure->getMessage());
+        }
+        try {
+            $this->addReminderToCalendar(
+                    $name,
+                    $description,
+                    $opening_date,
+                    $closing_date,
+                    $id);
+        } catch (Throwable $failure) {
+            error_log('Assignment calendar reminder failed after save: ' . $failure->getMessage());
+        }
         return $id;
     }
 
@@ -259,7 +271,7 @@ class dbassignment extends dbtable {
      * @param <type> $assesment_type
      * @return <type>
      */
-    public function updateAssignment($id, $name, $description, $resubmit, $format, $mark, $percentage, $opening_date, $closing_date, $assesment_type, $emailAlert, $filename_conversion, $visibility, $emailalert_onsubmit,$usegroups,$usegoals) {
+    public function updateAssignment($id, $name, $description, $resubmit, $format, $mark, $percentage, $opening_date, $closing_date, $assesment_type, $assessment_classification, $emailAlert, $filename_conversion, $visibility, $emailalert_onsubmit,$usegroups,$usegoals) {
 
         $id = $this->update('id', $id, array(
                     'name' => $name,
@@ -278,6 +290,7 @@ class dbassignment extends dbtable {
                     'visibility' => $visibility,
                     'filename_conversion' => $filename_conversion,
                     'assesment_type' => $assesment_type,
+                    'assessment_classification' => $assessment_classification,
                     'userid' => $this->objUser->userId(),
                     'last_modified' => date('Y-m-d H:i:s', time()),
                     'updated' => date('Y-m-d H:i:s', time())

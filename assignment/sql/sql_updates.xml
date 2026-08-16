@@ -139,4 +139,20 @@
         </data>
     </update>
 
+
+    <update>
+        <table>tbl_assignment</table>
+        <version>0.620</version>
+        <description>Add formative or summative assessment classification</description>
+        <data>
+            <add>
+                <name>assessment_classification</name>
+                <type>text</type>
+                <length>16</length>
+                <notnull>1</notnull>
+                <default>summative</default>
+            </add>
+        </data>
+    </update>
+
 </updates>

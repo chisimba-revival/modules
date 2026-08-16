@@ -69,6 +69,12 @@ $fields = array(
 		'notnull' => 1,
 		'default' => '0'
 		),
+	'assessment_classification' => array(
+		'type' => 'text',
+		'length' => 16,
+		'notnull' => 1,
+		'default' => 'summative'
+		),
        'email_alert' => array(
 		'type' => 'text',
 		'length' => 1,

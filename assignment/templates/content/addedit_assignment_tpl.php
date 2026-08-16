@@ -171,6 +171,10 @@ if (is_null($allowedFileTypes)) {
 } else {
     $arrAllowedFileTypes = explode(',', $allowedFileTypes);
 }
+$arrAllowedFileTypes = array_values(array_filter(array_map('trim', $arrAllowedFileTypes)));
+if (!in_array('mp4', $arrAllowedFileTypes, true)) {
+    $arrAllowedFileTypes[] = 'mp4';
+}
 if ($uploadableOptionsEnabled) {
     if ($mode == 'edit') {
         $rs = $this->objAssignmentUploadablefiletypes->getFiletypes($assignment['id']);
@@ -238,6 +242,8 @@ $radio->addOption(0, $this->objLanguage->languageText('word_no', 'system', 'No')
 $radio->setBreakSpace('&nbsp;');
 if ($mode == 'edit') {
     $radio->setSelected($assignment['assesment_type']);
+} else {
+    $radio->setSelected(0);
 }
 if (!$canChangeField) {
     $radio->extra = 'disabled="disabled"';
@@ -252,6 +258,31 @@ if ($mode == 'edit' && !$canChangeField) {
 $typetable->addCell($radio->show().($canChangeField?'':($textinput->show().'<sup>1</sup>')));
 $typetable->endRow();
 
+// Assessment classification
+$typetable->startRow();
+$typetable->addCell($this->objLanguage->languageText(
+    'mod_assignment_assessmentclassification',
+    'assignment',
+    'Assessment classification'
+));
+$classification = new dropdown('assessment_classification');
+$classification->addOption(
+    'formative',
+    $this->objLanguage->languageText('mod_assignment_classification_formative', 'assignment', 'Formative')
+);
+$classification->addOption(
+    'summative',
+    $this->objLanguage->languageText('mod_assignment_classification_summative', 'assignment', 'Summative')
+);
+$selectedClassification = 'summative';
+if ($mode == 'edit' && isset($assignment['assessment_classification'])
+        && in_array($assignment['assessment_classification'], array('formative', 'summative'), true)) {
+    $selectedClassification = $assignment['assessment_classification'];
+}
+$classification->setSelected($selectedClassification);
+$typetable->addCell($classification->show());
+$typetable->endRow();
+
 // Multiple submissions
 $typetable->startRow();
 $typetable->addCell($this->objLanguage->languageText('mod_assignment_allowresubmit', 'assignment', 'Allow Multiple Submissions?'));
@@ -260,6 +291,8 @@ $radio->addOption(1, $this->objLanguage->languageText('word_yes', 'system', 'Yes
 $radio->addOption(0, $this->objLanguage->languageText('word_no', 'system', 'No'));
 if ($mode == 'edit') {
     $radio->setSelected($assignment['resubmit']);
+} else {
+    $radio->setSelected(0);
 }
 $radio->setBreakSpace('&nbsp;');
 $typetable->addCell($radio->show());
@@ -312,16 +345,7 @@ if ($mode == 'edit') {
 $gradetable->addCell($label->show());
 $gradetable->addCell($textinput->show());
 $gradetable->endRow();
-// Percentage of year mark
-$gradetable->startRow();
-$label = new label($this->objLanguage->languageText('mod_assignment_percentyrmark', 'assignment', 'Percentage of year mark'), 'input_yearmark');
-$textinput = new textinput('yearmark');
-if ($mode == 'edit') {
-    $textinput->value = $assignment['percentage'];
-}
-$gradetable->addCell($label->show());
-$gradetable->addCell($textinput->show());
-$gradetable->endRow();
+// Course-mark weighting is configured centrally in Gradebook.
 
 //groups
 $recstable = $this->newObject('htmltable', 'htmlelements');
@@ -599,8 +623,6 @@ echo $js_filetypes;
 $form->addRule('filetypes[]', $this->objLanguage->languageText('mod_assignment_selectatleastone', 'assignment'), 'custom', 'val_filetypes');
 $form->addRule('mark', $this->objLanguage->languageText('mod_assignment_val_mark', 'assignment', 'Please enter mark'), 'required');
 $form->addRule('mark', $this->objLanguage->languageText('mod_assignment_val_numreq', 'assignment', 'Has to be a number'), 'numeric');
-$form->addRule('yearmark', $this->objLanguage->languageText('mod_assignment_val_yearmark', 'assignment', 'Please enter year mark'), 'required');
-$form->addRule('yearmark', $this->objLanguage->languageText('mod_assignment_val_numreq', 'assignment', 'Has to be a number'), 'numeric');
 
 $ret .= $form->show();
 echo "<div class='assignment_main'>$ret</div>";

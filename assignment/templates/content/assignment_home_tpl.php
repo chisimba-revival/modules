@@ -5,13 +5,19 @@ $closedLabel = $this->objLanguage->languageText('mod_assignment_closed', 'assign
 $viewLabel = $this->objLanguage->languageText('mod_assignment_view', 'assignment');
 $uploadLabel = $this->objLanguage->languageText('mod_assignment_upload', 'assignment');
 $onlineLabel = $this->objLanguage->languageText('mod_assignment_online', 'assignment');
+$addLabel = $this->objLanguage->languageText('mod_assignment_addassignment', 'assignment', 'Add assignment');
+$editLabel = $this->objLanguage->languageText('word_edit', 'system', 'Edit');
+$deleteLabel = $this->objLanguage->languageText('word_delete', 'system', 'Delete');
 
 // Set up html elements
 $this->loadClass('htmltable', 'htmlelements');
 $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$objIconService = $this->getObject('iconservice', 'ui');
+$addIcon = $objIconService->render('plus', array('decorative' => TRUE));
+$editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
+$deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
 $objTimeOut = $this->newObject('timeoutMessage', 'htmlelements');
 
 $objTrim = $this->getObject('trimstr', 'strings');
@@ -24,9 +30,9 @@ $objHead->type = 1;
 
 if ($this->isValid('add')) {
 
-    $objIcon->setIcon('add');
     $link = new link($this->uri(array('action' => 'add')));
-    $link->link =$objIcon->show();// $createButton->show();
+    $link->title = $addLabel;
+    $link->link = $addIcon;
     $objHead->str .= ' ' . $link->show();
 }
 
@@ -59,12 +65,6 @@ if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
     $i = 0;
     $status = '';
-
-    $objIcon->setIcon('edit');
-    $editIcon = $objIcon->show();
-
-    $objIcon->setIcon('delete');
-    $deleteIcon = $objIcon->show();
 
     $counter = 0;
 
@@ -134,9 +134,11 @@ if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
             if ($this->isValid('edit')) {
                 $editLink = new link($this->uri(array('action' => 'edit', 'id' => $assignment['id'])));
+                $editLink->title = $editLabel . ' ' . $assignment['name'];
                 $editLink->link = $editIcon;
 
                 $deleteLink = new link($this->uri(array('action' => 'delete', 'id' => $assignment['id'])));
+                $deleteLink->title = $deleteLabel . ' ' . $assignment['name'];
                 $deleteLink->link = $deleteIcon;
 
                 $objTable->addCell($editLink->show() . '&nbsp;' . $deleteLink->show(), '60', NULL, NULL, $class);

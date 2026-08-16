@@ -296,9 +296,13 @@ if ($this->isValid('markassignments')) {
                 $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
                 $allowedFilesString = $this->objSysConfig->getValue('FILETYPES_ALLOWED', 'assignment');
                 if (is_null($allowedFilesString)) {
-                    $allowedFileTypes = array('doc', 'odt', 'rtf', 'txt', 'docx', 'mp3', 'ppt', 'pptx', 'mp3', 'pdf');
+                    $allowedFileTypes = array('doc', 'odt', 'rtf', 'txt', 'docx', 'mp3', 'mp4', 'ppt', 'pptx', 'pdf');
                 } else {
                     $allowedFileTypes = explode(',', $allowedFilesString);
+                }
+                $allowedFileTypes = array_values(array_filter(array_map('trim', $allowedFileTypes)));
+                if (!in_array('mp4', $allowedFileTypes, true)) {
+                    $allowedFileTypes[] = 'mp4';
                 }
             } else {
                 $allowedFileTypes = array();
