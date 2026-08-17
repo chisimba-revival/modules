@@ -8,10 +8,12 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 class assignmentassessmentprovider extends ChisimbaObject
 {
     private $assignments;
+    private $submissions;
 
     public function init()
     {
         $this->assignments = $this->getObject('dbassignment', 'assignment');
+        $this->submissions = $this->getObject('dbassignmentsubmit', 'assignment');
     }
 
     public function listActivities($contextCode)
@@ -29,7 +31,9 @@ class assignmentassessmentprovider extends ChisimbaObject
             $activities[] = array(
                 'id' => $record['id'],
                 'name' => $record['name'],
-                'classification' => $classification
+                'classification' => $classification,
+                'total_mark' => isset($record['mark']) ? (float) $record['mark'] : 100.0,
+                'closing_date' => isset($record['closing_date']) ? $record['closing_date'] : null
             );
         }
         return $activities;
@@ -43,6 +47,32 @@ class assignmentassessmentprovider extends ChisimbaObject
             }
         }
         return false;
+    }
+
+    /** Return the newest submission, distinguishing submitted from marked. */
+    public function getStudentResult($contextCode, $activityId, $userId, $rule = 'latest_completed')
+    {
+        $activity = $this->getActivity($contextCode, $activityId);
+        if ($activity === false) {
+            return array('status' => 'not_attempted', 'mark_percent' => null);
+        }
+        $submissions = $this->submissions->getStudentAssignment($userId, $activityId);
+        if (empty($submissions)) {
+            return array('status' => 'not_attempted', 'mark_percent' => null);
+        }
+        $submission = $submissions[0];
+        if (!array_key_exists('mark', $submission) || $submission['mark'] === null
+            || $submission['mark'] === '' || !is_numeric($submission['mark'])
+            || (float) $submission['mark'] < 0) {
+            return array('status' => 'submitted', 'mark_percent' => null);
+        }
+        $total = isset($activity['total_mark']) && (float) $activity['total_mark'] > 0
+            ? (float) $activity['total_mark'] : 100.0;
+        $percentage = ((float) $submission['mark'] / $total) * 100;
+        return array(
+            'status' => 'marked',
+            'mark_percent' => max(0.0, min(100.0, $percentage))
+        );
     }
 }
 ?>

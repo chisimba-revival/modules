@@ -1,594 +1,100 @@
 <?php
-/* -------------------- gradebook class extends controller ---------------- */
-// security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
+    die('You cannot view this page directly');
 }
-//set the layout
 $this->setLayoutTemplate('gradebook_layout_tpl.php');
-
-$assignment = 0;
-$assignment = $this->getParam("assessment", NULL);
-$studentUserId = 0;
 $studentUserId = $this->objUser->userId();
-$check = 0;
-$check = $this->getParam("check", NULL);
-
-//load required form elements
-$this->loadClass('link','htmlelements');
-$this->loadClass('checkbox','htmlelements');
-$this->loadClass('button','htmlelements');
-$this->loadClass('hiddeninput','htmlelements');
-
-//help
-$this->objHelp = $this->newObject('helplink','help');
-//context object
-$objContext =& $this->getObject('dbcontext','context');
-//assignment object
-$objAssignment =& $this->getObject('dbassignment_old','assignment');
-$objAssignmentSubmit =& $this->getObject('dbassignmentsubmit_old','assignment');
-//essay object
-$objEssaytopics =& $this->getObject('dbessay_topics','essay');
-$objEssaybook =& $this->getObject('dbessay_book','essay');
-//testadmin object
-$objTestadmin =& $this->getObject('dbtestadmin','mcqtests');
-$objTestresults =& $this->getObject('dbresults','mcqtests');
-//worksheet object
-$objWorksheet =& $this->getObject('dbworksheet','worksheet');
-$objWorksheetresults =& $this->getObject('dbworksheetresults','worksheet');
-//datetime object
-$objDatetime =& $this->getObject('dateandtime','utilities');
-//$objFormattedDate =& $this->getObject('simplecal','datetime');
-
-//context management
-$contextObject =& $this->getObject('dbcontext', 'context');
+$contextObject = $this->getObject('dbcontext', 'context');
 $contextCode = $contextObject->getContextCode();
-$theCourse=0;
-
-//create the general form class
-$objForm = new form('upload');
-//parameters
-$action=$this->getParam("action", NULL);
-$assessment=$this->getParam("assessment", NULL);
-$objForm->setAction($this->uri(array('action'=>$action,'assessment'=>$assessment,'studentUserId'=>$studentUserId)));
-$objForm->displayType=3;  //Free form
-
-$this->objH =& $this->getObject('htmlheading', 'htmlelements');
-$this->objH->type=1; //Heading <h3>
-//$this->objH->align="center";
-$this->objH->str=($contextCode?$contextObject->getMenuText($contextCode):'').' '.$objLanguage->languageText('mod_gradebook_title','gradebook');
-$this->objH->str.=' - ';
-$this->objH->str.=$this->objUser->fullname($studentUserId);
-echo $this->objH->show();
-echo '<br />';
-echo '<strong>'.$objLanguage->languageText('mod_gradebook_studentNumber','gradebook').':</strong> '.$this->objUser->username($studentUserId);
-
-//select course text, for proper alignment, fit within table
-$this->TableInstructions = $this->newObject('htmltable', 'htmlelements');
-$this->TableInstructions->cellspacing="2";
-$this->TableInstructions->width="100%";
-//$this->TableInstructions->attributes="align=\"center\"";
-
-$this->TableInstructions->startHeaderRow();
-$this->TableInstructions->addHeaderCell("&nbsp;");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_closingDate','gradebook'),"15%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_assessment','gradebook'),"25%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_assessmentType','gradebook'),"15%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_mark','gradebook'),"5%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_classAvg','gradebook')."(%)","17%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_markplain','gradebook'),"10%");
-$this->TableInstructions->addHeaderCell($objLanguage->languageText('mod_gradebook_percentyearmark','gradebook'),"13%");
-$this->TableInstructions->endHeaderRow();
-
-$numberAssignments=0;
-$numberAssignments=count($objAssignment->getAssignment($contextCode));
-$totalMark=0;
-$totalPercentMark=0;
-$totalAvgMark=0;
-$totalPercentYrMark=0;
-$count=0;
-if(!$numberAssignments) {
-    $this->TableInstructions->startRow();
-    $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_noassignments','gradebook'),NULL,NULL,NULL,NULL," colspan=\"4\"");
-    $this->TableInstructions->endRow();
-} else {
-    $iassignment=array();
-    switch($assignment) {
-        case 'Essays':
-        case 'Online Worksheets':
-        case 'MCQ Tests':
-        case 'Assignments':
-        default:
-        //check counter
-            $checkCount=0;
-            //essays
-            $c=1;
-            $essayResultsArray=array();
-            $essayResultsArray=$objEssaytopics->getTopic(NULL,NULL," context='$contextCode'");
-            if(!empty($essayResultsArray)) {
-                foreach($essayResultsArray as $iassignment) {
-                    if($check) {
-                        /**
-                         * the variable checked against is created through a combination
-                         * of the id and the word "Essays" or Worksheets ... etc
-                         * the variable is recreated and we check to see if it exists
-                         */
-                        $xassignmentV=0;
-                        $xassignmentV="$iassignment[id]:Essays";
-                        $assignmentV=0;
-                        $assignmentV=$this->getParam($xassignmentV, NULL);
-
-                        if($assignmentV) {
-                            $checkCount++;
-                            //link
-                            $c++;
-                            $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                            //checkbox
-                            $objAssignmentCheckBox = new checkbox($iassignment["id"].":Essays");
-                            $objAssignmentCheckBox->setValue("1");
-                            $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                            //closing date
-                            $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                            //assignment name
-                            $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Essays','assignmentId'=>$iassignment["id"])));
-                            $objAssignmentLink->link=$iassignment["name"];
-                            $this->TableInstructions->addCell($objAssignmentLink->show());
-                            $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_essays','gradebook'));
-                            $studentResult=array();
-                            $xstudentResult=array();
-                            $xstudentResult=$objEssaybook->getGrades("studentid='$studentUserId' and topicid='".$iassignment["id"]."' and context='$contextCode'");
-                            $classAvg=array();
-                            $classAvg=$objEssaybook->getGrades("topicid='".$iassignment["id"]."' and context='$contextCode'","avg(mark) classavg");
-                            $ca=0;
-                            $ca=$classAvg[0]["classavg"];
-                            $totalAvgMark+=$ca;
-                            if(!empty($xstudentResult)) {
-                                foreach($xstudentResult as $studentResult) {
-                                    $this->TableInstructions->addCell(round($studentResult["mark"],2));
-                                    $this->TableInstructions->addCell(round($ca,2));
-                                    $this->TableInstructions->addCell('<font color="red">'.round((($studentResult["mark"]/100)*$iassignment["percentage"]),2).'</font>');
-                                    $totalMark+=round(($studentResult["mark"]/100)*$iassignment["percentage"],2);
-                                    $totalPercentMark+=$studentResult["mark"];
-                                    $count+=1;
-                                }
-                            } else {
-                                $this->TableInstructions->addCell('');
-                                $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                                $this->TableInstructions->addCell('');
-                                $count+=1;
-                            }
-                            $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                            $totalPercentYrMark+=$iassignment["percentage"];
-                            $this->TableInstructions->endRow();
-                        }
-                    } else {
-                        //link
-                        $c++;
-                        $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                        //checkbox
-                        $objAssignmentCheckBox = new checkbox($iassignment["id"].":Essays");
-                        $objAssignmentCheckBox->setValue("1");
-                        $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                        //closing date
-                        $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                        //assignment name
-                        $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Essays','assignmentId'=>$iassignment["id"])));
-                        $objAssignmentLink->link=$iassignment["name"];
-                        $this->TableInstructions->addCell($objAssignmentLink->show());
-                        $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_essays','gradebook'));
-                        $studentResult=array();
-                        $xstudentResult=array();
-                        $xstudentResult=$objEssaybook->getGrades("studentid='$studentUserId' and topicid='".$iassignment["id"]."' and context='$contextCode'");
-                        $classAvg=array();
-                        $classAvg=$objEssaybook->getGrades("topicid='".$iassignment["id"]."' and context='$contextCode'","avg(mark) classavg");
-                        $ca=0;
-                        $ca=$classAvg[0]["classavg"];
-                        $totalAvgMark+=$ca;
-                        if(!empty($xstudentResult)) {
-                            foreach($xstudentResult as $studentResult) {
-                                $this->TableInstructions->addCell(round($studentResult["mark"],2));
-                                $this->TableInstructions->addCell(round($ca,2));
-                                $this->TableInstructions->addCell('<font color="red">'.round((($studentResult["mark"]/100)*$iassignment["percentage"]),2).'</font>');
-                                $totalMark+=round(($studentResult["mark"]/100)*$iassignment["percentage"],2);
-                                $totalPercentMark+=$studentResult["mark"];
-                                $count+=1;
-                            }
-                        } else {
-                            $this->TableInstructions->addCell('');
-                            $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                            $this->TableInstructions->addCell('');
-                            $count+=1;
-                        }
-                        $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                        $totalPercentYrMark+=$iassignment["percentage"];
-                        $this->TableInstructions->endRow();
-                    }
-                }
-            }
-
-            //worksheets
-            $worksheetsResultsArray=array();
-            $worksheetsResultsArray=$objWorksheet->getWorksheets("context='$contextCode'");
-            if(!empty($worksheetsResultsArray)) {
-                foreach($worksheetsResultsArray as $iassignment) {
-                    if($check) {
-                        /**
-                         * the variable checked against is created through a combination
-                         * of the id and the word "Essays" or Worksheets ... etc
-                         * the variable is recreated and we check to see if it exists
-                         */
-                        $xassignmentV=0;
-                        $xassignmentV="$iassignment[id]:Worksheets";
-                        $assignmentV=0;
-                        $assignmentV=$this->getParam($xassignmentV, NULL);
-
-                        if($assignmentV) {
-                            $checkCount++;
-                            //link
-                            $c++;
-                            $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                            //checkbox
-                            $objAssignmentCheckBox = new checkbox($iassignment["id"].":Worksheets");
-                            $objAssignmentCheckBox->setValue("1");
-                            $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                            //closing date
-                            $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                            //assignment name
-                            $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Online Worksheets','assignmentId'=>$iassignment["id"])));
-                            $objAssignmentLink->link=$iassignment["name"];
-                            $this->TableInstructions->addCell($objAssignmentLink->show());
-                            $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_worksheet','gradebook'));
-                            $studentResult=array();
-                            $xstudentResult=array();
-                            $xstudentResult=$objWorksheetresults->getAnnualResults("userId='$studentUserId' and worksheet_id='".$iassignment["id"]."'");
-                            $classAvg=array();
-                            $classAvg=$objWorksheetresults->getAnnualResults("worksheet_id='".$iassignment["id"]."'","avg(mark) classAvg");
-                            $ca=0;
-                            $ca=($classAvg[0]["classavg"]<0?0:($classAvg[0]["classavg"]/$iassignment["total_mark"])*100);
-                            $totalAvgMark+=$ca;
-                            if(!empty($xstudentResult)) {
-                                foreach($xstudentResult as $studentResult) {
-                                    $this->TableInstructions->addCell(round(($studentResult["mark"]<0?0:($studentResult["mark"]/$iassignment["total_mark"])*100),2));
-                                    $this->TableInstructions->addCell(round($ca,2));
-                                    $this->TableInstructions->addCell('<font color="red">'.round(((($studentResult["mark"]<0?0:$studentResult["mark"])/100)*$iassignment["percentage"]),2).'</font>');
-                                    $totalMark+=round((($studentResult["mark"]<0?0:$studentResult["mark"])/100)*$iassignment["percentage"],2);
-                                    $totalPercentMark+=($studentResult["mark"]<0?0:$studentResult["mark"]);
-                                    $count+=1;
-                                }
-                            } else {
-                                $this->TableInstructions->addCell('');
-                                $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                                $this->TableInstructions->addCell('');
-                                $count+=1;
-                            }
-                            $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                            $totalPercentYrMark+=$iassignment["percentage"];
-                            $this->TableInstructions->endRow();
-                        }
-                    } else {
-                        //link
-                        $c++;
-                        $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                        //checkbox
-                        $objAssignmentCheckBox = new checkbox($iassignment["id"].":Worksheets");
-                        $objAssignmentCheckBox->setValue("1");
-                        $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                        //closing date
-                        $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                        //assignment name
-                        $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Online Worksheets','assignmentId'=>$iassignment["id"])));
-                        $objAssignmentLink->link=$iassignment["name"];
-                        $this->TableInstructions->addCell($objAssignmentLink->show());
-                        $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_worksheet','gradebook'));
-                        $studentResult=array();
-                        $xstudentResult=array();
-                        $xstudentResult=$objWorksheetresults->getAnnualResults("userId='$studentUserId' and worksheet_id='".$iassignment["id"]."'");
-                        $classAvg=array();
-                        $classAvg=$objWorksheetresults->getAnnualResults("worksheet_id='".$iassignment["id"]."'","avg(mark) classAvg");
-                        $ca=0;
-                        $ca=($classAvg[0]["classavg"]<0?0:($classAvg[0]["classavg"]/$iassignment["total_mark"])*100);
-                        $totalAvgMark+=$ca;
-                        if(!empty($xstudentResult)) {
-                            foreach($xstudentResult as $studentResult) {
-                                $this->TableInstructions->addCell(round(($studentResult["mark"]<0?0:($studentResult["mark"]/$iassignment["total_mark"])*100),2));
-                                $this->TableInstructions->addCell(round($ca,2));
-                                $this->TableInstructions->addCell('<font color="red">'.round(((($studentResult["mark"]<0?0:$studentResult["mark"])/100)*$iassignment["percentage"]),2).'</font>');
-                                $totalMark+=round((($studentResult["mark"]<0?0:$studentResult["mark"])/100)*$iassignment["percentage"],2);
-                                $totalPercentMark+=($studentResult["mark"]<0?0:$studentResult["mark"]);
-                                $count+=1;
-                            }
-                        } else {
-                            $this->TableInstructions->addCell('');
-                            $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                            $this->TableInstructions->addCell('');
-                            $count+=1;
-                        }
-                        $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                        $totalPercentYrMark+=$iassignment["percentage"];
-                        $this->TableInstructions->endRow();
-                    }
-                }
-            }
-
-            //MCQ Tests
-            $testsResultsArray=array();
-            $testsResultsArray=$objTestadmin->getTests($contextCode);
-            if(!empty($testsResultsArray)) {
-                foreach($testsResultsArray as $iassignment) {
-                    if($check) {
-                        /**
-                         * the variable checked against is created through a combination
-                         * of the id and the word "Essays" or Worksheets ... etc
-                         * the variable is recreated and we check to see if it exists
-                         */
-                        $xassignmentV=0;
-                        $xassignmentV="$iassignment[id]:Tests";
-                        $assignmentV=0;
-                        $assignmentV=$this->getParam($xassignmentV, NULL);
-
-                        if($assignmentV) {
-                            $checkCount++;
-                            //link
-                            $c++;
-                            $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                            //checkbox
-                            $objAssignmentCheckBox = new checkbox($iassignment["id"].":Tests");
-                            $objAssignmentCheckBox->setValue("1");
-                            $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                            //closing date
-                            $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                            //assignment name
-                            $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'MCQ Tests','assignmentId'=>$iassignment["id"])));
-                            $objAssignmentLink->link=$iassignment["name"];
-                            $this->TableInstructions->addCell($objAssignmentLink->show());
-                            $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_test','gradebook'));
-                            $studentResult=array();
-                            $xstudentResult=array();
-                            $xstudentResult=$objTestresults->getResult($studentUserId,$iassignment["id"]);
-
-                            $classAvg=array();
-                            $classAvg=$objTestresults->getAnnualResults("tbl_test_results.testId='".$iassignment["id"]."' and tbl_test_results.testId=tbl_tests.id","avg((tbl_test_results.mark/tbl_tests.totalMark)*100) classAvg","tbl_test_results,tbl_tests");
-                            $ca=0;
-                            $ca=$classAvg[0]["classAvg"];
-                            $sMark=array();
-                            $sMark=$objTestresults->getAnnualResults("tbl_test_results.testId='".$iassignment["id"]."' and tbl_test_results.studentId='$studentUserId' and tbl_test_results.testId=tbl_tests.id","((tbl_test_results.mark/tbl_tests.totalMark)*100) studentMark","tbl_test_results,tbl_tests");
-                            $mark=0;
-                            $mark=($sMark[0]["studentMark"]!=NULL?$sMark[0]["studentMark"]:0);
-                            $totalAvgMark+=$ca;
-                            if(!empty($xstudentResult)) {
-                                foreach($xstudentResult as $studentResult) {
-
-                                    $this->TableInstructions->addCell(round($mark,2));
-                                    $this->TableInstructions->addCell(round($ca,2));
-                                    $this->TableInstructions->addCell('<font color="red">'.round((($mark/100)*$iassignment["percentage"]),2).'</font>');
-                                    $totalMark+=round(($mark/100)*$iassignment["percentage"],2);
-                                    $totalPercentMark+=$mark;
-                                    $count+=1;
-                                }
-                            } else {
-                                $this->TableInstructions->addCell('');
-                                $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                                $this->TableInstructions->addCell('');
-                                $count+=1;
-                            }
-                            $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                            $totalPercentYrMark+=$iassignment["percentage"];
-                            $this->TableInstructions->endRow();
-                        }
-                    } else {
-                        //link
-                        $c++;
-                        $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                        //checkbox
-                        $objAssignmentCheckBox = new checkbox($iassignment["id"].":Tests");
-                        $objAssignmentCheckBox->setValue("1");
-                        $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                        //closing date
-                        $this->TableInstructions->addCell($objDatetime->formatDate(isset($iassignment['closing_date'])?$iassignment['closing_date']:NULL));
-                        //assignment name
-                        $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'MCQ Tests','assignmentId'=>$iassignment["id"])));
-                        $objAssignmentLink->link=$iassignment["name"];
-                        $this->TableInstructions->addCell($objAssignmentLink->show());
-                        $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_test','gradebook'));
-                        $studentResult=array();
-                        $xstudentResult=array();
-                        $xstudentResult=$objTestresults->getResult($studentUserId,$iassignment["id"]);
-                        
-                        $classAvg=array();
-                        $classAvg=$objTestresults->getAnnualResults("tbl_test_results.testId='".$iassignment["id"]."' and tbl_test_results.testId=tbl_tests.id","avg((tbl_test_results.mark/tbl_tests.totalMark)*100) classAvg","tbl_test_results,tbl_tests");
-                        $ca=0;
-                        $ca = isset($classAvg[0]['classavg']) ? $classAvg[0]['classavg'] : NULL;
-                        $sMark=array();
-                        $sMark=$objTestresults->getAnnualResults("tbl_test_results.testId='".$iassignment["id"]."' and tbl_test_results.studentId='$studentUserId' and tbl_test_results.testId=tbl_tests.id","(tbl_test_results.mark/tbl_tests.totalMark)*100 studentMark","tbl_test_results,tbl_tests");
-                        $mark=0;
-                        $totalAvgMark+=$ca;
-                        if(!empty($xstudentResult)) {
-                            foreach($xstudentResult as $studentResult) {
-                                $mark=$studentResult['mark'];
-                                if(!isset ($mark)) {
-                                    $mark=0;
-                                }else{
-                                    $mark=($mark/$iassignment['totalmark'])*100;
-                                }
-                                $this->TableInstructions->addCell(round($mark,2));
-                                $this->TableInstructions->addCell(round($ca,2));
-                                $this->TableInstructions->addCell('<font color="red">'.round((($mark/100)*$iassignment["percentage"]),2).'</font>');
-                                $totalMark+=round(($mark/100)*$iassignment["percentage"],2);
-                                $totalPercentMark+=$mark;
-                                $count+=1;
-                            }
-                        } else {
-                            $this->TableInstructions->addCell('');
-                            $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                            $this->TableInstructions->addCell('');
-                            $count+=1;
-                        }
-                        $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                        $totalPercentYrMark+=$iassignment["percentage"];
-                        $this->TableInstructions->endRow();
-                    }
-                }
-            }
-
-            //Assignments
-            $assignmentsResultsArray=array();
-            $assignmentsResultsArray=$objAssignment->getAssignment($contextCode);
-            if(!empty($assignmentsResultsArray)) {
-                foreach($assignmentsResultsArray as $iassignment) {
-                    if($check) {
-                        /**
-                         * the variable checked against is created through a combination
-                         * of the id and the word "Essays" or Worksheets ... etc
-                         * the variable is recreated and we check to see if it exists
-                         */
-                        $xassignmentV=0;
-                        $xassignmentV="$iassignment[id]:Assignments";
-                        $assignmentV=0;
-                        $assignmentV=$this->getParam($xassignmentV, NULL);
-
-                        if($assignmentV) {
-                            $checkCount++;
-                            //link
-                            $c++;
-                            $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                            //checkbox
-                            $objAssignmentCheckBox = new checkbox($iassignment["id"].":Assignments");
-                            $objAssignmentCheckBox->setValue("1");
-                            $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                            //closing date
-                            $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                            //assignment name
-                            $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Assignments','assignmentId'=>$iassignment["id"])));
-                            $objAssignmentLink->link=$iassignment["name"];
-                            $this->TableInstructions->addCell($objAssignmentLink->show());
-                            $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_assignments','gradebook'));
-                            $studentResult=array();
-                            $xstudentResult=array();
-                            $xstudentResult=$objAssignmentSubmit->getSubmit("userId='$studentUserId' and assignmentId='".$iassignment["id"]."'","mark");
-                            $classAvg=array();
-                            $classAvg=$objAssignmentSubmit->getSubmittedAssignments("assignmentId='".$iassignment["id"]."'","avg(mark) classAvg");
-                            $ca=0;
-                            $ca=($classAvg[0]["classavg"]/$iassignment["total_mark"])*100;
-                            $totalAvgMark+=$ca;
-                            $studentResult=$xstudentResult[(is_countable($xstudentResult) ? count($xstudentResult) : 0)-1];
-                            if(!empty($xstudentResult)) {
-                                //foreach($xstudentResult as $studentResult) {
-                                $this->TableInstructions->addCell(round(($studentResult["mark"]/$iassignment["mark"])*100,2));
-                                $this->TableInstructions->addCell(round($ca,2));
-                                $this->TableInstructions->addCell('<font color="red">'.round((($studentResult["mark"]/100)*$iassignment["percentage"]),2).'</font>');
-                                $totalMark+=round(($studentResult["mark"]/100)*$iassignment["percentage"],2);
-                                $totalPercentMark+=($studentResult["mark"]/$iassignment["mark"])*100;
-                                $count+=1;
-                                //}
-                            } else {
-                                $this->TableInstructions->addCell('');
-                                $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                                $this->TableInstructions->addCell('');
-                                $count+=1;
-                            }
-                            $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                            $totalPercentYrMark+=$iassignment["percentage"];
-                            $this->TableInstructions->endRow();
-                        }
-                    } else {
-                        //link
-                        $c++;
-                        $this->TableInstructions->startRow(!($c%2)?"odd":"even");
-                        //checkbox
-                        $objAssignmentCheckBox = new checkbox($iassignment["id"].":Assignments");
-                        $objAssignmentCheckBox->setValue("1");
-                        $this->TableInstructions->addCell($objAssignmentCheckBox->show());
-                        //closing date
-                        $this->TableInstructions->addCell($objDatetime->formatDate($iassignment["closing_date"]));
-                        //assignment name
-                        $objAssignmentLink = new link($this->uri(array('action'=>'assignmentDetails','assignment'=>'Assignments','assignmentId'=>$iassignment["id"])));
-                        $objAssignmentLink->link=$iassignment["name"];
-                        $this->TableInstructions->addCell($objAssignmentLink->show());
-                        $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_assignments','gradebook'));
-                        $studentResult=array();
-                        $xstudentResult=array();
-                        $xstudentResult=$objAssignmentSubmit->getSubmit("userId='$studentUserId' and assignmentId='".$iassignment["id"]."'","mark");
-                        $classAvg=array();
-                        $classAvg=$objAssignmentSubmit->getSubmittedAssignments("assignmentId='".$iassignment["id"]."'","avg(mark) classAvg");
-                        $ca=0;
-                        $ca=$classAvg[0]["classavg"];
-                        $totalAvgMark+=$ca;
-                        $studentResult=$xstudentResult[(is_countable($xstudentResult) ? count($xstudentResult) : 0)-1];
-                        if(!empty($xstudentResult)) {
-                            //foreach($xstudentResult as $studentResult) {
-                            $this->TableInstructions->addCell(round(($studentResult["mark"]/$iassignment["mark"])*100,2));
-                            $this->TableInstructions->addCell(round($ca,2));
-                            $this->TableInstructions->addCell('<font color="red">'.round((($studentResult["mark"]/100)*$iassignment["percentage"]),2).'</font>');
-                            $totalMark+=round(($studentResult["mark"]/100)*$iassignment["percentage"],2);
-                            $totalPercentMark+=($studentResult["mark"]/$iassignment["mark"])*100;
-                            $count+=1;
-                            //}
-                        } else {
-                            $this->TableInstructions->addCell('');
-                            $this->TableInstructions->addCell(($ca?round($ca,2):''));
-                            $this->TableInstructions->addCell('');
-                            $count+=1;
-                        }
-                        $this->TableInstructions->addCell(round($iassignment["percentage"],2));
-                        $totalPercentYrMark+=$iassignment["percentage"];
-                        $this->TableInstructions->endRow();
-                    }
-                }
-            }
-            if(!$checkCount && $check) {
-                /**
-                 * no checkbox selected but the button was clicked
-                 */
-                $this->TableInstructions->startRow();
-                $this->TableInstructions->addCell("&nbsp;");
-                $this->TableInstructions->addCell($objLanguage->languageText('mod_gradebook_nocheckboxes_selected','gradebook'),NULL,NULL,NULL,NULL," colspan=\"7\"");
-                $this->TableInstructions->endRow();
-            }
-            break;
+$dateTime = $this->getObject('dateandtime', 'utilities');
+$rows = $this->studentAssessmentRows($studentUserId);
+$escape = function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+$number = function ($value) {
+    return number_format((float) $value, 2, '.', '');
+};
+$statusLabels = array(
+    'not_attempted' => $objLanguage->languageText('mod_gradebook_result_notattempted', 'gradebook'),
+    'in_progress' => $objLanguage->languageText('mod_gradebook_result_inprogress', 'gradebook'),
+    'submitted' => $objLanguage->languageText('mod_gradebook_result_submitted', 'gradebook'),
+    'marked' => $objLanguage->languageText('mod_gradebook_result_marked', 'gradebook')
+);
+$plannedContribution = 0.0;
+$markedContribution = 0.0;
+$currentCourseMark = 0.0;
+$markedCount = 0;
+foreach ($rows as $row) {
+    $plannedContribution += $row['weight'];
+    if ($row['mark_percent'] !== null) {
+        $markedContribution += $row['weight'];
+        $currentCourseMark += $row['weighted_mark'];
+        $markedCount++;
     }
 }
-
-if($checkCount || !$check) {
-    //totals
-    $this->TableInstructions->startRow();
-    $this->TableInstructions->addCell("<strong>".$objLanguage->languageText('mod_gradebook_total','gradebook')."</strong>",NULL,NULL,NULL,NULL," colspan=\"3\"");
-    $this->TableInstructions->addCell('&nbsp;');
-    $this->TableInstructions->addCell('<strong>'.number_format(round($totalPercentMark,2),2).'</strong>');
-    $this->TableInstructions->addCell('<strong>'.number_format(round($totalAvgMark,2),2).'</strong>');
-    $this->TableInstructions->addCell('<strong><font color="red">'.number_format(round($totalMark,2),2).'</font></strong>');
-    $this->TableInstructions->addCell('<strong>'.number_format(round($totalPercentYrMark,2),2).'</strong>');
-    $this->TableInstructions->endRow();
-
-    //averages
-    $this->TableInstructions->startRow();
-    $this->TableInstructions->addCell("<strong>".$objLanguage->languageText('mod_gradebook_average','gradebook')."</strong>",NULL,NULL,NULL,NULL," colspan=\"3\"");
-    $this->TableInstructions->addCell('&nbsp;');
-    $this->TableInstructions->addCell('<strong>'.round(round(($totalPercentMark/($count?$count:1)),2),2).'</strong>');
-    $this->TableInstructions->addCell('<strong>'.round(round(($totalAvgMark/($count?$count:1)),2),2).'</strong>');
-    //$this->TableInstructions->addCell('<strong>'.round(round(($totalMark/$count),2),2).'</strong>');
-    $this->TableInstructions->addCell('&nbsp;');
-    //$this->TableInstructions->addCell('<strong>'.round(round(($totalPercentYrMark/$count),2),2).'</strong>');
-    $this->TableInstructions->addCell('&nbsp;');
-    $this->TableInstructions->endRow();
-}
-
-$this->TableInstructions->startRow();
-//display selected button
-$objButton = new button('check',$objLanguage->languageText('mod_gradebook_displaySelected','gradebook'));
-$objButton->setToSubmit();
-//view all button
-$objButtonAll = new button('viewAllChecks',$objLanguage->languageText('mod_gradebook_viewAll','gradebook'));
-$objButtonAll->setToSubmit();
-$this->TableInstructions->addCell(((!$checkCount && $check)?'':$objButton->show()).' '.$objButtonAll->show(),NULL,NULL,"left",NULL," colspan=\"8\"");
-$this->TableInstructions->endRow();
-
-//back to gradebook home
-$this->TableInstructions->startRow();
-$objLink = new link($this->uri(array('action'=>NULL)));
-$objLink->link=$objLanguage->languageText('mod_gradebook_goback','gradebook');
-$this->TableInstructions->addCell($objLink->show(),NULL,NULL,NULL,NULL," colspan=\"8\"");
-$this->TableInstructions->endRow();
-
-$objForm->addToForm($this->TableInstructions->show());
-echo $objForm->show();
 ?>
+<style>
+.student-gradebook { color: #14213d; }
+.student-gradebook__identity { margin: .25rem 0 1.25rem; color: #405064; }
+.student-gradebook__table-wrap { overflow-x: auto; border: 1px solid #d8e0e8; border-radius: 12px; }
+.student-gradebook__table { width: 100%; border-collapse: collapse; background: #fff; }
+.student-gradebook__table th { padding: .8rem .75rem; text-align: left; font-size: .88rem; color: #405064; background: #f5f8fa; border-bottom: 1px solid #d8e0e8; }
+.student-gradebook__table td { padding: .9rem .75rem; vertical-align: top; border-bottom: 1px solid #e5eaef; }
+.student-gradebook__table tr:last-child td { border-bottom: 0; }
+.student-gradebook__title { font-weight: 700; color: #14213d; }
+.student-gradebook__muted { color: #687789; }
+.student-gradebook__number { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.student-gradebook__status { display: inline-flex; padding: .28rem .58rem; border-radius: 999px; font-size: .82rem; font-weight: 700; background: #eef2f5; color: #435466; white-space: nowrap; }
+.student-gradebook__status--marked { background: #e6f5ea; color: #17633a; }
+.student-gradebook__status--submitted { background: #fff3d6; color: #7a5300; }
+.student-gradebook__summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.25rem 0; }
+.student-gradebook__summary-card { padding: 1rem; border: 1px solid #d8e0e8; border-radius: 12px; background: #f8fafb; }
+.student-gradebook__summary-label { display: block; color: #526377; font-size: .86rem; margin-bottom: .3rem; }
+.student-gradebook__summary-value { display: block; font-size: 1.25rem; font-weight: 800; color: #245b57; }
+.student-gradebook__empty { padding: 1.25rem; border: 1px solid #d8e0e8; border-radius: 12px; background: #f8fafb; color: #526377; }
+@media (max-width: 760px) { .student-gradebook__summary { grid-template-columns: 1fr; } }
+</style>
+<div class="student-gradebook">
+    <h2><?php echo $escape(($contextCode ? $contextObject->getMenuText($contextCode) : '') . ' ' . $objLanguage->languageText('mod_gradebook_title', 'gradebook') . ' - ' . $this->objUser->fullname($studentUserId)); ?></h2>
+    <p class="student-gradebook__identity"><strong><?php echo $escape($objLanguage->languageText('mod_gradebook_studentNumber', 'gradebook')); ?>:</strong> <?php echo $escape($this->objUser->username($studentUserId)); ?></p>
+
+    <?php if (empty($rows)): ?>
+        <div class="student-gradebook__empty"><?php echo $escape($objLanguage->languageText('mod_gradebook_noassessmentplanstudent', 'gradebook')); ?></div>
+    <?php else: ?>
+        <div class="student-gradebook__table-wrap">
+            <table class="student-gradebook__table">
+                <thead><tr>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_assessment', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_assessmentType', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_closingDate', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_contribution', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_activitystatus', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_mark', 'gradebook')); ?></th>
+                    <th><?php echo $escape($objLanguage->languageText('mod_gradebook_coursemarkearned', 'gradebook')); ?></th>
+                </tr></thead>
+                <tbody>
+                <?php foreach ($rows as $row):
+                    $status = isset($statusLabels[$row['status']]) ? $statusLabels[$row['status']] : $statusLabels['not_attempted'];
+                    $statusClass = in_array($row['status'], array('marked', 'submitted'), true) ? ' student-gradebook__status--' . $row['status'] : '';
+                ?>
+                    <tr>
+                        <td><span class="student-gradebook__title"><?php echo $escape($row['title']); ?></span></td>
+                        <td><?php echo $escape($row['provider']); ?></td>
+                        <td><?php echo $row['closing_date'] === null ? '<span class="student-gradebook__muted">' . $escape($objLanguage->languageText('mod_gradebook_noclosingdate', 'gradebook')) . '</span>' : $escape($dateTime->formatDate($row['closing_date'])); ?></td>
+                        <td class="student-gradebook__number"><?php echo $number($row['weight']); ?>%</td>
+                        <td><span class="student-gradebook__status<?php echo $statusClass; ?>"><?php echo $escape($status); ?></span></td>
+                        <td class="student-gradebook__number"><?php echo $row['mark_percent'] === null ? '&mdash;' : $number($row['mark_percent']) . '%'; ?></td>
+                        <td class="student-gradebook__number"><?php echo $row['weighted_mark'] === null ? '&mdash;' : $number($row['weighted_mark']) . '%'; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="student-gradebook__summary">
+            <div class="student-gradebook__summary-card"><span class="student-gradebook__summary-label"><?php echo $escape($objLanguage->languageText('mod_gradebook_plannedcontribution', 'gradebook')); ?></span><span class="student-gradebook__summary-value"><?php echo $number($plannedContribution); ?>%</span></div>
+            <div class="student-gradebook__summary-card"><span class="student-gradebook__summary-label"><?php echo $escape($objLanguage->languageText('mod_gradebook_markedcontribution', 'gradebook')); ?></span><span class="student-gradebook__summary-value"><?php echo $number($markedContribution); ?>%</span></div>
+            <div class="student-gradebook__summary-card"><span class="student-gradebook__summary-label"><?php echo $escape($objLanguage->languageText('mod_gradebook_currentcoursemark', 'gradebook')); ?></span><span class="student-gradebook__summary-value"><?php echo $markedCount ? $number($currentCourseMark) . '%' : $escape($objLanguage->languageText('mod_gradebook_notavailableyet', 'gradebook')); ?></span></div>
+        </div>
+    <?php endif; ?>
+    <p><a href="<?php echo $escape($this->uri(array('action' => null))); ?>"><?php echo $escape($objLanguage->languageText('mod_gradebook_goback', 'gradebook')); ?></a></p>
+</div>

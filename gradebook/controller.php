@@ -418,6 +418,54 @@ class gradebook extends controller {
         return $this->nextAction('assessmentSheet', array('planmessage'=>'weights_saved'));
     }
 
+    /**
+     * Build the learner view from the Assessment Plan and provider-owned results.
+     * Negative legacy sentinel values are never grades.
+     */
+    public function studentAssessmentRows($userId)
+    {
+        $registry = $this->getObject('assessmentproviderregistry', 'gradebook');
+        $rows = array();
+        foreach ($this->assessmentPlanRows() as $planRow) {
+            $item = $planRow['item'];
+            $result = array('status' => 'not_attempted', 'mark_percent' => null);
+            $adapter = $registry->adapter($item['provider_key']);
+            if (is_object($adapter) && is_callable(array($adapter, 'getStudentResult'))) {
+                $candidate = $adapter->getStudentResult(
+                    $this->contextCode,
+                    $item['activity_id'],
+                    $userId,
+                    isset($item['result_rule']) ? $item['result_rule'] : 'latest_completed'
+                );
+                if (is_array($candidate) && !empty($candidate['status'])) {
+                    $result = $candidate;
+                }
+            }
+
+            $weight = !isset($item['include_in_course_mark'])
+                || strtoupper((string) $item['include_in_course_mark']) === 'Y'
+                ? max(0.0, (float) $item['weight']) : 0.0;
+            $mark = isset($result['mark_percent']) && is_numeric($result['mark_percent'])
+                ? max(0.0, min(100.0, (float) $result['mark_percent'])) : null;
+            $closingDate = null;
+            if (isset($item['closing_enabled']) && strtoupper((string) $item['closing_enabled']) === 'Y'
+                && !empty($item['closing_date']) && strtotime((string) $item['closing_date']) !== false) {
+                $closingDate = $item['closing_date'];
+            }
+
+            $rows[] = array(
+                'title' => $planRow['title'],
+                'provider' => $planRow['provider'],
+                'closing_date' => $closingDate,
+                'weight' => $weight,
+                'status' => $result['status'],
+                'mark_percent' => $mark,
+                'weighted_mark' => $mark === null ? null : ($mark * $weight / 100)
+            );
+        }
+        return $rows;
+    }
+
     private function assessmentPlanRows()
     {
         $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');

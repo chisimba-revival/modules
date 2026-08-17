@@ -8,10 +8,12 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 class mcqtestsassessmentprovider extends ChisimbaObject
 {
     private $tests;
+    private $results;
 
     public function init()
     {
         $this->tests = $this->getObject('dbtestadmin', 'mcqtests');
+        $this->results = $this->getObject('dbresults', 'mcqtests');
     }
 
     public function listActivities($contextCode)
@@ -26,7 +28,9 @@ class mcqtestsassessmentprovider extends ChisimbaObject
                 $activities[] = array(
                     'id' => $record['id'],
                     'name' => $record['name'],
-                    'classification' => $classification
+                    'classification' => $classification,
+                    'total_mark' => isset($record['totalmark']) ? (float) $record['totalmark'] : 0.0,
+                    'closing_date' => isset($record['closingdate']) ? $record['closingdate'] : null
                 );
             }
         }
@@ -39,6 +43,30 @@ class mcqtestsassessmentprovider extends ChisimbaObject
             if ((string) $activity['id'] === (string) $activityId) { return $activity; }
         }
         return false;
+    }
+
+    /** Return a normalised learner result without exposing legacy sentinels. */
+    public function getStudentResult($contextCode, $activityId, $userId, $rule = 'latest_completed')
+    {
+        $activity = $this->getActivity($contextCode, $activityId);
+        if (!is_array($activity) || $activity['total_mark'] <= 0) {
+            return array('status' => 'not_attempted', 'mark_percent' => null);
+        }
+        $attempts = $this->results->getResult($userId, $activityId);
+        if (empty($attempts)) {
+            return array('status' => 'not_attempted', 'mark_percent' => null);
+        }
+        foreach ((array) $attempts as $attempt) {
+            if (array_key_exists('mark', $attempt) && is_numeric($attempt['mark'])
+                && (float) $attempt['mark'] >= 0) {
+                $percentage = ((float) $attempt['mark'] / $activity['total_mark']) * 100;
+                return array(
+                    'status' => 'marked',
+                    'mark_percent' => max(0.0, min(100.0, $percentage))
+                );
+            }
+        }
+        return array('status' => 'in_progress', 'mark_percent' => null);
     }
 }
 ?>
