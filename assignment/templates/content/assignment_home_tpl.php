@@ -18,6 +18,8 @@ $objIconService = $this->getObject('iconservice', 'ui');
 $addIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
 $deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
+$assignmentIcon = $objIconService->render('file-text', array('decorative' => TRUE, 'class' => 'assignment-row-icon'));
+$submittedListIcon = $objIconService->render('scroll-text', array('decorative' => TRUE, 'class' => 'assignment-row-icon'));
 $objTimeOut = $this->newObject('timeoutMessage', 'htmlelements');
 
 $objTrim = $this->getObject('trimstr', 'strings');
@@ -84,7 +86,7 @@ if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
         $objLink = new link($this->uri(array('action' => 'view', 'id' => $assignment['id'])));
         $objLink->title = $viewLabel . ' ' . $assignment['name'];
-        $objLink->link = $assignment['name'];
+        $objLink->link = $assignmentIcon . '<span>' . htmlspecialchars($assignment['name'], ENT_QUOTES, 'UTF-8') . '</span>';
 
 
         // Display whether the assignment is online or uploadable
@@ -167,9 +169,10 @@ if ($this->isValid('add')) {
 
 if ($this->objUser->isContextStudent($this->contextCode)) {
     $this->objLink->link($this->uri(array('action' => 'displaylist')));
-    $this->objLink->link = $this->objLanguage->languageText('mod_assignment_submittedassignmentslist', 'assignment');
+    $this->objLink->link = $submittedListIcon . '<span>' . $this->objLanguage->languageText('mod_assignment_submittedassignmentslist', 'assignment') . '</span>';
     $ret .= '<p class="assignment_link_submittedlist">' . $this->objLink->show() . '</p>';
 }
 
+$this->appendArrayVar('headerParams', '<style>.assignment_main .assignment-row-icon{width:1.15em;height:1.15em;margin-right:.45rem;vertical-align:-.18em}.assignment_main td a,.assignment_link_submittedlist a{display:inline-flex;align-items:center}.assignment_link_submittedlist{margin-top:1.25rem}</style>');
 echo "<div class='assignment_main'>$ret</div>";
 ?>

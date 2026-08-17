@@ -7,13 +7,14 @@ $this->loadClass('hiddeninput', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 $this->loadClass('fieldset', 'htmlelements');
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$objIconService = $this->getObject('iconservice', 'ui');
 $objWashout = $this->getObject('washout', 'utilities');
-$objIcon->setIcon('edit');
-$editIcon = $objIcon->show();
+$editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
+$deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
 
-$objIcon->setIcon('delete');
-$deleteIcon = $objIcon->show();
+$this->appendArrayVar('headerParams', '<style>
+.assignment_main{display:grid;gap:1rem}.assignment-card{background:#fff;border:1px solid #dbe4e7;border-radius:12px;padding:1.25rem;box-shadow:0 8px 24px rgba(15,23,42,.05)}.assignment-card>h1:first-child{margin-top:0}.assignment-card table{width:100%}.assignment-card hr{border:0;border-top:1px solid #dbe4e7;margin:1.25rem 0}.assignment-picker{display:grid;gap:.75rem;max-width:720px}.assignment-picker-actions{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}.assignment-picker-file{padding:.75rem;border-radius:8px;background:#f2f7f5;color:#234}.assignment-picker button{padding:.55rem .9rem}.assignment-file-types{color:#52606d;font-size:.92rem}@media(max-width:700px){.assignment-card{padding:1rem}.assignment-card table,.assignment-card tbody,.assignment-card tr,.assignment-card td{display:block;width:100%!important}.assignment-card td{padding:.25rem 0}}
+</style>');
 
 $header = new htmlHeading();
 $header->str = $assignment['name'];
@@ -33,7 +34,7 @@ $header->type = 1;
 $objDateTime = $this->getObject('dateandtime', 'utilities');
 $objTrimStr = $this->getObject('trimstr', 'strings');
 
-$ret .= $header->show();
+$ret .= '<section class="assignment-card assignment-brief">' . $header->show();
 
 $table = $this->newObject('htmltable', 'htmlelements');
 
@@ -52,8 +53,10 @@ $table->endRow();
 $table->startRow();
 $table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_openingdate', 'assignment', 'Opening Date') . '</strong>', 130);
 $table->addCell($objDateTime->formatDate($assignment['opening_date']));
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_percentyrmark', 'assignment', 'Percentage of year mark') . '</strong>', 200, NULL, NULL, 'nowrap');
-$table->addCell($assignment['percentage'] . '%');
+$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_assessmentclassification', 'assignment') . '</strong>', 200, NULL, NULL, 'nowrap');
+$classification = isset($assignment['assessment_classification']) ? strtolower((string) $assignment['assessment_classification']) : 'summative';
+$classificationKey = $classification === 'formative' ? 'mod_assignment_classification_formative' : 'mod_assignment_classification_summative';
+$table->addCell($this->objLanguage->languageText($classificationKey, 'assignment'));
 $table->endRow();
 
 $table->startRow();
@@ -64,23 +67,6 @@ if ($assignment['format'] == '0') {
     $table->addCell($this->objLanguage->languageText('mod_assignment_online', 'assignment', 'Online'));
 } else {
     $table->addCell($this->objLanguage->languageText('mod_assignment_upload', 'assignment', 'Upload'));
-}
-$table->endRow();
-
-$table->startRow();
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_emailalerttostudents1', 'assignment', 'Email on creation') . '</strong>', 130);
-if ($assignment['email_alert'] == '0') {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_emailalertoff', 'assignment', 'Off'));
-} else {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_emailalerton', 'assignment', 'On'));
-}
-
-
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_emailalertfromstudents1', 'assignment', 'Email on submission') . '</strong>', 130);
-if ($assignment['email_alert_onsubmit'] == '0') {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_emailalertoff', 'assignment', 'Off'));
-} else {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_emailalerton', 'assignment', 'On'));
 }
 $table->endRow();
 
@@ -134,7 +120,7 @@ if ($assignment['usegroups'] == '1') {
     $table->addCell($gfieldset->show(), NULL, NULL, NULL, NULL, 'colspan="4"');
     $table->endRow();
 }
-$ret .= $table->show();
+$ret .= $table->show() . '</section><section class="assignment-card assignment-submissions">';
 
 $htmlHeader = new htmlHeading();
 $htmlHeader->type = 1;
@@ -279,67 +265,25 @@ if ($this->isValid('markassignments')) {
 
             $ret .= $form->show();
         } else { // Upload Assignment
-            $header = new htmlHeading();
-            $header->str = $this->objLanguage->languageText('mod_assignment_uploadnewfile', 'assignment'); //$this->objLanguage->languageText('mod_filemanager_uploadnewfile', 'filemanager', 'Upload new file')
-            $header->type = 4;
-
-            $ret .= $header->show();
-
-            $form = new form('addassignmentbyupload', $this->uri(array('action' => 'uploadassignment')));
-            $form->extra = 'enctype="multipart/form-data"';
-
-            $objUpload = $this->newObject('uploadinput', 'filemanager');
-            $objUpload->targetDirMode = TARGETDIRMODE_USER;
-
-            $filetypes = $this->objAssignmentUploadablefiletypes->getFiletypes($assignment['id']);
-            if (empty($filetypes)) {
-                $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
-                $allowedFilesString = $this->objSysConfig->getValue('FILETYPES_ALLOWED', 'assignment');
-                if (is_null($allowedFilesString)) {
-                    $allowedFileTypes = array('doc', 'odt', 'rtf', 'txt', 'docx', 'mp3', 'mp4', 'ppt', 'pptx', 'pdf');
-                } else {
-                    $allowedFileTypes = explode(',', $allowedFilesString);
-                }
-                $allowedFileTypes = array_values(array_filter(array_map('trim', $allowedFileTypes)));
-                if (!in_array('mp4', $allowedFileTypes, true)) {
-                    $allowedFileTypes[] = 'mp4';
-                }
-            } else {
-                $allowedFileTypes = array();
-                foreach ($filetypes as $filetype) {
-                    $allowedFileTypes[] = $filetype['filetype'];
-                }
-            }
-            $objUpload->restrictFileList = $allowedFileTypes;
-
-            $button = new button('submitform', $this->objLanguage->languageText('mod_assignment_uploadassignment', 'assignment', 'Upload Assignment'));
-            $button->setToSubmit();
-
-            $form->addToForm($hiddenInput->show() . $objUpload->show() . '<br />' . $button->show());
-            $ret .= $form->show();
-
-            $header = new htmlHeading();
-            $header->str = $this->objLanguage->languageText('mod_filemanager_chooseexisting', 'filemanager', 'Choose existing file from file manager');
-            $header->type = 4;
-
-            $ret .= $header->show();
-
-            $form = new form('submitassignment', $this->uri(array('action' => 'submitassignment')));
-            $objSelectFile = $this->newObject('selectfile', 'filemanager');
-            $objSelectFile->name = 'assignment';
-            $objSelectFile->restrictFileList = $allowedFileTypes;
-            $objSelectFile->setForceRestrictions(TRUE);
-
-            $button = new button('submitform', 'Submit Assignment');
-            $button->setToSubmit();
-
-            $form->addToForm($hiddenInput->show() . $objSelectFile->show() . '<br />' . $button->show());
-
-            $ret .= $form->show();
+            $pickerUrl = html_entity_decode($this->uri(array('action' => 'filepicker', 'policy' => 'assignment', 'target' => 'assignment_submission_file'), 'filemanager', '', '', false, true), ENT_QUOTES, 'UTF-8');
+            $chooseLabel = $this->objLanguage->languageText('mod_assignment_choosefromfilemanager', 'assignment');
+            $noFileLabel = $this->objLanguage->languageText('mod_assignment_nofileselected', 'assignment');
+            $submitLabel = $this->objLanguage->languageText('mod_assignment_submitassignment', 'assignment');
+            $wrongTypeLabel = $this->objLanguage->languageText('mod_assignment_filetypenotallowed', 'assignment');
+            $allowedJson = json_encode(array_values(array_map('strtolower', $allowedFileTypes)), JSON_UNESCAPED_SLASHES);
+            $ret .= '<form class="assignment-picker" method="post" action="' . htmlspecialchars($this->uri(array('action' => 'submitassignment')), ENT_QUOTES, 'UTF-8') . '">'
+                . $hiddenInput->show()
+                . '<input type="hidden" id="assignment_file_id" name="assignment_file_id" value="">'
+                . '<div id="assignment_file_name" class="assignment-picker-file" aria-live="polite">' . htmlspecialchars($noFileLabel, ENT_QUOTES, 'UTF-8') . '</div>'
+                . '<div class="assignment-file-types">' . $this->objLanguage->languageText('mod_assignment_uploadablefiletypes', 'assignment') . ': ' . htmlspecialchars(implode(', ', $allowedFileTypes), ENT_QUOTES, 'UTF-8') . '</div>'
+                . '<div class="assignment-picker-actions"><button type="button" id="assignment_choose_file">' . htmlspecialchars($chooseLabel, ENT_QUOTES, 'UTF-8') . '</button>'
+                . '<button type="submit" id="assignment_submit_file" disabled>' . htmlspecialchars($submitLabel, ENT_QUOTES, 'UTF-8') . '</button></div></form>';
+            $ret .= '<script>(function(){"use strict";var pickerUrl=' . json_encode($pickerUrl) . ',allowed=' . $allowedJson . ',wrongType=' . json_encode($wrongTypeLabel) . ';window.ChisimbaFilePickerReceive=function(target,file){if(target!=="assignment_submission_file"||!file){return;}var ext=String(file.extension||"").toLowerCase();if(allowed.indexOf(ext)===-1){window.alert(wrongType);return;}document.getElementById("assignment_file_id").value=file.id||"";document.getElementById("assignment_file_name").textContent=file.name||"";document.getElementById("assignment_submit_file").disabled=!file.id;};document.getElementById("assignment_choose_file").onclick=function(){window.open(pickerUrl,"chisimba_assignment_picker","width=980,height=720,resizable=yes,scrollbars=yes");};}());</script>';
         }
     }
 }
 
+$ret .= '</section>';
 $links = '';
 
 $backLink = new link($this->uri(array()));

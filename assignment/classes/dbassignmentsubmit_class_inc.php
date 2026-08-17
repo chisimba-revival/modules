@@ -139,8 +139,19 @@ class dbassignmentsubmit extends dbtable {
         if (!$this->checkOkToSubmit($userId, $assignmentId)) {
             return 'alreadysubmitted';
         }
+        if (trim((string) $fileId) === '') {
+            return 'file_required';
+        }
 
         $objFile = $this->getObject('dbfile', 'filemanager');
+        $file = $objFile->getFile($fileId);
+        if (!is_array($file)) {
+            return 'filedoesnotexist';
+        }
+        if (!isset($file['userid']) || (string) $file['userid'] !== (string) $userId) {
+            return 'fileforbidden';
+        }
+
         $filePath = $objFile->getFullFilePath($fileId);
 
         if ($filePath == FALSE) {
@@ -150,14 +161,55 @@ class dbassignmentsubmit extends dbtable {
         if (!file_exists($filePath)) {
             return 'filedoesnotexist';
         }
+        if (!$this->isAllowedAssignmentFile($assignmentId, $file)) {
+            return 'invalidfiletype';
+        }
 
         $submitId = $this->addStudentAssignmentUpload($assignmentId, $userId, $fileId);
 
         if ($submitId == FALSE) {
             return 'unabletosave';
-        } else {
-            return $this->processfile($submitId, $filePath);
         }
+        if (!$this->processfile($submitId, $filePath, $file['filename'])) {
+            $this->delete('id', $submitId);
+            return 'unabletocopysubmission';
+        }
+
+        $assignment = $this->getAssignment($assignmentId);
+        if (!empty($assignment[0]['email_alert_onsubmit'])) {
+            try {
+                $this->prepareToSendEmail($submitId, $assignment[0]['userid'], $userId);
+            } catch (Throwable $error) {
+                // The immutable snapshot is authoritative; notification failure
+                // must never turn a safely stored submission into a failed one.
+            }
+        }
+        return 'submitted';
+    }
+
+    /**
+     * File Manager owns the student's working file. Assignment accepts only a
+     * student-owned source matching this activity's configured extensions.
+     */
+    private function isAllowedAssignmentFile($assignmentId, $file) {
+        $objTypes = $this->getObject('dbassignmentuploadablefiletypes');
+        $rows = $objTypes->getFiletypes($assignmentId);
+        $allowed = array();
+        foreach ((array) $rows as $row) {
+            if (!empty($row['filetype'])) {
+                $allowed[] = strtolower(ltrim(trim((string) $row['filetype']), '.'));
+            }
+        }
+        if (empty($allowed)) {
+            $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
+            $configured = (string) $objSysConfig->getValue('FILETYPES_ALLOWED', 'assignment');
+            if ($configured === '') {
+                $configured = 'doc,odt,rtf,txt,docx,mp3,mp4,ppt,pptx,odp,pdf';
+            }
+            $allowed = array_map('trim', explode(',', strtolower($configured)));
+        }
+        $extension = strtolower(pathinfo((string) $file['filename'], PATHINFO_EXTENSION));
+        return $extension !== '' && in_array($extension, $allowed, true);
     }
 
     /**
@@ -174,14 +226,10 @@ class dbassignmentsubmit extends dbtable {
             'studentfileid' => $fileId,
             'datesubmitted' => date('Y-m-d H:i:s', time())
         ));
-        $assignment = $this->getAssignment($assignmentId);
-        if ($assignment[0]['email_alert_onsubmit'] == '1') {
-            $this->prepareToSendEmail($submitid,$assignment[0]['userid']);
-        }
         return $submitid;
     }
 
-    private function prepareToSendEmail($submitId,$instructorid) {
+    private function prepareToSendEmail($submitId,$instructorid,$userId) {
         $link = new link($this->uri(array("action" => "viewsubmission", "id" => $submitId)));
         $objUser = $this->getObject("user", "security");
         $names = $objUser->fullname($userId);
@@ -229,7 +277,7 @@ class dbassignmentsubmit extends dbtable {
      * @param <type> $submitId
      * @param <type> $path
      */
-    private function processfile($submitId, $path) {
+    private function processfile($submitId, $path, $filename) {
         $objConfig = $this->getObject('altconfig', 'config');
         $savePath = $objConfig->getcontentBasePath() . '/assignment/submissions/' . $submitId;
 
@@ -239,7 +287,11 @@ class dbassignmentsubmit extends dbtable {
         $objMkdir = $this->getObject('mkdir', 'files');
         $objMkdir->mkdirs($savePath, 0777);
 
-        copy($path, $savePath . '/' . basename($path));
+        if (!is_dir($savePath)) {
+            return FALSE;
+        }
+        $target = $savePath . '/' . basename((string) $filename);
+        return copy($path, $target) && is_file($target);
     }
 
     /**
@@ -275,7 +327,7 @@ class dbassignmentsubmit extends dbtable {
         ));
 
         if ($assignment[0]['email_alert_onsubmit'] == '1') {
-            $this->prepareToSendEmail($submitid,$assignment[0]['userid']);
+            $this->prepareToSendEmail($submitid,$assignment[0]['userid'], $userId);
         }
         return $submitid;
     }

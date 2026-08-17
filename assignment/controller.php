@@ -499,11 +499,13 @@ class assignment extends controller {
 
     function __submitassignment($fileId=null) {
         if ($fileId == NULL) {
-            $fileId = $this->getParam('assignment');
+            $fileId = $this->getParam('assignment_file_id', $this->getParam('assignment'));
         }
 
         $result = $this->objAssignmentSubmit->submitAssignmentUpload($this->getParam('id'), $this->objUser->userId(), $fileId);
-
+        if ($result !== 'submitted') {
+            return $this->nextAction('view', array('id' => $this->getParam('id'), 'error' => $result));
+        }
         return $this->nextAction('view', array('id' => $this->getParam('id'), 'message' => 'assignmentsubmitted'));
     }
 
