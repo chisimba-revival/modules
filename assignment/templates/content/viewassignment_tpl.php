@@ -13,7 +13,7 @@ $editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
 $deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
 
 $this->appendArrayVar('headerParams', '<style>
-.assignment_main{display:grid;gap:1rem}.assignment-card{background:#fff;border:1px solid #dbe4e7;border-radius:12px;padding:1.25rem;box-shadow:0 8px 24px rgba(15,23,42,.05)}.assignment-card>h1:first-child{margin-top:0}.assignment-card table{width:100%}.assignment-card hr{border:0;border-top:1px solid #dbe4e7;margin:1.25rem 0}.assignment-picker{display:grid;gap:.75rem;max-width:720px}.assignment-picker-actions{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}.assignment-picker-file{padding:.75rem;border-radius:8px;background:#f2f7f5;color:#234}.assignment-picker button{padding:.55rem .9rem}.assignment-file-types{color:#52606d;font-size:.92rem}@media(max-width:700px){.assignment-card{padding:1rem}.assignment-card table,.assignment-card tbody,.assignment-card tr,.assignment-card td{display:block;width:100%!important}.assignment-card td{padding:.25rem 0}}
+.assignment_main{display:grid;gap:1rem}.assignment-card{background:#fff;border:1px solid #dbe4e7;border-radius:12px;padding:1.25rem;box-shadow:0 8px 24px rgba(15,23,42,.05)}.assignment-card>h1:first-child{margin-top:0}.assignment-card table{width:100%;border-collapse:separate;border-spacing:0 .35rem}.assignment-brief td{padding:.25rem .8rem .25rem 0;vertical-align:top}.assignment-brief td:nth-child(1),.assignment-brief td:nth-child(3){width:21%;min-width:145px}.assignment-brief td:nth-child(2),.assignment-brief td:nth-child(4){width:29%}.assignment-brief strong{display:block;line-height:1.3}.assignment-submit h1,.assignment-submissions h1{margin-top:0}.assignment-upload-form{display:grid;gap:.75rem;max-width:720px}.assignment-upload-form input[type=file]{width:100%;padding:.8rem;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc}.assignment-upload-form button,.assignment-picker button{padding:.65rem 1rem}.assignment-existing{margin-top:1.25rem;padding-top:.5rem}.assignment-existing h2{font-size:1.05rem;margin:0 0 .75rem}.assignment-picker{display:grid;gap:.75rem;max-width:720px}.assignment-picker-actions{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}.assignment-picker-file{padding:.75rem;border-radius:8px;background:#f2f7f5;color:#234}.assignment-file-types{color:#52606d;font-size:.92rem}.assignment-empty{margin:.25rem 0;color:#52606d}.assignment-submit-error{margin:0 0 1rem;padding:.85rem 1rem;border:1px solid #dc2626;border-radius:8px;background:#fef2f2;color:#991b1b}@media(max-width:760px){.assignment-card{padding:1rem}.assignment-card table,.assignment-card tbody,.assignment-card tr,.assignment-card td{display:block;width:100%!important}.assignment-card tr{margin-bottom:.75rem}.assignment-card td{padding:.2rem 0}.assignment-brief td:nth-child(odd){margin-top:.45rem}.assignment-brief td:nth-child(even){padding-left:.25rem}}
 </style>');
 
 $header = new htmlHeading();
@@ -43,20 +43,24 @@ $table->addCell('<strong>' . $this->objLanguage->languageText('word_description'
 $table->addCell($objWashout->parseText($assignment['description']), NULL, NULL, NULL, NULL, ' colspan="3"');
 $table->endRow();
 
+$classification = isset($assignment['assessment_classification']) ? strtolower((string) $assignment['assessment_classification']) : 'summative';
+$classificationKey = $classification === 'formative' ? 'mod_assignment_classification_formative' : 'mod_assignment_classification_summative';
+$weightText = $assessmentWeight === null
+    ? $this->objLanguage->languageText('mod_assignment_notincoursemark', 'assignment')
+    : rtrim(rtrim(number_format((float) $assessmentWeight, 3, '.', ''), '0'), '.') . '%';
+
 $table->startRow();
-$table->addCell('<strong>' . ucfirst($this->objLanguage->code2Txt('mod_assignment_lecturer', 'assignment', NULL, '[-author-]')) . '</strong>', 130);
+$table->addCell('<strong>' . ucfirst($this->objLanguage->code2Txt('mod_assignment_lecturer', 'assignment', NULL, '[-author-]')) . '</strong>', 150);
 $table->addCell($this->objUser->fullName($assignment['userid']));
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_totalmark', 'assignment') . '</strong>', 130);
-$table->addCell($assignment['mark']);
+$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_assessmentclassification', 'assignment') . '</strong>', 190);
+$table->addCell($this->objLanguage->languageText($classificationKey, 'assignment'));
 $table->endRow();
 
 $table->startRow();
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_openingdate', 'assignment', 'Opening Date') . '</strong>', 130);
+$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_openingdate', 'assignment', 'Opening Date') . '</strong>', 150);
 $table->addCell($objDateTime->formatDate($assignment['opening_date']));
-$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_assessmentclassification', 'assignment') . '</strong>', 200, NULL, NULL, 'nowrap');
-$classification = isset($assignment['assessment_classification']) ? strtolower((string) $assignment['assessment_classification']) : 'summative';
-$classificationKey = $classification === 'formative' ? 'mod_assignment_classification_formative' : 'mod_assignment_classification_summative';
-$table->addCell($this->objLanguage->languageText($classificationKey, 'assignment'));
+$table->addCell('<strong>' . $this->objLanguage->languageText('mod_assignment_coursemarkweight', 'assignment') . '</strong>', 190);
+$table->addCell($weightText);
 $table->endRow();
 
 $table->startRow();
@@ -120,12 +124,20 @@ if ($assignment['usegroups'] == '1') {
     $table->addCell($gfieldset->show(), NULL, NULL, NULL, NULL, 'colspan="4"');
     $table->endRow();
 }
-$ret .= $table->show() . '</section><section class="assignment-card assignment-submissions">';
+$ret .= $table->show() . '</section>';
+$submittedRet = '';
+$submitRet = '';
+$knownSubmissionErrors = array('file_required', 'fileforbidden', 'invalidfiletype', 'unabletocopysubmission', 'unabletoupload', 'filedoesnotexist', 'unabletosave', 'alreadysubmitted');
+if ($submissionError !== '' && in_array($submissionError, $knownSubmissionErrors, true)) {
+    $ret .= '<div class="assignment-submit-error">'
+        . $this->objLanguage->languageText('mod_assignment_error_' . $submissionError, 'assignment')
+        . '</div>';
+}
 
 $htmlHeader = new htmlHeading();
 $htmlHeader->type = 1;
 $htmlHeader->str = $this->objLanguage->languageText('mod_assignment_submittedassignments', 'assignment', 'Submitted Assignments');
-$ret .= '<hr />' . $htmlHeader->show();
+$submittedRet .= $htmlHeader->show();
 
 // If Lecturer, show list of assignments
 if ($this->isValid('markassignments')) {
@@ -157,7 +169,7 @@ if ($this->isValid('markassignments')) {
                 $table->addCell('<em>' . $this->objLanguage->languageText('mod_assignment_notmarked', 'assignment', 'Not Marked') . '</em>');
                 $table->addCell('<em>' . $this->objLanguage->languageText('mod_assignment_notmarked', 'assignment', 'Not Marked') . '</em>');
             } else {
-                $table->addCell($submission['mark']);
+                $table->addCell((float) $assignment['mark'] > 0 ? round(((float) $submission['mark'] / (float) $assignment['mark']) * 100, 2) . '%' : '0%');
                 $table->addCell($objTrimStr->strTrim($submission['commentinfo'], 50));
             }
 
@@ -165,7 +177,7 @@ if ($this->isValid('markassignments')) {
         }
     }
 
-    $ret .= $table->show();
+    $submittedRet .= $table->show();
 
 } else {
     // Show Student Views
@@ -221,7 +233,7 @@ if ($this->isValid('markassignments')) {
                     $table->addCell('<em>' . $this->objLanguage->languageText('mod_assignment_notmarked', 'assignment', 'Not Marked') . '</em>');
                     //$table->addCell('<em>'.$this->objLanguage->languageText('mod_assignment_notmarked', 'assignment', 'Not Marked').'</em>');
                 } else {
-                    $table->addCell($submission['mark']);
+                    $table->addCell((float) $assignment['mark'] > 0 ? round(((float) $submission['mark'] / (float) $assignment['mark']) * 100, 2) . '%' : '0%');
                     /*
                      * The commented line prevents view of comments untill the assignment is opened for viewing the results
                      */
@@ -232,7 +244,11 @@ if ($this->isValid('markassignments')) {
             $table->endRow();
         }
 
-        $ret .= $table->show();
+        $submittedRet .= $table->show();
+    }
+
+    if (!$this->isValid('markassignments') && (is_countable($submissions) ? count($submissions) : 0) === 0) {
+        $submittedRet .= '<p class="assignment-empty">' . $this->objLanguage->languageText('mod_assignment_nosubmissionsyet', 'assignment') . '</p>';
     }
 
     if ($this->objAssignmentSubmit->checkOkToSubmit($this->objUser->userId(), $assignment['id'])) {
@@ -241,14 +257,14 @@ if ($this->isValid('markassignments')) {
         $header = new htmlHeading();
         $header->type = 1;
         $header->str = $this->objLanguage->languageText('mod_assignment_submitassignment', 'assignment', 'Submit Assignment');
-        $ret .= '<hr />' . $header->show();
+        $submitRet .= $header->show();
 
         // Display by Assignment Type
         $this->objCond = $this->newObject('contextCondition', 'contextpermissions');
         if ($assignment['closing_date'] < date('Y-m-d H:i')) {
-            $ret .= '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_assignment_assignmentclosed', 'assignment', 'Assignment Closed') . '</div>';
+            $submitRet .= '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_assignment_assignmentclosed', 'assignment', 'Assignment Closed') . '</div>';
         } else if (!($this->objCond->isContextMember('Students'))) { 
-            $ret .= '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_assignment_notstudent', 'assignment', 'Not a Student') . '</div>';
+            $submitRet .= '<div class="noRecordsMessage">' . $this->objLanguage->languageText('mod_assignment_notstudent', 'assignment', 'Not a Student') . '</div>';
 
         } else if ($assignment['format'] == '0') { // Online Assignment
             $form = new form('addassignment', $this->uri(array('action' => 'submitonlineassignment')));
@@ -263,27 +279,40 @@ if ($this->isValid('markassignments')) {
 
             $form->addToForm($hiddenInput->show() . $htmlArea->show() . '<br />' . $button->show());
 
-            $ret .= $form->show();
+            $submitRet .= $form->show();
         } else { // Upload Assignment
             $pickerUrl = html_entity_decode($this->uri(array('action' => 'filepicker', 'policy' => 'assignment', 'target' => 'assignment_submission_file'), 'filemanager', '', '', false, true), ENT_QUOTES, 'UTF-8');
-            $chooseLabel = $this->objLanguage->languageText('mod_assignment_choosefromfilemanager', 'assignment');
+            $uploadLabel = $this->objLanguage->languageText('mod_assignment_uploaddirect', 'assignment');
+            $uploadSubmitLabel = $this->objLanguage->languageText('mod_assignment_uploadandsubmit', 'assignment');
+            $chooseLabel = $this->objLanguage->languageText('mod_assignment_chooseexisting', 'assignment');
             $noFileLabel = $this->objLanguage->languageText('mod_assignment_nofileselected', 'assignment');
             $submitLabel = $this->objLanguage->languageText('mod_assignment_submitassignment', 'assignment');
             $wrongTypeLabel = $this->objLanguage->languageText('mod_assignment_filetypenotallowed', 'assignment');
-            $allowedJson = json_encode(array_values(array_map('strtolower', $allowedFileTypes)), JSON_UNESCAPED_SLASHES);
-            $ret .= '<form class="assignment-picker" method="post" action="' . htmlspecialchars($this->uri(array('action' => 'submitassignment')), ENT_QUOTES, 'UTF-8') . '">'
+            $allowed = array_values(array_map(function ($type) { return strtolower(ltrim(trim((string) $type), '.')); }, $allowedFileTypes));
+            $accept = '.' . implode(',.', $allowed);
+            $allowedJson = json_encode($allowed, JSON_UNESCAPED_SLASHES);
+            $submitRet .= '<form class="assignment-upload-form" method="post" enctype="multipart/form-data" action="' . htmlspecialchars(str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'uploadassignment')), ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8') . '">'
+                . $hiddenInput->show()
+                . '<label for="assignment_direct_file"><strong>' . htmlspecialchars($uploadLabel, ENT_QUOTES, 'UTF-8') . '</strong></label>'
+                . '<input id="assignment_direct_file" name="file" type="file" accept="' . htmlspecialchars($accept, ENT_QUOTES, 'UTF-8') . '" required>'
+                . '<div class="assignment-file-types">' . $this->objLanguage->languageText('mod_assignment_uploadablefiletypes', 'assignment') . ': ' . htmlspecialchars(implode(', ', $allowed), ENT_QUOTES, 'UTF-8') . '</div>'
+                . '<div><button type="submit">' . htmlspecialchars($uploadSubmitLabel, ENT_QUOTES, 'UTF-8') . '</button></div></form>';
+            $submitRet .= '<div class="assignment-existing"><h2>' . htmlspecialchars($chooseLabel, ENT_QUOTES, 'UTF-8') . '</h2>'
+                . '<form class="assignment-picker" method="post" action="' . htmlspecialchars(str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'submitassignment')), ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8') . '">'
                 . $hiddenInput->show()
                 . '<input type="hidden" id="assignment_file_id" name="assignment_file_id" value="">'
                 . '<div id="assignment_file_name" class="assignment-picker-file" aria-live="polite">' . htmlspecialchars($noFileLabel, ENT_QUOTES, 'UTF-8') . '</div>'
-                . '<div class="assignment-file-types">' . $this->objLanguage->languageText('mod_assignment_uploadablefiletypes', 'assignment') . ': ' . htmlspecialchars(implode(', ', $allowedFileTypes), ENT_QUOTES, 'UTF-8') . '</div>'
                 . '<div class="assignment-picker-actions"><button type="button" id="assignment_choose_file">' . htmlspecialchars($chooseLabel, ENT_QUOTES, 'UTF-8') . '</button>'
-                . '<button type="submit" id="assignment_submit_file" disabled>' . htmlspecialchars($submitLabel, ENT_QUOTES, 'UTF-8') . '</button></div></form>';
-            $ret .= '<script>(function(){"use strict";var pickerUrl=' . json_encode($pickerUrl) . ',allowed=' . $allowedJson . ',wrongType=' . json_encode($wrongTypeLabel) . ';window.ChisimbaFilePickerReceive=function(target,file){if(target!=="assignment_submission_file"||!file){return;}var ext=String(file.extension||"").toLowerCase();if(allowed.indexOf(ext)===-1){window.alert(wrongType);return;}document.getElementById("assignment_file_id").value=file.id||"";document.getElementById("assignment_file_name").textContent=file.name||"";document.getElementById("assignment_submit_file").disabled=!file.id;};document.getElementById("assignment_choose_file").onclick=function(){window.open(pickerUrl,"chisimba_assignment_picker","width=980,height=720,resizable=yes,scrollbars=yes");};}());</script>';
+                . '<button type="submit" id="assignment_submit_file" disabled>' . htmlspecialchars($submitLabel, ENT_QUOTES, 'UTF-8') . '</button></div></form></div>';
+            $submitRet .= '<script>(function(){"use strict";var pickerUrl=' . json_encode($pickerUrl) . ',allowed=' . $allowedJson . ',wrongType=' . json_encode($wrongTypeLabel) . ';window.ChisimbaFilePickerReceive=function(target,file){if(target!=="assignment_submission_file"||!file){return;}var ext=String(file.extension||"").toLowerCase();if(allowed.indexOf(ext)===-1){window.alert(wrongType);return;}document.getElementById("assignment_file_id").value=file.id||"";document.getElementById("assignment_file_name").textContent=file.name||"";document.getElementById("assignment_submit_file").disabled=!file.id;};document.getElementById("assignment_choose_file").onclick=function(){window.open(pickerUrl,"chisimba_assignment_picker","width=980,height=720,resizable=yes,scrollbars=yes");};}());</script>';
         }
     }
 }
 
-$ret .= '</section>';
+if ($submitRet !== '') {
+    $ret .= '<section class="assignment-card assignment-submit">' . $submitRet . '</section>';
+}
+$ret .= '<section class="assignment-card assignment-submissions">' . $submittedRet . '</section>';
 $links = '';
 
 $backLink = new link($this->uri(array()));

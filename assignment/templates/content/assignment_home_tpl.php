@@ -158,6 +158,38 @@ if ((is_countable($assignments) ? count($assignments) : 0) == 0) {
 
 $ret .= $objTable->show();
 
+if ($this->isValid('markassignments')) {
+    $ret .= '<section class="assignment-admin-card"><h2>'
+        . $this->objLanguage->languageText('mod_assignment_markingoverview', 'assignment') . '</h2>';
+    if (empty($submissionSummary)) {
+        $ret .= '<p>' . $this->objLanguage->languageText('mod_assignment_noassignments', 'assignment') . '</p>';
+    } else {
+        $ret .= '<table class="assignment-summary"><thead><tr><th>'
+            . $this->objLanguage->languageText('word_name', 'system') . '</th><th>'
+            . $this->objLanguage->languageText('mod_assignment_submittedcount', 'assignment') . '</th><th>'
+            . $this->objLanguage->languageText('mod_assignment_markedcount', 'assignment') . '</th><th></th></tr></thead><tbody>';
+        foreach ($submissionSummary as $summary) {
+            $markUrl = htmlspecialchars(str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'view', 'id' => $summary['assignmentid'])), ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8');
+            $ret .= '<tr><td>' . htmlspecialchars($summary['name'], ENT_QUOTES, 'UTF-8') . '</td><td>'
+                . (int) $summary['submitted'] . '</td><td>' . (int) $summary['marked']
+                . '</td><td><a class="assignment-mark-link" href="' . $markUrl . '">'
+                . $this->objLanguage->languageText('mod_assignment_marksubmissions', 'assignment') . '</a></td></tr>';
+        }
+        $ret .= '</tbody></table>';
+    }
+    $policyAction = htmlspecialchars(str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'savecoursepolicy')), ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8');
+    $options = array('single' => 'mod_assignment_policy_single', 'until_closing' => 'mod_assignment_policy_untilclosing', 'unlimited' => 'mod_assignment_policy_unlimited');
+    $ret .= '</section><section class="assignment-admin-card"><h2>'
+        . $this->objLanguage->languageText('mod_assignment_submissionpolicy', 'assignment') . '</h2><form method="post" action="' . $policyAction . '">';
+    foreach ($options as $value => $key) {
+        $checked = $courseSubmissionPolicy === $value ? ' checked' : '';
+        $ret .= '<label class="assignment-policy-option"><input type="radio" name="submission_policy" value="'
+            . $value . '"' . $checked . '> <span>' . $this->objLanguage->languageText($key, 'assignment') . '</span></label>';
+    }
+    $ret .= '<button type="submit">' . $this->objLanguage->languageText('mod_assignment_savecoursepolicy', 'assignment')
+        . '</button></form></section>';
+}
+
 
 if ($this->isValid('add')) {
     $link = new link($this->uri(array('action' => 'add')));
@@ -173,6 +205,6 @@ if ($this->objUser->isContextStudent($this->contextCode)) {
     $ret .= '<p class="assignment_link_submittedlist">' . $this->objLink->show() . '</p>';
 }
 
-$this->appendArrayVar('headerParams', '<style>.assignment_main .assignment-row-icon{width:1.15em;height:1.15em;margin-right:.45rem;vertical-align:-.18em}.assignment_main td a,.assignment_link_submittedlist a{display:inline-flex;align-items:center}.assignment_link_submittedlist{margin-top:1.25rem}</style>');
+$this->appendArrayVar('headerParams', '<style>.assignment-admin-card{margin-top:1rem;padding:1.25rem;border:1px solid #dbe4e7;border-radius:12px;background:#fff}.assignment-admin-card h2{margin-top:0}.assignment-summary{width:100%;border-collapse:collapse}.assignment-summary th,.assignment-summary td{padding:.65rem;text-align:left;border-bottom:1px solid #e2e8f0}.assignment-mark-link{display:inline-block;padding:.45rem .75rem;border-radius:6px;background:#295351;color:#fff!important}.assignment-policy-option{display:block;margin:.65rem 0}.assignment-admin-card button{margin-top:.5rem;padding:.6rem 1rem}.assignment_main .assignment-row-icon{width:1.15em;height:1.15em;margin-right:.45rem;vertical-align:-.18em}.assignment_main td a,.assignment_link_submittedlist a{display:inline-flex;align-items:center}.assignment_link_submittedlist{margin-top:1.25rem}</style>');
 echo "<div class='assignment_main'>$ret</div>";
 ?>

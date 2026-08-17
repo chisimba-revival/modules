@@ -283,21 +283,6 @@ $classification->setSelected($selectedClassification);
 $typetable->addCell($classification->show());
 $typetable->endRow();
 
-// Multiple submissions
-$typetable->startRow();
-$typetable->addCell($this->objLanguage->languageText('mod_assignment_allowresubmit', 'assignment', 'Allow Multiple Submissions?'));
-$radio = new radio('resubmit');
-$radio->addOption(1, $this->objLanguage->languageText('word_yes', 'system', 'Yes'));
-$radio->addOption(0, $this->objLanguage->languageText('word_no', 'system', 'No'));
-if ($mode == 'edit') {
-    $radio->setSelected($assignment['resubmit']);
-} else {
-    $radio->setSelected(0);
-}
-$radio->setBreakSpace('&nbsp;');
-$typetable->addCell($radio->show());
-$typetable->endRow();
-
 //email alerts
 $commtable = $this->newObject('htmltable', 'htmlelements');
 

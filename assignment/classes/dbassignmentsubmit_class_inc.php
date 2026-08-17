@@ -104,28 +104,24 @@ class dbassignmentsubmit extends dbtable {
      */
     public function checkOkToSubmit($studentId, $assignmentId) {
         $objAssignment = $this->getObject('dbassignment');
-
         $assignment = $objAssignment->getAssignment($assignmentId);
-
-        // If assignment doesn't exist return FALSE;
-        if ($assignment == FALSE) {
+        if (!is_array($assignment)) {
             return FALSE;
         }
 
-        // Check if pass closing date
-        // If multiple submits allowed, return TRUE
-        if ($assignment['resubmit'] == '1') {
-            return TRUE;
-        }
+        $policyStore = $this->getObject('dbassignmentcoursepolicy');
+        $policy = $policyStore->getPolicy($assignment['context']);
+        $submitted = $this->numStudentAssignment($studentId, $assignmentId);
 
-        // Check if student has already submitted
-        $numAssignments = $this->numStudentAssignment($studentId, $assignmentId);
-
-        if ($numAssignments == 0) {
-            return TRUE;
-        } else {
-            return FALSE;
+        if ($policy === 'single') {
+            // MDB2 returns record counts as numeric strings.
+            return (int) $submitted === 0;
         }
+        if ($policy === 'until_closing') {
+            return empty($assignment['closing_date'])
+                || strtotime((string) $assignment['closing_date']) >= time();
+        }
+        return $policy === 'unlimited';
     }
 
     /**
@@ -170,7 +166,7 @@ class dbassignmentsubmit extends dbtable {
         if ($submitId == FALSE) {
             return 'unabletosave';
         }
-        if (!$this->processfile($submitId, $filePath, $file['filename'])) {
+        if (!$this->processfile($submitId, $assignmentId, $filePath, $file['filename'])) {
             $this->delete('id', $submitId);
             return 'unabletocopysubmission';
         }
@@ -277,21 +273,33 @@ class dbassignmentsubmit extends dbtable {
      * @param <type> $submitId
      * @param <type> $path
      */
-    private function processfile($submitId, $path, $filename) {
-        $objConfig = $this->getObject('altconfig', 'config');
-        $savePath = $objConfig->getcontentBasePath() . '/assignment/submissions/' . $submitId;
-
-        $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
-        $savePath = $objCleanUrl->cleanUpUrl($savePath);
-
+    private function processfile($submitId, $assignmentId, $path, $filename) {
+        $savePath = $this->getSubmissionDirectory($submitId, $assignmentId);
         $objMkdir = $this->getObject('mkdir', 'files');
-        $objMkdir->mkdirs($savePath, 0777);
+        $objMkdir->mkdirs($savePath, 0770);
 
         if (!is_dir($savePath)) {
             return FALSE;
         }
         $target = $savePath . '/' . basename((string) $filename);
         return copy($path, $target) && is_file($target);
+    }
+
+    /**
+     * The submitted copy belongs to the course assessment, not to the
+     * student's personal File Manager. Folder names are server-derived.
+     */
+    public function getSubmissionDirectory($submitId, $assignmentId) {
+        $objConfig = $this->getObject('altconfig', 'config');
+        $assignment = $this->getAssignment($assignmentId);
+        $context = !empty($assignment[0]['context']) ? (string) $assignment[0]['context'] : 'unknown-course';
+        $safe = function ($value) {
+            $value = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string) $value);
+            return trim((string) $value, '-.') !== '' ? trim((string) $value, '-.') : 'unknown';
+        };
+        return rtrim($objConfig->getcontentBasePath(), '/')
+            . '/assignment/course-submissions/' . $safe($context)
+            . '/' . $safe($assignmentId) . '/' . $safe($submitId);
     }
 
     /**
@@ -350,12 +358,20 @@ class dbassignmentsubmit extends dbtable {
         //var_dump($file);
 
         $objConfig = $this->getObject('altconfig', 'config');
-        $filePath = $objConfig->getcontentBasePath() . '/assignment/submissions/' . $submissionId . '/' . $file['filename'];
+        $submission = $this->getSubmission($submissionId);
+        $assignmentId = is_array($submission) && !empty($submission['assignmentid']) ? $submission['assignmentid'] : '';
+        $filePath = $this->getSubmissionDirectory($submissionId, $assignmentId) . '/' . $file['filename'];
 
         $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
         $filePath = $objCleanUrl->cleanUpUrl($filePath);
 
+        // Existing submissions remain readable from the pre-vault location.
         if (!file_exists($filePath)) {
+            $legacyPath = $objConfig->getcontentBasePath() . '/assignment/submissions/' . $submissionId . '/' . $file['filename'];
+            $legacyPath = $objCleanUrl->cleanUpUrl($legacyPath);
+            if (file_exists($legacyPath)) {
+                return $legacyPath;
+            }
             $originalFile = $objConfig->getcontentBasePath() . '/' . $file['path'];
             $originalFile = $objCleanUrl->cleanUpUrl($originalFile);
 
@@ -393,6 +409,19 @@ class dbassignmentsubmit extends dbtable {
      * Each assignment shows number of submissions, number marked and closing date.
      * @param string $context The current context
      */
+    public function getContextSubmissionSummary($context) {
+        $context = addslashes((string) $context);
+        $sql = "SELECT assign.id AS assignmentid, assign.name,
+                       COUNT(submit.id) AS submitted,
+                       SUM(CASE WHEN submit.mark IS NOT NULL THEN 1 ELSE 0 END) AS marked
+                FROM tbl_assignment AS assign
+                LEFT JOIN tbl_assignment_submit AS submit ON submit.assignmentid = assign.id
+                WHERE assign.context = '{$context}'
+                GROUP BY assign.id, assign.name
+                ORDER BY assign.name";
+        return $this->getArray($sql);
+    }
+
     public function getContextSubmissions($context) {
         $sql = 'SELECT assign.id, assign.name, assign.closing_date, submit.datesubmitted, submit.mark ';
         $sql .= 'FROM tbl_assignment_submit AS submit ';

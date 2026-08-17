@@ -96,6 +96,7 @@ class assignment extends controller {
         //database objects , provides access to the related tables.
         $this->objAssignment = $this->getObject('dbassignment');
         $this->objAssignmentSubmit = $this->getObject('dbassignmentsubmit');
+        $this->objAssignmentCoursePolicy = $this->getObject('dbassignmentcoursepolicy');
         $this->objAssignmentFunctions = $this->getObject('functions_assignment', 'assignment');
         $this->objAssignmentUploadablefiletypes = $this->getObject('dbassignmentuploadablefiletypes');
         $this->objAssignmentLearningOutcomes = $this->getObject('dbassignmentlearningoutcomes');
@@ -130,7 +131,7 @@ class assignment extends controller {
     }
 
     public function isValid($action, $default = true) {
-        $restrictedActions = array('add', 'edit', 'saveassignment', 'updateassignment', 'delete', 'markassignments', 'saveuploadmark', 'saveonlinemark');
+        $restrictedActions = array('add', 'edit', 'saveassignment', 'updateassignment', 'delete', 'markassignments', 'saveuploadmark', 'saveonlinemark', 'savecoursepolicy');
 
         if (in_array($action, $restrictedActions)) {
             $valid = $this->objUser->isCourseAdmin($this->contextCode);
@@ -224,8 +225,17 @@ class assignment extends controller {
 
         $assignments = $this->objAssignment->getAssignments($this->contextCode);
         $this->setVarByRef('assignments', $assignments);
+        $this->setVar('courseSubmissionPolicy', $this->objAssignmentCoursePolicy->getPolicy($this->contextCode));
+        $this->setVar('submissionSummary', $this->isValid('markassignments')
+            ? $this->objAssignmentSubmit->getContextSubmissionSummary($this->contextCode) : array());
 
         return 'assignment_home_tpl.php';
+    }
+
+    private function __savecoursepolicy() {
+        $policy = (string) $this->getParam('submission_policy', 'single');
+        $this->objAssignmentCoursePolicy->setPolicy($this->contextCode, $policy);
+        return $this->nextAction(NULL);
     }
 
     private function __displaylist() {
@@ -254,7 +264,7 @@ class assignment extends controller {
         //die("<br />----------------------------");
         $name = $this->getParam('name');
         $type = $this->getParam('type', '0');
-        $resubmit = $this->getParam('resubmit', '0');
+        $resubmit = 0; // Course submission policy is authoritative.
         $mark = $this->getParam('mark');
         // Course-mark weighting is owned by Gradebook's assessment plan.
         $yearmark = 0;
@@ -373,8 +383,39 @@ class assignment extends controller {
         $this->setVarByRef('goals', $learningoutcomesinassignment);
         $this->setVarByRef('groups', $groups);
         $this->setVarByRef('submissions', $submissions);
+        $this->setVar('assessmentWeight', $this->gradebookWeightForAssignment($id));
+        $this->setVar('submissionError', (string) $this->getParam('error', ''));
 
         return 'viewassignment_tpl.php';
+    }
+
+    /**
+     * Gradebook owns course-mark weighting. Assignment reads the active plan
+     * item for this activity and never falls back to its legacy percentage.
+     */
+    private function gradebookWeightForAssignment($assignmentId) {
+        if (!$this->objModuleCatalogue->checkIfRegistered('gradebook')) {
+            return null;
+        }
+        try {
+            $plans = $this->getObject('dbgradebookassessmentplans', 'gradebook');
+            $plan = $plans->findForContext($this->contextCode);
+            if (!is_array($plan) || empty($plan['id'])) {
+                return null;
+            }
+            $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+            $item = $items->findByActivity($plan['id'], 'assignment', $assignmentId);
+            if (!is_array($item)
+                || (isset($item['status']) && $item['status'] !== 'active')
+                || (isset($item['include_in_course_mark']) && $item['include_in_course_mark'] !== 'Y')) {
+                return null;
+            }
+            return isset($item['weight']) && is_numeric($item['weight'])
+                ? (float) $item['weight'] : null;
+        } catch (Throwable $error) {
+            error_log('Assignment could not read Gradebook weight: ' . $error->getMessage());
+            return null;
+        }
     }
 
     function __edit() {
@@ -409,7 +450,7 @@ class assignment extends controller {
         $name = $this->getParam('name');
 
         $existingAssignment = $this->objAssignment->getAssignment($id);
-        $resubmit = $this->getParam('resubmit', '0');
+        $resubmit = 0; // Course submission policy is authoritative.
         $type = $this->getParam('type', '0');
         $mark = $this->getParam('mark');
         // Preserve legacy data; Gradebook owns all new weighting changes.
@@ -477,24 +518,20 @@ class assignment extends controller {
     }
 
     function __uploadassignment() {
-        $objFileUpload = $this->getObject('uploadinput', 'filemanager');
-        $objFileUpload->enableOverwriteIncrement = TRUE;
-        $results = $objFileUpload->handleUpload('fileupload');
-
-        // Technically, FALSE can never be returned, this is just a precaution
-        // FALSE means there is no fileinput with that name
-        if ($results == FALSE) {
-            return $this->nextAction('view', array('id' => $this->getParam('id'), 'error' => 'unabletoupload'));
-        } else {
-            // If successfully Uploaded
-            if ($results['success']) {
-
-                return $this->__submitassignment($results['fileid']);
+        $fileApi = $this->getObject('fileapi', 'filemanager');
+        $upload = $fileApi->uploadAssignmentIntake($this->getParam('id'), 'file');
+        if (empty($upload['ok']) || empty($upload['file']['id'])) {
+            $code = !empty($upload['error']['code']) ? (string) $upload['error']['code'] : 'unabletoupload';
+            if (in_array($code, array('invalid_extension', 'invalid_mimetype'), true)) {
+                $code = 'invalidfiletype';
+            } elseif ($code === 'no_file') {
+                $code = 'file_required';
             } else {
-                // If not successfully uploaded
-                return $this->nextAction('view', array('id' => $this->getParam('id'), 'error' => $results['reason']));
+                $code = 'unabletoupload';
             }
+            return $this->nextAction('view', array('id' => $this->getParam('id'), 'error' => $code));
         }
+        return $this->__submitassignment((string) $upload['file']['id']);
     }
 
     function __submitassignment($fileId=null) {
@@ -534,9 +571,14 @@ class assignment extends controller {
         if ($assignment['context'] != $this->contextCode) {
             return $this->nextAction(NULL, array('error' => 'wrongcontext'));
         }
+        if (!$this->objUser->isCourseAdmin($this->contextCode)
+            && (string) $submission['userid'] !== (string) $this->objUser->userId()) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
+        }
 
         $this->setVarByRef('assignment', $assignment);
         $this->setVarByRef('submission', $submission);
+        $this->setVar('assessmentWeight', $this->gradebookWeightForAssignment($assignment['id']));
 
         return 'viewsubmission_tpl.php';
     }
@@ -556,6 +598,11 @@ class assignment extends controller {
 
         if ($assignment == FALSE) {
             return $this->nextAction(NULL, array('error' => 'unknownassignment'));
+        }
+        if ($assignment['context'] != $this->contextCode
+            || (!$this->objUser->isCourseAdmin($this->contextCode)
+                && (string) $submission['userid'] !== (string) $this->objUser->userId())) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
         }
 
 //        switch($mode){
@@ -601,38 +648,19 @@ class assignment extends controller {
 
     function __saveuploadmark() {
         $id = $this->getParam('id');
-        $mark = $this->getParam('mark');
+        $percentage = max(0, min(100, (float) $this->getParam('mark_percentage', 0)));
         $comment = $this->getParam('commentinfo');
-
-        $this->objAssignmentSubmit->markAssignment($id, $mark, $comment);
-
         $submission = $this->objAssignmentSubmit->getSubmission($id);
-
-        ///
-        $filePath = $this->objConfig->getcontentPath() . '/assignment/submissions/' . $id;
-
-        $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
-        $folderPath = $objCleanUrl->cleanUpUrl($filePath);
-
-        $objFolder = $this->getObject('dbfolder', 'filemanager');
-
-        $folderId = $objFolder->indexFolder($folderPath, FALSE);
-
-        $objUpload = $this->getObject('upload', 'filemanager');
-        $objUpload->setUploadFolder('/assignment/submissions/' . $id);
-        $objUpload->enableOverwriteIncrement = TRUE;
-
-        $restrictions = NULL;
-
-        $fileUploadResultsArray = array();
-
-        $fileResults = $objUpload->uploadFile('lectfile', $restrictions, $fileUploadResultsArray);
-
-        if ($fileResults['success'] == TRUE) {
-            $this->objAssignmentSubmit->setLecturerMarkFile($id, $fileResults['fileid']);
+        $assignment = is_array($submission)
+            ? $this->objAssignment->getAssignment($submission['assignmentid']) : FALSE;
+        if (!is_array($submission) || !is_array($assignment)
+            || $assignment['context'] != $this->contextCode) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
         }
-
-        return $this->nextAction('view', array('id' => $submission['assignmentid'], 'message' => 'assignmentmarked', 'assignment' => $id));
+        $total = isset($assignment['mark']) ? (float) $assignment['mark'] : 100.0;
+        $rawMark = round(($percentage / 100) * $total, 2);
+        $this->objAssignmentSubmit->markAssignment($id, $rawMark, $comment);
+        return $this->nextAction('viewsubmission', array('id' => $id, 'message' => 'assignmentmarked'));
     }
 
     function __saveonlinemark() {
@@ -654,6 +682,15 @@ class assignment extends controller {
 //        echo '</pre>';
         $id = $this->getParam('id');
         $fileId = $this->getParam('fileid');
+        $submission = $this->objAssignmentSubmit->getSubmission($id);
+        $assignment = is_array($submission)
+            ? $this->objAssignment->getAssignment($submission['assignmentid']) : FALSE;
+        if (!is_array($submission) || !is_array($assignment)
+            || $assignment['context'] != $this->contextCode
+            || (!$this->objUser->isCourseAdmin($this->contextCode)
+                && (string) $submission['userid'] !== (string) $this->objUser->userId())) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
+        }
 //        echo "Id==$id";
 //        echo "FileId==$fileId";
 //        die;

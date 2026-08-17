@@ -1,5 +1,85 @@
 <?php
 $ret = "";
+$ret .= '<style id="assignment-marking-form-polish">
+.assignment_main form[name="_form"],
+.assignment_main form#_form {
+    box-sizing: border-box;
+    margin-top: .8rem;
+    max-width: 48rem;
+}
+.assignment_main form[name="_form"] > table,
+.assignment_main form#_form > table {
+    border-collapse: separate;
+    border-spacing: 0 .55rem;
+    width: 100%;
+}
+.assignment_main form[name="_form"] > table > tbody > tr > td,
+.assignment_main form#_form > table > tbody > tr > td {
+    padding: .2rem 0;
+    vertical-align: top;
+}
+.assignment_main form[name="_form"] > table > tbody > tr > td:first-child,
+.assignment_main form#_form > table > tbody > tr > td:first-child {
+    box-sizing: border-box;
+    min-width: 10rem;
+    padding-right: 1.35rem;
+}
+.assignment_main form[name="_form"] input[name="mark"],
+.assignment_main form#_form input[name="mark"] {
+    box-sizing: border-box;
+    margin: 0 .5rem 0 0;
+    min-height: 2.65rem;
+    padding: .4rem .6rem;
+    width: 8.5rem;
+}
+.assignment_main form[name="_form"] textarea[name="commentinfo"],
+.assignment_main form#_form textarea[name="commentinfo"] {
+    box-sizing: border-box;
+    display: block;
+    margin: .15rem 0 .25rem;
+    min-height: 8rem;
+    padding: .7rem .8rem;
+    resize: vertical;
+    width: min(100%, 38rem);
+}
+.assignment_main form[name="_form"] input[type="submit"],
+.assignment_main form[name="_form"] button[type="submit"],
+.assignment_main form#_form input[type="submit"],
+.assignment_main form#_form button[type="submit"] {
+    background: #0878c9;
+    border: 1px solid #0878c9;
+    border-radius: .4rem;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    margin-top: .2rem;
+    min-height: 2.7rem;
+    padding: .55rem 1rem;
+}
+.assignment_main form[name="_form"] input[type="submit"]:hover,
+.assignment_main form[name="_form"] button[type="submit"]:hover,
+.assignment_main form#_form input[type="submit"]:hover,
+.assignment_main form#_form button[type="submit"]:hover {
+    background: #0666ab;
+    border-color: #0666ab;
+}
+.assignment_main .assignment_link_return {
+    margin-top: 1.45rem;
+}
+@media (max-width: 42rem) {
+    .assignment_main form[name="_form"] > table > tbody > tr > td,
+    .assignment_main form#_form > table > tbody > tr > td {
+        display: block;
+        width: 100% !important;
+    }
+    .assignment_main form[name="_form"] > table > tbody > tr > td:first-child,
+    .assignment_main form#_form > table > tbody > tr > td:first-child {
+        padding: 0 0 .35rem;
+    }
+}
+</style>';
+
 $isLecturerRole = $this->objUser->isCourseAdmin($this->contextCode);
 // Load classes
 $this->loadClass('htmlheading', 'htmlelements');
@@ -14,40 +94,31 @@ $objDateTime = $this->getObject('dateandtime', 'utilities');
 $objTrimStr = $this->getObject('trimstr', 'strings');
 $objWashout = $this->getObject('washout', 'utilities');
 // Section 1
-// Heading
-$header = new htmlHeading();
-$header->str = $assignment['name'];
-$header->type = 1;
-$ret .= $header->show();
-// Table
-$table = $this->newObject('htmltable', 'htmlelements');
-$table->startRow();
-$table->addCell('<strong>'.$this->objLanguage->languageText('word_description', 'system', 'Description').'</strong>', 130);
-$table->addCell($objWashout->parseText($assignment['description']), NULL, NULL, NULL, NULL, ' colspan="3"');
-$table->endRow();
-$table->startRow();
-$table->addCell('<strong>'.ucwords($this->objLanguage->code2Txt('mod_assignment_lecturer', 'assignment', NULL, '[-author-]')).':</strong>', 130);
-$table->addCell($this->objUser->fullName($assignment['userid']));
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_assignment_totalmark', 'assignment').'</strong>', 130);
-$table->addCell($assignment['mark']);
-$table->endRow();
-$table->startRow();
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_assignment_openingdate', 'assignment', 'Opening Date').'</strong>', 130);
-$table->addCell($objDateTime->formatDate($assignment['opening_date']));
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_assignment_percentyrmark', 'assignment', 'Percentage of year mark').':</strong>', 200, NULL, NULL, 'nowrap');
-$table->addCell($assignment['percentage'].'%');
-$table->endRow();
-$table->startRow();
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_assignment_closingdate', 'assignment', 'Closing Date').'</strong>', 130);
-$table->addCell($objDateTime->formatDate($assignment['closing_date']));
-$table->addCell('<strong>'.$this->objLanguage->languageText('mod_assignment_assignmenttype', 'assignment', 'Assignment Type').'</strong>', 130);
-if ($assignment['format'] == '0') {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_online', 'assignment', 'Online'));
-} else {
-    $table->addCell($this->objLanguage->languageText('mod_assignment_upload', 'assignment', 'Upload'));
-}
-$table->endRow();
-$ret .= $table->show();
+$classification = isset($assignment['assessment_classification'])
+    ? strtolower((string) $assignment['assessment_classification']) : 'summative';
+$classificationKey = $classification === 'formative'
+    ? 'mod_assignment_classification_formative' : 'mod_assignment_classification_summative';
+$weightText = $assessmentWeight === null
+    ? $this->objLanguage->languageText('mod_assignment_notincoursemark', 'assignment')
+    : rtrim(rtrim(number_format((float) $assessmentWeight, 3, '.', ''), '0'), '.') . '%';
+$this->appendArrayVar('headerParams', '<style>
+.assignment-marking-card{border:1px solid #dbe4e7;border-radius:12px;background:#fff;padding:1.25rem;margin-bottom:1rem}.assignment-marking-card h1{margin-top:0}.assignment-meta{display:grid;grid-template-columns:minmax(145px,190px) 1fr minmax(170px,220px) 1fr;gap:.55rem 1rem}.assignment-meta dt{font-weight:700}.assignment-meta dd{margin:0}.assignment-media{margin:1rem 0;padding:1rem;background:#f3f7f5;border-radius:10px}.assignment-media audio,.assignment-media video{display:block;width:100%;max-width:760px;margin-top:.75rem}.assignment-mark-form{margin-top:1rem}@media(max-width:760px){.assignment-meta{grid-template-columns:1fr}.assignment-meta dt{margin-top:.45rem}}
+</style>');
+$ret .= '<section class="assignment-marking-card"><h1>' . htmlspecialchars($assignment['name'], ENT_QUOTES, 'UTF-8') . '</h1>'
+    . '<dl class="assignment-meta"><dt>' . $this->objLanguage->languageText('word_description', 'system') . '</dt><dd>'
+    . $objWashout->parseText($assignment['description']) . '</dd><dt>'
+    . ucfirst($this->objLanguage->code2Txt('mod_assignment_lecturer', 'assignment', NULL, '[-author-]')) . '</dt><dd>'
+    . htmlspecialchars($this->objUser->fullName($assignment['userid']), ENT_QUOTES, 'UTF-8') . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_totalmark', 'assignment') . '</dt><dd>' . (int) $assignment['mark'] . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_openingdate', 'assignment') . '</dt><dd>' . $objDateTime->formatDate($assignment['opening_date']) . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_assessmentclassification', 'assignment') . '</dt><dd>'
+    . $this->objLanguage->languageText($classificationKey, 'assignment') . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_closingdate', 'assignment') . '</dt><dd>' . $objDateTime->formatDate($assignment['closing_date']) . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_coursemarkweight', 'assignment') . '</dt><dd>' . $weightText . '</dd><dt>'
+    . $this->objLanguage->languageText('mod_assignment_assignmenttype', 'assignment') . '</dt><dd>'
+    . $this->objLanguage->languageText($assignment['format'] == '0' ? 'mod_assignment_online' : 'mod_assignment_upload', 'assignment')
+    . '</dd></dl></section>';
+
 // Section 2
 $objIcon = $this->getObject('geticon', 'htmlelements');
 $objMark = $this->getObject('markimage', 'utilities');
@@ -108,54 +179,23 @@ if ($assignment['format'] == '1') {
         // Content
         $objFile = $this->getObject('dbfile', 'filemanager');
         $fileName = $objFile->getFileName($fileId);
-        $downloadLink = new link ($this->uri(array('action'=>'downloadfile', 'id'=>$submission['id'], 'fileid'=>$fileId)));
+        $downloadUrl = str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'downloadfile', 'id' => $submission['id'], 'fileid' => $fileId)), ENT_QUOTES, 'UTF-8'));
+        $downloadLink = new link($downloadUrl);
         $downloadLink->link = $this->objLanguage->languageText('word_download', 'system', 'Download');
         $objFileIcon = $this->getObject('fileicons', 'files');
-        $ret .= '<p class="assignment_link_filedn">'.$objFileIcon->getFileIcon($fileName).' '.$downloadLink->show().'</p>';
-        $filePath = $this->objAssignmentSubmit->getAssignmentFilename($submission['id'], $fileId);
-        $submissionId = $submission['id'];
-        $sysTemp = sys_get_temp_dir();
-        if ($sysTemp[strlen($sysTemp)-1] != DIRECTORY_SEPARATOR) {
-            $sysTemp .= DIRECTORY_SEPARATOR;
+        $ret .= '<div class="assignment-media"><p class="assignment_link_filedn">'
+            . $objFileIcon->getFileIcon($fileName) . ' ' . htmlspecialchars($fileName, ENT_QUOTES, 'UTF-8')
+            . ' &mdash; ' . $downloadLink->show() . '</p>';
+        $extension = strtolower(pathinfo((string) $fileName, PATHINFO_EXTENSION));
+        $mediaUrl = htmlspecialchars($downloadUrl, ENT_QUOTES, 'UTF-8');
+        if (in_array($extension, array('mp3', 'wav', 'ogg', 'm4a'), true)) {
+            $ret .= '<audio controls preload="metadata" src="' . $mediaUrl . '">'
+                . $this->objLanguage->languageText('mod_assignment_playaudio', 'assignment') . '</audio>';
+        } elseif (in_array($extension, array('mp4', 'webm'), true)) {
+            $ret .= '<video controls preload="metadata" src="' . $mediaUrl . '">'
+                . $this->objLanguage->languageText('mod_assignment_playvideo', 'assignment') . '</video>';
         }
-        $tempFilePath = $sysTemp.'chisimba'.DIRECTORY_SEPARATOR.$this->objConfig->serverName().DIRECTORY_SEPARATOR.'assignment'.DIRECTORY_SEPARATOR.'submissions'.DIRECTORY_SEPARATOR.$submissionId; //'/'.$fileName;
-        $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
-        $tempFilePath = $objCleanUrl->cleanUpUrl($tempFilePath);
-        $objMkdir = $this->getObject('mkdir', 'files');
-        $objMkdir->mkdirs($tempFilePath);
-        chmod($tempFilePath, 0777);
-        $tempFile = $tempFilePath . '/' . $fileName . '.html';
-        $destinationHtml = $tempFile; //$filePath.'.html';
-        // PHP file which will contain the assignment
-        $destinationPhp = $filePath.'.php';
-        // Check if the file exists, else we need to convert the document
-        if (!file_exists($destinationPhp)) {
-            // Convert Document
-            $objConvert = $this->getObject('convertdoc', 'documentconverter');
-            $conversionOK = $objConvert->convert($filePath, $destinationHtml);
-            // If successfully converted, rename .html to .php
-            if ($conversionOK && file_exists($destinationHtml)) {
-                //rename($destinationHtml, $destinationPhp);
-                copy($destinationHtml, $destinationPhp);
-                //unlink($destinationHtml);
-                $contents =  file_get_contents($destinationPhp);
-                $contents = '<?php if (isset($permission) && $permission) { ?>'.$contents.'<?php } ?>';
-                file_put_contents($destinationPhp, $contents);
-            }
-        }
-        if (file_exists($destinationPhp)) {
-            $this->loadClass('iframe', 'htmlelements');
-            $header = new htmlHeading();
-            $header->str = $this->objLanguage->languageText('word_preview', 'system', 'Preview');
-            $header->type = 1;
-            $ret .= $header->show();
-            $iframe = new iframe();
-            $iframe->width = '100%';
-            $iframe->height = 400;
-            //$iframe->src = $this->uri(array('action'=>'viewhtmlsubmission', '1'=>'1', '2'=>'2', '3'=>'3'));
-            $iframe->src = $this->uri(array('action'=>'viewhtmlsubmission', 'id'=>$submission['id'],'fileid'=>$fileId));
-            $ret .= $iframe->show();
-        }
+        $ret .= '</div>';
     }
     if ($submission['mark'] != NULL && ($assignment['closing_date'] < date('Y-m-d H:i:s') || $this->isValid('edit'))) {
         $header = new htmlHeading();
@@ -163,10 +203,11 @@ if ($assignment['format'] == '1') {
         $header->type = 3;
         $ret .= $header->show();
         $table = $this->newObject('htmltable', 'htmlelements');
-        $objMark->value = $submission['mark'];
+        $displayPercentage = (float) $assignment['mark'] > 0 ? round(((float) $submission['mark'] / (float) $assignment['mark']) * 100, 2) : 0;
+        $objMark->value = $displayPercentage;
         $table->startRow();
         $table->addCell($objMark->show(), 120);
-        $content = '<p><strong>'.$this->objLanguage->languageText('mod_assignment_mark', 'assignment', 'Mark').': '.$submission['mark'].'/'.$assignment['mark'].'</strong></p>';
+        $content = '<p><strong>' . $this->objLanguage->languageText('mod_assignment_markpercentage', 'assignment') . ': ' . $displayPercentage . '%</strong></p>';
         $content .= '<p>'.nl2br($submission['commentinfo']).'</p>';
         $table->addCell($content);
         $table->endRow();
@@ -178,65 +219,39 @@ if ($assignment['format'] == '1') {
         $ret .= $header->show();
     }
     if ($this->isValid('saveuploadmark')) {
-        // Header
         $header = new htmlHeading();
-        $header->str = $this->objLanguage->languageText('mod_assignment_markassgn', 'assignment', 'Mark Assignment');
+        $header->str = $this->objLanguage->languageText('mod_assignment_markassgn', 'assignment');
         $header->type = 3;
         $ret .= $header->show();
-        // Form
-        $form = new form ('_form', $this->uri(array('action'=>'saveuploadmark')));
-        $form->extra = 'enctype="multipart/form-data"';
+        $markAction = str_replace('&amp;', '&', html_entity_decode($this->uri(array('action' => 'saveuploadmark')), ENT_QUOTES, 'UTF-8'));
+        $form = new form('_form', $markAction);
         $hiddenInput = new hiddeninput('id', $submission['id']);
+        $currentPercentage = $submission['mark'] !== NULL && (float) $assignment['mark'] > 0
+            ? round(((float) $submission['mark'] / (float) $assignment['mark']) * 100, 2) : 0;
+        $percentageInput = '<input type="number" name="mark_percentage" min="0" max="100" step="0.01" value="'
+            . htmlspecialchars((string) $currentPercentage, ENT_QUOTES, 'UTF-8') . '" required> %';
         $textArea = new textarea('commentinfo');
         $textArea->value = $submission['commentinfo'];
-        $button = new button('savemark', $this->objLanguage->languageText('mod_assignment_markassgn', 'assignment', 'Mark Assignment'));
+        $button = new button('savemark', $this->objLanguage->languageText('mod_assignment_markassgn', 'assignment'));
+        /* CHISIMBA_ASSIGNMENT_NATIVE_MARK_BUTTON */
+        $button->sexyButtons = FALSE;
+        $button->setCSS('assignment-mark-submit');
         $button->setToSubmit();
-    	//Setup Tables
-    	$table = $this->newObject('htmltable', 'htmlelements');
-    	$objSubTable = new htmltable();
-    	$objSubTable->width="60%";
-    	//Insert mark
-        $objTextinput = new textinput('mark',is_null($submission['mark'])?'0':(int)$submission['mark']);
-    	$objTextinput->size='5';
-    	$objTextinput->extra=' maxlength=\'4\'';
-    	$objSubTable->startRow();
-    	$objSubTable->addCell($objTextinput->show().' / '.$assignment['mark']." ".$this->objLanguage->languageText('mod_assignment_typeorslider', 'assignment', 'Mark'),'70%','','left');
-    	$objSubTable->addCell("&nbsp;");
-    	$objSubTable->endRow();
-     	$objSubTable->startRow();
-        $objSlider = $this->newObject('dhtmlgoodies_slider', 'dhtmlgoodies');
-        $objSlider->setTargetId('slider_target');
-        $objSlider->setFieldRef('document._form.mark');
-        $objSlider->setWidth(200);
-        $objSlider->setMin(0);
-        $objSlider->setmax($assignment['mark']);
-    	$objSubTable->addCell('<span id=\'slider_target\'></span>'.$objSlider->show(),'70%','','left');
-    	$objSubTable->addCell("&nbsp;");
-    	$objSubTable->endRow();
+        $table = $this->newObject('htmltable', 'htmlelements');
         $table->startRow();
-        //$table->addCell("&nbsp;");
-        $table->addCell($this->objLanguage->languageText('mod_assignment_mark', 'assignment', 'Mark'), 120);
-        $table->addCell($objSubTable->show());
-        $table->endRow();
-    	//Spacer
-        $table->startRow();
-        $table->addCell("&nbsp;");
-        $table->addCell("&nbsp;");
+        $table->addCell($this->objLanguage->languageText('mod_assignment_markpercentage', 'assignment'), 180);
+        $table->addCell($percentageInput);
         $table->endRow();
         $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_assignment_comment', 'assignment', 'Comment'));
+        $table->addCell($this->objLanguage->languageText('mod_assignment_comment', 'assignment'));
         $table->addCell($textArea->show());
-        $table->endRow();
-        $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_assignment_reviewedassgn', 'assignment', 'Reviewed Assignment'));
-        $table->addCell('<input type="file" name="lectfile">');
         $table->endRow();
         $table->startRow();
         $table->addCell('&nbsp;');
         $table->addCell($button->show());
         $table->endRow();
-        $form->addToForm($hiddenInput->show().$table->show());
-        $ret .= $form->show();
+        $form->addToForm($hiddenInput->show() . $table->show());
+        $ret .= '<div class="assignment-mark-form">' . $form->show() . '</div>';
     }
 } else {
     // Online
@@ -258,10 +273,11 @@ if ($assignment['format'] == '1') {
         $ret .= $header->show();
         // Table
         $table = $this->newObject('htmltable', 'htmlelements');
-        $objMark->value = $submission['mark'];
+        $displayPercentage = (float) $assignment['mark'] > 0 ? round(((float) $submission['mark'] / (float) $assignment['mark']) * 100, 2) : 0;
+        $objMark->value = $displayPercentage;
         $table->startRow();
         $table->addCell($objMark->show(), 120);
-        $content = '<p><strong>'.$this->objLanguage->languageText('mod_assignment_mark', 'assignment', 'Mark').': '.$submission['mark'].'/'.$assignment['mark'].'</strong></p>';
+        $content = '<p><strong>' . $this->objLanguage->languageText('mod_assignment_markpercentage', 'assignment') . ': ' . $displayPercentage . '%</strong></p>';
         $content .= '<p>'.nl2br($submission['commentinfo']).'</p>';
         $table->addCell($content);
         $table->endRow();
@@ -285,6 +301,9 @@ if ($assignment['format'] == '1') {
         $textArea = new textarea('commentinfo');
         $textArea->value = $submission['commentinfo'];
         $button = new button('savemark', $this->objLanguage->languageText('mod_assignment_markassgn', 'assignment', 'Mark Assignment'));
+        /* CHISIMBA_ASSIGNMENT_NATIVE_MARK_BUTTON */
+        $button->sexyButtons = FALSE;
+        $button->setCSS('assignment-mark-submit');
         $button->setToSubmit();
     	// Table
     	$table = $this->newObject('htmltable', 'htmlelements');
