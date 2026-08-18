@@ -62,6 +62,7 @@ class db_contextcontent_activitystreamer extends dbtable {
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_activitystreamer');
+        $this->_db = $this->objEngine->getDbObj();
         $this->objUser = & $this->getObject('user', 'security');
         //Load content pages
         $this->objContentTitles = $this->getObject('db_contextcontent_titles');
@@ -157,6 +158,40 @@ class db_contextcontent_activitystreamer extends dbtable {
      * @param string $contextCode Context Code
      * @return TRUE
      */
+
+    /** Return the most recent ContextContent page visit for one user in one context. */
+    public function getLatestPageVisit($userId, $contextCode)
+    {
+        $userId = $this->_db->quote((string) $userId);
+        $contextCode = $this->_db->quote((string) $contextCode);
+        $sql = "SELECT contextitemid, description, datecreated
+                FROM tbl_contextcontent_activitystreamer
+                WHERE userid = " . $userId . "
+                  AND contextcode = " . $contextCode . "
+                  AND modulecode = 'contextcontent'
+                  AND pageorchapter = 'page'
+                  AND contextitemid <> 'x'
+                ORDER BY datecreated DESC, puid DESC LIMIT 1";
+        $rows = $this->getArray($sql);
+        return (!is_array($rows) || count($rows) === 0) ? FALSE : $rows[0];
+    }
+
+    /** Count distinct ContextContent pages visited by one user in one context. */
+    public function countVisitedPages($userId, $contextCode)
+    {
+        $userId = $this->_db->quote((string) $userId);
+        $contextCode = $this->_db->quote((string) $contextCode);
+        $sql = "SELECT COUNT(DISTINCT contextitemid) AS visited
+                FROM tbl_contextcontent_activitystreamer
+                WHERE userid = " . $userId . "
+                  AND contextcode = " . $contextCode . "
+                  AND modulecode = 'contextcontent'
+                  AND pageorchapter = 'page'
+                  AND contextitemid <> 'x'";
+        $rows = $this->getArray($sql);
+        return (!is_array($rows) || count($rows) === 0) ? 0 : (int) $rows[0]['visited'];
+    }
+
     public function getRecordById($Id) {
         $where = "WHERE id = '$Id'";
         $results = $this->getAll($where);

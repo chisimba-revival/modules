@@ -1245,14 +1245,20 @@ class contextcontent extends controller {
         if (!$entryDecision['allowed']) {
             return $this->showStageGateLocked($entryDecision['gate']);
         }
-        //Log in activity streamer only if logged in (Public courses dont need login)
+        // Persist the current learning-journey position for logged-in users.
+        // This is deliberately independent of optional event broadcasting:
+        // Context home needs a durable last-page position even when events are off.
         if (!empty($this->userId)) {
-            if ($this->eventsEnabled) {
-                $ischapterlogged = $this->objContextActivityStreamer->getRecord($this->userId, $pageId);
-                //if ($ischapterlogged == FALSE || $ischapterlogged == TRUE) {
-                $ischapterlogged = $this->objContextActivityStreamer->addRecord($this->userId, Null, $pageId, $this->contextCode, "contextcontent", Null, "page", $page['menutitle']);
-                //}
-            }
+            $this->objContextActivityStreamer->addRecord(
+                $this->userId,
+                Null,
+                $pageId,
+                $this->contextCode,
+                "contextcontent",
+                Null,
+                "page",
+                $page['menutitle']
+            );
         }
 
 
