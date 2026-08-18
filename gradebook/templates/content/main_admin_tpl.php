@@ -141,7 +141,8 @@ if (empty($planRows)) {
                     $result = $candidate;
                 }
             }
-            $statusKey = 'resultstatus_'.preg_replace('/[^a-z0-9_]/', '', strtolower((string) $result['status']));
+            $normalisedStatus = preg_replace('/[^a-z0-9_]/', '', strtolower((string) $result['status']));
+            $statusKey = 'result_'.str_replace('_', '', $normalisedStatus);
             $statusText = $language->languageText('mod_gradebook_'.$statusKey, 'gradebook');
             if ($statusText === 'mod_gradebook_'.$statusKey) {
                 $statusText = $result['status'];
