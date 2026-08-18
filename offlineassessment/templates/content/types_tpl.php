@@ -1,0 +1,6 @@
+<?php
+$L=function($k)use($this){return $this->objLanguage->languageText('mod_offlineassessment_'.$k,'offlineassessment');};
+echo '<h1>'.htmlspecialchars($L('types')).'</h1>';
+foreach($types as $t){echo '<form method="post" action="'.$this->uri(array('action'=>'savetype')).'" style="margin-bottom:.75rem"><input type="hidden" name="id" value="'.htmlspecialchars($t['id']).'"><input name="name" required value="'.htmlspecialchars($t['name']).'"> <label>'.$L('sortorder').' <input type="number" name="sort_order" value="'.(int)$t['sort_order'].'" style="width:5rem"></label> <select name="status"><option value="active">'.$L('active').'</option><option value="inactive"'.($t['status']==='inactive'?' selected':'').'>'.$L('inactive').'</option></select> <button>'.$L('save').'</button></form>';}
+echo '<h2>'.$L('addtype').'</h2><form method="post" action="'.$this->uri(array('action'=>'savetype')).'"><label>'.$L('typename').' <input required name="name"></label> <label>'.$L('sortorder').' <input type="number" name="sort_order" value="'.(count($types)+1).'" style="width:5rem"></label> <button>'.$L('save').'</button></form><p><a href="'.$this->uri(array()).'">'.$L('back').'</a></p>';
+?>
