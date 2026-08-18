@@ -65,7 +65,7 @@ echo '<div class="gradebook-home-actions">'
     .'</div>';
 
 echo '<section class="gradebook-home-section">';
-echo '<h2>'.$esc($L('coursesummary')).'</h2>';
+echo '<h2>'.$esc($L('course')).'</h2>';
 if ($studentCount === 0) {
     echo '<p>'.$esc($L('nostudents')).'</p>';
 } else {
@@ -96,15 +96,15 @@ if ($studentCount === 0) {
 echo '</section>';
 
 echo '<section class="gradebook-home-section">';
-echo '<h2>'.$esc($L('assessmentresults')).'</h2>';
+echo '<h2>'.$esc($L('viewByAssessment')).'</h2>';
 if (empty($planRows)) {
     echo '<p>'.$esc($L('noassessmentplanitems')).'</p>';
 } else {
     echo '<form method="get" action="'.$this->uri(array()).'">'
         .'<input type="hidden" name="module" value="gradebook">'
-        .'<label>'.$esc($L('chooseassessment')).' '
+        .'<label>'.$esc($L('assessment')).' '
         .'<select name="plan_item" onchange="this.form.submit()">'
-        .'<option value="">'.$esc($L('selectassessment')).'</option>';
+        .'<option value="">'.$esc($L('selectassessmentactivity')).'</option>';
     foreach ($planRows as $row) {
         $providerLabel = $row['provider'] ? $row['provider']['label'] : $row['item']['provider_module'];
         $selected = (string) $row['item']['id'] === $selectedItemId ? ' selected' : '';
@@ -123,7 +123,7 @@ if (empty($planRows)) {
             .'<th>'.$esc($L('studentNumber')).'</th>'
             .'<th>'.$esc($L('student')).'</th>'
             .'<th>'.$esc($L('mark')).'</th>'
-            .'<th>'.$esc($L('resultstatus')).'</th>'
+            .'<th>'.$esc($L('activitystatus')).'</th>'
             .'</tr></thead><tbody>';
 
         for ($i = 0; $i < $studentCount; $i++) {
