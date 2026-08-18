@@ -2,14 +2,14 @@
 if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly'); }
 class offlineassessment extends controller
 {
- private $user; private $lang; private $perm; private $context; private $contextCode; private $assessments; private $types; private $marks; private $history; private $userContext;
+ public $objLanguage;
+ private $user; private $perm; private $context; private $contextCode; private $assessments; private $types; private $marks; private $history; private $userContext;
  public function init(){
-  $this->user=$this->getObject('user','security'); $this->lang=$this->getObject('language','language'); $this->perm=$this->getObject('contextcondition','contextpermissions');
+  $this->user=$this->getObject('user','security'); $this->objLanguage=$this->getObject('language','language'); $this->perm=$this->getObject('contextcondition','contextpermissions');
   $this->context=$this->getObject('dbcontext','context'); $this->contextCode=$this->context->getContextCode(); $this->userContext=$this->getObject('usercontext','context');
   $this->assessments=$this->getObject('dbofflineassessments','offlineassessment'); $this->types=$this->getObject('dbofflineassessmenttypes','offlineassessment'); $this->marks=$this->getObject('dbofflineassessmentmarks','offlineassessment'); $this->history=$this->getObject('dbofflineassessmentmarkhistory','offlineassessment');
  }
  private function mayManage(){ return $this->user->isAdmin() || $this->perm->isContextMember('Lecturers'); }
- private function L($key){ return $this->lang->languageText('mod_offlineassessment_'.$key,'offlineassessment'); }
  private function assessment(){ $id=trim((string)$this->getParam('id','')); return $this->assessments->findInContext($id,$this->contextCode); }
  public function dispatch($action){
   if(!$this->mayManage()) return $this->nextAction(null,array('error'=>'noaccess'),'_default');
@@ -29,7 +29,8 @@ class offlineassessment extends controller
   $id=trim((string)$this->getParam('id','')); if($id && !$this->assessments->findInContext($id,$this->contextCode)) return $this->nextAction(null,array('error'=>'invalid'));
   $name=trim((string)$this->getParam('name','')); $type=trim((string)$this->getParam('type_id','')); $class=$this->getParam('classification','summative'); $max=(float)$this->getParam('maximum_mark',100);
   if($name===''||$type===''||$max<=0) return $this->nextAction('edit',array('id'=>$id,'error'=>'invalid'));
-  $date=trim((string)$this->getParam('assessment_date','')); $data=array('context_code'=>$this->contextCode,'type_id'=>$type,'name'=>$name,'classification'=>$class==='formative'?'formative':'summative','maximum_mark'=>$max,'assessment_date'=>$date===''?null:$date,'description'=>trim((string)$this->getParam('description','')),'status'=>$this->getParam('status','active')==='inactive'?'inactive':'active');
+  $date=trim((string)$this->getParam('assessment_date','')); if($date!=='')$date.=' 00:00:00';
+  $data=array('context_code'=>$this->contextCode,'type_id'=>$type,'name'=>$name,'classification'=>$class==='formative'?'formative':'summative','maximum_mark'=>$max,'assessment_date'=>$date===''?null:$date,'description'=>trim((string)$this->getParam('description','')),'status'=>$this->getParam('status','active')==='inactive'?'inactive':'active');
   $this->assessments->saveAssessment($id,$data,$this->user->userId()); return $this->nextAction(null,array('saved'=>'1'));
  }
  private function saveType(){ $name=trim((string)$this->getParam('name','')); if($name!=='')$this->types->saveType(trim((string)$this->getParam('id','')),$name,(int)$this->getParam('sort_order',0),$this->getParam('status','active')==='inactive'?'inactive':'active',$this->user->userId()); return $this->nextAction('types'); }
