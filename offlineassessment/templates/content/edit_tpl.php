@@ -1,5 +1,9 @@
 <?php
-$L=function($k)use($this){return $this->objLanguage->languageText('mod_offlineassessment_'.$k,'offlineassessment');}; $a=(array)$assessment;
+$language = $this->objLanguage;
+$L = function ($k) use ($language) {
+    return $language->languageText('mod_offlineassessment_'.$k, 'offlineassessment');
+};
+$a = (array) $assessment;
 function oaVal($a,$k,$d=''){return htmlspecialchars(isset($a[$k])?$a[$k]:$d,ENT_QUOTES,'UTF-8');}
 echo '<h1>'.htmlspecialchars(empty($a)?$L('new'):$L('edit')).'</h1><form method="post" action="'.$this->uri(array('action'=>'save')).'">';
 echo '<input type="hidden" name="id" value="'.oaVal($a,'id').'">';
