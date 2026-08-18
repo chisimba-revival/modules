@@ -1,5 +1,9 @@
 <?php
-$L=function($k)use($this){return $this->objLanguage->languageText('mod_offlineassessment_'.$k,'offlineassessment');}; $errs=isset($markErrors)?$markErrors:array();
+$language = $this->objLanguage;
+$L = function ($k) use ($language) {
+    return $language->languageText('mod_offlineassessment_'.$k, 'offlineassessment');
+};
+$errs=isset($markErrors)?$markErrors:array();
 echo '<h1>'.htmlspecialchars($assessment['name']).' — '.htmlspecialchars($L('entermarks')).'</h1><p>'.$L('maxmark').': '.htmlspecialchars($assessment['maximum_mark']).'</p>';
 if(empty($students)){echo '<p>'.$L('nostudents').'</p>';return;}
 echo '<form method="post" action="'.$this->uri(array('action'=>'savemarks','id'=>$assessment['id'])).'"><table class="table"><thead><tr><th>'.$L('student').'</th><th>'.$L('username').'</th><th>'.$L('mark').'</th><th>'.$L('reason').'</th></tr></thead><tbody>';
