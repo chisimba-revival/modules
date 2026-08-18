@@ -1343,6 +1343,25 @@ class mcqtests extends controller {
 
             case 'answertest':
                 $testId = $this->getParam('id');
+                $entryDecision = $this->learnerEntryDecision(
+                    $testId,
+                    $this->getParam('resume_result_id', NULL),
+                    $this->getParam('resume', '0') === '1'
+                );
+                if (!$entryDecision['allowed']) {
+                    $this->unsetSession('qData');
+                    $this->unsetSession('taketest');
+                    $this->unsetSession('stage_gate_return_chapter');
+                    $this->unsetSession('stage_gate_origin_chapter');
+                    $this->unsetSession('stage_gate_passmark');
+                    $this->unsetSession('stage_gate_course_completion');
+                    $this->setVar('unavailableTestId', $testId);
+                    $this->setVar(
+                        'unavailableStageGateOriginChapter',
+                        trim((string) $this->getParam('stage_gate_origin_chapter', ''))
+                    );
+                    return 'testunavailable_tpl.php';
+                }
                 $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
                 $stageGateOriginChapter = trim((string) $this->getParam('stage_gate_origin_chapter', ''));
                 $stageGatePassMark = (int) $this->getParam('stage_gate_passmark', 0);
@@ -1373,7 +1392,10 @@ class mcqtests extends controller {
                     $this->unsetSession('taketest');
                 }
                 $check = $this->getSession('taketest', NULL);
-                if ($check != 'open') {
+                if ($entryDecision['reason'] === 'in_progress') {
+                    $resultId = $entryDecision['resultid'];
+                    $this->setSession('taketest', 'open');
+                } elseif ($check != 'open') {
                     $this->unsetSession('qData');
                     $resultId = $this->closeTest($testId);
                     if (is_null($resultId)) {
@@ -1399,8 +1421,23 @@ class mcqtests extends controller {
                 return $this->setTest($testId, 0, $resultId);
             case 'answertest2':
                 $testId = $this->getParam('id');
+                $entryDecision = $this->learnerEntryDecision(
+                    $testId,
+                    $this->getParam('resume_result_id', NULL),
+                    $this->getParam('resume', '0') === '1'
+                );
+                if (!$entryDecision['allowed']) {
+                    $this->unsetSession('qData');
+                    $this->unsetSession('taketest');
+                    $this->setVar('unavailableTestId', $testId);
+                    $this->setVar('unavailableStageGateOriginChapter', '');
+                    return 'testunavailable_tpl.php';
+                }
                 $check = $this->getSession('taketest', NULL);
-                if ($check != 'open') {
+                if ($entryDecision['reason'] === 'in_progress') {
+                    $resultId = $entryDecision['resultid'];
+                    $this->setSession('taketest', 'open');
+                } elseif ($check != 'open') {
                     $this->unsetSession('qData');
                     $resultId = $this->closeTest($testId);
 //                    if (is_null($resultId)) {
@@ -3314,6 +3351,36 @@ class mcqtests extends controller {
             }
         }
         return NULL;
+    }
+
+    /**
+     * Authoritative learner-entry decision.
+     *
+     * A new learner attempt may begin only while the test is open. If a learner
+     * already has an unfinished attempt, closing the test does not strand them:
+     * that attempt may still be resumed and submitted.
+     */
+    private function learnerEntryDecision($testId, $resumeResultId = NULL, $resumeRequested = FALSE) {
+        if ($this->isOpenTest($testId)) {
+            return array('allowed' => TRUE, 'reason' => 'open');
+        }
+
+        if ($resumeRequested && !empty($resumeResultId)) {
+            $attempt = $this->dbResults->getAttempt(
+                $resumeResultId,
+                $this->userId,
+                $testId
+            );
+            if ($attempt !== FALSE && (int) $attempt['mark'] === -1) {
+                return array(
+                    'allowed' => TRUE,
+                    'reason' => 'in_progress',
+                    'resultid' => $attempt['id']
+                );
+            }
+        }
+
+        return array('allowed' => FALSE, 'reason' => 'not_open');
     }
 
     /** Re-read current state; never trust a page or submitted status value. */

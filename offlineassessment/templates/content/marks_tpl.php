@@ -1,0 +1,12 @@
+<?php
+$language = $this->objLanguage;
+$L = function ($k) use ($language) {
+    return $language->languageText('mod_offlineassessment_'.$k, 'offlineassessment');
+};
+$errs=isset($markErrors)?$markErrors:array();
+echo '<h1>'.htmlspecialchars($assessment['name']).' — '.htmlspecialchars($L('entermarks')).'</h1><p>'.$L('maxmark').': '.htmlspecialchars($assessment['maximum_mark']).'</p>';
+if(empty($students)){echo '<p>'.$L('nostudents').'</p>';return;}
+echo '<form method="post" action="'.$this->uri(array('action'=>'savemarks','id'=>$assessment['id'])).'"><table class="table"><thead><tr><th>'.$L('student').'</th><th>'.$L('username').'</th><th>'.$L('mark').'</th><th>'.$L('reason').'</th></tr></thead><tbody>';
+foreach($students as $s){$m=$marks[$s['id']]??false; $value=$m!==false?$m['mark']:''; echo '<tr><td>'.htmlspecialchars(trim($s['firstname'].' '.$s['surname'])).'</td><td>'.htmlspecialchars($s['username']).'</td><td><input type="number" min="0" max="'.htmlspecialchars($assessment['maximum_mark']).'" step="0.001" name="mark_'.htmlspecialchars($s['id']).'" value="'.htmlspecialchars($value).'">'; if(($errs[$s['id']]??'')==='range')echo '<br><strong>'.$L('markrange').'</strong>'; echo '</td><td><input type="text" name="reason_'.htmlspecialchars($s['id']).'" size="35">'; if(($errs[$s['id']]??'')==='reason')echo '<br><strong>'.$L('reasonrequired').'</strong>'; echo '</td></tr>';}
+echo '</tbody></table><p><button type="submit">'.$L('save').'</button> <a href="'.$this->uri(array()).'">'.$L('cancel').'</a></p></form>';
+?>

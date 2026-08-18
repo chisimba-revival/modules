@@ -40,6 +40,10 @@ class chapterstagegateservice extends controller
         if ($test === FALSE) {
             return FALSE;
         }
+        $inProgressAttempt = $this->incompleteAttempt($test['id']);
+        $inProgress = $inProgressAttempt !== FALSE;
+        $isOpen = isset($test['status']) && $test['status'] === 'open';
+
         return array(
             'chapterid' => $chapter['chapterid'],
             'chaptertitle' => $chapter['chaptertitle'],
@@ -47,7 +51,11 @@ class chapterstagegateservice extends controller
             'testname' => $test['name'],
             'passmark' => max(1, min(100, (int) $chapter['stage_gate_passmark'])),
             'totalmark' => (float) $test['totalmark'],
-            'testtype' => isset($test['testtype']) ? $test['testtype'] : ''
+            'testtype' => isset($test['testtype']) ? $test['testtype'] : '',
+            'teststatus' => isset($test['status']) ? $test['status'] : 'inactive',
+            'inprogress' => $inProgress,
+            'inprogressresultid' => $inProgress ? $inProgressAttempt['id'] : NULL,
+            'entryavailable' => $isOpen || $inProgress
         );
     }
 
@@ -158,9 +166,21 @@ class chapterstagegateservice extends controller
         return NULL;
     }
 
+    private function incompleteAttempt($testId)
+    {
+        if (!$this->objUser->isLoggedIn()) {
+            return FALSE;
+        }
+        $latest = $this->objResults->getLatestAttempt($this->objUser->userId(), $testId);
+        if ($latest === FALSE || (int) $latest['mark'] !== -1) {
+            return FALSE;
+        }
+        return $latest;
+    }
+
     private function testInContext($contextCode, $testId)
     {
-        $tests = $this->objTests->getTests($contextCode, 'id,name,totalmark,context,testtype', $testId);
+        $tests = $this->objTests->getTests($contextCode, 'id,name,totalmark,context,testtype,status', $testId);
         if (!is_array($tests) || empty($tests[0]) || $tests[0]['context'] !== $contextCode) {
             return FALSE;
         }

@@ -219,15 +219,60 @@ if ($page['contenttype'] === 'short_text') {
         . '</style>');
 }
 
+$bookmarkControl = '';
 if ($this->objUser->isLoggedIn()) {
-    $bookmarkLabel = $contextContentBookmarked ? 'Remove bookmark' : 'Bookmark page';
+    $bookmarkOnLabel = $this->objLanguage->languageText(
+        'mod_contextcontent_bookmark_page',
+        'contextcontent',
+        'Bookmark page'
+    );
+    $bookmarkOffLabel = $this->objLanguage->languageText(
+        'mod_contextcontent_remove_bookmark',
+        'contextcontent',
+        'Remove bookmark'
+    );
+    $bookmarkAddedMessage = $this->objLanguage->languageText(
+        'mod_contextcontent_bookmark_added',
+        'contextcontent',
+        'Page bookmarked'
+    );
+    $bookmarkRemovedMessage = $this->objLanguage->languageText(
+        'mod_contextcontent_bookmark_removed',
+        'contextcontent',
+        'Bookmark removed'
+    );
+    $bookmarkErrorMessage = $this->objLanguage->languageText(
+        'mod_contextcontent_bookmark_error',
+        'contextcontent',
+        'Bookmark could not be updated'
+    );
+
+    $bookmarkLabel = $contextContentBookmarked ? $bookmarkOffLabel : $bookmarkOnLabel;
     $bookmarkType = $contextContentBookmarked ? 'off' : 'on';
-    $content .= '<form method="post" class="contextcontent-bookmark-form" action="'
-        . htmlspecialchars($this->uri(array('action' => 'changebookmark')), ENT_QUOTES, 'UTF-8') . '">'
-        . '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($contextContentCsrf, ENT_QUOTES, 'UTF-8') . '" />'
-        . '<input type="hidden" name="id" value="' . htmlspecialchars($page['id'], ENT_QUOTES, 'UTF-8') . '" />'
-        . '<input type="hidden" name="type" value="' . $bookmarkType . '" />'
-        . '<button type="submit">' . htmlspecialchars($bookmarkLabel, ENT_QUOTES, 'UTF-8') . '</button></form>';
+    $bookmarkPressed = $contextContentBookmarked ? 'true' : 'false';
+
+    $bookmarkIcon = '<svg class="contextcontent-bookmark-icon" viewBox="0 0 24 24" aria-hidden="true">'
+        . '<path d="M6 3.5h12v17l-6-4-6 4z"/></svg>';
+
+    $bookmarkControl = '<div class="contextcontent-bookmark-control">'
+        . '<button type="button" class="contextcontent-bookmark-toggle'
+        . ($contextContentBookmarked ? ' is-bookmarked' : '') . '"'
+        . ' aria-pressed="' . $bookmarkPressed . '"'
+        . ' aria-label="' . htmlspecialchars($bookmarkLabel, ENT_QUOTES, 'UTF-8') . '"'
+        . ' title="' . htmlspecialchars($bookmarkLabel, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-bookmark-url="' . htmlspecialchars($this->uri(array('action' => 'changebookmark')), ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-page-id="' . htmlspecialchars($page['id'], ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-bookmark-type="' . $bookmarkType . '"'
+        . ' data-csrf="' . htmlspecialchars($contextContentCsrf, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-label-on="' . htmlspecialchars($bookmarkOnLabel, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-label-off="' . htmlspecialchars($bookmarkOffLabel, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-message-added="' . htmlspecialchars($bookmarkAddedMessage, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-message-removed="' . htmlspecialchars($bookmarkRemovedMessage, ENT_QUOTES, 'UTF-8') . '"'
+        . ' data-message-error="' . htmlspecialchars($bookmarkErrorMessage, ENT_QUOTES, 'UTF-8') . '">'
+        . $bookmarkIcon . '<span class="contextcontent-bookmark-state-indicator" aria-hidden="true"></span>'
+        . '</button>'
+        . '<span class="contextcontent-bookmark-feedback" role="status" aria-live="polite"></span>'
+        . '</div>';
 }
 
 
@@ -251,8 +296,30 @@ if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
         $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $nextChapterUrl . '">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_next_chapter', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</a></p>';
     } elseif ($stageGatePassed) {
         $stageGateAction = '<p class="contextcontent-stage-gate-complete">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_course_complete', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</p>';
+    } elseif (empty($chapterStageGate['entryavailable'])) {
+        $stageGateAction = '<p class="contextcontent-stage-gate-unavailable">'
+            . htmlspecialchars(
+                $this->objLanguage->languageText(
+                    'mod_contextcontent_stage_gate_unavailable',
+                    'contextcontent',
+                    'This assessment is not currently open for entry.'
+                ),
+                ENT_QUOTES,
+                'UTF-8'
+            ) . '</p>';
     } else {
-        $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $stageGateUrl . '">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_open_quiz', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</a></p>';
+        $stageGateActionLabel = !empty($chapterStageGate['inprogress'])
+            ? $this->objLanguage->languageText(
+                'mod_contextcontent_stage_gate_continue_quiz',
+                'contextcontent',
+                'Continue assessment'
+            )
+            : $this->objLanguage->languageText(
+                'mod_contextcontent_stage_gate_open_quiz',
+                'contextcontent'
+            );
+        $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $stageGateUrl . '">'
+            . htmlspecialchars($stageGateActionLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
     }
     $content .= '<section class="contextcontent-stage-gate ' . ($stageGatePassed ? 'contextcontent-stage-gate-passed' : 'contextcontent-stage-gate-pending') . '" aria-labelledby="contextcontent-stage-gate-title">'
         . '<h2 id="contextcontent-stage-gate-title">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_heading', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</h2>'
@@ -312,10 +379,61 @@ if ($this->isValid('addpage')) {
     // $objTabs->addTab("Lecturer View",$topTable->show().$content.'<hr />'.$table->show().$form);
     // $objTabs->addTab("Student View",$topTable->show().$content.'<hr />'.$table2->show());
     // echo $objTabs->show();
-    $res .= '<div id="tablenav">'.$topTable->show() . $content . '<hr />' . $table->show() . $form.'</div>';
+    $res .= '<div id="tablenav">'.$topTable->show() . $content
+        . '<div class="contextcontent-bottom-tools">' . $bookmarkControl . '</div>'
+        . '<hr />' . $table->show() . $form.'</div>';
 } else {
-    $res .= '<div id="tablenav">'.$topTable->show() . $content . '<hr />' . $table->show() . $form.'</div>';
+    $res .= '<div id="tablenav">'.$topTable->show() . $content
+        . '<div class="contextcontent-bottom-tools">' . $bookmarkControl . '</div>'
+        . '<hr />' . $table->show() . $form.'</div>';
 }
+
+$this->appendArrayVar('headerParams', '<style type="text/css">'
+    . '.contextcontent-bottom-tools{display:flex;justify-content:center;align-items:center;margin:0}'
+    . '.contextcontent-bookmark-control{display:flex;align-items:center;gap:.55rem;min-height:2.4rem}'
+    . '.contextcontent-bookmark-toggle{position:relative;display:inline-flex;align-items:center;justify-content:center;width:1.9rem;height:1.9rem;padding:0;border:1px solid #c4cdd2;border-radius:999px;background:#fff;color:#607d8b;cursor:pointer}'
+    . '.contextcontent-bookmark-toggle:hover,.contextcontent-bookmark-toggle:focus{border-color:#295351;color:#295351;outline:2px solid transparent}'
+    . '.contextcontent-bookmark-toggle.is-bookmarked{background:#eef7f3;border-color:#295351;color:#295351}'
+    . '.contextcontent-bookmark-icon{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}'
+    . '.contextcontent-bookmark-toggle.is-bookmarked .contextcontent-bookmark-icon{fill:currentColor}'
+    . '.contextcontent-bookmark-state-indicator{display:none;position:absolute;right:-2px;bottom:-2px;width:.55rem;height:.55rem;border-radius:50%;background:#295351;border:2px solid #fff}'
+    . '.contextcontent-bookmark-toggle.is-bookmarked .contextcontent-bookmark-state-indicator{display:block}'
+    . '.contextcontent-page-nav-with-bookmark{position:relative;min-height:2.7rem}.contextcontent-page-nav-with-bookmark>.contextcontent-bottom-tools{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}.contextcontent-page-nav-with-bookmark .contextcontent-bookmark-feedback{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;margin-top:.12rem;padding:0 .25rem;background:#fff}.contextcontent-bookmark-feedback{font-size:.88rem;color:#546e7a;min-width:0}'
+    . '</style>');
+
+$this->appendArrayVar('headerParams', '<script type="text/javascript">'
+    . 'document.addEventListener("DOMContentLoaded",function(){'
+    . 'var tools=document.querySelector("#tablenav .contextcontent-bottom-tools");'
+    . 'if(!tools){return;}'
+    . 'var hr=tools.nextElementSibling;'
+    . 'while(hr&&hr.tagName!=="HR"){hr=hr.nextElementSibling;}'
+    . 'var nav=hr?hr.nextElementSibling:null;'
+    . 'if(!nav){return;}'
+    . 'var wrap=document.createElement("div");'
+    . 'wrap.className="contextcontent-page-nav-with-bookmark";'
+    . 'nav.parentNode.insertBefore(wrap,nav);'
+    . 'wrap.appendChild(nav);'
+    . 'wrap.appendChild(tools);'
+    . '});'
+    . 'document.addEventListener("click",function(e){'
+    . 'var b=e.target.closest(".contextcontent-bookmark-toggle");if(!b){return;}'
+    . 'e.preventDefault();if(b.disabled){return;}b.disabled=true;'
+    . 'var body=new URLSearchParams();body.set("csrf_token",b.dataset.csrf);body.set("id",b.dataset.pageId);'
+    . 'body.set("type",b.dataset.bookmarkType);body.set("ajax","1");'
+    . 'var feedback=b.parentNode.querySelector(".contextcontent-bookmark-feedback");'
+    . 'fetch(b.dataset.bookmarkUrl,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest","Accept":"application/json"},body:body.toString(),credentials:"same-origin"})'
+    . '.then(function(r){if(!r.ok){throw new Error("request");}return r.json();})'
+    . '.then(function(data){if(!data||data.ok!==true){throw new Error("state");}'
+    . 'var on=data.bookmarked===true;b.classList.toggle("is-bookmarked",on);b.setAttribute("aria-pressed",on?"true":"false");'
+    . 'b.dataset.bookmarkType=on?"off":"on";var label=on?b.dataset.labelOff:b.dataset.labelOn;'
+    . 'b.setAttribute("aria-label",label);b.setAttribute("title",label);'
+    . 'feedback.textContent=on?b.dataset.messageAdded:b.dataset.messageRemoved;'
+    . 'window.setTimeout(function(){if(feedback){feedback.textContent="";}},2200);'
+    . '})'
+    . '.catch(function(){feedback.textContent=b.dataset.messageError;})'
+    . '.finally(function(){b.disabled=false;});'
+    . '});'
+    . '</script>');
 
 //Check if comments are allowed for this course
 $showcomment = $this->objContext->getField('showcomment', $contextCode = NULL);

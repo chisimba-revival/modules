@@ -1270,14 +1270,34 @@ class contextcontent extends controller {
         $this->setVar('pagelft', $page['lft']);
         $this->setVar('module', 'contextcontent');
 
-        $this->setVar('nextPage', $this->objContentOrder->getNextPage($this->contextCode, $page['chapterid'], $page['lft']));
-        $this->setVar('prevPage', $this->objContentOrder->getPreviousPage($this->contextCode, $page['chapterid'], $page['lft']));
+        $nextPage = $this->objContentOrder->getNextPage($this->contextCode, $page['chapterid'], $page['lft']);
+        $prevPage = $this->objContentOrder->getPreviousPage($this->contextCode, $page['chapterid'], $page['lft']);
+        $isLastPageInChapter = $this->objContentOrder->getNextPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL;
+        $isFirstPageInChapter = $this->objContentOrder->getPrevPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL;
+        if ($isLastPageInChapter) {
+            $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']);
+            if (!empty($nextChapterId)) {
+                $nextChapter = $this->objContextChapters->getChapter($nextChapterId);
+                if ($nextChapter !== FALSE) {
+                    $chapterLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $nextChapterId)));
+                    $chapterLink->link = $this->objLanguage->languageText('mod_contextcontent_nextchapter', 'contextcontent', 'Next chapter') . ': ' . htmlentities($nextChapter['chaptertitle']) . ' &#187;';
+                    $nextPage = $chapterLink->show();
+                }
+            }
+        }
+        if ($isFirstPageInChapter) {
+            $chapterOverviewLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $page['chapterid'])));
+            $chapterOverviewLink->link = '&#171; ' . $this->objLanguage->languageText('mod_contextcontent_chapteroverview', 'contextcontent', 'Chapter overview');
+            $prevPage = $chapterOverviewLink->show();
+        }
+        $this->setVar('nextPage', $nextPage);
+        $this->setVar('prevPage', $prevPage);
         $this->setVar('isFirstPageOnLevel', $this->objContentOrder->isFirstPageOnLevel($page['id']));
         $this->setVar('isLastPageOnLevel', $this->objContentOrder->isLastPageOnLevel($page['id']));
         $chapterStageGate = $this->objChapterStageGates->chapterGate($this->contextCode, $page['chapterid']);
         $this->setVar('chapterStageGate', $chapterStageGate);
         $this->setVar('chapterStageGateBestPercentage', $chapterStageGate === FALSE ? NULL : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']));
-        $this->setVar('isLastPageInChapter', $this->objContentOrder->getNextPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL);
+        $this->setVar('isLastPageInChapter', $isLastPageInChapter);
         $this->setVar('chapterStageGateNextChapterId', $chapterStageGate === FALSE
             ? NULL
             : $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']));
@@ -1509,6 +1529,9 @@ class contextcontent extends controller {
         if ($gate === FALSE || !$this->objChapterStageGates->isGatedProgression($this->contextCode)) {
             return $this->nextAction('viewchapter', array('id' => $chapterId));
         }
+        if (empty($gate['entryavailable'])) {
+            return $this->showStageGateLocked($gate);
+        }
         $params = array(
             'id' => $gate['testid'],
             'stage_gate_passmark' => $gate['passmark'],
@@ -1521,7 +1544,11 @@ class contextcontent extends controller {
             $params['stage_gate_course_completion'] = '1';
         }
         $best = $this->objChapterStageGates->bestPercentage($gate['testid'], $gate['totalmark']);
-        if ($best !== NULL && $best < $gate['passmark'] && strtolower((string) $gate['testtype']) === 'formative') {
+        if (!empty($gate['inprogress']) && !empty($gate['inprogressresultid'])) {
+            $params['resume'] = '1';
+            $params['resume_result_id'] = $gate['inprogressresultid'];
+        } elseif ($best !== NULL && $best < $gate['passmark']
+            && strtolower((string) $gate['testtype']) === 'formative') {
             $params['retry'] = '1';
         }
         return $this->nextAction('answertest', $params, 'mcqtests');
@@ -1554,23 +1581,18 @@ class contextcontent extends controller {
                 return 'chapternocontent_tpl.php';
             }
         } else {
-            return $this->nextAction('viewpage', array('id' => $firstPage['id'], 'message' => $this->getParam('message')));
-            /** code disabled due to Eteaching rejecting feature
             $chapter = $this->objContextChapters->getChapter($id);
-            $page = $this->objContentOrder->getPage($firstPage['id'], $this->contextCode);
-            $this->setVarByRef('nextPage', $this->objContentOrder->getNextPage($this->contextCode, $page['chapterid'], $page['lft']));
-            $breadcrumbs = $this->objContentOrder->getBreadcrumbs($this->contextCode, $page['chapterid'], $page['lft'], $page['rght']);
-            $this->objMenuTools->addToBreadCrumbs($breadcrumbs);
-            $this->setVarByRef('page', $page);
-            $this->setVarByRef('firstPage', $firstPage['id']);
-            $this->setVarByRef('message', $this->getParam('message'));
+            if ($chapter == FALSE) {
+                return $this->nextAction(NULL, array('error' => 'chapterdoesnotexist'));
+            }
+            $chapterPages = $this->objContentOrder->getContextPages($this->contextCode, $id);
             $this->setVarByRef('chapter', $chapter);
-            $this->setVarByRef('chapterId', $id);
-            $this->setVarByRef('prevchapterid', $id);
+            $this->setVar('chapterId', $id);
+            $this->setVar('firstPage', $firstPage['id']);
+            $this->setVar('chapterPageCount', is_array($chapterPages) ? count($chapterPages) : 0);
+            $this->setVar('message', $this->getParam('message'));
             $this->setLayoutTemplate('layout_firstpage_tpl.php');
             return 'viewchapter_tpl.php';
-            **/
-            //   return $this->nextAction('viewpage', array('id' => $firstPage['id'], 'message' => $this->getParam('message')));
         }
     }
 
@@ -1787,7 +1809,26 @@ class contextcontent extends controller {
 
         $page = $this->objContentOrder->getPage($id, $this->contextCode);
         if (!$page) { throw new InvalidArgumentException('Page does not exist in this course'); }
-        $this->objBookmarks->setBookmark($this->contextCode, $id, $this->userId, $type === 'on');
+        $bookmarked = $type === 'on';
+        $this->objBookmarks->setBookmark($this->contextCode, $id, $this->userId, $bookmarked);
+
+        if ($this->getParam('ajax', '0') === '1') {
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            if (!headers_sent()) {
+                http_response_code(200);
+                header('Content-Type: application/json; charset=UTF-8');
+                header('Cache-Control: no-store');
+            }
+            echo json_encode(array(
+                'ok' => TRUE,
+                'bookmarked' => $bookmarked,
+                'pageid' => $id
+            ));
+            exit;
+        }
+
         return $this->nextAction('viewpage', array('id' => $id));
     }
 
