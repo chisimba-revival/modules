@@ -87,7 +87,7 @@ echo $heading->show();
         <div class="contextcontent-type-cards">
 <?php if (!$hasSelectedType && !$hasAiWorkflow):
     $aiUrl = str_replace('&amp;', '&', $this->uri(array('action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent, 'ai'=>'start')));
-    $aiIcon = $objIconService->render('sparkles', array('decorative'=>TRUE, 'class'=>'contextcontent-type-icon-svg'));
+    $aiIcon = $objIconService->render('scroll-text', array('decorative'=>TRUE, 'class'=>'contextcontent-type-icon-svg'));
 ?>
             <article class="contextcontent-type-card" draggable="false" data-content-type="ai" data-content-url="<?php echo htmlspecialchars($aiUrl, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="contextcontent-type-icon" aria-hidden="true"><?php echo $aiIcon; ?></div>
