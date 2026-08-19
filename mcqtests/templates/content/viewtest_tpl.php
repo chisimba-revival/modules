@@ -210,6 +210,17 @@ $objLink->title = $addLabel;
 $objLink->link = $addIcon;
 $addQ = $questionEditingLocked ? '' : $objLink->show();
 
+$aiGenerateLabel = $this->objLanguage->languageText('mod_mcqtests_ai_generate_link', 'mcqtests');
+$aiGenerateUrl = $this->uri(array(
+    'action' => 'aigenerate',
+    'id' => $data['id']
+));
+$objLink = new link($aiGenerateUrl);
+$objLink->title = $aiGenerateLabel;
+$aiIcon = '<img src="'.$this->getResourceUri('icons/lucide/sparkles.svg', 'ui').'" width="20" height="20" alt="" aria-hidden="true" />';
+$objLink->link = '<span style="display:inline-flex;align-items:center;gap:.35rem">'.$aiIcon.'<span>'.$aiGenerateLabel.'</span></span>';
+$aiGenerate = $questionEditingLocked ? '' : $objLink->show();
+
 
 //=======================================================SPLIT=========================================================================
 
@@ -219,7 +230,7 @@ $str = null;
 $objHeading = new htmlheading();
 $objHeading->type = 3;
 $objHeading->str = $questionsLabel.' ('.$count.'):
-	&nbsp;&nbsp;&nbsp;&nbsp;'.$addQ;
+	&nbsp;&nbsp;&nbsp;&nbsp;'.$addQ.'&nbsp;&nbsp;'.$aiGenerate;
 $qHeading = $objHeading->show();
 $str.= $qHeading;
 if ($questionEditingLocked) {

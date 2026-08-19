@@ -134,6 +134,7 @@ class mcqtests extends controller {
         $this->dbTestadmin = $this->newObject('dbtestadmin');
         $this->dbQuestions = $this->newObject('dbquestions');
         $this->dbAnswers = $this->newObject('dbanswers');
+        $this->objMcqAiGenerator = $this->newObject('mcqaigenerator');
         $this->dbMarked = $this->newObject('dbmarked');
         $this->dbResults = $this->newObject('dbresults');
         $this->objUser = $this->newObject('user', 'security');
@@ -517,6 +518,89 @@ class mcqtests extends controller {
 
                 return 'choosequestiontype2_tpl.php';
                 break;
+
+            case 'aigenerate':
+                if (!$this->contextUsers->isContextLecturer()) {
+                    return 'noaccess_tpl.php';
+                }
+                $id = $this->getParam('id', NULL);
+                $testRows = $this->dbTestadmin->getTests($this->contextCode, '*', $id);
+                if (!is_array($testRows) || empty($testRows[0])) {
+                    return $this->nextAction('newhome');
+                }
+                $aiStack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+                $this->setVar('aiToken', $aiStack['csrf']->issue('mcqtests_ai_generate'));
+                $this->setVar('aiTest', $testRows[0]);
+                $this->setVar('aiSourceText', '');
+                $this->setVar('aiError', '');
+                $this->setVar('aiText', $this->mcqAiText());
+                return 'ai_generate_tpl.php';
+
+            case 'aigeneratequestions':
+                if (!$this->contextUsers->isContextLecturer()) {
+                    return 'noaccess_tpl.php';
+                }
+                $id = $this->getParam('id', NULL);
+                $testRows = $this->dbTestadmin->getTests($this->contextCode, '*', $id);
+                if (!is_array($testRows) || empty($testRows[0])) {
+                    return $this->nextAction('newhome');
+                }
+                $aiStack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+                $sourceText = trim((string) $this->getParam('source_text', ''));
+                if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+                    || !$aiStack['csrf']->consume('mcqtests_ai_generate', (string) $this->getParam('csrf_token', ''))) {
+                    $this->setVar('aiToken', $aiStack['csrf']->issue('mcqtests_ai_generate'));
+                    $this->setVar('aiTest', $testRows[0]);
+                    $this->setVar('aiSourceText', $sourceText);
+                    $this->setVar('aiError', 'request');
+                    $this->setVar('aiText', $this->mcqAiText());
+                    return 'ai_generate_tpl.php';
+                }
+                $generated = $this->objMcqAiGenerator->generate($sourceText);
+                if (empty($generated['ok'])) {
+                    $error = (($generated['error'] ?? '') === 'source_too_short')
+                        ? 'source_too_short'
+                        : ((($generated['error'] ?? '') === 'grounding_validation_failed')
+                            ? 'grounding'
+                            : 'provider');
+                    $this->setVar('aiToken', $aiStack['csrf']->issue('mcqtests_ai_generate'));
+                    $this->setVar('aiTest', $testRows[0]);
+                    $this->setVar('aiSourceText', $sourceText);
+                    $this->setVar('aiError', $error);
+                    $this->setVar('aiText', $this->mcqAiText());
+                    return 'ai_generate_tpl.php';
+                }
+                $this->setSession('mcq_ai_candidates_' . $id, $generated['questions']);
+                $this->setVar('aiToken', $aiStack['csrf']->issue('mcqtests_ai_insert'));
+                $this->setVar('aiTest', $testRows[0]);
+                $this->setVar('aiQuestions', $generated['questions']);
+                $this->setVar('aiText', $this->mcqAiText());
+                return 'ai_review_tpl.php';
+
+            case 'aiinsertquestions':
+                if (!$this->contextUsers->isContextLecturer()) {
+                    return 'noaccess_tpl.php';
+                }
+                $id = $this->getParam('id', NULL);
+                $aiStack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+                if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+                    || !$aiStack['csrf']->consume('mcqtests_ai_insert', (string) $this->getParam('csrf_token', ''))) {
+                    $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_invalidrequest', 'mcqtests'));
+                    return $this->nextAction('view', array('id' => $id, 'confirm' => 'yes'));
+                }
+                $questions = $this->getSession('mcq_ai_candidates_' . $id);
+                if (!is_array($questions) || count($questions) !== 5) {
+                    $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_candidatesexpired', 'mcqtests'));
+                    return $this->nextAction('view', array('id' => $id, 'confirm' => 'yes'));
+                }
+                $inserted = $this->objMcqAiGenerator->insertQuestions($id, $questions);
+                if (empty($inserted['ok'])) {
+                    $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_insertfailed', 'mcqtests'));
+                    return $this->nextAction('view', array('id' => $id, 'confirm' => 'yes'));
+                }
+                $this->unsetSession('mcq_ai_candidates_' . $id);
+                $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_insertedfive', 'mcqtests'));
+                return $this->nextAction('view', array('id' => $id, 'confirm' => 'yes'));
 
             case 'addquestion':
                 if ($this->contextUsers->isContextLecturer())
@@ -3329,11 +3413,28 @@ class mcqtests extends controller {
      * @param string $comLab The computer lab name
      * @return array $arrIpAddresses The array of ip addresses
      */
+    /**
+     * Language items for the AI-assisted MCQ authoring workflow.
+     */
+    private function mcqAiText() {
+        $keys = array(
+            'title', 'test', 'intro', 'grounding', 'source', 'generate', 'cancel',
+            'review_title', 'review_intro', 'question', 'correct', 'source_basis',
+            'insert', 'back', 'error_request', 'error_source_too_short',
+            'error_grounding', 'error_provider'
+        );
+        $items = array();
+        foreach ($keys as $key) {
+            $items[$key] = $this->objLanguage->languageText('mod_mcqtests_ai_' . $key, 'mcqtests');
+        }
+        return $items;
+    }
+
     /** Resolve the owning test for any question-structure action. */
     private function getQuestionMutationTestId($action) {
         $byId = array('addnewquestion', 'choosequestiontype', 'choosequestiontype2',
             'addquestion', 'addfreeform', 'deletequestion', 'deletequestion2',
-            'questionup', 'questiondown');
+            'questionup', 'questiondown', 'aigenerate', 'aigeneratequestions', 'aiinsertquestions');
         $byTestId = array('applyaddquestion', 'addanswers', 'addfreeformanswers',
             'saveanswer', 'applyaddanswer', 'applyfreeformanswer');
         $byQuestion = array('editquestion', 'editanswer', 'deleteanswer');
