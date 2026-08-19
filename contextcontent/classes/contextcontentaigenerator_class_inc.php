@@ -29,8 +29,8 @@ class contextcontentaigenerator extends ChisimbaObject
         if (mb_strlen($sourceText, 'UTF-8') < 150) {
             return array('ok' => false, 'error' => 'source_too_short');
         }
-        if ($this->aiService === null) {
-            $this->aiService = $this->getObject('aiservice', 'ai');
+        if (!$this->ensureAiAvailable()) {
+            return array('ok' => false, 'error' => 'ai_unavailable');
         }
 
         $schema = array(
@@ -131,6 +131,25 @@ class contextcontentaigenerator extends ChisimbaObject
         }
 
         return array('ok' => true, 'created' => $created);
+    }
+
+    private function ensureAiAvailable()
+    {
+        if ($this->aiService !== null) {
+            return method_exists($this->aiService, 'isAvailable') && $this->aiService->isAvailable();
+        }
+
+        try {
+            $modules = $this->getObject('modules', 'modulecatalogue');
+            if (!$modules->checkIfRegistered('ai')) {
+                return false;
+            }
+            $this->aiService = $this->getObject('aiservice', 'ai');
+            return method_exists($this->aiService, 'isAvailable') && $this->aiService->isAvailable();
+        } catch (Throwable $exception) {
+            $this->aiService = null;
+            return false;
+        }
     }
 
     private function validatePages($sourceText, array $pages)
