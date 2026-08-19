@@ -6,6 +6,8 @@ $language = function ($key) {
 };
 $selectedContentType = isset($selectedContentType) ? (string) $selectedContentType : '';
 $hasSelectedType = $selectedContentType !== '';
+$aiMode = (string) $this->getParam('ai', '');
+$hasAiWorkflow = $aiMode !== '';
 $objIconService = $this->getObject('iconservice', 'ui');
 
 $heading = new htmlheading();
@@ -54,8 +56,15 @@ echo $heading->show();
 @media(prefers-reduced-motion:reduce){.contextcontent-canvas,.contextcontent-type-card{transition:none}}
 </style>
 <div class="contextcontent-builder" id="contextcontent-builder">
-    <main class="contextcontent-canvas<?php echo $hasSelectedType ? ' has-form' : ''; ?>" id="contextcontent-page-canvas" <?php echo $hasSelectedType ? 'aria-label="'.$language('mod_contextcontent_pagecanvas').'"' : 'aria-labelledby="contextcontent-canvas-title"'; ?>>
-<?php if ($hasSelectedType): ?>
+    <main class="contextcontent-canvas<?php echo ($hasSelectedType || $hasAiWorkflow) ? ' has-form' : ''; ?>" id="contextcontent-page-canvas" <?php echo ($hasSelectedType || $hasAiWorkflow) ? 'aria-label="'.$language('mod_contextcontent_pagecanvas').'"' : 'aria-labelledby="contextcontent-canvas-title"'; ?>>
+<?php if ($hasAiWorkflow): ?>
+        <div class="contextcontent-canvas-form" id="contextcontent-live-form">
+<?php include dirname(__FILE__) . '/ai_chapter_workflow_tpl.php'; ?>
+            <div class="contextcontent-canvas-actions">
+                <a class="contextcontent-canvas-action" href="<?php echo htmlspecialchars(str_replace('&amp;', '&', $this->uri(array('action'=>'viewchapter', 'id'=>$chapter))), ENT_QUOTES, 'UTF-8'); ?>"><?php echo $language('mod_contextcontent_cancelpageauthoring'); ?></a>
+            </div>
+        </div>
+<?php elseif ($hasSelectedType): ?>
         <div class="contextcontent-canvas-form" id="contextcontent-live-form">
 <?php include dirname(__FILE__) . '/addeditpage_tpl.php'; ?>
             <div class="contextcontent-canvas-actions">
@@ -73,9 +82,22 @@ echo $heading->show();
     <aside class="contextcontent-palette" aria-labelledby="contextcontent-palette-title">
         <div class="contextcontent-palette-header">
             <h2 id="contextcontent-palette-title"><?php echo $language('mod_contextcontent_contentpalette'); ?></h2>
-            <p><?php echo $language($hasSelectedType ? 'mod_contextcontent_palette_locked' : 'mod_contextcontent_contentpalette_desc'); ?></p>
+            <p><?php echo $language(($hasSelectedType || $hasAiWorkflow) ? 'mod_contextcontent_palette_locked' : 'mod_contextcontent_contentpalette_desc'); ?></p>
         </div>
         <div class="contextcontent-type-cards">
+<?php if (!$hasSelectedType && !$hasAiWorkflow):
+    $aiUrl = str_replace('&amp;', '&', $this->uri(array('action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent, 'ai'=>'start')));
+    $aiIcon = $objIconService->render('sparkles', array('decorative'=>TRUE, 'class'=>'contextcontent-type-icon-svg'));
+?>
+            <article class="contextcontent-type-card" draggable="false" data-content-type="ai" data-content-url="<?php echo htmlspecialchars($aiUrl, ENT_QUOTES, 'UTF-8'); ?>">
+                <div class="contextcontent-type-icon" aria-hidden="true"><?php echo $aiIcon; ?></div>
+                <div class="contextcontent-type-copy">
+                    <h3><?php echo $language('mod_contextcontent_ai_generate_link'); ?></h3>
+                    <p><?php echo $language('mod_contextcontent_ai_generate_desc'); ?></p>
+                </div>
+                <a class="contextcontent-type-choice" href="<?php echo htmlspecialchars($aiUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="<?php echo $language('mod_contextcontent_ai_generate_link'); ?>"><?php echo $language('mod_contextcontent_ai_generate_link'); ?></a>
+            </article>
+<?php endif; ?>
 <?php foreach ($contentTypes as $type):
     $key = (string) $type['key'];
     $url = str_replace('&amp;', '&', $this->uri(array('action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent, 'contenttype'=>$key)));
@@ -84,13 +106,13 @@ echo $heading->show();
         array('decorative' => TRUE, 'class' => 'contextcontent-type-icon-svg')
     );
 ?>
-            <article class="contextcontent-type-card<?php echo $hasSelectedType ? ($key === $selectedContentType ? ' is-selected' : ' is-inert') : ''; ?>" draggable="<?php echo $hasSelectedType ? 'false' : 'true'; ?>" data-selected-label="<?php echo $language('mod_contextcontent_selectedtool'); ?>" data-content-type="<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8'); ?>" data-content-url="<?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?>">
+            <article class="contextcontent-type-card<?php echo ($hasSelectedType || $hasAiWorkflow) ? ($hasSelectedType && $key === $selectedContentType ? ' is-selected' : ' is-inert') : ''; ?>" draggable="<?php echo ($hasSelectedType || $hasAiWorkflow) ? 'false' : 'true'; ?>" data-selected-label="<?php echo $language('mod_contextcontent_selectedtool'); ?>" data-content-type="<?php echo htmlspecialchars($key, ENT_QUOTES, 'UTF-8'); ?>" data-content-url="<?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="contextcontent-type-icon" aria-hidden="true"><?php echo $icon; ?></div>
                 <div class="contextcontent-type-copy">
                     <h3><?php echo htmlspecialchars($type['label'], ENT_QUOTES, 'UTF-8'); ?></h3>
                     <p><?php echo htmlspecialchars($type['description'], ENT_QUOTES, 'UTF-8'); ?></p>
                 </div>
-<?php if (!$hasSelectedType): ?>
+<?php if (!$hasSelectedType && !$hasAiWorkflow): ?>
                 <a class="contextcontent-type-choice" href="<?php echo htmlspecialchars($url, ENT_QUOTES, 'UTF-8'); ?>" aria-label="<?php echo $language('mod_contextcontent_choosecontenttype') . ': ' . htmlspecialchars($type['label'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $language('mod_contextcontent_choosecontenttype'); ?></a>
 <?php endif; ?>
             </article>
@@ -110,7 +132,7 @@ echo $heading->show();
     var dropText=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_canvas_drop', 'contextcontent')); ?>;
     var loadingText=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_canvas_loading', 'contextcontent')); ?>;
     var selectedText=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_type_selected', 'contextcontent')); ?>;
-    var chosen=<?php echo $hasSelectedType ? 'true' : 'false'; ?>;
+    var chosen=<?php echo ($hasSelectedType || $hasAiWorkflow) ? 'true' : 'false'; ?>;
     var liveForm=document.getElementById('contextcontent-live-form');
     var formDirty=false;
     if(liveForm){
@@ -122,19 +144,19 @@ echo $heading->show();
         chosen=true;
         cards.forEach(function(item){item.classList.toggle('is-selected',item===card);item.classList.toggle('is-inert',item!==card);item.setAttribute('draggable','false');});
         canvas.classList.remove('is-dragover');canvas.classList.add('is-loading');
-        message.textContent=loadingText;
-        var label=card.querySelector('h3');status.textContent=selectedText+(label?': '+label.textContent:'');
+        if(message){message.textContent=loadingText;}
+        var label=card.querySelector('h3');if(status){status.textContent=selectedText+(label?': '+label.textContent:'');}
         window.setTimeout(function(){window.location.href=card.getAttribute('data-content-url');},180);
     }
     cards.forEach(function(card){
-        card.addEventListener('dragstart',function(event){if(chosen){event.preventDefault();return;}event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('text/plain',card.getAttribute('data-content-type'));});
-        card.addEventListener('dragend',function(){canvas.classList.remove('is-dragover');message.textContent=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_pagecanvas_empty', 'contextcontent')); ?>;});
+        card.addEventListener('dragstart',function(event){if(chosen||card.getAttribute('data-content-type')==='ai'){event.preventDefault();return;}event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('text/plain',card.getAttribute('data-content-type'));});
+        card.addEventListener('dragend',function(){if(message){canvas.classList.remove('is-dragover');message.textContent=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_pagecanvas_empty', 'contextcontent')); ?>;}});
         var choice=card.querySelector('a.contextcontent-type-choice');
         if(choice){choice.addEventListener('click',function(event){event.preventDefault();choose(card);});}
     });
-    canvas.addEventListener('dragenter',function(event){event.preventDefault();if(!chosen){canvas.classList.add('is-dragover');message.textContent=dropText;}});
+    canvas.addEventListener('dragenter',function(event){event.preventDefault();if(!chosen&&message){canvas.classList.add('is-dragover');message.textContent=dropText;}});
     canvas.addEventListener('dragover',function(event){event.preventDefault();event.dataTransfer.dropEffect='copy';});
-    canvas.addEventListener('dragleave',function(event){if(!canvas.contains(event.relatedTarget)){canvas.classList.remove('is-dragover');message.textContent=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_pagecanvas_empty', 'contextcontent')); ?>;}});
+    canvas.addEventListener('dragleave',function(event){if(message&&!canvas.contains(event.relatedTarget)){canvas.classList.remove('is-dragover');message.textContent=<?php echo json_encode($this->objLanguage->languageText('mod_contextcontent_pagecanvas_empty', 'contextcontent')); ?>;}});
     canvas.addEventListener('drop',function(event){event.preventDefault();if(chosen){return;}var key=event.dataTransfer.getData('text/plain');choose(builder.querySelector('.contextcontent-type-card[data-content-type="'+key.replace(/"/g,'')+'"]'));});
 }());
 </script>
