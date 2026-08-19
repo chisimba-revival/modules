@@ -17,6 +17,7 @@ $this->loadClass('checkbox', 'htmlelements');
 $this->loadClass('dropdown', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 $objPopupcal = $this->newObject('datepickajax', 'popupcalendar');
+$objIconService = $this->getObject('iconservice', 'ui');
 $lang = function ($key, $module = 'mcqtests') { return $this->objLanguage->languageText($key, $module); };
 $esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $addHeading=$lang('mod_mcqtests_addtest'); $editHeading=$lang('mod_mcqtests_edittest');
@@ -77,14 +78,16 @@ $schedule='<div class="mcq-form-grid">'.$field($esc($startLabel),$startField).$f
 $settings=$choice($esc($testTypeLabel),$testTypeRadio->show()).$choice($esc($qSequenceLabel),$qRadio->show()).$choice($esc($aSequenceLabel),$aRadio->show()).$choice($esc($permissionsLabel),$permissionsRadio->show());
 $access=$field($esc($restrictLabel),'<div class="mcq-lab-control">'.$labDrop->show().' '.$labLink->show().'</div>');
 $descriptionSection=$field($esc($descriptionLabel),$descriptionInput->show());
+$saveIcon=$objIconService->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+$cancelIcon=$objIconService->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
 $content='<div class="chisimba-workspace mcq-test-editor"><div class="chisimba-form">'
     .$section($esc($detailsHeading),$basic)
     .$section($esc($startLabel),$schedule)
     .$section($esc($testTypeLabel),$settings)
     .$section($esc($restrictLabel),$access)
     .$section($esc($descriptionLabel),$descriptionSection)
-    .$hidden.'<div class="chisimba-form-actions"><button class="button" type="submit" name="save" value="'.$esc($saveLabel).'">'.$esc($saveLabel).'</button>'
-    .'<button class="button chisimba-button-secondary" type="button" onclick="document.getElementById(\'form_exit\').submit()">'.$esc($exitLabel).'</button></div></div></div>';
+    .$hidden.'<div class="chisimba-form-actions"><button class="button" type="submit" name="save" value="'.$esc($saveLabel).'">'.$saveIcon.'<span>'.$esc($saveLabel).'</span></button>'
+    .'<button class="button chisimba-button-secondary" type="button" onclick="document.getElementById(\'form_exit\').submit()">'.$cancelIcon.'<span>'.$esc($exitLabel).'</span></button></div></div></div>';
 $form->addToForm($content); echo $form->show();
 $exitAction=$this->getParam('action')==='edit2'?$this->uri(array('action'=>'applyaddtest','prevaction'=>'edit2')):$this->uri(array('action'=>'applyaddtest'));
 $exitForm=new form('exit',$exitAction); $exitForm->addToForm($hidden.'<input type="hidden" name="save" value="'.$esc($exitLabel).'" />'); echo $exitForm->show();
