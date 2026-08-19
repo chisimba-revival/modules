@@ -20,12 +20,12 @@ $objRadio = $this->loadClass('radio', 'htmlelements');
 $objCheck = $this->loadClass('checkbox', 'htmlelements');
 $objInput = $this->loadClass('textinput', 'htmlelements');
 $objText = $this->loadClass('textarea', 'htmlelements');
-$objButton = $this->loadClass('button', 'htmlelements');
 $objLink = $this->loadClass('link', 'htmlelements');
 $objIcon = $this->newObject('geticon', 'htmlelements');
 $objImage = $this->loadClass('image', 'htmlelements');
 $objMsg = $this->newObject('timeoutmessage', 'htmlelements');
 $objEditor = $this->newObject('htmlarea', 'htmlelements');
+$objIconService = $this->getObject('iconservice', 'ui');
 $this->objStepMenu = $this->newObject('stepmenu', 'navigation');
 $this->loadClass('dropdown', 'htmlelements');
 
@@ -206,7 +206,6 @@ $objInput->fldType = 'file';
 $objInput->size = 57;
 
 $imageBtn = '<p>'.$objInput->show().'</p>';
-
 $objButton = new button('save', $includeImageLabel);
 $objButton->setOnClick("javascript:document.getElementById('form_addquestion').action.value = 'addimage';document.getElementById('form_addquestion').submit();");
 $imageBtn .= $objButton->show();
@@ -223,7 +222,6 @@ $objImage = new image();
 $objImage->src = $this->uri(array('action'=>'viewimage', 'fileid'=>$data['imageId']),'test');
 
 $imageStr .= '<p><b>'.$imageLabel.':</b> '.$data['imageName'].'</p>';
-
 $imageStr .= '<p>'.$objImage->show().'</p>';
 
 $objInput = new textinput('fileId',$data['imageId']);
@@ -238,13 +236,15 @@ $imageStr .= $objInput->show();
 */
 
 
-// Save and exit buttons
-$objButton = new button('save', $saveLabel);
-$objButton->setToSubmit();
-$btn = $objButton->show();
-$objButton = new button('save', $exitLabel);
-$objButton->setToSubmit();
-$btn.= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
+// Save and exit buttons: native semantic markup lets every maintained skin own
+// presentation while the module owns one consistent icon/action contract.
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$saveIcon = $objIconService->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+$cancelIcon = $objIconService->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+$btn = '<div class="chisimba-form-actions mcq-question-form-actions">'
+    .'<button class="button" type="submit" name="save" value="'.$esc($saveLabel).'">'.$saveIcon.'<span>'.$esc($saveLabel).'</span></button>'
+    .'<button class="button chisimba-button-secondary" type="submit" name="save" value="'.$esc($exitLabel).'">'.$cancelIcon.'<span>'.$esc($exitLabel).'</span></button>'
+    .'</div>';
 
 $objTextHid = new textinput('testId', $test['id'], 'hidden');
 
