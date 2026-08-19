@@ -7,7 +7,17 @@ $language = function ($key) {
 $selectedContentType = isset($selectedContentType) ? (string) $selectedContentType : '';
 $hasSelectedType = $selectedContentType !== '';
 $aiMode = (string) $this->getParam('ai', '');
-$hasAiWorkflow = $aiMode !== '';
+$aiAvailable = false;
+try {
+    $objModules = $this->getObject('modules', 'modulecatalogue');
+    if ($objModules->checkIfRegistered('ai')) {
+        $objAiService = $this->getObject('aiservice', 'ai');
+        $aiAvailable = method_exists($objAiService, 'isAvailable') && $objAiService->isAvailable();
+    }
+} catch (Throwable $exception) {
+    $aiAvailable = false;
+}
+$hasAiWorkflow = $aiMode !== '' && $aiAvailable;
 $objIconService = $this->getObject('iconservice', 'ui');
 
 $heading = new htmlheading();
@@ -85,7 +95,7 @@ echo $heading->show();
             <p><?php echo $language(($hasSelectedType || $hasAiWorkflow) ? 'mod_contextcontent_palette_locked' : 'mod_contextcontent_contentpalette_desc'); ?></p>
         </div>
         <div class="contextcontent-type-cards">
-<?php if (!$hasSelectedType && !$hasAiWorkflow):
+<?php if ($aiAvailable && !$hasSelectedType && !$hasAiWorkflow):
     $aiUrl = str_replace('&amp;', '&', $this->uri(array('action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent, 'ai'=>'start')));
     $aiIcon = $objIconService->render('scroll-text', array('decorative'=>TRUE, 'class'=>'contextcontent-type-icon-svg'));
 ?>
