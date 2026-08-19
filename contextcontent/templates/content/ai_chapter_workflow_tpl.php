@@ -20,7 +20,7 @@ $aiPages = array();
 $aiInserted = false;
 
 $txt = function ($key) {
-    return $this->objLanguage->languageText('mod_contextcontent_ai_' . $key, 'contextcontent');
+    return $this->objLanguage->code2Txt('mod_contextcontent_ai_' . $key, 'contextcontent');
 };
 
 if ($aiMode === 'generate' || $aiMode === 'insert') {
