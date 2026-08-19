@@ -14,12 +14,12 @@ $objTable = $this->loadClass('htmltable', 'htmlelements');
 $objLink = $this->loadClass('link', 'htmlelements');
 $objLayer = $this->loadClass('layer', 'htmlelements');
 $objIcon = $this->newObject('geticon', 'htmlelements');
+$objIconService = $this->getObject('iconservice', 'ui');
 $objConfirm = $this->loadClass('confirm', 'utilities');
 $objMsg = $this->newObject('timeoutmessage', 'htmlelements');
 $this->loadClass('textinput', 'htmlelements');
 $this->loadClass('radio', 'htmlelements');
 $this->loadClass('hiddeninput', 'htmlelements');
-$this->loadClass('button', 'htmlelements');
 
 // set up language items
 $testdetailsLabel = $this->objLanguage->languageText('mod_mcqtests_testdetailsLabel', 'mcqtests');
@@ -189,8 +189,6 @@ $objTable->endRow();
 // Show Table
 echo '<section class="mcq-lecturer-panel mcq-lecturer-summary">'.$heading.$objTable->show().'</section>';
 
-
-
 $questionEditingLocked = isset($data['status']) && $data['status'] === 'open';
 $count = (is_countable($questions) ? count($questions) : 0);
 if (empty($questions)) {
@@ -221,9 +219,6 @@ $aiIcon = '<img src="'.$this->getResourceUri('icons/lucide/sparkles.svg', 'ui').
 $objLink->link = '<span style="display:inline-flex;align-items:center;gap:.35rem">'.$aiIcon.'<span>'.$aiGenerateLabel.'</span></span>';
 $aiGenerate = $questionEditingLocked ? '' : $objLink->show();
 
-
-//=======================================================SPLIT=========================================================================
-
 $str = null;
 
 // Questions Header
@@ -236,7 +231,6 @@ $str.= $qHeading;
 if ($questionEditingLocked) {
     $str.= '<p class="mcq-edit-lock-notice" style="margin:.25rem 0 1rem;color:#555">'.$this->objLanguage->languageText('mod_mcqtests_activeeditdisabled', 'mcqtests').'</p>';
 }
-
 
 // Confirmation message on saving a question
 $confirm = $this->getParam('confirm');
@@ -260,7 +254,6 @@ $objTable->addCell($markLabel, '', '4%', '', 'heading');
 $objTable->addCell($actionLabel, '', '8%', '', 'heading', 'colspan="2"');
 $objTable->endRow();
 
-
 // Add questions to table
 if (!empty($questions)) {
     $i = 0;
@@ -271,7 +264,6 @@ if (!empty($questions)) {
             $icons = '';
             $editUrl = '';
         }
-        // move a question up in the order
         if ($i > 1) {
             $objIcon->title = $upLabel;
             $url = $this->uri(array(
@@ -283,7 +275,6 @@ if (!empty($questions)) {
         } else {
             $iconsUD = '&nbsp;&nbsp;&nbsp;&nbsp;';
         }
-        // move a question down in the order
         if ($i < $count) {
             $objIcon->title = $downLabel;
             $url = $this->uri(array(
@@ -294,7 +285,6 @@ if (!empty($questions)) {
             $iconsUD.= $objIcon->getLinkedIcon($url, 'mvdown');
         }
 
-        // edit & delete
         $objIcon->title = $editIconLabel;
         $editUrl = $this->uri(array(
             'action' => 'editquestion',
@@ -326,7 +316,6 @@ if (!empty($questions)) {
             $iconsUD = '';
             $icons = '';
         }
-        // link name to edit question - shorten the question to 100 characters or the first line break
         $pos = FALSE;
         if ($len > 10) {
             $pos = strpos($line['question'], '<br />', 10);
@@ -342,24 +331,13 @@ if (!empty($questions)) {
         $objLink = new link($editUrl);
         $objLink->link = $strQuestion;
 
-
         $objTable->startRow();
         $objTable->addCell($i.'.');
         $objTable->addCell($this->dbQuestions->previewQuestion($line));
-        //$objTable->addCell($objLink->show());
         $objTable->addCell($line['mark']);
         $objTable->addCell($iconsUD);
         $objTable->addCell($icons);
         $objTable->endRow();
-        /*
-        $tableRow = array();
-        $tableRow[] = $i;
-        $tableRow[] = ;
-        $tableRow[] = $line['mark'];
-        $tableRow[] = $iconsUD;
-        $tableRow[] = $icons;
-        $objTable->addRow($tableRow, $class);
-        */
     }
     $str.= $objTable->show();
 } else {
@@ -381,16 +359,6 @@ $objLayer->align = 'center';
 $objLayer->str = '';
 $back = $objLayer->show();
 $str.= $back;
-
-/*
-//echo $str;
-if(isset($qNum)){
-	$objInput = new textinput('questionId', $questId);
-	$objInput->fldType = 'hidden';
-	$topStr.= $objInput->show();
-}
-*/
-
 
 $objHeading = new htmlheading();
 $objHeading->type = 1;
@@ -427,22 +395,24 @@ if ($data['status'] == 'open') {
 }
 
 $hiddeninput = new hiddeninput('id', $data['id']);
-
 $form->addToForm($hiddeninput->show().'<p>'.$radio->show().'</p>');
 
-$button = new button ('update', $this->objLanguage->languageText('mod_mcqtests_updatestatus', 'mcqtests', 'Update Status'));
-$button->setToSubmit();
-
-$previewButton = new button ('previewButton','Preview');
-
-$previewButton->setOnClick(  "window.open('".$this->uri(array(
+$updateLabel = $this->objLanguage->languageText('mod_mcqtests_updatestatus', 'mcqtests');
+$previewLabel = $this->objLanguage->languageText('mod_mcqtests_preview', 'mcqtests');
+$updateIcon = $objIconService->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+$previewIcon = $objIconService->render('eye', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+$previewUrl = $this->uri(array(
     'action' => 'previewtest',
     'id' => $data['id'],
     'mode' => 'notoolbar'
-    )) ."', 'previewtest', 'fullscreen,scrollbars');");
-
-
-$form->addToForm($button->show().$previewButton->show());
+));
+$previewOnClick = "window.open('".str_replace("'", "\\'", $previewUrl)."', 'previewtest', 'fullscreen,scrollbars');";
+$form->addToForm(
+    '<div class="chisimba-form-actions mcq-activation-actions">'
+    .'<button class="button" type="submit" name="update">'.$updateIcon.'<span>'.htmlspecialchars($updateLabel, ENT_QUOTES, 'UTF-8').'</span></button>'
+    .'<button class="button chisimba-button-secondary" type="button" onclick="'.htmlspecialchars($previewOnClick, ENT_QUOTES, 'UTF-8').'">'.$previewIcon.'<span>'.htmlspecialchars($previewLabel, ENT_QUOTES, 'UTF-8').'</span></button>'
+    .'</div>'
+);
 
 echo $form->show();
 echo '</section>';
