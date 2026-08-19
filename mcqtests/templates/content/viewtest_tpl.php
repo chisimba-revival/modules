@@ -64,6 +64,9 @@ $scrambledLabel = $this->objLanguage->languageText('word_scrambled');
 $sequentialLabel = $this->objLanguage->languageText('word_sequential');
 $computerLabel = $this->objLanguage->languageText('mod_mcqtests_comlab', 'mcqtests');
 $anyLabLabel = $this->objLanguage->languageText('mod_mcqtests_labs', 'mcqtests');
+$esc = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
 
 //switch between the question descriptions and adding questions
 $mode = $this->getParam('mode');
@@ -92,7 +95,7 @@ $editLink.= '&nbsp;'.$objLink->show();
 $heading = '<span class="mcq-test-heading">'.$head.': '.$data['name'].' '.$editLink.'</span>';
 $emptyHeading = '';
 $this->setVarByRef('heading', $emptyHeading);
-echo '<style type="text/css">.mcq-lecturer-panel{border:1px solid rgba(15,23,42,.14);border-radius:.65rem;background:rgba(248,250,252,.72);padding:1rem 1.15rem;margin:0 0 1rem;box-sizing:border-box}.mcq-lecturer-panel h1,.mcq-lecturer-panel h2{margin-top:0}.mcq-lecturer-questions{background:#fff}.mcq-lecturer-home{margin:1rem 0 0}.mcq-test-heading{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;margin:0 0 .65rem}.mcq-lecturer-summary .mcq_overview{margin-bottom:0}</style>';
+echo '<style type="text/css">.mcq-lecturer-panel{border:1px solid rgba(15,23,42,.14);border-radius:.65rem;background:rgba(248,250,252,.72);padding:1rem 1.15rem;margin:0 0 1rem;box-sizing:border-box}.mcq-lecturer-panel h1,.mcq-lecturer-panel h2{margin-top:0}.mcq-lecturer-questions{background:#fff}.mcq-lecturer-home{margin:1rem 0 0}.mcq-test-heading{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;margin:0 0 .65rem}.mcq-lecturer-summary .mcq_overview{margin-bottom:0}.mcq-question-heading-row{display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;margin:0 0 .75rem}.mcq-question-heading-row h3{margin:0}.mcq-question-actions{margin:0}</style>';
 
 // Create Table for the test information
 $objTable = new htmltable();
@@ -168,8 +171,8 @@ if (isset($data['asequence']) && !empty($data['asequence'])) {
     $aSequence = $sequentialLabel;
 }
 $objTable->addRow(array(
-    "<b>".$aSequenceLabel.": </b>".$aSequence, "",""
-));
+    "<b>".$aSequenceLabel.": </b>".$aSequence, "","")
+);
 
 // add computer lab
 if (isset($data['comlab']) && !empty($data['comlab'])) {
@@ -195,18 +198,18 @@ if (empty($questions)) {
     $count = 0;
 }
 
-// choose questiontype
-$objIcon->title = $addLabel;
+// Question authoring actions use the same semantic button contract and shared
+// icon service so every maintained skin controls their presentation equally.
 $addQUrl = $this->uri(array(
     'action' => 'choosequestiontype',
     'id' => $data['id'],
     'count' => $count
 ));
-$addIcon = '<img src="'.$this->getResourceUri('icons/lucide/circle-plus.svg', 'ui').'" width="20" height="20" alt="" aria-hidden="true" />';
-$objLink = new link($addQUrl);
-$objLink->title = $addLabel;
-$objLink->link = $addIcon;
-$addQ = $questionEditingLocked ? '' : $objLink->show();
+$addIcon = $objIconService->render('plus', array(
+    'decorative' => true,
+    'class' => 'chisimba-action-icon'
+));
+$addQ = $questionEditingLocked ? '' : '<a class="button chisimba-button-secondary" href="'.$esc($addQUrl).'">'.$addIcon.'<span>'.$esc($addLabel).'</span></a>';
 
 $aiGenerate = '';
 $aiAvailable = false;
@@ -225,11 +228,11 @@ if ($aiAvailable && !$questionEditingLocked) {
         'action' => 'aigenerate',
         'id' => $data['id']
     ));
-    $objLink = new link($aiGenerateUrl);
-    $objLink->title = $aiGenerateLabel;
-    $aiIcon = '<img src="'.$this->getResourceUri('icons/lucide/sparkles.svg', 'ui').'" width="20" height="20" alt="" aria-hidden="true" />';
-    $objLink->link = '<span style="display:inline-flex;align-items:center;gap:.35rem">'.$aiIcon.'<span>'.$aiGenerateLabel.'</span></span>';
-    $aiGenerate = $objLink->show();
+    $aiIcon = $objIconService->render('sparkles', array(
+        'decorative' => true,
+        'class' => 'chisimba-action-icon'
+    ));
+    $aiGenerate = '<a class="button chisimba-button-secondary" href="'.$esc($aiGenerateUrl).'">'.$aiIcon.'<span>'.$esc($aiGenerateLabel).'</span></a>';
 }
 
 $str = null;
@@ -237,10 +240,13 @@ $str = null;
 // Questions Header
 $objHeading = new htmlheading();
 $objHeading->type = 3;
-$objHeading->str = $questionsLabel.' ('.$count.'):
-	&nbsp;&nbsp;&nbsp;&nbsp;'.$addQ.'&nbsp;&nbsp;'.$aiGenerate;
+$objHeading->str = $questionsLabel.' ('.$count.'):';
 $qHeading = $objHeading->show();
-$str.= $qHeading;
+$str.= '<div class="mcq-question-heading-row">'.$qHeading;
+if (!$questionEditingLocked) {
+    $str.= '<div class="chisimba-form-actions mcq-question-actions">'.$addQ.$aiGenerate.'</div>';
+}
+$str.= '</div>';
 if ($questionEditingLocked) {
     $str.= '<p class="mcq-edit-lock-notice" style="margin:.25rem 0 1rem;color:#555">'.$this->objLanguage->languageText('mod_mcqtests_activeeditdisabled', 'mcqtests').'</p>';
 }
