@@ -1,361 +1,220 @@
 <?php
 /**
- * Template for adding a new test or editing an existing one.
- * @package mcqtests
- * @param array $data The details of the test to be edited.
- * @param string $mode Add or edit
+ * Modern test add/edit form.
+ *
+ * @category  Chisimba
+ * @package   mcqtests
+ * @author    Derek Keats
+ * @copyright 2026 Derek Keats
+ * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
  */
-// set up layout template
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 
-// set up html elements
-$objTable = $this->loadClass('htmltable', 'htmlelements');
-$objForm = $this->loadClass('form', 'htmlelements');
-$objInput = $this->loadClass('textinput', 'htmlelements');
-$objText = $this->loadClass('textarea', 'htmlelements');
-$objRadio = $this->loadClass('radio', 'htmlelements');
-$objCheck = $this->loadClass('checkbox', 'htmlelements');
-$objButton = $this->loadClass('button', 'htmlelements');
-$objDropDown = $this->loadClass('dropdown', 'htmlelements');
-$objLayer = $this->loadClass('layer', 'htmlelements');
-$objLabel = $this->loadClass('label', 'htmlelements');
-$objLink = $this->loadClass('link', 'htmlelements');
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$this->loadClass('form', 'htmlelements');
+$this->loadClass('textinput', 'htmlelements');
+$this->loadClass('textarea', 'htmlelements');
+$this->loadClass('radio', 'htmlelements');
+$this->loadClass('checkbox', 'htmlelements');
+$this->loadClass('dropdown', 'htmlelements');
+$this->loadClass('link', 'htmlelements');
 $objPopupcal = $this->newObject('datepickajax', 'popupcalendar');
 
-// set up language items
-$addHeading = $this->objLanguage->languageText('mod_mcqtests_addtest', 'mcqtests');
-$editHeading = $this->objLanguage->languageText('mod_mcqtests_edittest', 'mcqtests');
-$nameLabel = $this->objLanguage->languageText('mod_mcqtests_wordname', 'mcqtests');
-$chapterLabel = $this->objLanguage->languageText('mod_mcqtests_contentchapter', 'mcqtests');
-$statusLabel = $this->objLanguage->languageText('mod_mcqtests_status', 'mcqtests');
-$notactiveLabel = $this->objLanguage->languageText('mod_mcqtests_inactive', 'mcqtests');
-$openLabel = $this->objLanguage->languageText('mod_mcqtests_openforentry', 'mcqtests');
-$startLabel = $this->objLanguage->languageText('mod_mcqtests_startdate', 'mcqtests');
-$closeLabel = $this->objLanguage->languageText('mod_mcqtests_closingdate', 'mcqtests');
-$descriptionLabel = $this->objLanguage->languageText('mod_mcqtests_description', 'mcqtests');
+$lang = function ($key, $module = 'mcqtests') {
+    return $this->objLanguage->languageText($key, $module);
+};
+$esc = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+
+$addHeading = $lang('mod_mcqtests_addtest');
+$editHeading = $lang('mod_mcqtests_edittest');
+$nameLabel = $lang('mod_mcqtests_wordname');
+$statusLabel = $lang('mod_mcqtests_status');
+$notactiveLabel = $lang('mod_mcqtests_inactive');
+$openLabel = $lang('mod_mcqtests_openforentry');
+$startLabel = $lang('mod_mcqtests_startdate');
+$closeLabel = $lang('mod_mcqtests_closingdate');
+$descriptionLabel = $lang('mod_mcqtests_description');
 $saveLabel = $this->objLanguage->languageText('word_save');
 $exitLabel = $this->objLanguage->languageText('word_cancel');
-$setTimedLabel = $this->objLanguage->languageText('mod_mcqtests_settimed', 'mcqtests');
-$setDurationLabel = $this->objLanguage->languageText('mod_mcqtests_setduration', 'mcqtests');
-$hourLabel = $this->objLanguage->languageText('mod_mcqtests_hours', 'mcqtests');
-$minLabel = $this->objLanguage->languageText('mod_mcqtests_minutes', 'mcqtests');
-$assessmentSheetLabel = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet', 'mcqtests');
-$assessmentSheetNote = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet_note', 'mcqtests');
-$testTypeLabel = $this->objLanguage->languageText('mod_mcqtests_testtype', 'mcqtests');
+$setTimedLabel = $lang('mod_mcqtests_settimed');
+$setDurationLabel = $lang('mod_mcqtests_setduration');
+$hourLabel = $lang('mod_mcqtests_hours');
+$minLabel = $lang('mod_mcqtests_minutes');
+$assessmentSheetLabel = $lang('mod_mcqtests_assessmentsheet');
+$assessmentSheetNote = $lang('mod_mcqtests_assessmentsheet_note');
+$testTypeLabel = $lang('mod_mcqtests_testtype');
 $formativeLabel = $this->objLanguage->languageText('word_formative');
 $summativeLabel = $this->objLanguage->languageText('word_summative');
-$advancedLabel = $this->objLanguage->languageText('mod_mcqtest_word_advanced', 'mcqtests');
-$qSequenceLabel = $this->objLanguage->languageText('mod_mcqtests_questionorder', 'mcqtests');
-$aSequenceLabel = $this->objLanguage->languageText('mod_mcqtests_answerorder', 'mcqtests');
+$advancedLabel = $lang('mod_mcqtest_word_advanced');
+$qSequenceLabel = $lang('mod_mcqtests_questionorder');
+$aSequenceLabel = $lang('mod_mcqtests_answerorder');
 $scrambledLabel = $this->objLanguage->languageText('word_scrambled');
 $sequentialLabel = $this->objLanguage->languageText('word_sequential');
-$restrictLabel = $this->objLanguage->languageText('mod_mcqtests_restrict', 'mcqtests');
-$anyLabLabel = $this->objLanguage->languageText('mod_mcqtests_labs', 'mcqtests');
-$addLabLabel = $this->objLanguage->languageText('mod_mcqtests_addlab', 'mcqtests');
-$errPercent = $this->objLanguage->languageText('mod_mcqtests_numericpercent', 'mcqtests');
-$errName = $this->objLanguage->languageText('mod_mcqtests_entername', 'mcqtests');
-$errDates = $this->objLanguage->languageText('mod_mcqtests_errordates', 'mcqtests');
-$permissionsLabel = $this->objLanguage->languageText('mod_mcqtests_coursepermissionslabel','mcqtests');
-$coursePermissionPrivate = $this->objLanguage->languageText('mod_mcqtests_privatecourse','mcqtests');
-$coursePermissionPublic = $this->objLanguage->languageText('mod_mcqtests_publiccourse','mcqtests');
+$restrictLabel = $lang('mod_mcqtests_restrict');
+$anyLabLabel = $lang('mod_mcqtests_labs');
+$addLabLabel = $lang('mod_mcqtests_addlab');
+$errName = $lang('mod_mcqtests_entername');
+$permissionsLabel = $lang('mod_mcqtests_coursepermissionslabel');
+$coursePermissionPrivate = $lang('mod_mcqtests_privatecourse');
+$coursePermissionPublic = $lang('mod_mcqtests_publiccourse');
 
-if ($mode == 'edit') {
-    $this->setVarByRef('heading', $editHeading);
-} else {
-    $this->setVarByRef('heading', $addHeading);
-}
+$this->setVar('heading', $mode === 'edit' ? $editHeading : $addHeading);
 
 if (!empty($data)) {
-    $id = $data[0]['id'];
-    $name = $data[0]['name'];
-    //$chapter = $data[0]['chapter'];
-    $status = $data[0]['status'];
-    $start = $data[0]['startdate'];
-    $close = $data[0]['closingdate'];
-    $timed = $data[0]['timed'];
-    $duration = $data[0]['duration'];
-    if ($duration > 0) {
-        $hour = floor($duration/60);
-        $min = $duration%60;
-    } else {
-        $hour = 0;
-        $min = 0;
-    }
-    $testType = $data[0]['testtype'];
-    $qSequence = $data[0]['qsequence'];
-    $aSequence = $data[0]['asequence'];
-    $comLab = $data[0]['comlab'];
-    $description = $data[0]['description'];
-    $coursePermissions = $data[0]['coursepermissions'];
+    $row = $data[0];
+    $id = $row['id'];
+    $name = $row['name'];
+    $status = $row['status'];
+    $start = $row['startdate'];
+    $close = $row['closingdate'];
+    $timed = $row['timed'];
+    $duration = (int) $row['duration'];
+    $hour = $duration > 0 ? floor($duration / 60) : 0;
+    $min = $duration > 0 ? $duration % 60 : 0;
+    $testType = $row['testtype'];
+    $qSequence = $row['qsequence'];
+    $aSequence = $row['asequence'];
+    $comLab = $row['comlab'];
+    $description = $row['description'];
+    $coursePermissions = $row['coursepermissions'];
 } else {
     $id = '';
     $name = '';
-    $chapter = '';
-    $status = '';
+    $status = 'inactive';
     $start = date('Y-m-d');
     $close = date('Y-m-d');
     $timed = '';
     $hour = 0;
     $min = 0;
+    $testType = 'Formative';
+    $qSequence = 'Sequential';
+    $aSequence = 'Sequential';
+    $comLab = '';
     $description = '';
-    $coursePermissions = '';
+    $coursePermissions = 'Private';
 }
-$objTable = new htmltable();
-$objTable->width = '99%';
-$objTable->cellpadding = 5;
-// Set test name
 
-$objLabel = new label('<b>'.$nameLabel.':</b>', 'input_name');
+$nameInput = new textinput('name', $name);
+$nameInput->cssClass = 'chisimba-input';
 
-$objInput = new textinput('name', $name);
-$objInput->size = 70;
-
-$objTable->startRow();
-$objTable->addCell($objLabel->show() , '30%');
-$objTable->addCell($objInput->show() , '70%');
-$objTable->endRow();
-
-/* Set content chapter
-
-$objLabel = new label('<b>'.$chapterLabel.':</b>', 'input_chapter');
-
-$objDropDown = new dropdown('chapter');
-$objDropDown->addFromDB($nodes, 'chapter_title', 'chapter_id');
-if ($mode == 'edit') {
-    $objDropDown->setSelected($chapter);
-}
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $objDropDown->show()
-));
-*/
-
-// Set activity status - not active if in add mode
-
-$objLabel = new label('<b>'.$statusLabel.':</b>', 'input_status');
-if ($mode == 'edit') {
-    $objRadio = new radio('status');
-    $objRadio->addOption('inactive', $notactiveLabel);
-    $objRadio->addOption('open', $openLabel);
-    $objRadio->setSelected($status);
-    $objRadio->setBreakSpace('<br />');
-    $statusShow = $objRadio->show();
+if ($mode === 'edit') {
+    $statusRadio = new radio('status');
+    $statusRadio->addOption('inactive', $notactiveLabel);
+    $statusRadio->addOption('open', $openLabel);
+    $statusRadio->setSelected($status);
+    $statusRadio->setBreakSpace('');
+    $statusShow = $statusRadio->show();
 } else {
-    $statusShow = '<b>'.$notactiveLabel.'</b>';
-    $objInput = new textinput('status', 'inactive');
-    $objInput->fldType = 'hidden';
-    $statusShow.= $objInput->show();
+    $statusShow = '<strong>'.$esc($notactiveLabel).'</strong><input type="hidden" name="status" value="inactive" />';
 }
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $statusShow
-));
+
 $assessmentSheetLink = new link($this->uri(array('action' => 'assessmentSheet'), 'gradebook'));
 $assessmentSheetLink->link = $assessmentSheetLabel;
-$objTable->addRow(array(
-    '<b>'.$assessmentSheetLabel.':</b>',
-    '<span class="mcq-assessment-sheet-note">'.$assessmentSheetNote.' '.$assessmentSheetLink->show().'</span>'
-));
-/* *** start date & time *** */
-// Set start date of test
 $startField = $objPopupcal->show('start', 'yes', 'no', $start);
-$objLabel = new label('<b>'.$startLabel.':</b>', 'input_start');
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $startField
-));
-// Set closing date of test
 $closeField = $objPopupcal->show('close', 'yes', 'no', $close);
-$objLabel = new label('<b>'.$closeLabel.':</b>', 'input_close');
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $closeField
-));
-// Set a timed test
-$objLabel = new label('<b>'.$setTimedLabel.':</b>', 'input_timed');
-$check = FALSE;
-if (!empty($timed)) {
-    $check = TRUE;
-}
-$objCheck = new checkbox('timed', '', $check);
-$objCheck->extra = ' onchange="if(this.checked){document.getElementById(\'input_hour\').disabled=false;document.getElementById(\'input_min\').disabled=false;}else{document.getElementById(\'input_hour\').value=\'0\';document.getElementById(\'input_hour\').disabled=true;document.getElementById(\'input_min\').value=\'0\';document.getElementById(\'input_min\').disabled=true;}"';
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $objCheck->show()
-));
-// Set duration of a timed test
-$objLabel = new label('<b>'.$setDurationLabel.':</b>', 'input_hour');
-$objLabelH = new label('<b>'.$hourLabel.'</b>', 'input_hour');
-$objDropDown = new dropdown('hour');
-for ($x = 0 ; $x <= 23 ; $x++) {
-    $objDropDown->addOption($x, $x);
-}
-$objDropDown->setSelected($hour);
-if (!$check) {
-    $objDropDown->extra = ' disabled="true"';
-}
-$hourDrop = $objDropDown->show();
-$objLabelM = new label('<b>'.$minLabel.'</b>', 'input_min');
-$objDropDown = new dropdown('min');
-for ($y = 0 ; $y <= 59 ; $y++) {
-    $objDropDown->addOption($y, $y);
-}
-$objDropDown->setSelected($min);
-if (!$check) {
-    $objDropDown->extra = ' disabled="true"';
-}
-$minDrop = $objDropDown->show();
-$input = $hourDrop.'&nbsp;&nbsp;'.$objLabelH->show() .'&nbsp;&nbsp;&nbsp;&nbsp;';
-$input.= $minDrop.'&nbsp;&nbsp;'.$objLabelM->show();
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $input
-));
-// set up test type
-$objRadio = new radio('testType');
-$objRadio->addOption($formativeLabel, $formativeLabel);
-$objRadio->addOption($summativeLabel, $summativeLabel);
-$objRadio->addOption($advancedLabel, $advancedLabel);
-if (isset($testType) && !empty($testType)) {
-    $objRadio->setSelected($testType);
-} else {
-    $objRadio->setSelected('Formative');
-}
-$objRadio->setBreakSpace('table');
-$testTypeRadio = $objRadio->show();
-$objTable->addRow(array(
-    "<b>".$testTypeLabel.":</b>",
-    "<b>".$testTypeRadio."</b>"
-));
-// set up question sequence
-$objRadio = new radio('qSequence');
-$objRadio->addOption($sequentialLabel, $sequentialLabel);
-$objRadio->addOption($scrambledLabel, $scrambledLabel);
-if (isset($qSequence) && !empty($qSequence)) {
-    $objRadio->setSelected($qSequence);
-} else {
-    $objRadio->setSelected('Sequential');
-}
-$objRadio->setBreakSpace('table');
-$qSequenceRadio = $objRadio->show();
-$objTable->addRow(array(
-    "<b>".$qSequenceLabel.":</b>",
-    "<b>".$qSequenceRadio."</b>"
-));
-// set up answer sequence
-$objRadio = new radio('aSequence');
-$objRadio->addOption($sequentialLabel, $sequentialLabel);
-$objRadio->addOption($scrambledLabel, $scrambledLabel);
-if (isset($aSequence) && !empty($aSequence)) {
-    $objRadio->setSelected($aSequence);
-} else {
-    $objRadio->setSelected('Sequential');
-}
-$objRadio->setBreakSpace('table');
-$aSequenceRadio = $objRadio->show();
-$objTable->addRow(array(
-    "<b>".$aSequenceLabel.":</b>",
-    "<b>".$aSequenceRadio."</b>"
-));
-// set up course permissions
-$objRadio = new radio('coursePermissions');
-$objRadio->setBreakSpace('table');
-$objRadio->addOption('Private', $coursePermissionPrivate);
-$objRadio->addOption('Public', $coursePermissionPublic);
-if (isset($coursePermissions) && !empty($coursePermissions)) {
-    $objRadio->setSelected($coursePermissions);
-}
-else {
-    $objRadio->setSelected('Private');
-}
-$objTable->addRow(array(
-    "<b>".$permissionsLabel.":</b>",
-    "<b>".$objRadio->show()."</b>"
-));
 
-// set up restricted computer laboratory
-$objDrop = new dropdown('comLab');
-$objDrop->addOption(NULL, $anyLabLabel);
-foreach($this->arrComLabs as $lab) {
-    $objDrop->addOPtion($lab, $lab);
-}
-if (isset($comLab) && !empty($comLab)) {
-    $objDrop->setSelected($comLab);
-}
-$labDrop = $objDrop->show();
-$objLink = new link($this->uri(array(
-    'action' => 'addlab',
-    'id' => $id,
-    'mode' => $mode
-)));
-$objLink->link = $addLabLabel;
-$labLink = $objLink->show();
-$objTable->addRow(array(
-    "<b>".$restrictLabel.":</b>",
-    $labDrop."&nbsp;&nbsp;".$labLink
-));
-// Set description
-$objLabel = new label('<b>'.$descriptionLabel.':</b>', 'input_description');
-$objText = new textarea('description', $description, 7, 67);
-$objTable->addRow(array(
-    $objLabel->show() ,
-    $objText->show()
-));
-// hidden fields
-$hidden = '';
-if ($mode == 'edit') {
-    $objInput = new textinput('id', $id);
-    $objInput->fldType = 'hidden';
-    $hidden = $objInput->show();
-}
-$objTable->addRow(array(
-    $hidden
-));
-// submit buttons
-$objButton = new button('save', $saveLabel);
-$objButton->setToSubmit();
-$btnSave = $objButton->show();
-$objButton = new button('save', $exitLabel);
-$objButton->setOnClick('javascript:document.getElementById(\'form_exit\').submit()');
-$btnExit = $objButton->show();
-$objTable->startRow();
-$objTable->addCell($btnSave, '30%', '', 'right');
-$objTable->addCell($btnExit, '70%', '', 'left');
-$objTable->endRow();
-if($this->getParam('action') == 'edit2') {
-    $objForm = new form('exit', $this->uri(array(
-        'action' => 'applyaddtest',
-        'prevaction' => 'edit2'
-    )));
-}else {
-    $objForm = new form('savetest', $this->uri(array(
-        'action' => 'applyaddtest'
-    )));
-}
+$check = !empty($timed);
+$timedCheck = new checkbox('timed', '', $check);
+$timedCheck->extra = ' onchange="var h=document.getElementById(\'input_hour\'),m=document.getElementById(\'input_min\');h.disabled=m.disabled=!this.checked;if(!this.checked){h.value=\'0\';m.value=\'0\';}"';
 
-$objForm->addToForm($objTable->show());
-$objForm->addRule('name', $errName, 'required');
-//$objForm->addRule(array('close','start'),$errDates,'greaterthan');
+$hourDrop = new dropdown('hour');
+for ($x = 0; $x <= 23; $x++) { $hourDrop->addOption($x, $x); }
+$hourDrop->setSelected($hour);
+if (!$check) { $hourDrop->extra = ' disabled="true"'; }
+$minDrop = new dropdown('min');
+for ($x = 0; $x <= 59; $x++) { $minDrop->addOption($x, $x); }
+$minDrop->setSelected($min);
+if (!$check) { $minDrop->extra = ' disabled="true"'; }
 
-$objLayer = new layer();
-$objLayer->str = $objForm->show();
-$objLayer->cssClass = 'odd';
-echo $objLayer->show();
-if($this->getParam('action') == 'edit2') {
-    $objForm = new form('exit', $this->uri(array(
-        'action' => 'applyaddtest',
-        'prevaction' => 'edit2'
-    )));
-}
-else {
-    $objForm = new form('exit', $this->uri(array(
-        'action' => 'applyaddtest'
-    )));
-}
-$objInput = new textinput('save', $exitLabel);
-$objInput->fldType = 'hidden';
-$hidden.= $objInput->show();
-$objForm->addToForm($hidden);
-echo $objForm->show();
+$testTypeRadio = new radio('testType');
+$testTypeRadio->addOption($formativeLabel, $formativeLabel);
+$testTypeRadio->addOption($summativeLabel, $summativeLabel);
+$testTypeRadio->addOption($advancedLabel, $advancedLabel);
+$testTypeRadio->setSelected(!empty($testType) ? $testType : 'Formative');
+$testTypeRadio->setBreakSpace('');
+
+$qRadio = new radio('qSequence');
+$qRadio->addOption($sequentialLabel, $sequentialLabel);
+$qRadio->addOption($scrambledLabel, $scrambledLabel);
+$qRadio->setSelected(!empty($qSequence) ? $qSequence : 'Sequential');
+$qRadio->setBreakSpace('');
+
+$aRadio = new radio('aSequence');
+$aRadio->addOption($sequentialLabel, $sequentialLabel);
+$aRadio->addOption($scrambledLabel, $scrambledLabel);
+$aRadio->setSelected(!empty($aSequence) ? $aSequence : 'Sequential');
+$aRadio->setBreakSpace('');
+
+$permissionsRadio = new radio('coursePermissions');
+$permissionsRadio->addOption('Private', $coursePermissionPrivate);
+$permissionsRadio->addOption('Public', $coursePermissionPublic);
+$permissionsRadio->setSelected(!empty($coursePermissions) ? $coursePermissions : 'Private');
+$permissionsRadio->setBreakSpace('');
+
+$labDrop = new dropdown('comLab');
+$labDrop->addOption(NULL, $anyLabLabel);
+foreach ($this->arrComLabs as $lab) { $labDrop->addOption($lab, $lab); }
+if (!empty($comLab)) { $labDrop->setSelected($comLab); }
+$labLink = new link($this->uri(array('action' => 'addlab', 'id' => $id, 'mode' => $mode)));
+$labLink->link = $addLabLabel;
+
+$descriptionInput = new textarea('description', $description, 7, 67);
+
+$hidden = $mode === 'edit' ? '<input type="hidden" name="id" value="'.$esc($id).'" />' : '';
+$formAction = $this->getParam('action') === 'edit2'
+    ? $this->uri(array('action' => 'applyaddtest', 'prevaction' => 'edit2'))
+    : $this->uri(array('action' => 'applyaddtest'));
+$form = new form('savetest', $formAction);
+$form->addRule('name', $errName, 'required');
+
+$section = function ($title, $body) {
+    return '<section class="chisimba-form-section mcq-form-section"><h2 class="mcq-form-section-title">'.$title.'</h2><div class="mcq-form-section-body">'.$body.'</div></section>';
+};
+$field = function ($label, $control, $class = '') {
+    return '<div class="chisimba-form-field '.$class.'"><label>'.$label.'</label>'.$control.'</div>';
+};
+$choice = function ($label, $control) {
+    return '<fieldset class="chisimba-form-field chisimba-choice-field"><legend>'.$label.'</legend><div class="chisimba-choice-group">'.$control.'</div></fieldset>';
+};
+
+$basic = '<div class="mcq-form-grid">'
+    .$field($esc($nameLabel), $nameInput->show())
+    .$choice($esc($statusLabel), $statusShow)
+    .'</div><div class="chisimba-form-field mcq-assessment-sheet-field"><strong>'.$esc($assessmentSheetLabel).'</strong><p>'.$esc($assessmentSheetNote).' '.$assessmentSheetLink->show().'</p></div>';
+
+$schedule = '<div class="mcq-form-grid">'
+    .$field($esc($startLabel), $startField)
+    .$field($esc($closeLabel), $closeField)
+    .$field($esc($setTimedLabel), '<div class="mcq-inline-choice">'.$timedCheck->show().'</div>')
+    .$field($esc($setDurationLabel), '<div class="mcq-duration">'.$hourDrop->show().' <span>'.$esc($hourLabel).'</span> '.$minDrop->show().' <span>'.$esc($minLabel).'</span></div>')
+    .'</div>';
+
+$settings = $choice($esc($testTypeLabel), $testTypeRadio->show())
+    .$choice($esc($qSequenceLabel), $qRadio->show())
+    .$choice($esc($aSequenceLabel), $aRadio->show())
+    .$choice($esc($permissionsLabel), $permissionsRadio->show());
+
+$access = $field($esc($restrictLabel), '<div class="mcq-lab-control">'.$labDrop->show().' '.$labLink->show().'</div>');
+$descriptionSection = $field($esc($descriptionLabel), $descriptionInput->show());
+
+$content = '<div class="chisimba-workspace mcq-test-editor"><div class="chisimba-form">'
+    .$section($esc($lang('mod_mcqtests_section_basic')), $basic)
+    .$section($esc($lang('mod_mcqtests_section_schedule')), $schedule)
+    .$section($esc($lang('mod_mcqtests_section_settings')), $settings)
+    .$section($esc($lang('mod_mcqtests_section_access')), $access)
+    .$section($esc($lang('mod_mcqtests_section_description')), $descriptionSection)
+    .$hidden
+    .'<div class="chisimba-form-actions"><button class="button" type="submit" name="save" value="'.$esc($saveLabel).'">'.$esc($saveLabel).'</button>'
+    .'<button class="button chisimba-button-secondary" type="button" onclick="document.getElementById(\'form_exit\').submit()">'.$esc($exitLabel).'</button></div>'
+    .'</div></div>';
+$form->addToForm($content);
+echo $form->show();
+
+$exitAction = $this->getParam('action') === 'edit2'
+    ? $this->uri(array('action' => 'applyaddtest', 'prevaction' => 'edit2'))
+    : $this->uri(array('action' => 'applyaddtest'));
+$exitForm = new form('exit', $exitAction);
+$exitForm->addToForm($hidden.'<input type="hidden" name="save" value="'.$esc($exitLabel).'" />');
+echo $exitForm->show();
 ?>
