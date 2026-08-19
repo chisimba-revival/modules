@@ -401,11 +401,11 @@ $updateLabel = $this->objLanguage->languageText('mod_mcqtests_updatestatus', 'mc
 $previewLabel = $this->objLanguage->languageText('mod_mcqtests_preview', 'mcqtests');
 $updateIcon = $objIconService->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
 $previewIcon = $objIconService->render('eye', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
-$previewUrl = $this->uri(array(
+$previewUrl = html_entity_decode($this->uri(array(
     'action' => 'previewtest',
     'id' => $data['id'],
     'mode' => 'notoolbar'
-));
+)), ENT_QUOTES, 'UTF-8');
 $previewOnClick = "window.open('".str_replace("'", "\\'", $previewUrl)."', 'previewtest', 'fullscreen,scrollbars');";
 $form->addToForm(
     '<div class="chisimba-form-actions mcq-activation-actions">'
