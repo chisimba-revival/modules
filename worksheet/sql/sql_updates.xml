@@ -12,4 +12,16 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_worksheet_questions</table>
+        <version>1.333</version>
+        <description>Add an optional reusable rubric reference to Worksheet questions.</description>
+        <data>
+            <add>
+                <name>rubric_id</name>
+                <type>text</type>
+                <length>32</length>
+            </add>
+        </data>
+    </update>
 </updates>
