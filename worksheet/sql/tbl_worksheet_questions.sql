@@ -24,6 +24,10 @@ $fields = array(
 	'model_answer' => array(
 		'type' => 'clob'
 		),
+    'rubric_id' => array(
+        'type' => 'text',
+        'length' => 32
+        ),
 	'question_worth' => array(
 		'type' => 'integer',
 		'length' => 11,
