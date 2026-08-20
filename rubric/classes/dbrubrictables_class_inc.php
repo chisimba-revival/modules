@@ -59,15 +59,24 @@ class dbRubricTables extends dbTable
 	*/
 	function insertSingle($contextCode, $title, $description, $rows, $cols, $userId=NULL)
 	{
-		$this->insert(array(
-			'contextCode' => $contextCode,
-        	'title' => $title,
-        	'description' => $description,
-        	'rows' => $rows,
-        	'cols' => $cols,
-			'userId' => $userId
-		));
-		return $this->getLastInsertId();		
+        $fields = array(
+            'contextCode' => $contextCode,
+            'title' => $title,
+            'description' => $description,
+            'rows' => $rows,
+            'cols' => $cols
+        );
+
+        // Context-owned rubrics are identified by SQL NULL in userId.
+        // dbTable::insert() quotes supplied values, so passing PHP null can
+        // become an empty value rather than SQL NULL. Omit the field entirely
+        // when no user owns the rubric so the database default remains NULL.
+        if (!is_null($userId) && $userId !== '') {
+            $fields['userId'] = $userId;
+        }
+
+        $id = $this->insert($fields);
+        return $id ? $id : FALSE;
 	}
 
 	/**
