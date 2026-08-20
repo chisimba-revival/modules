@@ -209,7 +209,7 @@ $addIcon = $objIconService->render('plus', array(
     'decorative' => true,
     'class' => 'chisimba-action-icon'
 ));
-$addQ = $questionEditingLocked ? '' : '<a class="button chisimba-button-secondary" href="'.$esc($addQUrl).'">'.$addIcon.'<span>'.$esc($addLabel).'</span></a>';
+$addQ = $questionEditingLocked ? '' : '<a class="button chisimba-button-secondary" href="'.$addQUrl.'">'.$addIcon.'<span>'.$esc($addLabel).'</span></a>';
 
 $aiGenerate = '';
 $aiAvailable = false;
@@ -232,7 +232,7 @@ if ($aiAvailable && !$questionEditingLocked) {
         'decorative' => true,
         'class' => 'chisimba-action-icon'
     ));
-    $aiGenerate = '<a class="button chisimba-button-secondary" href="'.$esc($aiGenerateUrl).'">'.$aiIcon.'<span>'.$esc($aiGenerateLabel).'</span></a>';
+    $aiGenerate = '<a class="button chisimba-button-secondary" href="'.$aiGenerateUrl.'">'.$aiIcon.'<span>'.$esc($aiGenerateLabel).'</span></a>';
 }
 
 $str = null;
