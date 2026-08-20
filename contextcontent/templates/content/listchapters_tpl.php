@@ -147,7 +147,28 @@ $chapterList = '<div id="allchapters" data-toggle-storage-key="'
 $objWashout = $this->getObject('washout', 'utilities');
 $todays_date = date('Y-m-d H:i');
 $today = strtotime($todays_date);
+
+$stageGateOverviewActive = $this->objChapterStageGates->isGatedProgression($this->contextCode)
+    && !$this->objChapterStageGates->isCourseManager($this->contextCode);
+$stageGateLockedLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_stagegatelockedchapter',
+    'contextcontent',
+    'Complete the previous stage gate assessment to unlock this [-chapter-].'
+);
+
+echo '<style>'
+    . '.chisimba-stage-gate-locked-heading{color:#777;opacity:.65;cursor:not-allowed;}'
+    . '.chisimba-stage-gate-locked-pages{opacity:.48;}'
+    . '.chisimba-stage-gate-locked-pages a{pointer-events:none;cursor:not-allowed;text-decoration:none;color:inherit;}'
+    . '.chisimba-stage-gate-locked-page{color:#777;cursor:not-allowed;}'
+    . '.chisimba-stage-gate-lock-note{font-size:.9em;color:#666;margin:.35rem 0 .75rem;}'
+    . '</style>';
+
 foreach ($chapters as $chapter) {
+    $stageGateEntry = $stageGateOverviewActive
+        ? $this->objChapterStageGates->entryDecision($this->contextCode, $chapter['chapterid'])
+        : array('allowed' => TRUE);
+    $stageGateLocked = empty($stageGateEntry['allowed']);
     $showChapter = TRUE;
 
     if ($chapter['visibility'] == 'N') {
@@ -260,6 +281,21 @@ foreach ($chapters as $chapter) {
             // Get List of Pages in the Chapter
             $chapterPages = $this->objContentOrder->getTree($this->contextCode, $chapter['chapterid'], 'htmllist');
 
+            if ($stageGateLocked) {
+                $chapterPages = preg_replace_callback(
+                    '#<a\\b[^>]*>(.*?)</a>#is',
+                    function ($matches) {
+                        return '<span class="chisimba-stage-gate-locked-page" aria-disabled="true">'
+                            . $matches[1] . '</span>';
+                    },
+                    $chapterPages
+                );
+                $chapterPages = '<div class="chisimba-stage-gate-lock-note" role="note">'
+                    . htmlspecialchars($stageGateLockedLabel, ENT_QUOTES, 'UTF-8') . '</div>'
+                    . '<div class="chisimba-stage-gate-locked-pages" aria-disabled="true">'
+                    . $chapterPages . '</div>';
+            }
+
             if (trim($chapterPages) == '<ul class="htmlliststyle"></ul>') {
                 $hasPages = FALSE;
                 //$dropdown->addOption($chapter['chapterid'], $chapter['chaptertitle'], ' disabled="disabled" title="' . $this->objLanguage->languageText('mod_contextcontent_chapterhasnopages', 'contextcontent') . '"');
@@ -300,6 +336,11 @@ foreach ($chapters as $chapter) {
                 $chapterHeading = $chapter['chaptertitle'];
             } else {
                 $chapterHeading = $chapterLink->show();
+            if ($stageGateLocked) {
+                $chapterHeading = '<span class="chisimba-stage-gate-locked-heading" aria-disabled="true" title="'
+                    . htmlspecialchars($stageGateLockedLabel, ENT_QUOTES, 'UTF-8') . '">'
+                    . htmlspecialchars($chapter['chaptertitle'], ENT_QUOTES, 'UTF-8') . '</span>';
+            }
             }
             if ($ischapterlogged == FALSE) {
                 $chapterHeading = $streamerimg . ' ' . $chapterHeading;
