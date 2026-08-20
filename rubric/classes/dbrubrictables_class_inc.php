@@ -63,8 +63,8 @@ class dbRubricTables extends dbTable
             'contextCode' => $contextCode,
             'title' => $title,
             'description' => $description,
-            'rows' => $rows,
-            'cols' => $cols
+            '`rows`' => $rows,
+            '`cols`' => $cols
         );
 
         // Context-owned rubrics are identified by SQL NULL in userId.
@@ -104,7 +104,7 @@ class dbRubricTables extends dbTable
 	{
 		$this->update("id", $id, 
 			array(
-        		'rows' => $rows
+        		'`rows`' => $rows
 			)
 		);
 	}
@@ -118,7 +118,7 @@ class dbRubricTables extends dbTable
 	{
 		$this->update("id", $id, 
 			array(
-        		'cols' => $cols
+        		'`cols`' => $cols
 			)
 		);
 	}
