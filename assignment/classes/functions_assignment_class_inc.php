@@ -704,9 +704,11 @@ class functions_assignment extends ChisimbaObject {
         //$zip->open($zip_name, ZIPARCHIVE::CREATE);
         //$zip->addFile($filePath, $file['filename']);
         $contentBasePath = $objConfig->getcontentBasePath();
-        //--$dirPath = $contentBasePath . 'assignment/submissions/' . $assignmentId;
         //--$mkdir->mkdirs($dirPath);
-        $zipFN = $contentBasePath . 'assignment/submissions/' . preg_replace('/[^[:alnum:]_\s]/', '_', $assignmentName) . '.zip'; //$assignmentId
+        $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
+        $secureRoot = rtrim((string) $objSysConfig->getValue('SECUREFODLER', 'filemanager'), '/');
+        $zipFN = $secureRoot . '/assignment/exports/'
+            . preg_replace('/[^[:alnum:]_\\s]/', '_', $assignmentName) . '.zip';
         if(file_exists($zipFN)){
             unlink($zipFN);
         }
@@ -716,7 +718,7 @@ class functions_assignment extends ChisimbaObject {
             $userId = $submission['userid'];
             $fileId = $submission['studentfileid'];
             $file = $objFile->getFile($fileId);
-            $filePath = $contentBasePath . 'assignment/submissions/' . $submissionId . '/' . $file['filename'];
+            $filePath = $this->dbSubmit->getAssignmentFilename($submissionId, $fileId);
             if (file_exists($filePath)) {
                 //copy($filePath, $dirPath . '/' . $file['filename']);
                 $files[] =

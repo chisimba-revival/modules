@@ -696,7 +696,6 @@ class assignment extends controller {
 //        die;
         $filePath = $this->objAssignmentSubmit->getAssignmentFilename($id, $fileId) . '.php';
 
-        //$filePath = $this->objConfig->getcontentBasePath().'/assignment/submissions/'.$id.'/'.$filename;
 
         $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
         $filePath = $objCleanUrl->cleanUpUrl($filePath);
@@ -769,8 +768,12 @@ class assignment extends controller {
         $filename = $assignmentid; //.'-'.$id;
 
         $objMkDir = $this->getObject('mkdir', 'files');
-        $destinationDir = $this->objAltConfig->getcontentBasePath() . '/assignment/submissions/export';
-        $objMkDir->mkdirs($destinationDir);
+        $secureRoot = rtrim((string) $objSysConfig->getValue('SECUREFODLER', 'filemanager'), '/');
+        if ($secureRoot === '') {
+            throw new RuntimeException('File Manager private storage is not configured');
+        }
+        $destinationDir = $secureRoot . '/assignment/exports';
+        $objMkDir->mkdirs($destinationDir, 0770);
         $exportfile = $destinationDir . "/" . $filename . ".xls";
 
         if (file_exists($exportfile)) {
@@ -819,8 +822,13 @@ class assignment extends controller {
 
         fclose($file);
 
-
-        $this->nextAction('downloadassignmentfile', array("filename" => $filename));
+        header("Cache-Control: private, no-store");
+        header("Content-Type: application/vnd.ms-excel");
+        header('Content-Disposition: attachment; filename="' . basename($exportfile) . '"');
+        header("Content-Length: " . filesize($exportfile));
+        readfile($exportfile);
+        unlink($exportfile);
+        return NULL;
     }
 
     function __downloadassignmentfile() {
@@ -846,18 +854,23 @@ class assignment extends controller {
             trigger_error('There are no submissions!');
             return $this->nextAction(NULL, array());
         }
-        //--$dirPath = $contentBasePath . 'assignment/submissions/' . $assignmentId;
-        $contentBasePath = $this->objConfig->getcontentBasePath();
-        //$contentPath = ;
-        //$zipPath = ;
-        $zipFullPath = $contentBasePath . 'assignment'.DIRECTORY_SEPARATOR.'submissions'.DIRECTORY_SEPARATOR;
+        $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
+        $secureRoot = rtrim((string) $objSysConfig->getValue('SECUREFODLER', 'filemanager'), '/');
+        if ($secureRoot === '') {
+            throw new RuntimeException('File Manager private storage is not configured');
+        }
+        $zipFullPath = $secureRoot . DIRECTORY_SEPARATOR . 'assignment'
+            . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR;
         //$sysTemp = sys_get_temp_dir();
         //if ($sysTemp[strlen($sysTemp)-1] != DIRECTORY_SEPARATOR) {
         //    $sysTemp .= DIRECTORY_SEPARATOR;
         //}
         //$zipFullPath = $sysTemp.'chisimba'.DIRECTORY_SEPARATOR.$this->objConfig->serverName().DIRECTORY_SEPARATOR.'assignment'.DIRECTORY_SEPARATOR.'submissions'.DIRECTORY_SEPARATOR;
         //==preg_replace('/[^[:alnum:]_\s]/', '_', '\temp0_ \/:*?"<>|');
-        $zipBaseName = $objFilename->makeFileName($this->context.' ('.$this->contextCode.')_'.$assignmentName.' ('.$assignmentId.').zip'); //preg_replace('/[^[:alnum:]_\s]/', '_', $assignmentName) . '.zip'; //$assignmentId //$contentBasePath . 'assignment/submissions/'
+        $zipBaseName = $objFilename->makeFileName(
+            $this->context . ' (' . $this->contextCode . ')_'
+            . $assignmentName . ' (' . $assignmentId . ').zip'
+        );
         $zipFN = $zipFullPath . $zipBaseName;
         //$zipURI = $this->objConfig->getsiteRoot() . $this->objConfig->getcontentPath() . $zipRelPath . rawurlencode($zipBaseName);
         $objMkdir->mkdirs($zipFullPath);
@@ -871,12 +884,9 @@ class assignment extends controller {
             $userName = $submission['username'];
             $fileId = $submission['studentfileid'];
             $file = $objDBFile->getFile($fileId);
-            $filePath = $contentBasePath . 'assignment/submissions/' . $submissionId . '/' . $file['filename'];
-            if (!file_exists($filePath)) {
-                //path
-                $filePath = $contentBasePath . $file['path'];
-                //trigger_error("Redirected:$filePath");
-            }
+            $filePath = $this->objAssignmentSubmit->getAssignmentFilename(
+                $submissionId, $fileId
+            );
             if (file_exists($filePath)) {
                 //copy($filePath, $dirPath . '/' . $file['filename']);
                 $files[] =

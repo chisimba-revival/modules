@@ -290,14 +290,20 @@ class dbassignmentsubmit extends dbtable {
      * student's personal File Manager. Folder names are server-derived.
      */
     public function getSubmissionDirectory($submitId, $assignmentId) {
-        $objConfig = $this->getObject('altconfig', 'config');
+        $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
+        $secureRoot = rtrim((string) $objSysConfig->getValue(
+            'SECUREFODLER', 'filemanager'
+        ), '/');
+        if ($secureRoot === '') {
+            throw new RuntimeException('File Manager private storage is not configured');
+        }
         $assignment = $this->getAssignment($assignmentId);
         $context = !empty($assignment[0]['context']) ? (string) $assignment[0]['context'] : 'unknown-course';
         $safe = function ($value) {
             $value = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string) $value);
             return trim((string) $value, '-.') !== '' ? trim((string) $value, '-.') : 'unknown';
         };
-        return rtrim($objConfig->getcontentBasePath(), '/')
+        return $secureRoot
             . '/assignment/course-submissions/' . $safe($context)
             . '/' . $safe($assignmentId) . '/' . $safe($submitId);
     }
@@ -365,23 +371,8 @@ class dbassignmentsubmit extends dbtable {
         $objCleanUrl = $this->getObject('cleanurl', 'filemanager');
         $filePath = $objCleanUrl->cleanUpUrl($filePath);
 
-        // Existing submissions remain readable from the pre-vault location.
         if (!file_exists($filePath)) {
-            $legacyPath = $objConfig->getcontentBasePath() . '/assignment/submissions/' . $submissionId . '/' . $file['filename'];
-            $legacyPath = $objCleanUrl->cleanUpUrl($legacyPath);
-            if (file_exists($legacyPath)) {
-                return $legacyPath;
-            }
-            $originalFile = $objConfig->getcontentBasePath() . '/' . $file['path'];
-            $originalFile = $objCleanUrl->cleanUpUrl($originalFile);
-
-            if (file_exists($originalFile)) {
-
-                $objMkdir = $this->getObject('mkdir', 'files');
-                $objMkdir->mkdirs(dirname($filePath), 0777);
-
-                copy($originalFile, $filePath);
-            }
+            return false;
         }
 
         return $filePath;
