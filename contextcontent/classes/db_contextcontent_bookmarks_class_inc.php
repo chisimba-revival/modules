@@ -29,7 +29,8 @@ class db_contextcontent_bookmarks extends dbtable
     public function idsForUser($contextCode, $userId)
     {
         $rows = $this->getAll('WHERE contextcode = ' . $this->quote($contextCode)
-            . ' AND userid = ' . $this->quote($userId));
+            . ' AND userid = ' . $this->quote($userId)
+            . ' ORDER BY datecreated DESC');
         $ids = array();
         foreach ($rows as $row) { $ids[] = $row['placementid']; }
         return $ids;
