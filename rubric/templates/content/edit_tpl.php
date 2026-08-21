@@ -1,4 +1,9 @@
 <?php
+	$error = $this->getParam('error', '');
+	if ($error === 'matrixmissing' || $error === 'savefailed') {
+		$errorKey = $error === 'matrixmissing' ? 'mod_rubric_matrix_missing' : 'mod_rubric_save_failed';
+		echo '<div class="rubric-notice error">'.$objLanguage->languageText($errorKey, 'rubric').'</div>';
+	}
 
     $pageTitle = $this->newObject('htmlheading','htmlelements');
     $pageTitle->type=1;
@@ -6,7 +11,7 @@
     $pageTitle->str=$objLanguage->languageText('rubric_rubric','rubric'). " : " . $title;
 	echo $pageTitle->show();
 	
-    $labelDescription = "<p><em>Description</em>: " . $description . "</p>";
+    $labelDescription = "<p><em>".$objLanguage->languageText('rubric_description', 'rubric')."</em>: " . htmlspecialchars($description, ENT_QUOTES, 'UTF-8') . "</p>";
     
     echo $labelDescription;
     
@@ -70,13 +75,13 @@
 	$createForm->addToForm('<p>'.$button->show().'</p>');
 	echo $createForm->show();
 	if (!isset($suppressModify)) {
-	    echo "<a href=\"".$this->uri(array('action'=>'addrow','tableId'=>$tableId))."\">Add Row</a><br/>";
-	    echo "<a href=\"".$this->uri(array('action'=>'addcol','tableId'=>$tableId))."\">Add Column</a><br/>";
+	    echo "<a href=\"".$this->uri(array('action'=>'addrow','tableId'=>$tableId))."\">".$objLanguage->languageText('rubric_add_row', 'rubric')."</a><br/>";
+	    echo "<a href=\"".$this->uri(array('action'=>'addcol','tableId'=>$tableId))."\">".$objLanguage->languageText('rubric_add_column', 'rubric')."</a><br/>";
 	    if ($rows > 1) {
-	        echo "<a href=\"".$this->uri(array('action'=>'delrow','tableId'=>$tableId))."\">Delete Row</a><br/>";
+	        echo "<a href=\"".$this->uri(array('action'=>'delrow','tableId'=>$tableId))."\">".$objLanguage->languageText('rubric_delete_row', 'rubric')."</a><br/>";
 	    }
 	    if ($cols > 1) {
-	        echo "<a href=\"".$this->uri(array('action'=>'delcol','tableId'=>$tableId))."\">Delete Column</a><br/>";
+	        echo "<a href=\"".$this->uri(array('action'=>'delcol','tableId'=>$tableId))."\">".$objLanguage->languageText('rubric_delete_column', 'rubric')."</a><br/>";
 	    }
 	}
 ?>

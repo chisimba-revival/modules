@@ -332,6 +332,10 @@ $ret .= $tblclass->show();
 }
 
 $pageTitle->str = $objLanguage->languageText('rubric_shared', 'rubric');
+if ($contextCode === 'root' && $this->objUser->isAdmin()) {
+    $pageTitle->str .= ' <a href="'.$this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'shared')).'">'
+        .$objLanguage->languageText('rubric_create_shared', 'rubric').'</a>';
+}
 $tblclass = $this->newObject('htmltable', 'htmlelements');
 $tblclass->width = '100%';
 $tblclass->border = '0';
@@ -360,7 +364,7 @@ foreach ((array) $sharedtables as $sharedtable) {
     $description = htmlspecialchars($sharedtable['description'], ENT_QUOTES, 'UTF-8');
     $viewUrl = $this->uri(array('module'=>'rubric', 'action'=>'viewtable', 'tableId'=>$sharedtable['id']));
     $options = '<a href="'.$viewUrl.'">'.$objLanguage->languageText('word_view').'</a>';
-    if ($this->isValid('edittable')) {
+    if (!empty($sharedtable['canModify']) && $this->isValid('edittable')) {
         $editUrl = $this->uri(array('module'=>'rubric', 'action'=>'edittable', 'tableId'=>$sharedtable['id']));
         $options .= ' &nbsp; <a href="'.$editUrl.'">'.$objLanguage->languageText('word_edit').'</a>';
     }

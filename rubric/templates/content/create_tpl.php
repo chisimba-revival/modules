@@ -33,7 +33,7 @@
     
     $row = array("<b>".$objLanguage->languageText("rubric_name","rubric")."</b>", $objUser->fullName());
     $objTable->addRow($row, 'even');
-    $row = array("<b>".ucfirst($objLanguage->code2Txt('rubric_course',"rubric",array('context'=>'')))."</b>", $contextTitle);
+    $row = array("<b>".$objLanguage->languageText('rubric_resource_scope', 'rubric')."</b>", htmlspecialchars($rubricScope, ENT_QUOTES, 'UTF-8'));
     $objTable->addRow($row, 'even');
     $textinput = new textinput("title","");
     $textinput->size = 50;

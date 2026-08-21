@@ -1,5 +1,8 @@
 <?php
 $ret = "";
+if ($this->getParam('saved', '') === 'yes') {
+    $ret .= '<div class="rubric-notice">'.$objLanguage->languageText('mod_rubric_saved', 'rubric').'</div>';
+}
 $pageTitle = $this->newObject('htmlheading','htmlelements');
 $pageTitle->type=1;
 $pageTitle->align='left';
@@ -48,7 +51,7 @@ for ($j=0;$j<$cols;$j++) {
     $table->addHeaderCell($performances[$j]);
 }
 if (isset($IsAssessment)) {
-    $table->addHeaderCell("Score");
+    $table->addHeaderCell($objLanguage->languageText('rubric_score', 'rubric'));
 }
 $table->endRow();
 $class = 'odd';
@@ -79,7 +82,7 @@ if (isset($IsAssessment)) {
 }
 $ret .= '<div class="rubric-matrix-scroll" style="max-width:100%;overflow-x:auto;">'.$table->show().'</div>';
 if ($noBanner == "yes") {
-    $ret .= "<a href=\"javascript:history.back();\">" . "Back" . "</a>";
+    $ret .= "<a href=\"javascript:history.back();\">" . $objLanguage->languageText('word_back') . "</a>";
 }
 else {
     // Print the page.

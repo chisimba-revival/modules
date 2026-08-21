@@ -89,10 +89,14 @@ public function dispatch($action=Null)
     {
         // Set the layout template.
         $this->setLayoutTemplate("layout_tpl.php");
-		$this->setVar('rubricFullWidth', in_array($action, array(
+		$rubricFullWidth = in_array($action, array(
 			'edittable', 'edittableconfirm', 'viewtable', 'viewassessment',
 			'addrow', 'addcol', 'delrow', 'delcol'
-		)));
+		));
+		$this->setVar('rubricFullWidth', $rubricFullWidth);
+		if ($rubricFullWidth) {
+			$this->setVar('pageSuppressContainer', TRUE);
+		}
 
         // Check to ensure the user is allowed to execute this action.
         if ($this->isRestricted($action) && !$this->userHasModifyAccess()) {
@@ -131,16 +135,51 @@ public function dispatch($action=Null)
 			$contextTitle = $contextRecord['title'];
 		}
 	    $this->setVarByRef('contextTitle', $contextTitle);
+		$currentScope = ($this->contextCode === 'root')
+			? $this->objLanguage->languageText('rubric_scope_root', 'rubric')
+			: $this->objLanguage->languageText('rubric_scope_course', 'rubric').' — '.$contextTitle;
+		$this->setVar('currentScope', $currentScope);
+
+		$tableIdParam = $this->getParam('tableId', '');
+		if (is_string($tableIdParam) && $tableIdParam !== '') {
+			$scopeTable = $this->objDbRubricTables->listSingle($tableIdParam);
+			if (!empty($scopeTable)) {
+				$this->setVar('rubricScope', $this->getRubricScopeLabel($scopeTable[0]));
+				$modifyActions = array(
+					'renametable', 'renametableconfirm', 'clonetable', 'edittable',
+					'edittableconfirm', 'addrow', 'addcol', 'delrow', 'delcol',
+					'deletetable'
+				);
+				if (in_array($action, $modifyActions) && !$this->canModifyRubric($scopeTable[0])) {
+					return 'access_denied_tpl.php';
+				}
+			}
+		}
 		switch($action){
 			case "createtable":
 				$this->setVarByRef("_type", $this->getParam("type", ""));
+				$createType = $this->getParam('type', '');
+				if ($createType === 'shared' && !$this->objUser->isAdmin()) {
+					return 'access_denied_tpl.php';
+				}
+				if ($createType === 'predefined') {
+					$createScope = $this->objLanguage->languageText('rubric_scope_personal', 'rubric').' — '.$this->objUser->fullName();
+				} elseif ($createType === 'shared') {
+					$createScope = $this->objLanguage->languageText('rubric_scope_shared', 'rubric');
+				} else {
+					$createScope = $this->objLanguage->languageText('rubric_scope_course', 'rubric').' — '.$contextTitle;
+				}
+				$this->setVar('rubricScope', $createScope);
 		        return "create_tpl.php";
 			case "createtableconfirm":
 				$this->setLayoutTemplate(NULL);
                 $type = $this->getParam("type", "");
+				if ($type === 'shared' && !$this->objUser->isAdmin()) {
+					return 'access_denied_tpl.php';
+				}
                 // Insert a record into the database
 				$tableId = $this->objDbRubricTables->insertSingle(
-					$type == 'predefined' ? 'root' : $this->contextCode,
+					in_array($type, array('predefined', 'shared')) ? 'root' : $this->contextCode,
 					$_POST["title"],
 					$_POST["description"],
 					$_POST["rows"],
@@ -387,6 +426,9 @@ public function dispatch($action=Null)
 			case "edittableconfirm":
 				$tableId = $this->getParam("tableId", "");
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
+				if (empty($tableInfo)) {
+					return $this->nextAction(NULL);
+				}
 				$title = $tableInfo[0]['title'];
 				$description = $tableInfo[0]['description'];
 				$rows = $tableInfo[0]['rows'];
@@ -395,35 +437,60 @@ public function dispatch($action=Null)
 				$this->setVarByRef("description", $description);
 				$this->setVarByRef("rows", $rows);
 				$this->setVarByRef("cols", $cols);
-				// Update the performances
-				$this->objDbRubricPerformances->deleteAll($tableId);
+				$submittedPerformances = array();
 				for ($j=0;$j<$cols;$j++) {
-					$this->objDbRubricPerformances->insertSingle(
-						$tableId,
-						"{$j}",
-						$_POST["performance{$j}"]
-					);
+					$key = "performance{$j}";
+					if (!array_key_exists($key, $_POST)) {
+						return $this->nextAction('edittable', array('tableId'=>$tableId, 'error'=>'matrixmissing'));
+					}
+					$submittedPerformances[$j] = $_POST[$key];
 				}
-				// Update the objectives
-				$this->objDbRubricObjectives->deleteAll($tableId);
+
+				$submittedObjectives = array();
+				$submittedCells = array();
 				for ($i=0;$i<$rows;$i++) {
-					$this->objDbRubricObjectives->insertSingle(
-						$tableId,
-						"{$i}",
-						$_POST["objective{$i}"]
-					);
-				}
-				// Update the cells
-				$this->objDbRubricCells->deleteAll($tableId);
-				for ($i=0;$i<$rows;$i++) {
+					$objectiveKey = "objective{$i}";
+					$cellKey = "cell{$i}";
+					if (!array_key_exists($objectiveKey, $_POST)
+						|| !isset($_POST[$cellKey])
+						|| !is_array($_POST[$cellKey])) {
+						return $this->nextAction('edittable', array('tableId'=>$tableId, 'error'=>'matrixmissing'));
+					}
+					$submittedObjectives[$i] = $_POST[$objectiveKey];
+					$submittedCells[$i] = array();
 					for ($j=0;$j<$cols;$j++) {
-						$this->objDbRubricCells->insertSingle(
+						if (!array_key_exists($j, $_POST[$cellKey])) {
+							return $this->nextAction('edittable', array('tableId'=>$tableId, 'error'=>'matrixmissing'));
+						}
+						$submittedCells[$i][$j] = $_POST[$cellKey][$j];
+					}
+				}
+
+				$this->objDbRubricCells->beginTransaction();
+				try {
+					$this->objDbRubricPerformances->deleteAll($tableId);
+					for ($j=0;$j<$cols;$j++) {
+						$this->objDbRubricPerformances->insertSingle($tableId, "{$j}", $submittedPerformances[$j]);
+					}
+					$this->objDbRubricObjectives->deleteAll($tableId);
+					for ($i=0;$i<$rows;$i++) {
+						$this->objDbRubricObjectives->insertSingle($tableId, "{$i}", $submittedObjectives[$i]);
+					}
+					$this->objDbRubricCells->deleteAll($tableId);
+					for ($i=0;$i<$rows;$i++) {
+						for ($j=0;$j<$cols;$j++) {
+					$this->objDbRubricCells->insertSingle(
 							$tableId,
 							"{$i}",
 							"{$j}",
-							$_POST["cell{$i}[$j]"]
+							$submittedCells[$i][$j]
 						);
+						}
 					}
+					$this->objDbRubricCells->commitTransaction();
+				} catch (Throwable $exception) {
+					$this->objDbRubricCells->rollbackTransaction();
+					return $this->nextAction('edittable', array('tableId'=>$tableId, 'error'=>'savefailed'));
 				}
 
 				$returnParams = $this->getWorksheetReturnParams();
@@ -435,12 +502,13 @@ public function dispatch($action=Null)
 					);
 				}
 
-				return $this->nextAction('viewtable', array('tableId'=>$tableId));
+				return $this->nextAction('viewtable', array('tableId'=>$tableId, 'saved'=>'yes'));
 
 				//return "view_tpl.php";
             case 'addrow':
                 //$this->setLayoutTemplate(NULL);
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$this->setVarByRef("tableId", $tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
@@ -454,21 +522,21 @@ public function dispatch($action=Null)
 				// Build the performances array
 				$performances = array();
 				for ($j=0;$j<$cols;$j++) {
-					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
 					$performances[] = $performance[0]['performance'];
 				}
 				$this->setVarByRef("performances", $performances);
 				// Build the objectives array
 				$objectives = array();
 				for ($i=0;$i<$rows;$i++) {
-					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
 					$objectives[] = $objective[0]['objective'];
                 }
 				for ($i=$rows;$i<($rows+1);$i++) {
 					$objective = "Objective ".($i+1);
 					$this->objDbRubricObjectives->insertSingle(
 						$tableId,
-						"{$i}",
+						(string) ($i + $indexOffset),
 						$objective
 					);
                     $objectives[] = $objective;
@@ -479,7 +547,7 @@ public function dispatch($action=Null)
 				for ($i=0;$i<$rows;$i++) {
 					$cells[$i] = array();
 					for ($j=0;$j<$cols;$j++) {
-						$cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+						$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
 						$cells[$i][$j] = $cell[0]['contents'];
 					}
 				}
@@ -489,8 +557,8 @@ public function dispatch($action=Null)
 						$cells[$i][$j] = "";
 						$this->objDbRubricCells->insertSingle(
 							$tableId,
-							"{$i}",
-							"{$j}",
+							(string) ($i + $indexOffset),
+							(string) ($j + $indexOffset),
 							""
 						);
 					}
@@ -502,6 +570,7 @@ public function dispatch($action=Null)
             case 'addcol':
                 //$this->setLayoutTemplate(NULL);
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$this->setVarByRef("tableId", $tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
@@ -515,14 +584,14 @@ public function dispatch($action=Null)
 				// Build the performances array
 				$performances = array();
 				for ($j=0;$j<$cols;$j++) {
-					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
 					$performances[] = $performance[0]['performance'];
                 }
 				for ($j=$cols;$j<($cols+1);$j++) {
 					$performance = "Performance ".($j+1);
 					$this->objDbRubricPerformances->insertSingle(
 						$tableId,
-						"{$j}",
+						(string) ($j + $indexOffset),
 						$performance
 					);
                     $performances[] = $performance;
@@ -531,7 +600,7 @@ public function dispatch($action=Null)
 				// Build the objectives array
 				$objectives = array();
 				for ($i=0;$i<$rows;$i++) {
-					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
 					$objectives[] = $objective[0]['objective'];
                 }
 				$this->setVarByRef("objectives", $objectives);
@@ -540,15 +609,15 @@ public function dispatch($action=Null)
 				for ($i=0;$i<$rows;$i++) {
 					$cells[$i] = array();
 					for ($j=0;$j<$cols;$j++) {
-						$cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+						$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
 						$cells[$i][$j] = $cell[0]['contents'];
 					}
 					for ($j=$cols;$j<($cols+1);$j++) {
 						$cells[$i][$j] = "";
 						$this->objDbRubricCells->insertSingle(
 							$tableId,
-							"{$i}",
-							"{$j}",
+							(string) ($i + $indexOffset),
+							(string) ($j + $indexOffset),
 							""
 						);
 					}
@@ -560,6 +629,7 @@ public function dispatch($action=Null)
             case 'delrow':
                 //$this->setLayoutTemplate(NULL);
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$this->setVarByRef("tableId", $tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
@@ -573,30 +643,30 @@ public function dispatch($action=Null)
 				// Build the performances array
 				$performances = array();
 				for ($j=0;$j<$cols;$j++) {
-					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
 					$performances[] = $performance[0]['performance'];
 				}
 				$this->setVarByRef("performances", $performances);
 				// Build the objectives array
 				$objectives = array();
 				for ($i=0;$i<($rows-1);$i++) {
-					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
 					$objectives[] = $objective[0]['objective'];
                 }
-				$this->objDbRubricObjectives->deleteSingle($tableId, $rows-1);
+				$this->objDbRubricObjectives->deleteSingle($tableId, $rows - 1 + $indexOffset);
 				$this->setVarByRef("objectives", $objectives);
 				// Build the cells matrix
 				$cells = array();
 				for ($i=0;$i<($rows-1);$i++) {
 					$cells[$i] = array();
 					for ($j=0;$j<$cols;$j++) {
-						$cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+						$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
 						$cells[$i][$j] = $cell[0]['contents'];
 					}
 				}
 				for ($i=($rows-1);$i<$rows;$i++) {
 					for ($j=0;$j<$cols;$j++) {
-				        $this->objDbRubricCells->deleteSingle($tableId, $i, $j);
+				        $this->objDbRubricCells->deleteSingle($tableId, $i + $indexOffset, $j + $indexOffset);
                     }
                 }
 				$this->setVarByRef("cells", $cells);
@@ -606,6 +676,7 @@ public function dispatch($action=Null)
             case 'delcol':
                 //$this->setLayoutTemplate(NULL);
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$this->setVarByRef("tableId", $tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
@@ -619,15 +690,15 @@ public function dispatch($action=Null)
 				// Build the performances array
 				$performances = array();
 				for ($j=0;$j<($cols-1);$j++) {
-					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
 					$performances[] = $performance[0]['performance'];
                 }
-				$this->objDbRubricPerformances->deleteSingle($tableId,$cols-1);
+				$this->objDbRubricPerformances->deleteSingle($tableId, $cols - 1 + $indexOffset);
 				$this->setVarByRef("performances", $performances);
 				// Build the objectives array
 				$objectives = array();
 				for ($i=0;$i<$rows;$i++) {
-					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
 					$objectives[] = $objective[0]['objective'];
                 }
 				$this->setVarByRef("objectives", $objectives);
@@ -636,13 +707,13 @@ public function dispatch($action=Null)
 				for ($i=0;$i<$rows;$i++) {
 					$cells[$i] = array();
 					for ($j=0;$j<($cols-1);$j++) {
-						$cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+						$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
 						$cells[$i][$j] = $cell[0]['contents'];
 					}
 				}
 				for ($i=0;$i<$rows;$i++) {
 					for ($j=($cols-1);$j<$cols;$j++) {
-				        $this->objDbRubricCells->deleteSingle($tableId, $i, $j);
+				        $this->objDbRubricCells->deleteSingle($tableId, $i + $indexOffset, $j + $indexOffset);
                     }
                 }
 				$this->setVarByRef("cells", $cells);
@@ -1100,6 +1171,9 @@ public function dispatch($action=Null)
 		$tables = $this->objDbRubricTables->listAll($this->contextCode, $this->contextCode == 'root' ? $this->objUser->userId() : NULL);
 		$this->setVarByRef("tables", $tables);
 		$sharedtables = $this->objDbRubricTables->listAll('root', NULL);
+		foreach ($sharedtables as $key => $sharedtable) {
+			$sharedtables[$key]['canModify'] = $this->canModifyRubric($sharedtable);
+		}
 		$this->setVarByRef("sharedtables", $sharedtables);
 		if ($this->contextCode != 'root') {
 			$pdtables = $this->objDbRubricTables->listAll("root", $this->objUser->userId());
@@ -1143,6 +1217,52 @@ public function dispatch($action=Null)
     {
 		$firstPerformance = $this->objDbRubricPerformances->listSingle($tableId, 0);
 		return empty($firstPerformance) ? 1 : 0;
+    }
+
+    /**
+     * Return the user-facing ownership scope for a rubric.
+     *
+     * @param array $table Rubric metadata.
+     * @return string Localised scope label.
+     */
+    private function getRubricScopeLabel($table)
+    {
+		$contextCode = isset($table['contextcode']) ? $table['contextcode'] : (isset($table['contextCode']) ? $table['contextCode'] : 'root');
+		$userId = isset($table['userid']) ? $table['userid'] : (isset($table['userId']) ? $table['userId'] : NULL);
+
+		if ($contextCode !== 'root') {
+			$context = $this->objDbContext->getContextDetails($contextCode);
+			$title = (!empty($context) && isset($context['title'])) ? $context['title'] : $contextCode;
+			return $this->objLanguage->languageText('rubric_scope_course', 'rubric').' — '.$title;
+		}
+
+		if (is_null($userId) || $userId === '') {
+			return $this->objLanguage->languageText('rubric_scope_shared', 'rubric');
+		}
+
+		return $this->objLanguage->languageText('rubric_scope_personal', 'rubric');
+    }
+
+    /**
+     * Check ownership-level permission for changing a rubric definition.
+     *
+     * @param array $table Rubric metadata.
+     * @return bool Whether the current user may modify it.
+     */
+    private function canModifyRubric($table)
+    {
+		if ($this->objUser->isAdmin()) {
+			return TRUE;
+		}
+
+		$contextCode = isset($table['contextcode']) ? $table['contextcode'] : (isset($table['contextCode']) ? $table['contextCode'] : 'root');
+		$userId = isset($table['userid']) ? $table['userid'] : (isset($table['userId']) ? $table['userId'] : NULL);
+
+		if ($contextCode === 'root') {
+			return !is_null($userId) && $userId !== '' && $userId === $this->objUser->userId();
+		}
+
+		return $contextCode === $this->contextCode && $this->objContextGroups->isContextLecturer();
     }
 
     /**
