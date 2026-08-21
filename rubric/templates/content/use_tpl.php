@@ -1,1 +1,128 @@
-¨¥yÛhr·šµë-­æ¦}Ó©z¶­Š‰ç¢Ú^®h­µçEj)^vÚ­æ­zËky©Ÿtê^­«b¢yè¶—«š+myÑZŠW¶‡+y«^²ÚÞjgÝ:—«jØ¨žz-¥êæŠÛ^tðýÁ¡À($‘•ÍŒ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘Ù…±Õ”¤ìÉ•ÑÕÉ¸¡Ñµ±ÍÁ•¥…±¡…ÉÌ ¡ÍÑÉ¥¹œ¤€‘Ù…±Õ”°9Q}EU=QL°€UQ´àœ¤ìôì($‘¥½¹Ì€ô€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ¥½¹Í•ÉÙ¥”œ°€Õ¤œ¤ì($‘Í…Ù•%½¸€ô€‘¥½¹Ì´ùÉ•¹‘•È ¥É±”µ¡•¬œ°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ì($‘…¹•±%½¸€ô€‘¥½¹Ì´ùÉ•¹‘•È àœ°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ì($‘ÕÉ°€ô™Õ¹Ñ¥½¸€ ‘Á…É…µÌ¤ìÉ•ÑÕÉ¸€‘Ñ¡¥Ì´ùÕÉ¥½É!Ñµ±ÑÑÉ¥‰ÕÑ” ‘Á…É…µÌ°€ÉÕ‰É¥Œœ¤ìôì((€€€€‘Ñ¡¥Ì´ù±½…‘±…ÍÌ ±…‰•°œ°¡Ñµ±•±•µ•¹ÑÌœ¤ì((€€€€‘Á…•Q¥Ñ±”€ô€‘Ñ¡¥Ì´ù¹•Ý=‰©•Ð ¡Ñµ±¡•…‘¥¹œœ°¡Ñµ±•±•µ•¹ÑÌœ¤ì(€€€€‘Á…•Q¥Ñ±”´ùÑåÁ”ôÄì(€€€€‘Á…•Q¥Ñ±”´ù…±¥¸ô±•™Ðœì(€€€€‘Á…•Q¥Ñ±”´ùÍÑÈô‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}ÉÕ‰É¥Œœ°ÉÕ‰É¥Œœ¤€¸€ˆ€è€ˆ€¸€‘Ñ¥Ñ±”€ì(%•¡¼€‘Á…•Q¥Ñ±”´ùÍ¡½Ü ¤ì(€€€€¼¼‘Á…•Q¥Ñ±”´ùÍÑÈô‘‘•ÍÉ¥ÁÑ¥½¸ì(€€€€¼½•¡¼€‘Á…•Q¥Ñ±”´ùÍ¡½Ü ¤ì(%•¡¼€œñÀøœ¹¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘‘•ÍÉ¥ÁÑ¥½¸°9Q}EU=QL°€UQ´àœ¤¸œð½Àøœì((€€€€¼¼1½…±…ÍÍ•Ì¸($‘Ñ¡¥Ì´ù±½…‘±…ÍÌ ‰™½É´ˆ°‰¡Ñµ±•±•µ•¹ÑÌˆ¤ì($‘Ñ¡¥Ì´ù±½…‘±…ÍÌ ‰Ñ•áÑ¥¹ÁÕÐˆ°‰¡Ñµ±•±•µ•¹ÑÌˆ¤ì($‘Ñ¡¥Ì´ù±½…‘±…ÍÌ ‰‘É½Á‘½Ý¸ˆ°‰¡Ñµ±•±•µ•¹ÑÌˆ¤ì(($¼¼¥ÍÁ±…ä™½É´¸(%ÍÝ¥Ñ  ‘µ½‘”¥ì($%…Í”€…‘œè($$$‘ÕÉ¤€ô€‘ÕÉ°¡…ÉÉ…ä ($$$$…Ñ¥½¸œôø…‘‘…ÍÍ•ÍÍµ•¹Ñ½¹™¥É´œ°($$$$Ñ…‰±•%œôø‘Ñ…‰±•%°($$$$9½	…¹¹•Èœôø‘¹½	…¹¹•È($$$¤¤ì($$%‰É•…¬ì($%…Í”€•‘¥Ðœè($$$‘ÕÉ¤€ô€‘ÕÉ°¡…ÉÉ…ä ($$$$…Ñ¥½¸œôø•‘¥Ñ…ÍÍ•ÍÍµ•¹Ñ½¹™¥É´œ°($$$$Ñ…‰±•%œôø‘Ñ…‰±•%°($$$$¥œôø‘¥°($$$$9½	…¹¹•Èœôø‘¹½	…¹¹•È($$$¤¤ì($$%‰É•…¬ì($%‘•™…Õ±Ðè($$$ì(%ô€¼¼ÍÝ¥Ñ ($‘™½É´€ô¹•Ü™½É´ ‰ÕÍ”ˆ°€‘ÕÉ¤¤ì($‘™½É´´ùÍ•Ñ¥ÍÁ±…åQåÁ” Ì¤ì(€€€€‘½‰©Q…‰±”€ô˜€‘Ñ¡¥Ì´ù¹•Ý=‰©•Ð ¡Ñµ±Ñ…‰±”œ°¡Ñµ±•±•µ•¹ÑÌœ¤ì(€€€€‘½‰©Q…‰±”´ùÝ¥‘Ñ ôœää”œì(€€€€‘½‰©Q…‰±”´ù‰½É‘•ÈôœÀœì(€€€€‘½‰©Q…‰±”´ù•±±ÍÁ…¥¹œôœÈœì(€€€€‘½‰©Q…‰±”´ù•±±Á…‘‘¥¹œôœÈœì((€€€€‘É½Ü€ô…ÉÉ…ä ˆñˆøˆ¹Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ‰ÉÕ‰É¥}Ñ•…¡•Èˆ°‰ÉÕ‰É¥Œˆ¤¤¸ˆð½ˆøˆ°€‘½‰©UÍ•È´ù™Õ±±¹…µ” ¤¤ì(€€€€‘½‰©Q…‰±”´ù…‘‘I½Ü ‘É½Ü¤ì(($¼¼É½Á‘½Ý¸½˜ÍÑÕ‘•¹ÑÌ($‘½‰©‰½¹Ñ•áÐ€ô˜€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ‘‰½¹Ñ•áÐœ°½¹Ñ•áÐœ¤ì($‘½¹Ñ•áÑ½‘”€ô€‘½‰©‰½¹Ñ•áÐ´ù•Ñ½¹Ñ•áÑ½‘” ¤ì($¼¼•ÐÑ¡”É½ÕÁ‘µ¥¹5½‘•°½‰©•Ð¸($‘É½ÕÁÌ€ô˜€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ‰É½ÕÁ‘µ¥¹5½‘•°ˆ°€‰É½ÕÁ…‘µ¥¸ˆ¤ì($¼¼•Ð„±¥ÍÐ½˜ÍÑÕ‘•¹ÑÌ¸($‘¥ô‘É½ÕÁÌ´ù•Ñ1•…™%¡…ÉÉ…ä ‘½¹Ñ•áÑ½‘”°MÑÕ‘•¹ÑÌœ¤¤ì($¼¼‘ÍÑÕ‘•¹ÑÌ€ô€‘É½ÕÁÌ´ù•ÑÉ½ÕÁUÍ•ÉÌ ‘¥°…ÉÉ…ä ÕÍ•É%œ°€ÕÍ•É¹…µ”œ°‰=9P¡™¥ÉÍÑ9…µ”°€œ€œ°ÍÕÉ¹…µ”°€œ€ œ°ÕÍ•É¹…µ”°€œ¤œ¤L‘¥ÍÁ±…äˆ°€ˆ™¥ÉÍÑ9…µ”œñð€œ€œñð€ÍÕÉ¹…µ”œL™Õ±±9…µ”ˆ¤°€‰=IH	d™Õ±±9…µ”ˆ¤ì($‘ÍÑÕ‘•¹ÑÍ|€ô€‘É½ÕÁÌ´ù•ÑÉ½ÕÁUÍ•ÉÌ ‘¥°QIU¤ì($‘ÍÑÕ‘•¹ÑÌ€ô…ÉÉ…ä ¤ì(%¥˜€ …•µÁÑä ‘ÍÑÕ‘•¹ÑÍ|¤¤ì($€€€™½É•… € ‘ÍÑÕ‘•¹ÑÍ|…Ì€‘ÍÑÕ‘•¹Ñ|¤ì($€€€€€€€€‘ÍÑÕ‘•¹ÑÍl‘ÍÑÕ‘•¹Ñ}lÍÕÉ¹…µ”t¸‘ÍÑÕ‘•¹Ñ}l™¥ÉÍÑ¹…µ”t¸‘ÍÑÕ‘•¹Ñ}lÕÍ•É¹…µ”ut€ô…ÉÉ…ä (€€€€$€€€€‘¥ÍÁ±…äœôø(€€€€€€€€$€€€€¼¨‘ÍÑÕ‘•¹Ñ}lÑ¥Ñ±”t(€€€€€€€€$€€€€¸œ™¹‰ÍÀìœ¸¨¼‘ÍÑÕ‘•¹Ñ}lÍÕÉ¹…µ”t(€€€€€€€€€€€€€€€€¸œ°™¹‰ÍÀìœ¸‘ÍÑÕ‘•¹Ñ}l™¥ÉÍÑ¹…µ”t(€€€€€€€€€€€€€€€€¸œ™¹‰ÍÀì œ¸‘ÍÑÕ‘•¹Ñ}lÕÍ•É¹…µ”t¸œ¤œ°(€€€€€€€€€€€€ÕÍ•É¹…µ”œôø‘ÍÑÕ‘•¹Ñ}lÕÍ•É¹…µ”t(€€€€€€€€€€€€¤ì($€€€ô(%ô(%¥˜€ …•µÁÑä ‘ÍÑÕ‘•¹ÑÌ¤¤ì($€€€­Í½ÉÐ ‘ÍÑÕ‘•¹ÑÌ¤ì(%ô($‘‘É½Á‘½Ý¸€ô¹•Ü‘É½Á‘½Ý¸ ‰ÍÑÕ‘•¹Ñ9¼ˆ¤ì($‘‘É½Á‘½Ý¸´ù…‘‘É½µ ‘ÍÑÕ‘•¹ÑÌ°€‘¥ÍÁ±…äœ°€¼¨ÕÍ•É%œ¨¼ÕÍ•É¹…µ”œ°€‘ÍÑÕ‘•¹Ñ9¼¤ì($¼¼‘‘É½Á‘½Ý¸´ù…‘‘É½µ ‘ÍÑÕ‘•¹ÑÌ°ÕÍ•É¹…µ”œ°€‘ÍÑÕ‘•¹Ñ9¼¤ì((€€€€‘±…‰•±MÑÕ‘•¹Ñ9¼€ô¹•Ü±…‰•°¡Õ™¥ÉÍÐ ‘Ñ¡¥Ì´ù½‰©1…¹Õ…”´ù½‘”ÉQáÐ ‰ÉÕ‰É¥}ÍÑÕ‘•¹Ðˆ°‰ÉÕ‰É¥Œˆ¤¤°‰¥¹ÁÕÑ}ÍÑÕ‘•¹Ñ9¼ˆ¤ì(€€€€‘É½Ü€ô…ÉÉ…ä ˆñˆøˆ¸‘±…‰•±MÑÕ‘•¹Ñ9¼´ùÍ¡½Ü ¤¸ˆð½ˆøˆ°€‘‘É½Á‘½Ý¸´ùÍ¡½Ü ¤¤ì((€€€€‘½‰©Q…‰±”´ù…‘‘I½Ü ‘É½Ü¤ì((($‘™½É´´ù…‘‘Q½½É´ ‘½‰©Q…‰±”´ùÍ¡½Ü ¤¤ì($‘Ñ…‰±”€ô˜€‘Ñ¡¥Ì´ù¹•Ý=‰©•Ð ‰¡Ñµ±Ñ…‰±”ˆ°‰¡Ñµ±•±•µ•¹ÑÌˆ¤ì($‘Ñ…‰±”´ù‰½É‘•È€ô€œÀœì($‘Ñ…‰±”´ùÝ¥‘Ñ €ô€œää”œì(€€€€‘Ñ…‰±”´ù•±±ÍÁ…¥¹œôœÈœì($‘Ñ…‰±”´ù•±±Á…‘‘¥¹œôœÈœì($‘Ñ…‰±”´ùÍÍ±…ÍÌôÉÕ‰É¥Œµ…ÍÍ•ÍÍµ•¹Ðµµ…ÑÉ¥àœì($‘Ñ…‰±”´ùÍÑ…ÉÑI½Ü ¤ì($‘Ñ…‰±”´ù…‘‘!•…‘•É•±° ˆ™¹‰ÍÀìˆ¤ì(€€€€¼¼¥ÍÁ±…äÁ•É™½Éµ…¹•Ì¸(%™½È€ ‘¨ôÀì‘¨ð‘½±Ìì‘¨¬¬¤ì($$‘Ñ…‰±”´ù…‘‘!•…‘•É•±° ‘Á•É™½Éµ…¹•Íl‘©t¤ì(%ô($‘Ñ…‰±”´ù•¹‘I½Ü ¤ì($‘±…ÍÌ€ô€½‘œì(%™½È€ ‘¤ôÀì‘¤ð‘É½ÝÌì‘¤¬¬¤ì($$‘Ñ…‰±”´ùÍÑ…ÉÑI½Ü ‘±…ÍÌ¤ì(€€€€€€€€¼¼¥ÍÁ±…ä½‰©•Ñ¥Ù”¸($$‘Ñ…‰±”´ù…‘‘•±° ‘½‰©•Ñ¥Ù•Íl‘¥t¤ì(€€€€€€€€¼¼¥ÍÁ±…ä•±±Ì¸($%™½È€ ‘¨ôÀì‘¨ð‘½±Ìì‘¨¬¬¤ì($$$¼¼‘¡•­•€ô€œœì($$$‘¡•­•€ô€‘µ½‘”€ôô€•‘¥Ðœ€ü€ ‘Í½É•Íl‘¥t€ôô€ ‘¨¬Ä¤€ü€¡•­•œ€è€œœ¤€è€œœì(€€€€€€€€€‘•±°€ô€ˆñ¥¹ÁÕÐÑåÁ”õp‰É…‘¥½pˆ¹…µ”õp‰É½Ýì‘¥õpˆ¥õp‰É½Ýì‘¥õ½±ì‘©õpˆÙ…±Õ”õp‰ì‘©õpˆ€ˆ¸‘¡•­•¸ˆ€¼øˆì((€€€€€€€€€‘•±°€¸ô€ˆñ±…‰•°™½Èõp‰É½Ýì‘¥õ½±ì‘©õpˆøˆ€¸€‘•±±Íl‘¥ul‘©t€¸€ˆð½±…‰•°øˆì(€€€€€€€€€‘Ñ…‰±”´ù…‘‘•±° ‘•±°¤ì(€€€€€€€€€€€€€€€ô(($$‘Ñ…‰±”´ù•¹‘I½Ü ¤ì($$‘±…ÍÌ€ô€‘±…ÍÌ€ôô€½‘œ€ü€•Ù•¸œ€è€½‘œì(%ô($‘™½É´´ù…‘‘Q½½É´ ‘Ñ…‰±”´ùÍ¡½Ü ¤¤ì($$‘É•ÑÕÉ¹UÉ°€ô€‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø…ÍÍ•ÍÍµ•¹ÑÌœ€°Ñ…‰±•%œôø‘Ñ…‰±•%°¤¤ì($‘™½É´´ù…‘‘Q½½É´ œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µ…Ñ¥½¹Ìˆøñ‰ÕÑÑ½¸±…ÍÌô‰‰ÕÑÑ½¸ˆÑåÁ”ô‰ÍÕ‰µ¥Ðˆøœ¸‘Í…Ù•%½¸¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}Í…Ù”œ¤¤¸œð½ÍÁ…¸øð½‰ÕÑÑ½¸øœ($$¸œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘É•ÑÕÉ¹UÉ°¸œˆøœ¸‘…¹•±%½¸¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}…¹•°œ¤¤¸œð½ÍÁ…¸øð½„øð½‘¥Øøœ¤ì((%•¡¼€‘™½É´´ùÍ¡½Ü ¤ì(üø
+<?php
+	$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+	$icons = $this->getObject('iconservice', 'ui');
+	$saveIcon = $icons->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+	$cancelIcon = $icons->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+	$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+
+    $this->loadClass('label','htmlelements');
+
+    $pageTitle = $this->newObject('htmlheading','htmlelements');
+    $pageTitle->type=1;
+    $pageTitle->align='left';
+    $pageTitle->str=$objLanguage->languageText('rubric_rubric','rubric') . " : " . $title ;
+	echo $pageTitle->show();
+    //$pageTitle->str=$description;
+    //echo $pageTitle->show();
+	echo '<p>'.htmlspecialchars($description, ENT_QUOTES, 'UTF-8').'</p>';
+
+    // Load classes.
+	$this->loadClass("form","htmlelements");
+	$this->loadClass("textinput","htmlelements");
+	$this->loadClass("dropdown","htmlelements");
+
+	// Display form.
+	switch($mode){
+		case 'add':
+			$uri = $url(array(
+				'action'=>'addassessmentconfirm',
+				'tableId'=>$tableId,
+				'NoBanner'=>$noBanner
+			));
+			break;
+		case 'edit':
+			$uri = $url(array(
+				'action'=>'editassessmentconfirm',
+				'tableId'=>$tableId,
+				'id'=>$id,
+				'NoBanner'=>$noBanner
+			));
+			break;
+		default:
+			;
+	} // switch
+	$form = new form("use", $uri);
+	$form->setDisplayType(3);
+    $objTable =& $this->newObject('htmltable','htmlelements');
+    $objTable->width='99%';
+    $objTable->border='0';
+    $objTable->cellspacing='2';
+    $objTable->cellpadding='2';
+
+    $row = array("<b>".ucfirst($objLanguage->code2Txt("rubric_teacher","rubric"))."</b>", $objUser->fullname());
+    $objTable->addRow($row);
+
+	// Dropdown of students
+	$objDbContext =& $this->getObject('dbcontext','context');
+	$contextCode = $objDbContext->getContextCode();
+	// Get the groupAdminModel object.
+	$groups =& $this->getObject("groupAdminModel", "groupadmin");
+	// Get a list of students.
+	$gid=$groups->getLeafId(array($contextCode,'Students'));
+	//$students = $groups->getGroupUsers($gid, array('userId', 'username',"CONCAT(firstName, ' ', surname, ' (', username, ')') AS display", "'firstName' || ' ' || 'surname' AS fullName"), "ORDER BY fullName");
+	$students_ = $groups->getGroupUsers($gid, TRUE);
+	$students = array();
+	if (!empty($students_)) {
+	    foreach ($students_ as $student_) {
+	        $students[$student_['surname'].$student_['firstname'].$student_['username']] = array(
+    	    'display'=>
+        	    /*$student_['title']
+        	    .'&nbsp;'.*/$student_['surname']
+                .',&nbsp;'.$student_['firstname']
+                .'&nbsp;('.$student_['username'].')',
+            'username'=>$student_['username']
+            );
+	    }
+	}
+	if (!empty($students)) {
+	    ksort($students);
+	}
+	$dropdown = new dropdown("studentNo");
+	$dropdown->addFromDB($students, 'display', /*'userId'*/'username', $studentNo);
+	//$dropdown->addFromDB($students,'username', $studentNo);
+
+    $labelStudentNo = new label(ucfirst($this->objLanguage->code2Txt("rubric_student","rubric")),"input_studentNo");
+    $row = array("<b>".$labelStudentNo->show()."</b>", $dropdown->show());
+
+    $objTable->addRow($row);
+
+
+	$form->addToForm($objTable->show());
+	$table =& $this->newObject("htmltable","htmlelements");
+	$table->border = '0';
+	$table->width = '99%';
+    $table->cellspacing='2';
+	$table->cellpadding='2';
+	$table->cssClass='rubric-assessment-matrix';
+	$table->startRow();
+	$table->addHeaderCell("&nbsp;");
+    // Display performances.
+	for ($j=0;$j<$cols;$j++) {
+		$table->addHeaderCell($performances[$j]);
+	}
+	$table->endRow();
+	$class = 'odd';
+	for ($i=0;$i<$rows;$i++) {
+		$table->startRow($class);
+        // Display objective.
+		$table->addCell($objectives[$i]);
+        // Display cells.
+		for ($j=0;$j<$cols;$j++) {
+			//$checked = '';
+			$checked = $mode == 'edit' ? ($scores[$i] == ($j+1) ? 'checked' : '') : '';
+         $cell = "<input type=\"radio\" name=\"row{$i}\" id=\"row{$i}col{$j}\" value=\"{$j}\" ".$checked." />";
+
+         $cell .= "<label for=\"row{$i}col{$j}\">" . $cells[$i][$j] . "</label>";
+         $table->addCell($cell);
+                }
+
+		$table->endRow();
+		$class = $class == 'odd' ? 'even' : 'odd';
+	}
+	$form->addToForm($table->show());
+		$returnUrl = $url(array('action'=>'assessments' ,'tableId'=>$tableId,));
+	$form->addToForm('<div class="rubric-form-actions"><button class="button" type="submit">'.$saveIcon.'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+		.'<a class="button chisimba-button-secondary" href="'.$returnUrl.'">'.$cancelIcon.'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a></div>');
+
+	echo $form->show();
+?>

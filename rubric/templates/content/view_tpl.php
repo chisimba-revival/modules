@@ -1,1 +1,39 @@
-¨¥yÛhr·šµë-­æ¦}Ó©z¶­Š‰ç¢Ú^®h­µçEj)^vÚ­æ­zËky©Ÿtê^­«b¢yè¶—«š+myÑZŠW¶‡+y«^²ÚÞjgÝ:—«jØ¨žz-¥êæŠÛ^tðýÁ¡À(‘•ÍŒ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘Ù…±Õ”¤ìÉ•ÑÕÉ¸¡Ñµ±ÍÁ•¥…±¡…ÉÌ ¡ÍÑÉ¥¹œ¤€‘Ù…±Õ”°9Q}EU=QL°€UQ´àœ¤ìôì(‘¥½¹Ì€ô€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ¥½¹Í•ÉÙ¥”œ°€Õ¤œ¤ì(‘¥½¸€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘¹…µ”¤ÕÍ”€ ‘¥½¹Ì¤ìÉ•ÑÕÉ¸€‘¥½¹Ì´ùÉ•¹‘•È ‘¹…µ”°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ìôì(‘ÕÉ°€ô™Õ¹Ñ¥½¸€ ‘Á…É…µÌ¤ìÉ•ÑÕÉ¸€‘Ñ¡¥Ì´ùÕÉ¥½É!Ñµ±ÑÑÉ¥‰ÕÑ” ‘Á…É…µÌ°€ÉÕ‰É¥Œœ¤ìôì)¥˜€ ‘Ñ¡¥Ì´ù•ÑA…É…´ Í…Ù•œ°€œœ¤€ôôô€å•Ìœ¤ì(€€€•¡¼€œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ¹½Ñ¥”ˆÉ½±”ô‰ÍÑ…ÑÕÌˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}Í…Ù•œ°€ÉÕ‰É¥Œœ¤¤¸œð½‘¥Øøœì)ô)•¡¼€œñ…ÉÑ¥±”±…ÍÌô‰ÉÕ‰É¥ŒµÙ¥•Üˆøñ¡•…‘•È±…ÍÌô‰ÉÕ‰É¥ŒµÙ¥•Üµ¡•…‘•Èˆøñ Äøœ¸‘•ÍŒ ‘Ñ¥Ñ±”¤¸œð½ ÄøñÀøœ¸‘•ÍŒ ‘‘•ÍÉ¥ÁÑ¥½¸¤¸œð½Àøð½¡•…‘•Èøœì)¥˜€¡¥ÍÍ•Ð ‘%ÍÍÍ•ÍÍµ•¹Ð¤¤ì(€€€•¡¼€œñ‘°±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µµ•Ñ„ˆøñ‘¥Øøñ‘ÐøñÍÑÉ½¹œøœ¸‘•ÍŒ¡Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ÉÕ‰É¥}Ñ•…¡•Èœ°ÉÕ‰É¥Œœ¤¤¤¸œð½ÍÑÉ½¹œøð½‘Ðøñ‘øœ¸‘•ÍŒ ‘Ñ•…¡•È¤¸œð½‘øð½‘¥Øøœ(€€€€€€€€¸œñ‘¥Øøñ‘ÐøñÍÑÉ½¹œøœ¸‘•ÍŒ¡Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ÉÕ‰É¥}ÍÑÕ‘•¹Ðœ°ÉÕ‰É¥Œœ¤¤¤¸œð½ÍÑÉ½¹œøð½‘Ðøñ‘øœ¸‘•ÍŒ ‘ÍÑÕ‘•¹Ð¤¸œ€ œ¸‘•ÍŒ ‘ÍÑÕ‘•¹Ñ9¼¤¸œ¤ð½‘øð½‘¥Øøœ(€€€€€€€€¸œñ‘¥Øøñ‘ÐøñÍÑÉ½¹œøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}‘…Ñ•ÍÕ‰µ¥ÑÑ•œ°ÉÕ‰É¥Œœ¤¤¸œð½ÍÑÉ½¹œøð½‘Ðøñ‘øœ¸‘•ÍŒ ‘‘…Ñ”¤¸œð½‘øð½‘¥Øøð½‘°øœì)ô)•¡¼€œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµµ…ÑÉ¥àÉÕ‰É¥Œµµ…ÑÉ¥àµÍÉ½±°ˆøñÑ…‰±”øñÑ¡•…øñÑÈøñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}É¥Ñ•É¥„œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øœì)™½È€ ‘¨€ô€Àì€‘¨€ð€‘½±Ìì€‘¨¬¬¤ì•¡¼€œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘Á•É™½Éµ…¹•Íl‘©t¤¸œð½Ñ øœìô)¥˜€¡¥ÍÍ•Ð ‘%ÍÍÍ•ÍÍµ•¹Ð¤¤ì•¡¼€œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}Í½É”œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øœìô)•¡¼€œð½ÑÈøð½Ñ¡•…øñÑ‰½‘äøœì)™½È€ ‘¤€ô€Àì€‘¤€ð€‘É½ÝÌì€‘¤¬¬¤ì(€€€•¡¼€œñÑÈøñÑ Í½Á”ô‰É½Üˆøœ¸‘•ÍŒ ‘½‰©•Ñ¥Ù•Íl‘¥t¤¸œð½Ñ øœì(€€€™½È€ ‘¨€ô€Àì€‘¨€ð€‘½±Ìì€‘¨¬¬¤ì•¡¼€œñÑøœ¸‘•ÍŒ ‘•±±Íl‘¥ul‘©t¤¸œð½Ñøœìô(€€€¥˜€¡¥ÍÍ•Ð ‘%ÍÍÍ•ÍÍµ•¹Ð¤¤ì•¡¼€œñÑøœ¸‘•ÍŒ ‘Í½É•Íl‘¥t¤¸œð½Ñøœìô(€€€•¡¼€œð½ÑÈøœì)ô)¥˜€¡¥ÍÍ•Ð ‘%ÍÍÍ•ÍÍµ•¹Ð¤¤ì(€€€•¡¼€œñÑÈøñÑ Í½Á”ô‰É½Üˆ½±ÍÁ…¸ôˆœ¸ ‘½±Ì¤¸œˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}Ñ½Ñ…°œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øñÑøœ¸‘•ÍŒ ‘Ñ½Ñ…°¸œ¼œ¸‘µ…áÑ½Ñ…°¤¸œð½Ñøð½ÑÈøœì)ô)•¡¼€œð½Ñ‰½‘äøð½Ñ…‰±”øð½‘¥Øøñ¹…Ø±…ÍÌô‰ÉÕ‰É¥ŒµÙ¥•Üµ…Ñ¥½¹Ìˆ…É¥„µ±…‰•°ôˆœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}…Ñ¥½¹Ìœ°ÉÕ‰É¥Œœ¤¤¸œˆøœì)¥˜€ ‘¹½	…¹¹•È€ôôô€å•Ìœ¤ì(€€€•¡¼€œñ‰ÕÑÑ½¸±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…ÉäˆÑåÁ”ô‰‰ÕÑÑ½¸ˆ½¹±¥¬ô‰¡¥ÍÑ½Éä¹‰…¬ ¤ˆøœ¸‘¥½¸ ¡•ÙÉ½¸µ±•™Ðœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}‰…¬œ¤¤¸œð½ÍÁ…¸øð½‰ÕÑÑ½¸øœì)ô•±Í”ì(€€€•¡¼€œñ‰ÕÑÑ½¸±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…ÉäˆÑåÁ”ô‰‰ÕÑÑ½¸ˆ½¹±¥¬ô‰Ý¥¹‘½Ü¹ÁÉ¥¹Ð ¤ˆøœ¸‘¥½¸ ™¥±”µÑ•áÐœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}ÁÉ¥¹Ðœ¤¤¸œð½ÍÁ…¸øð½‰ÕÑÑ½¸øœì(€€€€‘‰…¬€ô¥ÍÍ•Ð ‘%ÍÍÍ•ÍÍµ•¹Ð¤(€€€€€€€€ü€‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø…ÍÍ•ÍÍµ•¹ÑÌœ°Ñ…‰±•%œôø‘Ñ…‰±•%¤¤(€€€€€€€€è€‘ÕÉ°¡…ÉÉ…ä ¤¤ì(€€€•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘‰…¬¸œˆøœ¸‘¥½¸ ¡•ÙÉ½¸µ±•™Ðœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}‰…¬œ¤¤¸œð½ÍÁ…¸øð½„øœì)ô)•¡¼€œð½¹…Øøð½…ÉÑ¥±”øœì(üø(
+<?php
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
+$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+if ($this->getParam('saved', '') === 'yes') {
+    echo '<div class="rubric-notice" role="status">'.$esc($objLanguage->languageText('mod_rubric_saved', 'rubric')).'</div>';
+}
+echo '<article class="rubric-view"><header class="rubric-view-header"><h1>'.$esc($title).'</h1><p>'.$esc($description).'</p></header>';
+if (isset($IsAssessment)) {
+    echo '<dl class="rubric-form-meta"><div><dt><strong>'.$esc(ucfirst($objLanguage->code2Txt('rubric_teacher','rubric'))).'</strong></dt><dd>'.$esc($teacher).'</dd></div>'
+        .'<div><dt><strong>'.$esc(ucfirst($objLanguage->code2Txt('rubric_student','rubric'))).'</strong></dt><dd>'.$esc($student).' ('.$esc($studentNo).')</dd></div>'
+        .'<div><dt><strong>'.$esc($objLanguage->languageText('rubric_datesubmitted','rubric')).'</strong></dt><dd>'.$esc($date).'</dd></div></dl>';
+}
+echo '<div class="rubric-matrix rubric-matrix-scroll"><table><thead><tr><th scope="col">'.$esc($objLanguage->languageText('mod_rubric_criteria','rubric')).'</th>';
+for ($j = 0; $j < $cols; $j++) { echo '<th scope="col">'.$esc($performances[$j]).'</th>'; }
+if (isset($IsAssessment)) { echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_score','rubric')).'</th>'; }
+echo '</tr></thead><tbody>';
+for ($i = 0; $i < $rows; $i++) {
+    echo '<tr><th scope="row">'.$esc($objectives[$i]).'</th>';
+    for ($j = 0; $j < $cols; $j++) { echo '<td>'.$esc($cells[$i][$j]).'</td>'; }
+    if (isset($IsAssessment)) { echo '<td>'.$esc($scores[$i]).'</td>'; }
+    echo '</tr>';
+}
+if (isset($IsAssessment)) {
+    echo '<tr><th scope="row" colspan="'.($cols).'">'.$esc($objLanguage->languageText('rubric_total','rubric')).'</th><td>'.$esc($total.'/'.$maxtotal).'</td></tr>';
+}
+echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'">';
+if ($noBanner === 'yes') {
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="history.back()">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></button>';
+} else {
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
+    $back = isset($IsAssessment)
+        ? $url(array('action'=>'assessments','tableId'=>$tableId))
+        : $url(array());
+    echo '<a class="button chisimba-button-secondary" href="'.$back.'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a>';
+}
+echo '</nav></article>';
+?>

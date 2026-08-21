@@ -1,1 +1,17 @@
-¨¥yÛhr·šµë-­æ¦}Ó©z¶­Š‰ç¢Ú^®h­µçEj)^vÚ­æ­zËky©Ÿtê^­«b¢yè¶—«š+myÑZŠW¶‡+y«^²ÚÞjgÝ:—«jØ¨žz-¥êæŠÛ^tðýÁ¡À(‘•ÍŒ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘Ù…±Õ”¤ìÉ•ÑÕÉ¸¡Ñµ±ÍÁ•¥…±¡…ÉÌ ¡ÍÑÉ¥¹œ¤€‘Ù…±Õ”°9Q}EU=QL°€UQ´àœ¤ìôì(‘¥½¹Ì€ô€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ¥½¹Í•ÉÙ¥”œ°€Õ¤œ¤ì(‘¥½¸€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘¹…µ”¤ÕÍ”€ ‘¥½¹Ì¤ìÉ•ÑÕÉ¸€‘¥½¹Ì´ùÉ•¹‘•È ‘¹…µ”°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ìôì(‘ÕÉ°€ô™Õ¹Ñ¥½¸€ ‘Á…É…µÌ¤ìÉ•ÑÕÉ¸€‘Ñ¡¥Ì´ùÕÉ¥½É!Ñµ±ÑÑÉ¥‰ÕÑ” ‘Á…É…µÌ°€ÉÕ‰É¥Œœ¤ìôì(‘…Ñ¥½¸€ô€‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÉ•¹…µ•Ñ…‰±•½¹™¥É´œ°€Ñ…‰±•%œôø‘Ñ…‰±•%¤¤ì)•¡¼€œñµ…¥¸±…ÍÌô‰ÉÕ‰É¥Œµ™½É´ˆøñ¡•…‘•È±…ÍÌô‰ÉÕ‰É¥ŒµÁ…”µ¡•…‘•Èˆøñ‘¥Øøñ Äøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}É•¹…µ•ÉÕ‰É¥Œœ°ÉÕ‰É¥Œœ¤¤¸œð½ Äøœ(€€€€¸œñÀøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}É•¹…µ•}¥¹ÑÉ¼œ°ÉÕ‰É¥Œœ¤¤¸œð½Àøð½‘¥Øøð½¡•…‘•Èøœ(€€€€¸œñ™½É´µ•Ñ¡½ô‰Á½ÍÐˆ…Ñ¥½¸ôˆœ¸‘…Ñ¥½¸¸œˆ±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µ…Éˆøœ(€€€€¸œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µ™¥•±ˆøñ±…‰•°™½Èô‰ÉÕ‰É¥ŒµÑ¥Ñ±”ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}Ñ¥Ñ±”œ°ÉÕ‰É¥Œœ¤¤¸œð½±…‰•°øœ(€€€€¸œñ¥¹ÁÕÐ¥ô‰ÉÕ‰É¥ŒµÑ¥Ñ±”ˆ¹…µ”ô‰Ñ¥Ñ±”ˆÑåÁ”ô‰Ñ•áÐˆÉ•ÅÕ¥É•µ…á±•¹Ñ ôˆÈÔÔˆÙ…±Õ”ôˆœ¸‘•ÍŒ ‘Ñ¥Ñ±”¤¸œˆøð½‘¥Øøœ(€€€€¸œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µ™¥•±ˆøñ±…‰•°™½Èô‰ÉÕ‰É¥Œµ‘•ÍÉ¥ÁÑ¥½¸ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}‘•ÍÉ¥ÁÑ¥½¸œ°ÉÕ‰É¥Œœ¤¤¸œð½±…‰•°øœ(€€€€¸œñÑ•áÑ…É•„¥ô‰ÉÕ‰É¥Œµ‘•ÍÉ¥ÁÑ¥½¸ˆ¹…µ”ô‰‘•ÍÉ¥ÁÑ¥½¸ˆÉ½ÝÌôˆÐˆÉ•ÅÕ¥É•øœ¸‘•ÍŒ ‘‘•ÍÉ¥ÁÑ¥½¸¤¸œð½Ñ•áÑ…É•„øð½‘¥Øøœ(€€€€¸œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ™½É´µ…Ñ¥½¹Ìˆøñ‰ÕÑÑ½¸±…ÍÌô‰‰ÕÑÑ½¸ˆÑåÁ”ô‰ÍÕ‰µ¥Ðˆøœ¸‘¥½¸ ¥É±”µ¡•¬œ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}Í…Ù”œ¤¤¸œð½ÍÁ…¸øð½‰ÕÑÑ½¸øœ(€€€€¸œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä ¤¤¸œˆøœ¸‘¥½¸ àœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}…¹•°œ¤¤¸œð½ÍÁ…¸øð½„øœ(€€€€¸œð½‘¥Øøð½™½É´øð½µ…¥¸øœì(üø
+<?php
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
+$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+$action = $url(array('action'=>'renametableconfirm', 'tableId'=>$tableId));
+echo '<main class="rubric-form"><header class="rubric-page-header"><div><h1>'.$esc($objLanguage->languageText('rubric_renamerubric','rubric')).'</h1>'
+    .'<p>'.$esc($objLanguage->languageText('mod_rubric_rename_intro','rubric')).'</p></div></header>'
+    .'<form method="post" action="'.$action.'" class="rubric-form-card">'
+    .'<div class="rubric-form-field"><label for="rubric-title">'.$esc($objLanguage->languageText('rubric_title','rubric')).'</label>'
+    .'<input id="rubric-title" name="title" type="text" required maxlength="255" value="'.$esc($title).'"></div>'
+    .'<div class="rubric-form-field"><label for="rubric-description">'.$esc($objLanguage->languageText('rubric_description','rubric')).'</label>'
+    .'<textarea id="rubric-description" name="description" rows="4" required>'.$esc($description).'</textarea></div>'
+    .'<div class="rubric-form-actions"><button class="button" type="submit">'.$icon('circle-check').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+    .'<a class="button chisimba-button-secondary" href="'.$url(array()).'">'.$icon('x').'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a>'
+    .'</div></form></main>';
+?>
