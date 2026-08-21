@@ -1,57 +1,16 @@
-<?php 
-    // Load classes.
-	$this->loadClass("form","htmlelements");
-	$this->loadClass("textinput","htmlelements");
-	$this->loadClass("button","htmlelements");
-    $this->loadClass('label','htmlelements'); 
-	// Display form.
-	$form = new form("main", 
-		$this->uri(array(
-	    	'module'=>'rubric',
-			'action'=>'renametableconfirm',
-			'tableId'=>$tableId
-		))	
-	);
-	$form->setDisplayType(3);
-
-    $pageTitle = $this->newObject('htmlheading','htmlelements');
-    $pageTitle->type=1;
-    $pageTitle->align='left';
-    $pageTitle->str=$objLanguage->languageText('rubric_renamerubric','rubric');	
-	$form->addToForm($pageTitle->show());
-    
-    $objTable=$this->newObject('htmltable','htmlelements');
-    $objTable->border='0';    
-    $objTable->width='40%';
-    $objTable->cellspacing='2';
-    $objTable->cellpadding='2';
-    
-    $row = array("<b>".$objLanguage->languageText("rubric_name","rubric")."</b>", $objUser->fullName());
-    $objTable->addRow($row, 'even');
-    $row = array("<b>".ucfirst($objLanguage->code2Txt('rubric_course','rubric',array('context'=>'')))."</b>", $contextTitle);
-	 //made changes to fix the laguage item error	    
-    //$row = array("<b>".ucfirst($objLanguage->code2Txt('rubric_course'))."</b>", $contextTitle);
-    
-    $objTable->addRow($row, 'even');
-    $textinput = new textinput("title",$title);
-    $textinput->size = 50;
-    
-    $labelTitle = new label($this->objLanguage->languageText("rubric_title",'rubric'),"input_title");
-    $row = array("<b>".$labelTitle->show()."</b>", $textinput->show());
-    $objTable->addRow($row, 'even');
-    
-    $textinput = new textinput("description",$description);
-    $textinput->size = 70;
-    
-    $labelDescription = new label($this->objLanguage->languageText("rubric_description","rubric"),"input_description");
-    $row = array("<b>".$labelDescription->show()."</b>", $textinput->show());    
-    
-    $objTable->addRow($row, 'even');
-    $button = new button("submit", $objLanguage->languageText("word_save"));
-    $button->setToSubmit();    
-    $form->addToForm($objTable->show());    
-    $form->addToForm("<br />");    
-    $form->addToForm($button->show());
-    
-	echo $form->show();
+<?php
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
+$action = $this->uri(array('module'=>'rubric', 'action'=>'renametableconfirm', 'tableId'=>$tableId));
+echo '<main class="rubric-form"><header class="rubric-page-header"><div><h1>'.$esc($objLanguage->languageText('rubric_renamerubric','rubric')).'</h1>'
+    .'<p>'.$esc($objLanguage->languageText('mod_rubric_rename_intro','rubric')).'</p></div></header>'
+    .'<form method="post" action="'.$esc($action).'" class="rubric-form-card">'
+    .'<div class="rubric-form-field"><label for="rubric-title">'.$esc($objLanguage->languageText('rubric_title','rubric')).'</label>'
+    .'<input id="rubric-title" name="title" type="text" required maxlength="255" value="'.$esc($title).'"></div>'
+    .'<div class="rubric-form-field"><label for="rubric-description">'.$esc($objLanguage->languageText('rubric_description','rubric')).'</label>'
+    .'<textarea id="rubric-description" name="description" rows="4" required>'.$esc($description).'</textarea></div>'
+    .'<div class="rubric-form-actions"><button class="button" type="submit">'.$icon('save').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+    .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric'))).'">'.$icon('x').'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a>'
+    .'</div></form></main>';
 ?>

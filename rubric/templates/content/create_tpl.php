@@ -1,97 +1,36 @@
-<?php 
-    // Load classes
-	$this->loadClass("form","htmlelements");
-	$this->loadClass("textinput","htmlelements");
-   $this->loadClass('radio', 'htmlelements');
-	$this->loadClass("dropdown","htmlelements");
-	$this->loadClass("button","htmlelements");
-   $this->loadClass('label','htmlelements'); 
-	    
-    $pageTitle = $this->newObject('htmlheading','htmlelements');
-    $pageTitle->type=1;
-    $pageTitle->align='left';
-    $pageTitle->str=$objLanguage->languageText('rubric_createrubric','rubric');	
-    
-    $createForm = $this->newObject('form','htmlelements');
-    $createForm->name="main";
-    $createForm->action=$this->uri(array(
-	    	'module'=>'rubric',
-			'action'=>'createtableconfirm',
-			'type'=>$_type,
-			'returnModule'=>$this->getParam('returnModule', ''),
-			'returnAction'=>$this->getParam('returnAction', ''),
-			'returnId'=>$this->getParam('returnId', '')));
-
-	$createForm->setDisplayType(3);
-	$createForm->addToForm($pageTitle->show());
-    
-    $objTable=$this->newObject('htmltable','htmlelements');    
-    $objTable->border='0';
-    $objTable->width='40%';    
-    $objTable->cellspacing='2';
-    $objTable->cellpadding='2';
-    
-    $row = array("<b>".$objLanguage->languageText("rubric_name","rubric")."</b>", $objUser->fullName());
-    $objTable->addRow($row, 'even');
-    $row = array("<b>".$objLanguage->languageText('rubric_resource_scope', 'rubric')."</b>", htmlspecialchars($rubricScope, ENT_QUOTES, 'UTF-8'));
-    $objTable->addRow($row, 'even');
-    $textinput = new textinput("title","");
-    $textinput->size = 50;
-    $labelTitle = new label($this->objLanguage->languageText("rubric_title","rubric"),"input_title");    
-    $row = array("<b>". $labelTitle->show()."</b>", $textinput->show());
-    $objTable->addRow($row, 'even');
-    $textinput = new textinput("description","");
-    $textinput->size = 70;    
-    $labelDescription = new label($this->objLanguage->languageText("rubric_description","rubric"),"input_description");
-    $row = array("<b>" . $labelDescription->show() . "</b>", $textinput->show());
-    $objTable->addRow($row, 'even');
-    $dropdown = new dropdown("rows");
-    $dropdown->addOption("1", "1");
-    $dropdown->addOption("2", "2");
-    $dropdown->addOption("3", "3");
-    $dropdown->addOption("4", "4");
-    $dropdown->addOption("5", "5");
-    $dropdown->addOption("6", "6");
-    $dropdown->addOption("7", "7");
-    $dropdown->addOption("8", "8");
-    $dropdown->addOption("9", "9");    
-    $labelObjective = new label($this->objLanguage->languageText("word_objectives","rubric"),"input_rows");
-    $row = array("<b>" . $labelObjective->show() . "</b>", $dropdown->show());
-    $objTable->addRow($row, 'even');
-    $dropdown = new dropdown("cols");
-    $dropdown->addOption("1", "1");
-    $dropdown->addOption("2", "2");
-    $dropdown->addOption("3", "3");
-    $dropdown->addOption("4", "4");
-    $dropdown->addOption("5", "5");
-    $dropdown->addOption("6", "6");
-    $dropdown->addOption("7", "7");
-    $dropdown->addOption("8", "8");
-    $dropdown->addOption("9", "9");
-    $labelPerformance = new label($this->objLanguage->languageText("word_performance","rubric"),"input_cols");
-    $row = array("<b>".$labelPerformance->show()."</b>", $dropdown->show());
-    $objTable->addRow($row, 'even');
-    $button = new button("submit", $objLanguage->languageText("word_submit")); //word_create
-    $button->setToSubmit();
-    
-    $cancelButton = new button("cancel", $objLanguage->languageText("word_cancel")); //word_create
-	$returnModule = $this->getParam('returnModule', '');
-	$returnAction = $this->getParam('returnAction', '');
-	$returnId = $this->getParam('returnId', '');
-	$cancelUrl = ($returnModule === 'worksheet' && in_array($returnAction, array('editquestion', 'managequestions')) && $returnId !== '')
-		? $this->uri(array('module'=>'worksheet', 'action'=>$returnAction, 'id'=>$returnId))
-		: $this->uri(NULL);
-	$cancelButton->setOnClick("window.location='".$cancelUrl."'");
-    
-    //$row = array($button->show());
-    
-    //$objTable->addRow($row, 'even');	
-    $createForm->addToForm($objTable->show());
-    $createForm->addToForm("<br />");
-    $createForm->addToForm('<p>'.$button->show().' / '.$cancelButton->show().'</p>');
-    
-    $createForm->addRule('title', $objLanguage->languageText('mod_rubric_pleaseentertitle',"rubric", 'Please enter a title for the rubric.'),'required');
-    $createForm->addRule('description', $objLanguage->languageText('mod_rubric_pleaseenterdescription',"rubric",'Please enter a description for the rubric.'),'required');
-    
-	echo $createForm->show();    
+<?php
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) {
+    return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+};
+$returnModule = $this->getParam('returnModule', '');
+$returnAction = $this->getParam('returnAction', '');
+$returnId = $this->getParam('returnId', '');
+$action = $this->uri(array(
+    'module'=>'rubric', 'action'=>'createtableconfirm', 'type'=>$_type,
+    'returnModule'=>$returnModule, 'returnAction'=>$returnAction, 'returnId'=>$returnId
+));
+$cancelUrl = ($returnModule === 'worksheet' && in_array($returnAction, array('editquestion', 'managequestions')) && $returnId !== '')
+    ? $this->uri(array('module'=>'worksheet', 'action'=>$returnAction, 'id'=>$returnId))
+    : $this->uri(array('module'=>'rubric'));
+echo '<main class="rubric-form"><header class="rubric-page-header"><div><h1>'.$esc($objLanguage->languageText('rubric_createrubric','rubric')).'</h1>'
+    .'<p>'.$esc($objLanguage->languageText('mod_rubric_create_intro','rubric')).'</p></div></header>'
+    .'<form method="post" action="'.$esc($action).'" class="rubric-form-card">'
+    .'<div class="rubric-form-meta"><div><strong>'.$esc($objLanguage->languageText('rubric_name','rubric')).'</strong>'.$esc($objUser->fullName()).'</div>'
+    .'<div><strong>'.$esc($objLanguage->languageText('rubric_resource_scope','rubric')).'</strong>'.$esc($rubricScope).'</div></div>'
+    .'<div class="rubric-form-field"><label for="rubric-title">'.$esc($objLanguage->languageText('rubric_title','rubric')).'</label>'
+    .'<input id="rubric-title" name="title" type="text" required maxlength="255" autocomplete="off"></div>'
+    .'<div class="rubric-form-field"><label for="rubric-description">'.$esc($objLanguage->languageText('rubric_description','rubric')).'</label>'
+    .'<textarea id="rubric-description" name="description" rows="4" required></textarea></div>'
+    .'<div class="rubric-form-meta"><div class="rubric-form-field"><label for="rubric-rows">'.$esc($objLanguage->languageText('word_objectives','rubric')).'</label>'
+    .'<select id="rubric-rows" name="rows">';
+for ($number = 1; $number <= 9; $number++) { echo '<option value="'.$number.'">'.$number.'</option>'; }
+echo '</select></div><div class="rubric-form-field"><label for="rubric-cols">'.$esc($objLanguage->languageText('word_performance','rubric')).'</label>'
+    .'<select id="rubric-cols" name="cols">';
+for ($number = 1; $number <= 9; $number++) { echo '<option value="'.$number.'">'.$number.'</option>'; }
+echo '</select></div></div><div class="rubric-form-actions"><button class="button" type="submit">'.$icon('plus').'<span>'
+    .$esc($objLanguage->languageText('word_create', 'system', 'Create')).'</span></button>'
+    .'<a class="button chisimba-button-secondary" href="'.$esc($cancelUrl).'">'.$icon('x').'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a>'
+    .'</div></form></main>';
 ?>
