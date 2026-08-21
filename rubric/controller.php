@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 <?php
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run'])
@@ -135,11 +138,6 @@ public function dispatch($action=Null)
 			$contextTitle = $contextRecord['title'];
 		}
 	    $this->setVarByRef('contextTitle', $contextTitle);
-		$currentScope = ($this->contextCode === 'root')
-			? $this->objLanguage->languageText('rubric_scope_root', 'rubric')
-			: $this->objLanguage->languageText('rubric_scope_course', 'rubric').' — '.$contextTitle;
-		$this->setVar('currentScope', $currentScope);
-
 		$tableIdParam = $this->getParam('tableId', '');
 		if (is_string($tableIdParam) && $tableIdParam !== '') {
 			$scopeTable = $this->objDbRubricTables->listSingle($tableIdParam);
