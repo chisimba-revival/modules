@@ -10,7 +10,7 @@ echo '<main class="rubric-form"><header class="rubric-page-header"><div><h1>'.$e
     .'<input id="rubric-title" name="title" type="text" required maxlength="255" value="'.$esc($title).'"></div>'
     .'<div class="rubric-form-field"><label for="rubric-description">'.$esc($objLanguage->languageText('rubric_description','rubric')).'</label>'
     .'<textarea id="rubric-description" name="description" rows="4" required>'.$esc($description).'</textarea></div>'
-    .'<div class="rubric-form-actions"><button class="button" type="submit">'.$icon('save').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+    .'<div class="rubric-form-actions"><button class="button" type="submit">'.$icon('circle-check').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
     .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric'))).'">'.$icon('x').'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a>'
     .'</div></form></main>';
 ?>

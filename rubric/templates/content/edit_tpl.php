@@ -45,18 +45,18 @@ for ($i = 0; $i < $rows; $i++) {
     echo '</tr>';
 }
 echo '</tbody></table></div><div class="rubric-editor-actions"><button class="button" type="submit">'
-    .$icon('save').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+    .$icon('circle-check').'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
     .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'viewtable','tableId'=>$tableId))).'">'
     .$icon('eye').'<span>'.$esc($objLanguage->languageText('word_view')).'</span></a></div></form>';
 if (!isset($suppressModify)) {
     echo '<nav class="rubric-structure-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_structure_actions', 'rubric')).'">'
-        .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('action'=>'addrow','tableId'=>$tableId))).'">'.$icon('rows-3').'<span>'.$esc($objLanguage->languageText('rubric_add_row', 'rubric')).'</span></a>'
-        .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('action'=>'addcol','tableId'=>$tableId))).'">'.$icon('columns-3').'<span>'.$esc($objLanguage->languageText('rubric_add_column', 'rubric')).'</span></a>';
+        .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('action'=>'addrow','tableId'=>$tableId))).'">'.$icon('plus').'<span>'.$esc($objLanguage->languageText('rubric_add_row', 'rubric')).'</span></a>'
+        .'<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('action'=>'addcol','tableId'=>$tableId))).'">'.$icon('plus').'<span>'.$esc($objLanguage->languageText('rubric_add_column', 'rubric')).'</span></a>';
     if ($rows > 1) {
-        echo '<a class="button rubric-button-danger" href="'.$esc($this->uri(array('action'=>'delrow','tableId'=>$tableId))).'">'.$icon('rows-3').'<span>'.$esc($objLanguage->languageText('rubric_delete_row', 'rubric')).'</span></a>';
+        echo '<a class="button rubric-button-danger" href="'.$esc($this->uri(array('action'=>'delrow','tableId'=>$tableId))).'">'.$icon('minus').'<span>'.$esc($objLanguage->languageText('rubric_delete_row', 'rubric')).'</span></a>';
     }
     if ($cols > 1) {
-        echo '<a class="button rubric-button-danger" href="'.$esc($this->uri(array('action'=>'delcol','tableId'=>$tableId))).'">'.$icon('columns-3').'<span>'.$esc($objLanguage->languageText('rubric_delete_column', 'rubric')).'</span></a>';
+        echo '<a class="button rubric-button-danger" href="'.$esc($this->uri(array('action'=>'delcol','tableId'=>$tableId))).'">'.$icon('minus').'<span>'.$esc($objLanguage->languageText('rubric_delete_column', 'rubric')).'</span></a>';
     }
     echo '</nav>';
 }

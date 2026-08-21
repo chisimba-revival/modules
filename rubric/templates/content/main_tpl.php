@@ -35,16 +35,16 @@ $renderSection = function ($heading, $description, $records, $scope, $create = '
             $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'edittable', 'tableId'=>$id)), $lang('word_edit', 'system', 'Edit'), 'pencil');
         }
         if ($canModify && $this->isValid('renametable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'renametable', 'tableId'=>$id)), $lang('word_rename1', 'system', 'Rename'), 'text-cursor-input');
+            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'renametable', 'tableId'=>$id)), $lang('word_rename1', 'system', 'Rename'), 'square-pen');
         }
         if ($this->isValid('clonetable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'clonetable', 'tableId'=>$id)), $lang('word_copy', 'system', 'Copy'), 'copy');
+            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'clonetable', 'tableId'=>$id)), $lang('word_copy', 'system', 'Copy'), 'file-text');
         }
         if ($scope === 'personal' && $contextCode !== 'root' && $this->isValid('copytable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'copytable', 'tableId'=>$id)), $lang('mod_rubric_copytocontext'), 'book-copy');
+            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'copytable', 'tableId'=>$id)), $lang('mod_rubric_copytocontext'), 'book-open');
         }
         if ($scope === 'course' && $this->isValid('assessments')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'assessments', 'tableId'=>$id)), $lang('word_assessment', 'system', 'Assessments'), 'clipboard-check');
+            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'assessments', 'tableId'=>$id)), $lang('word_assessment', 'system', 'Assessments'), 'clipboard-pen');
         }
         if ($canModify && $this->isValid('deletetable')) {
             $confirm = $lang('mod_rubric_confirmdelete').' '.$record['title'].'?';

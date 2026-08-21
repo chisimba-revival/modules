@@ -26,13 +26,13 @@ if (isset($IsAssessment)) {
 }
 echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'">';
 if ($noBanner === 'yes') {
-    echo '<button class="button chisimba-button-secondary" type="button" onclick="history.back()">'.$icon('arrow-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></button>';
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="history.back()">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></button>';
 } else {
-    echo '<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('printer').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
     $back = isset($IsAssessment)
         ? $this->uri(array('module'=>'rubric','action'=>'assessments','tableId'=>$tableId))
         : $this->uri(array('module'=>'rubric'));
-    echo '<a class="button chisimba-button-secondary" href="'.$esc($back).'">'.$icon('arrow-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a>';
+    echo '<a class="button chisimba-button-secondary" href="'.$esc($back).'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a>';
 }
 echo '</nav></article>';
 ?>

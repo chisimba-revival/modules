@@ -1,7 +1,7 @@
 <?php
 	$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 	$icons = $this->getObject('iconservice', 'ui');
-	$saveIcon = $icons->render('save', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+	$saveIcon = $icons->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
 	$cancelIcon = $icons->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
 
     $this->loadClass('label','htmlelements');

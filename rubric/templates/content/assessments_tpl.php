@@ -40,8 +40,8 @@ echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc(
 if ($this->objUser->isContextLecturer()) {
     $toggle = $showStudentNames === 'yes' ? 'no' : 'yes';
     $toggleLabel = $showStudentNames === 'yes' ? $objLanguage->languageText('rubric_hide','rubric') : $objLanguage->languageText('rubric_show','rubric');
-    echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'assessments','tableId'=>$tableId,'showStudentNames'=>$toggle))).'">'.$icon('users').'<span>'.$esc($toggleLabel).'</span></a>'
-        .'<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('printer').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
+    echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'assessments','tableId'=>$tableId,'showStudentNames'=>$toggle))).'">'.$icon('users-round').'<span>'.$esc($toggleLabel).'</span></a>'
+        .'<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
 }
-echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric'))).'">'.$icon('arrow-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a></nav></main>';
+echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric'))).'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a></nav></main>';
 ?>
