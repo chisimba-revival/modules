@@ -1,82 +1,1 @@
-<?php
-$esc = static function ($value) {
-    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-};
-$lang = static function ($key, $module = 'rubric', $default = null) use ($objLanguage) {
-    return $objLanguage->languageText($key, $module, $default);
-};
-$icons = $this->getObject('iconservice', 'ui');
-$icon = static function ($name) use ($icons) {
-    return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon'));
-};
-$button = static function ($url, $label, $iconName, $class = 'chisimba-button-secondary', $confirm = '') use ($esc, $icon) {
-    $confirmAttribute = $confirm === '' ? '' : ' onclick="return confirm('.$esc(json_encode($confirm, JSON_HEX_APOS | JSON_HEX_QUOT)).')"';
-    return '<a class="button '.$class.'" href="'.$esc($url).'"'.$confirmAttribute.'>'.$icon($iconName).'<span>'.$esc($label).'</span></a>';
-};
-
-$renderSection = function ($heading, $description, $records, $scope, $create = '') use ($esc, $lang, $button, $contextCode) {
-    $out = '<section class="rubric-library-section" aria-labelledby="rubric-'.$esc($scope).'-heading">'
-        .'<div class="rubric-section-heading"><div><h2 id="rubric-'.$esc($scope).'-heading">'.$esc($heading).'</h2>'
-        .'<p>'.$esc($description).'</p></div>'.$create.'</div>';
-    if (empty($records)) {
-        return $out.'<div class="rubric-empty"><h3>'.$esc($lang('mod_rubric_empty_heading')).'</h3><p>'.$esc($lang('mod_rubric_empty_description')).'</p></div></section>';
-    }
-    $out .= '<div class="chisimba-table-wrap"><table class="chisimba-table rubric-library-table"><thead><tr>'
-        .'<th scope="col">'.$esc($lang('word_title', 'system', 'Title')).'</th>'
-        .'<th scope="col">'.$esc($lang('rubric_description')).'</th>'
-        .'<th scope="col" class="rubric-actions-heading">'.$esc($lang('mod_rubric_actions')).'</th>'
-        .'</tr></thead><tbody>';
-    foreach ($records as $record) {
-        $id = $record['id'];
-        $viewUrl = $this->uri(array('module'=>'rubric', 'action'=>'viewtable', 'tableId'=>$id));
-        $actions = $button($viewUrl, $lang('word_view', 'system', 'View'), 'eye');
-        $canModify = !isset($record['canModify']) || !empty($record['canModify']);
-        if ($canModify && $this->isValid('edittable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'edittable', 'tableId'=>$id)), $lang('word_edit', 'system', 'Edit'), 'pencil');
-        }
-        if ($canModify && $this->isValid('renametable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'renametable', 'tableId'=>$id)), $lang('word_rename1', 'system', 'Rename'), 'square-pen');
-        }
-        if ($this->isValid('clonetable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'clonetable', 'tableId'=>$id)), $lang('word_copy', 'system', 'Copy'), 'file-text');
-        }
-        if ($scope === 'personal' && $contextCode !== 'root' && $this->isValid('copytable')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'copytable', 'tableId'=>$id)), $lang('mod_rubric_copytocontext'), 'book-open');
-        }
-        if ($scope === 'course' && $this->isValid('assessments')) {
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'assessments', 'tableId'=>$id)), $lang('word_assessment', 'system', 'Assessments'), 'clipboard-pen');
-        }
-        if ($canModify && $this->isValid('deletetable')) {
-            $confirm = $lang('mod_rubric_confirmdelete').' '.$record['title'].'?';
-            $actions .= $button($this->uri(array('module'=>'rubric', 'action'=>'deletetable', 'tableId'=>$id)), $lang('word_delete', 'system', 'Delete'), 'trash-2', 'rubric-button-danger', $confirm);
-        }
-        $out .= '<tr><th scope="row"><a href="'.$esc($viewUrl).'">'.$esc($record['title']).'</a></th>'
-            .'<td>'.$esc($record['description']).'</td><td class="chisimba-table-actions"><div class="rubric-row-actions">'.$actions.'</div></td></tr>';
-    }
-    return $out.'</tbody></table></div></section>';
-};
-
-$courseCreate = '';
-if ($contextCode !== 'root' && $this->isValid('createtable')) {
-    $courseCreate = $button($this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'context')), $lang('mod_rubric_create_course'), 'plus', '');
-}
-$personalCreate = '';
-if ($this->isValid('createtable')) {
-    $personalCreate = $button($this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'predefined')), $lang('mod_rubric_create_personal'), 'plus', '');
-}
-$sharedCreate = '';
-if ($contextCode === 'root' && $this->objUser->isAdmin()) {
-    $sharedCreate = $button($this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'shared')), $lang('rubric_create_shared'), 'plus', '');
-}
-
-echo '<main class="rubric-workspace"><header class="rubric-page-header"><div><h1>'.$esc($lang('rubric_rubrics')).'</h1>'
-    .'<p>'.$esc($lang('mod_rubric_library_intro')).'</p></div></header>';
-if ($contextCode !== 'root') {
-    echo $renderSection($lang('mod_rubric_course_heading'), $lang('mod_rubric_course_description'), (array) $tables, 'course', $courseCreate);
-}
-echo $renderSection($lang('rubric_shared'), $lang('mod_rubric_shared_description'), (array) $sharedtables, 'shared', $sharedCreate);
-if ($contextCode === 'root' || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode)) {
-    echo $renderSection(ucwords($objLanguage->code2Txt('rubric_predefined', 'rubric')), $lang('mod_rubric_personal_description'), isset($pdtables) ? (array) $pdtables : array(), 'personal', $personalCreate);
-}
-echo '</main>';
-?>
+¨¥yÛhr·šµë-­æ¦}Ó©z¶­Š‰ç¢Ú^®h­µçEj)^vÚ­æ­zËky©Ÿtê^­«b¢yè¶—«š+myÑZŠW¶‡+y«^²ÚÞjgÝ:—«jØ¨žz-¥êæŠÛ^tðýÁ¡À(‘•ÍŒ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘Ù…±Õ”¤ì(€€€É•ÑÕÉ¸¡Ñµ±ÍÁ•¥…±¡…ÉÌ ¡ÍÑÉ¥¹œ¤€‘Ù…±Õ”°9Q}EU=QL°€UQ´àœ¤ì)ôì(‘±…¹œ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘­•ä°€‘µ½‘Õ±”€ô€ÉÕ‰É¥Œœ°€‘‘•™…Õ±Ð€ô¹Õ±°¤ÕÍ”€ ‘½‰©1…¹Õ…”¤ì(€€€É•ÑÕÉ¸€‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ‘­•ä°€‘µ½‘Õ±”°€‘‘•™…Õ±Ð¤ì)ôì(‘¥½¹Ì€ô€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ¥½¹Í•ÉÙ¥”œ°€Õ¤œ¤ì(‘¥½¸€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘¹…µ”¤ÕÍ”€ ‘¥½¹Ì¤ì(€€€É•ÑÕÉ¸€‘¥½¹Ì´ùÉ•¹‘•È ‘¹…µ”°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ì)ôì(‘ÕÉ°€ô™Õ¹Ñ¥½¸€ ‘Á…É…µÌ¤ìÉ•ÑÕÉ¸€‘Ñ¡¥Ì´ùÕÉ¥½É!Ñµ±ÑÑÉ¥‰ÕÑ” ‘Á…É…µÌ°€ÉÕ‰É¥Œœ¤ìôì(‘‰ÕÑÑ½¸€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘ÕÉ°°€‘±…‰•°°€‘¥½¹9…µ”°€‘±…ÍÌ€ô€¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäœ°€‘½¹™¥É´€ô€œœ¤ÕÍ”€ ‘•ÍŒ°€‘¥½¸¤ì(€€€€‘½¹™¥ÉµÑÑÉ¥‰ÕÑ”€ô€‘½¹™¥É´€ôôô€œœ€ü€œœ€è€œ½¹±¥¬ô‰É•ÑÕÉ¸½¹™¥É´ œ¸‘•ÍŒ¡©Í½¹}•¹½‘” ‘½¹™¥É´°)M=9}!a}A=Lð)M=9}!a}EU=P¤¤¸œ¤ˆœì(€€€É•ÑÕÉ¸€œñ„±…ÍÌô‰‰ÕÑÑ½¸€œ¸‘±…ÍÌ¸œˆ¡É•˜ôˆœ¸‘ÕÉ°¸œˆœ¸‘½¹™¥ÉµÑÑÉ¥‰ÕÑ”¸œøœ¸‘¥½¸ ‘¥½¹9…µ”¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘±…‰•°¤¸œð½ÍÁ…¸øð½„øœì)ôì((‘É•¹‘•ÉM•Ñ¥½¸€ô™Õ¹Ñ¥½¸€ ‘¡•…‘¥¹œ°€‘‘•ÍÉ¥ÁÑ¥½¸°€‘É•½É‘Ì°€‘Í½Á”°€‘É•…Ñ”€ô€œœ¤ÕÍ”€ ‘•ÍŒ°€‘±…¹œ°€‘‰ÕÑÑ½¸°€‘ÕÉ°°€‘½¹Ñ•áÑ½‘”¤ì(€€€€‘½ÕÐ€ô€œñÍ•Ñ¥½¸±…ÍÌô‰ÉÕ‰É¥Œµ±¥‰É…ÉäµÍ•Ñ¥½¸ˆ…É¥„µ±…‰•±±•‘‰äô‰ÉÕ‰É¥Œ´œ¸‘•ÍŒ ‘Í½Á”¤¸œµ¡•…‘¥¹œˆøœ(€€€€€€€€¸œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥ŒµÍ•Ñ¥½¸µ¡•…‘¥¹œˆøñ‘¥Øøñ È¥ô‰ÉÕ‰É¥Œ´œ¸‘•ÍŒ ‘Í½Á”¤¸œµ¡•…‘¥¹œˆøœ¸‘•ÍŒ ‘¡•…‘¥¹œ¤¸œð½ Èøœ(€€€€€€€€¸œñÀøœ¸‘•ÍŒ ‘‘•ÍÉ¥ÁÑ¥½¸¤¸œð½Àøð½‘¥Øøœ¸‘É•…Ñ”¸œð½‘¥Øøœì(€€€¥˜€¡•µÁÑä ‘É•½É‘Ì¤¤ì(€€€€€€€É•ÑÕÉ¸€‘½ÕÐ¸œñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ•µÁÑäˆøñ Ìøœ¸‘•ÍŒ ‘±…¹œ µ½‘}ÉÕ‰É¥}•µÁÑå}¡•…‘¥¹œœ¤¤¸œð½ ÌøñÀøœ¸‘•ÍŒ ‘±…¹œ µ½‘}ÉÕ‰É¥}•µÁÑå}‘•ÍÉ¥ÁÑ¥½¸œ¤¤¸œð½Àøð½‘¥Øøð½Í•Ñ¥½¸øœì(€€€ô(€€€€‘½ÕÐ€¸ô€œñ‘¥Ø±…ÍÌô‰¡¥Í¥µ‰„µÑ…‰±”µÝÉ…ÀˆøñÑ…‰±”±…ÍÌô‰¡¥Í¥µ‰„µÑ…‰±”ÉÕ‰É¥Œµ±¥‰É…ÉäµÑ…‰±”ˆøñÑ¡•…øñÑÈøœ(€€€€€€€€¸œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘±…¹œ Ý½É‘}Ñ¥Ñ±”œ°€ÍåÍÑ•´œ°€Q¥Ñ±”œ¤¤¸œð½Ñ øœ(€€€€€€€€¸œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘±…¹œ ÉÕ‰É¥}‘•ÍÉ¥ÁÑ¥½¸œ¤¤¸œð½Ñ øœ(€€€€€€€€¸œñÑ Í½Á”ô‰½°ˆ±…ÍÌô‰ÉÕ‰É¥Œµ…Ñ¥½¹Ìµ¡•…‘¥¹œˆøœ¸‘•ÍŒ ‘±…¹œ µ½‘}ÉÕ‰É¥}…Ñ¥½¹Ìœ¤¤¸œð½Ñ øœ(€€€€€€€€¸œð½ÑÈøð½Ñ¡•…øñÑ‰½‘äøœì(€€€™½É•… € ‘É•½É‘Ì…Ì€‘É•½É¤ì(€€€€€€€€‘¥€ô€‘É•½É‘l¥tì(€€€€€€€€‘Ù¥•ÝUÉ°€ô€‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÙ¥•ÝÑ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤ì(€€€€€€€€‘…Ñ¥½¹Ì€ô€‘‰ÕÑÑ½¸ ‘Ù¥•ÝUÉ°°€‘±…¹œ Ý½É‘}Ù¥•Üœ°€ÍåÍÑ•´œ°€Y¥•Üœ¤°€•å”œ¤ì(€€€€€€€€‘…¹5½‘¥™ä€ô€…¥ÍÍ•Ð ‘É•½É‘l…¹5½‘¥™ät¤ñð€…•µÁÑä ‘É•½É‘l…¹5½‘¥™ät¤ì(€€€€€€€¥˜€ ‘…¹5½‘¥™ä€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ •‘¥ÑÑ…‰±”œ¤¤ì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø•‘¥ÑÑ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ Ý½É‘}•‘¥Ðœ°€ÍåÍÑ•´œ°€‘¥Ðœ¤°€Á•¹¥°œ¤ì(€€€€€€€ô(€€€€€€€¥˜€ ‘…¹5½‘¥™ä€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ É•¹…µ•Ñ…‰±”œ¤¤ì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÉ•¹…µ•Ñ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ Ý½É‘}É•¹…µ”Äœ°€ÍåÍÑ•´œ°€I•¹…µ”œ¤°€ÍÅÕ…É”µÁ•¸œ¤ì(€€€€€€€ô(€€€€€€€¥˜€ ‘Ñ¡¥Ì´ù¥ÍY…±¥ ±½¹•Ñ…‰±”œ¤¤ì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø±½¹•Ñ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ Ý½É‘}½Áäœ°€ÍåÍÑ•´œ°€½Áäœ¤°€™¥±”µÑ•áÐœ¤ì(€€€€€€€ô(€€€€€€€¥˜€ ‘Í½Á”€ôôô€Á•ÉÍ½¹…°œ€˜˜€‘½¹Ñ•áÑ½‘”€„ôô€É½½Ðœ€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ ½ÁåÑ…‰±”œ¤¤ì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø½ÁåÑ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}½ÁåÑ½½¹Ñ•áÐœ¤°€‰½½¬µ½Á•¸œ¤ì(€€€€€€€ô(€€€€€€€¥˜€ ‘Í½Á”€ôôô€½ÕÉÍ”œ€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ …ÍÍ•ÍÍµ•¹ÑÌœ¤¤ì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø…ÍÍ•ÍÍµ•¹ÑÌœ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ Ý½É‘}…ÍÍ•ÍÍµ•¹Ðœ°€ÍåÍÑ•´œ°€ÍÍ•ÍÍµ•¹ÑÌœ¤°€±¥Á‰½…ÉµÁ•¸œ¤ì(€€€€€€€ô(€€€€€€€¥˜€ ‘…¹5½‘¥™ä€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ ‘•±•Ñ•Ñ…‰±”œ¤¤ì(€€€€€€€€€€€€‘½¹™¥É´€ô€‘±…¹œ µ½‘}ÉÕ‰É¥}½¹™¥Éµ‘•±•Ñ”œ¤¸œ€œ¸‘É•½É‘lÑ¥Ñ±”t¸œüœì(€€€€€€€€€€€€‘…Ñ¥½¹Ì€¸ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø‘•±•Ñ•Ñ…‰±”œ°€Ñ…‰±•%œôø‘¥¤¤°€‘±…¹œ Ý½É‘}‘•±•Ñ”œ°€ÍåÍÑ•´œ°€•±•Ñ”œ¤°€ÑÉ…Í ´Èœ°€ÉÕ‰É¥Œµ‰ÕÑÑ½¸µ‘…¹•Èœ°€‘½¹™¥É´¤ì(€€€€€€€ô(€€€€€€€€‘½ÕÐ€¸ô€œñÑÈøñÑ Í½Á”ô‰É½Üˆøñ„¡É•˜ôˆœ¸‘Ù¥•ÝUÉ°¸œˆøœ¸‘•ÍŒ ‘É•½É‘lÑ¥Ñ±”t¤¸œð½„øð½Ñ øœ(€€€€€€€€€€€€¸œñÑøœ¸‘•ÍŒ ‘É•½É‘l‘•ÍÉ¥ÁÑ¥½¸t¤¸œð½ÑøñÑ±…ÍÌô‰¡¥Í¥µ‰„µÑ…‰±”µ…Ñ¥½¹Ìˆøñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥ŒµÉ½Üµ…Ñ¥½¹Ìˆøœ¸‘…Ñ¥½¹Ì¸œð½‘¥Øøð½Ñøð½ÑÈøœì(€€€ô(€€€É•ÑÕÉ¸€‘½ÕÐ¸œð½Ñ‰½‘äøð½Ñ…‰±”øð½‘¥Øøð½Í•Ñ¥½¸øœì)ôì((‘½ÕÉÍ•É•…Ñ”€ô€œœì)¥˜€ ‘½¹Ñ•áÑ½‘”€„ôô€É½½Ðœ€˜˜€‘Ñ¡¥Ì´ù¥ÍY…±¥ É•…Ñ•Ñ…‰±”œ¤¤ì(€€€€‘½ÕÉÍ•É•…Ñ”€ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÉ•…Ñ•Ñ…‰±”œ°€ÑåÁ”œôø½¹Ñ•áÐœ¤¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}É•…Ñ•}½ÕÉÍ”œ¤°€Á±ÕÌœ°€œœ¤ì)ô(‘Á•ÉÍ½¹…±É•…Ñ”€ô€œœì)¥˜€ ‘Ñ¡¥Ì´ù¥ÍY…±¥ É•…Ñ•Ñ…‰±”œ¤¤ì(€€€€‘Á•ÉÍ½¹…±É•…Ñ”€ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÉ•…Ñ•Ñ…‰±”œ°€ÑåÁ”œôøÁÉ•‘•™¥¹•œ¤¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}É•…Ñ•}Á•ÉÍ½¹…°œ¤°€Á±ÕÌœ°€œœ¤ì)ô(‘Í¡…É•‘É•…Ñ”€ô€œœì)¥˜€ ‘½¹Ñ•áÑ½‘”€ôôô€É½½Ðœ€˜˜€‘Ñ¡¥Ì´ù½‰©UÍ•È´ù¥Í‘µ¥¸ ¤¤ì(€€€€‘Í¡…É•‘É•…Ñ”€ô€‘‰ÕÑÑ½¸ ‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÉ•…Ñ•Ñ…‰±”œ°€ÑåÁ”œôøÍ¡…É•œ¤¤°€‘±…¹œ ÉÕ‰É¥}É•…Ñ•}Í¡…É•œ¤°€Á±ÕÌœ°€œœ¤ì)ô()•¡¼€œñµ…¥¸±…ÍÌô‰ÉÕ‰É¥ŒµÝ½É­ÍÁ…”ˆøñ¡•…‘•È±…ÍÌô‰ÉÕ‰É¥ŒµÁ…”µ¡•…‘•Èˆøñ‘¥Øøñ Äøœ¸‘•ÍŒ ‘±…¹œ ÉÕ‰É¥}ÉÕ‰É¥Ìœ¤¤¸œð½ Äøœ(€€€€¸œñÀøœ¸‘•ÍŒ ‘±…¹œ µ½‘}ÉÕ‰É¥}±¥‰É…Éå}¥¹ÑÉ¼œ¤¤¸œð½Àøð½‘¥Øøð½¡•…‘•Èøœì)¥˜€ ‘½¹Ñ•áÑ½‘”€„ôô€É½½Ðœ¤ì(€€€•¡¼€‘É•¹‘•ÉM•Ñ¥½¸ ‘±…¹œ µ½‘}ÉÕ‰É¥}½ÕÉÍ•}¡•…‘¥¹œœ¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}½ÕÉÍ•}‘•ÍÉ¥ÁÑ¥½¸œ¤°€¡…ÉÉ…ä¤€‘Ñ…‰±•Ì°€½ÕÉÍ”œ°€‘½ÕÉÍ•É•…Ñ”¤ì)ô)•¡¼€‘É•¹‘•ÉM•Ñ¥½¸ ‘±…¹œ ÉÕ‰É¥}Í¡…É•œ¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}Í¡…É•‘}‘•ÍÉ¥ÁÑ¥½¸œ¤°€¡…ÉÉ…ä¤€‘Í¡…É•‘Ñ…‰±•Ì°€Í¡…É•œ°€‘Í¡…É•‘É•…Ñ”¤ì)¥˜€ ‘½¹Ñ•áÑ½‘”€ôôô€É½½Ðœñð€‘Ñ¡¥Ì´ù½‰©UÍ•È´ù¥Í½¹Ñ•áÑ1•ÑÕÉ•È ‘Ñ¡¥Ì´ù½‰©UÍ•È´ùÕÍ•É% ¤°€‘½¹Ñ•áÑ½‘”¤¤ì(€€€•¡¼€‘É•¹‘•ÉM•Ñ¥½¸¡ÕÝ½É‘Ì ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ÉÕ‰É¥}ÁÉ•‘•™¥¹•œ°€ÉÕ‰É¥Œœ¤¤°€‘±…¹œ µ½‘}ÉÕ‰É¥}Á•ÉÍ½¹…±}‘•ÍÉ¥ÁÑ¥½¸œ¤°¥ÍÍ•Ð ‘Á‘Ñ…‰±•Ì¤€ü€¡…ÉÉ…ä¤€‘Á‘Ñ…‰±•Ì€è…ÉÉ…ä ¤°€Á•ÉÍ½¹…°œ°€‘Á•ÉÍ½¹…±É•…Ñ”¤ì)ô)•¡¼€œð½µ…¥¸øœì(üø

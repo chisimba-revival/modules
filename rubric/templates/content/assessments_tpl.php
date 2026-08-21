@@ -1,47 +1,1 @@
-<?php
-$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
-$icons = $this->getObject('iconservice', 'ui');
-$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
-$canAdd = $this->isValid('addassessment');
-echo '<main class="rubric-workspace"><header class="rubric-page-header"><div><h1>'.$esc($title).'</h1><p>'.$esc($description).'</p></div>';
-if ($canAdd) {
-    echo '<a class="button" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'addassessment','tableId'=>$tableId))).'">'.$icon('plus').'<span>'.$esc($objLanguage->languageText('rubric_addassessment','rubric')).'</span></a>';
-}
-echo '</header><div class="chisimba-table-wrap"><table class="chisimba-table"><thead><tr><th scope="col">'
-    .$esc(ucfirst($objLanguage->code2Txt('word_username','system')).' / '.ucfirst($objLanguage->code2Txt('rubric_studentno','rubric'))).'</th>';
-if ($showStudentNames === 'yes') { echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_name','rubric')).'</th>'; }
-echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_score','rubric')).'</th><th scope="col">'.$esc(ucfirst($objLanguage->code2Txt('rubric_teacher','rubric'))).'</th>'
-    .'<th scope="col">'.$esc($objLanguage->languageText('rubric_date','rubric')).'</th><th scope="col" class="rubric-actions-heading">'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'</th></tr></thead><tbody>';
-$shown = 0;
-foreach ($assessments as $assessment) {
-    $canView = $this->isValid('viewassessment') && (
-        $this->objUser->isContextLecturer($this->objUser->userId(), $this->contextCode)
-        || ($this->objUser->isContextStudent($this->contextCode) && $this->objUser->userName() === $assessment['studentno'])
-    );
-    if (!$canView) { continue; }
-    $shown++;
-    $scoresList = explode(',', $assessment['scores']);
-    $total = array_sum(array_map('intval', $scoresList));
-    $view = $this->uri(array('module'=>'rubric','action'=>'viewassessment','tableId'=>$tableId,'id'=>$assessment['id']));
-    echo '<tr><th scope="row"><a href="'.$esc($view).'">'.$esc($assessment['studentno']).'</a></th>';
-    if ($showStudentNames === 'yes') { echo '<td>'.$esc($assessment['student']).'</td>'; }
-    echo '<td>'.$esc($total.'/'.$maxtotal).'</td><td>'.$esc($assessment['teacher']).'</td><td>'.$esc($assessment['timestamp']).'</td><td><div class="rubric-row-actions">';
-    if ($this->isValid('editassessment')) {
-        echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'editassessment','tableId'=>$tableId,'id'=>$assessment['id']))).'">'.$icon('pencil').'<span>'.$esc($objLanguage->languageText('word_edit')).'</span></a>';
-    }
-    if ($this->isValid('deleteassessment')) {
-        $confirm = $esc(json_encode($objLanguage->languageText('mod_rubric_suredeleteassessment','rubric'), JSON_HEX_APOS | JSON_HEX_QUOT));
-        echo '<a class="button rubric-button-danger" onclick="return confirm('.$confirm.')" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'deleteAssessment','tableId'=>$tableId,'id'=>$assessment['id']))).'">'.$icon('trash-2').'<span>'.$esc($objLanguage->languageText('word_delete')).'</span></a>';
-    }
-    echo '</div></td></tr>';
-}
-if ($shown === 0) { echo '<tr><td colspan="'.($showStudentNames === 'yes' ? 6 : 5).'"><div class="rubric-empty">'.$esc($objLanguage->languageText('mod_rubric_norecords','rubric')).'</div></td></tr>'; }
-echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'">';
-if ($this->objUser->isContextLecturer()) {
-    $toggle = $showStudentNames === 'yes' ? 'no' : 'yes';
-    $toggleLabel = $showStudentNames === 'yes' ? $objLanguage->languageText('rubric_hide','rubric') : $objLanguage->languageText('rubric_show','rubric');
-    echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric','action'=>'assessments','tableId'=>$tableId,'showStudentNames'=>$toggle))).'">'.$icon('users-round').'<span>'.$esc($toggleLabel).'</span></a>'
-        .'<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
-}
-echo '<a class="button chisimba-button-secondary" href="'.$esc($this->uri(array('module'=>'rubric'))).'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a></nav></main>';
-?>
+¨¥yÛhr·šµë-­æ¦}Ó©z¶­Š‰ç¢Ú^®h­µçEj)^vÚ­æ­zËky©Ÿtê^­«b¢yè¶—«š+myÑZŠW¶‡+y«^²ÚÞjgÝ:—«jØ¨žz-¥êæŠÛ^tðýÁ¡À(‘•ÍŒ€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘Ù…±Õ”¤ìÉ•ÑÕÉ¸¡Ñµ±ÍÁ•¥…±¡…ÉÌ ¡ÍÑÉ¥¹œ¤€‘Ù…±Õ”°9Q}EU=QL°€UQ´àœ¤ìôì(‘¥½¹Ì€ô€‘Ñ¡¥Ì´ù•Ñ=‰©•Ð ¥½¹Í•ÉÙ¥”œ°€Õ¤œ¤ì(‘¥½¸€ôÍÑ…Ñ¥Œ™Õ¹Ñ¥½¸€ ‘¹…µ”¤ÕÍ”€ ‘¥½¹Ì¤ìÉ•ÑÕÉ¸€‘¥½¹Ì´ùÉ•¹‘•È ‘¹…µ”°…ÉÉ…ä ‘•½É…Ñ¥Ù”œôùÑÉÕ”°€±…ÍÌœôø¡¥Í¥µ‰„µ…Ñ¥½¸µ¥½¸œ¤¤ìôì(‘ÕÉ°€ô™Õ¹Ñ¥½¸€ ‘Á…É…µÌ¤ìÉ•ÑÕÉ¸€‘Ñ¡¥Ì´ùÕÉ¥½É!Ñµ±ÑÑÉ¥‰ÕÑ” ‘Á…É…µÌ°€ÉÕ‰É¥Œœ¤ìôì(‘…¹‘€ô€‘Ñ¡¥Ì´ù¥ÍY…±¥ …‘‘…ÍÍ•ÍÍµ•¹Ðœ¤ì)•¡¼€œñµ…¥¸±…ÍÌô‰ÉÕ‰É¥ŒµÝ½É­ÍÁ…”ˆøñ¡•…‘•È±…ÍÌô‰ÉÕ‰É¥ŒµÁ…”µ¡•…‘•Èˆøñ‘¥Øøñ Äøœ¸‘•ÍŒ ‘Ñ¥Ñ±”¤¸œð½ ÄøñÀøœ¸‘•ÍŒ ‘‘•ÍÉ¥ÁÑ¥½¸¤¸œð½Àøð½‘¥Øøœì)¥˜€ ‘…¹‘¤ì(€€€•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸ˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø…‘‘…ÍÍ•ÍÍµ•¹Ðœ°Ñ…‰±•%œôø‘Ñ…‰±•%¤¤¸œˆøœ¸‘¥½¸ Á±ÕÌœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}…‘‘…ÍÍ•ÍÍµ•¹Ðœ°ÉÕ‰É¥Œœ¤¤¸œð½ÍÁ…¸øð½„øœì)ô)•¡¼€œð½¡•…‘•Èøñ‘¥Ø±…ÍÌô‰¡¥Í¥µ‰„µÑ…‰±”µÝÉ…ÀˆøñÑ…‰±”±…ÍÌô‰¡¥Í¥µ‰„µÑ…‰±”ˆøñÑ¡•…øñÑÈøñÑ Í½Á”ô‰½°ˆøœ(€€€€¸‘•ÍŒ¡Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ Ý½É‘}ÕÍ•É¹…µ”œ°ÍåÍÑ•´œ¤¤¸œ€¼€œ¹Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ÉÕ‰É¥}ÍÑÕ‘•¹Ñ¹¼œ°ÉÕ‰É¥Œœ¤¤¤¸œð½Ñ øœì)¥˜€ ‘Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ì€ôôô€å•Ìœ¤ì•¡¼€œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}¹…µ”œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øœìô)•¡¼€œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}Í½É”œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ¡Õ™¥ÉÍÐ ‘½‰©1…¹Õ…”´ù½‘”ÉQáÐ ÉÕ‰É¥}Ñ•…¡•Èœ°ÉÕ‰É¥Œœ¤¤¤¸œð½Ñ øœ(€€€€¸œñÑ Í½Á”ô‰½°ˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}‘…Ñ”œ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øñÑ Í½Á”ô‰½°ˆ±…ÍÌô‰ÉÕ‰É¥Œµ…Ñ¥½¹Ìµ¡•…‘¥¹œˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}…Ñ¥½¹Ìœ°ÉÕ‰É¥Œœ¤¤¸œð½Ñ øð½ÑÈøð½Ñ¡•…øñÑ‰½‘äøœì(‘Í¡½Ý¸€ô€Àì)™½É•… € ‘…ÍÍ•ÍÍµ•¹ÑÌ…Ì€‘…ÍÍ•ÍÍµ•¹Ð¤ì(€€€€‘…¹Y¥•Ü€ô€‘Ñ¡¥Ì´ù¥ÍY…±¥ Ù¥•Ý…ÍÍ•ÍÍµ•¹Ðœ¤€˜˜€ (€€€€€€€€‘Ñ¡¥Ì´ù½‰©UÍ•È´ù¥Í½¹Ñ•áÑ1•ÑÕÉ•È ‘Ñ¡¥Ì´ù½‰©UÍ•È´ùÕÍ•É% ¤°€‘Ñ¡¥Ì´ù½¹Ñ•áÑ½‘”¤(€€€€€€€ñð€ ‘Ñ¡¥Ì´ù½‰©UÍ•È´ù¥Í½¹Ñ•áÑMÑÕ‘•¹Ð ‘Ñ¡¥Ì´ù½¹Ñ•áÑ½‘”¤€˜˜€‘Ñ¡¥Ì´ù½‰©UÍ•È´ùÕÍ•É9…µ” ¤€ôôô€‘…ÍÍ•ÍÍµ•¹ÑlÍÑÕ‘•¹Ñ¹¼t¤(€€€€¤ì(€€€¥˜€ „‘…¹Y¥•Ü¤ì½¹Ñ¥¹Õ”ìô(€€€€‘Í¡½Ý¸¬¬ì(€€€€‘Í½É•Í1¥ÍÐ€ô•áÁ±½‘” œ°œ°€‘…ÍÍ•ÍÍµ•¹ÑlÍ½É•Ìt¤ì(€€€€‘Ñ½Ñ…°€ô…ÉÉ…å}ÍÕ´¡…ÉÉ…å}µ…À ¥¹ÑÙ…°œ°€‘Í½É•Í1¥ÍÐ¤¤ì(€€€€‘Ù¥•Ü€ô€‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôøÙ¥•Ý…ÍÍ•ÍÍµ•¹Ðœ°Ñ…‰±•%œôø‘Ñ…‰±•%°¥œôø‘…ÍÍ•ÍÍµ•¹Ñl¥t¤¤ì(€€€•¡¼€œñÑÈøñÑ Í½Á”ô‰É½Üˆøñ„¡É•˜ôˆœ¸‘Ù¥•Ü¸œˆøœ¸‘•ÍŒ ‘…ÍÍ•ÍÍµ•¹ÑlÍÑÕ‘•¹Ñ¹¼t¤¸œð½„øð½Ñ øœì(€€€¥˜€ ‘Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ì€ôôô€å•Ìœ¤ì•¡¼€œñÑøœ¸‘•ÍŒ ‘…ÍÍ•ÍÍµ•¹ÑlÍÑÕ‘•¹Ðt¤¸œð½Ñøœìô(€€€•¡¼€œñÑøœ¸‘•ÍŒ ‘Ñ½Ñ…°¸œ¼œ¸‘µ…áÑ½Ñ…°¤¸œð½ÑøñÑøœ¸‘•ÍŒ ‘…ÍÍ•ÍÍµ•¹ÑlÑ•…¡•Èt¤¸œð½ÑøñÑøœ¸‘•ÍŒ ‘…ÍÍ•ÍÍµ•¹ÑlÑ¥µ•ÍÑ…µÀt¤¸œð½ÑøñÑøñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥ŒµÉ½Üµ…Ñ¥½¹Ìˆøœì(€€€¥˜€ ‘Ñ¡¥Ì´ù¥ÍY…±¥ •‘¥Ñ…ÍÍ•ÍÍµ•¹Ðœ¤¤ì(€€€€€€€•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø•‘¥Ñ…ÍÍ•ÍÍµ•¹Ðœ°Ñ…‰±•%œôø‘Ñ…‰±•%°¥œôø‘…ÍÍ•ÍÍµ•¹Ñl¥t¤¤¸œˆøœ¸‘¥½¸ Á•¹¥°œ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}•‘¥Ðœ¤¤¸œð½ÍÁ…¸øð½„øœì(€€€ô(€€€¥˜€ ‘Ñ¡¥Ì´ù¥ÍY…±¥ ‘•±•Ñ•…ÍÍ•ÍÍµ•¹Ðœ¤¤ì(€€€€€€€€‘½¹™¥É´€ô€‘•ÍŒ¡©Í½¹}•¹½‘” ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}ÍÕÉ•‘•±•Ñ•…ÍÍ•ÍÍµ•¹Ðœ°ÉÕ‰É¥Œœ¤°)M=9}!a}A=Lð)M=9}!a}EU=P¤¤ì(€€€€€€€•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸ÉÕ‰É¥Œµ‰ÕÑÑ½¸µ‘…¹•Èˆ½¹±¥¬ô‰É•ÑÕÉ¸½¹™¥É´ œ¸‘½¹™¥É´¸œ¤ˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø‘•±•Ñ•ÍÍ•ÍÍµ•¹Ðœ°Ñ…‰±•%œôø‘Ñ…‰±•%°¥œôø‘…ÍÍ•ÍÍµ•¹Ñl¥t¤¤¸œˆøœ¸‘¥½¸ ÑÉ…Í ´Èœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}‘•±•Ñ”œ¤¤¸œð½ÍÁ…¸øð½„øœì(€€€ô(€€€•¡¼€œð½‘¥Øøð½Ñøð½ÑÈøœì)ô)¥˜€ ‘Í¡½Ý¸€ôôô€À¤ì•¡¼€œñÑÈøñÑ½±ÍÁ…¸ôˆœ¸ ‘Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ì€ôôô€å•Ìœ€ü€Ø€è€Ô¤¸œˆøñ‘¥Ø±…ÍÌô‰ÉÕ‰É¥Œµ•µÁÑäˆøœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}¹½É•½É‘Ìœ°ÉÕ‰É¥Œœ¤¤¸œð½‘¥Øøð½Ñøð½ÑÈøœìô)•¡¼€œð½Ñ‰½‘äøð½Ñ…‰±”øð½‘¥Øøñ¹…Ø±…ÍÌô‰ÉÕ‰É¥ŒµÙ¥•Üµ…Ñ¥½¹Ìˆ…É¥„µ±…‰•°ôˆœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ µ½‘}ÉÕ‰É¥}…Ñ¥½¹Ìœ°ÉÕ‰É¥Œœ¤¤¸œˆøœì)¥˜€ ‘Ñ¡¥Ì´ù½‰©UÍ•È´ù¥Í½¹Ñ•áÑ1•ÑÕÉ•È ¤¤ì(€€€€‘Ñ½±”€ô€‘Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ì€ôôô€å•Ìœ€ü€¹¼œ€è€å•Ìœì(€€€€‘Ñ½±•1…‰•°€ô€‘Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ì€ôôô€å•Ìœ€ü€‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}¡¥‘”œ°ÉÕ‰É¥Œœ¤€è€‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ ÉÕ‰É¥}Í¡½Üœ°ÉÕ‰É¥Œœ¤ì(€€€•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä …Ñ¥½¸œôø…ÍÍ•ÍÍµ•¹ÑÌœ°Ñ…‰±•%œôø‘Ñ…‰±•%°Í¡½ÝMÑÕ‘•¹Ñ9…µ•Ìœôø‘Ñ½±”¤¤¸œˆøœ¸‘¥½¸ ÕÍ•ÉÌµÉ½Õ¹œ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘Ñ½±•1…‰•°¤¸œð½ÍÁ…¸øð½„øœ(€€€€€€€€¸œñ‰ÕÑÑ½¸±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…ÉäˆÑåÁ”ô‰‰ÕÑÑ½¸ˆ½¹±¥¬ô‰Ý¥¹‘½Ü¹ÁÉ¥¹Ð ¤ˆøœ¸‘¥½¸ ™¥±”µÑ•áÐœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}ÁÉ¥¹Ðœ¤¤¸œð½ÍÁ…¸øð½‰ÕÑÑ½¸øœì)ô)•¡¼€œñ„±…ÍÌô‰‰ÕÑÑ½¸¡¥Í¥µ‰„µ‰ÕÑÑ½¸µÍ•½¹‘…Éäˆ¡É•˜ôˆœ¸‘ÕÉ°¡…ÉÉ…ä ¤¤¸œˆøœ¸‘¥½¸ ¡•ÙÉ½¸µ±•™Ðœ¤¸œñÍÁ…¸øœ¸‘•ÍŒ ‘½‰©1…¹Õ…”´ù±…¹Õ…•Q•áÐ Ý½É‘}‰…¬œ¤¤¸œð½ÍÁ…¸øð½„øð½¹…Øøð½µ…¥¸øœì(üø(
