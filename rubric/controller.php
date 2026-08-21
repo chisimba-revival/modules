@@ -63,6 +63,29 @@ class rubric extends controller
 		$this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
     }
 
+    /**
+     * Build a URI for direct use in an HTML attribute.
+     *
+     * Keep this compatibility method in the module while development images
+     * may still contain a framework predating the canonical core helper.
+     */
+    public function uriForHtmlAttribute(
+        $params,
+        $moduleName = '',
+        $uriMode = '',
+        $omitServerName = FALSE
+    ) {
+        $uri = $this->uri(
+            $params,
+            $moduleName,
+            $uriMode,
+            $omitServerName,
+            TRUE,
+            TRUE
+        );
+        return htmlspecialchars($uri, ENT_QUOTES, 'UTF-8');
+    }
+
    /**
      * Method to override isValid to enable administrators to perform certain action
      *
