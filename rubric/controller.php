@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 <?php
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run'])

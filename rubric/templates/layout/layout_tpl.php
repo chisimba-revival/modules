@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 <?php
 $this->appendArrayVar('headerParams', '<style type="text/css">'
     .'.rubric-scope-bar{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin:0 0 1rem;padding:.75rem 1rem;border:1px solid #cfd8dc;border-radius:.5rem;background:#f5f8f8;color:#37474f}'
