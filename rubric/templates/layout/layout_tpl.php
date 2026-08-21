@@ -20,7 +20,9 @@ else {
 }*/
 $userMenuBar=& $this->getObject('sidemenu','toolbar');
 $toolbar = $this->getObject('contextsidebar', 'context');
-$cssLayout->setLeftColumnContent($toolbar->show());
+if (empty($rubricFullWidth)) {
+    $cssLayout->setLeftColumnContent($toolbar->show());
+}
 $ret = $this->getContent();
 $ret = "<div class='rubric_main'>$ret</div>";
 $cssLayout->setMiddleColumnContent($ret);

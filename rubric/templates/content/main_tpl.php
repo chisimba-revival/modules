@@ -330,5 +330,51 @@ if (empty($pdtables)) {
 }
 $ret .= $tblclass->show();
 }
+
+$pageTitle->str = $objLanguage->languageText('rubric_shared', 'rubric');
+$tblclass = $this->newObject('htmltable', 'htmlelements');
+$tblclass->width = '100%';
+$tblclass->border = '0';
+$tblclass->cellspacing = '1';
+$tblclass->cellpadding = '5';
+$tblclass->startRow();
+$tblclass->addCell($pageTitle->show(), 'null', 'top', 'left', '', null);
+$tblclass->endRow();
+$ret .= $tblclass->show();
+
+$tblclass = $this->newObject('htmltable', 'htmlelements');
+$tblclass->width = '99%';
+$tblclass->border = '0';
+$tblclass->cellspacing = '1';
+$tblclass->cellpadding = '5';
+$tblclass->startHeaderRow();
+$tblclass->addHeaderCell($objLanguage->languageText('word_title'), 60);
+$tblclass->addHeaderCell($objLanguage->languageText('rubric_description', 'rubric'), 60);
+$tblclass->addHeaderCell('&nbsp;', 60);
+$tblclass->endHeaderRow();
+
+$oddOrEven = 'odd';
+foreach ((array) $sharedtables as $sharedtable) {
+    $oddOrEven = ($oddOrEven == 'even') ? 'odd' : 'even';
+    $title = htmlspecialchars($sharedtable['title'], ENT_QUOTES, 'UTF-8');
+    $description = htmlspecialchars($sharedtable['description'], ENT_QUOTES, 'UTF-8');
+    $viewUrl = $this->uri(array('module'=>'rubric', 'action'=>'viewtable', 'tableId'=>$sharedtable['id']));
+    $options = '<a href="'.$viewUrl.'">'.$objLanguage->languageText('word_view').'</a>';
+    if ($this->isValid('edittable')) {
+        $editUrl = $this->uri(array('module'=>'rubric', 'action'=>'edittable', 'tableId'=>$sharedtable['id']));
+        $options .= ' &nbsp; <a href="'.$editUrl.'">'.$objLanguage->languageText('word_edit').'</a>';
+    }
+    $tblclass->startRow();
+    $tblclass->addCell('<b><a href="'.$viewUrl.'">'.$title.'</a></b>', 'null', 'top', 'left', $oddOrEven, null);
+    $tblclass->addCell($description, 'null', 'top', 'left', $oddOrEven, null);
+    $tblclass->addCell($options, 'null', 'top', 'left', $oddOrEven, null);
+    $tblclass->endRow();
+}
+if (empty($sharedtables)) {
+    $tblclass->startRow();
+    $tblclass->addCell('<div class="noRecordsMessage">'.$objLanguage->languageText('mod_rubric_norecords', 'rubric').'</div>', 'null', 'top', 'left', '', 'colspan="3"');
+    $tblclass->endRow();
+}
+$ret .= $tblclass->show();
 echo $ret;
 ?>

@@ -57,10 +57,10 @@ $textarea->value = $question['model_answer'];
 $table->addCell($textarea->show());
 $table->endRow();
 
-if ($rubricAvailable && !empty($rubrics)) {
+if ($rubricAvailable) {
     $table->startRow();
     $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_rubric', 'worksheet', 'Rubric').'</strong>:');
-    $selectedRubric = isset($question['rubric_id']) ? $question['rubric_id'] : '';
+    $selectedRubric = !empty($returnedRubricId) ? $returnedRubricId : (isset($question['rubric_id']) ? $question['rubric_id'] : '');
     $select = '<select name="rubric_id" id="input_rubric_id">';
     $select .= '<option value="">'.htmlspecialchars($this->objLanguage->languageText('mod_worksheet_no_rubric', 'worksheet', 'No rubric'), ENT_QUOTES, 'UTF-8').'</option>';
     foreach ($rubrics as $rubric) {
@@ -68,6 +68,13 @@ if ($rubricAvailable && !empty($rubrics)) {
         $select .= '<option value="'.htmlspecialchars($rubric['id'], ENT_QUOTES, 'UTF-8').'"'.$selected.'>'.htmlspecialchars($rubric['title'], ENT_QUOTES, 'UTF-8').'</option>';
     }
     $select .= '</select><br /><small>'.$this->objLanguage->languageText('mod_worksheet_rubric_help', 'worksheet', 'Optional reusable marking rubric').'</small>';
+    $actions = array();
+    if ($selectedRubric !== '') {
+        $actions[] = '<a href="'.$this->uri(array('module'=>'rubric', 'action'=>'edittable', 'tableId'=>$selectedRubric)).'">'.$this->objLanguage->languageText('mod_worksheet_view_edit_rubric', 'worksheet', 'View/Edit selected rubric').'</a>';
+    }
+    $actions[] = '<a href="'.$this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'context', 'returnModule'=>'worksheet', 'returnAction'=>'editquestion', 'returnId'=>$question['id'])).'">'.$this->objLanguage->languageText('mod_worksheet_create_rubric', 'worksheet', 'Create rubric').'</a>';
+    $actions[] = '<a href="'.$this->uri(array('module'=>'rubric')).'">'.$this->objLanguage->languageText('mod_worksheet_manage_rubrics', 'worksheet', 'Manage rubrics').'</a>';
+    $select .= '<br /><span class="worksheet-rubric-actions">'.implode(' &middot; ', $actions).'</span>';
     $table->addCell($select);
     $table->endRow();
 }

@@ -33,11 +33,14 @@
     $createForm->action=$this->uri(array(
 	    	'module'=>'rubric',
 			'action'=>'edittableconfirm',
-			'tableId'=>$tableId));
+			'tableId'=>$tableId,
+			'returnModule'=>$this->getParam('returnModule', ''),
+			'returnAction'=>$this->getParam('returnAction', ''),
+			'returnId'=>$this->getParam('returnId', '')));
     
     $objTable=$this->newObject('htmltable','htmlelements');    
     $objTable->border='0';    
-    $objTable->width='40%';
+	$objTable->width='100%';
     $objTable->cellspacing='2';
     $objTable->cellpadding='2';	
 	
@@ -61,7 +64,7 @@
 		}
 		$objTable->endRow();
 	}
-	$createForm->addToForm($objTable->show());
+	$createForm->addToForm('<div class="rubric-matrix-scroll" style="max-width:100%;overflow-x:auto;">'.$objTable->show().'</div>');
 		$button = new button("submit", $objLanguage->languageText("word_save"));
 		$button->setToSubmit();
 	$createForm->addToForm('<p>'.$button->show().'</p>');

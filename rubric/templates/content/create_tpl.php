@@ -17,7 +17,10 @@
     $createForm->action=$this->uri(array(
 	    	'module'=>'rubric',
 			'action'=>'createtableconfirm',
-			'type'=>$_type));
+			'type'=>$_type,
+			'returnModule'=>$this->getParam('returnModule', ''),
+			'returnAction'=>$this->getParam('returnAction', ''),
+			'returnId'=>$this->getParam('returnId', '')));
 
 	$createForm->setDisplayType(3);
 	$createForm->addToForm($pageTitle->show());
@@ -72,7 +75,13 @@
     $button->setToSubmit();
     
     $cancelButton = new button("cancel", $objLanguage->languageText("word_cancel")); //word_create
-    $cancelButton->setOnClick("window.location='".$this->uri(NULL)."'");
+	$returnModule = $this->getParam('returnModule', '');
+	$returnAction = $this->getParam('returnAction', '');
+	$returnId = $this->getParam('returnId', '');
+	$cancelUrl = ($returnModule === 'worksheet' && in_array($returnAction, array('editquestion', 'managequestions')) && $returnId !== '')
+		? $this->uri(array('module'=>'worksheet', 'action'=>$returnAction, 'id'=>$returnId))
+		: $this->uri(NULL);
+	$cancelButton->setOnClick("window.location='".$cancelUrl."'");
     
     //$row = array($button->show());
     

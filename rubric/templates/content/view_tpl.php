@@ -38,7 +38,7 @@ if (isset($IsAssessment)) {
 }
 $table =& $this->newObject("htmltable","htmlelements");
 $table->border = '0';
-$table->width = '40%';
+$table->width = '100%';
 $table->cellspacing='2';
 $table->cellpadding='2';
 $table->startRow();
@@ -77,7 +77,7 @@ if (isset($IsAssessment)) {
     $table->addCell("$total/$maxtotal");
     $table->endRow();
 }
-$ret .= $table->show();
+$ret .= '<div class="rubric-matrix-scroll" style="max-width:100%;overflow-x:auto;">'.$table->show().'</div>';
 if ($noBanner == "yes") {
     $ret .= "<a href=\"javascript:history.back();\">" . "Back" . "</a>";
 }

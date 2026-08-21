@@ -89,6 +89,10 @@ public function dispatch($action=Null)
     {
         // Set the layout template.
         $this->setLayoutTemplate("layout_tpl.php");
+		$this->setVar('rubricFullWidth', in_array($action, array(
+			'edittable', 'edittableconfirm', 'viewtable', 'viewassessment',
+			'addrow', 'addcol', 'delrow', 'delcol'
+		)));
 
         // Check to ensure the user is allowed to execute this action.
         if ($this->isRestricted($action) && !$this->userHasModifyAccess()) {
@@ -156,7 +160,11 @@ public function dispatch($action=Null)
 
 		        //return "edit_tpl.php";
 
-                return $this->nextAction('edittable', array('tableId'=>$tableId, 'new'=>'yes'));
+				$returnParams = $this->getWorksheetReturnParams();
+				return $this->nextAction('edittable', array_merge(array(
+					'tableId'=>$tableId,
+					'new'=>'yes'
+				), $returnParams));
 			// Rename a rubric
 			case "renametable":
 				$tableId = $this->getParam("tableId", "");
@@ -313,6 +321,7 @@ public function dispatch($action=Null)
 			// Edit the rubric
 			case "edittable":
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$this->setVarByRef("tableId", $tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
@@ -352,14 +361,14 @@ public function dispatch($action=Null)
                     // Build the performances array
                     $performances = array();
                     for ($j=0;$j<$cols;$j++) {
-                        $performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+						$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
                         $performances[] = $performance[0]['performance'];
                     }
                     $this->setVarByRef("performances", $performances);
                     // Build the objectives array
                     $objectives = array();
                     for ($i=0;$i<$rows;$i++) {
-                        $objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+						$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
                         $objectives[] = $objective[0]['objective'];
                     }
                     $this->setVarByRef("objectives", $objectives);
@@ -368,7 +377,7 @@ public function dispatch($action=Null)
                     for ($i=0;$i<$rows;$i++) {
                         $cells[$i] = array();
                         for ($j=0;$j<$cols;$j++) {
-                            $cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+							$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
                             $cells[$i][$j] = $cell[0]['contents'];
                         }
                     }
@@ -417,7 +426,16 @@ public function dispatch($action=Null)
 					}
 				}
 
-                return $this->nextAction('viewtable', array('tableId'=>$tableId));
+				$returnParams = $this->getWorksheetReturnParams();
+				if (!empty($returnParams)) {
+					return $this->nextAction(
+						$returnParams['returnAction'],
+						array('id'=>$returnParams['returnId'], 'rubric_id'=>$tableId),
+						$returnParams['returnModule']
+					);
+				}
+
+				return $this->nextAction('viewtable', array('tableId'=>$tableId));
 
 				//return "view_tpl.php";
             case 'addrow':
@@ -643,6 +661,7 @@ public function dispatch($action=Null)
 			// View a rubric
 			case "viewtable":
 				$tableId = $this->getParam("tableId", "");
+				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$title = $tableInfo[0]['title'];
 				$description = $tableInfo[0]['description'];
@@ -655,14 +674,14 @@ public function dispatch($action=Null)
 				// Build the performances array
 				$performances = array();
 				for ($j=0;$j<$cols;$j++) {
-					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j);
+					$performance = $this->objDbRubricPerformances->listSingle($tableId, $j + $indexOffset);
 					$performances[] = $performance[0]['performance'];
 				}
 				$this->setVarByRef("performances", $performances);
 				// Build the objectives array
 				$objectives = array();
 				for ($i=0;$i<$rows;$i++) {
-					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i);
+					$objective = $this->objDbRubricObjectives->listSingle($tableId, $i + $indexOffset);
 					$objectives[] = $objective[0]['objective'];
 				}
 				$this->setVarByRef("objectives", $objectives);
@@ -671,7 +690,7 @@ public function dispatch($action=Null)
 				for ($i=0;$i<$rows;$i++) {
 					$cells[$i] = array();
 					for ($j=0;$j<$cols;$j++) {
-						$cell = $this->objDbRubricCells->listSingle($tableId, $i, $j);
+						$cell = $this->objDbRubricCells->listSingle($tableId, $i + $indexOffset, $j + $indexOffset);
 						$cells[$i][$j] = $cell[0]['contents'];
 					}
 				}
@@ -1080,11 +1099,50 @@ public function dispatch($action=Null)
 		}
 		$tables = $this->objDbRubricTables->listAll($this->contextCode, $this->contextCode == 'root' ? $this->objUser->userId() : NULL);
 		$this->setVarByRef("tables", $tables);
+		$sharedtables = $this->objDbRubricTables->listAll('root', NULL);
+		$this->setVarByRef("sharedtables", $sharedtables);
 		if ($this->contextCode != 'root') {
 			$pdtables = $this->objDbRubricTables->listAll("root", $this->objUser->userId());
 			$this->setVarByRef("pdtables", $pdtables);
 		}
         return "main_tpl.php";
+    }
+
+    /**
+     * Preserve only the supported return route from Rubric to Worksheet.
+     *
+     * @return array Safe module/action/id parameters, or an empty array.
+     */
+    private function getWorksheetReturnParams()
+    {
+		$returnModule = $this->getParam('returnModule', '');
+		$returnAction = $this->getParam('returnAction', '');
+		$returnId = $this->getParam('returnId', '');
+
+		if ($returnModule !== 'worksheet'
+			|| !in_array($returnAction, array('editquestion', 'managequestions'))
+			|| !is_string($returnId)
+			|| $returnId === '') {
+			return array();
+		}
+
+		return array(
+			'returnModule' => 'worksheet',
+			'returnAction' => $returnAction,
+			'returnId' => $returnId
+		);
+    }
+
+    /**
+     * Support both legacy zero-based matrices and reusable one-based fixtures.
+     *
+     * @param string $tableId Rubric identifier.
+     * @return int Zero or one.
+     */
+    private function getRubricIndexOffset($tableId)
+    {
+		$firstPerformance = $this->objDbRubricPerformances->listSingle($tableId, 0);
+		return empty($firstPerformance) ? 1 : 0;
     }
 
     /**
