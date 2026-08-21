@@ -11,6 +11,9 @@ $this->appendArrayVar('headerParams', '<style type="text/css">'
     .'.rubric-notice.error{border:1px solid #d99;background:#fff0f0;color:#8a1f1f}'
 	.'.rubric_main{box-sizing:border-box;width:min(100%,92rem);margin-inline:auto}'
 	.'.rubric_main--wide{width:calc(100% - 2 * clamp(.75rem,1.5vw,1.5rem));max-width:120rem}'
+	.'#Canvas_Content_Body:has(.rubric_main--wide){display:block!important;grid-template-columns:minmax(0,1fr)!important}'
+	.'#Canvas_Content_Body:has(.rubric_main--wide)>#onecolumn{display:block!important;float:none!important;margin-inline:auto!important;width:100%!important;max-width:none!important}'
+	.'#Canvas_Content_Body:has(.rubric_main--wide)>#onecolumn>#content,#Canvas_Content_Body:has(.rubric_main--wide)>#onecolumn>#content>#contentcontent{box-sizing:border-box;float:none!important;margin:0!important;width:100%!important;max-width:none!important}'
     .'@media(max-width:48rem){.rubric-scope-bar{display:block}.rubric-scope-bar span{display:block;margin:.2rem 0}.rubric-matrix-scroll th,.rubric-matrix-scroll td{min-width:12rem}}'
     .'</style>');
 $objDBContext = & $this->getObject('dbcontext','context');
