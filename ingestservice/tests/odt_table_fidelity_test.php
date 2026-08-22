@@ -33,6 +33,7 @@ $checks = array(
     ($table['rows'][0][0]['colspan'] ?? 0) === 2,
     ($table['rows'][1][0]['rowspan'] ?? 0) === 2,
     count($table['rows'][1][0]['content'] ?? array()) === 2,
+    ($table['rows'][1][0]['content'][1]['caption'] ?? 'missing') === '',
     count($table['assets'] ?? array()) === 1,
     count($result['assets']) === 1,
     empty(array_filter($result['issues'], fn($issue) => $issue['severity'] === 'error'))
