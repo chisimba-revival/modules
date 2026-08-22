@@ -95,8 +95,21 @@ class contextcontentingestprofile extends ChisimbaObject
         }
         if (($block['type'] ?? '') === 'table') {
             $rows = '';
-            foreach (($block['rows'] ?? array()) as $row) { $cells = ''; foreach ($row as $cell) { $cells .= '<td>' . ($cell['html'] ?? '') . '</td>'; } $rows .= '<tr>' . $cells . '</tr>'; }
-            return '<table><tbody>' . $rows . '</tbody></table>';
+            foreach (($block['rows'] ?? array()) as $row) {
+                $cells = '';
+                foreach ($row as $cell) {
+                    $tag = !empty($cell['header']) ? 'th' : 'td';
+                    $attributes = '';
+                    if (($cell['colspan'] ?? 1) > 1) { $attributes .= ' colspan="' . (int) $cell['colspan'] . '"'; }
+                    if (($cell['rowspan'] ?? 1) > 1) { $attributes .= ' rowspan="' . (int) $cell['rowspan'] . '"'; }
+                    $content = '';
+                    foreach (($cell['content'] ?? array()) as $cellBlock) { $content .= $this->renderBlock($cellBlock); }
+                    if ($content === '') { $content = $cell['html'] ?? ''; }
+                    $cells .= '<' . $tag . $attributes . '>' . $content . '</' . $tag . '>';
+                }
+                $rows .= '<tr>' . $cells . '</tr>';
+            }
+            return '<div class="ingest-table"><table><tbody>' . $rows . '</tbody></table></div>';
         }
         return '<p>' . ($block['html'] ?? '') . '</p>';
     }

@@ -8,11 +8,15 @@ $result = (new odtingestparser())->parse($path);
 $errors = array_filter($result['issues'], fn($issue) => $issue['severity'] === 'error');
 $imageBlocks = array_filter($result['blocks'], fn($block) => $block['type'] === 'image');
 $tableBlocks = array_filter($result['blocks'], fn($block) => $block['type'] === 'table');
+$referencedAssets = array();
+foreach ($imageBlocks as $block) { $referencedAssets[] = $block['assetId']; }
+foreach ($tableBlocks as $block) { $referencedAssets = array_merge($referencedAssets, $block['assets'] ?? array()); }
+$referencedAssets = array_unique($referencedAssets);
 $checks = array(
     $result['schema'] === 'chisimba.ingest-document/v1',
     empty($errors),
     count($result['blocks']) > 0,
-    count($result['assets']) === count($imageBlocks),
+    count($result['assets']) === count($referencedAssets),
     count($tableBlocks) > 0,
     !array_filter($imageBlocks, fn($block) => trim((string) ($block['caption'] ?? '')) === '')
 );
