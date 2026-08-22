@@ -32,6 +32,11 @@ $checks = array(
         && str_contains($workflow, 'legal_acceptance_not_confirmed'),
     'outbox delivery' => str_contains($workflow, 'queueEmail(')
         && str_contains($workflow, 'idempotencyKey'),
+    'complete transactional email' => str_contains($workflow, "'html' => \$email['html']")
+        && str_contains($workflow, 'Verify email address')
+        && str_contains($workflow, 'copy and paste this address')
+        && str_contains($workflow, 'expires in 24 hours')
+        && str_contains($workflow, 'safely ignore this email'),
     'atomic verification state' => str_contains($workflow, 'consumeWith(')
         && str_contains($workflow, "'status' => 'verified'"),
     'no legacy workflow reuse' => !str_contains($workflow, 'userregistration')

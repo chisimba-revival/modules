@@ -164,11 +164,21 @@ class registrationservice extends dbTable
         $url = rtrim($this->objConfig->getSiteRoot(), '/')
             . '/index.php?module=registration-service&action=verify&token='
             . rawurlencode($token['rawToken']);
+        $email = $this->actionEmail(
+            $pending['first_name'],
+            'Verify your email address',
+            'Thanks for creating a Chisimba account. Confirm that this email address belongs to you to finish setting up your account.',
+            'Verify email address',
+            $url,
+            'This verification link expires in 24 hours.',
+            'If you did not create this account, you can safely ignore this email.'
+        );
         $message = $this->objCommunications->queueEmail(array(
             'to' => $pending['email_address'],
             'toName' => $pending['first_name'] . ' ' . $pending['surname'],
-            'subject' => 'Verify your account',
-            'text' => "Complete your account verification:\n" . $url,
+            'subject' => 'Verify your email address | Chisimba',
+            'text' => $email['text'],
+            'html' => $email['html'],
             'idempotencyKey' => 'registration-verification:' . $token['tokenId'],
             'metadata' => array(
                 'purpose' => 'registration_verification',
@@ -354,11 +364,21 @@ class registrationservice extends dbTable
             $url = rtrim($this->objConfig->getSiteRoot(), '/')
                 . '/index.php?module=registration-service&action=recover&token='
                 . rawurlencode($token['rawToken']);
+            $email = $this->actionEmail(
+                $user['firstname'],
+                'Reset your password',
+                'We received a request to reset the password for your Chisimba account.',
+                'Reset password',
+                $url,
+                'This password reset link expires in one hour.',
+                'If you did not request a password reset, you can safely ignore this email. Your password will not change.'
+            );
             $message = $this->objCommunications->queueEmail(array(
                 'to' => $user['emailaddress'],
                 'toName' => trim($user['firstname'] . ' ' . $user['surname']),
-                'subject' => 'Reset your password',
-                'text' => "Complete your password reset:\n" . $url,
+                'subject' => 'Reset your password | Chisimba',
+                'text' => $email['text'],
+                'html' => $email['html'],
                 'idempotencyKey' => 'password-recovery:' . $token['tokenId'],
                 'metadata' => array(
                     'purpose' => 'password_recovery',
@@ -481,6 +501,62 @@ class registrationservice extends dbTable
             'metadata' => array(),
         ));
         return !empty($event['ok']);
+    }
+
+    private function actionEmail(
+        $firstName,
+        $heading,
+        $introduction,
+        $buttonLabel,
+        $url,
+        $expiry,
+        $ignoreNotice
+    ) {
+        $firstName = trim((string) $firstName);
+        $greeting = $firstName === '' ? 'Hello,' : 'Hello ' . $firstName . ',';
+        $text = $greeting . "\n\n"
+            . $introduction . "\n\n"
+            . $buttonLabel . ":\n" . $url . "\n\n"
+            . $expiry . "\n\n"
+            . $ignoreNotice . "\n\n"
+            . "Regards,\nThe Chisimba team";
+
+        $escape = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+        $html = '<!doctype html><html><body style="margin:0;background:#f3f6f9;'
+            . 'font-family:Arial,Helvetica,sans-serif;color:#172b4d">'
+            . '<div style="display:none;max-height:0;overflow:hidden">'
+            . $escape($introduction) . '</div>'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0"'
+            . ' style="background:#f3f6f9;padding:32px 12px"><tr><td align="center">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0"'
+            . ' style="max-width:600px;background:#fff;border:1px solid #dfe3e8;'
+            . 'border-radius:8px;overflow:hidden">'
+            . '<tr><td style="background:#075985;color:#fff;padding:20px 32px;'
+            . 'font-size:24px;font-weight:bold">Chisimba</td></tr>'
+            . '<tr><td style="padding:32px">'
+            . '<p style="margin:0 0 20px;font-size:16px">' . $escape($greeting) . '</p>'
+            . '<h1 style="margin:0 0 16px;font-size:26px;line-height:1.25;color:#102a43">'
+            . $escape($heading) . '</h1>'
+            . '<p style="margin:0 0 24px;font-size:16px;line-height:1.6">'
+            . $escape($introduction) . '</p>'
+            . '<p style="margin:0 0 24px"><a href="' . $escape($url) . '"'
+            . ' style="display:inline-block;background:#0879c1;color:#fff;text-decoration:none;'
+            . 'font-size:16px;font-weight:bold;padding:13px 22px;border-radius:6px">'
+            . $escape($buttonLabel) . '</a></p>'
+            . '<p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#52667a">'
+            . $escape($expiry) . '</p>'
+            . '<p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:#52667a">'
+            . 'If the button does not work, copy and paste this address into your browser:</p>'
+            . '<p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all">'
+            . '<a href="' . $escape($url) . '" style="color:#0879c1">' . $escape($url) . '</a></p>'
+            . '<hr style="border:0;border-top:1px solid #e5e9ed;margin:24px 0">'
+            . '<p style="margin:0;font-size:13px;line-height:1.5;color:#6b7785">'
+            . $escape($ignoreNotice) . '</p>'
+            . '</td></tr></table></td></tr></table></body></html>';
+
+        return array('text' => $text, 'html' => $html);
     }
 
     private function username($value)
