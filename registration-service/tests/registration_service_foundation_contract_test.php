@@ -48,6 +48,22 @@ $checks = array(
         $workflow,
         "'password_hash' => null"
     ),
+    'privacy preserving recovery' => str_contains(
+        $workflow,
+        "'code' => 'recovery_request_received'"
+    ) && str_contains($workflow, 'findByEmail('),
+    'recovery through outbox' => str_contains(
+        $workflow,
+        "'password-recovery:'"
+    ),
+    'atomic password recovery' => str_contains(
+        $workflow,
+        "consumeWith(\n            'password_recovery'"
+    ) && str_contains($workflow, 'replaceWithinTransaction('),
+    'recovery audit' => str_contains(
+        $workflow,
+        'account.password.recovery.completed'
+    ),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

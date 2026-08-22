@@ -46,6 +46,10 @@ class registrationservice extends dbTable
             'accounteventservice',
             'account-event-service'
         );
+        $this->objCredentials = $this->getObject(
+            'accountcredentialservice',
+            'security'
+        );
         $this->objConfig = $this->getObject('altconfig', 'config');
     }
 
@@ -322,6 +326,113 @@ class registrationservice extends dbTable
             'pendingId' => $pendingId,
             'userId' => $created['userId'],
         );
+    }
+
+    /**
+     * Request recovery without disclosing whether the address has an account.
+     */
+    public function requestPasswordRecovery($emailAddress, $correlationId)
+    {
+        $emailAddress = $this->email($emailAddress);
+        $correlationId = $this->identifier($correlationId, 64);
+        if ($emailAddress === null || $correlationId === null) {
+            return array('ok' => true, 'code' => 'recovery_request_received');
+        }
+        $user = $this->objUsers->findByEmail($emailAddress);
+        if (!is_array($user) || empty($user['userid'])
+            || empty($user['isactive'])) {
+            return array('ok' => true, 'code' => 'recovery_request_received');
+        }
+        $token = $this->objTokens->issue(
+            'password_recovery',
+            'user',
+            $user['userid'],
+            $correlationId,
+            3600
+        );
+        if (!empty($token['ok']) && !empty($token['rawToken'])) {
+            $url = rtrim($this->objConfig->getSiteRoot(), '/')
+                . '/index.php?module=registration-service&action=recover&token='
+                . rawurlencode($token['rawToken']);
+            $message = $this->objCommunications->queueEmail(array(
+                'to' => $user['emailaddress'],
+                'toName' => trim($user['firstname'] . ' ' . $user['surname']),
+                'subject' => 'Reset your password',
+                'text' => "Complete your password reset:\n" . $url,
+                'idempotencyKey' => 'password-recovery:' . $token['tokenId'],
+                'metadata' => array(
+                    'purpose' => 'password_recovery',
+                    'userId' => $user['userid'],
+                ),
+            ));
+            $this->objEvents->append(array(
+                'eventType' => 'account.password.recovery.requested',
+                'subjectType' => 'user',
+                'subjectId' => $user['userid'],
+                'actorType' => 'anonymous',
+                'actorId' => '',
+                'outcome' => empty($message['ok']) ? 'failed' : 'requested',
+                'reasonCode' => empty($message['ok'])
+                    ? 'communication_queue_failed' : '',
+                'correlationId' => $correlationId,
+                'sourceService' => 'registration-service',
+                'metadata' => array(),
+            ));
+        }
+        return array('ok' => true, 'code' => 'recovery_request_received');
+    }
+
+    /** Atomically consume recovery proof, replace password, and revoke sessions. */
+    public function completePasswordRecovery($rawToken, $newPassword, $correlationId)
+    {
+        $correlationId = $this->identifier($correlationId, 64);
+        if ($correlationId === null || !is_scalar($newPassword)) {
+            return array('ok' => false, 'code' => 'invalid_recovery_request');
+        }
+        $userId = null;
+        $result = $this->objTokens->consumeWith(
+            'password_recovery',
+            $rawToken,
+            function ($subjectType, $subjectId) use (
+                &$userId,
+                $newPassword,
+                $correlationId
+            ) {
+                if ($subjectType !== 'user') {
+                    return false;
+                }
+                $changed = $this->objCredentials->replaceWithinTransaction(
+                    $subjectId,
+                    (string) $newPassword
+                );
+                if (empty($changed['ok'])) {
+                    return false;
+                }
+                $event = $this->objEvents->append(array(
+                    'eventType' => 'account.password.recovery.completed',
+                    'subjectType' => 'user',
+                    'subjectId' => $subjectId,
+                    'actorType' => 'anonymous',
+                    'actorId' => '',
+                    'outcome' => 'succeeded',
+                    'correlationId' => $correlationId,
+                    'sourceService' => 'registration-service',
+                    'metadata' => array(),
+                ));
+                if (empty($event['ok'])) {
+                    return false;
+                }
+                $userId = $subjectId;
+                return true;
+            }
+        );
+        if (empty($result['ok']) || $userId === null) {
+            return array(
+                'ok' => false,
+                'code' => $result['code'] ?? 'password_recovery_failed',
+            );
+        }
+        return array('ok' => true, 'code' => 'password_recovered', 'userId' => $userId);
     }
 
     private function pending($id, $status)
