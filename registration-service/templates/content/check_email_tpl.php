@@ -1,0 +1,2 @@
+<?php $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8'); $t=fn($k)=>$this->objLanguage->languageText('mod_registration_service_'.$k,'registration-service'); ?>
+<main class="chisimba-workspace registration-service" aria-labelledby="check-email-title"><h1 id="check-email-title"><?php echo $e($t('check_email_title')); ?></h1><p><?php echo $e($t('check_email_intro')); ?></p><p><strong><?php echo $e($registrationEmail ?? ''); ?></strong></p><p><?php echo $e($t('check_email_help')); ?></p></main>
