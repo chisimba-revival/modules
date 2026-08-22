@@ -52,6 +52,6 @@ $result = isset($documentImportResult) && is_array($documentImportResult) ? $doc
 <div class="<?php echo $status === 'completed' || $status === 'unchanged' ? 'success' : 'error'; ?>">
 <?php echo $e($t($status === 'completed' ? 'mod_contextcontent_importdocument_success' : ($status === 'unchanged' ? 'mod_contextcontent_importdocument_unchanged' : 'mod_contextcontent_importdocument_failed'))); ?>
 </div>
-<p><a href="<?php echo $u(); ?>"><?php echo $e($t('mod_contextcontent_importdocument_return')); ?></a></p>
+<div class="chisimba-form-actions"><a class="button" href="<?php echo $u(); ?>"><?php echo $e($t('mod_contextcontent_importdocument_return')); ?></a></div>
 <?php endif; ?>
 </div>

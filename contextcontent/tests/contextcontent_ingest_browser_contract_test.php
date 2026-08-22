@@ -15,6 +15,13 @@ $checks = array(
         && str_contains($template, 'accept=".odt,.docx,'),
     'explicit confirmation' => str_contains($template, "action' => 'confirmdocumentimport'")
         && str_contains($template, 'stage_token'),
+    'modern success destination' => str_contains(
+        $template,
+        '<div class="chisimba-form-actions"><a class="button"'
+    ) && str_contains(
+        $register,
+        'mod_contextcontent_importdocument_return|Open course content action|Open course content'
+    ),
     'single URL encoding' => str_contains($template, 'html_entity_decode($this->uri(')
         && !str_contains($template, '$e($this->uri('),
     'discoverable import entry points' => substr_count(
