@@ -54,7 +54,7 @@ $table->endRow();
 $form->addToForm($table->show());
 
 
-$button = new button('submitbutton', $this->objLanguage->languageText('mod_contextcontent_chapter','contextcontent'));
+$button = new button('submitbutton', $this->objLanguage->languageText('mod_contextcontent_createchapter','contextcontent'));
 $button->setToSubmit();
 $importUrl = htmlspecialchars(
     html_entity_decode(

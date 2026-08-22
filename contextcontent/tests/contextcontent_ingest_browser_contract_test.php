@@ -24,7 +24,8 @@ $checks = array(
     'empty-course actions share skin row' => str_contains(
         $emptyCourseTemplate,
         '<div class="chisimba-form-actions">' . "' . \$button->show() . \$importAction . '" . '</div>'
-    ) && !str_contains($emptyCourseTemplate, "echo '<p><a class=\"button"),
+    ) && !str_contains($emptyCourseTemplate, "echo '<p><a class=\"button")
+        && str_contains($emptyCourseTemplate, "languageText('mod_contextcontent_createchapter'"),
     'entry URLs encoded once' => str_contains(
         $emptyCourseTemplate,
         'html_entity_decode('
