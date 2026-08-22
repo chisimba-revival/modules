@@ -37,6 +37,8 @@ class registration_service extends controller
 
     public function dispatch($action)
     {
+        header('Cache-Control: no-store, private');
+        header('Referrer-Policy: no-referrer');
         $this->setLayoutTemplate(null);
         $this->setVar('pageSuppressToolbar', true);
         switch ((string) $action) {
@@ -76,6 +78,9 @@ class registration_service extends controller
         $password = $this->scalarParam('password');
         if ($password === '' || !hash_equals($password, $this->scalarParam('password_confirm'))) {
             return $this->registrationPage('password_mismatch', $values);
+        }
+        if (strlen($password) < 12) {
+            return $this->registrationPage('weak_password', $values);
         }
         $correlation = 'registration.web.' . bin2hex(random_bytes(16));
         $pending = $this->service->createPending($values + array(
@@ -171,6 +176,9 @@ class registration_service extends controller
         $password = $this->scalarParam('password');
         if ($password === '' || !hash_equals($password, $this->scalarParam('password_confirm'))) {
             return $this->recoveryResetPage('password_mismatch', $token);
+        }
+        if (strlen($password) < 12) {
+            return $this->recoveryResetPage('weak_password', $token);
         }
         $result = $this->service->completePasswordRecovery(
             $token,
