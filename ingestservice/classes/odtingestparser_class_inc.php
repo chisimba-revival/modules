@@ -10,6 +10,7 @@ class odtingestparser extends ChisimbaObject
     private const XLINK_NS = 'http://www.w3.org/1999/xlink';
     private const SVG_NS = 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0';
     private const TABLE_NS = 'urn:oasis:names:tc:opendocument:xmlns:table:1.0';
+    private const FO_NS = 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0';
 
     public function parse($path, array $options = array())
     {
@@ -142,7 +143,8 @@ class odtingestparser extends ChisimbaObject
                     'content' => $content,
                     'header' => $isHeader,
                     'colspan' => max(1, (int) $cell->getAttributeNS(self::TABLE_NS, 'number-columns-spanned')),
-                    'rowspan' => max(1, (int) $cell->getAttributeNS(self::TABLE_NS, 'number-rows-spanned'))
+                    'rowspan' => max(1, (int) $cell->getAttributeNS(self::TABLE_NS, 'number-rows-spanned')),
+                    'backgroundColor' => $styles[$cell->getAttributeNS(self::TABLE_NS, 'style-name')]['backgroundColor'] ?? ''
                 );
             }
             $rows[] = $cells;
@@ -209,6 +211,12 @@ class odtingestparser extends ChisimbaObject
                 if (preg_match('/(?:Heading|heading)[ _](\d)$/', $display, $match)) { $level = (int) $match[1]; }
                 $styles[$id] = array('displayName' => $display, 'level' => $level);
             }
+            foreach ($xpath->query('//style:style[@style:family="table-cell"]') as $style) {
+                $id = $style->getAttributeNS(self::STYLE_NS, 'name');
+                $properties = $xpath->query('./style:table-cell-properties', $style)->item(0);
+                $colour = $properties ? strtolower($properties->getAttributeNS(self::FO_NS, 'background-color')) : '';
+                $styles[$id] = array('backgroundColor' => preg_match('/^#[0-9a-f]{6}$/', $colour) ? $colour : '');
+            }
             foreach ($xpath->query('//text:list-style') as $listStyle) {
                 $id = $listStyle->getAttributeNS(self::STYLE_NS, 'name');
                 $styles[$id] = array('ordered' => $xpath->query('./text:list-level-style-number', $listStyle)->length > 0);
@@ -264,6 +272,7 @@ class odtingestparser extends ChisimbaObject
         $xpath->registerNamespace('draw', self::DRAW_NS);
         $xpath->registerNamespace('svg', self::SVG_NS);
         $xpath->registerNamespace('table', self::TABLE_NS);
+        $xpath->registerNamespace('fo', self::FO_NS);
         return $xpath;
     }
 
