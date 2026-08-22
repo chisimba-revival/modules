@@ -125,7 +125,15 @@ if ($this->isValid('addchapter')) {
     $link->link = $this->objLanguage->languageText('mod_contextcontent_addanewchapter', 'contextcontent');
 
     $content .= '<br /><p>' . $link->show() . '</p>';
-    $importUrl = $this->uri(array('action' => 'importdocument'));
+    $importUrl = htmlspecialchars(
+        html_entity_decode(
+            $this->uri(array('action' => 'importdocument')),
+            ENT_QUOTES,
+            'UTF-8'
+        ),
+        ENT_QUOTES,
+        'UTF-8'
+    );
     $importLabel = htmlspecialchars(
         $this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent'),
         ENT_QUOTES,

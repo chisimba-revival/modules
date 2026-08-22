@@ -21,10 +21,12 @@ $checks = array(
         $emptyCourseTemplate . $courseLayout,
         'button chisimba-button-secondary contextcontent-import-document'
     ) === 2,
-    'entry URLs encoded once' => !str_contains(
+    'entry URLs encoded once' => str_contains(
         $emptyCourseTemplate,
-        'htmlspecialchars($importUrl'
-    ) && !str_contains($courseLayout, 'htmlspecialchars($importUrl'),
+        'html_entity_decode('
+    ) && str_contains($courseLayout, 'html_entity_decode(')
+        && !str_contains($emptyCourseTemplate, 'htmlspecialchars($importUrl')
+        && !str_contains($courseLayout, 'htmlspecialchars($importUrl'),
     'registered permissions' => str_contains($register, 'importdocument,previewdocumentimport,confirmdocumentimport|iscontextlecturer')
 );
 foreach ($checks as $name => $passed) {

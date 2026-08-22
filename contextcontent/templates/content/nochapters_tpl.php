@@ -62,7 +62,15 @@ $form->addToForm($button->show());
 
 echo $form->show();
 
-$importUrl = $this->uri(array('action' => 'importdocument'), 'contextcontent');
+$importUrl = htmlspecialchars(
+    html_entity_decode(
+        $this->uri(array('action' => 'importdocument'), 'contextcontent'),
+        ENT_QUOTES,
+        'UTF-8'
+    ),
+    ENT_QUOTES,
+    'UTF-8'
+);
 echo '<p><a class="button chisimba-button-secondary contextcontent-import-document" href="' . $importUrl . '">'
     . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent'), ENT_QUOTES, 'UTF-8')
     . '</a></p>';
