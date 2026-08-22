@@ -55,8 +55,8 @@ class odtingestparser extends ChisimbaObject
             if ($table) {
                 $key = $table->getNodePath();
                 if (!isset($seenTables[$key])) {
-                    if ($xpath->query('.//draw:image', $table)->length) { $issues[] = $this->issue('warning', 'table.images_unsupported', 'Images inside table cells were not imported.', $location); }
-                    $blocks[] = $this->tableBlock($xpath, $table, $location); $seenTables[$key] = true;
+                    $blocks[] = $this->tableBlock($xpath, $table, $zip, $assets, $styles, $options, $issues, $location);
+                    $seenTables[$key] = true;
                 }
                 continue;
             }
@@ -114,26 +114,52 @@ class odtingestparser extends ChisimbaObject
             'items' => $items, 'source' => array('path' => $location, 'styleId' => $styleId));
     }
 
-    private function tableBlock($xpath, $table, $location)
+    private function tableBlock($xpath, $table, $zip, array &$assets, array $styles, array $options, array &$issues, $location)
     {
-        $rows = array();
+        $rows = array(); $tableAssets = array();
         foreach ($xpath->query('./table:table-row', $table) as $row) {
             $cells = array();
-            foreach ($xpath->query('./table:table-cell', $row) as $cell) {
-                $html = array(); $text = array();
+            foreach ($row->childNodes as $cell) {
+                if (!($cell instanceof DOMElement) || $cell->namespaceURI !== self::TABLE_NS) { continue; }
+                if ($cell->localName === 'covered-table-cell') { continue; }
+                if ($cell->localName !== 'table-cell') { continue; }
+                $html = array(); $text = array(); $content = array(); $isHeader = false;
                 foreach ($xpath->query('./text:p', $cell) as $paragraph) {
-                    $html[] = $this->inlineHtml($paragraph); $text[] = trim($this->plainText($paragraph));
+                    $paragraphHtml = $this->inlineHtml($paragraph);
+                    $paragraphText = trim($this->plainText($paragraph));
+                    $html[] = $paragraphHtml; $text[] = $paragraphText;
+                    $content[] = array('type' => 'paragraph', 'text' => $paragraphText, 'html' => $paragraphHtml);
+                    $styleId = $paragraph->getAttributeNS(self::TEXT_NS, 'style-name');
+                    if (stripos((string) ($styles[$styleId]['displayName'] ?? $styleId), 'heading') !== false) { $isHeader = true; }
+                    foreach ($xpath->query('.//draw:frame', $paragraph) as $frame) {
+                        $image = $this->imageBlock($xpath, $frame, $zip, $assets, $options, $issues, $location);
+                        if ($image) { $content[] = $image; $tableAssets[] = $image['assetId']; }
+                    }
                 }
-                $cells[] = array('text' => trim(implode("\n", $text)), 'html' => implode('<br>', $html));
+                $cells[] = array(
+                    'text' => trim(implode("\n", $text)),
+                    'html' => implode('<br>', $html),
+                    'content' => $content,
+                    'header' => $isHeader,
+                    'colspan' => max(1, (int) $cell->getAttributeNS(self::TABLE_NS, 'number-columns-spanned')),
+                    'rowspan' => max(1, (int) $cell->getAttributeNS(self::TABLE_NS, 'number-rows-spanned'))
+                );
             }
             $rows[] = $cells;
         }
-        return array('type' => 'table', 'rows' => $rows, 'source' => array('path' => $location));
+        return array('type' => 'table', 'rows' => $rows, 'assets' => array_values(array_unique($tableAssets)),
+            'source' => array('path' => $location));
     }
 
     private function imageBlock($xpath, $frame, $zip, array &$assets, array $options, array &$issues, $location)
     {
-        $image = $xpath->query('./draw:image', $frame)->item(0);
+        $image = null;
+        foreach ($xpath->query('./draw:image', $frame) as $candidate) {
+            $candidatePath = rawurldecode($candidate->getAttributeNS(self::XLINK_NS, 'href'));
+            $candidateExtension = strtolower(pathinfo($candidatePath, PATHINFO_EXTENSION));
+            if (in_array($candidateExtension, array('png', 'jpg', 'jpeg', 'gif', 'webp'), true)) { $image = $candidate; break; }
+        }
+        if (!$image) { $image = $xpath->query('./draw:image', $frame)->item(0); }
         if (!$image) { return null; }
         $target = $image ? rawurldecode($image->getAttributeNS(self::XLINK_NS, 'href')) : '';
         if ($target === '' || str_starts_with($target, '/') || str_contains($target, '..')) {

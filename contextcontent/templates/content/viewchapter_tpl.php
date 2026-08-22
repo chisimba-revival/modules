@@ -1,4 +1,5 @@
 <?php
+$this->appendArrayVar('headerParams', '<style type="text/css">.ingest-table{max-width:100%;margin:1.25rem 0;overflow-x:auto}.ingest-table table{width:100%;border-collapse:collapse}.ingest-table th,.ingest-table td{min-width:8rem;padding:.7rem .8rem;border:1px solid #b0bec5;vertical-align:top;text-align:left}.ingest-table th{background:#eef2f3;font-weight:700}.ingest-table p{margin:.25rem 0}.ingest-table figure{margin:.5rem 0}.ingest-table img{display:block;max-width:100%;height:auto}</style>');
 $this->loadClass('link', 'htmlelements');
 $objWashout = $this->getObject('washout', 'utilities');
 $backLink = new link($this->uri(array('action' => 'showcontextchapters'), 'contextcontent'));
