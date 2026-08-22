@@ -19,7 +19,7 @@ $document = array(
             array('level' => 0, 'text' => 'Second', 'html' => 'Second')
         )),
         array('type' => 'table', 'assets' => array('asset-1'), 'rows' => array(array(
-            array('text' => 'Alpha', 'html' => 'Alpha', 'header' => true, 'colspan' => 2, 'rowspan' => 1,
+            array('text' => 'Alpha', 'html' => 'Alpha', 'header' => true, 'colspan' => 2, 'rowspan' => 1, 'backgroundColor' => '#bff1d9',
                 'content' => array(array('type' => 'paragraph', 'html' => 'Alpha'))),
             array('text' => 'Beta', 'html' => 'Beta', 'header' => false, 'colspan' => 1, 'rowspan' => 2,
                 'content' => array(array('type' => 'image', 'assetId' => 'asset-1', 'assets' => array('asset-1'), 'alt' => 'Beta')))
@@ -37,7 +37,7 @@ $checks = array(
     str_contains($result['chapters'][0]['pages'][0]['html'], '<h3>Inside</h3>'),
     str_contains($result['chapters'][0]['pages'][0]['html'], '<ol><li>First</li><li>Second</li></ol>'),
     str_contains($result['chapters'][0]['pages'][0]['html'], '<div class="ingest-table"><table>'),
-    str_contains($result['chapters'][0]['pages'][0]['html'], '<th colspan="2"><p>Alpha</p></th>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<th colspan="2" style="background-color:#bff1d9"><p>Alpha</p></th>'),
     str_contains($result['chapters'][0]['pages'][0]['html'], '<td rowspan="2"><figure><img src="ingest-asset://asset-1"'),
     str_contains($result['chapters'][0]['pages'][0]['html'], 'ingest-asset://asset-1'),
     $result['issues'][0]['code'] === 'structure.content_before_chapter'
