@@ -21,6 +21,10 @@ $checks = array(
         $emptyCourseTemplate . $courseLayout,
         'button chisimba-button-secondary contextcontent-import-document'
     ) === 2,
+    'empty-course actions share skin row' => str_contains(
+        $emptyCourseTemplate,
+        '<div class="chisimba-form-actions">' . "' . \$button->show() . \$importAction . '" . '</div>'
+    ) && !str_contains($emptyCourseTemplate, "echo '<p><a class=\"button"),
     'entry URLs encoded once' => str_contains(
         $emptyCourseTemplate,
         'html_entity_decode('

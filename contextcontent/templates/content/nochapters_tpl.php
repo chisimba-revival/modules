@@ -56,12 +56,6 @@ $form->addToForm($table->show());
 
 $button = new button('submitbutton', $this->objLanguage->languageText('mod_contextcontent_chapter','contextcontent'));
 $button->setToSubmit();
-$form->addToForm($button->show());
-
-//$form->addRule('chapter');
-
-echo $form->show();
-
 $importUrl = htmlspecialchars(
     html_entity_decode(
         $this->uri(array('action' => 'importdocument'), 'contextcontent'),
@@ -71,8 +65,13 @@ $importUrl = htmlspecialchars(
     ENT_QUOTES,
     'UTF-8'
 );
-echo '<p><a class="button chisimba-button-secondary contextcontent-import-document" href="' . $importUrl . '">'
+$importAction = '<a class="button chisimba-button-secondary contextcontent-import-document" href="' . $importUrl . '">'
     . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent'), ENT_QUOTES, 'UTF-8')
-    . '</a></p>';
+    . '</a>';
+$form->addToForm('<div class="chisimba-form-actions">' . $button->show() . $importAction . '</div>');
+
+//$form->addRule('chapter');
+
+echo $form->show();
 
 ?>
