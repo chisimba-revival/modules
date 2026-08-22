@@ -31,6 +31,8 @@ $aside = '<aside class="chisimba-guidance-card" aria-labelledby="account-guidanc
     . $e($t('already_registered')) . '</a></p></aside>';
 
 $layout = $this->newObject('csslayout', 'htmlelements');
+$layout->setNumColumns(3);
+$layout->layoutType = 'canvas_stacked31';
 $layout->setMiddleColumnContent($this->getContent());
 $layout->setRightColumnContent($aside);
 echo $layout->show();

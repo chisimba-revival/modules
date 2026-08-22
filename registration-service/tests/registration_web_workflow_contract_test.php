@@ -13,6 +13,8 @@ $checks = array(
         && str_contains($controller, "'forgotpassword', 'requestrecovery', 'recover', 'resetpassword'"),
     'standard two-column layout' => str_contains($controller, "setLayoutTemplate('registration_layout_tpl.php')")
         && str_contains($layout, "newObject('csslayout', 'htmlelements')")
+        && str_contains($layout, 'setNumColumns(3)')
+        && str_contains($layout, "layoutType = 'canvas_stacked31'")
         && str_contains($layout, 'setMiddleColumnContent(')
         && str_contains($layout, 'setRightColumnContent(')
         && str_contains($layout, 'chisimba-guidance-card'),
