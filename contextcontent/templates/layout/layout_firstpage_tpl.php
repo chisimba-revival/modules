@@ -125,9 +125,14 @@ if ($this->isValid('addchapter')) {
     $link->link = $this->objLanguage->languageText('mod_contextcontent_addanewchapter', 'contextcontent');
 
     $content .= '<br /><p>' . $link->show() . '</p>';
-    $importLink = new link($this->uri(array('action' => 'importdocument')));
-    $importLink->link = $this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent');
-    $content .= '<p>' . $importLink->show() . '</p>';
+    $importUrl = $this->uri(array('action' => 'importdocument'));
+    $importLabel = htmlspecialchars(
+        $this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent'),
+        ENT_QUOTES,
+        'UTF-8'
+    );
+    $content .= '<p><a class="button chisimba-button-secondary contextcontent-import-document" href="'
+        . $importUrl . '">' . $importLabel . '</a></p>';
 }
 //Show logs if configured true
 if ($enableViewActivityLog == 'true' && $this->isValid('addchapter')) {
