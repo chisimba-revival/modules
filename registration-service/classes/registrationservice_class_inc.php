@@ -514,8 +514,9 @@ class registrationservice extends dbTable
 
     private function quote($value)
     {
-        return method_exists($this->_objDB, 'quoteSmart')
-            ? $this->_objDB->quoteSmart((string) $value)
+        $database = $this->objEngine->getDbObj();
+        return method_exists($database, 'quoteSmart')
+            ? $database->quoteSmart((string) $value)
             : "'" . str_replace("'", "''", (string) $value) . "'";
     }
 

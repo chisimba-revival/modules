@@ -64,6 +64,8 @@ $checks = array(
         $workflow,
         'account.password.recovery.completed'
     ),
+    'runtime database quoting' => !str_contains($workflow . $service, '_objDB')
+        && substr_count($workflow . $service, 'objEngine->getDbObj()') === 2,
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

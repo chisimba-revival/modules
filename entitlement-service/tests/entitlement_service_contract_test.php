@@ -32,6 +32,8 @@ $checks = array(
         $registration . $service,
         'userregistration'
     ),
+    'runtime database quoting' => !str_contains($service, '_objDB')
+        && str_contains($service, 'objEngine->getDbObj()'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

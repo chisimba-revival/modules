@@ -184,8 +184,9 @@ class accounteventservice extends dbTable
 
     private function quoteValue($value)
     {
-        return method_exists($this->_objDB, 'quoteSmart')
-            ? $this->_objDB->quoteSmart((string) $value)
+        $database = $this->objEngine->getDbObj();
+        return method_exists($database, 'quoteSmart')
+            ? $database->quoteSmart((string) $value)
             : "'" . str_replace("'", "''", (string) $value) . "'";
     }
 
@@ -195,4 +196,3 @@ class accounteventservice extends dbTable
     }
 }
 ?>
-

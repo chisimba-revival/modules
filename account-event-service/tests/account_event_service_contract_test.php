@@ -16,6 +16,8 @@ $checks = array(
     'primary key' => str_contains($schema, "'primary' => TRUE"),
     'subject index' => str_contains($schema, "'account_event_subject'"),
     'no legacy dependency' => !str_contains($registration . $service, 'userregistration'),
+    'runtime database quoting' => !str_contains($service, '_objDB')
+        && str_contains($service, 'objEngine->getDbObj()'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
