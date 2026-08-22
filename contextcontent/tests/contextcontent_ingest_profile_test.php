@@ -18,8 +18,11 @@ $document = array(
             array('level' => 0, 'text' => 'First', 'html' => 'First'),
             array('level' => 0, 'text' => 'Second', 'html' => 'Second')
         )),
-        array('type' => 'table', 'rows' => array(array(
-            array('text' => 'Alpha', 'html' => 'Alpha'), array('text' => 'Beta', 'html' => 'Beta')
+        array('type' => 'table', 'assets' => array('asset-1'), 'rows' => array(array(
+            array('text' => 'Alpha', 'html' => 'Alpha', 'header' => true, 'colspan' => 2, 'rowspan' => 1,
+                'content' => array(array('type' => 'paragraph', 'html' => 'Alpha'))),
+            array('text' => 'Beta', 'html' => 'Beta', 'header' => false, 'colspan' => 1, 'rowspan' => 2,
+                'content' => array(array('type' => 'image', 'assetId' => 'asset-1', 'assets' => array('asset-1'), 'alt' => 'Beta')))
         ))),
         array('type' => 'image', 'assetId' => 'asset-1', 'assets' => array('asset-1'), 'alt' => '')
     )
@@ -33,7 +36,9 @@ $checks = array(
     $result['chapters'][0]['pages'][0]['title'] === 'Page A',
     str_contains($result['chapters'][0]['pages'][0]['html'], '<h3>Inside</h3>'),
     str_contains($result['chapters'][0]['pages'][0]['html'], '<ol><li>First</li><li>Second</li></ol>'),
-    str_contains($result['chapters'][0]['pages'][0]['html'], '<table><tbody><tr><td>Alpha</td><td>Beta</td></tr></tbody></table>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<div class="ingest-table"><table>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<th colspan="2"><p>Alpha</p></th>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<td rowspan="2"><figure><img src="ingest-asset://asset-1"'),
     str_contains($result['chapters'][0]['pages'][0]['html'], 'ingest-asset://asset-1'),
     $result['issues'][0]['code'] === 'structure.content_before_chapter'
 );
