@@ -17,7 +17,8 @@ class contentauthoringservice extends ChisimbaObject
     public function createNativePage(array $input)
     {
         $data = $this->validatePage($input);
-        $this->titles->beginTransaction();
+        $manageTransaction = !array_key_exists('manage_transaction', $input) || $input['manage_transaction'] !== false;
+        if ($manageTransaction) { $this->titles->beginTransaction(); }
         try {
             $titleId = $this->titles->createTypedTitle($data['contenttype']);
             $this->pages->createNativeBody($titleId, $data['title'], $data['body'], $data['language']);
@@ -26,10 +27,10 @@ class contentauthoringservice extends ChisimbaObject
                 $data['insert_after']
             );
             if (!$placementId) { throw new RuntimeException('Could not create content placement'); }
-            $this->titles->commitTransaction();
+            if ($manageTransaction) { $this->titles->commitTransaction(); }
             return $placementId;
         } catch (Throwable $error) {
-            $this->titles->rollbackTransaction();
+            if ($manageTransaction) { $this->titles->rollbackTransaction(); }
             throw $error;
         }
     }
