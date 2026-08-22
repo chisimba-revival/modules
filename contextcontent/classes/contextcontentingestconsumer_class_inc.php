@@ -9,6 +9,8 @@ class contextcontentingestconsumer extends ChisimbaObject
         $this->contextChapters = $this->getObject('db_contextcontent_contextchapter', 'contextcontent');
         $this->authoring = $this->getObject('contentauthoringservice', 'contextcontent');
         $this->profile = $this->getObject('contextcontentingestprofile', 'contextcontent');
+        $this->fileApi = $this->getObject('fileapi', 'filemanager');
+        $this->objLanguage = $this->getObject('language', 'language');
     }
 
     public function consume(array $document, array $options)
@@ -25,8 +27,8 @@ class contextcontentingestconsumer extends ChisimbaObject
         if (!preg_match('/^[a-z]{2,3}$/', $language)) {
             throw new InvalidArgumentException('A valid content language is required.');
         }
-        $assets = array_column($document['assets'] ?? array(), null, 'id');
-        $created = array('contextcode' => $contextCode, 'chapters' => array());
+        $assets = $this->storeAssets($document['assets'] ?? array(), $contextCode, $document['source']['fingerprint'] ?? 'source');
+        $created = array('contextcode' => $contextCode, 'chapters' => array(), 'assets' => array_values($assets));
         $this->chapterRows->beginTransaction();
         try {
             foreach ($document['chapters'] as $chapter) {
@@ -66,11 +68,32 @@ class contextcontentingestconsumer extends ChisimbaObject
     {
         return preg_replace_callback('/ingest-asset:\/\/([A-Za-z0-9_-]+)/', function ($match) use ($assets) {
             $asset = $assets[$match[1]] ?? null;
-            if (!$asset || empty($asset['content']) || empty($asset['mediaType'])) {
+            if (!$asset || empty($asset['url'])) {
                 throw new RuntimeException('Imported content references a missing image asset.');
             }
-            return 'data:' . $asset['mediaType'] . ';base64,' . $asset['content'];
+            return $asset['url'];
         }, $html);
+    }
+
+    private function storeAssets(array $assets, $contextCode, $fingerprint)
+    {
+        $stored = array();
+        $collection = substr(preg_replace('/[^a-f0-9]+/i', '', (string) $fingerprint), 0, 24) ?: 'source';
+        foreach ($assets as $asset) {
+            if (empty($asset['id'])) { throw new RuntimeException($this->objLanguage->languageText('mod_contextcontent_ingest_invalid_asset', 'contextcontent')); }
+            $result = $this->fileApi->storeContextGeneratedImage($contextCode, $asset, $collection);
+            if (empty($result['ok']) || empty($result['file']['url'])) {
+                $message = $result['error']['message'] ?? $this->objLanguage->languageText('mod_contextcontent_ingest_asset_store_failed', 'contextcontent');
+                throw new RuntimeException($message);
+            }
+            $stored[$asset['id']] = array(
+                'assetId' => $asset['id'],
+                'fileId' => $result['file']['id'],
+                'url' => $result['file']['url'],
+                'reused' => !empty($result['reused'])
+            );
+        }
+        return $stored;
     }
 }
 ?>

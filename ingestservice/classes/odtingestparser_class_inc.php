@@ -46,6 +46,10 @@ class odtingestparser extends ChisimbaObject
             if ($node->localName === 'frame' && $node->parentNode && in_array($node->parentNode->localName, array('p', 'h'), true)) {
                 continue;
             }
+            if (in_array($node->localName, array('p', 'h'), true)
+                && $xpath->query('ancestor::draw:frame[1]', $node)->length) {
+                continue;
+            }
             $location = 'content[' . $position . ']';
             $table = $xpath->query('ancestor::table:table[1]', $node)->item(0);
             if ($table) {
@@ -130,6 +134,7 @@ class odtingestparser extends ChisimbaObject
     private function imageBlock($xpath, $frame, $zip, array &$assets, array $options, array &$issues, $location)
     {
         $image = $xpath->query('./draw:image', $frame)->item(0);
+        if (!$image) { return null; }
         $target = $image ? rawurldecode($image->getAttributeNS(self::XLINK_NS, 'href')) : '';
         if ($target === '' || str_starts_with($target, '/') || str_contains($target, '..')) {
             $issues[] = $this->issue('error', 'image.invalid_relationship', 'An embedded image has an invalid package path.', $location);
@@ -155,9 +160,12 @@ class odtingestparser extends ChisimbaObject
             'bytes' => strlen($content), 'content' => base64_encode($content));
         $title = $xpath->query('./svg:title', $frame)->item(0);
         $description = $xpath->query('./svg:desc', $frame)->item(0);
+        $captionNode = $xpath->query('ancestor::text:p[1]', $frame)->item(0);
+        $caption = trim($title ? $title->textContent : '');
+        if ($caption === '' && $captionNode) { $caption = trim($this->plainText($captionNode)); }
         return array('type' => 'image', 'assetId' => $id, 'assets' => array($id),
             'alt' => trim($description ? $description->textContent : ''),
-            'caption' => trim($title ? $title->textContent : ''));
+            'caption' => $caption);
     }
 
     private function readStyles($zip, $contentDom)

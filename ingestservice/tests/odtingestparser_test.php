@@ -24,8 +24,10 @@ $zip->addFromString('content.xml', '<?xml version="1.0"?><office:document-conten
     . '<text:p text:style-name="Chapter_20_Overview">Lorem ipsum dolor sit amet.</text:p>'
     . '<text:h text:outline-level="2" text:style-name="Heading_20_2">Lorem Page</text:h>'
     . '<text:h text:outline-level="3" text:style-name="Heading_20_3">Consectetur</text:h>'
-    . '<text:p>Sed do eiusmod tempor incididunt.<draw:frame><svg:title>Lorem figure</svg:title><svg:desc>Decorative lorem diagram</svg:desc>'
-    . '<draw:image xlink:href="Pictures/lorem.png"/></draw:frame></text:p>'
+    . '<text:p>Sed do eiusmod tempor incididunt.</text:p>'
+    . '<text:p><draw:frame><draw:text-box><text:p><draw:frame><svg:title>Lorem figure</svg:title>'
+    . '<svg:desc>Decorative lorem diagram</svg:desc><draw:image xlink:href="Pictures/lorem.png"/>'
+    . '</draw:frame>Figure 1: Lorem figure.</text:p></draw:text-box></draw:frame></text:p>'
     . '</office:text></office:body></office:document-content>');
 $zip->close();
 
