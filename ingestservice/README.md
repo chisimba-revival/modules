@@ -17,6 +17,11 @@ The DOCX and ODT adapters record heading levels and named paragraph styles witho
 them to chapters, pages, essays, or any other domain object. `styleMap` can override
 source-style interpretation.
 
+Package guards limit source size, archive entries, expanded size, compression ratio,
+and individual image size. The adapters preserve safe hyperlinks, lists, basic tables,
+line breaks, image descriptions and captions; the DOCX adapter also retains common
+inline emphasis. Content that cannot yet be retained is reported as a structured issue.
+
 Optional capabilities transform the neutral document for a particular use case.
 `contextcontentingestprofile` is the reference capability: Heading 1 creates a chapter,
 Chapter Overview supplies its overview, Heading 2 creates a page, and lower headings

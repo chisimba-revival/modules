@@ -14,6 +14,13 @@ $document = array(
         array('type' => 'heading', 'level' => 2, 'text' => 'Page A', 'html' => 'Page A'),
         array('type' => 'heading', 'level' => 3, 'text' => 'Inside', 'html' => 'Inside'),
         array('type' => 'paragraph', 'text' => 'Body', 'html' => 'Body', 'style' => ''),
+        array('type' => 'list', 'ordered' => true, 'items' => array(
+            array('level' => 0, 'text' => 'First', 'html' => 'First'),
+            array('level' => 0, 'text' => 'Second', 'html' => 'Second')
+        )),
+        array('type' => 'table', 'rows' => array(array(
+            array('text' => 'Alpha', 'html' => 'Alpha'), array('text' => 'Beta', 'html' => 'Beta')
+        ))),
         array('type' => 'image', 'assetId' => 'asset-1', 'assets' => array('asset-1'), 'alt' => '')
     )
 );
@@ -25,6 +32,8 @@ $checks = array(
     str_contains($result['chapters'][0]['overview'], '<p>Overview</p>'),
     $result['chapters'][0]['pages'][0]['title'] === 'Page A',
     str_contains($result['chapters'][0]['pages'][0]['html'], '<h3>Inside</h3>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<ol><li>First</li><li>Second</li></ol>'),
+    str_contains($result['chapters'][0]['pages'][0]['html'], '<table><tbody><tr><td>Alpha</td><td>Beta</td></tr></tbody></table>'),
     str_contains($result['chapters'][0]['pages'][0]['html'], 'ingest-asset://asset-1'),
     $result['issues'][0]['code'] === 'structure.content_before_chapter'
 );

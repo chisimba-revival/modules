@@ -83,8 +83,20 @@ class contextcontentingestprofile extends ChisimbaObject
             return '<h' . $level . '>' . ($block['html'] ?? '') . '</h' . $level . '>';
         }
         if (($block['type'] ?? '') === 'image') {
+            $caption = trim((string) ($block['caption'] ?? ''));
             return '<figure><img src="ingest-asset://' . htmlspecialchars($block['assetId'], ENT_QUOTES, 'UTF-8')
-                . '" alt="' . htmlspecialchars((string) ($block['alt'] ?? ''), ENT_QUOTES, 'UTF-8') . '"></figure>';
+                . '" alt="' . htmlspecialchars((string) ($block['alt'] ?? ''), ENT_QUOTES, 'UTF-8') . '">'
+                . ($caption === '' ? '' : '<figcaption>' . htmlspecialchars($caption, ENT_QUOTES, 'UTF-8') . '</figcaption>') . '</figure>';
+        }
+        if (($block['type'] ?? '') === 'list') {
+            $tag = !empty($block['ordered']) ? 'ol' : 'ul'; $items = '';
+            foreach (($block['items'] ?? array()) as $item) { $items .= '<li>' . ($item['html'] ?? '') . '</li>'; }
+            return '<' . $tag . '>' . $items . '</' . $tag . '>';
+        }
+        if (($block['type'] ?? '') === 'table') {
+            $rows = '';
+            foreach (($block['rows'] ?? array()) as $row) { $cells = ''; foreach ($row as $cell) { $cells .= '<td>' . ($cell['html'] ?? '') . '</td>'; } $rows .= '<tr>' . $cells . '</tr>'; }
+            return '<table><tbody>' . $rows . '</tbody></table>';
         }
         return '<p>' . ($block['html'] ?? '') . '</p>';
     }

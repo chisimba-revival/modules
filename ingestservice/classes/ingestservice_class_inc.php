@@ -16,10 +16,17 @@ class ingestservice extends ChisimbaObject
     {
         $options += array(
             'unknownStylePolicy' => $this->sysconfig->getValue('INGESTSERVICE_UNKNOWN_STYLE_POLICY', 'ingestservice'),
-            'maxImageBytes' => (int) $this->sysconfig->getValue('INGESTSERVICE_MAX_IMAGE_BYTES', 'ingestservice')
+            'maxImageBytes' => $this->configuredLimit('INGESTSERVICE_MAX_IMAGE_BYTES', 10485760),
+            'maxSourceBytes' => $this->configuredLimit('INGESTSERVICE_MAX_SOURCE_BYTES', 52428800),
+            'maxArchiveEntries' => $this->configuredLimit('INGESTSERVICE_MAX_ARCHIVE_ENTRIES', 2000),
+            'maxExpandedBytes' => $this->configuredLimit('INGESTSERVICE_MAX_EXPANDED_BYTES', 209715200),
+            'maxCompressionRatio' => $this->configuredLimit('INGESTSERVICE_MAX_COMPRESSION_RATIO', 100)
         );
         if (!is_file($sourcePath) || !is_readable($sourcePath)) {
             return $this->failure('source.unreadable', 'The source file cannot be read.', 'source');
+        }
+        if (filesize($sourcePath) > max(1, $options['maxSourceBytes'])) {
+            return $this->failure('source.too_large', 'The source file exceeds the configured size limit.', 'source');
         }
         $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION));
         if (!in_array($extension, array('docx', 'odt'), true)) {
@@ -100,6 +107,12 @@ class ingestservice extends ChisimbaObject
         return array('schema' => 'chisimba.ingest-document/v1', 'valid' => false, 'blocks' => array(), 'assets' => array(), 'issues' => array(
             array('severity' => 'error', 'code' => $code, 'message' => $message, 'path' => $path)
         ));
+    }
+
+    private function configuredLimit($key, $fallback)
+    {
+        $value = (int) $this->sysconfig->getValue($key, 'ingestservice');
+        return $value > 0 ? $value : $fallback;
     }
 }
 ?>

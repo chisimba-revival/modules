@@ -9,6 +9,7 @@ class odtingestparser extends ChisimbaObject
     private const DRAW_NS = 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0';
     private const XLINK_NS = 'http://www.w3.org/1999/xlink';
     private const SVG_NS = 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0';
+    private const TABLE_NS = 'urn:oasis:names:tc:opendocument:xmlns:table:1.0';
 
     public function parse($path, array $options = array())
     {
@@ -20,6 +21,7 @@ class odtingestparser extends ChisimbaObject
             throw new RuntimeException('The ODT package could not be opened.');
         }
         try {
+            $this->assertSafeArchive($zip, $options);
             $content = $this->loadXml($this->requiredEntry($zip, 'content.xml'), 'content.xml');
             $styles = $this->readStyles($zip, $content);
             return $this->readDocument($zip, $content, $styles, $options);
@@ -39,11 +41,27 @@ class odtingestparser extends ChisimbaObject
             throw new InvalidArgumentException('Unknown named-style policy must be preserve, ignore, warn, or error.');
         }
         $nodes = $xpath->query('//office:body/office:text//*[self::text:h or self::text:p or self::draw:frame]');
+        $seenLists = array(); $seenTables = array();
         foreach ($nodes as $position => $node) {
             if ($node->localName === 'frame' && $node->parentNode && in_array($node->parentNode->localName, array('p', 'h'), true)) {
                 continue;
             }
             $location = 'content[' . $position . ']';
+            $table = $xpath->query('ancestor::table:table[1]', $node)->item(0);
+            if ($table) {
+                $key = $table->getNodePath();
+                if (!isset($seenTables[$key])) {
+                    if ($xpath->query('.//draw:image', $table)->length) { $issues[] = $this->issue('warning', 'table.images_unsupported', 'Images inside table cells were not imported.', $location); }
+                    $blocks[] = $this->tableBlock($xpath, $table, $location); $seenTables[$key] = true;
+                }
+                continue;
+            }
+            $list = $xpath->query('ancestor::text:list[1]', $node)->item(0);
+            if ($list && $node->localName === 'p') {
+                $key = $list->getNodePath();
+                if (!isset($seenLists[$key])) { $blocks[] = $this->listBlock($xpath, $list, $styles, $location); $seenLists[$key] = true; }
+                continue;
+            }
             if ($node->localName === 'frame') {
                 $image = $this->imageBlock($xpath, $node, $zip, $assets, $options, $issues, $location);
                 if ($image) { $blocks[] = $image; }
@@ -79,6 +97,34 @@ class odtingestparser extends ChisimbaObject
         }
         return array('schema' => 'chisimba.ingest-document/v1', 'metadata' => array(), 'blocks' => $blocks,
             'assets' => array_values($assets), 'issues' => $issues);
+    }
+
+    private function listBlock($xpath, $list, array $styles, $location)
+    {
+        $styleId = $list->getAttributeNS(self::TEXT_NS, 'style-name');
+        $items = array();
+        foreach ($xpath->query('./text:list-item/text:p', $list) as $paragraph) {
+            $items[] = array('level' => 0, 'text' => trim($this->plainText($paragraph)), 'html' => $this->inlineHtml($paragraph));
+        }
+        return array('type' => 'list', 'ordered' => (bool) ($styles[$styleId]['ordered'] ?? false),
+            'items' => $items, 'source' => array('path' => $location, 'styleId' => $styleId));
+    }
+
+    private function tableBlock($xpath, $table, $location)
+    {
+        $rows = array();
+        foreach ($xpath->query('./table:table-row', $table) as $row) {
+            $cells = array();
+            foreach ($xpath->query('./table:table-cell', $row) as $cell) {
+                $html = array(); $text = array();
+                foreach ($xpath->query('./text:p', $cell) as $paragraph) {
+                    $html[] = $this->inlineHtml($paragraph); $text[] = trim($this->plainText($paragraph));
+                }
+                $cells[] = array('text' => trim(implode("\n", $text)), 'html' => implode('<br>', $html));
+            }
+            $rows[] = $cells;
+        }
+        return array('type' => 'table', 'rows' => $rows, 'source' => array('path' => $location));
     }
 
     private function imageBlock($xpath, $frame, $zip, array &$assets, array $options, array &$issues, $location)
@@ -129,14 +175,35 @@ class odtingestparser extends ChisimbaObject
                 if (preg_match('/(?:Heading|heading)[ _](\d)$/', $display, $match)) { $level = (int) $match[1]; }
                 $styles[$id] = array('displayName' => $display, 'level' => $level);
             }
+            foreach ($xpath->query('//text:list-style') as $listStyle) {
+                $id = $listStyle->getAttributeNS(self::STYLE_NS, 'name');
+                $styles[$id] = array('ordered' => $xpath->query('./text:list-level-style-number', $listStyle)->length > 0);
+            }
         }
         return $styles;
     }
 
     private function inlineHtml($node)
     {
-        return htmlspecialchars($this->plainText($node), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $html = '';
+        foreach ($node->childNodes as $child) {
+            if ($child instanceof DOMText) { $html .= htmlspecialchars($child->nodeValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); continue; }
+            if ($child->namespaceURI === self::DRAW_NS) { continue; }
+            if ($child->namespaceURI === self::TEXT_NS && $child->localName === 'tab') { $html .= ' '; continue; }
+            if ($child->namespaceURI === self::TEXT_NS && $child->localName === 'line-break') { $html .= '<br>'; continue; }
+            if ($child->namespaceURI === self::TEXT_NS && $child->localName === 's') {
+                $count = max(1, (int) $child->getAttributeNS(self::TEXT_NS, 'c')); $html .= str_repeat(' ', $count); continue;
+            }
+            $content = $this->inlineHtml($child);
+            if ($child->namespaceURI === self::TEXT_NS && $child->localName === 'a') {
+                $url = $this->safeUrl($child->getAttributeNS(self::XLINK_NS, 'href'));
+                $html .= $url === '' ? $content : '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">' . $content . '</a>';
+            } else { $html .= $content; }
+        }
+        return $html;
     }
+
+    private function safeUrl($url) { $url = trim((string) $url); if (str_starts_with($url, '#')) { return $url; } $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME)); return in_array($scheme, array('http', 'https', 'mailto'), true) ? $url : ''; }
 
     private function plainText($node)
     {
@@ -162,10 +229,12 @@ class odtingestparser extends ChisimbaObject
         $xpath->registerNamespace('style', self::STYLE_NS);
         $xpath->registerNamespace('draw', self::DRAW_NS);
         $xpath->registerNamespace('svg', self::SVG_NS);
+        $xpath->registerNamespace('table', self::TABLE_NS);
         return $xpath;
     }
 
     private function requiredEntry($zip, $name) { $value = $zip->getFromName($name); if ($value === false) { throw new RuntimeException('The ODT package is missing ' . $name . '.'); } return $value; }
+    private function assertSafeArchive($zip, array $options) { $entryLimit = max(1, (int) ($options['maxArchiveEntries'] ?? 2000)); $expandedLimit = max(1, (int) ($options['maxExpandedBytes'] ?? 209715200)); $ratioLimit = max(1, (int) ($options['maxCompressionRatio'] ?? 100)); if ($zip->numFiles > $entryLimit) { throw new RuntimeException('The ODT package contains too many entries.'); } $expanded = 0; for ($index = 0; $index < $zip->numFiles; $index++) { $stat = $zip->statIndex($index); if (!$stat) { throw new RuntimeException('The ODT package directory is invalid.'); } $name = str_replace('\\', '/', (string) $stat['name']); if (str_starts_with($name, '/') || preg_match('#(^|/)\.\.(/|$)#', $name)) { throw new RuntimeException('The ODT package contains an unsafe entry path.'); } $size = (int) ($stat['size'] ?? 0); $compressed = (int) ($stat['comp_size'] ?? 0); $expanded += $size; if ($expanded > $expandedLimit) { throw new RuntimeException('The ODT package expands beyond the configured size limit.'); } if ($size > 1048576 && $compressed > 0 && ($size / $compressed) > $ratioLimit) { throw new RuntimeException('The ODT package contains a suspiciously compressed entry.'); } } }
     private function loadXml($xml, $name) { $dom = new DOMDocument(); $previous = libxml_use_internal_errors(true); $ok = $dom->loadXML($xml, LIBXML_NONET | LIBXML_COMPACT); libxml_clear_errors(); libxml_use_internal_errors($previous); if (!$ok) { throw new RuntimeException('Invalid XML in ' . $name . '.'); } return $dom; }
     private function issue($severity, $code, $message, $path) { return array('severity' => $severity, 'code' => $code, 'message' => $message, 'path' => $path); }
 }

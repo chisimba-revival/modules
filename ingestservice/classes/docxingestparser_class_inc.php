@@ -18,17 +18,19 @@ class docxingestparser extends ChisimbaObject
             throw new RuntimeException('The DOCX package could not be opened.');
         }
         try {
+            $this->assertSafeArchive($zip, $options);
             $documentXml = $this->requiredEntry($zip, 'word/document.xml');
             $styles = $this->readStyles($zip);
             $relationships = $this->readRelationships($zip);
+            $numbering = $this->readNumbering($zip);
             $policy = $this->normalisePolicy($options);
-            return $this->readDocument($zip, $documentXml, $styles, $relationships, $policy, $options);
+            return $this->readDocument($zip, $documentXml, $styles, $relationships, $numbering, $policy, $options);
         } finally {
             $zip->close();
         }
     }
 
-    private function readDocument($zip, $xml, array $styles, array $relationships, array $policy, array $options)
+    private function readDocument($zip, $xml, array $styles, array $relationships, array $numbering, array $policy, array $options)
     {
         $dom = $this->loadXml($xml, 'word/document.xml');
         $xpath = new DOMXPath($dom);
@@ -36,10 +38,14 @@ class docxingestparser extends ChisimbaObject
         $blocks = array();
         $assets = array();
         $issues = array();
-        if ($xpath->query('//w:body/w:tbl')->length > 0) {
-            $issues[] = $this->issue('warning', 'content.tables_unsupported', 'Tables are not imported by this release.', 'document');
-        }
-        foreach ($xpath->query('//w:body/w:p') as $position => $paragraph) {
+        foreach ($xpath->query('//w:body/*[self::w:p or self::w:tbl]') as $position => $paragraph) {
+            if ($paragraph->localName === 'tbl') {
+                if ($xpath->query('.//*[local-name()="blip"]', $paragraph)->length) {
+                    $issues[] = $this->issue('warning', 'table.images_unsupported', 'Images inside table cells were not imported.', 'content[' . $position . ']');
+                }
+                $blocks[] = $this->tableBlock($xpath, $paragraph, $relationships, 'content[' . $position . ']');
+                continue;
+            }
             $styleId = $this->attribute($xpath, './w:pPr/w:pStyle', 'val', $paragraph);
             $styleName = $styles[$styleId] ?? $styleId;
             $role = $this->roleForStyle($styleId, $styleName, $policy);
@@ -54,12 +60,22 @@ class docxingestparser extends ChisimbaObject
             }
             $source = array('path' => $location, 'styleId' => $styleId, 'styleName' => $styleName);
             if ($text !== '') {
-                if (str_starts_with($role, 'heading')) {
+                $numId = $this->attribute($xpath, './w:pPr/w:numPr/w:numId', 'val', $paragraph);
+                if ($numId !== '' && !str_starts_with($role, 'heading')) {
+                    $level = (int) $this->attribute($xpath, './w:pPr/w:numPr/w:ilvl', 'val', $paragraph);
+                    $ordered = ($numbering[$numId] ?? 'bullet') !== 'bullet';
+                    $last = count($blocks) - 1;
+                    if ($last < 0 || $blocks[$last]['type'] !== 'list' || $blocks[$last]['ordered'] !== $ordered) {
+                        $blocks[] = array('type' => 'list', 'ordered' => $ordered, 'items' => array(), 'source' => $source);
+                        $last = count($blocks) - 1;
+                    }
+                    $blocks[$last]['items'][] = array('level' => $level, 'text' => $text, 'html' => $this->inlineHtml($xpath, $paragraph, $relationships));
+                } elseif (str_starts_with($role, 'heading')) {
                     $blocks[] = array(
                         'type' => 'heading',
                         'level' => (int) substr($role, 7),
                         'text' => $text,
-                        'html' => $this->inlineHtml($xpath, $paragraph),
+                        'html' => $this->inlineHtml($xpath, $paragraph, $relationships),
                         'style' => $styleName,
                         'source' => $source
                     );
@@ -67,7 +83,7 @@ class docxingestparser extends ChisimbaObject
                     $blocks[] = array(
                         'type' => 'paragraph',
                         'text' => $text,
-                        'html' => $this->inlineHtml($xpath, $paragraph),
+                        'html' => $this->inlineHtml($xpath, $paragraph, $relationships),
                         'style' => $styleName,
                         'source' => $source
                     );
@@ -81,12 +97,30 @@ class docxingestparser extends ChisimbaObject
         return array('schema' => 'chisimba.ingest-document/v1', 'metadata' => array(), 'blocks' => $blocks, 'assets' => array_values($assets), 'issues' => $issues);
     }
 
+    private function tableBlock($xpath, $table, array $relationships, $location)
+    {
+        $rows = array();
+        foreach ($xpath->query('./w:tr', $table) as $row) {
+            $cells = array();
+            foreach ($xpath->query('./w:tc', $row) as $cell) {
+                $html = array(); $text = array();
+                foreach ($xpath->query('./w:p', $cell) as $paragraph) {
+                    $html[] = $this->inlineHtml($xpath, $paragraph, $relationships);
+                    $text[] = trim($this->paragraphText($xpath, $paragraph));
+                }
+                $cells[] = array('text' => trim(implode("\n", $text)), 'html' => implode('<br>', $html));
+            }
+            $rows[] = $cells;
+        }
+        return array('type' => 'table', 'rows' => $rows, 'source' => array('path' => $location));
+    }
+
     private function extractImages($xpath, $paragraph, $zip, array $relationships, array &$assets, array $options, array &$issues, $location)
     {
         $blocks = array();
         foreach ($xpath->query('.//*[local-name()="blip"]', $paragraph) as $blip) {
             $relationshipId = $blip->getAttributeNS(self::REL_NS, 'embed');
-            $target = $relationships[$relationshipId] ?? '';
+            $target = $relationships[$relationshipId]['target'] ?? '';
             if ($target === '' || str_contains($target, '..')) {
                 $issues[] = $this->issue('error', 'image.invalid_relationship', 'An embedded image has an invalid package relationship.', $location);
                 continue;
@@ -108,20 +142,57 @@ class docxingestparser extends ChisimbaObject
             }
             $id = 'asset-' . substr(hash('sha256', $content), 0, 20);
             $assets[$id] = array('id' => $id, 'name' => basename($target), 'mediaType' => $mime, 'bytes' => strlen($content), 'content' => base64_encode($content));
-            $blocks[] = array('type' => 'image', 'assetId' => $id, 'assets' => array($id), 'alt' => '', 'caption' => '');
+            $metadata = $xpath->query('.//*[local-name()="docPr"]', $paragraph)->item(0);
+            $blocks[] = array('type' => 'image', 'assetId' => $id, 'assets' => array($id),
+                'alt' => $metadata ? trim($metadata->getAttribute('descr')) : '',
+                'caption' => $metadata ? trim($metadata->getAttribute('title')) : '');
         }
         return $blocks;
     }
 
-    private function inlineHtml($xpath, $paragraph)
+    private function inlineHtml($xpath, $paragraph, array $relationships)
     {
         $parts = array();
-        foreach ($xpath->query('.//w:t|.//w:tab|.//w:br', $paragraph) as $node) {
-            if ($node->localName === 'tab') { $parts[] = ' '; }
-            elseif ($node->localName === 'br') { $parts[] = '<br>'; }
-            else { $parts[] = htmlspecialchars($node->textContent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+        foreach ($paragraph->childNodes as $node) {
+            if ($node->namespaceURI !== self::WORD_NS) { continue; }
+            if ($node->localName === 'r') {
+                $parts[] = $this->renderRun($xpath, $node);
+            } elseif ($node->localName === 'hyperlink') {
+                $label = '';
+                foreach ($xpath->query('./w:r', $node) as $run) { $label .= $this->renderRun($xpath, $run); }
+                $relationshipId = $node->getAttributeNS(self::REL_NS, 'id');
+                $target = $relationships[$relationshipId]['external'] ?? false
+                    ? $this->safeUrl($relationships[$relationshipId]['target'] ?? '') : '';
+                $anchor = trim($node->getAttributeNS(self::WORD_NS, 'anchor'));
+                if ($target === '' && $anchor !== '') { $target = '#' . rawurlencode($anchor); }
+                $parts[] = $target === '' ? $label : '<a href="' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '">' . $label . '</a>';
+            }
         }
         return implode('', $parts);
+    }
+
+    private function renderRun($xpath, $run)
+    {
+        $html = '';
+        foreach ($xpath->query('./w:t|./w:tab|./w:br', $run) as $node) {
+            if ($node->localName === 'tab') { $html .= ' '; }
+            elseif ($node->localName === 'br') { $html .= '<br>'; }
+            else { $html .= htmlspecialchars($node->textContent, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+        }
+        if ($html === '') { return ''; }
+        if ($xpath->query('./w:rPr/w:b[not(@w:val="0") and not(@w:val="false")]', $run)->length) { $html = '<strong>' . $html . '</strong>'; }
+        if ($xpath->query('./w:rPr/w:i[not(@w:val="0") and not(@w:val="false")]', $run)->length) { $html = '<em>' . $html . '</em>'; }
+        if ($xpath->query('./w:rPr/w:u[not(@w:val="none")]', $run)->length) { $html = '<u>' . $html . '</u>'; }
+        if ($xpath->query('./w:rPr/w:strike[not(@w:val="0") and not(@w:val="false")]', $run)->length) { $html = '<s>' . $html . '</s>'; }
+        return $html;
+    }
+
+    private function safeUrl($url)
+    {
+        $url = trim((string) $url);
+        if (str_starts_with($url, '#')) { return $url; }
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        return in_array($scheme, array('http', 'https', 'mailto'), true) ? $url : '';
     }
 
     private function readStyles($zip)
@@ -146,11 +217,33 @@ class docxingestparser extends ChisimbaObject
         $dom = $this->loadXml($xml, 'word/_rels/document.xml.rels');
         $relationships = array();
         foreach ($dom->getElementsByTagNameNS(self::PACKAGE_REL_NS, 'Relationship') as $relationship) {
-            if ($relationship->getAttribute('TargetMode') !== 'External') {
-                $relationships[$relationship->getAttribute('Id')] = $relationship->getAttribute('Target');
-            }
+            $relationships[$relationship->getAttribute('Id')] = array(
+                'target' => $relationship->getAttribute('Target'),
+                'external' => $relationship->getAttribute('TargetMode') === 'External'
+            );
         }
         return $relationships;
+    }
+
+    private function readNumbering($zip)
+    {
+        $xml = $zip->getFromName('word/numbering.xml');
+        if ($xml === false) { return array(); }
+        $dom = $this->loadXml($xml, 'word/numbering.xml');
+        $xpath = new DOMXPath($dom); $xpath->registerNamespace('w', self::WORD_NS);
+        $abstract = array();
+        foreach ($xpath->query('//w:abstractNum') as $definition) {
+            $id = $definition->getAttributeNS(self::WORD_NS, 'abstractNumId');
+            $format = $this->attribute($xpath, './w:lvl[@w:ilvl="0"]/w:numFmt', 'val', $definition);
+            $abstract[$id] = $format ?: 'bullet';
+        }
+        $numbering = array();
+        foreach ($xpath->query('//w:num') as $number) {
+            $id = $number->getAttributeNS(self::WORD_NS, 'numId');
+            $abstractId = $this->attribute($xpath, './w:abstractNumId', 'val', $number);
+            $numbering[$id] = $abstract[$abstractId] ?? 'bullet';
+        }
+        return $numbering;
     }
 
     private function normalisePolicy(array $options)
@@ -177,6 +270,29 @@ class docxingestparser extends ChisimbaObject
         $content = $zip->getFromName($name);
         if ($content === false) { throw new RuntimeException('The DOCX package is missing ' . $name . '.'); }
         return $content;
+    }
+
+    private function assertSafeArchive($zip, array $options)
+    {
+        $entryLimit = max(1, (int) ($options['maxArchiveEntries'] ?? 2000));
+        $expandedLimit = max(1, (int) ($options['maxExpandedBytes'] ?? 209715200));
+        $ratioLimit = max(1, (int) ($options['maxCompressionRatio'] ?? 100));
+        if ($zip->numFiles > $entryLimit) { throw new RuntimeException('The DOCX package contains too many entries.'); }
+        $expanded = 0;
+        for ($index = 0; $index < $zip->numFiles; $index++) {
+            $stat = $zip->statIndex($index);
+            if (!$stat) { throw new RuntimeException('The DOCX package directory is invalid.'); }
+            $name = str_replace('\\', '/', (string) $stat['name']);
+            if (str_starts_with($name, '/') || preg_match('#(^|/)\.\.(/|$)#', $name)) {
+                throw new RuntimeException('The DOCX package contains an unsafe entry path.');
+            }
+            $size = (int) ($stat['size'] ?? 0); $compressed = (int) ($stat['comp_size'] ?? 0);
+            $expanded += $size;
+            if ($expanded > $expandedLimit) { throw new RuntimeException('The DOCX package expands beyond the configured size limit.'); }
+            if ($size > 1048576 && $compressed > 0 && ($size / $compressed) > $ratioLimit) {
+                throw new RuntimeException('The DOCX package contains a suspiciously compressed entry.');
+            }
+        }
     }
 
     private function loadXml($xml, $name)
