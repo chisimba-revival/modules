@@ -1,20 +1,26 @@
 # Content Ingest Service
 
 `ingestservice` is a reusable boundary between source formats and Chisimba modules.
-It parses a source into `chisimba.content-ingest/v1`, validates that canonical model,
+It parses a source into the consumer-neutral `chisimba.ingest-document/v1`, validates that canonical model,
 produces byte-free dry-run previews, and delivers valid content through a named
 consumer adapter. Source adapters never call consumer persistence APIs.
 
 ## Canonical model
 
-The document contains source metadata (including a SHA-256 fingerprint), chapters,
-pages, binary assets, and structured issues. Every issue has `severity`, `code`,
+The document contains source metadata (including a SHA-256 fingerprint), ordered
+blocks, binary assets, and structured issues. Blocks represent headings, paragraphs,
+images, lists, or tables without assigning consumer-specific meaning to them. Every issue has `severity`, `code`,
 `message`, and `path`. Asset references use `ingest-asset://<id>` until a consumer
 materialises them.
 
-The DOCX adapter maps Heading 1 to chapters, Chapter Overview to the current chapter
-overview, Heading 2 to pages, and Heading 3 through Heading 6 to headings inside the
-current page. `styleMap` can override or extend these roles.
+The DOCX adapter records heading levels and named paragraph styles without mapping
+them to chapters, pages, essays, or any other domain object. `styleMap` can override
+source-style interpretation.
+
+Optional capabilities transform the neutral document for a particular use case.
+`contextcontentingestprofile` is the reference capability: Heading 1 creates a chapter,
+Chapter Overview supplies its overview, Heading 2 creates a page, and lower headings
+remain inside pages. An essay consumer can instead retain the ordered neutral blocks.
 
 ## Public service API
 
@@ -22,6 +28,11 @@ current page. `styleMap` can override or extend these roles.
 $service = $this->getObject('ingestservice', 'ingestservice');
 $preview = $service->preview($path, $options);
 $document = $service->parse($path, $options);
+$projection = $service->applyCapability(
+    $document,
+    'contextcontent',
+    'contextcontentingestprofile'
+);
 $result = $service->deliver(
     $document,
     'contextcontent',
@@ -33,4 +44,4 @@ $result = $service->deliver(
 Delivery is idempotent for the tuple `(source fingerprint, consumer module, target)`.
 Passing `force => true` starts another delivery. The first consumer stores DOCX images
 as data URIs in rich-text content; a later managed-file asset sink can replace that
-consumer detail without changing the parser or canonical contract.
+consumer detail without changing the parser or neutral canonical contract.

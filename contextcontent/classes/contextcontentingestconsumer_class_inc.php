@@ -8,10 +8,15 @@ class contextcontentingestconsumer extends ChisimbaObject
         $this->chapterRows = $this->getObject('db_contextcontent_chapters', 'contextcontent');
         $this->contextChapters = $this->getObject('db_contextcontent_contextchapter', 'contextcontent');
         $this->authoring = $this->getObject('contentauthoringservice', 'contextcontent');
+        $this->profile = $this->getObject('contextcontentingestprofile', 'contextcontent');
     }
 
     public function consume(array $document, array $options)
     {
+        $document = $this->profile->transform($document, $options['profileOptions'] ?? array());
+        if (!$document['valid']) {
+            throw new InvalidArgumentException('The document does not satisfy the Context Content ingest profile.');
+        }
         $contextCode = trim((string) ($options['contextcode'] ?? $options['target'] ?? ''));
         $language = trim((string) ($options['language'] ?? 'en'));
         if (!preg_match('/^[A-Za-z0-9._-]{1,255}$/', $contextCode)) {

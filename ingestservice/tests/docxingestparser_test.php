@@ -31,16 +31,17 @@ $zip->close();
 $result = (new docxingestparser())->parse($path);
 @unlink($path);
 $checks = array(
-    count($result['chapters']) === 1,
-    $result['chapters'][0]['title'] === 'Chapter A',
-    str_contains($result['chapters'][0]['overview'], 'Overview A'),
-    $result['chapters'][0]['pages'][0]['title'] === 'Page A',
-    str_contains($result['chapters'][0]['pages'][0]['html'], '<h3>Inside page</h3>'),
-    str_contains($result['chapters'][0]['pages'][0]['html'], 'ingest-asset://asset-'),
+    $result['schema'] === 'chisimba.ingest-document/v1',
+    count($result['blocks']) === 6,
+    $result['blocks'][0]['type'] === 'heading' && $result['blocks'][0]['level'] === 1,
+    $result['blocks'][1]['type'] === 'paragraph' && $result['blocks'][1]['style'] === 'Chapter Overview',
+    $result['blocks'][2]['type'] === 'heading' && $result['blocks'][2]['level'] === 2,
+    $result['blocks'][3]['type'] === 'heading' && $result['blocks'][3]['level'] === 3,
+    $result['blocks'][5]['type'] === 'image' && str_starts_with($result['blocks'][5]['assetId'], 'asset-'),
     count($result['assets']) === 1
 );
 if (in_array(false, $checks, true)) {
-    fwrite(STDERR, "FAIL: DOCX semantic mapping\n");
+    fwrite(STDERR, "FAIL: DOCX neutral block parsing\n");
     exit(1);
 }
-echo "OK: DOCX semantic mapping and image extraction\n";
+echo "OK: DOCX neutral block parsing and image extraction\n";

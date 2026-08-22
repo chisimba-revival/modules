@@ -74,9 +74,29 @@ class ingestservice extends ChisimbaObject
         }
     }
 
+    public function applyCapability(array $document, $module, $class, array $options = array())
+    {
+        $document = $this->validator->validate($document);
+        if (!$document['valid']) {
+            return $document;
+        }
+        try {
+            return $this->getObject($class, $module)->transform($document, $options);
+        } catch (Throwable $error) {
+            $document['valid'] = false;
+            $document['issues'][] = array(
+                'severity' => 'error',
+                'code' => 'capability.failed',
+                'message' => $error->getMessage(),
+                'path' => 'capability'
+            );
+            return $document;
+        }
+    }
+
     private function failure($code, $message, $path)
     {
-        return array('valid' => false, 'chapters' => array(), 'assets' => array(), 'issues' => array(
+        return array('schema' => 'chisimba.ingest-document/v1', 'valid' => false, 'blocks' => array(), 'assets' => array(), 'issues' => array(
             array('severity' => 'error', 'code' => $code, 'message' => $message, 'path' => $path)
         ));
     }

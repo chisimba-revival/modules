@@ -33,11 +33,9 @@ class docxingestparser extends ChisimbaObject
         $dom = $this->loadXml($xml, 'word/document.xml');
         $xpath = new DOMXPath($dom);
         $xpath->registerNamespace('w', self::WORD_NS);
-        $chapters = array();
+        $blocks = array();
         $assets = array();
         $issues = array();
-        $chapter = null;
-        $page = null;
         if ($xpath->query('//w:body/w:tbl')->length > 0) {
             $issues[] = $this->issue('warning', 'content.tables_unsupported', 'Tables are not imported by this release.', 'document');
         }
@@ -54,60 +52,38 @@ class docxingestparser extends ChisimbaObject
             } elseif ($role === 'named' && $policy['unknown'] === 'ignore') {
                 $role = 'paragraph';
             }
-            if ($role === 'chapter') {
-                $this->flushPage($chapter, $page);
-                $this->flushChapter($chapters, $chapter);
-                $chapter = array('title' => $text, 'overview' => '', 'pages' => array(), 'source' => array('path' => $location, 'style' => $styleName));
-                continue;
-            }
-            if ($role === 'page') {
-                $this->flushPage($chapter, $page);
-                if ($chapter === null) {
-                    $issues[] = $this->issue('error', 'structure.page_before_chapter', 'A Heading 2 page occurs before the first Heading 1 chapter.', $location);
-                    continue;
-                }
-                $page = array('title' => $text, 'html' => '', 'assets' => array(), 'source' => array('path' => $location, 'style' => $styleName));
-                continue;
-            }
-            if ($role === 'overview') {
-                if ($chapter === null) {
-                    $issues[] = $this->issue('error', 'structure.overview_before_chapter', 'A Chapter Overview occurs before the first Heading 1 chapter.', $location);
-                } elseif ($page !== null) {
-                    $issues[] = $this->issue('warning', 'structure.late_overview', 'A Chapter Overview occurs after the first page and was still assigned to its chapter.', $location);
-                    $chapter['overview'] .= $this->paragraphHtml($xpath, $paragraph, 'paragraph', $styleName, $zip, $relationships, $assets, $options, $issues, $location);
+            $source = array('path' => $location, 'styleId' => $styleId, 'styleName' => $styleName);
+            if ($text !== '') {
+                if (str_starts_with($role, 'heading')) {
+                    $blocks[] = array(
+                        'type' => 'heading',
+                        'level' => (int) substr($role, 7),
+                        'text' => $text,
+                        'html' => $this->inlineHtml($xpath, $paragraph),
+                        'style' => $styleName,
+                        'source' => $source
+                    );
                 } else {
-                    $chapter['overview'] .= $this->paragraphHtml($xpath, $paragraph, 'paragraph', $styleName, $zip, $relationships, $assets, $options, $issues, $location);
+                    $blocks[] = array(
+                        'type' => 'paragraph',
+                        'text' => $text,
+                        'html' => $this->inlineHtml($xpath, $paragraph),
+                        'style' => $styleName,
+                        'source' => $source
+                    );
                 }
-                continue;
             }
-            if ($chapter === null && ($text !== '' || $this->hasDrawing($xpath, $paragraph))) {
-                $issues[] = $this->issue('warning', 'structure.content_before_chapter', 'Content before the first Heading 1 was ignored.', $location);
-                continue;
+            foreach ($this->extractImages($xpath, $paragraph, $zip, $relationships, $assets, $options, $issues, $location) as $imageBlock) {
+                $imageBlock['source'] = $source;
+                $blocks[] = $imageBlock;
             }
-            if ($page === null) {
-                if ($text !== '') {
-                    $chapter['overview'] .= $this->paragraphHtml($xpath, $paragraph, $role, $styleName, $zip, $relationships, $assets, $options, $issues, $location);
-                }
-                continue;
-            }
-            $page['html'] .= $this->paragraphHtml($xpath, $paragraph, $role, $styleName, $zip, $relationships, $assets, $options, $issues, $location, $page);
         }
-        $this->flushPage($chapter, $page);
-        $this->flushChapter($chapters, $chapter);
-        return array('schema' => 'chisimba.content-ingest/v1', 'chapters' => $chapters, 'assets' => array_values($assets), 'issues' => $issues);
+        return array('schema' => 'chisimba.ingest-document/v1', 'metadata' => array(), 'blocks' => $blocks, 'assets' => array_values($assets), 'issues' => $issues);
     }
 
-    private function paragraphHtml($xpath, $paragraph, $role, $styleName, $zip, array $relationships, array &$assets, array $options, array &$issues, $location, &$page = null)
+    private function extractImages($xpath, $paragraph, $zip, array $relationships, array &$assets, array $options, array &$issues, $location)
     {
-        $html = '';
-        $text = $this->inlineHtml($xpath, $paragraph);
-        if (str_starts_with($role, 'heading')) {
-            $level = (int) substr($role, 7);
-            $html .= '<h' . $level . '>' . $text . '</h' . $level . '>';
-        } elseif ($text !== '') {
-            $class = $role === 'named' && $styleName !== '' ? ' class="docx-style-' . $this->slug($styleName) . '"' : '';
-            $html .= '<p' . $class . '>' . $text . '</p>';
-        }
+        $blocks = array();
         foreach ($xpath->query('.//*[local-name()="blip"]', $paragraph) as $blip) {
             $relationshipId = $blip->getAttributeNS(self::REL_NS, 'embed');
             $target = $relationships[$relationshipId] ?? '';
@@ -115,29 +91,26 @@ class docxingestparser extends ChisimbaObject
                 $issues[] = $this->issue('error', 'image.invalid_relationship', 'An embedded image has an invalid package relationship.', $location);
                 continue;
             }
-            $entry = 'word/' . ltrim($target, '/');
-            $content = $zip->getFromName($entry);
+            $content = $zip->getFromName('word/' . ltrim($target, '/'));
             if ($content === false) {
                 $issues[] = $this->issue('error', 'image.missing', 'An embedded image is missing from the DOCX package.', $location);
                 continue;
             }
-            $limit = max(1, (int) ($options['maxImageBytes'] ?? 10485760));
-            if (strlen($content) > $limit) {
+            if (strlen($content) > max(1, (int) ($options['maxImageBytes'] ?? 10485760))) {
                 $issues[] = $this->issue('error', 'image.too_large', 'An embedded image exceeds the configured size limit.', $location);
                 continue;
             }
-            $id = 'asset-' . substr(hash('sha256', $content), 0, 20);
             $extension = strtolower(pathinfo($target, PATHINFO_EXTENSION));
             $mime = array('png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'webp' => 'image/webp')[$extension] ?? '';
             if ($mime === '') {
                 $issues[] = $this->issue('error', 'image.unsupported_type', 'An embedded image uses an unsupported format.', $location);
                 continue;
             }
+            $id = 'asset-' . substr(hash('sha256', $content), 0, 20);
             $assets[$id] = array('id' => $id, 'name' => basename($target), 'mediaType' => $mime, 'bytes' => strlen($content), 'content' => base64_encode($content));
-            if ($page !== null && !in_array($id, $page['assets'], true)) { $page['assets'][] = $id; }
-            $html .= '<figure><img src="ingest-asset://' . $id . '" alt=""></figure>';
+            $blocks[] = array('type' => 'image', 'assetId' => $id, 'assets' => array($id), 'alt' => '', 'caption' => '');
         }
-        return $html;
+        return $blocks;
     }
 
     private function inlineHtml($xpath, $paragraph)
@@ -182,8 +155,8 @@ class docxingestparser extends ChisimbaObject
 
     private function normalisePolicy(array $options)
     {
-        $defaults = array('heading 1' => 'chapter', 'chapter overview' => 'overview', 'heading 2' => 'page');
-        for ($level = 3; $level <= 6; $level++) { $defaults['heading ' . $level] = 'heading' . $level; }
+        $defaults = array();
+        for ($level = 1; $level <= 6; $level++) { $defaults['heading ' . $level] = 'heading' . $level; }
         foreach (($options['styleMap'] ?? array()) as $style => $role) { $defaults[mb_strtolower(trim($style))] = $role; }
         $unknown = strtolower((string) ($options['unknownStylePolicy'] ?? 'preserve'));
         if (!in_array($unknown, array('preserve', 'ignore', 'warn', 'error'), true)) {
@@ -197,18 +170,6 @@ class docxingestparser extends ChisimbaObject
         $keys = array(mb_strtolower(trim($styleName)), mb_strtolower(trim(preg_replace('/(?<=\D)(\d)$/', ' $1', $styleId))));
         foreach ($keys as $key) { if (isset($policy['map'][$key])) { return $policy['map'][$key]; } }
         return $styleName === '' ? 'paragraph' : ($policy['unknown'] === 'ignore' ? 'paragraph' : 'named');
-    }
-
-    private function flushPage(&$chapter, &$page)
-    {
-        if ($page !== null && $chapter !== null) { $chapter['pages'][] = $page; }
-        $page = null;
-    }
-
-    private function flushChapter(array &$chapters, &$chapter)
-    {
-        if ($chapter !== null) { $chapters[] = $chapter; }
-        $chapter = null;
     }
 
     private function requiredEntry($zip, $name)
@@ -236,8 +197,6 @@ class docxingestparser extends ChisimbaObject
     }
 
     private function paragraphText($xpath, $paragraph) { return implode('', array_map(fn($node) => $node->textContent, iterator_to_array($xpath->query('.//w:t', $paragraph)))); }
-    private function hasDrawing($xpath, $paragraph) { return $xpath->query('.//*[local-name()="blip"]', $paragraph)->length > 0; }
-    private function slug($value) { return trim(preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($value)), '-'); }
     private function issue($severity, $code, $message, $path) { return array('severity' => $severity, 'code' => $code, 'message' => $message, 'path' => $path); }
 }
 ?>

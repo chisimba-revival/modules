@@ -6,20 +6,28 @@ class ingestvalidator extends ChisimbaObject
     public function validate(array $document)
     {
         $issues = $document['issues'] ?? array();
-        if (empty($document['chapters'])) {
-            $issues[] = $this->issue('error', 'document.no_chapters', 'No Heading 1 chapter was found.', 'document');
+        if (($document['schema'] ?? '') !== 'chisimba.ingest-document/v1') {
+            $issues[] = $this->issue('error', 'document.invalid_schema', 'The document does not use the supported neutral ingest schema.', 'document.schema');
         }
-        foreach (($document['chapters'] ?? array()) as $chapterIndex => $chapter) {
-            $chapterPath = 'chapters[' . $chapterIndex . ']';
-            if (trim((string) ($chapter['title'] ?? '')) === '') {
-                $issues[] = $this->issue('error', 'chapter.missing_title', 'A chapter has no title.', $chapterPath);
+        if (empty($document['blocks'])) {
+            $issues[] = $this->issue('error', 'document.no_content', 'The source contains no importable content.', 'document.blocks');
+        }
+        $assetIds = array();
+        foreach (($document['assets'] ?? array()) as $assetIndex => $asset) {
+            $id = (string) ($asset['id'] ?? '');
+            if ($id === '' || isset($assetIds[$id])) {
+                $issues[] = $this->issue('error', 'asset.invalid_id', 'An asset has a missing or duplicate identifier.', 'assets[' . $assetIndex . ']');
             }
-            if (empty($chapter['pages'])) {
-                $issues[] = $this->issue('warning', 'chapter.no_pages', 'The chapter contains no Heading 2 pages.', $chapterPath);
+            $assetIds[$id] = true;
+        }
+        foreach (($document['blocks'] ?? array()) as $blockIndex => $block) {
+            $path = 'blocks[' . $blockIndex . ']';
+            if (!in_array(($block['type'] ?? ''), array('heading', 'paragraph', 'image', 'list', 'table'), true)) {
+                $issues[] = $this->issue('error', 'block.unsupported_type', 'A block has an unsupported type.', $path);
             }
-            foreach (($chapter['pages'] ?? array()) as $pageIndex => $page) {
-                if (trim((string) ($page['title'] ?? '')) === '') {
-                    $issues[] = $this->issue('error', 'page.missing_title', 'A page has no title.', $chapterPath . '.pages[' . $pageIndex . ']');
+            foreach (($block['assets'] ?? array()) as $assetId) {
+                if (!isset($assetIds[$assetId])) {
+                    $issues[] = $this->issue('error', 'block.missing_asset', 'A block references an asset that is not present.', $path . '.assets');
                 }
             }
         }
