@@ -32,7 +32,8 @@ $checks = array(
         && !str_contains($templates, '$e($this->uri('),
     'skin primitives' => str_contains($templates, 'chisimba-workspace')
         && str_contains($templates, 'chisimba-form-section')
-        && str_contains($templates, 'chisimba-form-actions'),
+        && str_contains($templates, 'chisimba-form-actions')
+        && str_contains($templates, 'chisimba-status-card'),
     'accessible forms' => str_contains($templates, 'autocomplete="new-password"')
         && str_contains($templates, 'role="alert"')
         && str_contains($templates, 'aria-labelledby='),

@@ -37,6 +37,10 @@ $checks = array(
         && str_contains($workflow, 'copy and paste this address')
         && str_contains($workflow, 'expires in 24 hours')
         && str_contains($workflow, 'safely ignore this email'),
+    'configurable email branding' => str_contains($workflow, 'getSiteName()')
+        && !str_contains($workflow, 'Chisimba account')
+        && !str_contains($workflow, 'The Chisimba team')
+        && !str_contains($workflow, 'font-weight:bold">Chisimba'),
     'atomic verification state' => str_contains($workflow, 'consumeWith(')
         && str_contains($workflow, "'status' => 'verified'"),
     'no legacy workflow reuse' => !str_contains($workflow, 'userregistration')

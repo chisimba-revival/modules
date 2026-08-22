@@ -164,10 +164,11 @@ class registrationservice extends dbTable
         $url = rtrim($this->objConfig->getSiteRoot(), '/')
             . '/index.php?module=registration-service&action=verify&token='
             . rawurlencode($token['rawToken']);
+        $siteName = $this->siteName();
         $email = $this->actionEmail(
             $pending['first_name'],
             'Verify your email address',
-            'Thanks for creating a Chisimba account. Confirm that this email address belongs to you to finish setting up your account.',
+            'Thanks for creating a ' . $siteName . ' account. Confirm that this email address belongs to you to finish setting up your account.',
             'Verify email address',
             $url,
             'This verification link expires in 24 hours.',
@@ -176,7 +177,7 @@ class registrationservice extends dbTable
         $message = $this->objCommunications->queueEmail(array(
             'to' => $pending['email_address'],
             'toName' => $pending['first_name'] . ' ' . $pending['surname'],
-            'subject' => 'Verify your email address | Chisimba',
+            'subject' => 'Verify your email address | ' . $siteName,
             'text' => $email['text'],
             'html' => $email['html'],
             'idempotencyKey' => 'registration-verification:' . $token['tokenId'],
@@ -364,10 +365,11 @@ class registrationservice extends dbTable
             $url = rtrim($this->objConfig->getSiteRoot(), '/')
                 . '/index.php?module=registration-service&action=recover&token='
                 . rawurlencode($token['rawToken']);
+            $siteName = $this->siteName();
             $email = $this->actionEmail(
                 $user['firstname'],
                 'Reset your password',
-                'We received a request to reset the password for your Chisimba account.',
+                'We received a request to reset the password for your ' . $siteName . ' account.',
                 'Reset password',
                 $url,
                 'This password reset link expires in one hour.',
@@ -376,7 +378,7 @@ class registrationservice extends dbTable
             $message = $this->objCommunications->queueEmail(array(
                 'to' => $user['emailaddress'],
                 'toName' => trim($user['firstname'] . ' ' . $user['surname']),
-                'subject' => 'Reset your password | Chisimba',
+                'subject' => 'Reset your password | ' . $siteName,
                 'text' => $email['text'],
                 'html' => $email['html'],
                 'idempotencyKey' => 'password-recovery:' . $token['tokenId'],
@@ -512,6 +514,7 @@ class registrationservice extends dbTable
         $expiry,
         $ignoreNotice
     ) {
+        $siteName = $this->siteName();
         $firstName = trim((string) $firstName);
         $greeting = $firstName === '' ? 'Hello,' : 'Hello ' . $firstName . ',';
         $text = $greeting . "\n\n"
@@ -519,7 +522,7 @@ class registrationservice extends dbTable
             . $buttonLabel . ":\n" . $url . "\n\n"
             . $expiry . "\n\n"
             . $ignoreNotice . "\n\n"
-            . "Regards,\nThe Chisimba team";
+            . "Regards,\nThe " . $siteName . ' team';
 
         $escape = static function ($value) {
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
@@ -534,7 +537,7 @@ class registrationservice extends dbTable
             . ' style="max-width:600px;background:#fff;border:1px solid #dfe3e8;'
             . 'border-radius:8px;overflow:hidden">'
             . '<tr><td style="background:#075985;color:#fff;padding:20px 32px;'
-            . 'font-size:24px;font-weight:bold">Chisimba</td></tr>'
+            . 'font-size:24px;font-weight:bold">' . $escape($siteName) . '</td></tr>'
             . '<tr><td style="padding:32px">'
             . '<p style="margin:0 0 20px;font-size:16px">' . $escape($greeting) . '</p>'
             . '<h1 style="margin:0 0 16px;font-size:26px;line-height:1.25;color:#102a43">'
@@ -557,6 +560,12 @@ class registrationservice extends dbTable
             . '</td></tr></table></td></tr></table></body></html>';
 
         return array('text' => $text, 'html' => $html);
+    }
+
+    private function siteName()
+    {
+        $siteName = trim((string) $this->objConfig->getSiteName());
+        return $siteName === '' ? 'This site' : $siteName;
     }
 
     private function username($value)
