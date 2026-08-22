@@ -62,4 +62,9 @@ $form->addToForm($button->show());
 
 echo $form->show();
 
+$importUrl = $this->uri(array('action' => 'importdocument'), 'contextcontent');
+echo '<p><a href="' . htmlspecialchars($importUrl, ENT_QUOTES, 'UTF-8') . '">'
+    . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_importdocument', 'contextcontent'), ENT_QUOTES, 'UTF-8')
+    . '</a></p>';
+
 ?>
