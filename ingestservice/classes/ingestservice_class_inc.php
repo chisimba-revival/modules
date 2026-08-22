@@ -15,12 +15,12 @@ class ingestservice extends ChisimbaObject
     public function parse($sourcePath, array $options = array())
     {
         $options += array(
-            'unknownStylePolicy' => $this->sysconfig->getValue('INGESTSERVICE_UNKNOWN_STYLE_POLICY', 'ingestservice'),
-            'maxImageBytes' => $this->configuredLimit('INGESTSERVICE_MAX_IMAGE_BYTES', 10485760),
-            'maxSourceBytes' => $this->configuredLimit('INGESTSERVICE_MAX_SOURCE_BYTES', 52428800),
-            'maxArchiveEntries' => $this->configuredLimit('INGESTSERVICE_MAX_ARCHIVE_ENTRIES', 2000),
-            'maxExpandedBytes' => $this->configuredLimit('INGESTSERVICE_MAX_EXPANDED_BYTES', 209715200),
-            'maxCompressionRatio' => $this->configuredLimit('INGESTSERVICE_MAX_COMPRESSION_RATIO', 100)
+            'unknownStylePolicy' => $this->sysconfig->getValue('INGEST_UNKNOWN_STYLE_POLICY', 'ingestservice'),
+            'maxImageBytes' => $this->configuredLimit('INGEST_MAX_IMAGE_BYTES', 10485760),
+            'maxSourceBytes' => $this->configuredLimit('INGEST_MAX_SOURCE_BYTES', 52428800),
+            'maxArchiveEntries' => $this->configuredLimit('INGEST_MAX_ARCHIVE_ENTRIES', 2000),
+            'maxExpandedBytes' => $this->configuredLimit('INGEST_MAX_EXPANDED_BYTES', 209715200),
+            'maxCompressionRatio' => $this->configuredLimit('INGEST_MAX_COMPRESSION_RATIO', 100)
         );
         if (!is_file($sourcePath) || !is_readable($sourcePath)) {
             return $this->failure('source.unreadable', 'The source file cannot be read.', 'source');
