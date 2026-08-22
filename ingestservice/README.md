@@ -13,7 +13,7 @@ images, lists, or tables without assigning consumer-specific meaning to them. Ev
 `message`, and `path`. Asset references use `ingest-asset://<id>` until a consumer
 materialises them.
 
-The DOCX adapter records heading levels and named paragraph styles without mapping
+The DOCX and ODT adapters record heading levels and named paragraph styles without mapping
 them to chapters, pages, essays, or any other domain object. `styleMap` can override
 source-style interpretation.
 

@@ -7,6 +7,7 @@ class ingestservice extends ChisimbaObject
     {
         $this->validator = $this->getObject('ingestvalidator', 'ingestservice');
         $this->docx = $this->getObject('docxingestparser', 'ingestservice');
+        $this->odt = $this->getObject('odtingestparser', 'ingestservice');
         $this->runs = $this->getObject('db_ingestservice_runs', 'ingestservice');
         $this->sysconfig = $this->getObject('dbsysconfig', 'sysconfig');
     }
@@ -21,13 +22,13 @@ class ingestservice extends ChisimbaObject
             return $this->failure('source.unreadable', 'The source file cannot be read.', 'source');
         }
         $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION));
-        if ($extension !== 'docx') {
-            return $this->failure('source.unsupported_type', 'Only DOCX sources are supported by this release.', 'source');
+        if (!in_array($extension, array('docx', 'odt'), true)) {
+            return $this->failure('source.unsupported_type', 'Only DOCX and ODT sources are supported by this release.', 'source');
         }
         try {
-            $document = $this->docx->parse($sourcePath, $options);
+            $document = $this->{$extension}->parse($sourcePath, $options);
             $document['source'] = array(
-                'type' => 'docx',
+                'type' => $extension,
                 'name' => basename($sourcePath),
                 'fingerprint' => hash_file('sha256', $sourcePath)
             );

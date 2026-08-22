@@ -5,6 +5,8 @@ $checks = array(
     'module identity' => str_contains($read('register.conf'), 'MODULE_ID: ingestservice')
         && str_contains($read('register.conf'), 'MODULE_NAME: Content Ingest Service'),
     'neutral schema' => str_contains($read('classes/docxingestparser_class_inc.php'), 'chisimba.ingest-document/v1'),
+    'multiple source adapters' => str_contains($read('classes/ingestservice_class_inc.php'), "array('docx', 'odt')")
+        && str_contains($read('classes/odtingestparser_class_inc.php'), 'chisimba.ingest-document/v1'),
     'neutral parser' => !str_contains($read('classes/docxingestparser_class_inc.php'), "'heading 1' => 'chapter'")
         && !str_contains($read('classes/docxingestparser_class_inc.php'), 'contextcontent'),
     'capability API' => str_contains($read('classes/ingestservice_class_inc.php'), 'function applyCapability'),
