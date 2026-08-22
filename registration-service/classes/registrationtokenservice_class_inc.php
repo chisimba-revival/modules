@@ -74,6 +74,18 @@ class registrationtokenservice extends dbTable
 
     public function consume($purpose, $rawToken)
     {
+        return $this->consumeWith($purpose, $rawToken, null);
+    }
+
+    /**
+     * Consume a token and run its state transition in the same transaction.
+     * The callback receives subjectType and subjectId and must return true.
+     */
+    public function consumeWith($purpose, $rawToken, $onConsume)
+    {
+        if ($onConsume !== null && !is_callable($onConsume)) {
+            return $this->result(false, 'invalid_consumer');
+        }
         $purpose = $this->enumValue($purpose, self::PURPOSES);
         if ($purpose === null || !is_scalar($rawToken)
             || !preg_match('/^([a-f0-9]{24})\.([a-f0-9]{64})$/', (string) $rawToken, $parts)) {
@@ -92,6 +104,14 @@ class registrationtokenservice extends dbTable
             || !hash_equals($rows[0]['verifier_hash'], hash('sha256', $parts[2]))) {
             $this->rollbackTransaction();
             return $this->result(false, 'invalid_or_expired_token');
+        }
+        if ($onConsume !== null && call_user_func(
+            $onConsume,
+            $rows[0]['subject_type'],
+            $rows[0]['subject_id']
+        ) !== true) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'token_transition_failed');
         }
         $consumedAt = date('Y-m-d H:i:s');
         if ($this->_execute(
