@@ -51,7 +51,7 @@ $checks = array(
         && str_contains($templates, 'chisimba-form-grid')
         && str_contains($templates, 'chisimba-field-help'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.001'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.002'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
