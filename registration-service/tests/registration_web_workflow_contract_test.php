@@ -22,6 +22,10 @@ $checks = array(
     'abuse protection' => str_contains($controller, "issueFormEvidence('registration.create')")
         && str_contains($controller, "issueFormEvidence('registration.recovery')")
         && str_contains($controller, "'website' =>"),
+    'sensitive response policy' => str_contains($controller, "Cache-Control: no-store")
+        && str_contains($controller, "Referrer-Policy: no-referrer"),
+    'minimum password length' => substr_count($controller, 'strlen($password) < 12') === 2
+        && substr_count($templates, 'minlength="12"') === 4,
     'passwords never repopulated' => !str_contains($controller, "'password' => \$this->scalarParam")
         && !str_contains($templates, 'value="<?php echo $e($password'),
     'safe URI rendering' => str_contains($templates, 'html_entity_decode($this->uri(')
