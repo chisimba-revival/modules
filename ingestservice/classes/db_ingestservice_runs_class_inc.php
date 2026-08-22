@@ -3,9 +3,9 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class db_ingestservice_runs extends dbtable
 {
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
-        parent::init('tbl_ingestservice_runs');
+        parent::init('tbl_ingestservice_runs', $pearDb, $errorCallback);
         $this->objUser = $this->getObject('user', 'security');
         $this->db = $this->objEngine->getDbObj();
     }
