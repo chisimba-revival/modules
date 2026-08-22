@@ -228,6 +228,102 @@ class registrationservice extends dbTable
         return $this->result(true, 'email_verified', $pending['id']);
     }
 
+    /** Provision one verified request into the canonical identity services. */
+    public function provisionVerified($pendingId)
+    {
+        $pendingId = is_scalar($pendingId)
+            ? strtolower(trim((string) $pendingId)) : '';
+        if (!preg_match('/^[a-f0-9]{32}$/', $pendingId)) {
+            return $this->result(false, 'invalid_pending_registration');
+        }
+        $this->beginTransaction();
+        $rows = $this->getArray(
+            'SELECT * FROM ' . self::TABLE_NAME
+            . ' WHERE id = ' . $this->quote($pendingId)
+            . " AND status = 'verified'"
+            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' LIMIT 2 FOR UPDATE'
+        );
+        if (!is_array($rows) || count($rows) !== 1) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'pending_registration_not_verified');
+        }
+        $pending = $rows[0];
+        if (!$this->objUsers->usernameAvailable($pending['username'])
+            || !$this->objUsers->emailAvailable($pending['email_address'])) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'canonical_identity_conflict', $pendingId);
+        }
+        $userId = $this->objUsers->generateUserId();
+        if ($userId === null) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'userid_allocation_failed', $pendingId);
+        }
+        $provisioning = $this->getObject(
+            'userprovisioningservice',
+            'security'
+        );
+        $created = $provisioning->createLocalUserWithPasswordHash(array(
+            'userId' => $userId,
+            'username' => $pending['username'],
+            'firstName' => $pending['first_name'],
+            'surname' => $pending['surname'],
+            'emailAddress' => $pending['email_address'],
+            'title' => '',
+            'country' => '',
+            'cellnumber' => '',
+            'staffnumber' => '',
+            'sex' => '',
+            'isActive' => true,
+            'howCreated' => 'registration-service',
+        ), $pending['password_hash']);
+        if (empty($created['ok']) || empty($created['userId'])) {
+            $this->rollbackTransaction();
+            return $this->result(
+                false,
+                $created['code'] ?? 'canonical_provisioning_failed',
+                $pendingId
+            );
+        }
+        $now = date('Y-m-d H:i:s');
+        if ($this->update('id', $pendingId, array(
+            'status' => 'provisioned',
+            'provisioned_user_id' => $created['userId'],
+            'password_hash' => null,
+            'updated_at' => $now,
+        )) === false || !$this->appendEvent(
+            'registration.account.provisioned',
+            $pendingId,
+            $pending['correlation_id'],
+            'succeeded'
+        )) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'provisioning_finalization_failed', $pendingId);
+        }
+        $userEvent = $this->objEvents->append(array(
+            'eventType' => 'account.registration.completed',
+            'subjectType' => 'user',
+            'subjectId' => $created['userId'],
+            'actorType' => 'system',
+            'actorId' => 'registration-service',
+            'outcome' => 'succeeded',
+            'correlationId' => $pending['correlation_id'],
+            'sourceService' => 'registration-service',
+            'metadata' => array('pending_registration_id' => $pendingId),
+        ));
+        if (empty($userEvent['ok'])) {
+            $this->rollbackTransaction();
+            return $this->result(false, 'provisioning_audit_failed', $pendingId);
+        }
+        $this->commitTransaction();
+        return array(
+            'ok' => true,
+            'code' => 'account_provisioned',
+            'pendingId' => $pendingId,
+            'userId' => $created['userId'],
+        );
+    }
+
     private function pending($id, $status)
     {
         $id = is_scalar($id) ? strtolower(trim((string) $id)) : '';

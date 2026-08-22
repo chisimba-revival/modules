@@ -36,6 +36,18 @@ $checks = array(
         && str_contains($workflow, "'status' => 'verified'"),
     'no legacy workflow reuse' => !str_contains($workflow, 'userregistration')
         && !str_contains($workflow, 'useradmin_model'),
+    'verified canonical provisioning' => str_contains(
+        $workflow,
+        'createLocalUserWithPasswordHash('
+    ) && str_contains($workflow, "'howCreated' => 'registration-service'"),
+    'provisioning rechecks identity' => str_contains(
+        $workflow,
+        'canonical_identity_conflict'
+    ),
+    'pending credential cleared' => str_contains(
+        $workflow,
+        "'password_hash' => null"
+    ),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
