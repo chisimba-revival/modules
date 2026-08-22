@@ -39,7 +39,7 @@ class registration_service extends controller
     {
         header('Cache-Control: no-store, private');
         header('Referrer-Policy: no-referrer');
-        $this->setLayoutTemplate(null);
+        $this->setLayoutTemplate('registration_layout_tpl.php');
         $this->setVar('pageSuppressToolbar', true);
         switch ((string) $action) {
             case 'register': return $this->submitRegistration();

@@ -2,6 +2,7 @@
 $root = dirname(__DIR__);
 $controller = file_get_contents($root . '/controller.php');
 $register = file_get_contents($root . '/register.conf');
+$layout = file_get_contents($root . '/templates/layout/registration_layout_tpl.php');
 $templates = '';
 foreach (glob($root . '/templates/content/*.php') as $file) {
     $templates .= file_get_contents($file);
@@ -10,6 +11,11 @@ $checks = array(
     'hyphenated controller alias' => str_contains($controller, "class_alias('registration_service', 'registration-service')"),
     'public action allow-list' => str_contains($controller, "'register', 'verify', 'terms'")
         && str_contains($controller, "'forgotpassword', 'requestrecovery', 'recover', 'resetpassword'"),
+    'standard two-column layout' => str_contains($controller, "setLayoutTemplate('registration_layout_tpl.php')")
+        && str_contains($layout, "newObject('csslayout', 'htmlelements')")
+        && str_contains($layout, 'setMiddleColumnContent(')
+        && str_contains($layout, 'setRightColumnContent(')
+        && str_contains($layout, 'chisimba-guidance-card'),
     'no legacy reuse' => !str_contains($controller . $templates . $register, 'userregistration'),
     'canonical orchestration' => str_contains($controller, 'createPending(')
         && str_contains($controller, 'acceptLegalAndQueueVerification(')
