@@ -1,334 +1,83 @@
 <?php
-$ret = "";
-// Load needed classes
-$this->loadClass('link', 'htmlelements');
-$pageTitle = $this->newObject('htmlheading','htmlelements');
-$pageTitle->type=1;
-$pageTitle->align='left';
-$pageTitle->str=$objLanguage->languageText('rubric_rubrics','rubric');
-$tblclass=$this->newObject('htmltable','htmlelements');
-$tblclass->width='100%';
-$tblclass->border='0';
-$tblclass->cellspacing='1';
-$tblclass->cellpadding='5';
-$pageTitle->type=3;
-if ($contextCode == "root"){
-    $pageTitle->str.='<br />'.ucwords($objLanguage->code2Txt("rubric_predefined","rubric"));
-} else {
-    //$pageTitle->str=ucwords($objLanguage->code2Txt("rubric_context"));
-}
-$tblclass->startRow();
-if ($this->isValid('createtable')) {
-    // Display create button.
-    $icon = $this->getObject('geticon','htmlelements');
-    $icon->setIcon('add');
-    $icon->title = "Create";
-    $icon->align=false;
-    $pageTitle->str .= "<a href=\"" .
-        $this->uri(array(
-            'module'=>'rubric',
-            'action'=>'createtable',
-            'type'=>($contextCode == "root" ? 'predefined' : 'context')
-        ))
-    . "\">" . $icon->show() . "</a>";
-}
-$tblclass->addCell($pageTitle->show(), "null", "top", "left", "",null);
-$tblclass->endRow();
-$ret .= $tblclass->show();
-$tblclass = $this->newObject('htmltable','htmlelements');
-$tblclass->width='99%';
-$tblclass->border='0';
-$tblclass->cellspacing='1';
-$tblclass->cellpadding='5';
-$tblclass->startHeaderRow();
-$tblclass->addHeaderCell($objLanguage->languageText('word_title'), 60);
-$tblclass->addHeaderCell($objLanguage->languageText('rubric_description','rubric'), 60);
-$tblclass->addHeaderCell("&nbsp;", 60);
-$tblclass->endHeaderRow();
-// Display tables.
-$oddOrEven = "odd";
-foreach ($tables as $table) {
-    $viewLink = new link ($this->uri(array('action'=>'assessments', 'tableId'=>$table['id'])));
-    $viewLink->link = $table['title'];
-    $viewLinkItem = $viewLink->show();
-    $tblclass->startRow();
-    $oddOrEven = ($oddOrEven=="even")? "odd":"even";
-    $tblclass->addCell("<b>" . $viewLinkItem . "</b>", "null", "top", "left", $oddOrEven, null);
-    $tblclass->addCell("<b>" . $table['description'] . "</b>", "null", "top", "left", $oddOrEven, null);
+$esc = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+$lang = static function ($key, $module = 'rubric', $default = null) use ($objLanguage) {
+    return $objLanguage->languageText($key, $module, $default);
+};
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) {
+    return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+};
+$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+$button = static function ($url, $label, $iconName, $class = 'chisimba-button-secondary', $confirm = '') use ($esc, $icon) {
+    $confirmAttribute = $confirm === '' ? '' : ' onclick="return confirm('.$esc(json_encode($confirm, JSON_HEX_APOS | JSON_HEX_QUOT)).')"';
+    return '<a class="button '.$class.'" href="'.$url.'"'.$confirmAttribute.'>'.$icon($iconName).'<span>'.$esc($label).'</span></a>';
+};
 
-    // Start of Rubric Options
-    $options = NULL;
-
-    if ($contextCode != "root") {
-        if ($this->isValid('assessments')) {
-            // Assessments for table.
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('assessments');
-            $icon->title = $objLanguage->languageText("word_assessment");
-            $icon->alt = $objLanguage->languageText("word_assessment");
-            $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'assessments',
-                'tableId'=>$table['id']
-            )) . "\">" .$icon->show() . "</a>";
-            $options .= "&nbsp;";
+$renderSection = function ($heading, $description, $records, $scope, $create = '') use ($esc, $lang, $button, $url, $contextCode) {
+    $out = '<section class="rubric-library-section" aria-labelledby="rubric-'.$esc($scope).'-heading">'
+        .'<div class="rubric-section-heading"><div><h2 id="rubric-'.$esc($scope).'-heading">'.$esc($heading).'</h2>'
+        .'<p>'.$esc($description).'</p></div>'.$create.'</div>';
+    if (empty($records)) {
+        return $out.'<div class="rubric-empty"><h3>'.$esc($lang('mod_rubric_empty_heading')).'</h3><p>'.$esc($lang('mod_rubric_empty_description')).'</p></div></section>';
+    }
+    $out .= '<div class="chisimba-table-wrap"><table class="chisimba-table rubric-library-table"><thead><tr>'
+        .'<th scope="col">'.$esc($lang('word_title', 'system', 'Title')).'</th>'
+        .'<th scope="col">'.$esc($lang('rubric_description')).'</th>'
+        .'<th scope="col" class="rubric-actions-heading">'.$esc($lang('mod_rubric_actions')).'</th>'
+        .'</tr></thead><tbody>';
+    foreach ($records as $record) {
+        $id = $record['id'];
+        $viewUrl = $url(array('action'=>'viewtable', 'tableId'=>$id));
+        $actions = $button($viewUrl, $lang('word_view', 'system', 'View'), 'eye');
+        $canModify = !isset($record['canModify']) || !empty($record['canModify']);
+        if ($canModify && $this->isValid('edittable')) {
+            $actions .= $button($url(array('action'=>'edittable', 'tableId'=>$id)), $lang('word_edit', 'system', 'Edit'), 'pencil');
         }
-    }
-    if ($this->isValid('renametable')) {
-        // Rename table.
-        $icon->setIcon('rename');
-        $icon->title = $objLanguage->languageText("word_rename1");
-        $icon->alt = $objLanguage->languageText("word_rename1");
-
-        $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'renametable',
-                'tableId'=>$table['id']
-            ))
-        . "\">" . $icon->show() . "</a>";
-        $options .= "&nbsp;";
-
-    }
-    if ($this->isValid('viewtable')) {
-        // View table.
-        $icon = $this->getObject('geticon','htmlelements');
-        $icon->setIcon('preview');
-        $icon->title = $objLanguage->languageText("word_view");
-        $icon->alt = $objLanguage->languageText("word_view");
-        $icon->align=false;
-        $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'viewtable',
-                'tableId'=>$table['id']
-            ))
-        . "\">" . $icon->show() . "</a>";
-        $options .= "&nbsp;";
-    }
-    if ($this->isValid('clonetable')) {
-        // Clone table.
-        $icon = $this->getObject('geticon','htmlelements');
-        $icon->setIcon('copy');
-        $icon->title = $objLanguage->languageText("word_copy");
-        $icon->alt = $objLanguage->languageText("word_copy");
-        $icon->align=false;
-        $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'clonetable',
-                'tableId'=>$table['id']
-            ))
-        . "\">" . $icon->show() . "</a>";
-        $options .= "&nbsp;";
-    }
-    if ($this->isValid('edittable')) {
-        // Edit table.
-        $icon = $this->getObject('geticon','htmlelements');
-        $icon->setIcon('edit');
-        $icon->title = $objLanguage->languageText("word_edit");
-        $icon->alt = $objLanguage->languageText("word_edit");
-        $icon->align=false;
-        $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'edittable',
-                'tableId'=>$table['id']
-            ))
-        . "\">" . $icon->show() . "</a>";
-        $options .= "&nbsp;";
-    }
-    if ($this->isValid('deletetable')) {
-        // Delete table.
-        $objConfirm=&$this->newObject('confirm','utilities');
-        $icon = $this->getObject('geticon','htmlelements');
-        $icon->setIcon('delete');
-        $icon->title = $objLanguage->languageText("word_delete");
-        $icon->alt = $objLanguage->languageText("word_delete");
-        $icon->align=false;
-        $objConfirm->setConfirm(
-            $icon->show(),
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'deletetable',
-                'tableId'=>$table['id'])),
-        $objLanguage->languageText('mod_rubric_confirmdelete','rubric')." ".$table['title']."?");
-        $options .= $objConfirm->show();
-    }
-    if($noBanner == "yes") {
-        $options .= "&nbsp;";
-        // Assign table.
-        $options .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'assign',
-                'tableId'=>$table['id']
-            ))
-        . "\">" . "Assign" . "</a>";
-
-    }
-    $tblclass->addCell($options, "null", "top", "left", $oddOrEven, null);
-    $tblclass->endRow();
-
-}
-if (empty($tables)) {
-    $tblclass->startRow();
-    $tblclass->addCell("<div class=\"noRecordsMessage\">" . $objLanguage->languageText('mod_rubric_norecords','rubric') . "</div>", "null", "top", "left", "", 'colspan="3"');
-    $tblclass->endRow();
-}
-$ret .= $tblclass->show();
-// If not root then show predefined tables.
-if ($this->objUser->isContextLecturer($this->objUser->userId(), $contextCode)) {
-    $pageTitle->str=ucwords($objLanguage->code2Txt("rubric_predefined","rubric"));
-    $tblclass=$this->newObject('htmltable','htmlelements');
-    $tblclass->width='100%';
-    $tblclass->border='0';
-    $tblclass->cellspacing='1';
-    $tblclass->cellpadding='5';
-    $tblclass->startRow();
-    if ($this->isValid('createtable')) {
-        // Display create button.
-        $icon = $this->getObject('geticon','htmlelements');
-        $icon->setIcon('add');
-        $icon->title= "Create";
-        $icon->alt = "Create";
-        $icon->align=false;
-        $icon_ = $icon->show();
-    }
-    else {
-        $icon_ = '';
-    }
-    $pageTitle->str .= "<a href=\"" .
-    $this->uri(array('module'=>'rubric','action'=>'createtable','type'=>'predefined'))
-    . "\">" .$icon_. "</a>";
-    $tblclass->addCell($pageTitle->show(), "null", "top", "left", "",null);
-    $tblclass->endRow();
-    $ret .= $tblclass->show();
-    $tblclass = $this->newObject('htmltable','htmlelements');
-    $tblclass->width='99%';
-    $tblclass->border='0';
-    $tblclass->cellspacing='1';
-    $tblclass->cellpadding='5';
-    $tblclass->startHeaderRow();
-    $tblclass->addHeaderCell($objLanguage->languageText('word_title'), 60);
-    $tblclass->addHeaderCell($objLanguage->languageText('rubric_description','rubric'), 60);
-    $tblclass->addHeaderCell("&nbsp;", 60);
-    $tblclass->endHeaderRow();
-
-    $oddOrEven = "odd";
-if (isset($pdtables)) {
-    foreach ($pdtables as $pdtable) {
-        $tblclass->startRow();
-        $oddOrEven = ($oddOrEven=="even")? "odd":"even";
-        $tblclass->addCell("<b>" . $pdtable['title'] . "</b>", "null", "top", "left", $oddOrEven, null);
-        $tblclass->addCell("<b>" . $pdtable['description'] . "</b>", "null", "top", "left", $oddOrEven, null);
-        if ($this->isValid('renametable')) {
-            // Rename table.
-            $icon->setIcon('rename');
-            $icon->title = $objLanguage->languageText("word_rename1");
-            $icon->alt = $objLanguage->languageText("word_rename1");
-            $options =  "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'renametable',
-                'tableId'=>$pdtable['id']
-            ))
-            . "\">" . $icon->show() . "</a>";
-            $options .=  "&nbsp;";
-        }
-        if ($this->isValid('viewtable')) {
-        // View table.
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('preview');
-            $icon->title = $objLanguage->languageText("word_view");
-            $icon->alt = $objLanguage->languageText("word_view");
-            $icon->align=false;
-            $options .= "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'viewtable',
-                    'tableId'=>$pdtable['id']
-                ))
-            . "\">" . $icon->show() . "</a>";
-            $options .= "&nbsp;";
+        if ($canModify && $this->isValid('renametable')) {
+            $actions .= $button($url(array('action'=>'renametable', 'tableId'=>$id)), $lang('word_rename1', 'system', 'Rename'), 'square-pen');
         }
         if ($this->isValid('clonetable')) {
-        // Clone table.
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('copy');
-            $icon->title = $objLanguage->languageText("word_copy");
-            $icon->alt = $objLanguage->languageText("word_copy");
-            $icon->align=false;
-            $options .= "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'clonetable',
-                    'tableId'=>$pdtable['id']
-                ))
-            . "\">" . $icon->show() . "</a>";
-            $options .= "&nbsp;";
+            $actions .= $button($url(array('action'=>'clonetable', 'tableId'=>$id)), $lang('word_copy', 'system', 'Copy'), 'file-text');
         }
-        if ($this->isValid('copytable')) {
-        // Copy table.
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('copy');
-            $icon->title = $objLanguage->code2Txt("mod_rubric_copytocontext");
-            $icon->alt = $objLanguage->code2Txt("mod_rubric_copytocontext");
-            $icon->align=false;
-            $options .=  "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'copytable',
-                    'tableId'=>$pdtable['id']
-                ))
-            . "\">" . $icon->show() . "</a>";
-            $options .=  "&nbsp;";
+        if ($scope === 'personal' && $contextCode !== 'root' && $this->isValid('copytable')) {
+            $actions .= $button($url(array('action'=>'copytable', 'tableId'=>$id)), $lang('mod_rubric_copytocontext'), 'book-open');
         }
-        if ($this->isValid('edittable')) {
-        // Edit table.
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('edit');
-            $icon->title = $objLanguage->languageText("word_edit");
-            $icon->alt = $objLanguage->languageText("word_edit");
-            $icon->align=false;
-            $options .= "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'edittable',
-                    'tableId'=>$pdtable['id']
-                ))
-            . "\">" . $icon->show() . "</a>";
-            $options .= "&nbsp;";
+        if ($scope === 'course' && $this->isValid('assessments')) {
+            $actions .= $button($url(array('action'=>'assessments', 'tableId'=>$id)), $lang('word_assessment', 'system', 'Assessments'), 'clipboard-pen');
         }
-
-        if ($this->isValid('deletetable')) {
-            // Delete table.
-            $objConfirm=&$this->newObject('confirm','utilities');
-            $icon = $this->getObject('geticon','htmlelements');
-            $icon->setIcon('delete');
-            $icon->title = $objLanguage->languageText("word_delete");
-            $icon->alt = $objLanguage->languageText("word_delete");
-            $icon->align=false;
-            $objConfirm->setConfirm(
-            $icon->show(),
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'deletetable',
-                'tableId'=>$pdtable['id'])),
-            $objLanguage->languageText('mod_rubric_suredelete','rubric'));
-            $options .= $objConfirm->show();
+        if ($canModify && $this->isValid('deletetable')) {
+            $confirm = $lang('mod_rubric_confirmdelete').' '.$record['title'].'?';
+            $actions .= $button($url(array('action'=>'deletetable', 'tableId'=>$id)), $lang('word_delete', 'system', 'Delete'), 'trash-2', 'rubric-button-danger', $confirm);
         }
-        $tblclass->addCell($options, "null", "top", "left", $oddOrEven, null);
-        $tblclass->endRow();
+        $out .= '<tr><th scope="row"><a href="'.$viewUrl.'">'.$esc($record['title']).'</a></th>'
+            .'<td>'.$esc($record['description']).'</td><td class="chisimba-table-actions"><div class="rubric-row-actions">'.$actions.'</div></td></tr>';
     }
+    return $out.'</tbody></table></div></section>';
+};
+
+$courseCreate = '';
+if ($contextCode !== 'root' && $this->isValid('createtable')) {
+    $courseCreate = $button($url(array('action'=>'createtable', 'type'=>'context')), $lang('mod_rubric_create_course'), 'plus', '');
 }
-if (empty($pdtables)) {
-    $tblclass->startRow();
-    $tblclass->addCell("<div class=\"noRecordsMessage\">" . $objLanguage->languageText('mod_rubric_norecords','rubric') . "</div>", "null", "top", "left", "", 'colspan="3"');
-    $tblclass->endRow();
+$personalCreate = '';
+if ($this->isValid('createtable')) {
+    $personalCreate = $button($url(array('action'=>'createtable', 'type'=>'predefined')), $lang('mod_rubric_create_personal'), 'plus', '');
 }
-$ret .= $tblclass->show();
+$sharedCreate = '';
+if ($contextCode === 'root' && $this->objUser->isAdmin()) {
+    $sharedCreate = $button($url(array('action'=>'createtable', 'type'=>'shared')), $lang('rubric_create_shared'), 'plus', '');
 }
-echo $ret;
+
+echo '<main class="rubric-workspace"><header class="rubric-page-header"><div><h1>'.$esc($lang('rubric_rubrics')).'</h1>'
+    .'<p>'.$esc($lang('mod_rubric_library_intro')).'</p></div></header>';
+if ($contextCode !== 'root') {
+    echo $renderSection($lang('mod_rubric_course_heading'), $lang('mod_rubric_course_description'), (array) $tables, 'course', $courseCreate);
+}
+echo $renderSection($lang('rubric_shared'), $lang('mod_rubric_shared_description'), (array) $sharedtables, 'shared', $sharedCreate);
+if ($contextCode === 'root' || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode)) {
+    echo $renderSection(ucwords($objLanguage->code2Txt('rubric_predefined', 'rubric')), $lang('mod_rubric_personal_description'), isset($pdtables) ? (array) $pdtables : array(), 'personal', $personalCreate);
+}
+echo '</main>';
 ?>

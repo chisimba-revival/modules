@@ -19,7 +19,7 @@ $register = file_get_contents($root . '/register.conf');
 $checks = array(
     'module version records presentation fix' => str_contains(
         $register,
-        'MODULE_VERSION: 1.008'
+        'MODULE_VERSION: 1.009'
     ),
     'Hero uses a compound semantic selector' => str_contains(
         $css,
@@ -33,9 +33,13 @@ $checks = array(
         $css,
         'padding: 0 !important;'
     ) >= 2,
-    'Hero retains the Kenga gradient' => str_contains(
+    'Hero gradient follows skin primary colours' => str_contains(
         $css,
-        'background: linear-gradient(135deg, #285b57, #5fbd6b);'
+        'var(--chisimba-primary-dark, #285b57)'
+    ) && str_contains($css, 'var(--chisimba-primary, #5fbd6b)'),
+    'Hero foreground follows the inverse text primitive' => str_contains(
+        $css,
+        'color: var(--chisimba-text-inverse, #fff);'
     ),
     'Hero title and body retain inverse colour' => str_contains(
         $css,

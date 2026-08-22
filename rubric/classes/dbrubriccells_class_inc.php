@@ -33,8 +33,8 @@ class dbRubricCells extends dbTable
 	{
 		$sql = "SELECT contents FROM tbl_rubric_cells 
 		WHERE (tableId = '" . $tableId . "')
-		AND (row = '" . $row . "')
-		AND (col = '" . $col . "')";
+		AND (`row` = '" . $row . "')
+		AND (`col` = '" . $col . "')";
 		return $this->getArray($sql);
 		//return $this->getRow("id", $id);
 	}
@@ -50,8 +50,8 @@ class dbRubricCells extends dbTable
 	{
 		$this->insert(array(
         	'tableId' => $tableId,
-        	'row' => $row,
-        	'col' => $col,
+			'`row`' => $row,
+			'`col`' => $col,
         	'contents' => $contents
 		));
 		return;
@@ -67,8 +67,8 @@ class dbRubricCells extends dbTable
 	{
 		$sql = "SELECT id FROM {$this->_tableName}
 		WHERE (tableId = '$tableId')
-		AND (row = '$row')
-		AND (col = '$col')";
+		AND (`row` = '$row')
+		AND (`col` = '$col')";
 		$list = $this->getArray($sql);
         $id = $list[0]['id'];
 		$this->delete("id", $id);

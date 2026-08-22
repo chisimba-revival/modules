@@ -32,7 +32,7 @@ class dbRubricPerformances extends dbTable
 	{
 		$sql = "SELECT performance FROM tbl_rubric_performances
 		WHERE (tableId = '" . $tableId . "')
-		AND (col = '" . $col . "')";
+		AND (`col` = '" . $col . "')";
 		return $this->getArray($sql);
 		//return $this->getRow("id", $id);
 	}
@@ -47,7 +47,7 @@ class dbRubricPerformances extends dbTable
 	{
 		$this->insert(array(
         	'tableId' => $tableId,
-        	'col' => $col,
+			'`col`' => $col,
         	'performance' => $performance
 		));
 		return;
@@ -62,7 +62,7 @@ class dbRubricPerformances extends dbTable
 	{
 		$sql = "SELECT id FROM {$this->_tableName}
 		WHERE (tableId = '$tableId')
-		AND (col = '$col')";
+		AND (`col` = '$col')";
 		$list = $this->getArray($sql);
         $id = $list[0]['id'];
 		$this->delete("id", $id);

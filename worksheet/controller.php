@@ -475,6 +475,8 @@ class worksheet extends controller
         $rubrics = $this->getAvailableRubrics();
         $this->setVarByRef('rubrics', $rubrics);
         $this->setVar('rubricAvailable', $this->rubricAvailable);
+		$returnedRubricId = $this->getValidRubricId($this->getParam('rubric_id'));
+		$this->setVar('returnedRubricId', $returnedRubricId);
         return 'editquestion_tpl.php';
     }
 
