@@ -36,7 +36,12 @@ $checks = array(
         && str_contains($templates, 'chisimba-status-card'),
     'accessible forms' => str_contains($templates, 'autocomplete="new-password"')
         && str_contains($templates, 'role="alert"')
-        && str_contains($templates, 'aria-labelledby='),
+        && str_contains($templates, 'aria-labelledby=')
+        && str_contains($templates, 'aria-describedby="registration-username-help"')
+        && str_contains($templates, 'aria-describedby="registration-password-help"'),
+    'structured registration fields' => str_contains($templates, 'chisimba-form-card')
+        && str_contains($templates, 'chisimba-form-grid')
+        && str_contains($templates, 'chisimba-field-help'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
     'module update' => str_contains($register, 'MODULE_VERSION: 1.001'),
 );
