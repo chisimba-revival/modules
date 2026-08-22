@@ -132,7 +132,7 @@ class odtingestparser extends ChisimbaObject
                     $styleId = $paragraph->getAttributeNS(self::TEXT_NS, 'style-name');
                     if (stripos((string) ($styles[$styleId]['displayName'] ?? $styleId), 'heading') !== false) { $isHeader = true; }
                     foreach ($xpath->query('.//draw:frame', $paragraph) as $frame) {
-                        $image = $this->imageBlock($xpath, $frame, $zip, $assets, $options, $issues, $location);
+                        $image = $this->imageBlock($xpath, $frame, $zip, $assets, $options, $issues, $location, false);
                         if ($image) { $content[] = $image; $tableAssets[] = $image['assetId']; }
                     }
                 }
@@ -151,7 +151,7 @@ class odtingestparser extends ChisimbaObject
             'source' => array('path' => $location));
     }
 
-    private function imageBlock($xpath, $frame, $zip, array &$assets, array $options, array &$issues, $location)
+    private function imageBlock($xpath, $frame, $zip, array &$assets, array $options, array &$issues, $location, $inferParagraphCaption = true)
     {
         $image = null;
         foreach ($xpath->query('./draw:image', $frame) as $candidate) {
@@ -188,7 +188,7 @@ class odtingestparser extends ChisimbaObject
         $description = $xpath->query('./svg:desc', $frame)->item(0);
         $captionNode = $xpath->query('ancestor::text:p[1]', $frame)->item(0);
         $caption = trim($title ? $title->textContent : '');
-        if ($caption === '' && $captionNode) { $caption = trim($this->plainText($captionNode)); }
+        if ($caption === '' && $captionNode && $inferParagraphCaption) { $caption = trim($this->plainText($captionNode)); }
         return array('type' => 'image', 'assetId' => $id, 'assets' => array($id),
             'alt' => trim($description ? $description->textContent : ''),
             'caption' => $caption);
