@@ -102,6 +102,8 @@ class contextcontentingestprofile extends ChisimbaObject
                     $attributes = '';
                     if (($cell['colspan'] ?? 1) > 1) { $attributes .= ' colspan="' . (int) $cell['colspan'] . '"'; }
                     if (($cell['rowspan'] ?? 1) > 1) { $attributes .= ' rowspan="' . (int) $cell['rowspan'] . '"'; }
+                    $background = strtolower((string) ($cell['backgroundColor'] ?? ''));
+                    if (preg_match('/^#[0-9a-f]{6}$/', $background)) { $attributes .= ' style="background-color:' . $background . '"'; }
                     $content = '';
                     foreach (($cell['content'] ?? array()) as $cellBlock) { $content .= $this->renderBlock($cellBlock); }
                     if ($content === '') { $content = $cell['html'] ?? ''; }

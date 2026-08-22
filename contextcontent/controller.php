@@ -921,7 +921,7 @@ class contextcontent extends controller {
                 }
 
                 // Return Message
-                return $this->nextAction(NULL, array('message' => 'chapterdeleted', 'chapter' => $chapter));
+                return $this->nextAction(NULL, array('message' => 'chapterdeleted'));
             } else {
                 return $this->nextAction(NULL, array('message' => 'chapternotincontext', 'id' => $id));
             }
