@@ -41,6 +41,12 @@ class registration_service extends controller
         header('Referrer-Policy: no-referrer');
         $this->setLayoutTemplate('registration_layout_tpl.php');
         $this->setVar('pageSuppressToolbar', true);
+        $guidancePrefix = in_array((string) $action, array(
+            'recover', 'resetpassword'
+        ), true) ? 'recovery_reset_guidance' : (in_array((string) $action, array(
+            'forgotpassword', 'requestrecovery'
+        ), true) ? 'recovery_guidance' : 'guidance');
+        $this->setVar('registrationGuidancePrefix', $guidancePrefix);
         switch ((string) $action) {
             case 'register': return $this->submitRegistration();
             case 'verify': return $this->verifyAccount();

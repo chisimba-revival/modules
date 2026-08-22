@@ -18,6 +18,11 @@ $checks = array(
         && str_contains($layout, 'setMiddleColumnContent(')
         && str_contains($layout, 'setRightColumnContent(')
         && str_contains($layout, 'chisimba-guidance-card'),
+    'contextual recovery guidance' => str_contains($controller, "'recovery_reset_guidance'")
+        && str_contains($controller, "'recovery_guidance'")
+        && str_contains($layout, '$registrationGuidancePrefix')
+        && str_contains($register, 'Resetting your password')
+        && str_contains($register, 'Finish resetting your password'),
     'no legacy reuse' => !str_contains($controller . $templates . $register, 'userregistration'),
     'canonical orchestration' => str_contains($controller, 'createPending(')
         && str_contains($controller, 'acceptLegalAndQueueVerification(')
@@ -51,7 +56,7 @@ $checks = array(
         && str_contains($templates, 'chisimba-form-grid')
         && str_contains($templates, 'chisimba-field-help'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.002'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.003'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

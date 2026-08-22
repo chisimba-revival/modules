@@ -18,15 +18,18 @@ $loginUrl = htmlspecialchars(
     'UTF-8'
 );
 
+$guidancePrefix = isset($registrationGuidancePrefix)
+    ? preg_replace('/[^a-z_]/', '', (string) $registrationGuidancePrefix)
+    : 'guidance';
 $aside = '<aside class="chisimba-guidance-card" aria-labelledby="account-guidance-title">'
-    . '<h2 id="account-guidance-title">' . $e($t('guidance_title')) . '</h2>'
+    . '<h2 id="account-guidance-title">' . $e($t($guidancePrefix . '_title')) . '</h2>'
     . '<ol class="chisimba-guidance-steps">'
-    . '<li><strong>' . $e($t('guidance_step_details_title')) . '</strong><span>'
-    . $e($t('guidance_step_details')) . '</span></li>'
-    . '<li><strong>' . $e($t('guidance_step_verify_title')) . '</strong><span>'
-    . $e($t('guidance_step_verify')) . '</span></li>'
-    . '<li><strong>' . $e($t('guidance_step_ready_title')) . '</strong><span>'
-    . $e($t('guidance_step_ready')) . '</span></li>'
+    . '<li><strong>' . $e($t($guidancePrefix . '_step_one_title')) . '</strong><span>'
+    . $e($t($guidancePrefix . '_step_one')) . '</span></li>'
+    . '<li><strong>' . $e($t($guidancePrefix . '_step_two_title')) . '</strong><span>'
+    . $e($t($guidancePrefix . '_step_two')) . '</span></li>'
+    . '<li><strong>' . $e($t($guidancePrefix . '_step_three_title')) . '</strong><span>'
+    . $e($t($guidancePrefix . '_step_three')) . '</span></li>'
     . '</ol><p class="chisimba-guidance-card__footer"><a href="' . $loginUrl . '">'
     . $e($t('already_registered')) . '</a></p></aside>';
 
