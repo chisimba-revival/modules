@@ -13,6 +13,8 @@ $checks = array(
         && str_contains($template, 'accept=".odt,.docx,'),
     'explicit confirmation' => str_contains($template, "action' => 'confirmdocumentimport'")
         && str_contains($template, 'stage_token'),
+    'single URL encoding' => str_contains($template, 'html_entity_decode($this->uri(')
+        && !str_contains($template, '$e($this->uri('),
     'registered permissions' => str_contains($register, 'importdocument,previewdocumentimport,confirmdocumentimport|iscontextlecturer')
 );
 foreach ($checks as $name => $passed) {
