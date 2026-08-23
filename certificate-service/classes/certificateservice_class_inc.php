@@ -12,6 +12,7 @@ class certificateservice extends dbTable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init($tableName ?: self::BASES, $pearDb, $errorCallback);
+        $this->_db = $this->objEngine->getDbObj();
         $this->events = $this->getObject('accounteventservice', 'account-event-service');
         $this->config = $this->getObject('altconfig', 'config');
     }
