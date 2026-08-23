@@ -14,7 +14,7 @@ if (strpos($service,'function storeImageAsset')===false || strpos($renderer,'fun
 if (strpos($service,"'snapshot_json'")===false || strpos($service,"'completion_reference'")===false) { $failures[]='issuance is not immutable/idempotent'; }
 if (strpos($service,"'certificate.issued'")===false) { $failures[]='issuance is not audited'; }
 if (strpos($register,'PAGE: admin_shared|||mod_certificate_service_title|site')===false
-    || strpos($register,'SIDEMENU: postlogin-3|Site Admin||award|mod_certificate_service_title|site')===false) {
+    || strpos($register,'SIDEMENU: postlogin-3|Site Admin||scroll-text|mod_certificate_service_title|site')===false) {
     $failures[]='site administration navigation declarations missing';
 }
 foreach (array('class certificate_service_pdf_document','/MediaBox [0 0 595.28 841.89]','imagejpeg','CERTIFICATE OF','AWARDED TO','Certificate number:') as $needle) {
