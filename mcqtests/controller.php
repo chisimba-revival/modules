@@ -136,6 +136,7 @@ class mcqtests extends controller {
         $this->dbAnswers = $this->newObject('dbanswers');
         $this->objMcqAiGenerator = $this->newObject('mcqaigenerator');
         $this->objChapterQuizGenerator = $this->newObject('chapterquizgenerator');
+        $this->objChapterQuizJobs = $this->newObject('dbchapterquizjobs');
         $this->dbMarked = $this->newObject('dbmarked');
         $this->dbResults = $this->newObject('dbresults');
         $this->objUser = $this->newObject('user', 'security');
@@ -225,6 +226,10 @@ class mcqtests extends controller {
                 return $this->chapterQuizSetup();
             case 'aigeneratechapterquizzes':
                 return $this->generateChapterQuizzes();
+            case 'aichapterquizjob':
+                return $this->chapterQuizJob();
+            case 'aichapterquizreview':
+                return $this->chapterQuizReview();
             case 'aiinsertchapterquizzes':
                 return $this->insertChapterQuizzes();
             case "deletescq":
@@ -2268,6 +2273,7 @@ class mcqtests extends controller {
         $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
         $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
         $this->setVar('chapterQuizError', '');
+        $this->setVar('chapterQuizHasRecoveredReview', !empty($this->getSession('mcq_ai_chapter_candidates', array())));
         return 'ai_chapter_quizzes_tpl.php';
     }
 
@@ -2281,17 +2287,46 @@ class mcqtests extends controller {
         }
         $ids = $this->getParam('chapters', array());
         if (!is_array($ids)) { $ids = array(); }
-        $result = $this->objChapterQuizGenerator->generate($this->contextCode, $ids);
-        if (empty($result['ok'])) {
+        $jobId = $this->objChapterQuizJobs->enqueue($this->contextCode, $this->userId, $ids);
+        if (empty($jobId)) {
             $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
             $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
             $this->setVar('chapterQuizError', 'generation');
+            $this->setVar('chapterQuizHasRecoveredReview', !empty($this->getSession('mcq_ai_chapter_candidates', array())));
             return 'ai_chapter_quizzes_tpl.php';
         }
-        $this->setSession('mcq_ai_chapter_candidates', $result['chapters']);
+        return $this->nextAction('aichapterquizjob', array('id' => $jobId));
+    }
+
+    private function chapterQuizJob()
+    {
+        if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
+        $job = $this->objChapterQuizJobs->getOwned(
+            $this->getParam('id', ''), $this->contextCode, $this->userId, $this->objUser->isAdmin()
+        );
+        if (!is_array($job)) { return $this->nextAction('aichapterquizzes'); }
+        if ($job['status'] === 'completed') {
+            $this->setSession('mcq_ai_chapter_candidates', $job['results']);
+            return $this->renderChapterQuizReview($job['results'], $job['errors']);
+        }
+        $this->setVar('chapterQuizJob', $job);
+        return 'ai_chapter_quiz_progress_tpl.php';
+    }
+
+    private function chapterQuizReview()
+    {
+        if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
+        $generated = $this->getSession('mcq_ai_chapter_candidates', array());
+        if (empty($generated)) { return $this->nextAction('aichapterquizzes'); }
+        return $this->renderChapterQuizReview($generated, array());
+    }
+
+    private function renderChapterQuizReview(array $generated, array $errors)
+    {
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_insert'));
-        $this->setVar('chapterQuizGenerated', $result['chapters']);
-        $this->setVar('chapterQuizErrors', $result['errors']);
+        $this->setVar('chapterQuizGenerated', $generated);
+        $this->setVar('chapterQuizErrors', $errors);
         return 'ai_chapter_quiz_review_tpl.php';
     }
 

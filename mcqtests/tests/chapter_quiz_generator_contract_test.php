@@ -24,7 +24,7 @@ $checks = array(
     'questions inserted' => str_contains($service, '$this->ai->insertQuestions('),
     'automatic chapter link' => str_contains($service, 'updateChapterStageGate('),
     'inactive formative default' => str_contains($service, "'status' => 'inactive'") && str_contains($service, "'testtype' => 'Formative'"),
-    'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aiinsertchapterquizzes|isContextLecturer'),
+    'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aichapterquizjob,aichapterquizreview,aiinsertchapterquizzes|isContextLecturer'),
     'site administrator access' => str_contains($controller, '$this->objUser->isAdmin() || $this->contextUsers->isContextLecturer()'),
     'visible correct answer' => str_contains($review, 'mod_mcqtests_ai_correct_answer'),
     'durable correction flag' => str_contains($review, 'correction_flags[]')
