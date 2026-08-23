@@ -2232,15 +2232,27 @@ class mcqtests extends controller {
      */
     private function newHome($testId = NULL) {
         $data = $this->dbTestadmin->getTests($this->contextCode);
+        $chapterMap = array();
+        $chapterRows = $this->objContextChapters->getContextChapters($this->contextCode);
+        foreach (is_array($chapterRows) ? $chapterRows : array() as $chapterIndex => $chapter) {
+            $chapterMap[(string) $chapter['chapterid']] = array(
+                'order' => $chapterIndex + 1,
+                'title' => (string) $chapter['chaptertitle'],
+            );
+        }
         if (!empty($data)) {
             foreach ($data as $key => $line) {
-                $sql = "SELECT title FROM tbl_context_nodes WHERE ";
-                $sql.= "id = '" . $line['chapter'] . "'";
-                $nodes = $this->objContentNodes->getArray($sql);
-                if (!empty($nodes)) {
-                    $data[$key]['node'] = $nodes[0]['title'];
+                $chapterId = (string) $line['chapter'];
+                if (isset($chapterMap[$chapterId])) {
+                    $data[$key]['chapterorder'] = $chapterMap[$chapterId]['order'];
+                    $data[$key]['node'] = sprintf(
+                        $this->objLanguage->languageText('mod_mcqtests_chapter_numbered', 'mcqtests', 'Chapter %d: %s'),
+                        $chapterMap[$chapterId]['order'],
+                        $chapterMap[$chapterId]['title']
+                    );
                 } else {
-                    $data[$key]['node'] = $this->objContextChapters->getContextChapterTitle($line['chapter']);
+                    $data[$key]['chapterorder'] = PHP_INT_MAX;
+                    $data[$key]['node'] = '';
                 }
                 $questionCount = (int) $this->dbQuestions->countQuestions($line['id']);
                 $actualMarks = $questionCount > 0
@@ -2249,6 +2261,10 @@ class mcqtests extends controller {
                 $data[$key]['questioncount'] = $questionCount;
                 $data[$key]['actualmarks'] = $actualMarks;
             }
+            usort($data, function ($left, $right) {
+                $order = ((int) $left['chapterorder']) <=> ((int) $right['chapterorder']);
+                return $order !== 0 ? $order : strcasecmp((string) $left['name'], (string) $right['name']);
+            });
         }
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVarByRef('testId', $testId);

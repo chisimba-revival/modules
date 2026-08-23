@@ -3,7 +3,10 @@ $this->appendArrayVar('headerParams', '<style type="text/css">.ingest-table{max-
 $this->loadClass('link', 'htmlelements');
 $objWashout = $this->getObject('washout', 'utilities');
 $backLink = new link($this->uri(array('action' => 'showcontextchapters'), 'contextcontent'));
-$backLink->link = '&#171; ' . $this->objLanguage->languageText('mod_contextcontent_allchapters', 'contextcontent', 'All chapters');
+$backLink->link = '&#171; ' . $this->objLanguage->code2Txt(
+    'mod_contextcontent_allchapters',
+    'contextcontent'
+);
 $startLink = new link($this->uri(array('action' => 'viewpage', 'id' => $firstPage, 'prevchapterid' => $chapterId), 'contextcontent'));
 $startLink->cssClass = 'contextcontent-chapter-start';
 $startLabel = $this->objLanguage->code2Txt(
