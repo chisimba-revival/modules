@@ -20,6 +20,16 @@ if (strpos($register,'PAGE: admin_shared|||mod_certificate_service_title|site')=
 foreach (array('class certificate_service_pdf_document','/MediaBox [0 0 595.28 841.89]','imagejpeg','CERTIFICATE OF','AWARDED TO','Certificate number:') as $needle) {
     if (strpos($renderer,$needle)===false) { $failures[]='renderer missing '.$needle; }
 }
+if (strpos($renderer,"centredIn(\$im,\$base['organisation']")!==false || strpos($renderer,"centredIn(\$im,'Organisation'")!==false) {
+    $failures[]='organisation text must not be printed beneath the logo';
+}
+$companyPosition=strpos($renderer,"centred(\$im,\$base['company_name']");
+$locationPosition=strpos($renderer,"centred(\$im,\$base['company_location']");
+$websitePosition=strpos($renderer,"centred(\$im,\$base['website_url']");
+if ($companyPosition===false || $locationPosition===false || $websitePosition===false
+    || !($companyPosition<$locationPosition && $locationPosition<$websitePosition)) {
+    $failures[]='footer must print company name, location, then website URL';
+}
 foreach(array('DejaVuSans.ttf','DejaVuSans-Bold.ttf','DejaVuSerif.ttf','DejaVuSerif-Bold.ttf','DEJAVU-LICENSE.txt') as $font){if(!is_file($root.'/resources/fonts/'.$font)){$failures[]='bundled font asset missing '.$font;}}
 if(strpos($renderer,"dirname(__DIR__).'/resources/fonts/'")===false){$failures[]='renderer does not own its font dependency';}
 if (strpos($renderer,'arbitrary HTML')===false) { $failures[]='safe fixed-layout contract missing'; }
