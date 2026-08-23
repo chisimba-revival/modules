@@ -29,7 +29,7 @@ class certificatepdfrenderer extends ChisimbaObject
     private function safe($text){return trim(preg_replace('/\s+/u',' ',(string)$text));}
     private function colour($im,$hex){$hex=ltrim((string)$hex,'#');return imagecolorallocate($im,hexdec(substr($hex,0,2)),hexdec(substr($hex,2,2)),hexdec(substr($hex,4,2)));}
     private function placeAsset($canvas,$path,$x,$y,$maxWidth,$maxHeight){if($path===''||!is_file($path)||!is_readable($path)){return;}$data=@file_get_contents($path);$source=$data===false?false:@imagecreatefromstring($data);if(!$source){return;}$width=imagesx($source);$height=imagesy($source);$scale=min($maxWidth/$width,$maxHeight/$height,1);$targetWidth=(int)($width*$scale);$targetHeight=(int)($height*$scale);imagecopyresampled($canvas,$source,$x+(int)(($maxWidth-$targetWidth)/2),$y+(int)(($maxHeight-$targetHeight)/2),0,0,$targetWidth,$targetHeight,$width,$height);imagedestroy($source);}
-    private function font($name){foreach(array('/usr/share/fonts/truetype/dejavu/','/usr/share/fonts/dejavu/') as $directory){$path=$directory.$name;if(is_file($path)){return $path;}}throw new RuntimeException('Certificate font is not installed: '.$name);}
+    private function font($name){$path=dirname(__DIR__).'/resources/fonts/'.$name;if(is_file($path)&&is_readable($path)){return $path;}throw new RuntimeException('Bundled certificate font is missing: '.$name);}
 }
 /** Minimal self-contained PDF wrapper for the rendered A4 certificate page. */
 class certificate_service_pdf_document
