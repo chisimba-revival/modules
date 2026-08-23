@@ -38,14 +38,9 @@ $addUrl = $this->uri(array(
     'action' => 'addstep'
 ));
 $iconBase = $this->getResourceUri('icons/lucide/', 'ui');
-$addIcon = '<img src="'.$iconBase.'circle-plus.svg" width="20" height="20" alt="" aria-hidden="true" />';
 if ($this->isValid('add'))
 {
         $addOkay=TRUE;
-        $objLink = new link($addUrl);
-        $objLink->title = $addLabel;
-        $objLink->link = $addIcon;
-	$heading.= '<span class="mcq-heading-actions">'.$objLink->show().'</span>';
 } else {
        $addOkay=FALSE;
 }
@@ -145,15 +140,35 @@ echo "<h2>".$advanced->show()."</h2>";
 echo $objTable->show();
 if ($this->isValid('add'))
 {
-	$objLink = new link($addUrl);
-	$objLink->link = $addLabel;
-	$links = $objLink->show();
+	$chapterQuizUrl = html_entity_decode(
+	    $this->uri(array('action' => 'aichapterquizzes')),
+	    ENT_QUOTES | ENT_HTML5,
+	    'UTF-8'
+	);
+	$links = '<a class="button" href="'
+	    . htmlspecialchars(html_entity_decode($addUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+	    . '"><img src="' . htmlspecialchars($iconBase . 'circle-plus.svg', ENT_QUOTES, 'UTF-8')
+	    . '" width="18" height="18" alt="" aria-hidden="true" /> '
+	    . htmlspecialchars($addLabel, ENT_QUOTES, 'UTF-8') . '</a>';
+	$links .= '<a class="button chisimba-button-secondary" href="'
+	    . htmlspecialchars($chapterQuizUrl, ENT_QUOTES, 'UTF-8')
+	    . '"><img src="' . htmlspecialchars($iconBase . 'sparkles.svg', ENT_QUOTES, 'UTF-8')
+	    . '" width="18" height="18" alt="" aria-hidden="true" /> '
+	    . htmlspecialchars($this->objLanguage->languageText(
+	        'mod_mcqtests_ai_chapter_button', 'mcqtests',
+	        'Generate quizzes from chapters'
+	    ), ENT_QUOTES, 'UTF-8') . '</a>';
 }else {
 	$links = "";
 }
-$assessmentSheetLink = new link($this->uri(array('action' => 'assessmentSheet'), 'gradebook'));
-$assessmentSheetLink->link = $assessmentSheetLabel;
-$links.= '<span class="mcq-home-link">'.$assessmentSheetLink->show().'</span>';
+$assessmentSheetUrl = html_entity_decode(
+    $this->uri(array('action' => 'assessmentSheet'), 'gradebook'),
+    ENT_QUOTES | ENT_HTML5,
+    'UTF-8'
+);
+$links.= '<a class="button chisimba-button-secondary" href="'
+    . htmlspecialchars($assessmentSheetUrl, ENT_QUOTES, 'UTF-8') . '">'
+    . htmlspecialchars($assessmentSheetLabel, ENT_QUOTES, 'UTF-8') . '</a>';
 // Link to Assignment Management Module if registered
 if ($this->assignment) {
     $objLink = new link($this->uri('', 'assignmentadmin'));
