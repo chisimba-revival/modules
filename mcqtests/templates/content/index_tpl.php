@@ -150,14 +150,16 @@ if ($this->isValid('add'))
 	    . '"><img src="' . htmlspecialchars($iconBase . 'circle-plus.svg', ENT_QUOTES, 'UTF-8')
 	    . '" width="18" height="18" alt="" aria-hidden="true" /> '
 	    . htmlspecialchars($addLabel, ENT_QUOTES, 'UTF-8') . '</a>';
-	$links .= '<a class="button chisimba-button-secondary" href="'
-	    . htmlspecialchars($chapterQuizUrl, ENT_QUOTES, 'UTF-8')
-	    . '"><img src="' . htmlspecialchars($iconBase . 'sparkles.svg', ENT_QUOTES, 'UTF-8')
-	    . '" width="18" height="18" alt="" aria-hidden="true" /> '
-	    . htmlspecialchars($this->objLanguage->languageText(
-	        'mod_mcqtests_ai_chapter_button', 'mcqtests',
-	        'Generate quizzes from chapters'
-	    ), ENT_QUOTES, 'UTF-8') . '</a>';
+	if (!empty($aiAvailable)) {
+	    $links .= '<a class="button chisimba-button-secondary" href="'
+	        . htmlspecialchars($chapterQuizUrl, ENT_QUOTES, 'UTF-8')
+	        . '"><img src="' . htmlspecialchars($iconBase . 'sparkles.svg', ENT_QUOTES, 'UTF-8')
+	        . '" width="18" height="18" alt="" aria-hidden="true" /> '
+	        . htmlspecialchars($this->objLanguage->languageText(
+	            'mod_mcqtests_ai_chapter_button', 'mcqtests',
+	            'Generate quizzes from chapters'
+	        ), ENT_QUOTES, 'UTF-8') . '</a>';
+	}
 }else {
 	$links = "";
 }

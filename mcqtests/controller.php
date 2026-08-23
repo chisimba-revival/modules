@@ -2227,6 +2227,7 @@ class mcqtests extends controller {
         }
         $this->setVarByRef('testId', $testId);
         $this->setVarByRef('data', $data);
+        $this->setVar('aiAvailable', $this->objMcqAiGenerator->isAvailable());
         return 'index_tpl.php';
     }
 
@@ -2253,12 +2254,16 @@ class mcqtests extends controller {
         }
         $this->setVarByRef('testId', $testId);
         $this->setVarByRef('data', $data);
+        $this->setVar('aiAvailable', $this->objMcqAiGenerator->isAvailable());
         return 'newindex_tpl.php';
     }
 
     private function chapterQuizSetup()
     {
         if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
+        if (!$this->objMcqAiGenerator->isAvailable()) {
+            return $this->nextAction(NULL);
+        }
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
         $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
