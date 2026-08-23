@@ -110,10 +110,13 @@ class rubricservice extends ChisimbaObject
         }
 
         $performances = array();
-        for ($col = 1; $col <= $rubric['cols']; $col++) {
-            $record = $this->objRubricPerformances->listSingle($rubricId, $col);
+        $firstPerformance = $this->objRubricPerformances->listSingle($rubricId, 0);
+        $indexOffset = empty($firstPerformance) ? 1 : 0;
+        for ($col = 0; $col < $rubric['cols']; $col++) {
+            $storedCol = $col + $indexOffset;
+            $record = $this->objRubricPerformances->listSingle($rubricId, $storedCol);
             $performances[] = array(
-                'column' => $col,
+                'column' => $storedCol,
                 'label' => (!empty($record) && isset($record[0]['performance']))
                     ? $record[0]['performance']
                     : '',
@@ -121,14 +124,16 @@ class rubricservice extends ChisimbaObject
         }
 
         $criteria = array();
-        for ($row = 1; $row <= $rubric['rows']; $row++) {
-            $objective = $this->objRubricObjectives->listSingle($rubricId, $row);
+        for ($row = 0; $row < $rubric['rows']; $row++) {
+            $storedRow = $row + $indexOffset;
+            $objective = $this->objRubricObjectives->listSingle($rubricId, $storedRow);
             $levels = array();
 
-            for ($col = 1; $col <= $rubric['cols']; $col++) {
-                $cell = $this->objRubricCells->listSingle($rubricId, $row, $col);
+            for ($col = 0; $col < $rubric['cols']; $col++) {
+                $storedCol = $col + $indexOffset;
+                $cell = $this->objRubricCells->listSingle($rubricId, $storedRow, $storedCol);
                 $levels[] = array(
-                    'column' => $col,
+                    'column' => $storedCol,
                     'description' => (!empty($cell) && isset($cell[0]['contents']))
                         ? $cell[0]['contents']
                         : '',
@@ -136,7 +141,7 @@ class rubricservice extends ChisimbaObject
             }
 
             $criteria[] = array(
-                'row' => $row,
+                'row' => $storedRow,
                 'objective' => (!empty($objective) && isset($objective[0]['objective']))
                     ? $objective[0]['objective']
                     : '',

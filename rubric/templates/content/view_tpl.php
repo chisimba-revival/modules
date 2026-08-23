@@ -1,106 +1,39 @@
 <?php
-$ret = "";
-$pageTitle = $this->newObject('htmlheading','htmlelements');
-$pageTitle->type=1;
-$pageTitle->align='left';
-$pageTitle->str=$objLanguage->languageText('rubric_rubric','rubric') . " : " . $title ;
-$ret .= $pageTitle->show();
-
-$labelDescription = "<p>" . $description . "</p>";
-
-$ret .= $labelDescription;
-
-// If this is an assessment then display details.
-if (isset($IsAssessment)) {
-    $objTable =& $this->newObject('htmltable','htmlelements');
-    $objTable->border = '0';
-    $objTable->width='40%';
-    $objTable->cellspacing='2';
-    $objTable->cellpadding='2';
-
-    $objTable->startRow();
-    $objTable->addCell("<b>".ucfirst($objLanguage->code2Txt("rubric_teacher","rubric"))."</b>");
-    $objTable->addCell($teacher);
-    $objTable->endRow();
-    $objTable->startRow();
-    $objTable->addCell("<b>".ucfirst($objLanguage->code2Txt("rubric_studentno","rubric"))."</b>");
-    $objTable->addCell($studentNo);
-    $objTable->endRow();
-    $objTable->startRow();
-    $objTable->addCell("<b>".ucfirst($objLanguage->code2Txt("rubric_student","rubric"))."</b>");
-    $objTable->addCell($student);
-    $objTable->endRow();
-    $objTable->startRow();
-    $objTable->addCell("<b>".$objLanguage->languageText("rubric_datesubmitted","rubric")."</b>");
-    $objTable->addCell($date);
-    $objTable->endRow();
-    $ret .= $objTable->show();
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
+$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+if ($this->getParam('saved', '') === 'yes') {
+    echo '<div class="rubric-notice" role="status">'.$esc($objLanguage->languageText('mod_rubric_saved', 'rubric')).'</div>';
 }
-$table =& $this->newObject("htmltable","htmlelements");
-$table->border = '0';
-$table->width = '40%';
-$table->cellspacing='2';
-$table->cellpadding='2';
-$table->startRow();
-$table->addHeaderCell("&nbsp;");
-// Display performances.
-for ($j=0;$j<$cols;$j++) {
-    $table->addHeaderCell($performances[$j]);
+echo '<article class="rubric-view"><header class="rubric-view-header"><h1>'.$esc($title).'</h1><p>'.$esc($description).'</p></header>';
+if (isset($IsAssessment)) {
+    echo '<dl class="rubric-form-meta"><div><dt><strong>'.$esc(ucfirst($objLanguage->code2Txt('rubric_teacher','rubric'))).'</strong></dt><dd>'.$esc($teacher).'</dd></div>'
+        .'<div><dt><strong>'.$esc(ucfirst($objLanguage->code2Txt('rubric_student','rubric'))).'</strong></dt><dd>'.$esc($student).' ('.$esc($studentNo).')</dd></div>'
+        .'<div><dt><strong>'.$esc($objLanguage->languageText('rubric_datesubmitted','rubric')).'</strong></dt><dd>'.$esc($date).'</dd></div></dl>';
+}
+echo '<div class="rubric-matrix rubric-matrix-scroll"><table><thead><tr><th scope="col">'.$esc($objLanguage->languageText('mod_rubric_criteria','rubric')).'</th>';
+for ($j = 0; $j < $cols; $j++) { echo '<th scope="col">'.$esc($performances[$j]).'</th>'; }
+if (isset($IsAssessment)) { echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_score','rubric')).'</th>'; }
+echo '</tr></thead><tbody>';
+for ($i = 0; $i < $rows; $i++) {
+    echo '<tr><th scope="row">'.$esc($objectives[$i]).'</th>';
+    for ($j = 0; $j < $cols; $j++) { echo '<td>'.$esc($cells[$i][$j]).'</td>'; }
+    if (isset($IsAssessment)) { echo '<td>'.$esc($scores[$i]).'</td>'; }
+    echo '</tr>';
 }
 if (isset($IsAssessment)) {
-    $table->addHeaderCell("Score");
+    echo '<tr><th scope="row" colspan="'.($cols).'">'.$esc($objLanguage->languageText('rubric_total','rubric')).'</th><td>'.$esc($total.'/'.$maxtotal).'</td></tr>';
 }
-$table->endRow();
-$class = 'odd';
-for ($i=0;$i<$rows;$i++) {
-    $table->startRow($class);
-    // Display objective.
-    $table->addCell($objectives[$i]);
-    // Display cells.
-    for ($j=0;$j<$cols;$j++) {
-        $table->addCell($cells[$i][$j]);
-    }
-    if (isset($IsAssessment)) {
-        $table->addCell($scores[$i]);
-    }
-    $table->endRow();
-    $class = $class == 'odd' ? 'even' : 'odd';
+echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'">';
+if ($noBanner === 'yes') {
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="history.back()">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></button>';
+} else {
+    echo '<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
+    $back = isset($IsAssessment)
+        ? $url(array('action'=>'assessments','tableId'=>$tableId))
+        : $url(array());
+    echo '<a class="button chisimba-button-secondary" href="'.$back.'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a>';
 }
-// If this is an assessment display the total score.
-if (isset($IsAssessment)) {
-    $table->startRow();
-    $table->addCell("&nbsp;");
-    for ($j=0;$j<($cols-1);$j++) {
-        $table->addCell("&nbsp;");
-    }
-    $table->addCell($objLanguage->languageText("rubric_total","rubric") . "&nbsp;", Null, Null, "right");
-    $table->addCell("$total/$maxtotal");
-    $table->endRow();
-}
-$ret .= $table->show();
-if ($noBanner == "yes") {
-    $ret .= "<a href=\"javascript:history.back();\">" . "Back" . "</a>";
-}
-else {
-    // Print the page.
-    $ret .= "<a href=\"javascript:window.print();\">" . $objLanguage->languageText("word_print") . "</a>";
-    $ret .= "&nbsp;";
-    if (isset($IsAssessment)) {
-        $ret .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-                'action'=>'assessments',
-                'tableId'=>$tableId
-            ))
-        . "\">" . $objLanguage->languageText("word_back") . "</a>"; //rubric_returntomainmenu
-    }
-    else {
-        $ret .= "<a href=\"" .
-            $this->uri(array(
-                'module'=>'rubric',
-            ))
-        . "\">" . $objLanguage->languageText("word_back") . "</a>"; //rubric_returntomainmenu
-    }
-}
-echo "<div class='rubric_view'>$ret</div>";
+echo '</nav></article>';
 ?>

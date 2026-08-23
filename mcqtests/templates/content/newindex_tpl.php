@@ -37,10 +37,16 @@ $exportLabel = $this->objLanguage->languageText('mod_mcqtests_export', 'mcqtests
 $addUrl = $this->uri(array(
     'action' => 'addstep'
 ));
+$chapterQuizUrl = $this->uri(array('action' => 'aichapterquizzes'));
 $addIcon = $objIcon->getAddIcon($addUrl);
 if ($this->isValid('add'))
 {
 	$heading.= '&nbsp;&nbsp;&nbsp;'.$addIcon;
+	$heading.= '&nbsp;&nbsp;<a class="button chisimba-button-secondary" href="'
+        . $chapterQuizUrl . '">'
+        . htmlspecialchars($this->objLanguage->languageText(
+            'mod_mcqtests_ai_chapter_button', 'mcqtests', 'Generate quizzes from chapters'
+        ), ENT_QUOTES, 'UTF-8') . '</a>';
 }
 $this->setVarByRef('heading', $heading);
 if (!empty($testId)) {

@@ -34,4 +34,13 @@ echo $heading->show();
 <h2><?php echo $this->objLanguage->languageText('mod_contextcontent_course_completion_requirements', 'contextcontent'); ?></h2>
 <p class="course-completion-placeholder"><?php echo $this->objLanguage->languageText('mod_contextcontent_course_completion_no_requirements', 'contextcontent'); ?></p>
 </section>
+<?php
+$certificateModules=$this->getObject('modules','modulecatalogue');
+if($certificateModules->checkIfRegistered('certificate-service')){
+    $certificateService=$this->getObject('certificateservice','certificate-service');
+    if($certificateService->assignmentFor('course',$this->contextCode)){
+        echo '<p class="course-completion-certificate"><a class="button" href="'.$this->uri(array('action'=>'downloadcourse'),'certificate-service').'">'.$this->objLanguage->languageText('mod_certificate_service_download','certificate-service').'</a></p>';
+    }
+}
+?>
 </div>

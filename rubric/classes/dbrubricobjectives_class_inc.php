@@ -32,7 +32,7 @@ class dbRubricObjectives extends dbTable
 	{
 		$sql = "SELECT objective FROM tbl_rubric_objectives 
 		WHERE (tableId = '" . $tableId . "')
-		AND (row = '" . $row . "')";
+		AND (`row` = '" . $row . "')";
 		return $this->getArray($sql);
 		//return $this->getRow("id", $id);
 	}
@@ -47,7 +47,7 @@ class dbRubricObjectives extends dbTable
 	{
 		$this->insert(array(
         	'tableId' => $tableId,
-        	'row' => $row,
+			'`row`' => $row,
         	'objective' => $objective
 		));
 		return;
@@ -62,7 +62,7 @@ class dbRubricObjectives extends dbTable
 	{
 		$sql = "SELECT id FROM {$this->_tableName}
 		WHERE (tableId = '$tableId')
-		AND (row = '$row')";
+		AND (`row` = '$row')";
 		$list = $this->getArray($sql);
         $id = $list[0]['id'];
 		$this->delete("id", $id);

@@ -111,7 +111,7 @@ if ($worksheet['activity_status'] == 'inactive') {
     $table->addCell($textarea->show());
     $table->endRow();
 
-    if ($rubricAvailable && !empty($rubrics)) {
+    if ($rubricAvailable) {
         $table->startRow();
         $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_rubric', 'worksheet', 'Rubric').'</strong>:');
         $select = '<select name="rubric_id" id="input_rubric_id">';
@@ -120,6 +120,9 @@ if ($worksheet['activity_status'] == 'inactive') {
             $select .= '<option value="'.htmlspecialchars($rubric['id'], ENT_QUOTES, 'UTF-8').'">'.htmlspecialchars($rubric['title'], ENT_QUOTES, 'UTF-8').'</option>';
         }
         $select .= '</select><br /><small>'.$this->objLanguage->languageText('mod_worksheet_rubric_help', 'worksheet', 'Optional reusable marking rubric').'</small>';
+        $createRubricUrl = $this->uri(array('module'=>'rubric', 'action'=>'createtable', 'type'=>'context', 'returnModule'=>'worksheet', 'returnAction'=>'managequestions', 'returnId'=>$id));
+        $manageRubricsUrl = $this->uri(array('module'=>'rubric'));
+        $select .= '<br /><span class="worksheet-rubric-actions"><a href="'.$createRubricUrl.'">'.$this->objLanguage->languageText('mod_worksheet_create_rubric', 'worksheet', 'Create rubric').'</a> &middot; <a href="'.$manageRubricsUrl.'">'.$this->objLanguage->languageText('mod_worksheet_manage_rubrics', 'worksheet', 'Manage rubrics').'</a></span>';
         $table->addCell($select);
         $table->endRow();
     }

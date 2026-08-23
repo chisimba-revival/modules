@@ -135,6 +135,7 @@ class mcqaigenerator extends ChisimbaObject
                 'questionorder' => $order,
                 'questiontype' => 'mcq',
                 'qtype' => 'mcq'
+                ,'needsreview' => !empty($question['needsCorrection']) ? 1 : 0
             ));
 
             if (empty($questionId)) {

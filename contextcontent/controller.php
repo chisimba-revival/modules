@@ -92,6 +92,8 @@ class contextcontent extends controller {
             $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
             $this->objTikTokVideo = $this->getObject('tiktokvideoservice', 'contextcontent');
             $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
+            $this->objIngest = $this->getObject('ingestservice', 'ingestservice');
+            $this->objIngestStaging = $this->getObject('ingeststagingservice', 'ingestservice');
             $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $this->csrf = $stack['csrf'];
 
@@ -186,7 +188,8 @@ class contextcontent extends controller {
         if (in_array($action, array('addcontent', 'addpage', 'editpage', 'deletepage',
             'addchapter', 'editchapter', 'deletechapter', 'exportcontent',
             'useractivity', 'showuseractivity', 'viewlogs', 'viewlogdetails',
-            'viewcontextcontentusage', 'viewcontextcontentusagedetails', 'addpagefromfile'), true)) {
+            'viewcontextcontentusage', 'viewcontextcontentusagedetails', 'addpagefromfile',
+            'importdocument'), true)) {
             $this->requireCourseManager();
         }
         if (in_array($action, array('addscorm', 'addscormpage', 'editscorm', 'savescormpage',
@@ -316,6 +319,12 @@ class contextcontent extends controller {
                 return $this->uploadFile();
             case 'createpagefromfile':
                 return $this->createpagefromfile();
+            case 'importdocument':
+                return $this->importDocument();
+            case 'previewdocumentimport':
+                return $this->previewDocumentImport();
+            case 'confirmdocumentimport':
+                return $this->confirmDocumentImport();
             case 'viewlogs':
                 $this->setLayoutTemplate('layout_firstpage_tpl.php');
                 $action = "viewlogdetails";
@@ -392,7 +401,7 @@ class contextcontent extends controller {
             'movepageup', 'movepagedown', 'savechapter', 'updatechapter',
             'deletechapterconfirm', 'movechapterup', 'movechapterdown',
             'movetochapter', 'changebookmark', 'addcomment', 'uploadfile',
-            'createpagefromfile'
+            'createpagefromfile', 'previewdocumentimport', 'confirmdocumentimport'
         ), true);
     }
 
@@ -429,6 +438,58 @@ class contextcontent extends controller {
     private function prepareMutationForm()
     {
         $this->setVar('contextContentCsrf', $this->csrf->issue(self::CSRF_CONTEXT));
+    }
+
+    private function importDocument()
+    {
+        $this->prepareMutationForm();
+        $this->setVar('documentImportState', 'upload');
+        $this->setVar('documentImportMaximumBytes', 52428800);
+        return 'importdocument_tpl.php';
+    }
+
+    private function previewDocumentImport()
+    {
+        $this->requireCourseManager();
+        $this->setVar('documentImportState', 'error');
+        try {
+            $staged = $this->objIngestStaging->stageUpload($_FILES['source_document'] ?? array(), $this->userId);
+            $document = $this->objIngest->preview($staged['path'] ?? $this->objIngestStaging->resolve($staged['token'], $this->userId)['path']);
+            $preview = $this->objIngest->applyCapability($document, 'contextcontent', 'contextcontentingestprofile');
+            $this->setVar('documentImportState', 'preview');
+            $this->setVar('documentImportStage', $staged);
+            $this->setVar('documentImportPreview', $preview);
+        } catch (Throwable $error) {
+            $this->setVar('documentImportErrorCode', $error->getMessage());
+        }
+        $this->prepareMutationForm();
+        return 'importdocument_tpl.php';
+    }
+
+    private function confirmDocumentImport()
+    {
+        $this->requireCourseManager();
+        $token = (string) $this->getParam('stage_token', '');
+        try {
+            $staged = $this->objIngestStaging->resolve($token, $this->userId);
+            $document = $this->objIngest->parse($staged['path']);
+            $result = $this->objIngest->deliver($document, 'contextcontent', 'contextcontentingestconsumer', array(
+                'target' => $this->contextCode,
+                'contextcode' => $this->contextCode,
+                'language' => 'en',
+                'force' => (string) $this->getParam('force_import', '') === '1'
+            ));
+            if (($result['status'] ?? '') === 'completed' || ($result['status'] ?? '') === 'unchanged') {
+                $this->objIngestStaging->discard($token, $this->userId);
+            }
+            $this->setVar('documentImportState', 'result');
+            $this->setVar('documentImportResult', $result);
+        } catch (Throwable $error) {
+            $this->setVar('documentImportState', 'error');
+            $this->setVar('documentImportErrorCode', $error->getMessage());
+        }
+        $this->prepareMutationForm();
+        return 'importdocument_tpl.php';
     }
 
     /**
@@ -860,7 +921,7 @@ class contextcontent extends controller {
                 }
 
                 // Return Message
-                return $this->nextAction(NULL, array('message' => 'chapterdeleted', 'chapter' => $chapter));
+                return $this->nextAction(NULL, array('message' => 'chapterdeleted'));
             } else {
                 return $this->nextAction(NULL, array('message' => 'chapternotincontext', 'id' => $id));
             }

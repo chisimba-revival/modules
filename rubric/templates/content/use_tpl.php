@@ -1,4 +1,9 @@
 <?php
+	$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+	$icons = $this->getObject('iconservice', 'ui');
+	$saveIcon = $icons->render('circle-check', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+	$cancelIcon = $icons->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon'));
+	$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
 
     $this->loadClass('label','htmlelements');
 
@@ -9,7 +14,7 @@
 	echo $pageTitle->show();
     //$pageTitle->str=$description;
     //echo $pageTitle->show();
-	echo $description;
+	echo '<p>'.htmlspecialchars($description, ENT_QUOTES, 'UTF-8').'</p>';
 
     // Load classes.
 	$this->loadClass("form","htmlelements");
@@ -19,16 +24,14 @@
 	// Display form.
 	switch($mode){
 		case 'add':
-			$uri = $this->uri(array(
-		    	'module'=>'rubric',
+			$uri = $url(array(
 				'action'=>'addassessmentconfirm',
 				'tableId'=>$tableId,
 				'NoBanner'=>$noBanner
 			));
 			break;
 		case 'edit':
-			$uri = $this->uri(array(
-		    	'module'=>'rubric',
+			$uri = $url(array(
 				'action'=>'editassessmentconfirm',
 				'tableId'=>$tableId,
 				'id'=>$id,
@@ -89,7 +92,8 @@
 	$table->border = '0';
 	$table->width = '99%';
     $table->cellspacing='2';
-    $table->cellpadding='2';
+	$table->cellpadding='2';
+	$table->cssClass='rubric-assessment-matrix';
 	$table->startRow();
 	$table->addHeaderCell("&nbsp;");
     // Display performances.
@@ -116,14 +120,9 @@
 		$class = $class == 'odd' ? 'even' : 'odd';
 	}
 	$form->addToForm($table->show());
-		$button = new button("submit", $objLanguage->languageText("word_save"));
-		$button->setToSubmit();
-		$returnUrl = $this->uri(array('module'=>'rubric','action'=>'assessments' ,'tableId'=>$tableId,));
-
-		$buttonc = new button("submit", $objLanguage->languageText("word_cancel"));
-		$buttonc->setOnClick("window.location='$returnUrl'");
-	$form->addToForm($button);
-	$form->addToForm($buttonc);
+		$returnUrl = $url(array('action'=>'assessments' ,'tableId'=>$tableId,));
+	$form->addToForm('<div class="rubric-form-actions"><button class="button" type="submit">'.$saveIcon.'<span>'.$esc($objLanguage->languageText('word_save')).'</span></button>'
+		.'<a class="button chisimba-button-secondary" href="'.$returnUrl.'">'.$cancelIcon.'<span>'.$esc($objLanguage->languageText('word_cancel')).'</span></a></div>');
 
 	echo $form->show();
 ?>

@@ -1,157 +1,48 @@
 <?php
-
-    $pageTitle = $this->newObject('htmlheading','htmlelements');
-    $pageTitle->type=1;
-    $pageTitle->align='left';
-    $pageTitle->str=$objLanguage->languageText('rubric_rubric','rubric').": " . $title;
-    if ($this->isValid('addassessment')) {
-	    // Add assessment.
-   		$icon =& $this->getObject('geticon','htmlelements');
-   		$icon->setIcon('add');
-   		$icon->alt = $objLanguage->languageText("rubric_addassessment","rubric");
-   		$icon->align=false;
-        $pageTitle->str .= "<a href=\"" .
-        $this->uri(array(
-            'module'=>'rubric',
-            'action'=>'addassessment',
-            'tableId'=>$tableId
-        )) . "\">" . $icon->show() . "</a>";
-	}
-    // Show Title
-    echo $pageTitle->show();
-    // Show Description
-	echo '<p>'.$description.'</p>';
-    $tblclass = $this->newObject('htmltable','htmlelements');
-    $tblclass->width='99%';
-    $tblclass->border='0';
-    $tblclass->cellspacing='1';
-    $tblclass->cellpadding='5';
-    $tblclass->startHeaderRow();
-    $tblclass->addHeaderCell(ucfirst($objLanguage->code2Txt('word_username','system'))." / ".ucfirst($objLanguage->code2Txt('rubric_studentno','rubric')), 150);
-    if ($showStudentNames == "yes") {
-        $tblclass->addHeaderCell($objLanguage->languageText('rubric_name','rubric'), 150);
+$esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$icon = static function ($name) use ($icons) { return $icons->render($name, array('decorative'=>true, 'class'=>'chisimba-action-icon')); };
+$url = function ($params) { return $this->uriForHtmlAttribute($params, 'rubric'); };
+$canAdd = $this->isValid('addassessment');
+echo '<main class="rubric-workspace"><header class="rubric-page-header"><div><h1>'.$esc($title).'</h1><p>'.$esc($description).'</p></div>';
+if ($canAdd) {
+    echo '<a class="button" href="'.$url(array('action'=>'addassessment','tableId'=>$tableId)).'">'.$icon('plus').'<span>'.$esc($objLanguage->languageText('rubric_addassessment','rubric')).'</span></a>';
+}
+echo '</header><div class="chisimba-table-wrap"><table class="chisimba-table"><thead><tr><th scope="col">'
+    .$esc(ucfirst($objLanguage->code2Txt('word_username','system')).' / '.ucfirst($objLanguage->code2Txt('rubric_studentno','rubric'))).'</th>';
+if ($showStudentNames === 'yes') { echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_name','rubric')).'</th>'; }
+echo '<th scope="col">'.$esc($objLanguage->languageText('rubric_score','rubric')).'</th><th scope="col">'.$esc(ucfirst($objLanguage->code2Txt('rubric_teacher','rubric'))).'</th>'
+    .'<th scope="col">'.$esc($objLanguage->languageText('rubric_date','rubric')).'</th><th scope="col" class="rubric-actions-heading">'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'</th></tr></thead><tbody>';
+$shown = 0;
+foreach ($assessments as $assessment) {
+    $canView = $this->isValid('viewassessment') && (
+        $this->objUser->isContextLecturer($this->objUser->userId(), $this->contextCode)
+        || ($this->objUser->isContextStudent($this->contextCode) && $this->objUser->userName() === $assessment['studentno'])
+    );
+    if (!$canView) { continue; }
+    $shown++;
+    $scoresList = explode(',', $assessment['scores']);
+    $total = array_sum(array_map('intval', $scoresList));
+    $view = $url(array('action'=>'viewassessment','tableId'=>$tableId,'id'=>$assessment['id']));
+    echo '<tr><th scope="row"><a href="'.$view.'">'.$esc($assessment['studentno']).'</a></th>';
+    if ($showStudentNames === 'yes') { echo '<td>'.$esc($assessment['student']).'</td>'; }
+    echo '<td>'.$esc($total.'/'.$maxtotal).'</td><td>'.$esc($assessment['teacher']).'</td><td>'.$esc($assessment['timestamp']).'</td><td><div class="rubric-row-actions">';
+    if ($this->isValid('editassessment')) {
+        echo '<a class="button chisimba-button-secondary" href="'.$url(array('action'=>'editassessment','tableId'=>$tableId,'id'=>$assessment['id'])).'">'.$icon('pencil').'<span>'.$esc($objLanguage->languageText('word_edit')).'</span></a>';
     }
-    $tblclass->addHeaderCell($objLanguage->languageText('rubric_score','rubric'), 60);
-    $tblclass->addHeaderCell(ucfirst($objLanguage->code2Txt('rubric_teacher','rubric')), 150);
-    $tblclass->addHeaderCell($objLanguage->languageText('rubric_date','rubric'), 60);
-    $tblclass->addHeaderCell("&nbsp;",'rubric', 60);
-    $tblclass->endHeaderRow();
-    // Display the assessments.
-    $oddOrEven = "odd";
-	foreach ($assessments as $assessment) {
-		// Only allow assessment if permissions are set or it  is your assessment.
-		if (
-		    $this->isValid('viewassessment')
-            && (
-                $this->objUser->isContextLecturer($this->objUser->userId(), $this->contextCode)
-                || $this->objUser->isContextStudent($this->contextCode)
-                && $this->objUser->userName() == $assessment['studentno']
-            )
-    	) {
-
-            $tblclass->startRow();
-            $oddOrEven = ($oddOrEven=="even")? "odd":"even";
-            $option = "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'viewassessment',
-                    'tableId'=>$tableId,
-                    'id'=>$assessment['id']
-            ))."\">".$assessment['studentno']."</a>";
-            $tblclass->addCell($option, "null", "top", "left", $oddOrEven, null);
-			if ($showStudentNames == "yes"){
-	            $tblclass->addCell("<b>" . $assessment['student'] . "</b>", "null", "top", "left", $oddOrEven, null);
-			}
-			$scores = explode(",", $assessment['scores']);
-			$total = 0;
-			foreach ($scores as $score) {
-				$total += $score;
-			}
-	        $tblclass->addCell("<b>" . "$total/$maxtotal" . "</b>", "null", "top", "left", $oddOrEven, null);
-	        $tblclass->addCell("<b>" . $assessment['teacher'] . "</b>", "null", "top", "left", $oddOrEven, null);		 $tblclass->addCell("<b>" . $assessment['timestamp'] . "</b>", "null", "top", "left", $oddOrEven, null);
-			$options = ("&nbsp;");
-			if ($this->isValid('editassessment')) {
-			    // Edit assessment.
-		   		$icon =& $this->getObject('geticon','htmlelements');
-		   		$icon->setIcon('edit');
-		   		$icon->alt = $objLanguage->languageText("word_edit");
-		   		$icon->align=false;
-				$options .= "<a href=\"" .
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'editassessment',
-                    'tableId'=>$tableId,
-                    'id'=>$assessment['id']
-                )) . "\">" . $icon->show() . "</a>";
-			}
-			$options .= "&nbsp;";
-			if ($this->isValid('deleteassessment')) {
-	            $objConfirm=&$this->newObject('confirm','utilities');
-	    		$icon = $this->getObject('geticon','htmlelements');
-	    		$icon->setIcon('delete');
-	    		$icon->alt = $objLanguage->languageText("word_delete");
-	    		$icon->align=false;
-	            $objConfirm->setConfirm(
-                $icon->show(),
-                $this->uri(array(
-                    'module'=>'rubric',
-                    'action'=>'deleteAssessment',
-                    'tableId'=>$tableId,
-                    'id'=>$assessment['id']
-                )),
-                $objLanguage->languageText('mod_rubric_suredeleteassessment','rubric'));
-	            $options .= $objConfirm->show();
-			}
-	        $tblclass->addCell($options, "null", "top", "left", $oddOrEven, null);
-	        $tblclass->endRow();
-		}
-	}
-    echo $tblclass->show();
-	echo "<br />";
-	if ($this->isValid('addassessment')) {
-	    // Add assessment.
-		echo "<a href=\"" .
-			$this->uri(array(
-		    	'module'=>'rubric',
-				'action'=>'addassessment',
-				'tableId'=>$tableId
-			))
-		. "\">" . $objLanguage->languageText("rubric_addassessment","rubric") . "</a>";
-		echo "&nbsp;/&nbsp;";
-	}
-    // Show/hide student names.
-	if ($this->objUser->isContextLecturer()) {
-		if ($showStudentNames == "yes") {
-			echo "<a href=\"" .
-				$this->uri(array(
-			    	'module'=>'rubric',
-					'action'=>'assessments',
-					'tableId'=>$tableId,
-					'showStudentNames'=>'no'
-				))
-			. "\">" . $objLanguage->languageText("rubric_hide","rubric") . "</a>";
-		}
-		else {
-			echo "<a href=\"" .
-				$this->uri(array(
-			    	'module'=>'rubric',
-					'action'=>'assessments',
-					'tableId'=>$tableId,
-					'showStudentNames'=>'yes'
-				))
-			. "\">" . $objLanguage->languageText("rubric_show","rubric") . "</a>";
-		}
-		echo "&nbsp;/&nbsp;";
-	}
-    // Print the page.
-	if ($this->objUser->isContextLecturer()) {
-		echo "<a href=\"javascript:window.print();\">" . $objLanguage->languageText("word_print") . "</a>";
-		echo "&nbsp;/&nbsp;";
-	}
-	// Back link
-	echo "<a href=\"" .
-		$this->uri(array(
-	    	'module'=>'rubric',
-		))
-	. "\">" . $objLanguage->languageText("word_back") . "</a>"; //rubric_returntomainmenu
+    if ($this->isValid('deleteassessment')) {
+        $confirm = $esc(json_encode($objLanguage->languageText('mod_rubric_suredeleteassessment','rubric'), JSON_HEX_APOS | JSON_HEX_QUOT));
+        echo '<a class="button rubric-button-danger" onclick="return confirm('.$confirm.')" href="'.$url(array('action'=>'deleteAssessment','tableId'=>$tableId,'id'=>$assessment['id'])).'">'.$icon('trash-2').'<span>'.$esc($objLanguage->languageText('word_delete')).'</span></a>';
+    }
+    echo '</div></td></tr>';
+}
+if ($shown === 0) { echo '<tr><td colspan="'.($showStudentNames === 'yes' ? 6 : 5).'"><div class="rubric-empty">'.$esc($objLanguage->languageText('mod_rubric_norecords','rubric')).'</div></td></tr>'; }
+echo '</tbody></table></div><nav class="rubric-view-actions" aria-label="'.$esc($objLanguage->languageText('mod_rubric_actions','rubric')).'">';
+if ($this->objUser->isContextLecturer()) {
+    $toggle = $showStudentNames === 'yes' ? 'no' : 'yes';
+    $toggleLabel = $showStudentNames === 'yes' ? $objLanguage->languageText('rubric_hide','rubric') : $objLanguage->languageText('rubric_show','rubric');
+    echo '<a class="button chisimba-button-secondary" href="'.$url(array('action'=>'assessments','tableId'=>$tableId,'showStudentNames'=>$toggle)).'">'.$icon('users-round').'<span>'.$esc($toggleLabel).'</span></a>'
+        .'<button class="button chisimba-button-secondary" type="button" onclick="window.print()">'.$icon('file-text').'<span>'.$esc($objLanguage->languageText('word_print')).'</span></button>';
+}
+echo '<a class="button chisimba-button-secondary" href="'.$url(array()).'">'.$icon('chevron-left').'<span>'.$esc($objLanguage->languageText('word_back')).'</span></a></nav></main>';
 ?>
