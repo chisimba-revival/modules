@@ -135,6 +135,7 @@ class mcqtests extends controller {
         $this->dbQuestions = $this->newObject('dbquestions');
         $this->dbAnswers = $this->newObject('dbanswers');
         $this->objMcqAiGenerator = $this->newObject('mcqaigenerator');
+        $this->objChapterQuizGenerator = $this->newObject('chapterquizgenerator');
         $this->dbMarked = $this->newObject('dbmarked');
         $this->dbResults = $this->newObject('dbresults');
         $this->objUser = $this->newObject('user', 'security');
@@ -220,6 +221,12 @@ class mcqtests extends controller {
                 } else {
                     return $this->newHome();
                 }
+            case 'aichapterquizzes':
+                return $this->chapterQuizSetup();
+            case 'aigeneratechapterquizzes':
+                return $this->generateChapterQuizzes();
+            case 'aiinsertchapterquizzes':
+                return $this->insertChapterQuizzes();
             case "deletescq":
                 $this->deleteSCQuestions($id = $this->getParam('id', null));
                 $test = $this->getParam('test', Null);
@@ -2247,6 +2254,63 @@ class mcqtests extends controller {
         $this->setVarByRef('testId', $testId);
         $this->setVarByRef('data', $data);
         return 'newindex_tpl.php';
+    }
+
+    private function chapterQuizSetup()
+    {
+        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
+        $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
+        $this->setVar('chapterQuizError', '');
+        return 'ai_chapter_quizzes_tpl.php';
+    }
+
+    private function generateChapterQuizzes()
+    {
+        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('mcqtests_chapter_quiz_generate', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction('aichapterquizzes');
+        }
+        $ids = $this->getParam('chapters', array());
+        if (!is_array($ids)) { $ids = array(); }
+        $result = $this->objChapterQuizGenerator->generate($this->contextCode, $ids);
+        if (empty($result['ok'])) {
+            $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
+            $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
+            $this->setVar('chapterQuizError', 'generation');
+            return 'ai_chapter_quizzes_tpl.php';
+        }
+        $this->setSession('mcq_ai_chapter_candidates', $result['chapters']);
+        $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_insert'));
+        $this->setVar('chapterQuizGenerated', $result['chapters']);
+        $this->setVar('chapterQuizErrors', $result['errors']);
+        return 'ai_chapter_quiz_review_tpl.php';
+    }
+
+    private function insertChapterQuizzes()
+    {
+        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('mcqtests_chapter_quiz_insert', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction('aichapterquizzes');
+        }
+        $generated = $this->getSession('mcq_ai_chapter_candidates', array());
+        $result = $this->objChapterQuizGenerator->insert($this->contextCode, $this->userId, $generated, 70);
+        if (empty($result['ok'])) {
+            $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_chapter_insert_failed', 'mcqtests'));
+        } else {
+            $this->unsetSession('mcq_ai_chapter_candidates');
+            $message = sprintf(
+                $this->objLanguage->languageText('mod_mcqtests_ai_chapter_inserted', 'mcqtests'),
+                count($result['created'])
+            );
+            $this->setSession('confirm', $message);
+        }
+        return $this->nextAction('newhome', array('confirm' => 'yes'));
     }
 
     /**
