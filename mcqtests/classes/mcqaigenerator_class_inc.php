@@ -28,6 +28,16 @@ class mcqaigenerator extends ChisimbaObject
         $this->dbTestadmin = $this->getObject('dbtestadmin', 'mcqtests');
     }
 
+    /**
+     * Expose the shared AI service's canonical availability decision.
+     *
+     * @return boolean
+     */
+    public function isAvailable()
+    {
+        return $this->ensureAiAvailable();
+    }
+
     public function generate($sourceText)
     {
         $sourceText = trim((string) $sourceText);

@@ -39,7 +39,7 @@ $addUrl = $this->uri(array(
 ));
 $chapterQuizUrl = $this->uri(array('action' => 'aichapterquizzes'));
 $addIcon = $objIcon->getAddIcon($addUrl);
-if ($this->isValid('add'))
+if ($this->isValid('add') && !empty($aiAvailable))
 {
 	$heading.= '&nbsp;&nbsp;&nbsp;'.$addIcon;
 	$heading.= '&nbsp;&nbsp;<a class="button chisimba-button-secondary" href="'

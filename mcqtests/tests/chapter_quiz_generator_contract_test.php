@@ -10,6 +10,13 @@ $generator = file_get_contents($root . '/classes/mcqaigenerator_class_inc.php');
 $checks = array(
     'standard root action button' => str_contains($home, "'action' => 'aichapterquizzes'")
         && str_contains($home, 'mod_mcqtests_ai_chapter_button'),
+    'root action follows shared AI availability' => str_contains(
+        $home,
+        'if (!empty($aiAvailable))'
+    ) && str_contains(
+        $controller,
+        "setVar('aiAvailable', \$this->objMcqAiGenerator->isAvailable())"
+    ) && str_contains($generator, 'public function isAvailable()'),
     'root action URL encoded once' => str_contains($home, 'html_entity_decode('),
     'pre-test workflow' => str_contains($controller, "case 'aichapterquizzes':") && str_contains($controller, "case 'aiinsertchapterquizzes':"),
     'chapter title test name' => str_contains($service, "'name' => mb_substr(trim((string) \$chapter['title'])"),
