@@ -16,10 +16,10 @@ class certificatepdfrenderer extends ChisimbaObject
         $this->centred($im,'CERTIFICATE',260,20,$sansBold,$white);$this->centred($im,'CERTIFICATE OF',455,49,$serifBold,$primary);$this->centred($im,'COMPLETION',550,59,$serifBold,$primary);$this->centred($im,'AWARDED TO',755,22,$sansBold,$accent);
         $this->centredFit($im,$snapshot['recipient_name'],910,64,1320,$serifItalic,$primary,34);$this->centred($im,'for the completion of the course',1078,25,$serif,$primary);$this->centredFit($im,$snapshot['resource_title'],1200,50,1320,$serifBold,$primary,28);
         $this->centred($im,'Completed on '.date('F j, Y',strtotime($snapshot['completed_at'])),1395,24,$serif,$primary);
-        imagesetthickness($im,2);imageline($im,210,1745,690,1745,$primary);imageline($im,964,1745,1444,1745,$primary);
-        $this->placeAsset($im,$signer['signature_path']??'',280,1570,340,150);$this->placeAsset($im,$base['logo_path']??'',1060,1550,290,170);
-        $this->centredIn($im,$signer['name'],210,690,1810,25,$serifBold,$primary);$this->centredIn($im,$signer['title']?:'Signer',210,690,1860,18,$serif,$primary);$this->centredIn($im,$base['organisation'],964,1444,1810,25,$serifBold,$primary);$this->centredIn($im,'Organisation',964,1444,1860,18,$serif,$primary);
-        $this->centred($im,$base['website_url']?:'',2070,18,$sans,$primary);$this->centred($im,$base['company_name'],2110,18,$sansBold,$primary);$this->centred($im,$base['company_location']?:'',2150,18,$sans,$primary);$this->centred($im,'Certificate number: '.$issuance['certificate_number'],2230,14,$sans,$primary);
+        imagesetthickness($im,2);imageline($im,210,1745,690,1745,$primary);
+        $this->placeAsset($im,$signer['signature_path']??'',280,1570,340,150);$this->placeAsset($im,$base['logo_path']??'',1004,1540,400,220);
+        $this->centredIn($im,$signer['name'],210,690,1810,25,$serifBold,$primary);$this->centredIn($im,$signer['title']?:'Signer',210,690,1860,18,$serif,$primary);
+        $this->centred($im,$base['company_name'],2070,22,$sansBold,$primary);$this->centred($im,$base['company_location']?:'',2115,18,$sans,$primary);$this->centred($im,$base['website_url']?:'',2155,18,$sans,$primary);$this->centred($im,'Certificate number: '.$issuance['certificate_number'],2230,14,$sans,$primary);
         ob_start();imagejpeg($im,null,95);$jpeg=ob_get_clean();imagedestroy($im);return (new certificate_service_pdf_document())->wrapJpeg($jpeg,self::WIDTH,self::HEIGHT);
     }
     private function centredFit($im,$text,$y,$size,$max,$font,$colour,$minimum){while($size>$minimum&&$this->textWidth($text,$size,$font)>$max){$size--;} $this->centred($im,$text,$y,$size,$font,$colour);}
