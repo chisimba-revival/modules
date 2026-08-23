@@ -72,6 +72,20 @@ class certificateservice extends dbTable
         $ok=$this->updateIn(self::SIGNERS,$existing['id'],$values);return array('ok'=>(bool)$ok,'code'=>$ok?'signer_updated':'signer_update_failed','id'=>$existing['id']);
     }
 
+    public function archiveBase($id)
+    {
+        $base=$this->find(self::BASES,$id);if(!$base){return array('ok'=>false,'code'=>'base_not_found');}
+        if($this->one(self::ASSIGNMENTS,'base_id='.$this->quote($base['id'])." AND status='active'")){return array('ok'=>false,'code'=>'in_use');}
+        $ok=$this->updateIn(self::BASES,$base['id'],array('status'=>'inactive','date_updated'=>date('Y-m-d H:i:s')));return array('ok'=>(bool)$ok,'code'=>$ok?'base_archived':'base_archive_failed','id'=>$base['id']);
+    }
+
+    public function archiveSigner($id)
+    {
+        $signer=$this->find(self::SIGNERS,$id);if(!$signer){return array('ok'=>false,'code'=>'signer_not_found');}
+        if($this->one(self::ASSIGNMENTS,'signer_id='.$this->quote($signer['id'])." AND status='active'")){return array('ok'=>false,'code'=>'in_use');}
+        $ok=$this->updateIn(self::SIGNERS,$signer['id'],array('status'=>'inactive','date_updated'=>date('Y-m-d H:i:s')));return array('ok'=>(bool)$ok,'code'=>$ok?'signer_archived':'signer_archive_failed','id'=>$signer['id']);
+    }
+
     public function assign($resourceType, $resourceId, $baseId, $signerId, $actorId)
     {
         $resourceType = $this->identifier($resourceType, 64);
@@ -145,6 +159,7 @@ class certificateservice extends dbTable
 
     public function activeBases() { return $this->rows(self::BASES); }
     public function activeSigners() { return $this->rows(self::SIGNERS); }
+    public function baseById($id) { return $this->find(self::BASES,$id); }
     public function storeImageAsset(array $upload, $kind, $recordId)
     {
         $map=array('logo'=>array(self::BASES,'logo_path'),'signature'=>array(self::SIGNERS,'signature_path'));

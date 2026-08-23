@@ -7,7 +7,7 @@ $failures = array();
 foreach (array('tbl_certificate_service_bases','tbl_certificate_service_signers','tbl_certificate_service_assignments','tbl_certificate_service_issuances') as $table) {
     if (strpos($register, 'TABLE: '.$table) === false || !is_file($root.'/sql/'.$table.'.sql')) { $failures[]='missing '.$table; }
 }
-foreach (array('function createBase','function updateBase','function createSigner','function updateSigner','function assign','function issue','function assignmentFor') as $contract) {
+foreach (array('function createBase','function updateBase','function archiveBase','function createSigner','function updateSigner','function archiveSigner','function assign','function issue','function assignmentFor','function baseById') as $contract) {
     if (strpos($service,$contract)===false) { $failures[]='missing '.$contract; }
 }
 if (strpos($service,'function storeImageAsset')===false || strpos($renderer,'function placeAsset')===false) { $failures[]='managed logo/signature assets missing'; }
@@ -23,6 +23,8 @@ foreach (array('class certificate_service_pdf_document','/MediaBox [0 0 595.28 8
 if (strpos($renderer,'arbitrary HTML')===false) { $failures[]='safe fixed-layout contract missing'; }
 $controller=file_get_contents($root.'/controller.php');$template=file_get_contents($root.'/templates/content/manage_tpl.php');
 foreach(array("case 'savebase'","case 'savesigner'","'ajax'","'csrfToken'","certificate-base-list","certificate-signer-list","certificate-preview__page","Text and line colour","Border and seal colour") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='management workspace missing '.$needle;}}
+foreach(array("case 'deletebase'","case 'deletesigner'","case 'previewbase'","SAMPLE-CERTIFICATE","chisimba-button-danger","trash-2","file-down","View/download sample") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='saved item action missing '.$needle;}}
+if(strpos($service,"code'=>'in_use'")===false||strpos($service,"'status'=>'inactive'")===false){$failures[]='guarded soft deletion missing';}
 if ($failures) { fwrite(STDERR, implode("\n",$failures)."\n"); exit(1); }
 echo "PASS: certificate service ownership, issuance and A4 renderer contracts verified.\n";
 ?>
