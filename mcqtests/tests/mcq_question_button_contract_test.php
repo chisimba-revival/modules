@@ -18,7 +18,7 @@ $checks = array(
     'save uses circle-check icon' => "render('circle-check'",
     'cancel uses x icon' => "render('x'",
     'uses skin-neutral action group' => 'mcq-question-form-actions',
-    'uses native save button' => '<button class=\"button\" type=\"submit\"',
+    'uses native save button' => '<button class="button" type="submit"',
     'uses secondary cancel button' => 'chisimba-button-secondary',
 );
 
