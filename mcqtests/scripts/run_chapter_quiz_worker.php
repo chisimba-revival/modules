@@ -12,7 +12,18 @@ require_once 'classes/core/engine_class_inc.php';
 try {
     $engine = new engine();
     $worker = $engine->getObject('dbchapterquizjobs', 'mcqtests');
-    echo json_encode($worker->runOne(), JSON_UNESCAPED_SLASHES) . PHP_EOL;
+    $limit = isset($argv[1]) ? filter_var($argv[1], FILTER_VALIDATE_INT, array(
+        'options' => array('min_range' => 1, 'max_range' => 50),
+    )) : 20;
+    if ($limit === false) { throw new InvalidArgumentException('Batch size must be from 1 to 50.'); }
+    $summary = array('selected' => 0, 'completed' => 0);
+    for ($step = 0; $step < $limit; $step++) {
+        $result = $worker->runOne();
+        if (empty($result['selected'])) { break; }
+        $summary['selected']++;
+        $summary['completed'] += (int) ($result['completed'] ?? 0);
+    }
+    echo json_encode($summary, JSON_UNESCAPED_SLASHES) . PHP_EOL;
     exit(0);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'Chapter quiz worker failed: ' . $exception->getMessage() . PHP_EOL);
