@@ -56,6 +56,22 @@ class certificateservice extends dbTable
             : array('ok' => false, 'code' => 'signer_create_failed');
     }
 
+    public function updateBase($id, array $input)
+    {
+        $existing=$this->find(self::BASES,$id);if(!$existing){return array('ok'=>false,'code'=>'base_not_found');}
+        $values=array('name'=>$this->text($input['name']??'',191),'organisation'=>$this->text($input['organisation']??'',191),'company_name'=>$this->text($input['companyName']??'',255),'company_location'=>$this->optionalText($input['companyLocation']??'',255),'website_url'=>$this->url($input['websiteUrl']??''),'primary_colour'=>$this->colour($input['primaryColour']??''),'accent_colour'=>$this->colour($input['accentColour']??''),'date_updated'=>date('Y-m-d H:i:s'));
+        if(in_array(null,array($values['name'],$values['organisation'],$values['company_name'],$values['primary_colour'],$values['accent_colour']),true)){return array('ok'=>false,'code'=>'invalid_base');}
+        $ok=$this->updateIn(self::BASES,$existing['id'],$values);return array('ok'=>(bool)$ok,'code'=>$ok?'base_updated':'base_update_failed','id'=>$existing['id']);
+    }
+
+    public function updateSigner($id, array $input)
+    {
+        $existing=$this->find(self::SIGNERS,$id);if(!$existing){return array('ok'=>false,'code'=>'signer_not_found');}
+        $values=array('name'=>$this->text($input['name']??'',191),'title'=>$this->optionalText($input['title']??'',191),'date_updated'=>date('Y-m-d H:i:s'));
+        if($values['name']===null){return array('ok'=>false,'code'=>'invalid_signer');}
+        $ok=$this->updateIn(self::SIGNERS,$existing['id'],$values);return array('ok'=>(bool)$ok,'code'=>$ok?'signer_updated':'signer_update_failed','id'=>$existing['id']);
+    }
+
     public function assign($resourceType, $resourceId, $baseId, $signerId, $actorId)
     {
         $resourceType = $this->identifier($resourceType, 64);
