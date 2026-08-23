@@ -2,11 +2,11 @@
 $root = dirname(__DIR__);
 $controller = file_get_contents($root . '/controller.php');
 $template = file_get_contents($root . '/templates/content/index_tpl.php');
-$legacy = file_get_contents($root . '/templates/content/newindex_tpl.php');
 $register = file_get_contents($root . '/register.conf');
 $checks = array(
     'both routes use one canonical overview' => str_contains($controller, 'return $this->newHome($testId);')
-        && substr_count($controller, "return 'index_tpl.php';") === 1,
+        && substr_count($controller, "return 'index_tpl.php';") === 1
+        && !file_exists($root . '/templates/content/newindex_tpl.php'),
     'legacy gradebook percentage is absent' => !str_contains($template, "['percentage']")
         && !str_contains($template, 'mod_mcqtests_finalmark'),
     'actual question marks are displayed' => str_contains($controller, "['actualmarks']")
@@ -26,6 +26,8 @@ $checks = array(
     'missing chapter workflow is explicit' => str_contains($controller, "setVar('chapterQuizMissingCount'")
         && str_contains($template, 'mod_mcqtests_ai_missing_chapter_button'),
     'overview endpoint is lecturer protected' => str_contains($register, 'updateoverview|isContextLecturer'),
+    'tests follow course chapter order' => str_contains($controller, "['chapterorder']")
+        && str_contains($controller, 'usort($data, function ($left, $right)'),
 );
 foreach ($checks as $name => $ok) {
     if (!$ok) { fwrite(STDERR, "FAIL: $name\n"); exit(1); }
