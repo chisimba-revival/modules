@@ -137,6 +137,7 @@ class mcqtests extends controller {
         $this->objMcqAiGenerator = $this->newObject('mcqaigenerator');
         $this->objChapterQuizGenerator = $this->newObject('chapterquizgenerator');
         $this->objChapterQuizJobs = $this->newObject('dbchapterquizjobs');
+        $this->objContextChapters = $this->getObject('db_contextcontent_contextchapter', 'contextcontent');
         $this->dbMarked = $this->newObject('dbmarked');
         $this->dbResults = $this->newObject('dbresults');
         $this->objUser = $this->newObject('user', 'security');
@@ -222,6 +223,8 @@ class mcqtests extends controller {
                 } else {
                     return $this->newHome();
                 }
+            case 'updateoverview':
+                return $this->updateOverview();
             case 'aichapterquizzes':
                 return $this->chapterQuizSetup();
             case 'aigeneratechapterquizzes':
@@ -2217,23 +2220,7 @@ class mcqtests extends controller {
      * @return
      */
     private function home($testId = NULL) {
-        $data = $this->dbTestadmin->getTests($this->contextCode);
-        if (!empty($data)) {
-            foreach ($data as $key => $line) {
-                $sql = "SELECT title FROM tbl_context_nodes WHERE ";
-                $sql.= "id = '" . $line['chapter'] . "'";
-                $nodes = $this->objContentNodes->getArray($sql);
-                if (!empty($nodes)) {
-                    $data[$key]['node'] = $nodes[0]['title'];
-                } else {
-                    $data[$key]['node'] = '';
-                }
-            }
-        }
-        $this->setVarByRef('testId', $testId);
-        $this->setVarByRef('data', $data);
-        $this->setVar('aiAvailable', $this->objMcqAiGenerator->isAvailable());
-        return 'index_tpl.php';
+        return $this->newHome($testId);
     }
 
     /**
@@ -2253,14 +2240,122 @@ class mcqtests extends controller {
                 if (!empty($nodes)) {
                     $data[$key]['node'] = $nodes[0]['title'];
                 } else {
-                    $data[$key]['node'] = '';
+                    $data[$key]['node'] = $this->objContextChapters->getContextChapterTitle($line['chapter']);
                 }
+                $questionCount = (int) $this->dbQuestions->countQuestions($line['id']);
+                $actualMarks = $questionCount > 0
+                    ? (int) $this->dbQuestions->sumTotalmark($line['id'])
+                    : 0;
+                $data[$key]['questioncount'] = $questionCount;
+                $data[$key]['actualmarks'] = $actualMarks;
             }
         }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVarByRef('testId', $testId);
         $this->setVarByRef('data', $data);
         $this->setVar('aiAvailable', $this->objMcqAiGenerator->isAvailable());
-        return 'newindex_tpl.php';
+        $this->setVar('overviewToken', $stack['csrf']->issue('mcqtests_overview_update'));
+        $missing = 0;
+        if ($this->objMcqAiGenerator->isAvailable()) {
+            foreach ($this->objChapterQuizGenerator->chapterCandidates($this->contextCode) as $chapter) {
+                if (!empty($chapter['eligible'])) { $missing++; }
+            }
+        }
+        $this->setVar('chapterQuizMissingCount', $missing);
+        return 'index_tpl.php';
+    }
+
+    private function updateOverview()
+    {
+        if (!$this->canManageChapterQuizzes()) {
+            return $this->overviewJson(array('ok' => false, 'error' => 'forbidden'), 403);
+        }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('mcqtests_overview_update', (string) $this->getParam('csrf_token', ''))) {
+            return $this->overviewJson(array('ok' => false, 'error' => 'invalid_request'), 400);
+        }
+        $operation = (string) $this->getParam('operation', '');
+        $tests = $this->dbTestadmin->getTests($this->contextCode);
+        $tests = is_array($tests) ? $tests : array();
+        $updated = array();
+        $skipped = array();
+
+        if ($operation === 'mark_one') {
+            $testId = (string) $this->getParam('test_id', '');
+            $test = $this->dbTestadmin->getTests($this->contextCode, 'id', $testId);
+            if (empty($test) || !$this->setOverviewMarks($testId, $this->getParam('marks', 0))) {
+                $skipped[] = $testId;
+            } else {
+                $updated[] = $testId;
+            }
+        } elseif ($operation === 'marks_all') {
+            foreach ($tests as $test) {
+                if ($this->setOverviewMarks($test['id'], $this->getParam('marks', 0))) {
+                    $updated[] = $test['id'];
+                } else {
+                    $skipped[] = $test['id'];
+                }
+            }
+        } elseif ($operation === 'activate_all') {
+            foreach ($tests as $test) {
+                $questionCount = (int) $this->dbQuestions->countQuestions($test['id']);
+                $marks = $questionCount > 0 ? (int) $this->dbQuestions->sumTotalmark($test['id']) : 0;
+                if ($questionCount < 1 || $marks < 1) {
+                    $skipped[] = $test['id'];
+                    continue;
+                }
+                $this->dbTestadmin->addTest(array('status' => 'open'), $test['id']);
+                $updated[] = $test['id'];
+            }
+        } else {
+            return $this->overviewJson(array('ok' => false, 'error' => 'unknown_operation'), 400);
+        }
+
+        return $this->overviewJson(array(
+            'ok' => !empty($updated),
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'csrfToken' => $stack['csrf']->issue('mcqtests_overview_update'),
+        ), empty($updated) ? 409 : 200);
+    }
+
+    private function setOverviewMarks($testId, $target)
+    {
+        $target = filter_var($target, FILTER_VALIDATE_INT, array(
+            'options' => array('min_range' => 1, 'max_range' => 10000),
+        ));
+        $questions = $this->dbQuestions->getQuestions($testId);
+        if ($target === false || !is_array($questions) || $target < count($questions)) { return false; }
+        $results = $this->dbResults->getResults($testId);
+        if (is_array($results) && !empty($results)) { return false; }
+        $base = intdiv($target, count($questions));
+        $remainder = $target % count($questions);
+        $this->dbQuestions->beginTransaction();
+        try {
+            foreach ($questions as $index => $question) {
+                $mark = $base + ($index < $remainder ? 1 : 0);
+                $this->dbQuestions->update('id', $question['id'], array('mark' => $mark));
+            }
+            $this->dbTestadmin->setTotal($testId, $target);
+            $this->dbQuestions->commitTransaction();
+            return true;
+        } catch (Throwable $exception) {
+            $this->dbQuestions->rollbackTransaction();
+            return false;
+        }
+    }
+
+    private function overviewJson(array $payload, $status)
+    {
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store, private');
+            header('X-Content-Type-Options: nosniff');
+            http_response_code((int) $status);
+        }
+        echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+        exit;
     }
 
     private function chapterQuizSetup()
