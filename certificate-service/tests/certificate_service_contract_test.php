@@ -25,6 +25,8 @@ $controller=file_get_contents($root.'/controller.php');$template=file_get_conten
 foreach(array("case 'savebase'","case 'savesigner'","'ajax'","'csrfToken'","certificate-base-list","certificate-signer-list","certificate-preview__page","Text and line colour","Border and seal colour") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='management workspace missing '.$needle;}}
 foreach(array("case 'deletebase'","case 'deletesigner'","case 'previewbase'","SAMPLE-CERTIFICATE","chisimba-button-danger","trash-2","file-down","View/download sample") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='saved item action missing '.$needle;}}
 if(strpos($service,"code'=>'in_use'")===false||strpos($service,"'status'=>'inactive'")===false){$failures[]='guarded soft deletion missing';}
+if(strpos($template,'html_entity_decode($this->uri($params)')===false||strpos($template,'certificate-reset-colours')===false){$failures[]='safe AJAX URL or no-refresh colour reset missing';}
+if(preg_match('~action="<\?php echo \$esc\(\$this->uri~',$template)){ $failures[]='form action is vulnerable to double encoding'; }
 if ($failures) { fwrite(STDERR, implode("\n",$failures)."\n"); exit(1); }
 echo "PASS: certificate service ownership, issuance and A4 renderer contracts verified.\n";
 ?>
