@@ -45,7 +45,7 @@ if ($this->isValid('add'))
 	$heading.= '&nbsp;&nbsp;<a class="button chisimba-button-secondary" href="'
         . $chapterQuizUrl . '">'
         . htmlspecialchars($this->objLanguage->languageText(
-            'mod_mcqtests_ai_chapter_button', 'mcqtests'
+            'mod_mcqtests_ai_chapter_button', 'mcqtests', 'Generate quizzes from chapters'
         ), ENT_QUOTES, 'UTF-8') . '</a>';
 }
 $this->setVarByRef('heading', $heading);
