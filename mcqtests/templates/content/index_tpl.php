@@ -1,186 +1,148 @@
 <?php
-
-/**
- * Template for test home page. Lists the current tests.
- * @package mcqtests
- * @param array $data The list of tests.
- */
-// set up layout template
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
-
-// set up html elements
-$objTable = &$this->loadClass('htmltable', 'htmlelements');
-$objIcon = &$this->newObject('geticon', 'htmlelements');
-$objLink = &$this->loadClass('link', 'htmlelements');
-$objLayer = &$this->loadClass('layer', 'htmlelements');
-$objConfirm = &$this->loadClass('confirm', 'utilities');
-
-// set up language items
-$heading = $this->objLanguage->languageText('mod_mcqtests_onlinetests', 'mcqtests');
-$nameLabel = $this->objLanguage->languageText('mod_mcqtests_wordname', 'mcqtests');
-$chapterLabel = $this->objLanguage->languageText('mod_mcqtests_chapter', 'mcqtests');
-$statusLabel = $this->objLanguage->languageText('mod_mcqtests_status', 'mcqtests');
-$closeLabel = $this->objLanguage->languageText('mod_mcqtests_closingdate', 'mcqtests');
-$notestsLabel = $this->objLanguage->languageText('mod_mcqtests_notests', 'mcqtests');
-$openLabel = $this->objLanguage->languageText('mod_mcqtests_openforentry', 'mcqtests');
-//$notactiveLabel = $this->objLanguage->languageText('mod_mcqtests_notactive');
-$confirmLabel = $this->objLanguage->languageText('mod_mcqtests_deletetest', 'mcqtests');
-$assignLabel = $objLanguage->languageText('mod_assignmentadmin_name', 'assignmentadmin');
-$testLabel = $this->objLanguage->languageText('mod_mcqtests_test', 'mcqtests');
-$editLabel = $this->objLanguage->languageText('word_edit') .' '.$testLabel;
-$deleteLabel = $this->objLanguage->languageText('word_delete') .' '.$testLabel;
-$listLabel = $this->objLanguage->code2Txt('mod_mcqtests_liststudents', 'mcqtests');
-$viewLabel = $this->objLanguage->languageText('word_view') .' '.$testLabel;
-$addLabel = $this->objLanguage->languageText('mod_mcqtests_addtest', 'mcqtests');
-$exportLabel = $this->objLanguage->languageText('mod_mcqtests_export', 'mcqtests');
-$assessmentSheetLabel = $this->objLanguage->languageText('mod_mcqtests_assessmentsheet', 'mcqtests');
-$addUrl = $this->uri(array(
-    'action' => 'addstep'
-));
-$iconBase = $this->getResourceUri('icons/lucide/', 'ui');
-if ($this->isValid('add'))
-{
-        $addOkay=TRUE;
-} else {
-       $addOkay=FALSE;
-}
-$this->setVarByRef('heading', $heading);
-if (!empty($testId)) {
-    $testData = $this->dbTestadmin->getTests('', 'name', $testId);
-    $array = array(
-        'item' => $testData[0]['name'],
-        'date' => $this->formatDate(date('Y-m-d H:i:s'))
-    );
-    $confirm = $this->objLanguage->code2Txt('mod_mcqtests_emailconfirm', 'mcqtests', $array);
-    echo "<font class='confirm'>".$confirm."</font>";
-}
-$objTable = new htmltable();
-$objTable->cssClass = 'mcq-test-list';
-$objTable->width = '99%';
-$objTable->cellspacing = '2';
-$objTable->cellpadding = '5';
-$tableHd = array();
-$tableHd[] = $nameLabel;
-$tableHd[] = $chapterLabel;
-$tableHd[] = $statusLabel;
-$tableHd[] = $closeLabel;
-$tableHd[] = '&nbsp;';
-$objTable->addHeader($tableHd, 'heading');
-if (!empty($data)) {
-    $i = 0;
-    foreach($data as $line) {
-        $class = (($i++%2) == 0) ? 'odd' : 'even';
-        // link to view test and add questions
-if ($addOkay==TRUE){
-        $objLink = new link($this->uri(array(
-            'action' => 'view',
-            'id' => $line['id']
-        )));
-        $objLink->title = $viewLabel;
-        $objLink->link = $line['name'];
-        $viewLink = $objLink->show();
-} else {
-        $viewLink=$line['name'];
-}
-$icons='';
-if ($addOkay==TRUE){
-        // edit, mark and delete icons
-        $objLink = new link($this->uri(array(
-            'action' => 'edit',
-            'id' => $line['id']
-        )));
-        $objLink->title = $editLabel;
-        $objLink->link = '<img src="'.$iconBase.'pencil.svg" width="18" height="18" alt="" aria-hidden="true" />';
-        $icons = '<span class="mcq-icon-action">'.$objLink->show().'</span>';
-
-        $objConfirm = new confirm();
-        $deleteIcon = '<img src="'.$iconBase.'trash-2.svg" width="18" height="18" alt="" aria-hidden="true" />';
-        $objConfirm->setConfirm($deleteIcon, $this->uri(array(
-            'action' => 'delete',
-            'id' => $line['id']
-        )) , $confirmLabel.' '.$line['name'].'?');
-        $icons.= '<span class="mcq-icon-action">'.$objConfirm->show().'</span>';
-        $objLink = new link($this->uri(array(
-            'action' => 'liststudents',
-            'id' => $line['id']
-        )));
-        $objLink->title = $listLabel;
-        $objLink->link = '<span class="mcq-results-action"><img src="'.$iconBase.'list-checks.svg" width="19" height="19" alt="" aria-hidden="true" /><span class="mcq-results-action-label">'.$this->objLanguage->languageText('mod_mcqtests_testresults', 'mcqtests').'</span></span>';
-        $icons.= '<span class="mcq-icon-action mcq-icon-action-results">'.$objLink->show().'</span>';
-        // set up export results icon
-        $objLink = new link($this->uri(array(
-            'action' => 'doexport',
-            'testId' => $line['id']
-        )));
-        $objLink->title = $exportLabel;
-        $objLink->link = '<img src="'.$iconBase.'download.svg" width="18" height="18" alt="" aria-hidden="true" />';
-        $icons.= '<span class="mcq-icon-action">'.$objLink->show().'</span>';
-}
-        // set up table rows
-        $tableRow = array();
-        $tableRow[] = $viewLink;
-        $tableRow[] = $line['node'];
-        $statusText = $this->objLanguage->languageText('mod_mcqtests_'.$line['status'], 'mcqtests');
-        $tableRow[] = '<span class="mcq-test-status">'.$statusText.'</span>';
-        $tableRow[] = $this->formatDate($line['closingdate']);
-        $tableRow[] = '<span class="mcq-action-group">'.$icons.'</span>';
-        $objTable->addRow($tableRow, $class);
-    }
-} else {
-    $objTable->startRow();
-    $objTable->addCell($notestsLabel, '', '', '', 'noRecordsMessage', 'colspan="5"');
-    $objTable->endRow();
-}
-/*
-$advanced = new link($this->uri(array('action'=>'home2')));
-$advanced->link = $this->objLanguage->languageText('mod_mcqtest_advanced', 'mcqtests');
-$advanced->extra  =  "style='color:#000099;'";
-echo "<h2>".$advanced->show()."</h2>";
-*/
-echo $objTable->show();
-if ($this->isValid('add'))
-{
-	$chapterQuizUrl = html_entity_decode(
-	    $this->uri(array('action' => 'aichapterquizzes')),
-	    ENT_QUOTES | ENT_HTML5,
-	    'UTF-8'
-	);
-	$links = '<a class="button" href="'
-	    . htmlspecialchars(html_entity_decode($addUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES, 'UTF-8')
-	    . '"><img src="' . htmlspecialchars($iconBase . 'circle-plus.svg', ENT_QUOTES, 'UTF-8')
-	    . '" width="18" height="18" alt="" aria-hidden="true" /> '
-	    . htmlspecialchars($addLabel, ENT_QUOTES, 'UTF-8') . '</a>';
-	if (!empty($aiAvailable)) {
-	    $links .= '<a class="button chisimba-button-secondary" href="'
-	        . htmlspecialchars($chapterQuizUrl, ENT_QUOTES, 'UTF-8')
-	        . '"><img src="' . htmlspecialchars($iconBase . 'sparkles.svg', ENT_QUOTES, 'UTF-8')
-	        . '" width="18" height="18" alt="" aria-hidden="true" /> '
-	        . htmlspecialchars($this->objLanguage->languageText(
-	            'mod_mcqtests_ai_chapter_button', 'mcqtests',
-	            'Generate quizzes from chapters'
-	        ), ENT_QUOTES, 'UTF-8') . '</a>';
-	}
-}else {
-	$links = "";
-}
-$assessmentSheetUrl = html_entity_decode(
-    $this->uri(array('action' => 'assessmentSheet'), 'gradebook'),
+$e = fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+$u = fn($params, $module = 'mcqtests') => html_entity_decode(
+    $this->uri($params, $module),
     ENT_QUOTES | ENT_HTML5,
     'UTF-8'
 );
-$links.= '<a class="button chisimba-button-secondary" href="'
-    . htmlspecialchars($assessmentSheetUrl, ENT_QUOTES, 'UTF-8') . '">'
-    . htmlspecialchars($assessmentSheetLabel, ENT_QUOTES, 'UTF-8') . '</a>';
-// Link to Assignment Management Module if registered
-if ($this->assignment) {
-    $objLink = new link($this->uri('', 'assignmentadmin'));
-    $objLink->title = $assignLabel;
-    $objLink->link = $assignLabel;
-    $links.= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$objLink->show();
-}
-
-$objLayer = new layer();
-$objLayer->str = '<div class="mcq-home-actions">'.$links.'</div>';
-$objLayer->align = 'center';
-echo $objLayer->show();
+$t = fn($key, $fallback) => $this->objLanguage->languageText($key, 'mcqtests', $fallback);
+$iconBase = $this->getResourceUri('icons/lucide/', 'ui');
+$canManage = $this->isValid('add');
+$formatClosing = function ($value) use ($t) {
+    $value = trim((string) $value);
+    if ($value === '' || str_starts_with($value, '0000-00-00') || $value === '-2') {
+        return $t('mod_mcqtests_no_closing_date', 'No closing date');
+    }
+    return $this->formatDate($value);
+};
+$iconLink = function ($icon, $label, $url, $extra = '') use ($e, $iconBase) {
+    return '<a class="chisimba-icon-button" href="' . $e($url) . '" title="' . $e($label)
+        . '" aria-label="' . $e($label) . '" ' . $extra . '><img src="'
+        . $e($iconBase . $icon . '.svg') . '" width="18" height="18" alt="" aria-hidden="true" /></a>';
+};
+$tests = is_array($data ?? null) ? $data : array();
+$updateUrl = $u(array('action' => 'updateoverview'));
 ?>
+<section class="chisimba-card mcq-overview" data-update-url="<?php echo $e($updateUrl); ?>">
+    <div class="mcq-overview__heading">
+        <div>
+            <h1><?php echo $e($t('mod_mcqtests_onlinetests', 'Online Tests')); ?></h1>
+            <p><?php echo $e($t('mod_mcqtests_overview_help', 'Manage test availability and marks. Course weighting is managed in Gradebook.')); ?></p>
+        </div>
+        <?php if ($canManage): ?>
+            <div class="chisimba-form-actions mcq-overview__create-actions">
+                <a class="button" href="<?php echo $e($u(array('action' => 'addstep'))); ?>">
+                    <img src="<?php echo $e($iconBase . 'circle-plus.svg'); ?>" width="18" height="18" alt="" aria-hidden="true" />
+                    <?php echo $e($t('mod_mcqtests_addtest', 'Create test')); ?>
+                </a>
+                <?php if (!empty($aiAvailable) && !empty($chapterQuizMissingCount)): ?>
+                    <a class="button" href="<?php echo $e($u(array('action' => 'aichapterquizzes'))); ?>">
+                        <img src="<?php echo $e($iconBase . 'sparkles.svg'); ?>" width="18" height="18" alt="" aria-hidden="true" />
+                        <?php echo $e(sprintf($t('mod_mcqtests_ai_missing_chapter_button', 'Generate missing chapter quizzes (%d)'), $chapterQuizMissingCount)); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($canManage && !empty($tests)): ?>
+        <div class="mcq-overview__bulk chisimba-card" aria-label="<?php echo $e($t('mod_mcqtests_bulk_actions', 'Bulk actions')); ?>">
+            <button class="button" type="button" data-operation="activate_all"><?php echo $e($t('mod_mcqtests_activate_all', 'Mark all active')); ?></button>
+            <label>
+                <span><?php echo $e($t('mod_mcqtests_same_marks', 'Assign all the same marks')); ?></span>
+                <input type="number" min="1" max="10000" step="1" value="5" data-bulk-marks />
+            </label>
+            <button class="button chisimba-button-secondary" type="button" data-operation="marks_all"><?php echo $e($t('mod_mcqtests_apply_marks', 'Apply marks')); ?></button>
+            <span class="mcq-overview__save-status" role="status" aria-live="polite"></span>
+        </div>
+    <?php endif; ?>
+
+    <input type="hidden" value="<?php echo $e($overviewToken); ?>" data-overview-csrf />
+    <div class="chisimba-table-scroll">
+        <table class="mcq-test-list">
+            <thead><tr>
+                <th><?php echo $e($t('mod_mcqtests_wordname', 'Name')); ?></th>
+                <th><?php echo $e($t('mod_mcqtests_chapter', 'Chapter')); ?></th>
+                <th><?php echo $e($t('mod_mcqtests_status', 'Status')); ?></th>
+                <th><?php echo $e($t('mod_mcqtests_marks', 'Marks')); ?></th>
+                <th><?php echo $e($t('mod_mcqtests_closingdate', 'Closing date and time')); ?></th>
+                <th><span class="visually-hidden"><?php echo $e($t('mod_mcqtests_actions', 'Actions')); ?></span></th>
+            </tr></thead>
+            <tbody>
+            <?php if (empty($tests)): ?>
+                <tr><td colspan="6" class="noRecordsMessage"><?php echo $e($t('mod_mcqtests_notests', 'There are no tests yet.')); ?></td></tr>
+            <?php else: ?>
+                <?php foreach ($tests as $test):
+                    $id = (string) $test['id'];
+                    $name = (string) $test['name'];
+                    $status = (string) $test['status'];
+                    $statusLabel = $status === 'open'
+                        ? $t('mod_mcqtests_active_label', 'Active')
+                        : $t('mod_mcqtests_inactive_label', 'Not active');
+                ?>
+                    <tr data-test-id="<?php echo $e($id); ?>">
+                        <td><a href="<?php echo $e($u(array('action' => 'view', 'id' => $id))); ?>"><?php echo $e($name); ?></a></td>
+                        <td><?php echo $e($test['node'] ?: $t('mod_mcqtests_unassigned_chapter', 'Not assigned')); ?></td>
+                        <td><span class="chisimba-pill <?php echo $status === 'open' ? 'chisimba-pill--success' : ''; ?>" data-test-status><?php echo $e($statusLabel); ?></span></td>
+                        <td>
+                            <?php if ($canManage): ?>
+                                <input class="mcq-inline-mark" type="number" min="<?php echo $e(max(1, (int) $test['questioncount'])); ?>" max="10000" step="1" value="<?php echo $e($test['actualmarks']); ?>" data-test-marks aria-label="<?php echo $e(sprintf($t('mod_mcqtests_marks_for', 'Marks for %s'), $name)); ?>" />
+                            <?php else: ?><?php echo $e($test['actualmarks']); ?><?php endif; ?>
+                        </td>
+                        <td><?php echo $e($formatClosing($test['closingdate'] ?? '')); ?></td>
+                        <td><span class="mcq-action-group">
+                            <?php if ($canManage):
+                                echo $iconLink('pencil', sprintf($t('mod_mcqtests_edit_named', 'Edit %s'), $name), $u(array('action' => 'edit', 'id' => $id)));
+                                echo $iconLink('trash-2', sprintf($t('mod_mcqtests_delete_named', 'Delete %s'), $name), $u(array('action' => 'delete', 'id' => $id)), 'onclick="return confirm(' . $e(json_encode($t('mod_mcqtests_delete_confirm', 'Delete this test?'))) . ')"');
+                                echo $iconLink('list-checks', sprintf($t('mod_mcqtests_results_named', 'Show results for %s'), $name), $u(array('action' => 'liststudents', 'id' => $id)));
+                                echo $iconLink('download', sprintf($t('mod_mcqtests_export_named', 'Export results for %s'), $name), $u(array('action' => 'doexport', 'testId' => $id)));
+                            endif; ?>
+                        </span></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="chisimba-form-actions">
+        <a class="button chisimba-button-secondary" href="<?php echo $e($u(array('action' => 'assessmentSheet'), 'gradebook')); ?>"><?php echo $e($t('mod_mcqtests_assessmentsheet', 'Assessment Sheet')); ?></a>
+    </div>
+</section>
+<script>
+(function () {
+    const root = document.querySelector('.mcq-overview');
+    if (!root) return;
+    const token = root.querySelector('[data-overview-csrf]');
+    const status = root.querySelector('.mcq-overview__save-status');
+    const post = async (values) => {
+        const body = new URLSearchParams(Object.assign({csrf_token: token.value}, values));
+        const response = await fetch(root.dataset.updateUrl, {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body: body.toString(), credentials: 'same-origin'});
+        const result = await response.json();
+        if (result.csrfToken) token.value = result.csrfToken;
+        if (!response.ok || !result.ok) throw new Error(result.error || 'save_failed');
+        return result;
+    };
+    const announce = (message, failed) => { if (status) { status.textContent = message; status.classList.toggle('error', !!failed); } };
+    root.querySelectorAll('[data-test-marks]').forEach((input) => {
+        input.addEventListener('change', async () => {
+            input.disabled = true;
+            try { await post({operation: 'mark_one', test_id: input.closest('tr').dataset.testId, marks: input.value}); announce('<?php echo $e($t('mod_mcqtests_marks_saved', 'Marks saved.')); ?>', false); }
+            catch (error) { announce('<?php echo $e($t('mod_mcqtests_marks_not_saved', 'Marks could not be changed. Tests with attempts are protected.')); ?>', true); }
+            finally { input.disabled = false; }
+        });
+    });
+    root.querySelectorAll('[data-operation]').forEach((button) => button.addEventListener('click', async () => {
+        button.disabled = true;
+        const operation = button.dataset.operation;
+        const marks = root.querySelector('[data-bulk-marks]');
+        try {
+            const result = await post({operation: operation, marks: marks ? marks.value : ''});
+            if (operation === 'activate_all') result.updated.forEach((id) => { const badge = root.querySelector('tr[data-test-id="' + CSS.escape(id) + '"] [data-test-status]'); if (badge) { badge.textContent = '<?php echo $e($t('mod_mcqtests_active_label', 'Active')); ?>'; badge.classList.add('chisimba-pill--success'); } });
+            if (operation === 'marks_all') result.updated.forEach((id) => { const field = root.querySelector('tr[data-test-id="' + CSS.escape(id) + '"] [data-test-marks]'); if (field) field.value = marks.value; });
+            announce('<?php echo $e($t('mod_mcqtests_changes_saved', 'Changes saved.')); ?>', false);
+        } catch (error) { announce('<?php echo $e($t('mod_mcqtests_changes_not_saved', 'The changes could not be applied.')); ?>', true); }
+        finally { button.disabled = false; }
+    }));
+}());
+</script>

@@ -9,10 +9,10 @@ $review = file_get_contents($root . '/templates/content/ai_chapter_quiz_review_t
 $generator = file_get_contents($root . '/classes/mcqaigenerator_class_inc.php');
 $checks = array(
     'standard root action button' => str_contains($home, "'action' => 'aichapterquizzes'")
-        && str_contains($home, 'mod_mcqtests_ai_chapter_button'),
+        && str_contains($home, 'mod_mcqtests_ai_missing_chapter_button'),
     'root action follows shared AI availability' => str_contains(
         $home,
-        'if (!empty($aiAvailable))'
+        '!empty($aiAvailable)'
     ) && str_contains(
         $controller,
         "setVar('aiAvailable', \$this->objMcqAiGenerator->isAvailable())"
@@ -24,7 +24,8 @@ $checks = array(
     'questions inserted' => str_contains($service, '$this->ai->insertQuestions('),
     'automatic chapter link' => str_contains($service, 'updateChapterStageGate('),
     'inactive formative default' => str_contains($service, "'status' => 'inactive'") && str_contains($service, "'testtype' => 'Formative'"),
-    'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aichapterquizjob,aichapterquizreview,aiinsertchapterquizzes|isContextLecturer'),
+    'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aichapterquizjob,aichapterquizreview,aiinsertchapterquizzes')
+        && str_contains($register, 'updateoverview|isContextLecturer'),
     'site administrator access' => str_contains($controller, '$this->objUser->isAdmin() || $this->contextUsers->isContextLecturer()'),
     'visible correct answer' => str_contains($review, 'mod_mcqtests_ai_correct_answer'),
     'numbered chapter headings' => str_contains($review, 'mod_mcqtests_ai_chapter_numbered_title')
