@@ -27,6 +27,10 @@ $checks = array(
     'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aichapterquizjob,aichapterquizreview,aiinsertchapterquizzes|isContextLecturer'),
     'site administrator access' => str_contains($controller, '$this->objUser->isAdmin() || $this->contextUsers->isContextLecturer()'),
     'visible correct answer' => str_contains($review, 'mod_mcqtests_ai_correct_answer'),
+    'numbered chapter headings' => str_contains($review, 'mod_mcqtests_ai_chapter_numbered_title')
+        && str_contains($review, '$chapterIndex + 1'),
+    'answer choices use A to D markers' => str_contains($review, 'class="mcq-ai-review-options" type="A"'),
+    'correct answer uses semantic pill' => str_contains($review, 'chisimba-pill chisimba-pill--success'),
     'durable correction flag' => str_contains($review, 'correction_flags[]')
         && str_contains($generator, "'needsreview' => !empty(\$question['needsCorrection'])"),
     'setup uses grouped choice cards' => str_contains($setup, 'mcq-ai-chapter-fieldset')
