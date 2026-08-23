@@ -4,6 +4,8 @@ $controller = file_get_contents($root . '/controller.php');
 $service = file_get_contents($root . '/classes/chapterquizgenerator_class_inc.php');
 $home = file_get_contents($root . '/templates/content/newindex_tpl.php');
 $register = file_get_contents($root . '/register.conf');
+$review = file_get_contents($root . '/templates/content/ai_chapter_quiz_review_tpl.php');
+$generator = file_get_contents($root . '/classes/mcqaigenerator_class_inc.php');
 $checks = array(
     'root action button' => str_contains($home, "'action' => 'aichapterquizzes'"),
     'pre-test workflow' => str_contains($controller, "case 'aichapterquizzes':") && str_contains($controller, "case 'aiinsertchapterquizzes':"),
@@ -14,6 +16,9 @@ $checks = array(
     'inactive formative default' => str_contains($service, "'status' => 'inactive'") && str_contains($service, "'testtype' => 'Formative'"),
     'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aiinsertchapterquizzes|isContextLecturer'),
     'site administrator access' => str_contains($controller, '$this->objUser->isAdmin() || $this->contextUsers->isContextLecturer()'),
+    'visible correct answer' => str_contains($review, 'mod_mcqtests_ai_correct_answer'),
+    'durable correction flag' => str_contains($review, 'correction_flags[]')
+        && str_contains($generator, "'needsreview' => !empty(\$question['needsCorrection'])"),
 );
 foreach ($checks as $name => $ok) { if (!$ok) { fwrite(STDERR, "FAIL: $name\n"); exit(1); } }
 echo 'OK: ' . count($checks) . " chapter quiz generator checks\n";

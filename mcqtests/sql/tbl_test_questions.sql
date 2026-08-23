@@ -76,6 +76,11 @@ $fields = array(
         'type'=>'text',
         'length'=>1
         ),
+    'needsreview' => array(
+        'type' => 'integer',
+        'length' => 1,
+        'default' => 0
+        ),
     'timecreated'  => array(
         'type'=>'timestamp'
         ),
