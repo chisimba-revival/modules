@@ -13,6 +13,7 @@ $checks = array(
     'automatic chapter link' => str_contains($service, 'updateChapterStageGate('),
     'inactive formative default' => str_contains($service, "'status' => 'inactive'") && str_contains($service, "'testtype' => 'Formative'"),
     'lecturer permissions' => str_contains($register, 'aichapterquizzes,aigeneratechapterquizzes,aiinsertchapterquizzes|isContextLecturer'),
+    'site administrator access' => str_contains($controller, '$this->objUser->isAdmin() || $this->contextUsers->isContextLecturer()'),
 );
 foreach ($checks as $name => $ok) { if (!$ok) { fwrite(STDERR, "FAIL: $name\n"); exit(1); } }
 echo 'OK: ' . count($checks) . " chapter quiz generator checks\n";

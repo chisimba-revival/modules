@@ -2258,7 +2258,7 @@ class mcqtests extends controller {
 
     private function chapterQuizSetup()
     {
-        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVar('chapterQuizToken', $stack['csrf']->issue('mcqtests_chapter_quiz_generate'));
         $this->setVar('chapterQuizCandidates', $this->objChapterQuizGenerator->chapterCandidates($this->contextCode));
@@ -2268,7 +2268,7 @@ class mcqtests extends controller {
 
     private function generateChapterQuizzes()
     {
-        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
             || !$stack['csrf']->consume('mcqtests_chapter_quiz_generate', (string) $this->getParam('csrf_token', ''))) {
@@ -2292,7 +2292,7 @@ class mcqtests extends controller {
 
     private function insertChapterQuizzes()
     {
-        if (!$this->contextUsers->isContextLecturer()) { return 'noaccess_tpl.php'; }
+        if (!$this->canManageChapterQuizzes()) { return 'noaccess_tpl.php'; }
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
             || !$stack['csrf']->consume('mcqtests_chapter_quiz_insert', (string) $this->getParam('csrf_token', ''))) {
@@ -2301,16 +2301,21 @@ class mcqtests extends controller {
         $generated = $this->getSession('mcq_ai_chapter_candidates', array());
         $result = $this->objChapterQuizGenerator->insert($this->contextCode, $this->userId, $generated, 70);
         if (empty($result['ok'])) {
-            $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_chapter_insert_failed', 'mcqtests'));
+            $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_chapter_insert_failed', 'mcqtests', 'The chapter quizzes could not be created. No partial set was retained.'));
         } else {
             $this->unsetSession('mcq_ai_chapter_candidates');
             $message = sprintf(
-                $this->objLanguage->languageText('mod_mcqtests_ai_chapter_inserted', 'mcqtests'),
+                $this->objLanguage->languageText('mod_mcqtests_ai_chapter_inserted', 'mcqtests', 'Created %d chapter quizzes and attached them to their chapters.'),
                 count($result['created'])
             );
             $this->setSession('confirm', $message);
         }
         return $this->nextAction('newhome', array('confirm' => 'yes'));
+    }
+
+    private function canManageChapterQuizzes()
+    {
+        return $this->objUser->isAdmin() || $this->contextUsers->isContextLecturer();
     }
 
     /**
