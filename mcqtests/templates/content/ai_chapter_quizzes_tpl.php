@@ -26,6 +26,14 @@ $summary = html_entity_decode(
         'mod_mcqtests_ai_chapter_help',
         'Select the chapters to use. Each selected chapter will produce an inactive formative test with five grounded questions and will be linked to that chapter automatically.'
     )); ?></p>
+    <?php if (!empty($chapterQuizHasRecoveredReview)): ?>
+        <p><a class="button" href="<?php echo $e($u(array(
+            'action' => 'aichapterquizreview'
+        ))); ?>"><?php echo $e($t(
+            'mod_mcqtests_ai_chapter_recover',
+            'Review completed generation'
+        )); ?></a></p>
+    <?php endif; ?>
     <?php if (!empty($chapterQuizError)): ?>
         <div class="error" role="alert"><?php echo $e($t(
             'mod_mcqtests_ai_chapter_generation_failed',
