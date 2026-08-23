@@ -20,6 +20,8 @@ if (strpos($register,'PAGE: admin_shared|||mod_certificate_service_title|site')=
 foreach (array('class certificate_service_pdf_document','/MediaBox [0 0 595.28 841.89]','imagejpeg','CERTIFICATE OF','AWARDED TO','Certificate number:') as $needle) {
     if (strpos($renderer,$needle)===false) { $failures[]='renderer missing '.$needle; }
 }
+foreach(array('DejaVuSans.ttf','DejaVuSans-Bold.ttf','DejaVuSerif.ttf','DejaVuSerif-Bold.ttf','DEJAVU-LICENSE.txt') as $font){if(!is_file($root.'/resources/fonts/'.$font)){$failures[]='bundled font asset missing '.$font;}}
+if(strpos($renderer,"dirname(__DIR__).'/resources/fonts/'")===false){$failures[]='renderer does not own its font dependency';}
 if (strpos($renderer,'arbitrary HTML')===false) { $failures[]='safe fixed-layout contract missing'; }
 $controller=file_get_contents($root.'/controller.php');$template=file_get_contents($root.'/templates/content/manage_tpl.php');
 foreach(array("case 'savebase'","case 'savesigner'","'ajax'","'csrfToken'","certificate-base-list","certificate-signer-list","certificate-preview__page","Text and line colour","Border and seal colour") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='management workspace missing '.$needle;}}
