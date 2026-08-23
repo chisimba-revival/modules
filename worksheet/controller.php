@@ -72,6 +72,9 @@ class worksheet extends controller
     public $objLog;
     public $rubricAvailable = FALSE;
     public $objRubricService = NULL;
+    public $objAiMarker = NULL;
+    public $aiMarkingAvailable = FALSE;
+    public $objAiMarkingJobs = NULL;
 
     public function init()
     {
@@ -97,6 +100,10 @@ class worksheet extends controller
             $this->rubricAvailable = TRUE;
         }
 
+        $this->objAiMarker = $this->getObject('worksheetaimarker', 'worksheet');
+        $this->aiMarkingAvailable = $this->objAiMarker->isAvailable();
+        $this->objAiMarkingJobs = $this->getObject('dbworksheetaimarkingjobs', 'worksheet');
+
         if($this->objModuleCatalogue->checkIfRegistered('activitystreamer'))
         {
             $this->objActivityStreamer = $this->getObject('activityops', 'activitystreamer');
@@ -112,7 +119,7 @@ class worksheet extends controller
         $lecturerActions = array(
             'add', 'deleteworksheet', 'saveworksheet', 'saveworksheetedit', 'worksheetinfo',
             'managequestions', 'savequestion', 'activate', 'updatestatus', 'viewstudentworksheet',
-            'savestudentmark', 'editquestion', 'updatequestion', 'deletequestion', 'preview'
+            'savestudentmark', 'aiassistmark', 'aimarkingjob', 'editquestion', 'updatequestion', 'deletequestion', 'preview'
         );
 
         if (in_array($action, $lecturerActions)) {
@@ -446,16 +453,90 @@ class worksheet extends controller
             }
         }
         $this->setVarByRef('structuredRubrics', $structuredRubrics);
+        $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
+        $this->setVar('aiSuggestions', array());
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
+        if ($this->aiMarkingAvailable) {
+            $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
+        }
 
         return 'viewstudentworksheet_tpl.php';
     }
 
+    private function __aiassistmark()
+    {
+        if (!$this->aiMarkingAvailable) { return $this->nextAction(NULL); }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('worksheet_ai_marking', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction(NULL);
+        }
+        $resultId = $this->getParam('id');
+        $result = $this->objWorksheetResults->getRow('id', $resultId);
+        if ($result == FALSE) { return $this->nextAction(NULL, array('error'=>'resultnotavailable')); }
+        $worksheet = $this->objWorksheet->getWorksheet($result['worksheet_id']);
+        if ($worksheet == FALSE || $worksheet['context'] !== $this->contextCode) {
+            return $this->nextAction(NULL, array('error'=>'unknownworksheet'));
+        }
+        $jobId = $this->objAiMarkingJobs->enqueue($this->contextCode, $this->objUser->userId(), $resultId);
+        return empty($jobId) ? $this->nextAction('viewstudentworksheet', array('id'=>$resultId)) : $this->nextAction('aimarkingjob', array('id'=>$jobId));
+    }
+
+    private function __aimarkingjob()
+    {
+        $job = $this->objAiMarkingJobs->getOwned($this->getParam('id', ''), $this->contextCode, $this->objUser->userId(), $this->objUser->isAdmin());
+        if (!is_array($job)) { return $this->nextAction(NULL); }
+        if ($job['status'] === 'completed') {
+            $result = $this->objWorksheetResults->getRow('id', $job['result_id']);
+            if (!is_array($result)) { return $this->nextAction(NULL); }
+            $worksheet = $this->objWorksheet->getWorksheet($result['worksheet_id']);
+            if (!is_array($worksheet) || (string) $worksheet['context'] !== (string) $this->contextCode) {
+                return $this->nextAction(NULL);
+            }
+            $questions = $this->objWorksheetQuestions->getQuestions($result['worksheet_id']);
+            $rubrics = array();
+            if ($this->rubricAvailable) {
+                foreach ($questions as $question) {
+                    if (!empty($question['rubric_id'])) {
+                        $rubric = $this->objRubricService->getStructuredRubric($question['rubric_id']);
+                        if ($rubric !== false) { $rubrics[$question['id']] = $rubric; }
+                    }
+                }
+            }
+            $this->setVarByRef('id', $result['worksheet_id']);
+            $this->setVarByRef('worksheet', $worksheet);
+            $this->setVarByRef('questions', $questions);
+            $this->setVarByRef('worksheetResult', $result);
+            $this->setVarByRef('structuredRubrics', $rubrics);
+            $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
+            $this->setVar('aiSuggestions', $job['suggestions']);
+            $this->setVar('aiSuggestionError', '');
+            $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
+            if ($this->aiMarkingAvailable) {
+                $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
+            }
+            return 'viewstudentworksheet_tpl.php';
+        }
+        $this->setVarByRef('aiMarkingJob', $job);
+        return 'ai_marking_progress_tpl.php';
+    }
+
     private function __savestudentmark()
     {
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('worksheet_save_marks', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction(NULL);
+        }
         $student = $this->getParam('student');
         $worksheet = $this->getParam('worksheet');
         $this->objWorksheetAnswers->saveMarks($student, $worksheet, $this->objUser->userId());
         $resultId = $this->objWorksheetResults->getWorksheetResult($student, $worksheet);
+        if (is_array($resultId) && !empty($resultId['id'])) {
+            $this->objAiMarkingJobs->deleteForResult($resultId['id']);
+        }
         return $this->nextAction('viewstudentworksheet', array('id'=>$resultId['id'], 'message'=>'worksheetmarked'));
     }
 

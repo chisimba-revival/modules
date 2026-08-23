@@ -46,10 +46,27 @@ if ($worksheetResult == FALSE) {
 
 echo '<hr />';
 
+if (!empty($aiMarkingAvailable)) {
+    $aiForm = new form('aiassistmark', $this->uri(array('action'=>'aiassistmark')));
+    $aiForm->addToForm((new hiddeninput('id', $worksheetResult['id']))->show());
+    $aiForm->addToForm((new hiddeninput('csrf_token', $aiMarkingToken))->show());
+    $aiButton = new button('aiassist', $this->objLanguage->languageText('mod_worksheet_ai_suggest', 'worksheet', 'Suggest marks with AI'));
+    $aiButton->setToSubmit();
+    $aiForm->addToForm('<div class="worksheet-ai-assist"><p>'.$this->objLanguage->languageText('mod_worksheet_ai_explanation', 'worksheet', 'AI can draft marks and feedback for your review. Nothing is saved until you choose Save marks.').'</p>'.$aiButton->show().'</div>');
+    echo $aiForm->show();
+}
+if (!empty($aiSuggestionError)) {
+    echo '<div class="error">'.$this->objLanguage->languageText('mod_worksheet_ai_failed', 'worksheet', 'AI suggestions could not be generated. You can continue marking manually.').'</div>';
+} elseif (!empty($aiSuggestions)) {
+    echo '<div class="success">'.$this->objLanguage->languageText('mod_worksheet_ai_ready', 'worksheet', 'AI suggestions are ready for your review. Check and edit them before saving.').'</div>';
+}
+
 $form = new form ('savestudentmark', $this->uri(array('action'=>'savestudentmark')));
 $hiddenInput = new hiddeninput('worksheet', $id);
 $form->addToForm($hiddenInput->show());
 $hiddenInput = new hiddeninput('student', $worksheetResult['userid']);
+$form->addToForm($hiddenInput->show());
+$hiddenInput = new hiddeninput('csrf_token', $worksheetMarkToken);
 $form->addToForm($hiddenInput->show());
 
 $counter = 1;
@@ -105,7 +122,9 @@ foreach ($questions as $question)
         $slider = $this->newObject('slider', 'htmlelements');
         $slider->name = $studentAnswer['id'];
         $slider->maxValue = $question['question_worth'];
-        if ($studentAnswer['mark'] != '') {
+        if (!empty($aiSuggestions[$studentAnswer['id']])) {
+            $slider->value = $aiSuggestions[$studentAnswer['id']]['mark'];
+        } elseif ($studentAnswer['mark'] != '') {
             $slider->value = $studentAnswer['mark'];
         }
         $table->addCell($slider->show());
@@ -114,7 +133,9 @@ foreach ($questions as $question)
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_worksheet_comment', 'worksheet', 'Comment').':');
         $textArea = new textarea('comment_'.$studentAnswer['id']);
-        $textArea->value = $studentAnswer['comments'];
+        $textArea->value = !empty($aiSuggestions[$studentAnswer['id']])
+            ? $aiSuggestions[$studentAnswer['id']]['feedback']
+            : $studentAnswer['comments'];
         $table->addCell($textArea->show());
         $table->endRow();
 
