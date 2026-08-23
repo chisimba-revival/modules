@@ -232,4 +232,17 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_test_questions</table>
+        <version>4.173</version>
+        <description>Retain course-owner correction flags on generated MCQ questions</description>
+        <data>
+            <add>
+                <name>needsreview</name>
+                <type>integer</type>
+                <length>1</length>
+                <default>0</default>
+            </add>
+        </data>
+    </update>
 </updates>

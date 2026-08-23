@@ -352,7 +352,14 @@ if (!empty($questions)) {
 
         $objTable->startRow();
         $objTable->addCell($i.'.');
-        $objTable->addCell($this->dbQuestions->previewQuestion($line));
+        $questionPreview = $this->dbQuestions->previewQuestion($line);
+        if (!empty($line['needsreview'])) {
+            $questionPreview .= '<div class="chisimba-badge chisimba-badge-warning">'
+                . htmlspecialchars($this->objLanguage->languageText(
+                    'mod_mcqtests_ai_needs_correction', 'mcqtests', 'Flagged for correction'
+                ), ENT_QUOTES, 'UTF-8') . '</div>';
+        }
+        $objTable->addCell($questionPreview);
         $objTable->addCell($line['mark']);
         $objTable->addCell($iconsUD);
         $objTable->addCell($icons);

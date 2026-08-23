@@ -2299,6 +2299,15 @@ class mcqtests extends controller {
             return $this->nextAction('aichapterquizzes');
         }
         $generated = $this->getSession('mcq_ai_chapter_candidates', array());
+        $flagValues = $this->getParam('correction_flags', array());
+        if (!is_array($flagValues)) { $flagValues = array(); }
+        $flags = array_fill_keys(array_map('strval', $flagValues), true);
+        foreach ($generated as $chapterIndex => $chapter) {
+            foreach ($chapter['questions'] as $questionIndex => $question) {
+                $key = (string) $chapter['chapterId'] . ':' . $questionIndex;
+                $generated[$chapterIndex]['questions'][$questionIndex]['needsCorrection'] = !empty($flags[$key]);
+            }
+        }
         $result = $this->objChapterQuizGenerator->insert($this->contextCode, $this->userId, $generated, 70);
         if (empty($result['ok'])) {
             $this->setSession('confirm', $this->objLanguage->languageText('mod_mcqtests_ai_chapter_insert_failed', 'mcqtests', 'The chapter quizzes could not be created. No partial set was retained.'));
