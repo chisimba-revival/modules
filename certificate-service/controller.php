@@ -11,6 +11,9 @@ class certificate_service extends controller
         switch((string)$action){
             case 'savebase': return $this->saveBase($contextCode);
             case 'savesigner': return $this->saveSigner($contextCode);
+            case 'deletebase': return $this->deleteBase($contextCode);
+            case 'deletesigner': return $this->deleteSigner($contextCode);
+            case 'previewbase': return $this->previewBase();
             case 'assigncourse': return $this->assignCourse($contextCode);
             case 'downloadcourse': return $this->downloadCourse($contextCode);
             default: return $this->manage($contextCode);
@@ -37,14 +40,34 @@ class certificate_service extends controller
         if(!empty($result['ok'])&&!empty($_FILES['signature']['name'])){$result['ok']=$this->service->storeImageAsset($_FILES['signature'],'signature',$result['id']);}
         return $this->saveResponse($result,$contextCode);
     }
+    private function deleteBase($contextCode)
+    {
+        if(!$this->user->isAdmin()||!$this->validPost()){return $this->saveResponse(array('ok'=>false,'code'=>'invalid'),$contextCode);}
+        return $this->saveResponse($this->service->archiveBase($this->param('id')),$contextCode);
+    }
+    private function deleteSigner($contextCode)
+    {
+        if(!$this->user->isAdmin()||!$this->validPost()){return $this->saveResponse(array('ok'=>false,'code'=>'invalid'),$contextCode);}
+        return $this->saveResponse($this->service->archiveSigner($this->param('id')),$contextCode);
+    }
+    private function previewBase()
+    {
+        if(!$this->user->isAdmin()){return $this->nextAction(null,array('error'=>'noaccess'),'_default');}
+        $base=$this->service->baseById($this->param('id'));if(!$base){return $this->nextAction(null,array('error'=>'invalid'));}
+        $signers=$this->service->activeSigners();$signer=!empty($signers)?$signers[0]:array('name'=>'Sample Signer','title'=>'Authorised Signer','signature_path'=>null);
+        $issuance=array('certificate_number'=>'SAMPLE-CERTIFICATE','snapshot'=>array('recipient_name'=>'Student Full Name','resource_title'=>'Sample Course Title','completed_at'=>date('Y-m-d H:i:s'),'base'=>$base,'signer'=>$signer));
+        $pdf=$this->getObject('certificatepdfrenderer','certificate-service')->render($issuance);header('Content-Type: application/pdf');header('Content-Disposition: inline; filename="certificate-design-sample.pdf"');header('Content-Length: '.strlen($pdf));header('Cache-Control: private, no-store');echo $pdf;exit;
+    }
     private function assignCourse($contextCode){if(!$this->mayManageCourse($contextCode)||!$this->validPost()){return $this->saveResponse(array('ok'=>false,'code'=>'invalid'),$contextCode);}$result=$this->service->assign('course',$contextCode,$this->param('base_id'),$this->param('signer_id'),$this->user->userId());return $this->saveResponse($result,$contextCode,'assigned');}
     private function saveResponse(array $result,$contextCode,$successMessage='saved')
     {
         if($this->param('ajax')==='1'){
             header('Content-Type: application/json; charset=UTF-8');
-            echo json_encode(array('ok'=>!empty($result['ok']),'message'=>!empty($result['ok'])?$successMessage:'invalid','csrfToken'=>$this->csrf->issue(self::CSRF),'bases'=>$this->service->activeBases(),'signers'=>$this->service->activeSigners(),'assignment'=>$contextCode===''?false:$this->service->assignmentFor('course',$contextCode)),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;
+            $message=!empty($result['ok'])?$successMessage:(!empty($result['code'])&&$result['code']==='in_use'?'inuse':'invalid');
+            echo json_encode(array('ok'=>!empty($result['ok']),'message'=>$message,'csrfToken'=>$this->csrf->issue(self::CSRF),'bases'=>$this->service->activeBases(),'signers'=>$this->service->activeSigners(),'assignment'=>$contextCode===''?false:$this->service->assignmentFor('course',$contextCode)),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);exit;
         }
-        return $this->nextAction(null,array(!empty($result['ok'])?'message':'error'=>!empty($result['ok'])?$successMessage:'invalid'));
+        $message=!empty($result['ok'])?$successMessage:(!empty($result['code'])&&$result['code']==='in_use'?'inuse':'invalid');
+        return $this->nextAction(null,array(!empty($result['ok'])?'message':'error'=>$message));
     }
     private function downloadCourse($contextCode)
     {
