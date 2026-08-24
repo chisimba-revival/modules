@@ -22,7 +22,8 @@ $checks = array(
         "getObject('studentlearningoverview', 'context')"
     ),
     'Site Home is an explicit escape route' => str_contains($template, 'siteHomeUrl')
-        && str_contains($controller, "uri(null, 'postlogin')"),
+        && str_contains($controller, "uri(null, 'postlogin')")
+        && str_contains($template, "getObject('language', 'language')"),
 );
 
 foreach ($checks as $name => $ok) {
