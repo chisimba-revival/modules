@@ -7,6 +7,14 @@ $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: timeanddate-service'),
     'stateless module' => !str_contains($registration, 'TABLE:'),
     'configuration dependency' => str_contains($registration, 'DEPENDS: sysconfig'),
+    'installable configuration' => str_contains(
+        $registration,
+        'CONFIG: TIMEANDDATE_TIMEZONE|Africa/Johannesburg|'
+    ) && substr_count($registration, 'CONFIG: TIMEANDDATE_') === 4,
+    'configuration descriptions' => substr_count(
+        $registration,
+        'TEXT: mod_timeanddate_service_'
+    ) === 4,
     'UTC now contract' => str_contains($service, 'public function nowUtc()'),
     'canonical storage' => str_contains($service, "STORAGE_FORMAT = 'Y-m-d H:i:s'")
         && str_contains($service, 'public function toStorage(')
