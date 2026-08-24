@@ -25,7 +25,11 @@ $checks = array(
         && str_contains($template, "getObject('postloginmenu', 'toolbar')")
         && str_contains($template, 'mylearning-sidebar')
         && strpos($template, '. $accountMenu')
-            < strpos($template, '. $upperBlocks'),
+            < strpos($template, '. $upperBlocks')
+        && strpos($template, '. $upperBlocks')
+            < strpos($template, '. $editingSwitch')
+        && strpos($template, '. $editingSwitch')
+            < strpos($template, '. $lowerBlocks'),
     'sidebar supports page-specific blocks' => str_contains(
         $controller,
         "'mylearning', 'left'"

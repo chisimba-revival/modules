@@ -74,9 +74,9 @@ $accountMenu = $this->getObject('postloginmenu', 'toolbar')->show();
 $layout->setLeftColumnContent(
     '<aside class="mylearning-sidebar" aria-label="Student navigation">'
     . $accountMenu
-    . $editingSwitch
     . '<div id="rightblocks" class="mylearning-sidebar__blocks mylearning-sidebar__blocks--upper">'
     . $upperBlocks . '</div>'
+    . $editingSwitch
     . $upperEditor
     . '<div id="leftblocks" class="mylearning-sidebar__blocks">'
     . $lowerBlocks . '</div>'
