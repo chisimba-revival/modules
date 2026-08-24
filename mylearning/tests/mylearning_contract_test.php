@@ -28,6 +28,12 @@ $checks = array(
         $controller,
         "getContextBlocks('mylearning', 'left')"
     ) && str_contains($template, '$sidebarBlocks'),
+    'administrator can edit sidebar blocks' => str_contains(
+        $controller,
+        'dispatchBlockAction'
+    ) && str_contains($template, 'contextblocks.js')
+        && str_contains($template, "theModule = 'mylearning'")
+        && str_contains($template, 'id="leftaddblock"'),
 );
 
 foreach ($checks as $name => $ok) {
