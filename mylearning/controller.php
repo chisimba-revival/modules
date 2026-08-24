@@ -19,12 +19,18 @@ class mylearning extends controller
             return null;
         }
         $this->setVar('learningOverview', $this->getObject('studentlearningoverview', 'context')->show());
-        $this->setVar(
-            'sidebarBlocks',
-            $this->contextBlocks->getContextBlocks('mylearning', 'left')
-        );
+        $this->setVar('upperBlocks', $this->contextBlocks->getContextBlocks(
+            'mylearning', 'right'
+        ));
+        $this->setVar('lowerBlocks', $this->contextBlocks->getContextBlocks(
+            'mylearning', 'left'
+        ));
+        $this->setVar('wideBlocks', $this->contextBlocks->getContextBlocks(
+            'mylearning', 'middle'
+        ));
         $this->setVar('mayEditBlocks', $this->user->isAdmin());
-        $this->setVar('availableSidebarBlocks', $this->availableSidebarBlocks());
+        $this->setVar('availableNarrowBlocks', $this->availableBlocks(false));
+        $this->setVar('availableWideBlocks', $this->availableBlocks(true));
         return 'main_tpl.php';
     }
 
@@ -32,7 +38,10 @@ class mylearning extends controller
     {
         if (!$this->user->isAdmin()) { return; }
         $blockId = (string) $this->getParam('blockid', '');
-        $side = 'left';
+        $side = (string) $this->getParam('side', 'left');
+        if (!in_array($side, array('left', 'right', 'middle'), true)) {
+            return;
+        }
         if ($action === 'removeblock') {
             echo $this->contextBlocks->removeBlock($blockId) ? 'ok' : 'notok';
             return;
@@ -69,11 +78,14 @@ class mylearning extends controller
             . '" class="block highlightblock">' . $content . '</div>';
     }
 
-    private function availableSidebarBlocks()
+    private function availableBlocks($wide)
     {
         if (!$this->user->isAdmin()) { return array(); }
         $options = array();
-        foreach ((array) $this->dynamicBlocks->getSmallSiteBlocks() as $block) {
+        $dynamic = $wide
+            ? $this->dynamicBlocks->getWideSiteBlocks()
+            : $this->dynamicBlocks->getSmallSiteBlocks();
+        foreach ((array) $dynamic as $block) {
             $title = trim((string) ($block['title'] ?? ''));
             $options[] = array(
                 'value' => 'dynamicblock|' . $block['id'] . '|' . $block['module'],
@@ -82,7 +94,8 @@ class mylearning extends controller
             );
         }
         $registry = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        foreach ((array) $registry->getBlocks('normal', 'site|user|postlogin') as $block) {
+        $size = $wide ? 'wide' : 'normal';
+        foreach ((array) $registry->getBlocks($size, 'site|user|postlogin') as $block) {
             if ($block['moduleid'] === 'contentblocks') { continue; }
             $title = $block['blockname'];
             try {

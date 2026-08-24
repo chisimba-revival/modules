@@ -23,17 +23,25 @@ $checks = array(
     ),
     'standard two-column student hub' => str_contains($template, 'setNumColumns(2)')
         && str_contains($template, "getObject('postloginmenu', 'toolbar')")
-        && str_contains($template, 'mylearning-sidebar'),
+        && str_contains($template, 'mylearning-sidebar')
+        && strpos($template, '. $accountMenu')
+            < strpos($template, '. $upperBlocks'),
     'sidebar supports page-specific blocks' => str_contains(
         $controller,
-        "getContextBlocks('mylearning', 'left')"
-    ) && str_contains($template, '$sidebarBlocks'),
+        "'mylearning', 'left'"
+    ) && str_contains($controller, "'mylearning', 'right'")
+        && str_contains($controller, "'mylearning', 'middle'")
+        && str_contains($template, '$upperBlocks')
+        && str_contains($template, '$lowerBlocks')
+        && str_contains($template, '$wideBlocks'),
     'administrator can edit sidebar blocks' => str_contains(
         $controller,
         'dispatchBlockAction'
     ) && str_contains($template, 'contextblocks.js')
         && str_contains($template, "theModule = 'mylearning'")
-        && str_contains($template, 'id="leftaddblock"'),
+        && str_contains($template, "\$makeEditor('right'")
+        && str_contains($template, "\$makeEditor('left'")
+        && str_contains($template, "\$makeEditor('middle'"),
 );
 
 foreach ($checks as $name => $ok) {

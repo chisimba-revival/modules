@@ -1,6 +1,9 @@
 <?php
 $language = $this->getObject('language', 'language');
-$editingTools = '';
+$editingSwitch = '';
+$upperEditor = '';
+$lowerEditor = '';
+$wideEditor = '';
 if ($mayEditBlocks) {
     $icons = $this->newObject('geticon', 'htmlelements');
     $icons->setIcon('up'); $upIcon = $icons->show();
@@ -9,30 +12,47 @@ if ($mayEditBlocks) {
     $switch = $this->getObject('buildcanvas', 'canvas')->getSwitchButton(
         $language->languageText('mod_context_turneditingon', 'context', 'Turn Editing On')
     );
-    $options = '<option value="">'
-        . htmlspecialchars($language->languageText(
-            'phrase_selectone', 'context', 'Select one'
-        ), ENT_QUOTES, 'UTF-8') . '...</option>';
-    foreach ($availableSidebarBlocks as $block) {
-        $options .= '<option value="'
-            . htmlspecialchars($block['value'], ENT_QUOTES, 'UTF-8') . '">'
-            . htmlspecialchars($block['title'], ENT_QUOTES, 'UTF-8') . '</option>';
-    }
-    $editingTools = '<div id="editmode" class="mylearning-editmode">' . $switch
-        . '</div><div id="leftaddblock" class="mylearning-addblock">'
-        . '<h3>' . htmlspecialchars($language->languageText(
-            'mod_context_addablock', 'context', 'Add a Block'
-        ), ENT_QUOTES, 'UTF-8') . '</h3>'
-        . '<label for="ddleftblocks" class="visually-hidden">'
-        . htmlspecialchars($language->languageText(
-            'mod_mylearning_sidebarblock', 'mylearning', 'Sidebar block'
-        ), ENT_QUOTES, 'UTF-8') . '</label>'
-        . '<select id="ddleftblocks" name="leftblocks">' . $options . '</select>'
-        . '<div id="leftpreview"><div id="leftpreviewcontent"></div>'
-        . '<button type="button" id="leftbutton" class="button">'
-        . htmlspecialchars($language->languageText(
-            'mod_prelogin_addblock', 'system', 'Add Block'
-        ), ENT_QUOTES, 'UTF-8') . '</button></div></div>';
+    $makeOptions = static function ($blocks) use ($language) {
+        $html = '<option value="">' . htmlspecialchars(
+            $language->languageText('phrase_selectone', 'context', 'Select one'),
+            ENT_QUOTES, 'UTF-8'
+        ) . '...</option>';
+        foreach ($blocks as $block) {
+            $html .= '<option value="'
+                . htmlspecialchars($block['value'], ENT_QUOTES, 'UTF-8') . '">'
+                . htmlspecialchars($block['title'], ENT_QUOTES, 'UTF-8')
+                . '</option>';
+        }
+        return $html;
+    };
+    $makeEditor = static function ($side, $label, $options) use ($language) {
+        return '<div id="' . $side . 'addblock" class="mylearning-addblock">'
+            . '<h3>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</h3>'
+            . '<label for="dd' . $side . 'blocks" class="visually-hidden">'
+            . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</label>'
+            . '<select id="dd' . $side . 'blocks" name="' . $side
+            . 'blocks">' . $options . '</select>'
+            . '<div id="' . $side . 'preview"><div id="' . $side
+            . 'previewcontent"></div><button type="button" id="' . $side
+            . 'button" class="button">' . htmlspecialchars(
+                $language->languageText(
+                    'mod_prelogin_addblock', 'system', 'Add Block'
+                ), ENT_QUOTES, 'UTF-8'
+            ) . '</button></div></div>';
+    };
+    $narrowOptions = $makeOptions($availableNarrowBlocks);
+    $wideOptions = $makeOptions($availableWideBlocks);
+    $editingSwitch = '<div id="editmode" class="mylearning-editmode">'
+        . $switch . '</div>';
+    $upperEditor = $makeEditor('right', $language->languageText(
+        'mod_mylearning_addupperblock', 'mylearning', 'Add an upper block'
+    ), $narrowOptions);
+    $lowerEditor = $makeEditor('left', $language->languageText(
+        'mod_mylearning_addlowerblock', 'mylearning', 'Add a lower block'
+    ), $narrowOptions);
+    $wideEditor = $makeEditor('middle', $language->languageText(
+        'mod_mylearning_addwideblock', 'mylearning', 'Add a wide block'
+    ), $wideOptions);
     ?>
     <script>
     upIcon = <?php echo json_encode($upIcon); ?>;
@@ -54,13 +74,19 @@ $accountMenu = $this->getObject('postloginmenu', 'toolbar')->show();
 $layout->setLeftColumnContent(
     '<aside class="mylearning-sidebar" aria-label="Student navigation">'
     . $accountMenu
-    . $editingTools
+    . $editingSwitch
+    . '<div id="rightblocks" class="mylearning-sidebar__blocks mylearning-sidebar__blocks--upper">'
+    . $upperBlocks . '</div>'
+    . $upperEditor
     . '<div id="leftblocks" class="mylearning-sidebar__blocks">'
-    . $sidebarBlocks . '</div>'
+    . $lowerBlocks . '</div>'
+    . $lowerEditor
     . '</aside>'
 );
 $layout->setMiddleColumnContent(
-    '<main class="mylearning-page">' . $learningOverview . '</main>'
+    '<main class="mylearning-page">' . $learningOverview
+    . '<div id="middleblocks" class="mylearning-page__blocks">'
+    . $wideBlocks . '</div>' . $wideEditor . '</main>'
 );
 echo $layout->show();
 ?>
