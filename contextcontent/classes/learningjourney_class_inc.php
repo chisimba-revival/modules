@@ -24,6 +24,7 @@ class learningjourney extends ChisimbaObject
             'pagetitle'=>'',
             'visited'=>0,
             'total'=>0,
+            'lastactivity'=>'',
             'bookmarks'=>array()
         );
         $firstPage = $this->objOrder->getFirstPage($contextCode);
@@ -56,6 +57,9 @@ class learningjourney extends ChisimbaObject
         $state['pageid'] = $lastPage['id'];
         $state['pagetitle'] = isset($lastPage['menutitle']) ? $lastPage['menutitle'] : '';
         $state['visited'] = (int) $this->objActivity->countVisitedPages($userId, $contextCode);
+        $state['lastactivity'] = isset($latest['datecreated'])
+            ? (string) $latest['datecreated']
+            : '';
         return $state;
     }
 }
