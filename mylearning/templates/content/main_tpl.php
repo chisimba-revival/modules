@@ -28,10 +28,10 @@ if ($mayEditBlocks) {
     $makeEditor = static function ($side, $label, $options) use ($language) {
         return '<div id="' . $side . 'addblock" class="mylearning-addblock">'
             . '<h3>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</h3>'
-            . '<label for="dd' . $side . 'blocks" class="visually-hidden">'
-            . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</label>'
             . '<select id="dd' . $side . 'blocks" name="' . $side
-            . 'blocks">' . $options . '</select>'
+            . 'blocks" aria-label="'
+            . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '">'
+            . $options . '</select>'
             . '<div id="' . $side . 'preview"><div id="' . $side
             . 'previewcontent"></div><button type="button" id="' . $side
             . 'button" class="button">' . htmlspecialchars(
@@ -76,8 +76,8 @@ $layout->setLeftColumnContent(
     . $accountMenu
     . '<div id="rightblocks" class="mylearning-sidebar__blocks mylearning-sidebar__blocks--upper">'
     . $upperBlocks . '</div>'
-    . $editingSwitch
     . $upperEditor
+    . $editingSwitch
     . '<div id="leftblocks" class="mylearning-sidebar__blocks">'
     . $lowerBlocks . '</div>'
     . $lowerEditor

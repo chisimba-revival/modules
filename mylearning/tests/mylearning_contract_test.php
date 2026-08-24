@@ -27,6 +27,8 @@ $checks = array(
         && strpos($template, '. $accountMenu')
             < strpos($template, '. $upperBlocks')
         && strpos($template, '. $upperBlocks')
+            < strpos($template, '. $upperEditor')
+        && strpos($template, '. $upperEditor')
             < strpos($template, '. $editingSwitch')
         && strpos($template, '. $editingSwitch')
             < strpos($template, '. $lowerBlocks'),
