@@ -6,12 +6,16 @@ class mylearning extends controller
     {
         $this->user = $this->getObject('user', 'security');
         $this->userContext = $this->getObject('usercontext', 'context');
+        $this->contextBlocks = $this->getObject('dbcontextblocks', 'context');
     }
     public function dispatch($action)
     {
         if (!$this->mayView()) { return 'noaccess_tpl.php'; }
         $this->setVar('learningOverview', $this->getObject('studentlearningoverview', 'context')->show());
-        $this->setVar('siteHomeUrl', $this->uri(null, 'postlogin'));
+        $this->setVar(
+            'sidebarBlocks',
+            $this->contextBlocks->getContextBlocks('mylearning', 'left')
+        );
         return 'main_tpl.php';
     }
     private function mayView()

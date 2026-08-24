@@ -1,12 +1,15 @@
 <?php
-$this->loadClass('link', 'htmlelements');
-$language = $this->getObject('language', 'language');
-$siteHome = new link($siteHomeUrl);
-$siteHome->link = $language->languageText(
-    'mod_mylearning_sitehome',
-    'mylearning',
-    'Site Home'
+$layout = $this->newObject('csslayout', 'htmlelements');
+$layout->setNumColumns(2);
+$accountMenu = $this->getObject('postloginmenu', 'toolbar')->show();
+$layout->setLeftColumnContent(
+    '<aside class="mylearning-sidebar" aria-label="Student navigation">'
+    . $accountMenu
+    . '<div class="mylearning-sidebar__blocks">' . $sidebarBlocks . '</div>'
+    . '</aside>'
 );
-echo '<div class="mylearning-page"><nav class="mylearning-page__site" aria-label="Site navigation">'
-    . $siteHome->show() . '</nav>' . $learningOverview . '</div>';
+$layout->setMiddleColumnContent(
+    '<main class="mylearning-page">' . $learningOverview . '</main>'
+);
+echo $layout->show();
 ?>

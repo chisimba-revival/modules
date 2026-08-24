@@ -21,9 +21,13 @@ $checks = array(
         $controller,
         "getObject('studentlearningoverview', 'context')"
     ),
-    'Site Home is an explicit escape route' => str_contains($template, 'siteHomeUrl')
-        && str_contains($controller, "uri(null, 'postlogin')")
-        && str_contains($template, "getObject('language', 'language')"),
+    'standard two-column student hub' => str_contains($template, 'setNumColumns(2)')
+        && str_contains($template, "getObject('postloginmenu', 'toolbar')")
+        && str_contains($template, 'mylearning-sidebar'),
+    'sidebar supports page-specific blocks' => str_contains(
+        $controller,
+        "getContextBlocks('mylearning', 'left')"
+    ) && str_contains($template, '$sidebarBlocks'),
 );
 
 foreach ($checks as $name => $ok) {
