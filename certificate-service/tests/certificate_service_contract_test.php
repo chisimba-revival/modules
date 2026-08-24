@@ -13,7 +13,7 @@ foreach (array('function createBase','function updateBase','function archiveBase
 if (strpos($service,'function storeImageAsset')===false || strpos($renderer,'function placeAsset')===false) { $failures[]='managed logo/signature assets missing'; }
 if (strpos($service,"'snapshot_json'")===false || strpos($service,"'completion_reference'")===false) { $failures[]='issuance is not immutable/idempotent'; }
 if (strpos($service,"'certificate.issued'")===false) { $failures[]='issuance is not audited'; }
-if (strpos($register,'PAGE: admin_shared|||mod_certificate_service_title|site')===false
+if (strpos($register,'PAGE: admin_shared||award|mod_certificate_service_title|site')===false
     || strpos($register,'SIDEMENU: postlogin-3|Site Admin||award|mod_certificate_service_title|site')===false) {
     $failures[]='site administration navigation declarations missing';
 }
