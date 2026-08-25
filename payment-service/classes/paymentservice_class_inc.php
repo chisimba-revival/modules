@@ -5,7 +5,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 class paymentservice extends ChisimbaObject
 {
     private const PURPOSES = array('membership', 'private_course');
-    private const PROVIDERS = array('fake');
+    private const PROVIDERS = array('fake', 'yoco');
     private const EVENT_STATES = array(
         'payment.succeeded' => 'succeeded',
         'payment.failed' => 'failed',
@@ -45,6 +45,7 @@ class paymentservice extends ChisimbaObject
 
     public function intent($intentId) { return $this->intents->byId($this->hexId($intentId)); }
     public function operations($limit=200) { return array('intents'=>$this->intents->recent($limit),'payments'=>$this->payments->recent($limit),'events'=>$this->events->recent($limit)); }
+    public function providerAvailable($code) { $provider=$this->provider($code); return $provider!==NULL&&$provider->isAvailable(); }
 
     /** Development adapter only; events still pass verification and idempotency. */
     public function runFakeScenario($intentId,$scenario)
@@ -93,7 +94,7 @@ class paymentservice extends ChisimbaObject
         if ($intent['state'] !== 'created') { return $this->result(TRUE, 'checkout_already_started', $intent['id']); }
         $provider = $this->provider($intent['provider_code']);
         if ($provider === NULL || !$provider->isAvailable()) { return $this->result(FALSE, 'provider_unavailable', $intent['id']); }
-        $checkout = $provider->createCheckout($intent, $options['scenario'] ?? 'success');
+        $checkout = $provider->createCheckout($intent, $intent['provider_code']==='fake' ? ($options['scenario'] ?? 'success') : $options);
         if (empty($checkout['ok'])) { return array_merge($this->result(FALSE, $checkout['code'] ?? 'checkout_failed', $intent['id']), array('retryable'=>!empty($checkout['retryable']))); }
         $this->intents->transition($intent['id'], 'created', array(
             'state'=>'awaiting_approval',
@@ -117,6 +118,21 @@ class paymentservice extends ChisimbaObject
         $provider = $this->provider($providerCode);
         if ($provider === NULL) { return $this->result(FALSE, 'provider_unavailable'); }
         $verified = $provider->verifyAndNormalize($envelope);
+        if (!empty($verified['ok']) && !empty($verified['ignored'])) {
+            $ignored=$verified['ignoredEvent']??NULL;
+            if(is_array($ignored)&&$this->text($ignored['providerEventId']??NULL,191)!==NULL
+                &&$this->hexId($ignored['intentId']??NULL)!==NULL
+                &&$this->text($ignored['type']??NULL,96)!==NULL
+                &&$this->timestamp($ignored['occurredAt']??NULL)!==NULL) {
+                $claim=$this->events->claim(array(
+                    'provider_code'=>$providerCode,'provider_event_id'=>$ignored['providerEventId'],
+                    'intent_id'=>$ignored['intentId'],'event_type'=>$ignored['type'],
+                    'reason_code'=>$ignored['reasonCode']??NULL,'occurred_at'=>$ignored['occurredAt'],
+                ));
+                if(!empty($claim['ok'])&&empty($claim['duplicate'])) $this->events->complete($claim['id'],$verified['code']??'verified_event_ignored');
+            }
+            return $this->result(TRUE, $verified['code'] ?? 'verified_event_ignored');
+        }
         if (empty($verified['ok']) || !is_array($verified['event'] ?? NULL)) { return $this->result(FALSE, 'unverified_event'); }
         $event = $verified['event'];
         if (!$this->validEvent($event)) { return $this->result(FALSE, 'invalid_provider_event'); }
@@ -154,7 +170,8 @@ class paymentservice extends ChisimbaObject
         $updated = $this->intents->transition($intent['id'], $intent['state'], array(
             'state'=>$next,
             'failure_code'=>$next === 'failed' ? $event['reasonCode'] : NULL,
-            'provider_reference'=>$event['providerPaymentId'],
+            // Keep the checkout reference stable so later refund webhooks can be correlated.
+            'provider_reference'=>$intent['provider_reference'] ?? $event['providerPaymentId'],
             'updated_at'=>date('Y-m-d H:i:s'),
         ));
         if ($updated === FALSE) { return $this->result(FALSE, 'state_transition_failed', $intent['id']); }
@@ -173,7 +190,11 @@ class paymentservice extends ChisimbaObject
                 return $this->result(TRUE, 'payment_succeeded_fulfilment_pending', $intent['id']);
             }
         }
-        if (in_array($next,array('refunded','reversed'),TRUE)) $this->reverseFulfilment($intent,$event['providerPaymentId']);
+        if (in_array($next,array('refunded','reversed'),TRUE)) {
+            $originalPayment=method_exists($this->payments,'successfulReferenceForIntent')
+                ? $this->payments->successfulReferenceForIntent($intent['id']) : NULL;
+            $this->reverseFulfilment($intent,$originalPayment?:$event['providerPaymentId']);
+        }
         return $this->result(TRUE, 'payment_' . $next, $intent['id']);
     }
 
@@ -223,7 +244,9 @@ class paymentservice extends ChisimbaObject
 
     private function provider($code)
     {
-        return $code === 'fake' ? $this->getObject('fakepaymentprovider') : NULL;
+        if ($code === 'fake') { return $this->getObject('fakepaymentprovider'); }
+        if ($code === 'yoco') { return $this->getObject('yocopaymentprovider'); }
+        return NULL;
     }
 
     private function normaliseIntent(array $input)

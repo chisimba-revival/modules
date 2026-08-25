@@ -9,6 +9,7 @@ class dbpayments extends dbTable
         $values['id']=bin2hex(random_bytes(16)); $values['created_at']=$values['updated_at']=date('Y-m-d H:i:s'); return $this->insert($values);
     }
     public function recent($limit=200) { $limit=max(1,min(500,(int)$limit)); $rows=$this->getAll('ORDER BY updated_at DESC LIMIT '.$limit); return is_array($rows)?$rows:array(); }
+    public function successfulReferenceForIntent($intentId) { $rows=$this->getAll('WHERE intent_id='.$this->quote($intentId)." AND state='succeeded' ORDER BY created_at ASC LIMIT 1"); return is_array($rows)&&count($rows)?$rows[0]['provider_payment_id']:null; }
     private function quote($value) { $db=$this->objEngine->getDbObj(); return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'"; }
 }
 ?>

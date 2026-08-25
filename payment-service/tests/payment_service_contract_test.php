@@ -1,6 +1,7 @@
 <?php
 $module=dirname(__DIR__);
 $service=file_get_contents($module.'/classes/paymentservice_class_inc.php');
+$controller=file_get_contents($module.'/controller.php');
 $events=file_get_contents($module.'/sql/tbl_payment_service_events.sql');
 $expect=function($condition,$message){ if(!$condition){ throw new RuntimeException($message); } };
 $expect(strpos($service,'extends ChisimbaObject')!==false
@@ -10,6 +11,10 @@ $expect(strpos($service,'recordBrowserReturn')!==false && strpos($service,"'awai
     'Browser returns must remain non-authoritative.');
 $expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unverified_event'")!==false,
     'Provider events must be verified before processing.');
+$expect(strpos($controller,"(string)\$action!=='yocowebhook'")!==false
+    && strpos($controller,"file_get_contents('php://input')")!==false
+    && strpos($controller,"http_response_code(\$accepted?200:403)")!==false,
+    'The webhook endpoint must accept unauthenticated delivery while rejecting unverified events.');
 $expect(strpos($events,"'unique' => TRUE")!==false && strpos($events,"'provider_event_id'")!==false,
     'Provider event identity must be unique and durable.');
 $expect(strpos($service,"'duplicate_event_ignored'")!==false && strpos($service,"'out_of_order_event_ignored'")!==false,
