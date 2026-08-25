@@ -25,5 +25,7 @@ $expect(strpos($service,"'payment.failed' => 'failed'")!==false
     'Canonical unhappy payment states must be represented.');
 $expect(stripos($service,'card_number')===false && stripos($service,'cvv')===false,
     'The payment core must not store raw card data.');
+$stores=file_get_contents($module.'/classes/dbpaymentintents_class_inc.php').file_get_contents($module.'/classes/dbpaymentevents_class_inc.php').file_get_contents($module.'/classes/dbpayments_class_inc.php');
+$expect(!preg_match('/->update\s*\(\s*array\s*\(/',$stores),'Payment stores must use the PHP 8 three-argument dbTable update contract.');
 fwrite(STDOUT,"PASS: provider-neutral payment service contract\n");
 ?>

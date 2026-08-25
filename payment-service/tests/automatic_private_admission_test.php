@@ -22,7 +22,7 @@ $id=str_repeat('a',32);
 $intent=array('id'=>$id,'user_id'=>'user-1','purpose_type'=>'private_course','purpose_id'=>'course-1','product_code'=>'course','price_version'=>'v1','amount_minor'=>1000,'currency'=>'ZAR','provider_code'=>'fake','state'=>'awaiting_approval','correlation_id'=>'payment:test');
 $service=new paymentservice();
 $intents=new IntentStore($intent);$events=new EventStore();$payments=new PaymentStore();$audits=new AuditStore();$provider=new ProviderStub();$admissions=new AdmissionSpy();
-$service->objects=array('dbpaymentintents'=>$intents,'dbpaymentevents'=>$events,'dbpayments'=>$payments,'userservice'=>new UserStore(),'accounteventservice'=>$audits,'fakepaymentprovider'=>$provider,'privateadmissionservice'=>$admissions);
+$service->objects=array('dbpaymentintents'=>$intents,'dbpaymentevents'=>$events,'dbpayments'=>$payments,'paymentcatalogservice'=>new stdClass(),'userservice'=>new UserStore(),'accounteventservice'=>$audits,'fakepaymentprovider'=>$provider,'privateadmissionservice'=>$admissions);
 $service->init();
 $expect=function($ok,$message){if(!$ok)throw new RuntimeException($message);};
 $service->recordBrowserReturn($id,'browser-reference');

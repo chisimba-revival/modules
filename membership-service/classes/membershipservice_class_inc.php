@@ -72,6 +72,17 @@ class membershipservice extends dbTable
         return $periodId === null ? null : $this->rowBy('id', $periodId);
     }
 
+    /** Last paid/recorded coverage boundary for deterministic renewals. */
+    public function latestCoverageEnd($userId,$tierCode)
+    {
+        $userId=$this->text($userId,25); $tierCode=$this->tier($tierCode);
+        if($userId===null||$tierCode===null) return null;
+        $rows=$this->getArray('SELECT MAX(ends_at) AS coverage_end FROM '.self::PERIODS
+            .' WHERE user_id='.$this->quote($userId).' AND tier_code='.$this->quote($tierCode)
+            ." AND state IN ('scheduled','active','grace')");
+        return is_array($rows)&&!empty($rows[0]['coverage_end'])?$rows[0]['coverage_end']:null;
+    }
+
     public function createPeriod(array $input)
     {
         $values = $this->normalisePeriod($input);
