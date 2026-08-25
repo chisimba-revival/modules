@@ -27,7 +27,7 @@ class entitlementservice extends dbTable
         );
     }
 
-    public function grant(array $input)
+    public function grant(array $input, $manageTransaction = true)
     {
         $values = $this->normaliseGrant($input);
         if ($values === null) {
@@ -42,9 +42,13 @@ class entitlementservice extends dbTable
         }
         $values['id'] = bin2hex(random_bytes(16));
         $values['granted_at'] = date('Y-m-d H:i:s');
-        $this->beginTransaction();
+        if ($manageTransaction) {
+            $this->beginTransaction();
+        }
         if ($this->insert($values) === false) {
-            $this->rollbackTransaction();
+            if ($manageTransaction) {
+                $this->rollbackTransaction();
+            }
             $existing = $this->rowBy('idempotency_key', $values['idempotency_key']);
             return $existing === null
                 ? $this->result(false, 'grant_failed')
@@ -58,14 +62,24 @@ class entitlementservice extends dbTable
             $values['resource_type'],
             $values['resource_id']
         )) {
-            $this->rollbackTransaction();
+            if ($manageTransaction) {
+                $this->rollbackTransaction();
+            }
             return $this->result(false, 'grant_audit_failed');
         }
-        $this->commitTransaction();
+        if ($manageTransaction) {
+            $this->commitTransaction();
+        }
         return $this->result(true, 'entitlement_granted', $values['id']);
     }
 
-    public function revoke($grantId, $reasonCode, array $actor, $correlationId)
+    public function revoke(
+        $grantId,
+        $reasonCode,
+        array $actor,
+        $correlationId,
+        $manageTransaction = true
+    )
     {
         $grantId = $this->hexId($grantId);
         $reasonCode = $this->identifier($reasonCode, 96);
@@ -85,7 +99,9 @@ class entitlementservice extends dbTable
         if ($existing !== null) {
             return $this->result(true, 'already_revoked', $grantId);
         }
-        $this->beginTransaction();
+        if ($manageTransaction) {
+            $this->beginTransaction();
+        }
         $previous = $this->_tableName;
         $this->_tableName = self::REVOCATIONS;
         $inserted = $this->insert(array(
@@ -106,10 +122,14 @@ class entitlementservice extends dbTable
             $grant['resource_type'],
             $grant['resource_id']
         )) {
-            $this->rollbackTransaction();
+            if ($manageTransaction) {
+                $this->rollbackTransaction();
+            }
             return $this->result(false, 'revocation_failed', $grantId);
         }
-        $this->commitTransaction();
+        if ($manageTransaction) {
+            $this->commitTransaction();
+        }
         return $this->result(true, 'entitlement_revoked', $grantId);
     }
 
@@ -183,6 +203,32 @@ class entitlementservice extends dbTable
             . ' ORDER BY g.granted_at DESC, g.id DESC LIMIT ' . (int) $limit
         );
         return is_array($rows) ? $rows : array();
+    }
+
+    /** Resolve one grant owned by its service-level idempotency key. */
+    public function grantByIdempotencyKey($idempotencyKey)
+    {
+        $idempotencyKey = $this->text($idempotencyKey, 191);
+        return $idempotencyKey === null
+            ? null : $this->rowBy('idempotency_key', $idempotencyKey);
+    }
+
+    /** Return the latest unrevoked grant in one service-owned key family. */
+    public function latestUnrevokedGrantByIdempotencyPrefix($prefix)
+    {
+        $prefix = $this->text($prefix, 150);
+        if ($prefix === null) {
+            return null;
+        }
+        $rows = $this->getArray(
+            'SELECT g.* FROM ' . self::GRANTS . ' g'
+            . ' LEFT JOIN ' . self::REVOCATIONS . ' r ON r.grant_id = g.id'
+            . ' WHERE r.id IS NULL AND (g.idempotency_key = '
+            . $this->quote($prefix) . ' OR g.idempotency_key LIKE '
+            . $this->quote($prefix . ':amend:%') . ')'
+            . ' ORDER BY g.granted_at DESC, g.id DESC LIMIT 1'
+        );
+        return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
     private function normaliseGrant(array $input)

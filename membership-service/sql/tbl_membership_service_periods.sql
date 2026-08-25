@@ -17,6 +17,7 @@ $fields = array(
     'source_reference' => array('type' => 'text', 'length' => 191),
     'idempotency_key' => array('type' => 'text', 'length' => 191, 'notnull' => TRUE),
     'correlation_id' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
+    'current_entitlement_key' => array('type' => 'text', 'length' => 191),
     'created_at' => array('type' => 'timestamp', 'notnull' => TRUE),
     'updated_at' => array('type' => 'timestamp', 'notnull' => TRUE)
 );

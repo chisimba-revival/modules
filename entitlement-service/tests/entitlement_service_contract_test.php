@@ -23,9 +23,22 @@ $checks = array(
     'canonical user validation' => str_contains($service, 'findByUserId('),
     'audited mutations' => str_contains($service, 'entitlement.granted')
         && str_contains($service, 'entitlement.revoked'),
+    'composable transaction ownership' => str_contains(
+        $service,
+        'grant(array $input, $manageTransaction = true)'
+    ) && str_contains($service, '$manageTransaction = true')
+        && str_contains($service, 'if ($manageTransaction)'),
     'bounded listing' => str_contains($service, "'max_range' => 500"),
     'grant and revocation history' => str_contains($service, 'historyForUser(')
         && str_contains($service, 'r.reason_code'),
+    'owning services can resolve their idempotent grant' => str_contains(
+        $service,
+        'grantByIdempotencyKey('
+    ) && str_contains($service, "rowBy('idempotency_key'"),
+    'owning services can resolve current amended grant' => str_contains(
+        $service,
+        'latestUnrevokedGrantByIdempotencyPrefix('
+    ) && str_contains($service, "':amend:%'"),
     'secret metadata rejection' => str_contains($service, 'containsSecretKey(')
         && str_contains($service, "'api_key'"),
     'no enrolment or payment writes' => !str_contains($service, 'contextgroups')

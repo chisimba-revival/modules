@@ -23,6 +23,7 @@ $checks = array(
     ),
     'standard two-column student hub' => str_contains($template, 'setNumColumns(2)')
         && str_contains($template, "getObject('postloginmenu', 'toolbar')")
+        && str_contains($template, 'chisimba-structural-sidebar mylearning-sidebar')
         && str_contains($template, 'mylearning-sidebar')
         && strpos($template, '. $accountMenu')
             < strpos($template, '. $upperBlocks')

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+    <update>
+        <table>tbl_membership_service_periods</table>
+        <version>1.003</version>
+        <description>Add the explicit current entitlement key used by audited membership amendments.</description>
+        <data>
+            <add>
+                <name>current_entitlement_key</name>
+                <type>text</type>
+                <length>191</length>
+            </add>
+        </data>
+    </update>
+</updates>

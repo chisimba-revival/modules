@@ -72,7 +72,7 @@ $layout = $this->newObject('csslayout', 'htmlelements');
 $layout->setNumColumns(2);
 $accountMenu = $this->getObject('postloginmenu', 'toolbar')->show();
 $layout->setLeftColumnContent(
-    '<aside class="mylearning-sidebar" aria-label="Student navigation">'
+    '<aside class="chisimba-structural-sidebar mylearning-sidebar" aria-label="Student navigation">'
     . $accountMenu
     . '<div id="rightblocks" class="mylearning-sidebar__blocks mylearning-sidebar__blocks--upper">'
     . $upperBlocks . '</div>'
