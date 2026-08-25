@@ -214,6 +214,10 @@ class entitlementservice extends dbTable
             ),
             'granted_by_id' => $this->text($input['grantedById'] ?? '', 191, true),
         );
+        if (($values['source_type'] ?? null) === 'manual'
+            && $this->text($metadata['reason'] ?? null, 500) === null) {
+            return null;
+        }
         if ($metadataJson === false || strlen($metadataJson) > 65535
             || in_array(null, array_diff_key($values, array_flip(array(
                 'metadata_json', 'expires_at'

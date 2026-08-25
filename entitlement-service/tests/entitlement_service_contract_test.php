@@ -18,6 +18,8 @@ $checks = array(
     'revocation aware evaluation' => str_contains($service, 'r.id IS NULL'),
     'source provenance' => str_contains($grants, "'source_type'")
         && str_contains($grants, "'source_reference'"),
+    'manual grants require reason' => str_contains($service, "=== 'manual'")
+        && str_contains($service, '$metadata[\'reason\']'),
     'canonical user validation' => str_contains($service, 'findByUserId('),
     'audited mutations' => str_contains($service, 'entitlement.granted')
         && str_contains($service, 'entitlement.revoked'),
