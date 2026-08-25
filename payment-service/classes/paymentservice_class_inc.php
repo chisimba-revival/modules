@@ -83,7 +83,13 @@ class paymentservice extends ChisimbaObject
             'occurred_at'=>$event['occurredAt'],
         ));
         if (empty($claim['ok'])) { return $this->result(FALSE, 'event_claim_failed', $event['intentId']); }
-        if (!empty($claim['duplicate'])) { return $this->result(TRUE, 'duplicate_event_ignored', $event['intentId']); }
+        if (!empty($claim['duplicate'])) {
+            $intent = $this->intents->byId($event['intentId']);
+            if ($event['type'] === 'payment.succeeded' && is_array($intent)) {
+                $this->applyAutomaticAdmission($intent, $event['providerPaymentId']);
+            }
+            return $this->result(TRUE, 'duplicate_event_ignored', $event['intentId']);
+        }
         $result = $this->applyEvent($providerCode, $event);
         $this->events->complete($claim['id'], $result['code']);
         return $result;
@@ -115,7 +121,24 @@ class paymentservice extends ChisimbaObject
         }
         $intent['state']=$next;
         $this->audit('payment.' . $next, $intent, $next === 'failed' ? 'failed' : 'succeeded', array('reason_code'=>$event['reasonCode']));
+        if ($next === 'succeeded' && $intent['purpose_type'] === 'private_course') {
+            $admission = $this->applyAutomaticAdmission($intent, $event['providerPaymentId']);
+            if (empty($admission['ok']) && ($admission['code'] ?? '') !== 'automatic_payment_not_configured') {
+                return $this->result(TRUE, 'payment_succeeded_admission_pending', $intent['id']);
+            }
+        }
         return $this->result(TRUE, 'payment_' . $next, $intent['id']);
+    }
+
+    private function applyAutomaticAdmission(array $intent, $paymentReference)
+    {
+        try {
+            return $this->getObject('privateadmissionservice', 'membership-service')
+                ->admitConfirmedPayment($intent['purpose_id'], $intent['user_id'],
+                    (string) $paymentReference, $intent['correlation_id']);
+        } catch (Throwable $failure) {
+            return array('ok' => false, 'code' => 'admission_service_unavailable');
+        }
     }
 
     private function provider($code)

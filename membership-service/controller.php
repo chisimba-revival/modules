@@ -17,6 +17,8 @@ class membership_service extends controller
             'membershipservice',
             'membership-service'
         );
+        $this->admissions = $this->getObject('privateadmissionservice', 'membership-service');
+        $this->contexts = $this->getObject('dbcontext', 'context');
         $this->users = $this->getObject('userservice', 'security');
         $this->user = $this->getObject('user', 'security');
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
@@ -33,8 +35,154 @@ class membership_service extends controller
             case 'createperiod': return $this->createPeriod();
             case 'editperiod': return $this->editPeriod();
             case 'transition': return $this->transitionPeriod();
+            case 'admissions': return $this->admissionsHome();
+            case 'createadmission': return $this->createAdmission();
+            case 'updateadmission': return $this->updateAdmission();
+            case 'admit': return $this->admit();
+            case 'revokeadmission': return $this->revokeAdmission();
+            case 'previewcsv': return $this->previewCsv();
+            case 'importcsv': return $this->importCsv();
             default: return $this->home();
         }
+    }
+
+    private function admissionsHome($message = '', $error = '', array $preview = array())
+    {
+        if (!$this->authorization->can('private_admission.manage')) {
+            return $this->nextAction(null, array('error' => 'noaccess'), '_default');
+        }
+        $courseCode = $this->param('contextcode');
+        $course = $this->contexts->getContext($courseCode);
+        if (!is_array($course) || strtolower((string) ($course['access_policy'] ?? '')) !== 'private') {
+            return $this->home('', 'private_course_required');
+        }
+        $rows = $this->admissions->listForCourse($courseCode);
+        foreach ($rows as &$row) {
+            $person = $this->users->findByUserId($row['user_id']);
+            $row['person'] = is_array($person) ? trim($person['firstname'].' '.$person['surname']) : $row['user_id'];
+            $row['username'] = is_array($person) ? $person['username'] : '';
+        }
+        unset($row);
+        $this->setVar('admissionCourse', $course);
+        $this->setVar('admissionRows', $rows);
+        $this->setVar('admissionUsers', $this->users->listUsers('', false));
+        $this->setVar('admissionPreview', $preview);
+        $this->setVar('admissionCsrf', $this->csrf->issue(self::CSRF));
+        $this->setVar('admissionMessage', $message);
+        $this->setVar('admissionError', $error);
+        return 'admissions_tpl.php';
+    }
+
+    private function createAdmission()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $result = $this->admissions->createReview(array(
+            'courseCode'=>$this->param('contextcode'), 'userId'=>$this->param('user_id'),
+            'reviewStatus'=>$this->param('review_status'), 'paymentStatus'=>$this->param('payment_status'),
+            'paymentReference'=>$this->param('payment_reference'), 'reason'=>$this->param('reason'),
+            'correlationId'=>$this->correlationId(),
+        ));
+        return $this->admissionsHome(!empty($result['ok'])?'admission_recorded':'', empty($result['ok'])?$result['code']:'');
+    }
+
+    private function admit()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $result=$this->admissions->admit($this->param('admission_id'),$this->correlationId());
+        return $this->admissionsHome(!empty($result['ok'])?'learner_admitted':'',empty($result['ok'])?$result['code']:'');
+    }
+
+    private function updateAdmission()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $result=$this->admissions->updateReview($this->param('admission_id'),array(
+            'reviewStatus'=>$this->param('review_status'), 'paymentStatus'=>$this->param('payment_status'),
+            'paymentReference'=>$this->param('payment_reference'), 'reason'=>$this->param('reason'),
+            'correlationId'=>$this->correlationId(),
+        ));
+        return $this->admissionsHome(!empty($result['ok'])?'admission_updated':'',empty($result['ok'])?$result['code']:'');
+    }
+
+    private function revokeAdmission()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $result=$this->admissions->revoke($this->param('admission_id'),$this->param('reason'),$this->correlationId());
+        return $this->admissionsHome(!empty($result['ok'])?'admission_revoked':'',empty($result['ok'])?$result['code']:'');
+    }
+
+    private function previewCsv()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $courseCode=$this->param('contextcode');
+        $file=$_FILES['admission_csv']??array();
+        if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+            return $this->admissionsHome('', 'csv_required');
+        }
+        $handle=fopen($file['tmp_name'],'rb'); $header=$handle?fgetcsv($handle):false;
+        $expected=array('username','email','status','payment_reference','reason');
+        if ($header===false || array_map('strtolower',array_map('trim',$header))!==$expected) {
+            if (is_resource($handle)) fclose($handle);
+            return $this->admissionsHome('', 'invalid_csv_headers');
+        }
+        $preview=array(); $line=1;
+        while (($values=fgetcsv($handle))!==false && count($preview)<500) {
+            $line++; $values=array_pad($values,5,''); $row=array_combine($expected,array_slice($values,0,5));
+            $byUsername=trim($row['username'])!==''?$this->users->findByUsername($row['username']):null;
+            $byEmail=trim($row['email'])!==''?$this->users->findByEmail($row['email']):null;
+            $person=$byUsername?:$byEmail;
+            $row['status']=strtolower(trim((string)$row['status']));
+            $validStatuses=array('awaiting_payment','payment_under_review','ready_for_admission');
+            $row['line']=$line; $row['user_id']=is_array($person)?$person['userid']:'';
+            $identityMatches=is_array($person)&&(!$byUsername||!$byEmail||(string)$byUsername['userid']===(string)$byEmail['userid']);
+            $statusValid=in_array($row['status'],$validStatuses,true);
+            $row['valid']=$identityMatches&&$statusValid;
+            $row['error']=$identityMatches
+                ? ($statusValid?'':'Unknown admission status.')
+                : 'No single existing user matches this username and email.';
+            $preview[]=$row;
+        }
+        fclose($handle);
+        $token=bin2hex(random_bytes(16));
+        $this->setSession('admissionCsvPreview',array('token'=>$token,'course'=>$courseCode,'rows'=>$preview));
+        foreach ($preview as &$row) { $row['token']=$token; } unset($row);
+        return $this->admissionsHome('', '', $preview);
+    }
+
+    private function importCsv()
+    {
+        if (!$this->validPost() || !$this->authorization->can('private_admission.manage')) {
+            return $this->admissionsHome('', 'invalid_request');
+        }
+        $saved=$this->getSession('admissionCsvPreview');
+        if (!is_array($saved)||!hash_equals((string)($saved['token']??''),$this->param('preview_token'))
+            || (string)($saved['course']??'')!==$this->param('contextcode')) {
+            return $this->admissionsHome('', 'csv_preview_expired');
+        }
+        $created=0;
+        foreach ($saved['rows'] as $row) {
+            if (empty($row['valid'])) continue;
+            $result=$this->admissions->createReview(array('courseCode'=>$saved['course'],'userId'=>$row['user_id'],
+                'reviewStatus'=>in_array($row['status'],array('awaiting_payment','payment_under_review','ready_for_admission'),true)?$row['status']:'awaiting_payment',
+                'paymentStatus'=>trim($row['payment_reference'])!==''?'paid':'not_recorded',
+                'paymentReference'=>$row['payment_reference'],'reason'=>$row['reason'],'correlationId'=>$this->correlationId()));
+            if (!empty($result['ok'])) $created++;
+        }
+        $this->unsetSession('admissionCsvPreview');
+        return $this->admissionsHome(
+            $created . ($created === 1
+                ? ' admission record imported' : ' admission records imported'),
+            ''
+        );
     }
 
     private function home($message = '', $error = '')

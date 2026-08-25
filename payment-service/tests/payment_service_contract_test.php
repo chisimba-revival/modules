@@ -14,6 +14,10 @@ $expect(strpos($events,"'unique' => TRUE")!==false && strpos($events,"'provider_
     'Provider event identity must be unique and durable.');
 $expect(strpos($service,"'duplicate_event_ignored'")!==false && strpos($service,"'out_of_order_event_ignored'")!==false,
     'Duplicate and out-of-order event outcomes must be explicit.');
+$expect(strpos($service, 'applyAutomaticAdmission') !== false
+    && strpos($service, "\$event['type'] === 'payment.succeeded'") !== false
+    && strpos($service, 'recordBrowserReturn') < strpos($service, 'applyAutomaticAdmission'),
+    'Private admission must be driven by verified success, with duplicate delivery available for recovery.');
 $expect(strpos($service,"'payment.failed' => 'failed'")!==false
     && strpos($service,"'payment.refunded' => 'refunded'")!==false
     && strpos($service,"'payment.reversed' => 'reversed'")!==false
