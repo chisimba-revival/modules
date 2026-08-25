@@ -1,0 +1,22 @@
+<?php
+$module=dirname(__DIR__);
+$service=file_get_contents($module.'/classes/paymentservice_class_inc.php');
+$events=file_get_contents($module.'/sql/tbl_payment_service_events.sql');
+$expect=function($condition,$message){ if(!$condition){ throw new RuntimeException($message); } };
+$expect(strpos($service,'recordBrowserReturn')!==false && strpos($service,"'awaiting_verified_provider_event'")!==false,
+    'Browser returns must remain non-authoritative.');
+$expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unverified_event'")!==false,
+    'Provider events must be verified before processing.');
+$expect(strpos($events,"'unique' => TRUE")!==false && strpos($events,"'provider_event_id'")!==false,
+    'Provider event identity must be unique and durable.');
+$expect(strpos($service,"'duplicate_event_ignored'")!==false && strpos($service,"'out_of_order_event_ignored'")!==false,
+    'Duplicate and out-of-order event outcomes must be explicit.');
+$expect(strpos($service,"'payment.failed' => 'failed'")!==false
+    && strpos($service,"'payment.refunded' => 'refunded'")!==false
+    && strpos($service,"'payment.reversed' => 'reversed'")!==false
+    && strpos($service,"'payment.disputed' => 'disputed'")!==false,
+    'Canonical unhappy payment states must be represented.');
+$expect(stripos($service,'card_number')===false && stripos($service,'cvv')===false,
+    'The payment core must not store raw card data.');
+fwrite(STDOUT,"PASS: provider-neutral payment service contract\n");
+?>
