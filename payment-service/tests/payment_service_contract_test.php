@@ -14,6 +14,8 @@ $expect(strpos($events,"'unique' => TRUE")!==false && strpos($events,"'provider_
     'Provider event identity must be unique and durable.');
 $expect(strpos($service,"'duplicate_event_ignored'")!==false && strpos($service,"'out_of_order_event_ignored'")!==false,
     'Duplicate and out-of-order event outcomes must be explicit.');
+$expect(strpos($service,"'provider_reference'=>'fake-checkout-'.\$intent['id'].':delayed'")!==false,
+    'Delayed fake events must retain an explicit reconciliation marker.');
 $expect(strpos($service, 'applyAutomaticAdmission') !== false
     && strpos($service, "\$event['type'] === 'payment.succeeded'") !== false
     && strpos($service, 'recordBrowserReturn') < strpos($service, 'applyAutomaticAdmission'),
@@ -23,6 +25,7 @@ $expect(strpos($service,"'payment.failed' => 'failed'")!==false
     && strpos($service,"'payment.reversed' => 'reversed'")!==false
     && strpos($service,"'payment.disputed' => 'disputed'")!==false,
     'Canonical unhappy payment states must be represented.');
+$expect(str_contains($service,'reverseFulfilment')&&str_contains($service,"array('refunded','reversed')"),'Refunds and reversals must end the fulfilment created by the payment.');
 $expect(stripos($service,'card_number')===false && stripos($service,'cvv')===false,
     'The payment core must not store raw card data.');
 $stores=file_get_contents($module.'/classes/dbpaymentintents_class_inc.php').file_get_contents($module.'/classes/dbpaymentevents_class_inc.php').file_get_contents($module.'/classes/dbpayments_class_inc.php');

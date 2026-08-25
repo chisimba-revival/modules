@@ -31,6 +31,10 @@ class paymentservice extends ChisimbaObject
     {
         $product=$this->catalog->purchasable($productCode);
         if($product===NULL) return $this->result(FALSE,'product_not_purchasable');
+        if($product['purpose_type']==='private_course') {
+            try { if($this->getObject('privateadmissionservice','membership-service')->isAdmitted($product['purpose_id'],$userId)) return $this->result(FALSE,'already_has_access'); }
+            catch(Throwable $failure) { return $this->result(FALSE,'admission_service_unavailable'); }
+        }
         return $this->createIntent(array(
             'userId'=>$userId,'purposeType'=>$product['purpose_type'],'purposeId'=>$product['purpose_id'],
             'productCode'=>$product['code'],'priceVersion'=>$product['price']['version_code'],
@@ -47,9 +51,24 @@ class paymentservice extends ChisimbaObject
     {
         $intent=$this->intents->byId($this->hexId($intentId));
         if($intent===NULL||$intent['provider_code']!=='fake') return $this->result(FALSE,'fake_checkout_required',$intentId);
+        if($scenario==='delayed') {
+            $this->intents->transition($intent['id'], 'awaiting_approval', array(
+                'provider_reference'=>'fake-checkout-'.$intent['id'].':delayed',
+                'updated_at'=>date('Y-m-d H:i:s'),
+            ));
+            return array('ok'=>true,'code'=>'fake_event_delayed','intentId'=>$intent['id'],'results'=>array());
+        }
         $results=array();
         foreach($this->getObject('fakepaymentprovider')->script($scenario,$intent['id'],date('Y-m-d H:i:s')) as $envelope) $results[]=$this->receiveProviderEvent('fake',$envelope);
         return array('ok'=>count($results)>0,'code'=>count($results)?'fake_events_processed':'no_fake_events','intentId'=>$intent['id'],'results'=>$results);
+    }
+
+    public function deliverDelayedFakeEvent($intentId)
+    {
+        $intent=$this->intents->byId($this->hexId($intentId));
+        if($intent===NULL||$intent['provider_code']!=='fake'||$intent['state']!=='awaiting_approval'||!str_ends_with((string)$intent['provider_reference'],':delayed')) return $this->result(FALSE,'intent_not_pending',$intentId);
+        $script=$this->getObject('fakepaymentprovider')->script('success',$intent['id'],date('Y-m-d H:i:s'));
+        return count($script)?$this->receiveProviderEvent('fake',$script[0]):$this->result(FALSE,'fake_event_unavailable',$intent['id']);
     }
 
     public function createIntent(array $input)
@@ -154,6 +173,7 @@ class paymentservice extends ChisimbaObject
                 return $this->result(TRUE, 'payment_succeeded_fulfilment_pending', $intent['id']);
             }
         }
+        if (in_array($next,array('refunded','reversed'),TRUE)) $this->reverseFulfilment($intent,$event['providerPaymentId']);
         return $this->result(TRUE, 'payment_' . $next, $intent['id']);
     }
 
@@ -190,6 +210,15 @@ class paymentservice extends ChisimbaObject
                 'idempotencyKey'=>'payment-intent:'.$intent['id'],'correlationId'=>$intent['correlation_id'],
             ));
         } catch(Throwable $failure) { return array('ok'=>false,'code'=>'membership_service_unavailable'); }
+    }
+
+    private function reverseFulfilment(array $intent,$paymentReference)
+    {
+        try {
+            if($intent['purpose_type']==='membership') return $this->getObject('membershipservice','membership-service')->endPeriodByIdempotency('payment-intent:'.$intent['id'],$intent['correlation_id']);
+            if($intent['purpose_type']==='private_course') return $this->getObject('privateadmissionservice','membership-service')->revokeConfirmedPayment($intent['purpose_id'],$intent['user_id'],$paymentReference,$intent['correlation_id']);
+        } catch(Throwable $failure) { return array('ok'=>false,'code'=>'fulfilment_reversal_pending'); }
+        return array('ok'=>false,'code'=>'unsupported_fulfilment');
     }
 
     private function provider($code)

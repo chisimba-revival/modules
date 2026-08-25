@@ -15,7 +15,7 @@ class PaymentStore { public $rows=array(); public function record($v){$this->row
 class UserStore { public function findByUserId($id){return array('userid'=>$id);} }
 class AuditStore { public $events=array(); public function append($v){$this->events[]=$v;return array('ok'=>true);} }
 class ProviderStub { public function isAvailable(){return true;} public function verifyAndNormalize($e){return array('ok'=>true,'event'=>$e['event']);} }
-class AdmissionSpy { public $calls=array(); public function admitConfirmedPayment($course,$user,$reference,$correlation){$this->calls[]=func_get_args();return array('ok'=>true,'code'=>'admitted');} }
+class AdmissionSpy { public $calls=array(); public $revocations=array(); public function admitConfirmedPayment($course,$user,$reference,$correlation){$this->calls[]=func_get_args();return array('ok'=>true,'code'=>'admitted');} public function revokeConfirmedPayment($course,$user,$reference,$correlation){$this->revocations[]=func_get_args();return array('ok'=>true,'code'=>'revoked');} }
 
 require dirname(__DIR__).'/classes/paymentservice_class_inc.php';
 $id=str_repeat('a',32);
@@ -37,4 +37,7 @@ $expect($result['code']==='duplicate_event_ignored'&&count($admissions->calls)==
 $events->duplicate=false;$intents->row['state']='awaiting_approval';$event['providerEventId']='event-2';$event['type']='payment.failed';$event['reasonCode']='card_declined';
 $service->receiveProviderEvent('fake',array('event'=>$event));
 $expect(count($admissions->calls)===2,'Failed payment must not request admission.');
+$intents->row['state']='succeeded';$event['providerEventId']='event-3';$event['type']='payment.refunded';$event['reasonCode']=null;
+$service->receiveProviderEvent('fake',array('event'=>$event));
+$expect(count($admissions->revocations)===1&&$admissions->revocations[0][0]==='course-1','Verified refund must revoke the admission created by that payment.');
 echo "PASS: verified automatic private-admission bridge\n";

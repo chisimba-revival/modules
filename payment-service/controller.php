@@ -14,13 +14,17 @@ class payment_service extends controller
     public function dispatch($action){
         switch((string)$action){
             case 'buy': return $this->buy(); case 'fakecheckout': return $this->fakeCheckout();
+            case 'deliverfake': return $this->deliverFake();
             case 'return': return $this->returned(); case 'products': return $this->products();
             case 'createproduct': return $this->createProduct(); case 'addprice': return $this->addPrice();
             case 'operations': return $this->operations(); default:return $this->authorization->can('payment.view')?$this->operations():$this->catalogue();
         }
     }
     private function catalogue($message='',$error=''){
-        $this->setVar('paymentProducts',$this->catalog->listProducts(true)); $this->common($message,$error); return 'catalogue_tpl.php';
+        $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
+        $admissions=$this->getObject('privateadmissionservice','membership-service');
+        $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
+        $this->setVar('paymentProducts',$products); $this->common($message,$error); return 'catalogue_tpl.php';
     }
     private function buy(){
         if(!$this->validPost()) return $this->catalogue('','invalid_request');
@@ -53,6 +57,7 @@ class payment_service extends controller
     private function createProduct(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->createProduct(array('code'=>$this->param('code'),'name'=>$this->param('name'),'purposeType'=>$this->param('purpose_type'),'purposeId'=>$this->param('purpose_id'),'billingPeriod'=>$this->param('billing_period'),'durationMonths'=>$this->param('duration_months'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
     private function addPrice(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->addPrice($this->param('product_id'),array('versionCode'=>$this->param('version_code'),'amountMinor'=>$this->param('amount_minor'),'currency'=>$this->param('currency'),'effectiveFrom'=>$this->param('effective_from'),'effectiveUntil'=>$this->param('effective_until'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
     private function operations(){ if(!$this->authorization->can('payment.view')) return $this->catalogue('','no_access'); $this->setVar('paymentOperations',$this->payments->operations()); $this->common('',''); return 'operations_tpl.php'; }
+    private function deliverFake(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->operations(); $this->payments->deliverDelayedFakeEvent($this->param('intent_id')); return $this->operations(); }
     private function common($message,$error){ $this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function param($name){$value=$this->getParam($name,null);return is_scalar($value)?trim((string)$value):'';}

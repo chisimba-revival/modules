@@ -148,7 +148,7 @@ class privateadmissionservice extends dbTable
         $this->commitTransaction(); return $this->result(true, 'admission_updated', $row['id']);
     }
 
-    public function revoke($admissionId, $reason, $correlationId)
+    public function revoke($admissionId, $reason, $correlationId, array $actor = array())
     {
         $row = $this->record($admissionId);
         $correlationId = $this->identifier($correlationId, 64);
@@ -158,9 +158,10 @@ class privateadmissionservice extends dbTable
         }
         $groupId = $this->groups->groupIdForName($row['course_code'] . '^Students');
         $permissionUserId = $this->identity->permissionUserIdForUser($row['user_id']);
+        $actor=$this->actorDescriptor($actor['type']??'user',$actor['id']??null);
         $this->beginTransaction();
         $revoked = $this->entitlements->revoke($row['entitlement_grant_id'], 'private_admission_revoked',
-            array('type' => 'user', 'id' => (string) $this->actor->userId()), $correlationId, false);
+            $actor, $correlationId, false);
         if (empty($revoked['ok']) || ((int) $row['student_membership_added'] === 1
             && (!$groupId || $permissionUserId === null || !$this->groups->removeMembership($groupId, $permissionUserId)))) {
             $this->rollbackTransaction();
@@ -168,13 +169,20 @@ class privateadmissionservice extends dbTable
         }
         $now = date('Y-m-d H:i:s');
         $fields = array('review_status' => 'revoked', 'reason' => $reason,
-            'revoked_by' => (string) $this->actor->userId(), 'revoked_at' => $now,
+            'revoked_by' => $actor['id'], 'revoked_at' => $now,
             'updated_at' => $now, 'correlation_id' => $correlationId);
         if ($this->update('id', $row['id'], $fields) === false
             || !$this->audit('private_admission.revoked', array_merge($row, $fields), 'succeeded')) {
             $this->rollbackTransaction(); return $this->result(false, 'admission_revocation_failed');
         }
         $this->commitTransaction(); return $this->result(true, 'admission_revoked', $row['id']);
+    }
+
+    public function revokeConfirmedPayment($courseCode,$userId,$paymentReference,$correlationId)
+    {
+        $row=$this->latest($courseCode,$userId);
+        if($row===null||$row['review_status']!=='admitted'||(string)$row['payment_reference']!==(string)$paymentReference) return $this->result(false,'paid_admission_not_found');
+        return $this->revoke($row['id'],'Verified payment reversed',$correlationId,array('type'=>'service','id'=>'payment-service'));
     }
 
     public function listForCourse($courseCode, $limit = 250)
@@ -184,6 +192,12 @@ class privateadmissionservice extends dbTable
         $rows = $this->getArray('SELECT * FROM ' . self::TABLE_NAME . ' WHERE course_code = '
             . $this->quote($course['contextcode']) . ' ORDER BY updated_at DESC, id DESC LIMIT ' . min(500, max(1, (int) $limit)));
         return is_array($rows) ? $rows : array();
+    }
+
+    public function isAdmitted($courseCode,$userId)
+    {
+        $row=$this->latest($courseCode,$userId);
+        return is_array($row)&&$row['review_status']==='admitted';
     }
 
     public function record($id) { $id = $this->hex($id); return $id === null ? null : $this->one('id', $id); }

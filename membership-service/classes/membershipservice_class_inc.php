@@ -83,6 +83,15 @@ class membershipservice extends dbTable
         return is_array($rows)&&!empty($rows[0]['coverage_end'])?$rows[0]['coverage_end']:null;
     }
 
+    public function endPeriodByIdempotency($idempotencyKey,$correlationId)
+    {
+        $idempotencyKey=$this->text($idempotencyKey,191); $correlationId=$this->identifier($correlationId,64);
+        $period=$idempotencyKey===null?null:$this->rowBy('idempotency_key',$idempotencyKey);
+        if($period===null||$correlationId===null) return $this->result(false,'period_not_found');
+        if($period['state']==='expired') return $this->result(true,'already_expired',$period['id']);
+        return $this->transition($period['id'],'expired',$correlationId);
+    }
+
     public function createPeriod(array $input)
     {
         $values = $this->normalisePeriod($input);

@@ -25,7 +25,7 @@ class fakepaymentprovider extends ChisimbaObject
         return array(
             'ok' => TRUE,
             'code' => 'approval_required',
-            'providerReference' => 'fake-checkout-' . $intent['id'],
+            'providerReference' => 'fake-checkout-' . $intent['id'] . ':' . $scenario,
             'approvalUrl' => 'fake-payment://checkout/' . $intent['id'] . '?scenario=' . $scenario,
         );
     }
