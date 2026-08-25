@@ -2,7 +2,7 @@
 /** Provider-neutral payment core. Browser returns never confirm payment. */
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 
-class paymentservice extends object
+class paymentservice extends ChisimbaObject
 {
     private const PURPOSES = array('membership', 'private_course');
     private const PROVIDERS = array('fake');

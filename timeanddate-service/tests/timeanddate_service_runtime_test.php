@@ -20,7 +20,7 @@ $source = file_get_contents(
 );
 $source = preg_replace('/^<\?php|\?>$/m', '', $source);
 $source = str_replace(
-    'class timeanddateservice extends object',
+    'class timeanddateservice extends ChisimbaObject',
     'class timeanddateservice extends timeanddatetestbase',
     $source
 );

@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
     die('You cannot view this page directly');
 }
 
-class accesspolicyservice extends object
+class accesspolicyservice extends ChisimbaObject
 {
     private const POLICIES = array('public', 'free', 'tier_1', 'tier_2', 'private');
     private const RESOURCE_TYPES = array('course', 'page');

@@ -3,7 +3,7 @@ $GLOBALS['kewl_entry_point_run'] = true;
 class FakeProviderBase {}
 $source = file_get_contents(dirname(__DIR__) . '/classes/fakepaymentprovider_class_inc.php');
 $source = preg_replace('/^<\?php|\?>\s*$/', '', $source);
-$source = str_replace('class fakepaymentprovider extends object', 'class fakepaymentprovider extends FakeProviderBase', $source);
+$source = str_replace('class fakepaymentprovider extends ChisimbaObject', 'class fakepaymentprovider extends FakeProviderBase', $source);
 eval($source);
 $provider = new fakepaymentprovider();
 $expect = function ($condition, $message) { if (!$condition) { throw new RuntimeException($message); } };

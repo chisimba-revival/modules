@@ -3,6 +3,9 @@ $module=dirname(__DIR__);
 $service=file_get_contents($module.'/classes/paymentservice_class_inc.php');
 $events=file_get_contents($module.'/sql/tbl_payment_service_events.sql');
 $expect=function($condition,$message){ if(!$condition){ throw new RuntimeException($message); } };
+$expect(strpos($service,'extends ChisimbaObject')!==false
+    && !preg_match('/extends\s+object\b/i',$service),
+    'Runtime payment services must use the PHP 8 Chisimba base class.');
 $expect(strpos($service,'recordBrowserReturn')!==false && strpos($service,"'awaiting_verified_provider_event'")!==false,
     'Browser returns must remain non-authoritative.');
 $expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unverified_event'")!==false,

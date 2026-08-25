@@ -2,7 +2,7 @@
 /** Deterministic provider used to exercise unhappy payment paths without money. */
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 
-class fakepaymentprovider extends object
+class fakepaymentprovider extends ChisimbaObject
 {
     private const SCENARIOS = array(
         'success', 'card_decline', 'insufficient_funds', 'expired_card', 'timeout',

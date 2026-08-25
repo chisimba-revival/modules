@@ -4,6 +4,8 @@ $service = file_get_contents($root . '/classes/accesspolicyservice_class_inc.php
 $registration = file_get_contents($root . '/register.conf');
 $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: access-policy-service'),
+    'PHP 8 framework base class' => str_contains($service, 'extends ChisimbaObject')
+        && !preg_match('/extends\s+object\b/i', $service),
     'agreed policy vocabulary' => str_contains($service, "array('public', 'free', 'tier_1', 'tier_2', 'private')"),
     'one resolver for course and page' => str_contains($service, "array('course', 'page')")
         && substr_count($service, 'public function resolve(') === 1,

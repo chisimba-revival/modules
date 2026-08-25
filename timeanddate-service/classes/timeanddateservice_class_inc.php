@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
     die('You cannot view this page directly');
 }
 
-class timeanddateservice extends object
+class timeanddateservice extends ChisimbaObject
 {
     private const CONFIG_MODULE = 'timeanddate-service';
     private const STORAGE_FORMAT = 'Y-m-d H:i:s';
