@@ -124,6 +124,47 @@ class registrationservice extends dbTable
         return $this->result(true, 'pending_registration_created', $id);
     }
 
+    /**
+     * Check a proposed username and return a small, bounded set of alternatives.
+     * No user records or other account attributes are exposed.
+     */
+    public function usernameAvailability($requested, $firstName = '', $surname = '')
+    {
+        $username = $this->username($requested);
+        if ($username === null) {
+            return array('valid' => false, 'available' => false, 'suggestions' => array());
+        }
+        if ($this->isUsernameAvailable($username)) {
+            return array('valid' => true, 'available' => true, 'suggestions' => array());
+        }
+
+        $first = $this->usernamePart($firstName);
+        $last = $this->usernamePart($surname);
+        $candidates = array();
+        if ($first !== '' && $last !== '') {
+            $candidates = array(
+                $first . substr($last, 0, 1),
+                $first . '.' . $last,
+                $first . $last,
+                substr($first, 0, 1) . $last,
+            );
+        }
+        $candidates[] = $username . '1';
+        $candidates[] = $username . '2';
+
+        $suggestions = array();
+        foreach (array_values(array_unique($candidates)) as $candidate) {
+            if (count($suggestions) >= 3) {
+                break;
+            }
+            if ($candidate !== $username && $this->username($candidate) !== null
+                && $this->isUsernameAvailable($candidate)) {
+                $suggestions[] = $candidate;
+            }
+        }
+        return array('valid' => true, 'available' => false, 'suggestions' => $suggestions);
+    }
+
     /** Record legal evidence, issue a token, and queue its verification email. */
     public function acceptLegalAndQueueVerification(
         $pendingId,
@@ -497,6 +538,24 @@ class registrationservice extends dbTable
             . ' LIMIT 1'
         );
         return is_array($rows) && count($rows) > 0;
+    }
+
+    private function isUsernameAvailable($username)
+    {
+        return $this->objUsers->usernameAvailable($username)
+            && !$this->hasLivePending('username', $username);
+    }
+
+    private function usernamePart($value)
+    {
+        $value = is_scalar($value) ? strtolower(trim((string) $value)) : '';
+        if (function_exists('iconv')) {
+            $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if ($ascii !== false) {
+                $value = $ascii;
+            }
+        }
+        return preg_replace('/[^a-z0-9]+/', '', $value) ?: '';
     }
 
     private function appendEvent($type, $subjectId, $correlationId, $outcome)

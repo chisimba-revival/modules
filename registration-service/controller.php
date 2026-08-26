@@ -32,7 +32,8 @@ class registration_service extends controller
     {
         return in_array((string) $action, array(
             '', 'default', 'register', 'verify', 'terms',
-            'forgotpassword', 'requestrecovery', 'recover', 'resetpassword'
+            'forgotpassword', 'requestrecovery', 'recover', 'resetpassword',
+            'usernameavailability'
         ), true);
     }
 
@@ -49,6 +50,7 @@ class registration_service extends controller
         ), true) ? 'recovery_guidance' : 'guidance');
         $this->setVar('registrationGuidancePrefix', $guidancePrefix);
         switch ((string) $action) {
+            case 'usernameavailability': return $this->usernameAvailability();
             case 'register': return $this->submitRegistration();
             case 'verify': return $this->verifyAccount();
             case 'terms': return $this->termsPage();
@@ -60,6 +62,18 @@ class registration_service extends controller
             case 'default':
             default: return $this->registrationPage();
         }
+    }
+
+    private function usernameAvailability()
+    {
+        $result = $this->service->usernameAvailability(
+            $this->scalarParam('username'),
+            $this->scalarParam('first_name'),
+            $this->scalarParam('surname')
+        );
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode($result, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
     private function registrationPage($errorCode = '', array $values = array())

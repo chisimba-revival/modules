@@ -17,7 +17,7 @@ $loginUrl = htmlspecialchars(
     ENT_QUOTES,
     'UTF-8'
 );
-$this->appendArrayVar('headerParams','<style type="text/css">.registration-phone-input{display:grid;grid-template-columns:minmax(10rem,.9fr) minmax(0,1.4fr);gap:.75rem}.registration-phone-input select,.registration-phone-input input{box-sizing:border-box;width:100%}@media(max-width:38rem){.registration-phone-input{grid-template-columns:1fr}}</style>');
+$this->appendArrayVar('headerParams','<style type="text/css">.registration-phone-input{display:grid;grid-template-columns:minmax(10rem,.9fr) minmax(0,1.4fr);gap:.75rem}.registration-phone-input select,.registration-phone-input input{box-sizing:border-box;width:100%}.registration-username-status{min-height:1.5rem;margin-top:.4rem;font-size:.92rem}.registration-username-status.is-available{color:var(--chisimba-success,#2e7d32)}.registration-username-status.is-unavailable,.registration-username-status.is-invalid{color:var(--chisimba-danger,#b42318)}.registration-username-suggestions{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.35rem}.registration-username-suggestion{font:inherit;cursor:pointer}.registration-username-suggestion:hover,.registration-username-suggestion:focus{background:color-mix(in srgb,currentColor 8%,var(--chisimba-surface,#fff));text-decoration:none}@media(max-width:38rem){.registration-phone-input{grid-template-columns:1fr}}</style>');
 
 $guidancePrefix = isset($registrationGuidancePrefix)
     ? preg_replace('/[^a-z_]/', '', (string) $registrationGuidancePrefix)

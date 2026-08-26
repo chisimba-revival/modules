@@ -50,7 +50,7 @@ $checks = array(
     'accessible forms' => str_contains($templates, 'autocomplete="new-password"')
         && str_contains($templates, 'role="alert"')
         && str_contains($templates, 'aria-labelledby=')
-        && str_contains($templates, 'aria-describedby="registration-username-help"')
+        && str_contains($templates, 'aria-describedby="registration-username-help registration-username-status"')
         && str_contains($templates, 'aria-describedby="registration-password-help"'),
     'structured registration fields' => str_contains($templates, 'chisimba-form-card')
         && str_contains($templates, 'chisimba-form-grid')
@@ -60,7 +60,11 @@ $checks = array(
         && str_contains($controller, "'REGISTRATION_DEFAULT_CALLING_CODE'")
         && str_contains($register, 'CONFIG: REGISTRATION_DEFAULT_CALLING_CODE|+27'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.004'),
+    'live username availability' => str_contains($controller, "case 'usernameavailability'")
+        && str_contains($templates, 'registration-username-status')
+        && str_contains($templates, 'first_name=')
+        && str_contains($templates, 'surname='),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.005'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
