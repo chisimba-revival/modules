@@ -55,8 +55,12 @@ $checks = array(
     'structured registration fields' => str_contains($templates, 'chisimba-form-card')
         && str_contains($templates, 'chisimba-form-grid')
         && str_contains($templates, 'chisimba-field-help'),
+    'international mobile input' => str_contains($templates, 'name="country_calling_code"')
+        && str_contains($templates, 'name="mobile_number"')
+        && str_contains($controller, "'REGISTRATION_DEFAULT_CALLING_CODE'")
+        && str_contains($register, 'CONFIG: REGISTRATION_DEFAULT_CALLING_CODE|+27'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.003'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.004'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

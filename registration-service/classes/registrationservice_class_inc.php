@@ -51,6 +51,7 @@ class registrationservice extends dbTable
             'security'
         );
         $this->objConfig = $this->getObject('altconfig', 'config');
+        $this->objPhone = $this->getObject('internationalphonenumber', 'registration-service');
     }
 
     /** Create pending state only; no canonical account is created or activated. */
@@ -60,8 +61,15 @@ class registrationservice extends dbTable
         $email = $this->email($request['emailAddress'] ?? null);
         $firstName = $this->text($request['firstName'] ?? null, 50);
         $surname = $this->text($request['surname'] ?? null, 50);
+        $mobileNumber = $this->objPhone->normalize(
+            $request['countryCallingCode'] ?? null,
+            $request['mobileNumber'] ?? null
+        );
         $correlationId = $this->identifier($request['correlationId'] ?? null, 64);
         $password = $request['password'] ?? null;
+        if ($mobileNumber === null) {
+            return $this->result(false, 'invalid_mobile_number');
+        }
         if ($username === null || $email === null || $firstName === null
             || $surname === null || $correlationId === null
             || !is_scalar($password) || trim((string) $password) === '') {
@@ -94,6 +102,7 @@ class registrationservice extends dbTable
             'email_address' => $email,
             'first_name' => $firstName,
             'surname' => $surname,
+            'mobile_number' => $mobileNumber,
             'password_hash' => $passwordHash,
             'status' => 'awaiting_legal_acceptance',
             'correlation_id' => $correlationId,
@@ -286,7 +295,8 @@ class registrationservice extends dbTable
             'emailAddress' => $pending['email_address'],
             'title' => '',
             'country' => '',
-            'cellnumber' => '',
+            // Pending registrations created before version 1.004 have no mobile value.
+            'cellnumber' => (string) ($pending['mobile_number'] ?? ''),
             'staffnumber' => '',
             'sex' => '',
             'isActive' => true,

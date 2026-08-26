@@ -17,6 +17,7 @@ $loginUrl = htmlspecialchars(
     ENT_QUOTES,
     'UTF-8'
 );
+$this->appendArrayVar('headerParams','<style type="text/css">.registration-phone-input{display:grid;grid-template-columns:minmax(10rem,.9fr) minmax(0,1.4fr);gap:.75rem}.registration-phone-input select,.registration-phone-input input{box-sizing:border-box;width:100%}@media(max-width:38rem){.registration-phone-input{grid-template-columns:1fr}}</style>');
 
 $guidancePrefix = isset($registrationGuidancePrefix)
     ? preg_replace('/[^a-z_]/', '', (string) $registrationGuidancePrefix)

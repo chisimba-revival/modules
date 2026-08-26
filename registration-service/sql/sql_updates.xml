@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+    <update>
+        <table>tbl_registration_service_pending</table>
+        <version>1.004</version>
+        <description>Store the normalized international mobile number while registration awaits verification.</description>
+        <data>
+            <add>
+                <name>mobile_number</name>
+                <type>text</type>
+                <length>16</length>
+            </add>
+        </data>
+    </update>
+</updates>

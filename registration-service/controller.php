@@ -23,6 +23,7 @@ class registration_service extends controller
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->csrf = $stack['csrf'];
         $this->abuse = $stack['abuse'];
+        $this->phones = $this->getObject('internationalphonenumber', 'registration-service');
     }
 
     public function requiresLogin($action) { return false; }
@@ -63,10 +64,17 @@ class registration_service extends controller
 
     private function registrationPage($errorCode = '', array $values = array())
     {
+        $defaultCode=$this->phones->defaultCallingCode(
+            $this->getObject('altconfig','config')->getValue(
+                'REGISTRATION_DEFAULT_CALLING_CODE','registration-service'
+            )
+        );
+        if(empty($values['countryCallingCode'])) $values['countryCallingCode']=$defaultCode;
         $this->setVar('registrationCsrf', $this->csrf->issue(self::REGISTER_CSRF));
         $this->setVar('registrationAbuse', $this->abuse->issueFormEvidence('registration.create'));
         $this->setVar('registrationError', $errorCode);
         $this->setVar('registrationValues', $values);
+        $this->setVar('registrationCallingCodes', $this->phones->callingCodes());
         return 'register_tpl.php';
     }
 
@@ -202,6 +210,8 @@ class registration_service extends controller
             'emailAddress' => strtolower(trim($this->scalarParam('email_address'))),
             'firstName' => trim($this->scalarParam('first_name')),
             'surname' => trim($this->scalarParam('surname')),
+            'countryCallingCode' => trim($this->scalarParam('country_calling_code')),
+            'mobileNumber' => trim($this->scalarParam('mobile_number')),
         );
     }
 

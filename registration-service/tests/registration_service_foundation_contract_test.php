@@ -6,6 +6,8 @@ $pending = $read('sql/tbl_registration_service_pending.sql');
 $tokens = $read('sql/tbl_registration_service_tokens.sql');
 $service = $read('classes/registrationtokenservice_class_inc.php');
 $workflow = $read('classes/registrationservice_class_inc.php');
+$phone = $read('classes/internationalphonenumber_class_inc.php');
+$updates = $read('sql/sql_updates.xml');
 $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: registration-service'),
     'service dependencies' => str_contains($registration, 'DEPENDS: security')
@@ -13,6 +15,10 @@ $checks = array(
         && str_contains($registration, 'DEPENDS: legal-acceptance-service'),
     'pending outside users' => str_contains($pending, "'password_hash'")
         && !str_contains($pending, "\$tablename = 'tbl_users'"),
+    'mobile pending migration' => str_contains($pending, "'mobile_number'")
+        && str_contains($updates, '<name>mobile_number</name>'),
+    'international mobile normalization' => str_contains($phone, "if(str_starts_with(\$compact,'0'))")
+        && str_contains($phone, "'/^\\+[1-9][0-9]{7,14}$/'"),
     'hash width' => str_contains($pending, "'length' => 255"),
     'hashed verifier' => str_contains($tokens, "'verifier_hash'")
         && str_contains($service, "hash('sha256', \$rawVerifier)"),
@@ -48,7 +54,8 @@ $checks = array(
     'verified canonical provisioning' => str_contains(
         $workflow,
         'createLocalUserWithPasswordHash('
-    ) && str_contains($workflow, "'howCreated' => 'registration-service'"),
+    ) && str_contains($workflow, "'howCreated' => 'registration-service'")
+      && str_contains($workflow, "'cellnumber' => (string) (\$pending['mobile_number'] ?? '')"),
     'provisioning rechecks identity' => str_contains(
         $workflow,
         'canonical_identity_conflict'
