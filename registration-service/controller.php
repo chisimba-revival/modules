@@ -33,7 +33,7 @@ class registration_service extends controller
         return in_array((string) $action, array(
             '', 'default', 'register', 'verify', 'terms',
             'forgotpassword', 'requestrecovery', 'recover', 'resetpassword',
-            'usernameavailability'
+            'usernameavailability', 'checkemail'
         ), true);
     }
 
@@ -51,6 +51,7 @@ class registration_service extends controller
         $this->setVar('registrationGuidancePrefix', $guidancePrefix);
         switch ((string) $action) {
             case 'usernameavailability': return $this->usernameAvailability();
+            case 'checkemail': return $this->confirmationPage();
             case 'register': return $this->submitRegistration();
             case 'verify': return $this->verifyAccount();
             case 'terms': return $this->termsPage();
@@ -116,16 +117,22 @@ class registration_service extends controller
             'correlationId' => $correlation,
         ));
         if (empty($pending['ok'])) {
+            if (($pending['code'] ?? '') === 'registration_already_pending'
+                && !empty($pending['pendingId'])) {
+                $resumed = $this->service->resumeVerification(
+                    $pending['pendingId'],
+                    $this->registrationPolicy()
+                );
+                if (!empty($resumed['ok'])) {
+                    return $this->checkEmailPage($resumed, $values);
+                }
+            }
             $this->recordAbuse('registration.create', $values['emailAddress'], false);
             return $this->registrationPage((string) ($pending['code'] ?? 'registration_failed'), $values);
         }
         $queued = $this->service->acceptLegalAndQueueVerification(
             $pending['pendingId'],
-            array(
-                'policyKey' => self::POLICY_KEY,
-                'policyVersion' => self::POLICY_VERSION,
-                'contentDigest' => hash('sha256', self::POLICY_TEXT),
-            ),
+            $this->registrationPolicy(),
             array(
                 'acceptanceMethod' => 'checkbox',
                 'ipAddress' => (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
@@ -137,7 +144,41 @@ class registration_service extends controller
             return $this->registrationPage((string) ($queued['code'] ?? 'verification_email_failed'), $values);
         }
         $this->recordAbuse('registration.create', $values['emailAddress'], true);
-        $this->setVar('registrationEmail', $values['emailAddress']);
+        return $this->checkEmailPage($queued, $values);
+    }
+
+    private function registrationPolicy()
+    {
+        return array(
+            'policyKey' => self::POLICY_KEY,
+            'policyVersion' => self::POLICY_VERSION,
+            'contentDigest' => hash('sha256', self::POLICY_TEXT),
+        );
+    }
+
+    private function checkEmailPage(array $result, array $fallback)
+    {
+        $this->setSession('registration_service_confirmation', array(
+            'emailAddress' => $result['emailAddress'] ?? $fallback['emailAddress'],
+            'username' => $result['username'] ?? $fallback['username'],
+        ));
+        $location = html_entity_decode(
+            $this->uri(array('action' => 'checkemail'), 'registration-service'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        header('Location: ' . $location, true, 303);
+        exit;
+    }
+
+    private function confirmationPage()
+    {
+        $confirmation = $this->getSession('registration_service_confirmation');
+        if (!is_array($confirmation) || empty($confirmation['emailAddress'])) {
+            return $this->registrationPage();
+        }
+        $this->setVar('registrationEmail', $confirmation['emailAddress']);
+        $this->setVar('registrationUsername', $confirmation['username'] ?? '');
         return 'check_email_tpl.php';
     }
 

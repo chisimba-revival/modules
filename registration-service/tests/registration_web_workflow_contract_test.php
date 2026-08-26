@@ -64,7 +64,11 @@ $checks = array(
         && str_contains($templates, 'registration-username-status')
         && str_contains($templates, 'first_name=')
         && str_contains($templates, 'surname='),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.006'),
+    'clear pending registration outcome' => str_contains($controller, 'resumeVerification(')
+        && str_contains($controller, 'checkEmailPage(')
+        && str_contains($templates, '$registrationUsername')
+        && str_contains($controller, "header('Location: ' . \$location, true, 303)"),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.007'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

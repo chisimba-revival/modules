@@ -81,9 +81,12 @@ class registrationservice extends dbTable
         if (!$this->objUsers->emailAvailable($email)) {
             return $this->result(false, 'email_taken');
         }
-        if ($this->hasLivePending('username', $username)
-            || $this->hasLivePending('email_address', $email)) {
-            return $this->result(false, 'registration_already_pending');
+        $existingEmail = $this->livePending('email_address', $email);
+        if ($existingEmail !== null) {
+            return $this->result(false, 'registration_already_pending', $existingEmail['id']);
+        }
+        if ($this->hasLivePending('username', $username)) {
+            return $this->result(false, 'username_taken');
         }
         try {
             $passwordHash = $this->objAuthentication->createPasswordHash(
@@ -201,6 +204,40 @@ class registrationservice extends dbTable
             return $this->result(false, 'legal_acceptance_not_confirmed', $pending['id']);
         }
 
+        return $this->prepareAndQueueVerification($pending);
+    }
+
+    /** Resume a saved registration rather than asking the person to start over. */
+    public function resumeVerification($pendingId, array $policy)
+    {
+        $pending = $this->pendingWithStatuses(
+            $pendingId,
+            array('awaiting_legal_acceptance', 'awaiting_verification')
+        );
+        if ($pending === null || !$this->objLegal->hasAccepted(
+            'pending_registration',
+            $pending['id'],
+            $policy['policyKey'] ?? null,
+            $policy['policyVersion'] ?? null,
+            $policy['contentDigest'] ?? null
+        )) {
+            return $this->result(false, 'pending_registration_not_ready', $pendingId);
+        }
+        return $this->prepareAndQueueVerification($pending);
+    }
+
+    private function prepareAndQueueVerification(array $pending)
+    {
+        if ($pending['status'] !== 'awaiting_verification') {
+            if ($this->update('id', $pending['id'], array(
+                'status' => 'awaiting_verification',
+                'updated_at' => date('Y-m-d H:i:s'),
+            )) === false) {
+                return $this->result(false, 'verification_state_failed', $pending['id']);
+            }
+            $pending['status'] = 'awaiting_verification';
+        }
+
         $token = $this->objTokens->issue(
             'email_verification',
             'pending_registration',
@@ -239,21 +276,21 @@ class registrationservice extends dbTable
         if (empty($message['ok'])) {
             return $this->result(false, 'verification_email_failed', $pending['id']);
         }
-        $this->beginTransaction();
-        if ($this->update('id', $pending['id'], array(
-            'status' => 'awaiting_verification',
-            'updated_at' => date('Y-m-d H:i:s'),
-        )) === false || !$this->appendEvent(
+        // Audit failure must not turn a successfully queued email into a false
+        // form failure. The canonical pending state is already resumable.
+        $this->appendEvent(
             'registration.verification.requested',
             $pending['id'],
             $pending['correlation_id'],
             'requested'
-        )) {
-            $this->rollbackTransaction();
-            return $this->result(false, 'verification_state_failed', $pending['id']);
-        }
-        $this->commitTransaction();
-        return $this->result(true, 'verification_queued', $pending['id']);
+        );
+        return array(
+            'ok' => true,
+            'code' => 'verification_queued',
+            'pendingId' => $pending['id'],
+            'username' => $pending['username'],
+            'emailAddress' => $pending['email_address'],
+        );
     }
 
     /** Consume the token and mark pending state verified atomically. */
@@ -524,20 +561,44 @@ class registrationservice extends dbTable
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
+    private function pendingWithStatuses($id, array $statuses)
+    {
+        $id = is_scalar($id) ? strtolower(trim((string) $id)) : '';
+        $allowed = array('awaiting_legal_acceptance', 'awaiting_verification', 'verified');
+        $statuses = array_values(array_intersect($allowed, $statuses));
+        if (!preg_match('/^[a-f0-9]{32}$/', $id) || count($statuses) === 0) {
+            return null;
+        }
+        $quoted = array_map(array($this, 'quote'), $statuses);
+        $rows = $this->getArray(
+            'SELECT * FROM ' . self::TABLE_NAME
+            . ' WHERE id = ' . $this->quote($id)
+            . ' AND status IN (' . implode(',', $quoted) . ')'
+            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' LIMIT 2'
+        );
+        return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
+    }
+
     private function hasLivePending($column, $value)
+    {
+        return $this->livePending($column, $value) !== null;
+    }
+
+    private function livePending($column, $value)
     {
         $allowed = array('username', 'email_address');
         if (!in_array($column, $allowed, true)) {
-            return true;
+            return null;
         }
         $rows = $this->getArray(
-            'SELECT id FROM ' . self::TABLE_NAME
+            'SELECT id, username, email_address, status FROM ' . self::TABLE_NAME
             . ' WHERE ' . $column . ' = ' . $this->quote($value)
             . " AND status IN ('awaiting_legal_acceptance','awaiting_verification','verified')"
             . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
             . ' LIMIT 1'
         );
-        return is_array($rows) && count($rows) > 0;
+        return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
     private function isUsernameAvailable($username)

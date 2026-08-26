@@ -49,6 +49,10 @@ $checks = array(
         && !str_contains($workflow, 'font-weight:bold">Chisimba'),
     'atomic verification state' => str_contains($workflow, 'consumeWith(')
         && str_contains($workflow, "'status' => 'verified'"),
+    'resumable verification delivery' => str_contains($workflow, 'resumeVerification(')
+        && str_contains($workflow, 'prepareAndQueueVerification(')
+        && strpos($workflow, "'status' => 'awaiting_verification'")
+            < strpos($workflow, 'queueEmail('),
     'no legacy workflow reuse' => !str_contains($workflow, 'userregistration')
         && !str_contains($workflow, 'useradmin_model'),
     'verified canonical provisioning' => str_contains(

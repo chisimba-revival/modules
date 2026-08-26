@@ -11,6 +11,7 @@ $t = fn($k) => $this->objLanguage->languageText(
         <h1 id="check-email-title"><?php echo $e($t('check_email_title')); ?></h1>
         <p class="chisimba-status-card__lead"><?php echo $e($t('check_email_intro')); ?></p>
         <p class="chisimba-status-card__detail"><strong><?php echo $e($registrationEmail ?? ''); ?></strong></p>
+        <p class="chisimba-status-card__detail"><?php echo $e($t('check_email_username')); ?> <strong><?php echo $e($registrationUsername ?? ''); ?></strong></p>
         <p class="chisimba-status-card__help"><?php echo $e($t('check_email_help')); ?></p>
     </section>
 </main>
