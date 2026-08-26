@@ -9,8 +9,7 @@ class registration_service extends controller
     private const RECOVERY_RESET_CSRF = 'registration_service_recovery_reset';
     private const VERIFICATION_RETRY_CSRF = 'registration_service_verification_retry';
     private const POLICY_KEY = 'account_terms';
-    private const POLICY_VERSION = '1.0.0';
-    private const POLICY_TEXT = 'I agree to the Terms of Use and acknowledge the Privacy Notice.';
+    private const POLICY_VERSION = '1.1.0';
 
     private $service;
     private $csrf;
@@ -157,10 +156,55 @@ class registration_service extends controller
 
     private function registrationPolicy()
     {
+        $content = $this->policyContent();
         return array(
             'policyKey' => self::POLICY_KEY,
             'policyVersion' => self::POLICY_VERSION,
-            'contentDigest' => hash('sha256', self::POLICY_TEXT),
+            'contentDigest' => hash(
+                'sha256',
+                json_encode($content, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            ),
+        );
+    }
+
+    private function policyContent()
+    {
+        $text = function ($key) {
+            return $this->objLanguage->languageText(
+                'mod_registration_service_' . $key,
+                'registration-service'
+            );
+        };
+        $section = function ($prefix, $paragraphCount) use ($text) {
+            $paragraphs = array();
+            for ($number = 1; $number <= $paragraphCount; $number++) {
+                $paragraphs[] = $text($prefix . '_p' . $number);
+            }
+            return array('heading' => $text($prefix . '_heading'), 'paragraphs' => $paragraphs);
+        };
+
+        return array(
+            'terms' => array(
+                'title' => $text('terms_of_use_title'),
+                'introduction' => $text('terms_of_use_intro'),
+                'sections' => array(
+                    $section('terms_accounts', 2), $section('terms_learning', 2),
+                    $section('terms_conduct', 2), $section('terms_content', 2),
+                    $section('terms_payments', 2), $section('terms_availability', 2),
+                    $section('terms_end', 2), $section('terms_changes', 2),
+                ),
+            ),
+            'privacy' => array(
+                'title' => $text('privacy_notice_title'),
+                'introduction' => $text('privacy_notice_intro'),
+                'sections' => array(
+                    $section('privacy_collect', 2), $section('privacy_use', 2),
+                    $section('privacy_share', 2), $section('privacy_payment', 2),
+                    $section('privacy_retention', 2), $section('privacy_security', 2),
+                    $section('privacy_rights', 2), $section('privacy_children', 1),
+                    $section('privacy_changes', 2),
+                ),
+            ),
         );
     }
 
@@ -257,8 +301,9 @@ class registration_service extends controller
 
     private function termsPage()
     {
-        $this->setVar('registrationPolicyText', self::POLICY_TEXT);
+        $this->setVar('registrationPolicyContent', $this->policyContent());
         $this->setVar('registrationPolicyVersion', self::POLICY_VERSION);
+        $this->setVar('registrationPolicyPage', true);
         return 'terms_tpl.php';
     }
 

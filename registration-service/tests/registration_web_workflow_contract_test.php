@@ -60,6 +60,13 @@ $checks = array(
         && str_contains($controller, "'DEFAULT_CALLING_CODE'")
         && str_contains($register, 'CONFIG: DEFAULT_CALLING_CODE|27'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
+    'full legal documents' => str_contains($templates, "array('terms', 'privacy')")
+        && str_contains($register, 'operate an eLearning service and serve users\' educational needs'),
+    'policy acceptance covers displayed content' => str_contains($controller, 'json_encode($content'),
+    'privacy rights acknowledge retained records' => str_contains(
+        $register,
+        'operational, educational, contractual, financial, security or legal reasons'
+    ),
     'live username availability' => str_contains($controller, "case 'usernameavailability'")
         && str_contains($templates, 'registration-username-status')
         && str_contains($templates, 'first_name=')
@@ -74,7 +81,7 @@ $checks = array(
         && str_contains($templates, 'deliveryRetryUsername'),
     'canonical sign-in entrance' => !str_contains($layout . $templates, "'showlogin'")
         && str_contains($layout . $templates, "getItem('KEWL_SITE_ROOT')"),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.009'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.010'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
