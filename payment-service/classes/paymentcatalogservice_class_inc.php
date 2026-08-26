@@ -26,6 +26,14 @@ class paymentcatalogservice extends ChisimbaObject
         $price=(!$product||$version===null)?null:$this->prices->byVersion($product['id'],$version);
         if(!$product||!$price) return null; $product['price']=$price; return $product;
     }
+    public function privateCourseProduct($courseCode) {
+        $courseCode=$this->text($courseCode,191); if($courseCode===null) return null;
+        foreach($this->listProducts(true) as $product) {
+            if($product['purpose_type']==='private_course'&&$product['purpose_id']===$courseCode
+                &&is_array($product['current_price']??null)) return $product;
+        }
+        return null;
+    }
     public function createProduct(array $input) {
         $purpose=$this->enum($input['purposeType']??null,self::PURPOSES); $period=$this->enum($input['billingPeriod']??null,self::PERIODS);
         $duration=filter_var($input['durationMonths']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>120)));

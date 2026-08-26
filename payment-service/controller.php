@@ -24,6 +24,8 @@ class payment_service extends controller
     }
     private function catalogue($message='',$error=''){
         $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
+        $requested=$this->param('product');
+        if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
         $admissions=$this->getObject('privateadmissionservice','membership-service');
         $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
         $this->setVar('paymentProducts',$products); $this->common($message,$error); return 'catalogue_tpl.php';
