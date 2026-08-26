@@ -68,8 +68,11 @@ class payment_service extends controller
         $filters=array('query'=>$this->param('q'),'purpose'=>$this->param('purpose'),'purpose_id'=>$this->param('purpose_id'),'status'=>$this->param('status'));
         $page=filter_var($this->param('page'),FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1)))?:1;
         $this->setVar('paymentProductPage',$this->catalog->productPage($filters,$page,20));
-        $this->setVar('paymentProducts',$this->catalog->productOptions());
+        $options=$this->catalog->productOptions(); $courseProduct=null;
+        foreach($options as $option) if($filters['purpose_id']!==''&&(string)$option['purpose_type']==='private_course'&&(string)$option['purpose_id']===$filters['purpose_id']) {$courseProduct=$option;break;}
+        $this->setVar('paymentProducts',$options);
         $this->setVar('paymentCourseCode',$filters['purpose_id']);
+        $this->setVar('paymentCourseProduct',$courseProduct);
         $this->common($message,$error); return 'products_tpl.php';
     }
     private function createProduct(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->createProduct(array('code'=>$this->param('code'),'name'=>$this->param('name'),'purposeType'=>$this->param('purpose_type'),'purposeId'=>$this->param('purpose_id'),'billingPeriod'=>$this->param('billing_period'),'durationMonths'=>$this->param('duration_months'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }

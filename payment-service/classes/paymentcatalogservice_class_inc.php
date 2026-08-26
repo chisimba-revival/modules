@@ -52,6 +52,8 @@ class paymentcatalogservice extends ChisimbaObject
         if($purpose==='private_course') {
             $course=$this->contexts->getContext($values['purpose_id']);
             if(!is_array($course)||strtolower((string)($course['access_policy']??''))!=='private') return array('ok'=>false,'code'=>'private_course_required');
+            $purposeProduct=$this->products->byPurpose('private_course',$values['purpose_id']);
+            if($purposeProduct) return array('ok'=>true,'code'=>'already_created','productId'=>$purposeProduct['id']);
         }
         $existing=$this->products->byCode($values['code']); if($existing) return array('ok'=>true,'code'=>'already_created','productId'=>$existing['id']);
         $values['id']=bin2hex(random_bytes(16)); $values['created_at']=$values['updated_at']=date('Y-m-d H:i:s');
