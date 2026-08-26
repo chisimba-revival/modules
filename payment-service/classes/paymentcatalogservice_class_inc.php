@@ -11,6 +11,15 @@ class paymentcatalogservice extends ChisimbaObject
         foreach($rows as &$row){ $row['current_price']=$this->prices->currentForProduct($row['id']); $row['prices']=$this->prices->forProduct($row['id']); } unset($row);
         return $rows;
     }
+    public function productOptions() { return $this->products->allProducts(); }
+    public function productPage(array $filters,$page=1,$pageSize=20) {
+        $page=max(1,(int)$page); $pageSize=max(5,min(100,(int)$pageSize));
+        $total=$this->products->countProducts($filters); $pages=max(1,(int)ceil($total/$pageSize));
+        if($page>$pages) $page=$pages;
+        $rows=$this->products->searchProducts($filters,($page-1)*$pageSize,$pageSize);
+        foreach($rows as &$row){$row['current_price']=$this->prices->currentForProduct($row['id']);$row['prices']=$this->prices->forProduct($row['id']);}unset($row);
+        return array('products'=>$rows,'total'=>$total,'page'=>$page,'page_size'=>$pageSize,'pages'=>$pages,'filters'=>$filters);
+    }
     public function purchasable($code,$version=null) {
         $code=$this->identifier($code,96); $product=$code===null?null:$this->products->byCode($code);
         if(!is_array($product)||empty($product['active'])) return null;

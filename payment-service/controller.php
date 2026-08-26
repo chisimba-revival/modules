@@ -19,7 +19,7 @@ class payment_service extends controller
             case 'return': return $this->returned(); case 'products': return $this->products();
             case 'createproduct': return $this->createProduct(); case 'addprice': return $this->addPrice();
             case 'operations': return $this->operations(); case 'catalogue': return $this->catalogue();
-            default:return $this->authorization->can('payment.view')?$this->operations():$this->catalogue();
+            default:return $this->user->isAdmin()?$this->products():($this->authorization->can('payment.view')?$this->operations():$this->catalogue());
         }
     }
     private function catalogue($message='',$error=''){
@@ -65,7 +65,12 @@ class payment_service extends controller
     }
     private function products($message='',$error=''){
         if(!$this->user->isAdmin()) return $this->catalogue('','no_access');
-        $this->setVar('paymentProducts',$this->catalog->listProducts(false)); $this->common($message,$error); return 'products_tpl.php';
+        $filters=array('query'=>$this->param('q'),'purpose'=>$this->param('purpose'),'purpose_id'=>$this->param('purpose_id'),'status'=>$this->param('status'));
+        $page=filter_var($this->param('page'),FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1)))?:1;
+        $this->setVar('paymentProductPage',$this->catalog->productPage($filters,$page,20));
+        $this->setVar('paymentProducts',$this->catalog->productOptions());
+        $this->setVar('paymentCourseCode',$filters['purpose_id']);
+        $this->common($message,$error); return 'products_tpl.php';
     }
     private function createProduct(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->createProduct(array('code'=>$this->param('code'),'name'=>$this->param('name'),'purposeType'=>$this->param('purpose_type'),'purposeId'=>$this->param('purpose_id'),'billingPeriod'=>$this->param('billing_period'),'durationMonths'=>$this->param('duration_months'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
     private function addPrice(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->addPrice($this->param('product_id'),array('versionCode'=>$this->param('version_code'),'amountMinor'=>$this->param('amount_minor'),'currency'=>$this->param('currency'),'effectiveFrom'=>$this->param('effective_from'),'effectiveUntil'=>$this->param('effective_until'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }

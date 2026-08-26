@@ -6,6 +6,9 @@ $products=file_get_contents($root.'/sql/tbl_payment_service_products.sql');
 $prices=file_get_contents($root.'/sql/tbl_payment_service_prices.sql');
 $controller=file_get_contents($root.'/controller.php');
 $returnTemplate=file_get_contents($root.'/templates/content/return_tpl.php');
+$productsTemplate=file_get_contents($root.'/templates/content/products_tpl.php');
+$productDb=file_get_contents($root.'/classes/dbpaymentproducts_class_inc.php');
+$register=file_get_contents($root.'/register.conf');
 $expect=function($ok,$message){if(!$ok)throw new RuntimeException($message);};
 $expect(str_contains($prices,"'version_code'")&&str_contains($prices,"'unique' => TRUE"),'Price versions must have durable unique identity.');
 $expect(!str_contains($catalog,'$this->prices->update('),'Published price versions must be immutable.');
@@ -20,5 +23,9 @@ $expect(str_contains($controller,"class_alias('payment_service','payment-service
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
 $expect(str_contains($returnTemplate,'Open course')&&str_contains($returnTemplate,'Refresh payment status'),'The browser return must offer the next human action without treating the return as payment proof.');
+$expect(str_contains($catalog,'productPage')&&str_contains($productDb,'countProducts')&&str_contains($productDb,'LIMIT '),'The administrator catalogue must use bounded server-side pagination.');
+$expect(str_contains($productDb,'name LIKE')&&str_contains($productDb,'purpose_type')&&str_contains($productDb,'active=1'),'Product search, purpose and status filters must be applied by the server.');
+$expect(str_contains($productsTemplate,'Saved products pages')&&str_contains($productsTemplate,'Apply filters')&&str_contains($productsTemplate,'No products match these filters.'),'The product catalogue must expose accessible search, pagination and empty states.');
+$expect(str_contains($productsTemplate,'View payment activity')&&str_contains($register,'mod_payment_service_products|site'),'Product setup must be the discoverable administrator landing page with a route to payment activity.');
 echo "PASS: versioned payment catalogue and fulfilment contract\n";
 ?>
