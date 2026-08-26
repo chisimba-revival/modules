@@ -7,6 +7,7 @@ class registration_service extends controller
     private const REGISTER_CSRF = 'registration_service_register';
     private const RECOVERY_REQUEST_CSRF = 'registration_service_recovery_request';
     private const RECOVERY_RESET_CSRF = 'registration_service_recovery_reset';
+    private const VERIFICATION_RETRY_CSRF = 'registration_service_verification_retry';
     private const POLICY_KEY = 'account_terms';
     private const POLICY_VERSION = '1.0.0';
     private const POLICY_TEXT = 'I agree to the Terms of Use and acknowledge the Privacy Notice.';
@@ -34,6 +35,7 @@ class registration_service extends controller
             '', 'default', 'register', 'verify', 'terms',
             'forgotpassword', 'requestrecovery', 'recover', 'resetpassword',
             'usernameavailability', 'checkemail'
+            , 'deliverypending', 'retryverification'
         ), true);
     }
 
@@ -52,6 +54,8 @@ class registration_service extends controller
         switch ((string) $action) {
             case 'usernameavailability': return $this->usernameAvailability();
             case 'checkemail': return $this->confirmationPage();
+            case 'deliverypending': return $this->deliveryPendingPage();
+            case 'retryverification': return $this->retryVerification();
             case 'register': return $this->submitRegistration();
             case 'verify': return $this->verifyAccount();
             case 'terms': return $this->termsPage();
@@ -141,6 +145,10 @@ class registration_service extends controller
             )
         );
         if (empty($queued['ok'])) {
+            if (($queued['code'] ?? '') === 'verification_email_failed'
+                && !empty($queued['pendingId'])) {
+                return $this->deliveryPendingRedirect($queued['pendingId'], $values);
+            }
             return $this->registrationPage((string) ($queued['code'] ?? 'verification_email_failed'), $values);
         }
         $this->recordAbuse('registration.create', $values['emailAddress'], true);
@@ -180,6 +188,59 @@ class registration_service extends controller
         $this->setVar('registrationEmail', $confirmation['emailAddress']);
         $this->setVar('registrationUsername', $confirmation['username'] ?? '');
         return 'check_email_tpl.php';
+    }
+
+    private function deliveryPendingRedirect($pendingId, array $values)
+    {
+        $this->setSession('registration_service_delivery_retry', array(
+            'pendingId' => (string) $pendingId,
+            'emailAddress' => $values['emailAddress'],
+            'username' => $values['username'],
+        ));
+        $location = html_entity_decode(
+            $this->uri(array('action' => 'deliverypending'), 'registration-service'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        header('Location: ' . $location, true, 303);
+        exit;
+    }
+
+    private function deliveryPendingPage($errorCode = '')
+    {
+        $retry = $this->getSession('registration_service_delivery_retry');
+        if (!is_array($retry) || empty($retry['pendingId'])) {
+            return $this->registrationPage();
+        }
+        $this->setVar('deliveryRetryCsrf', $this->csrf->issue(self::VERIFICATION_RETRY_CSRF));
+        $this->setVar('deliveryRetryEmail', $retry['emailAddress'] ?? '');
+        $this->setVar('deliveryRetryUsername', $retry['username'] ?? '');
+        $this->setVar('deliveryRetryError', $errorCode);
+        return 'delivery_pending_tpl.php';
+    }
+
+    private function retryVerification()
+    {
+        if (!$this->isPost()
+            || !$this->csrf->consume(self::VERIFICATION_RETRY_CSRF, $this->scalarParam('csrf_token'))) {
+            return $this->deliveryPendingPage('invalid_request');
+        }
+        $retry = $this->getSession('registration_service_delivery_retry');
+        if (!is_array($retry) || empty($retry['pendingId'])) {
+            return $this->registrationPage();
+        }
+        $result = $this->service->resumeVerification(
+            $retry['pendingId'],
+            $this->registrationPolicy()
+        );
+        if (empty($result['ok'])) {
+            return $this->deliveryPendingPage((string) ($result['code'] ?? 'verification_email_failed'));
+        }
+        $this->unsetSession('registration_service_delivery_retry');
+        return $this->checkEmailPage($result, array(
+            'emailAddress' => $retry['emailAddress'] ?? '',
+            'username' => $retry['username'] ?? '',
+        ));
     }
 
     private function verifyAccount()
