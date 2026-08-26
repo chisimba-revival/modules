@@ -80,7 +80,7 @@ class registration_service extends controller
     {
         $defaultCode=$this->phones->defaultCallingCode(
             $this->getObject('altconfig','config')->getValue(
-                'REGISTRATION_DEFAULT_CALLING_CODE','registration-service'
+                'DEFAULT_CALLING_CODE','registration-service'
             )
         );
         if(empty($values['countryCallingCode'])) $values['countryCallingCode']=$defaultCode;

@@ -57,14 +57,14 @@ $checks = array(
         && str_contains($templates, 'chisimba-field-help'),
     'international mobile input' => str_contains($templates, 'name="country_calling_code"')
         && str_contains($templates, 'name="mobile_number"')
-        && str_contains($controller, "'REGISTRATION_DEFAULT_CALLING_CODE'")
-        && str_contains($register, 'CONFIG: REGISTRATION_DEFAULT_CALLING_CODE|+27'),
+        && str_contains($controller, "'DEFAULT_CALLING_CODE'")
+        && str_contains($register, 'CONFIG: DEFAULT_CALLING_CODE|27'),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
     'live username availability' => str_contains($controller, "case 'usernameavailability'")
         && str_contains($templates, 'registration-username-status')
         && str_contains($templates, 'first_name=')
         && str_contains($templates, 'surname='),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.005'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.006'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
