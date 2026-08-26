@@ -14,12 +14,8 @@ $source=file_get_contents(dirname(__DIR__).'/classes/yocopaymentprovider_class_i
 $source=preg_replace('/^<\?php|\?>\s*$/','',$source);
 $source=str_replace('class yocopaymentprovider extends ChisimbaObject','class yocopaymentprovider extends YocoProviderBase',$source);
 eval($source);
-class TestYocoProvider extends yocopaymentprovider {
-    public $payment;
-    protected function fetchPayment($paymentId){return array('ok'=>true,'payment'=>$this->payment);}
-}
 $expect=function($condition,$message){if(!$condition)throw new RuntimeException($message);};
-$provider=new TestYocoProvider(); $provider->config=new YocoConfigStub(); $provider->intents=new YocoIntentStub();
+$provider=new yocopaymentprovider(); $provider->config=new YocoConfigStub(); $provider->intents=new YocoIntentStub();
 $provider->config->values=array(
     'PAYMENT_YOCO_MODE'=>'sandbox','PAYMENT_YOCO_CHECKOUT_SECRET_KEY'=>'sk_test_contract',
     'PAYMENT_YOCO_WEBHOOK_SECRET'=>'whsec_'.base64_encode('contract-secret'),
@@ -68,33 +64,15 @@ $checkoutFullResult=$provider->verifyAndNormalize(array('rawBody'=>$checkoutFull
     'webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutFullSignature,
 )));
 $expect(($checkoutFullResult['event']['type']??'')==='payment.refunded','A Hosted Checkout full refund must reverse fulfilled access.');
-$provider->payment=array(
-    'id'=>'pay-test-1','checkout_id'=>'ch_test_123','external_id'=>$intent['id'],
-    'status'=>'approved','created_at'=>gmdate('c'),'updated_at'=>gmdate('c'),
-    'total_amount'=>array('amount'=>12500,'currency'=>'ZAR'),
-    'refunded_amount'=>array('amount'=>0,'currency'=>'ZAR'),
-);
-$body=json_encode(array('event_type'=>'payment.created','payment_id'=>'pay-test-1','business_id'=>'business_1','order_id'=>'order_1'),JSON_UNESCAPED_SLASHES);
-$signature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$body,'contract-secret',true));
-$envelope=array('rawBody'=>$body,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$signature));
-$verified=$provider->verifyAndNormalize($envelope);
-$expect(!empty($verified['ok'])&&$verified['event']['type']==='payment.succeeded','A current correctly signed payment must verify.');
+$envelope=array('rawBody'=>$checkoutBody,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutSignature));
 $tampered=$envelope; $tampered['rawBody'].=' ';
 $expect(empty($provider->verifyAndNormalize($tampered)['ok']),'A modified raw body must fail verification.');
 $stale=$envelope; $stale['headers']['webhook-timestamp']=(string)(time()-181);
-$stale['headers']['webhook-signature']='v1,'.base64_encode(hash_hmac('sha256',$webhookId.'.'.$stale['headers']['webhook-timestamp'].'.'.$body,'contract-secret',true));
+$stale['headers']['webhook-signature']='v1,'.base64_encode(hash_hmac('sha256',$webhookId.'.'.$stale['headers']['webhook-timestamp'].'.'.$checkoutBody,'contract-secret',true));
 $expect(($provider->verifyAndNormalize($stale)['code']??'')==='stale_webhook','A webhook outside the replay window must fail.');
-$provider->payment['refunded_amount']['amount']=500;
-$partial=array('event_type'=>'payment.refunded','payment_id'=>'pay-test-1','business_id'=>'business_1','order_id'=>'order_1');
-$partialBody=json_encode($partial,JSON_UNESCAPED_SLASHES); $partialSig=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$partialBody,'contract-secret',true));
-$partialResult=$provider->verifyAndNormalize(array('rawBody'=>$partialBody,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$partialSig)));
-$expect(!empty($partialResult['ok'])&&!empty($partialResult['ignored'])&&$partialResult['code']==='partial_refund_requires_review'&&!empty($partialResult['ignoredEvent']),'A partial refund must be auditable without revoking all access automatically.');
-$provider->payment['refunded_amount']['amount']=12500;
-$fullBody=json_encode($partial,JSON_UNESCAPED_SLASHES); $fullSig=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$fullBody,'contract-secret',true));
-$fullResult=$provider->verifyAndNormalize(array('rawBody'=>$fullBody,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$fullSig)));
-$expect(($fullResult['event']['type']??'')==='payment.refunded','A full refund must reverse the fulfilled payment.');
-$provider->payment['refunded_amount']['amount']=0; $provider->payment['total_amount']['amount']=12499;
-$mismatch=$provider->verifyAndNormalize($envelope);
-$expect(($mismatch['code']??'')==='payment_reconciliation_mismatch','A mismatched server-side amount must never fulfil access.');
+$mismatch=json_decode($checkoutBody,true); $mismatch['payload']['amount']=12499;
+$mismatchBody=json_encode($mismatch,JSON_UNESCAPED_SLASHES); $mismatchSignature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$mismatchBody,'contract-secret',true));
+$mismatchResult=$provider->verifyAndNormalize(array('rawBody'=>$mismatchBody,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$mismatchSignature)));
+$expect(($mismatchResult['code']??'')==='payment_reconciliation_mismatch','A mismatched signed amount must never fulfil access.');
 fwrite(STDOUT,"PASS: Yoco hosted checkout and webhook contract\n");
 ?>
