@@ -3,6 +3,7 @@ $module=dirname(__DIR__);
 $service=file_get_contents($module.'/classes/paymentservice_class_inc.php');
 $controller=file_get_contents($module.'/controller.php');
 $events=file_get_contents($module.'/sql/tbl_payment_service_events.sql');
+$catalogue=file_get_contents($module.'/templates/content/catalogue_tpl.php');
 $expect=function($condition,$message){ if(!$condition){ throw new RuntimeException($message); } };
 $expect(strpos($service,'extends ChisimbaObject')!==false
     && !preg_match('/extends\s+object\b/i',$service),
@@ -33,6 +34,15 @@ $expect(strpos($service,"'payment.failed' => 'failed'")!==false
 $expect(str_contains($service,'reverseFulfilment')&&str_contains($service,"array('refunded','reversed')"),'Refunds and reversals must end the fulfilment created by the payment.');
 $expect(stripos($service,'card_number')===false && stripos($service,'cvv')===false,
     'The payment core must not store raw card data.');
+$expect(str_contains($controller,"getContextDetails((string)\$product['purpose_id'])")
+    && str_contains($controller,"getContextLecturers((string)\$product['purpose_id'])")
+    && str_contains($catalogue,'course-card payment-review-course'),
+    'A private-course purchase must retain its course identity and lecturer confidence cues.');
+$expect(str_contains($catalogue,'Once-off payment')
+    && str_contains($catalogue,'Continue securely with Yoco')
+    && str_contains($catalogue,'paymentLearnerName')
+    && str_contains($catalogue,'never receives or stores your card details'),
+    'Checkout review copy must explain the learner, billing model and secure handoff plainly.');
 $stores=file_get_contents($module.'/classes/dbpaymentintents_class_inc.php').file_get_contents($module.'/classes/dbpaymentevents_class_inc.php').file_get_contents($module.'/classes/dbpayments_class_inc.php');
 $expect(!preg_match('/->update\s*\(\s*array\s*\(/',$stores),'Payment stores must use the PHP 8 three-argument dbTable update contract.');
 fwrite(STDOUT,"PASS: provider-neutral payment service contract\n");

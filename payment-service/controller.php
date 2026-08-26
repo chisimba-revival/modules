@@ -28,6 +28,18 @@ class payment_service extends controller
         if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
         $admissions=$this->getObject('privateadmissionservice','membership-service');
         $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
+        $contexts=$this->getObject('dbcontext','context'); $images=$this->getObject('contextimage','context'); $members=$this->getObject('usercontext','context');
+        foreach($products as &$product) {
+            if(($product['purpose_type']??'')!=='private_course') continue;
+            $course=$contexts->getContextDetails((string)$product['purpose_id']); if(!is_array($course)) continue;
+            $lecturers=array();
+            foreach((array)$members->getContextLecturers((string)$product['purpose_id']) as $lecturer) {
+                $name=trim((string)($lecturer['firstname']??'').' '.(string)($lecturer['surname']??''));
+                if($name!==''&&!in_array($name,$lecturers,true)) $lecturers[]=$name;
+            }
+            $product['course']=array('title'=>(string)($course['title']??$product['name']),'about'=>trim(strip_tags((string)($course['about']??''))),'image'=>$images->getContextImage((string)$product['purpose_id']),'lecturers'=>$lecturers);
+        }
+        unset($product);
         $this->setVar('paymentProducts',$products); $this->common($message,$error); return 'catalogue_tpl.php';
     }
     private function buy(){
@@ -87,7 +99,7 @@ class payment_service extends controller
         http_response_code($accepted?200:(!empty($result['retryable'])?503:403)); header('Content-Type: application/json');
         echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES); exit;
     }
-    private function common($message,$error){ $this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); }
+    private function common($message,$error){ $this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function param($name){$value=$this->getParam($name,null);return is_scalar($value)?trim((string)$value):'';}
 }
