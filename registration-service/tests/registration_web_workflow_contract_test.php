@@ -72,7 +72,9 @@ $checks = array(
         && str_contains($controller, 'retryVerification(')
         && str_contains($templates, 'delivery_pending_retry')
         && str_contains($templates, 'deliveryRetryUsername'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.008'),
+    'canonical sign-in entrance' => !str_contains($layout . $templates, "'showlogin'")
+        && str_contains($layout . $templates, "getItem('KEWL_SITE_ROOT')"),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.009'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

@@ -33,7 +33,7 @@ $usernameAvailabilityUrl = html_entity_decode($this->uri(array('action' => 'user
 </section>
 <div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $e($t('create_account')); ?></button><a class="button chisimba-button-secondary" href="<?php echo $u(array('action' => 'forgotpassword')); ?>"><?php echo $e($t('forgot_password')); ?></a></div>
 </form>
-<p class="chisimba-form-card__footer"><a href="<?php echo $e(html_entity_decode($this->uri(array('action' => 'showlogin'), 'security'), ENT_QUOTES, 'UTF-8')); ?>"><?php echo $e($t('already_registered')); ?></a></p>
+<p class="chisimba-form-card__footer"><a href="<?php echo $e(rtrim((string) $this->getObject('altconfig', 'config')->getItem('KEWL_SITE_ROOT'), '/') . '/'); ?>"><?php echo $e($t('already_registered')); ?></a></p>
 </div>
 </main>
 <script type="text/javascript">

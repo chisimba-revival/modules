@@ -9,11 +9,7 @@ $t = function ($key) {
     );
 };
 $loginUrl = htmlspecialchars(
-    html_entity_decode(
-        $this->uri(array('action' => 'showlogin'), 'security'),
-        ENT_QUOTES,
-        'UTF-8'
-    ),
+    rtrim((string) $this->getObject('altconfig', 'config')->getItem('KEWL_SITE_ROOT'), '/') . '/',
     ENT_QUOTES,
     'UTF-8'
 );
