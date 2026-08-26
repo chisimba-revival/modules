@@ -32,6 +32,42 @@ $payload=$provider->buildCheckoutPayload($intent,array(
 $expect($payload['amount']===12500&&$payload['currency']==='ZAR','Checkout must use the canonical server-side amount.');
 $expect($payload['externalId']===$intent['id'],'Checkout must carry the internal intent reference.');
 $expect($provider->buildCheckoutPayload($intent,array('successUrl'=>'http://example.test','cancelUrl'=>'https://example.test','failureUrl'=>'https://example.test'))===null,'Return URLs must use HTTPS.');
+$timestamp=(string)time(); $webhookId='msg_test_1';
+$checkoutBody=json_encode(array(
+    'createdDate'=>gmdate('c'),'id'=>'evt_checkout_success','type'=>'payment.succeeded',
+    'payload'=>array(
+        'amount'=>12500,'currency'=>'ZAR','id'=>'pay-checkout-1','mode'=>'test',
+        'status'=>'succeeded','type'=>'payment','metadata'=>array('checkoutId'=>'ch_test_123'),
+    ),
+),JSON_UNESCAPED_SLASHES);
+$checkoutSignature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$checkoutBody,'contract-secret',true));
+$checkoutResult=$provider->verifyAndNormalize(array('rawBody'=>$checkoutBody,'headers'=>array(
+    'webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutSignature,
+)));
+$expect(($checkoutResult['event']['type']??'')==='payment.succeeded','The Hosted Checkout payment event must be the canonical Yoco success path.');
+$checkoutFailed=json_decode($checkoutBody,true); $checkoutFailed['id']='evt_checkout_failed'; $checkoutFailed['type']='payment.failed';
+$checkoutFailed['payload']['status']='failed'; $checkoutFailed['payload']['failureReason']='card_declined';
+$checkoutFailedBody=json_encode($checkoutFailed,JSON_UNESCAPED_SLASHES);
+$checkoutFailedSignature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$checkoutFailedBody,'contract-secret',true));
+$checkoutFailedResult=$provider->verifyAndNormalize(array('rawBody'=>$checkoutFailedBody,'headers'=>array(
+    'webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutFailedSignature,
+)));
+$expect(($checkoutFailedResult['event']['type']??'')==='payment.failed'&&($checkoutFailedResult['event']['reasonCode']??'')==='card_declined','A failed Hosted Checkout payment must be recorded without granting access.');
+$checkoutPartial=json_decode($checkoutBody,true); $checkoutPartial['id']='evt_checkout_partial'; $checkoutPartial['type']='refund.succeeded';
+$checkoutPartial['payload']['amount']=500; $checkoutPartial['payload']['id']='refund-partial-1'; $checkoutPartial['payload']['type']='refund'; $checkoutPartial['payload']['refundableAmount']=12000;
+$checkoutPartialBody=json_encode($checkoutPartial,JSON_UNESCAPED_SLASHES);
+$checkoutPartialSignature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$checkoutPartialBody,'contract-secret',true));
+$checkoutPartialResult=$provider->verifyAndNormalize(array('rawBody'=>$checkoutPartialBody,'headers'=>array(
+    'webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutPartialSignature,
+)));
+$expect(($checkoutPartialResult['code']??'')==='partial_refund_requires_review','A Hosted Checkout partial refund must be retained for review.');
+$checkoutFull=$checkoutPartial; $checkoutFull['payload']['amount']=12500; unset($checkoutFull['payload']['refundableAmount']); $checkoutFull['id']='evt_checkout_full';
+$checkoutFullBody=json_encode($checkoutFull,JSON_UNESCAPED_SLASHES);
+$checkoutFullSignature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$checkoutFullBody,'contract-secret',true));
+$checkoutFullResult=$provider->verifyAndNormalize(array('rawBody'=>$checkoutFullBody,'headers'=>array(
+    'webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$checkoutFullSignature,
+)));
+$expect(($checkoutFullResult['event']['type']??'')==='payment.refunded','A Hosted Checkout full refund must reverse fulfilled access.');
 $provider->payment=array(
     'id'=>'pay-test-1','checkout_id'=>'ch_test_123','external_id'=>$intent['id'],
     'status'=>'approved','created_at'=>gmdate('c'),'updated_at'=>gmdate('c'),
@@ -39,7 +75,6 @@ $provider->payment=array(
     'refunded_amount'=>array('amount'=>0,'currency'=>'ZAR'),
 );
 $body=json_encode(array('event_type'=>'payment.created','payment_id'=>'pay-test-1','business_id'=>'business_1','order_id'=>'order_1'),JSON_UNESCAPED_SLASHES);
-$timestamp=(string)time(); $webhookId='msg_test_1';
 $signature=base64_encode(hash_hmac('sha256',$webhookId.'.'.$timestamp.'.'.$body,'contract-secret',true));
 $envelope=array('rawBody'=>$body,'headers'=>array('webhook-id'=>$webhookId,'webhook-timestamp'=>$timestamp,'webhook-signature'=>'v1,'.$signature));
 $verified=$provider->verifyAndNormalize($envelope);

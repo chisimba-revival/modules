@@ -89,6 +89,51 @@ class yocopaymentprovider extends ChisimbaObject
         if(!$matched) return $this->failure('invalid_webhook_signature');
         $body=json_decode($raw,true);
         if(!is_array($body)) return $this->failure('invalid_webhook_json');
+        // Hosted Checkout and the newer Yoco API use the same signature scheme,
+        // but deliberately different event envelopes. Chisimba creates Hosted
+        // Checkout sessions, so that envelope is the primary path. Retain the
+        // Yoco API envelope as an additive compatibility path for installations
+        // that have separately provisioned access to that API.
+        if(isset($body['type'])) return $this->normalizeCheckoutEvent($body,$id,$timestamp);
+        return $this->normalizeApiEvent($body,$id,$timestamp);
+    }
+
+    private function normalizeCheckoutEvent(array $body,$webhookId,$timestamp)
+    {
+        $payload=is_array($body['payload']??NULL)?$body['payload']:array();
+        $checkoutId=trim((string)($payload['metadata']['checkoutId']??''));
+        $intent=$checkoutId===''?NULL:$this->intents->byProviderReference($checkoutId);
+        if($intent===NULL) return array('ok'=>true,'ignored'=>true,'code'=>'unrelated_yoco_checkout');
+        $rawType=trim((string)($body['type']??''));
+        $amount=(int)($payload['amount']??-1);
+        $currency=strtoupper(trim((string)($payload['currency']??'')));
+        $validAmount=$rawType==='refund.succeeded'
+            ?($amount>0&&$amount<=(int)$intent['amount_minor'])
+            :($amount===(int)$intent['amount_minor']);
+        if(!$validAmount||$currency!==(string)$intent['currency']) return $this->failure('payment_reconciliation_mismatch');
+        $mode=strtolower(trim((string)($payload['mode']??'')));
+        $configuredMode=strtolower(trim((string)$this->config->getValue('PAYMENT_YOCO_MODE','payment-service')));
+        if(($configuredMode==='sandbox'&&$mode!=='test')||($configuredMode==='live'&&$mode!=='live')) return $this->failure('yoco_mode_mismatch');
+        try{$occurred=(new DateTimeImmutable((string)($body['createdDate']??('@'.$timestamp))))->format('Y-m-d H:i:s');}catch(Throwable $failure){return $this->failure('invalid_event_time');}
+        $status=strtolower(trim((string)($payload['status']??'')));
+        if($rawType==='payment.succeeded'&&$status==='succeeded') $type='payment.succeeded';
+        elseif($rawType==='payment.failed'&&$status==='failed') $type='payment.failed';
+        elseif($rawType==='refund.succeeded'&&$status==='succeeded'&&!array_key_exists('refundableAmount',$payload)) $type='payment.refunded';
+        else return array('ok'=>true,'ignored'=>true,'code'=>$rawType==='refund.succeeded'?'partial_refund_requires_review':'unsupported_yoco_event','ignoredEvent'=>array(
+            'providerEventId'=>(string)($body['id']??$webhookId),'intentId'=>$intent['id'],'type'=>$rawType?:'unknown',
+            'reasonCode'=>isset($payload['failureReason'])?substr(preg_replace('/[^A-Za-z0-9_.:-]/','_',strtolower((string)$payload['failureReason'])),0,96):NULL,
+            'occurredAt'=>$occurred,
+        ));
+        return array('ok'=>true,'event'=>array(
+            'providerEventId'=>(string)($body['id']??$webhookId),'intentId'=>$intent['id'],
+            'providerPaymentId'=>(string)($payload['id']??$checkoutId),'type'=>$type,
+            'reasonCode'=>$type==='payment.failed'?(isset($payload['failureReason'])?substr(preg_replace('/[^A-Za-z0-9_.:-]/','_',strtolower((string)$payload['failureReason'])),0,96):'failed'):NULL,
+            'occurredAt'=>$occurred,
+        ));
+    }
+
+    private function normalizeApiEvent(array $body,$id,$timestamp)
+    {
         $rawType=trim((string)($body['event_type']??''));
         $paymentId=trim((string)($body['payment_id']??''));
         if(!in_array($rawType,array('payment.created','payment.refunded'),true)||!preg_match('/^[A-Za-z0-9:-]{1,100}$/',$paymentId)) return $this->failure('unsupported_yoco_event');
