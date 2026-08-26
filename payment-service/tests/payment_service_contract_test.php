@@ -13,7 +13,7 @@ $expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unver
     'Provider events must be verified before processing.');
 $expect(strpos($controller,"(string)\$action!=='yocowebhook'")!==false
     && strpos($controller,"file_get_contents('php://input')")!==false
-    && strpos($controller,"http_response_code(\$accepted?200:403)")!==false,
+    && strpos($controller,"http_response_code(\$accepted?200:(!empty(\$result['retryable'])?503:403))")!==false,
     'The webhook endpoint must accept unauthenticated delivery while rejecting unverified events.');
 $expect(strpos($events,"'unique' => TRUE")!==false && strpos($events,"'provider_event_id'")!==false,
     'Provider event identity must be unique and durable.');

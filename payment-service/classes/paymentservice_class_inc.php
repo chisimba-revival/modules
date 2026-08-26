@@ -133,7 +133,9 @@ class paymentservice extends ChisimbaObject
             }
             return $this->result(TRUE, $verified['code'] ?? 'verified_event_ignored');
         }
-        if (empty($verified['ok']) || !is_array($verified['event'] ?? NULL)) { return $this->result(FALSE, 'unverified_event'); }
+        if (empty($verified['ok']) || !is_array($verified['event'] ?? NULL)) {
+            return array_merge($this->result(FALSE, 'unverified_event'),array('retryable'=>!empty($verified['retryable'])));
+        }
         $event = $verified['event'];
         if (!$this->validEvent($event)) { return $this->result(FALSE, 'invalid_provider_event'); }
         $claim = $this->events->claim(array(

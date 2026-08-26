@@ -74,7 +74,7 @@ class payment_service extends controller
         foreach(array('webhook-id'=>'HTTP_WEBHOOK_ID','webhook-timestamp'=>'HTTP_WEBHOOK_TIMESTAMP','webhook-signature'=>'HTTP_WEBHOOK_SIGNATURE') as $name=>$server) $headers[$name]=(string)($_SERVER[$server]??'');
         $result=$this->payments->receiveProviderEvent('yoco',array('rawBody'=>(string)$raw,'headers'=>$headers));
         $accepted=!empty($result['ok'])||in_array($result['code']??'',array('invalid_provider_event','intent_not_found'),true);
-        http_response_code($accepted?200:403); header('Content-Type: application/json');
+        http_response_code($accepted?200:(!empty($result['retryable'])?503:403)); header('Content-Type: application/json');
         echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES); exit;
     }
     private function common($message,$error){ $this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); }
