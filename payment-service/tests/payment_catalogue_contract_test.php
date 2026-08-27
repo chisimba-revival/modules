@@ -39,9 +39,13 @@ $expect(str_contains($productsTemplate,'Saved products pages')&&str_contains($pr
 $expect(str_contains($productsTemplate,'View payment activity')&&str_contains($register,'mod_payment_service_products|site'),'Product setup must be the discoverable administrator landing page with a route to payment activity.');
 $expect(str_contains($controller,"case 'tiers'")
     && str_contains($tiersTemplate,'Your current tier')
-    && str_contains($tiersTemplate,'View <?=$e($label)?> courses')
+    && str_contains($tiersTemplate,"'free courses':\$label.' courses'")
     && str_contains($tiersTemplate,'Upgrade to <?=$e($label)?>'),
     'Membership comparison must show the current tier and connect course discovery to upgrade actions.');
+$expect(str_contains($controller,"array('tiers','yocowebhook','paystackwebhook')")
+    && str_contains($tiersTemplate,'Register now for free courses')
+    && str_contains($tiersTemplate,"'free courses'"),
+    'The membership comparison must be public and offer a sentence-case free-registration journey.');
 $expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
     || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
     'A tier upgrade must preserve its chosen tier while offering every published billing option.');

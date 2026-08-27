@@ -12,7 +12,7 @@ $expect(strpos($service,'recordBrowserReturn')!==false && strpos($service,"'awai
     'Browser returns must remain non-authoritative.');
 $expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unverified_event'")!==false,
     'Provider events must be verified before processing.');
-$expect(strpos($controller,"array('yocowebhook','paystackwebhook')")!==false
+$expect(strpos($controller,"array('tiers','yocowebhook','paystackwebhook')")!==false
     && strpos($controller,"file_get_contents('php://input')")!==false
     && strpos($controller,"http_response_code(\$accepted?200:(!empty(\$result['retryable'])?503:403))")!==false,
     'The webhook endpoint must accept unauthenticated delivery while rejecting unverified events.');

@@ -10,7 +10,7 @@ class payment_service extends controller
         $this->user=$this->getObject('user','security');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
-    public function requiresLogin($action){return !in_array((string)$action,array('yocowebhook','paystackwebhook'),true);}
+    public function requiresLogin($action){return !in_array((string)$action,array('tiers','yocowebhook','paystackwebhook'),true);}
     public function dispatch($action){
         switch((string)$action){
             case 'buy': return $this->buy(); case 'fakecheckout': return $this->fakeCheckout();
@@ -25,9 +25,9 @@ class payment_service extends controller
         }
     }
     private function tiers($message='',$error='',$editOpen=false){
-        $memberships=$this->getObject('membershipservice','membership-service');$effective=$memberships->effectiveTier($this->user->userId());
+        $isLoggedIn=$this->user->isLoggedIn();$memberships=$this->getObject('membershipservice','membership-service');$effective=$isLoggedIn?$memberships->effectiveTier($this->user->userId()):'free';
         $products=array('tier_1'=>array(),'tier_2'=>array());foreach($this->catalog->listProducts(true) as $product){if(($product['purpose_type']??'')==='membership'&&isset($products[$product['purpose_id']])&&is_array($product['current_price']??null))$products[$product['purpose_id']][]=$product;}
-        $this->setVar('tierEffective',$effective);$this->setVar('tierProducts',$products);$this->setVar('tierContent',$this->getObject('tierpresentationservice')->all());$this->setVar('tierEditOpen',$editOpen);$this->common($message,$error);return 'tiers_tpl.php';
+        $this->setVar('tierEffective',$effective);$this->setVar('tierIsLoggedIn',$isLoggedIn);$this->setVar('tierProducts',$products);$this->setVar('tierContent',$this->getObject('tierpresentationservice')->all());$this->setVar('tierEditOpen',$editOpen);$this->common($message,$error);return 'tiers_tpl.php';
     }
     private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array('free','tier_1','tier_2') as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
     private function catalogue($message='',$error=''){
@@ -135,7 +135,7 @@ class payment_service extends controller
         http_response_code($accepted?200:(!empty($result['retryable'])?503:403));header('Content-Type: application/json');
         echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES);exit;
     }
-    private function common($message,$error){ $provider=$this->payments->preferredProvider();$errors=array('checkout_requires_deliverable_email'=>'This account needs a real email address before it can continue to secure payment. Update the email address in My Profile, then try again.');$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$errors[$error]??$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
+    private function common($message,$error){ $provider=$this->payments->preferredProvider();$errors=array('checkout_requires_deliverable_email'=>'This account needs a real email address before it can continue to secure payment. Update the email address in My Profile, then try again.');$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$errors[$error]??$error); $this->setVar('paymentIsLoggedIn',$this->user->isLoggedIn()); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function param($name){$value=$this->getParam($name,null);return is_scalar($value)?trim((string)$value):'';}
 }
