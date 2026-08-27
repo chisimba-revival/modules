@@ -46,6 +46,8 @@ $expect(str_contains($catalogue,'Once-off payment')
 $expect(str_contains($service,"'paystack'")&&str_contains($service,'preferredProvider')
     &&str_contains($controller,"case 'paystackwebhook'")&&str_contains($controller,'reconcileIntent'),
     'Paystack must be selectable, webhook-driven and independently verified on browser return.');
+$expect(str_contains($controller,"'email'=>\$this->user->email(\$this->user->userId())"),
+    'Checkout must resolve email from the canonical user record when legacy sessions omit it.');
 $expect(str_contains($service,'ensureRenewalIntent')&&str_contains($service,'rememberSubscription')
     &&str_contains($service,'payment.renewal_intent_created'),
     'Every recurring charge must receive its own idempotent intent and durable subscription mapping.');

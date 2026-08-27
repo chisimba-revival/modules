@@ -56,7 +56,10 @@ class payment_service extends controller
             'successUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
             'cancelUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
             'failureUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
-            'email'=>$this->user->email(),
+            // Resolve from the canonical user record. Older sessions may not
+            // carry the optional email session value even when the account
+            // has a valid email address.
+            'email'=>$this->user->email($this->user->userId()),
         ));
         if(empty($started['ok'])) return $this->catalogue('',$started['code']);
         if($provider!=='fake'&&!empty($started['approvalUrl'])) { header('Location: '.$started['approvalUrl'],true,303); exit; }
