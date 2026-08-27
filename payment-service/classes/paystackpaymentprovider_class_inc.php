@@ -87,6 +87,9 @@ class paystackpaymentprovider extends ChisimbaObject
         $intent=$reference===''?null:$this->intents->byProviderReference($reference);
         if($intent===null&&!empty($metadata['intentId']))$intent=$this->intents->byId((string)$metadata['intentId']);
         $descriptor=$this->subscriptionDescriptor($data);
+        if($descriptor!==null&&empty($descriptor['providerSubscriptionId'])) {
+            $descriptor=$this->resolveSubscriptionDescriptor($data,$descriptor);
+        }
         $renewal=null;
         if($intent===null&&$descriptor!==null){
             $mapping=$this->subscriptions->byCustomerPlan('paystack',$descriptor['providerCustomerId'],$descriptor['providerPlanId']);
@@ -128,6 +131,32 @@ class paystackpaymentprovider extends ChisimbaObject
         $customerId=trim((string)($customer['customer_code']??$data['customer_code']??''));$planId=trim((string)($plan['plan_code']??(is_scalar($data['plan']??null)?$data['plan']:'')??''));
         if($customerId===''||$planId==='')return null;
         return array('providerCustomerId'=>$customerId,'providerPlanId'=>$planId,'providerSubscriptionId'=>(string)($data['subscription_code']??$data['subscription']['subscription_code']??''));
+    }
+    /**
+     * Paystack may deliver subscription.create before charge.success. When that
+     * happens the core cannot associate the early event with an intent yet.
+     * Resolve the provider-owned subscription during verified charge handling
+     * so its cancellation identifier is never lost to webhook ordering.
+     */
+    private function resolveSubscriptionDescriptor(array $charge,array $descriptor){
+        $customer=is_array($charge['customer']??null)?$charge['customer']:array();
+        $plan=is_array($charge['plan_object']??null)?$charge['plan_object']:array();
+        if(!$plan&&is_array($charge['plan']??null))$plan=$charge['plan'];
+        $customerId=filter_var($customer['id']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1)));
+        $planId=filter_var($plan['id']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1)));
+        $path='/subscription?perPage=100';
+        if($customerId!==false&&$planId!==false)$path.='&customer='.$customerId.'&plan='.$planId;
+        $response=$this->request('GET',$path);
+        if(empty($response['ok'])||!is_array($response['data']['data']??null))return $descriptor;
+        foreach($response['data']['data'] as $subscription){
+            if(!is_array($subscription))continue;
+            $candidate=$this->subscriptionDescriptor($subscription);
+            if($candidate!==null
+                &&$candidate['providerCustomerId']===$descriptor['providerCustomerId']
+                &&$candidate['providerPlanId']===$descriptor['providerPlanId']
+                &&trim((string)$candidate['providerSubscriptionId'])!=='')return $candidate;
+        }
+        return $descriptor;
     }
     private function request($method,$path,$payload=null){
         if(!function_exists('curl_init'))return $this->failure('curl_unavailable');

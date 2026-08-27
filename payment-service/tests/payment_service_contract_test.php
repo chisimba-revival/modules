@@ -57,6 +57,11 @@ $expect(str_contains($catalogue,'payment-review-product--course')
 $expect(str_contains($service,'ensureRenewalIntent')&&str_contains($service,'rememberSubscription')
     &&str_contains($service,'payment.renewal_intent_created'),
     'Every recurring charge must receive its own idempotent intent and durable subscription mapping.');
+$paystack=file_get_contents($module.'/classes/paystackpaymentprovider_class_inc.php');
+$expect(str_contains($paystack,'resolveSubscriptionDescriptor')
+    && str_contains($paystack,"'/subscription?perPage=100'")
+    && str_contains($paystack,"empty(\$descriptor['providerSubscriptionId'])"),
+    'A verified recurring charge must recover the provider subscription code when subscription.create arrived first.');
 $stores=file_get_contents($module.'/classes/dbpaymentintents_class_inc.php').file_get_contents($module.'/classes/dbpaymentevents_class_inc.php').file_get_contents($module.'/classes/dbpayments_class_inc.php');
 $expect(!preg_match('/->update\s*\(\s*array\s*\(/',$stores),'Payment stores must use the PHP 8 three-argument dbTable update contract.');
 fwrite(STDOUT,"PASS: provider-neutral payment service contract\n");
