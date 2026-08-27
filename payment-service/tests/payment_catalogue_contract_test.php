@@ -24,6 +24,7 @@ $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'c
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
 $catalogueTemplate=file_get_contents($root.'/templates/content/catalogue_tpl.php');
 $tiersTemplate=file_get_contents($root.'/templates/content/tiers_tpl.php');
+$layoutTemplate=file_get_contents($root.'/templates/layout/payment_layout.php');
 $tierService=file_get_contents($root.'/classes/tierpresentationservice_class_inc.php');
 $expect(str_contains($controller,"\$purpose=\$this->param('purpose')")
     && str_contains($catalogueTemplate,'Choose your membership')
@@ -46,6 +47,13 @@ $expect(str_contains($controller,"array('tiers','yocowebhook','paystackwebhook')
     && str_contains($tiersTemplate,'Register now for free courses')
     && str_contains($tiersTemplate,"'free courses'"),
     'The membership comparison must be public and offer a sentence-case free-registration journey.');
+$expect(str_contains($layoutTemplate,"showBlock('login','security')")
+    && str_contains($layoutTemplate,"showBlock('register','security')")
+    && str_contains($layoutTemplate,'payment-acquisition-sidebar'),
+    'Anonymous membership discovery must reuse the canonical sign-in and registration blocks in its sidebar.');
+$expect(str_contains($tiersTemplate,'per month, billed annually')
+    && str_contains($tiersTemplate,"['amount_minor'])/12"),
+    'Annual membership prices must disclose their effective monthly cost without obscuring the annual charge.');
 $expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
     || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
     'A tier upgrade must preserve its chosen tier while offering every published billing option.');
