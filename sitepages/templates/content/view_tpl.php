@@ -1,0 +1,2 @@
+<?php $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8'); ?>
+<main class="sitepages-view"><?php if(!empty($sitepagesMissing)):?><section class="sitepages-card"><h1><?= $e($sitepagesMissing) ?></h1></section><?php else:?><article class="sitepages-card sitepages-article"><h1><?= $e($sitepagesPage['title']) ?></h1><div class="sitepages-body"><?= $sitepagesPage['body_html'] ?></div></article><?php endif;?></main>
