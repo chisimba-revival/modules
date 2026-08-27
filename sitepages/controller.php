@@ -47,7 +47,9 @@ HTML;
     }
     public function dispatch($action)
     {
-        return match((string)$action){'manage'=>$this->manage(),'save'=>$this->save(),'archive'=>$this->archive(),default=>$this->view()};
+        $action=(string)$action;
+        if($action===''&&$this->canManage())$action='manage';
+        return match($action){'manage'=>$this->manage(),'save'=>$this->save(),'archive'=>$this->archive(),default=>$this->view()};
     }
     private function canManage(){return $this->user->isAdmin();}
     private function text($key){return $this->getObject('language','language')->languageText('mod_sitepages_'.$key,'sitepages');}
