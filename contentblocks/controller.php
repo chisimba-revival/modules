@@ -147,7 +147,7 @@ class contentblocks extends controller
             }
         }
         $labels = array();
-        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','herodesc','information','informationdesc','width','wide','normal','blocktitle','showtitle','body','imageurl','imagehelp','chooseimage','removeimage','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
+        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','herodesc','videohero','videoherodesc','information','informationdesc','width','wide','normal','blocktitle','videoname','videonamehelp','showtitle','body','imageurl','imagehelp','chooseimage','removeimage','videourl','videohelp','choosevideo','removevideo','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
             $labels[$key] = $this->text($key);
         }
         $this->setVar('contentblocksLabels', $labels);
@@ -180,17 +180,21 @@ class contentblocks extends controller
         $type = (string)$this->getParam('blocktype', 'information');
         $width = (string)$this->getParam('blockwidth', 'wide');
         $title = trim((string)$this->getParam('title', ''));
-        $image = $this->safeUrl($this->getParam('image_url', ''));
+        $image = $this->safeUrl($this->getParam($type === 'videohero' ? 'video_url' : 'image_url', ''));
         $action = $this->safeUrl($this->getParam('action_url', ''));
         $actionLabel = trim((string)$this->getParam('action_label', ''));
         if ($type === 'hero') {
             $width = 'wide';
+        } elseif ($type === 'videohero') {
+            $width = 'wide';
+            $actionLabel = '';
+            $action = '';
         } else {
             $image = '';
             $actionLabel = '';
             $action = '';
         }
-        if ($title === '' || !in_array($type, array('hero','information'), true) || !in_array($width, array('wide','normal'), true) || $image === false || $action === false) {
+        if ($title === '' || !in_array($type, array('hero','videohero','information'), true) || !in_array($width, array('wide','normal'), true) || $image === false || $action === false || ($type === 'videohero' && $image === '')) {
             $this->flash($this->text('invalid'));
             return $this->redirectManage($scope);
         }
@@ -200,11 +204,11 @@ class contentblocks extends controller
             'blocktype' => $old ? $old['blocktype'] : $type,
             'blockwidth' => $old ? $old['blockwidth'] : $width,
             'title' => $title,
-            'body_html' => (string)$this->getParam('body_html', ''),
+            'body_html' => $type === 'videohero' ? '' : (string)$this->getParam('body_html', ''),
             'image_url' => $image,
             'action_label' => $actionLabel,
             'action_url' => $action,
-            'show_title' => $this->getParam('show_title', '') === '1' ? '1' : '0',
+            'show_title' => $type === 'videohero' ? '0' : ($this->getParam('show_title', '') === '1' ? '1' : '0'),
         ), $this->user->userId(), $id);
         if (!$row) {
             $this->flash($this->text('savefailed'));

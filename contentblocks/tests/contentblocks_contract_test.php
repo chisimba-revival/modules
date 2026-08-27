@@ -31,7 +31,7 @@ $db = file_get_contents($root . '/classes/dbcontentblocks_class_inc.php');
 $checks = array(
     'context aware' => str_contains($register, 'CONTEXT_AWARE: 1'),
     'no context dependency' => str_contains($register, 'DEPENDS_CONTEXT: 0') && !preg_match('/^DEPENDS: *context$/m', $register),
-    'two block types' => str_contains($controller, "array('hero','information')"),
+    'three block types' => str_contains($controller, "array('hero','videohero','information')"),
     'render context guard' => str_contains($base, "=== 'context'") && str_contains($base, 'currentContext()'),
     'safe semantic rendering' => str_contains($base, "'blockType' => 'none'") && str_contains($base, 'washout'),
     'csrf guard' => str_contains($controller, 'hash_equals'),
@@ -42,8 +42,12 @@ $checks = array(
         && str_contains($register, 'TEXT: mod_contentblocks_normal|Side-column label|Side column'),
     'single-encoded action routes' => str_contains($template, 'html_entity_decode') && str_contains($template, '$moduleUrl(') && !str_contains($template, '$e($this->uri'),
     'File Manager image picker' => str_contains($template, 'ChisimbaFilePickerReceive') && str_contains($template, '\'policy\' => \'image\'') && str_contains($template, 'readonly id="contentblocks-image-url"'),
+    'File Manager video picker' => str_contains($template, '\'policy\' => \'video\'') && str_contains($template, 'readonly id="contentblocks-video-url"'),
     'failed save is reported' => str_contains($controller, 'if (!$row)') && str_contains($controller, 'text(\'savefailed\')'),
     'distinct block types' => str_contains($controller, 'if ($type === \'hero\')') && str_contains($template, 'contentblocks-hero-only') && str_contains($template, 'contentblocks-type-help'),
+    'text-free video hero rendering' => str_contains($base, '<video class="content-block content-block--video-hero" controls playsinline preload="metadata"')
+        && str_contains($controller, "\$type === 'videohero' ? '' : (string)\$this->getParam('body_html', '')")
+        && str_contains($controller, "\$type === 'videohero' ? '0'"),
     'context plugin declaration' => str_contains($register, 'ISCONTEXTPLUGIN: 1'),
     'lecturer manifest rule' => str_contains($register, 'CONDITION: iscontextlecturer|Lecturers')
         && str_contains($register, 'RULE: manage,save,delete|iscontextlecturer'),

@@ -22,7 +22,7 @@ $checks = array(
     ),
     'Information adjacency selector exists' => str_contains(
         $css,
-        '.content-block.content-block--information + .content-block {'
+        '.content-block.content-block--information + .content-block,'
     ),
     'small logical gap outranks canvas reset' => str_contains(
         $css,

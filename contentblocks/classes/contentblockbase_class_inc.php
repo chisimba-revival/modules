@@ -23,7 +23,7 @@
  * @link      https://github.com/chisimba-revival/modules
  */
 /**
- * Renders database-backed Hero and Information blocks.
+ * Renders database-backed Hero, Video Hero and Information blocks.
  *
  * @category Chisimba
  * @package  contentblocks
@@ -77,10 +77,23 @@ class contentblockbase extends ChisimbaObject
         $image = $this->safeUrl($row['image_url'] ?? '');
         $actionUrl = $this->safeUrl($row['action_url'] ?? '');
         $actionLabel = htmlspecialchars((string)($row['action_label'] ?? ''), ENT_QUOTES, 'UTF-8');
+        if (($row['blocktype'] ?? '') === 'videohero') {
+            $video = htmlspecialchars($image, ENT_QUOTES, 'UTF-8');
+            $html = '<video class="content-block content-block--video-hero" controls playsinline preload="metadata" src="' . $video . '"></video>';
+            return array(
+                'title' => false,
+                'blockContents' => $html,
+                'blockType' => 'none',
+                'cssClass' => '',
+                'cssId' => '',
+                'show_title' => 0,
+            );
+        }
         $kind = ($row['blocktype'] ?? '') === 'hero' ? 'hero' : 'information';
         $tag = $kind === 'hero' ? 'section' : 'article';
         $heading = $kind === 'hero' ? 'h1' : 'h2';
-        $html = '<' . $tag . ' class="content-block content-block--' . $kind . '">';
+        $placement = ($row['blockwidth'] ?? 'wide') === 'normal' ? 'normal' : 'wide';
+        $html = '<' . $tag . ' class="content-block content-block--' . $kind . ' content-block--' . $placement . '">';
         if ($kind === 'hero' && $image !== '') {
             $html .= '<img class="content-block__image" src="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '" alt="">';
         }

@@ -30,6 +30,20 @@
     color: inherit;
 }
 
+.content-block.content-block--information.content-block--normal .content-block__inner {
+    padding: 1rem;
+}
+
+.content-block.content-block--video-hero {
+    display: block;
+    width: 100%;
+    height: auto;
+    padding: 0 !important;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
 .content-block.content-block--hero .content-block__title,
 .content-block.content-block--hero .content-block__body {
     color: inherit;
@@ -45,6 +59,9 @@
  * @author Derek Keats
  */
 .content-block.content-block--hero + .content-block,
-.content-block.content-block--information + .content-block {
+.content-block.content-block--information + .content-block,
+.content-block.content-block--video-hero + .content-block {
     margin-block-start: 0.75rem !important;
 }
+
+.contentblocks-video-preview{display:block;width:min(100%,46rem);max-height:28rem;margin-top:1rem;background:#111}.contentblocks-video-preview[hidden],.contentblocks-video-hero-only[hidden],.contentblocks-text-only[hidden],.contentblocks-field-help[hidden]{display:none}.contentblocks-field-help{margin-top:-.55rem;color:#536273}
