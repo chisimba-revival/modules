@@ -19,6 +19,13 @@ $checks = array(
     'Video Hero is always wide' => str_contains($controller, "elseif (\$type === 'videohero')")
         && str_contains($controller, "\$width = 'wide';"),
     'Video Hero requires video' => str_contains($controller, "\$type === 'videohero' && \$image === ''"),
+    'hidden video field cannot block other block types' => str_contains(
+        $template,
+        'videoField.required=video'
+    ) && !str_contains(
+        $template,
+        'name="video_url" value="<?= $e($imageValue) ?>" required'
+    ),
     'Video Hero has no visible copy or chrome' => str_contains($renderer, '<video class="content-block content-block--video-hero"')
         && str_contains($css, '.content-block.content-block--video-hero')
         && str_contains($css, 'background: transparent'),
