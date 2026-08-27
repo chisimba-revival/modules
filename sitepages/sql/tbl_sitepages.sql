@@ -12,8 +12,9 @@ $fields = array(
     'datecreated' => array('type' => 'timestamp'),
     'datemodified' => array('type' => 'timestamp'),
 );
-$indexes = array(
-    'slug' => array('fields' => array('slug' => array()),'unique' => true),
-    'status' => array('fields' => array('status' => array())),
+$tableIndexes = array(
+    'sitepages_primary' => array('primary' => true,'fields' => array('id' => array())),
+    'sitepages_slug' => array('unique' => true,'fields' => array('slug' => array())),
+    'sitepages_status' => array('fields' => array('status' => array())),
 );
 ?>
