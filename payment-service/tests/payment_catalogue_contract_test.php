@@ -23,6 +23,9 @@ $expect(str_contains($controller,"class_alias('payment_service','payment-service
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
 $expect(str_contains($returnTemplate,'Open course')&&str_contains($returnTemplate,'Refresh payment status'),'The browser return must offer the next human action without treating the return as payment proof.');
+$expect(str_contains($returnTemplate,'Go to My Learning')
+    && str_contains($returnTemplate,"if(!\$good)"),
+    'Successful membership checkout must lead into learning rather than immediately offering another purchase.');
 $expect(str_contains($catalog,'productPage')&&str_contains($productDb,'countProducts')&&str_contains($productDb,'LIMIT '),'The administrator catalogue must use bounded server-side pagination.');
 $expect(str_contains($productDb,'name LIKE')&&str_contains($productDb,'purpose_type')&&str_contains($productDb,'active=1'),'Product search, purpose and status filters must be applied by the server.');
 $expect(str_contains($productsTemplate,'Saved products pages')&&str_contains($productsTemplate,'Apply filters')&&str_contains($productsTemplate,'No products match these filters.'),'The product catalogue must expose accessible search, pagination and empty states.');

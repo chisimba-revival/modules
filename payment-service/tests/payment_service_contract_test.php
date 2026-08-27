@@ -48,6 +48,12 @@ $expect(str_contains($service,"'paystack'")&&str_contains($service,'preferredPro
     'Paystack must be selectable, webhook-driven and independently verified on browser return.');
 $expect(str_contains($controller,"'email'=>\$this->user->email(\$this->user->userId())"),
     'Checkout must resolve email from the canonical user record when legacy sessions omit it.');
+$expect(str_contains($controller,'effectiveTier($userId)')
+    && str_contains($controller,'tierIncludes($effectiveTier'),
+    'The catalogue must not sell a membership tier already included by the learner current tier.');
+$expect(str_contains($catalogue,'payment-review-product--course')
+    && str_contains($catalogue,'payment-review-product--membership'),
+    'Each order must remain visually grouped with its own optional course preview.');
 $expect(str_contains($service,'ensureRenewalIntent')&&str_contains($service,'rememberSubscription')
     &&str_contains($service,'payment.renewal_intent_created'),
     'Every recurring charge must receive its own idempotent intent and durable subscription mapping.');

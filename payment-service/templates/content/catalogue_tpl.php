@@ -12,6 +12,7 @@ $period=static function($value){return match((string)$value){'one_off'=>'Once-of
   <?php if($this->getVar('paymentError','')):?><div class="error"><?=$e($this->getVar('paymentError',''))?></div><?php endif;?>
   <div class="payment-review-grid">
   <?php foreach($products as $product): $price=$product['current_price']??null; if(!$price)continue; $course=$product['course']??null; ?>
+    <div class="payment-review-product<?=is_array($course)?' payment-review-product--course':' payment-review-product--membership'?>">
     <?php if(is_array($course)):?>
       <article class="course-card payment-review-course">
         <div class="course-card__media">
@@ -30,6 +31,7 @@ $period=static function($value){return match((string)$value){'one_off'=>'Once-of
       <form method="post" action="<?=$this->uri(array('action'=>'buy'))?>"><input type="hidden" name="csrf_token" value="<?=$csrf?>"><input type="hidden" name="product_code" value="<?=$e($product['code'])?>"><button class="button payment-continue" type="submit">Continue securely with <?=$provider?></button></form>
       <p class="payment-trust"><strong>Secure checkout</strong><span><?=$provider?> handles your payment securely. This learning site never receives or stores your card details.</span></p>
     </article>
+    </div>
   <?php endforeach;?>
   </div>
   <?php if(!$products):?><div class="payment-empty-state"><strong>No purchase is needed.</strong><p>This item is no longer available or access has already been granted.</p></div><?php endif;?>

@@ -29,6 +29,12 @@ class payment_service extends controller
         if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
         $admissions=$this->getObject('privateadmissionservice','membership-service');
         $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
+        $memberships=$this->getObject('membershipservice','membership-service');
+        $effectiveTier=$memberships->effectiveTier($userId);
+        $products=array_values(array_filter($products,function($product)use($memberships,$effectiveTier){
+            if(($product['purpose_type']??'')!=='membership') return true;
+            return !$memberships->tierIncludes($effectiveTier,(string)($product['purpose_id']??''));
+        }));
         $contexts=$this->getObject('dbcontext','context'); $images=$this->getObject('contextimage','context'); $members=$this->getObject('usercontext','context');
         foreach($products as &$product) {
             if(($product['purpose_type']??'')!=='private_course') continue;
