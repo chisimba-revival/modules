@@ -13,6 +13,8 @@ $expect=function($condition,$message){if(!$condition)throw new RuntimeException(
 $provider=new paystackpaymentprovider();$provider->config=new PaystackConfigStub();$provider->intents=new PaystackIntentStub();$provider->plans=new PaystackPlanStub();$provider->subscriptions=new PaystackSubscriptionStub();
 $provider->config->values=array('PAYMENT_PAYSTACK_MODE'=>'test','PAYMENT_PAYSTACK_SECRET_KEY'=>'sk_test_contract_secret');
 $intent=array('id'=>str_repeat('a',32),'amount_minor'=>12500,'currency'=>'ZAR','product_code'=>'tier-1-monthly');
+$reserved=$provider->createCheckout($intent,array('email'=>'student@demo.test','successUrl'=>'https://example.org/return'));
+$expect(($reserved['code']??'')==='checkout_requires_deliverable_email','Reserved test email domains must be rejected before provider checkout.');
 $provider->intents->rows[$intent['id']]=$intent;
 $charge=array('event'=>'charge.success','data'=>array('id'=>991,'domain'=>'test','status'=>'success','reference'=>$intent['id'],'amount'=>12500,'currency'=>'ZAR','paid_at'=>'2026-08-27T09:00:00Z','customer'=>array('customer_code'=>'CUS_test'),'plan_object'=>array('plan_code'=>'PLN_test')));
 $raw=json_encode($charge,JSON_UNESCAPED_SLASHES);$signature=hash_hmac('sha512',$raw,'sk_test_contract_secret');

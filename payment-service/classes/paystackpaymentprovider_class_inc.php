@@ -21,7 +21,7 @@ class paystackpaymentprovider extends ChisimbaObject
         $options=is_array($options)?$options:array();
         $email=filter_var($options['email']??'',FILTER_VALIDATE_EMAIL);
         $callback=$options['successUrl']??'';
-        if($email===false||!$this->httpsUrl($callback))return $this->failure('invalid_checkout_details');
+        if($email===false||$this->reservedEmailDomain($email)||!$this->httpsUrl($callback))return $this->failure('checkout_requires_deliverable_email');
         $product=is_array($options['product']??null)?$options['product']:array();
         $payload=array(
             'email'=>$email,'amount'=>(int)$intent['amount_minor'],'currency'=>(string)$intent['currency'],
@@ -140,6 +140,10 @@ class paystackpaymentprovider extends ChisimbaObject
         return array('ok'=>true,'data'=>$decoded);
     }
     private function secret(){return trim((string)$this->config->getValue('PAYMENT_PAYSTACK_SECRET_KEY','payment-service'));}
+    private function reservedEmailDomain($email){
+        $domain=strtolower((string)substr(strrchr((string)$email,'@')?:'',1));
+        return $domain===''||preg_match('/(?:^|\.)(?:test|invalid|example|localhost)$/',$domain)===1;
+    }
     private function httpsUrl($url){return filter_var($url,FILTER_VALIDATE_URL)&&parse_url($url,PHP_URL_SCHEME)==='https';}
     private function time($value){try{return(new DateTimeImmutable((string)$value))->format('Y-m-d H:i:s');}catch(Throwable $failure){return date('Y-m-d H:i:s');}}
     private function failure($code,$retryable=false,$detail=null){return array('ok'=>false,'code'=>$code,'retryable'=>(bool)$retryable,'detail'=>$detail);}
