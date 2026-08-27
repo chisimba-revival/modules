@@ -1,5 +1,5 @@
 <?php
 $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8'); $t=fn($k)=>$this->objLanguage->languageText('mod_registration_service_'.$k,'registration-service');
-$ok=!empty($verificationResult['ok']); $login=$e(rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/');
+$ok=!empty($verificationResult['ok']);$returnTo=(string)($registrationReturnTo??'');$login=rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/';if($returnTo!=='')$login.='?return_to='.rawurlencode($returnTo);$login=$e($login);
 ?>
 <main class="chisimba-workspace registration-service" aria-labelledby="verification-title"><h1 id="verification-title"><?php echo $e($t($ok?'verification_success_title':'verification_failed_title')); ?></h1><div class="<?php echo $ok?'success':'error'; ?>" role="status"><?php echo $e($t($ok?'verification_success':'verification_failed')); ?></div><div class="chisimba-form-actions"><?php if($ok): ?><a class="button" href="<?php echo $login; ?>"><?php echo $e($t('sign_in')); ?></a><?php else: ?><a class="button chisimba-button-secondary" href="<?php echo $e(html_entity_decode($this->uri(array(),'registration-service'),ENT_QUOTES,'UTF-8')); ?>"><?php echo $e($t('start_again')); ?></a><?php endif; ?></div></main>

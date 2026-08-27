@@ -82,6 +82,7 @@ class registration_service extends controller
 
     private function registrationPage($errorCode = '', array $values = array())
     {
+        $returnTo=$this->captureContinuation();
         $defaultCode=$this->phones->defaultCallingCode(
             $this->getObject('altconfig','config')->getValue(
                 'DEFAULT_CALLING_CODE','registration-service'
@@ -93,12 +94,14 @@ class registration_service extends controller
         $this->setVar('registrationError', $errorCode);
         $this->setVar('registrationValues', $values);
         $this->setVar('registrationCallingCodes', $this->phones->callingCodes());
+        $this->setVar('registrationReturnTo', $returnTo);
         return 'register_tpl.php';
     }
 
     private function submitRegistration()
     {
         if (!$this->isPost()) { return $this->registrationPage('post_required'); }
+        $returnTo=$this->captureContinuation();
         $values = $this->registrationValues();
         if (!$this->csrf->consume(self::REGISTER_CSRF, $this->scalarParam('csrf_token'))
             || !$this->abuseAllowed('registration.create', $values['emailAddress'])) {
@@ -124,7 +127,8 @@ class registration_service extends controller
                 && !empty($pending['pendingId'])) {
                 $resumed = $this->service->resumeVerification(
                     $pending['pendingId'],
-                    $this->registrationPolicy()
+                    $this->registrationPolicy(),
+                    $returnTo
                 );
                 if (!empty($resumed['ok'])) {
                     return $this->checkEmailPage($resumed, $values);
@@ -141,12 +145,13 @@ class registration_service extends controller
                 'ipAddress' => (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
                 'userAgent' => substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 512),
                 'locale' => 'en_ZA',
-            )
+            ),
+            $returnTo
         );
         if (empty($queued['ok'])) {
             if (($queued['code'] ?? '') === 'verification_email_failed'
                 && !empty($queued['pendingId'])) {
-                return $this->deliveryPendingRedirect($queued['pendingId'], $values);
+                return $this->deliveryPendingRedirect($queued['pendingId'], $values, $returnTo);
             }
             return $this->registrationPage((string) ($queued['code'] ?? 'verification_email_failed'), $values);
         }
@@ -234,12 +239,13 @@ class registration_service extends controller
         return 'check_email_tpl.php';
     }
 
-    private function deliveryPendingRedirect($pendingId, array $values)
+    private function deliveryPendingRedirect($pendingId, array $values, $returnTo = '')
     {
         $this->setSession('registration_service_delivery_retry', array(
             'pendingId' => (string) $pendingId,
             'emailAddress' => $values['emailAddress'],
             'username' => $values['username'],
+            'returnTo' => $returnTo,
         ));
         $location = html_entity_decode(
             $this->uri(array('action' => 'deliverypending'), 'registration-service'),
@@ -275,7 +281,8 @@ class registration_service extends controller
         }
         $result = $this->service->resumeVerification(
             $retry['pendingId'],
-            $this->registrationPolicy()
+            $this->registrationPolicy(),
+            $this->validatedContinuation($retry['returnTo']??'')??''
         );
         if (empty($result['ok'])) {
             return $this->deliveryPendingPage((string) ($result['code'] ?? 'verification_email_failed'));
@@ -289,6 +296,8 @@ class registration_service extends controller
 
     private function verifyAccount()
     {
+        $returnTo=$this->captureContinuation();
+        $this->unsetSession('registration_service_return_to');
         $verified = $this->service->completeEmailVerification($this->scalarParam('token'));
         if (empty($verified['ok']) || empty($verified['pendingId'])) {
             $this->setVar('verificationResult', array('ok' => false, 'code' => $verified['code'] ?? 'verification_failed'));
@@ -296,7 +305,31 @@ class registration_service extends controller
         }
         $result = $this->service->provisionVerified($verified['pendingId']);
         $this->setVar('verificationResult', $result);
+        $this->setVar('registrationReturnTo', $returnTo);
         return 'verification_result_tpl.php';
+    }
+
+    /** Preserve only a local, non-authentication destination through signup. */
+    private function captureContinuation()
+    {
+        $candidate=$this->validatedContinuation($this->scalarParam('return_to'));
+        if($candidate!==null){$this->setSession('registration_service_return_to',$candidate);return $candidate;}
+        $candidate=$this->validatedContinuation($this->getSession('registration_service_return_to',''));
+        return $candidate===null?'':$candidate;
+    }
+
+    private function validatedContinuation($candidate)
+    {
+        if(is_array($candidate)||is_object($candidate))return null;
+        $candidate=html_entity_decode(trim((string)$candidate),ENT_QUOTES,'UTF-8');
+        if($candidate===''||strlen($candidate)>2048||preg_match('/[\x00-\x1F\x7F\\\\]/',$candidate)||strncmp($candidate,'//',2)===0)return null;
+        $parts=parse_url($candidate);
+        if($parts===false||isset($parts['scheme'])||isset($parts['host'])||isset($parts['user'])||isset($parts['pass'])||isset($parts['port'])||isset($parts['fragment']))return null;
+        $path=(string)($parts['path']??'');$script=(string)($_SERVER['SCRIPT_NAME']??'/index.php');$base=rtrim(str_replace('\\','/',dirname($script)),'/');$prefix=$base===''?'/':$base.'/';
+        if($path!==$base&&strncmp($path,$prefix,strlen($prefix))!==0)return null;
+        parse_str((string)($parts['query']??''),$query);
+        if(($query['module']??'')==='security')return null;
+        return $candidate;
     }
 
     private function termsPage()

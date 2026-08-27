@@ -57,6 +57,9 @@ $expect(str_contains($tiersTemplate,'per month, billed annually')
 $expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
     || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
     'A tier upgrade must preserve its chosen tier while offering every published billing option.');
+$expect(str_contains($tiersTemplate,"'return_to'=>html_entity_decode(\$afterRegistration")
+    && str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
+    'Registration must retain the exact membership tier the visitor selected.');
 $expect(str_contains($tierService,'dbpaymenttiercontent')
     && str_contains($controller,'saveTiers()')
     && str_contains($tiersTemplate,'Edit membership page'),

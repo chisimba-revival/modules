@@ -81,7 +81,12 @@ $checks = array(
         && str_contains($templates, 'deliveryRetryUsername'),
     'canonical sign-in entrance' => !str_contains($layout . $templates, "'showlogin'")
         && str_contains($layout . $templates, "getItem('KEWL_SITE_ROOT')"),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.010'),
+    'purchase continuation' => str_contains($controller, 'validatedContinuation(')
+        && str_contains($controller, "setSession('registration_service_return_to'")
+        && str_contains($controller, "unsetSession('registration_service_return_to')")
+        && str_contains($templates, 'name="return_to"')
+        && str_contains($templates, "'?return_to='.rawurlencode(\$returnTo)"),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.011'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

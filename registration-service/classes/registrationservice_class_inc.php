@@ -172,7 +172,8 @@ class registrationservice extends dbTable
     public function acceptLegalAndQueueVerification(
         $pendingId,
         array $policy,
-        array $evidence = array()
+        array $evidence = array(),
+        $returnTo = ''
     ) {
         $pending = $this->pending($pendingId, 'awaiting_legal_acceptance');
         if ($pending === null) {
@@ -204,11 +205,11 @@ class registrationservice extends dbTable
             return $this->result(false, 'legal_acceptance_not_confirmed', $pending['id']);
         }
 
-        return $this->prepareAndQueueVerification($pending);
+        return $this->prepareAndQueueVerification($pending, $returnTo);
     }
 
     /** Resume a saved registration rather than asking the person to start over. */
-    public function resumeVerification($pendingId, array $policy)
+    public function resumeVerification($pendingId, array $policy, $returnTo = '')
     {
         $pending = $this->pendingWithStatuses(
             $pendingId,
@@ -223,10 +224,10 @@ class registrationservice extends dbTable
         )) {
             return $this->result(false, 'pending_registration_not_ready', $pendingId);
         }
-        return $this->prepareAndQueueVerification($pending);
+        return $this->prepareAndQueueVerification($pending, $returnTo);
     }
 
-    private function prepareAndQueueVerification(array $pending)
+    private function prepareAndQueueVerification(array $pending, $returnTo = '')
     {
         if ($pending['status'] !== 'awaiting_verification') {
             if ($this->update('id', $pending['id'], array(
@@ -251,6 +252,7 @@ class registrationservice extends dbTable
         $url = rtrim($this->objConfig->getSiteRoot(), '/')
             . '/index.php?module=registration-service&action=verify&token='
             . rawurlencode($token['rawToken']);
+        if(is_scalar($returnTo)&&trim((string)$returnTo)!=='')$url.='&return_to='.rawurlencode((string)$returnTo);
         $siteName = $this->siteName();
         $email = $this->actionEmail(
             $pending['first_name'],
