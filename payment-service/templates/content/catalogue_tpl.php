@@ -3,11 +3,12 @@ $products=$this->getVar('paymentProducts',array());
 $csrf=htmlspecialchars($this->getVar('paymentCsrf',''),ENT_QUOTES,'UTF-8');
 $learner=htmlspecialchars($this->getVar('paymentLearnerName',''),ENT_QUOTES,'UTF-8');
 $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+$provider=$e($this->getVar('paymentProviderName','payment provider'));
 $money=static function($price){$amount=number_format(((int)$price['amount_minor'])/100,2);return strtoupper((string)$price['currency'])==='ZAR'?'R'.$amount:(string)$price['currency'].' '.$amount;};
 $period=static function($value){return match((string)$value){'one_off'=>'Once-off payment','monthly'=>'Monthly membership','annual'=>'Annual membership',default=>ucwords(str_replace('_',' ',(string)$value)),};};
 ?>
 <section class="payment-workbench payment-checkout-review">
-  <header><p class="eyebrow">SECURE COURSE ACCESS</p><h1>Review your purchase</h1><p>Confirm the details below, then continue to Yoco to pay securely.</p></header>
+  <header><p class="eyebrow">SECURE COURSE ACCESS</p><h1>Review your purchase</h1><p>Confirm the details below, then continue to <?=$provider?> to pay securely.</p></header>
   <?php if($this->getVar('paymentError','')):?><div class="error"><?=$e($this->getVar('paymentError',''))?></div><?php endif;?>
   <div class="payment-review-grid">
   <?php foreach($products as $product): $price=$product['current_price']??null; if(!$price)continue; $course=$product['course']??null; ?>
@@ -26,8 +27,8 @@ $period=static function($value){return match((string)$value){'one_off'=>'Once-of
     <article class="payment-card payment-order-summary" aria-labelledby="payment-order-title">
       <p class="eyebrow">YOUR ORDER</p><h2 id="payment-order-title"><?=$e($product['name'])?></h2>
       <dl><dt>Learner</dt><dd><?=$learner?></dd><dt>Access</dt><dd><?=$e($period($product['billing_period']))?></dd><dt>Total</dt><dd class="payment-price"><?=$e($money($price))?></dd></dl>
-      <form method="post" action="<?=$this->uri(array('action'=>'buy'))?>"><input type="hidden" name="csrf_token" value="<?=$csrf?>"><input type="hidden" name="product_code" value="<?=$e($product['code'])?>"><button class="button payment-continue" type="submit">Continue securely with Yoco</button></form>
-      <p class="payment-trust"><strong>Secure checkout</strong><span>Yoco handles your payment securely. KengaLearn never receives or stores your card details.</span></p>
+      <form method="post" action="<?=$this->uri(array('action'=>'buy'))?>"><input type="hidden" name="csrf_token" value="<?=$csrf?>"><input type="hidden" name="product_code" value="<?=$e($product['code'])?>"><button class="button payment-continue" type="submit">Continue securely with <?=$provider?></button></form>
+      <p class="payment-trust"><strong>Secure checkout</strong><span><?=$provider?> handles your payment securely. This learning site never receives or stores your card details.</span></p>
     </article>
   <?php endforeach;?>
   </div>

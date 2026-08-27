@@ -5,7 +5,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 class paymentservice extends ChisimbaObject
 {
     private const PURPOSES = array('membership', 'private_course');
-    private const PROVIDERS = array('fake', 'yoco');
+    private const PROVIDERS = array('fake', 'yoco', 'paystack');
     private const EVENT_STATES = array(
         'payment.succeeded' => 'succeeded',
         'payment.failed' => 'failed',
@@ -22,6 +22,7 @@ class paymentservice extends ChisimbaObject
         $this->events = $this->getObject('dbpaymentevents');
         $this->payments = $this->getObject('dbpayments');
         $this->catalog = $this->getObject('paymentcatalogservice');
+        $this->subscriptions = $this->getObject('dbpaymentsubscriptions');
         $this->users = $this->getObject('userservice', 'security');
         $this->accountEvents = $this->getObject('accounteventservice', 'account-event-service');
     }
@@ -44,8 +45,17 @@ class paymentservice extends ChisimbaObject
     }
 
     public function intent($intentId) { return $this->intents->byId($this->hexId($intentId)); }
-    public function operations($limit=200) { return array('intents'=>$this->intents->recent($limit),'payments'=>$this->payments->recent($limit),'events'=>$this->events->recent($limit)); }
+    public function operations($limit=200) { return array('intents'=>$this->intents->recent($limit),'payments'=>$this->payments->recent($limit),'events'=>$this->events->recent($limit),'subscriptions'=>$this->subscriptions->recent($limit)); }
     public function providerAvailable($code) { $provider=$this->provider($code); return $provider!==NULL&&$provider->isAvailable(); }
+    public function preferredProvider()
+    {
+        $config=$this->getObject('dbsysconfig','sysconfig');
+        $preferred=strtolower(trim((string)$config->getValue('PAYMENT_DEFAULT_PROVIDER','payment-service')));
+        foreach(array($preferred,'paystack','yoco','fake') as $code) {
+            if(in_array($code,self::PROVIDERS,true)&&$this->providerAvailable($code)) return $code;
+        }
+        return 'fake';
+    }
 
     /** Development adapter only; events still pass verification and idempotency. */
     public function runFakeScenario($intentId,$scenario)
@@ -94,6 +104,7 @@ class paymentservice extends ChisimbaObject
         if ($intent['state'] !== 'created') { return $this->result(TRUE, 'checkout_already_started', $intent['id']); }
         $provider = $this->provider($intent['provider_code']);
         if ($provider === NULL || !$provider->isAvailable()) { return $this->result(FALSE, 'provider_unavailable', $intent['id']); }
+        if($intent['provider_code']!=='fake') $options['product']=$this->catalog->productVersion($intent['product_code'],$intent['price_version']);
         $checkout = $provider->createCheckout($intent, $intent['provider_code']==='fake' ? ($options['scenario'] ?? 'success') : $options);
         if (empty($checkout['ok'])) { return array_merge($this->result(FALSE, $checkout['code'] ?? 'checkout_failed', $intent['id']), array('retryable'=>!empty($checkout['retryable']))); }
         $this->intents->transition($intent['id'], 'created', array(
@@ -113,11 +124,26 @@ class paymentservice extends ChisimbaObject
         return $this->result(TRUE, 'awaiting_verified_provider_event', $intent['id']);
     }
 
+    /** Server verification can improve return-page feedback; browser navigation itself remains non-authoritative. */
+    public function reconcileIntent($intentId)
+    {
+        $intent=$this->intents->byId($this->hexId($intentId));
+        if($intent===NULL) return $this->result(FALSE,'intent_not_found');
+        $provider=$this->provider($intent['provider_code']);
+        if($provider===NULL||!method_exists($provider,'verifyPayment')) return $this->result(TRUE,'verification_deferred',$intent['id']);
+        $verified=$provider->verifyPayment($intent);
+        if(empty($verified['ok'])||!is_array($verified['event']??null)) return array_merge($this->result(FALSE,$verified['code']??'verification_failed',$intent['id']),array('retryable'=>!empty($verified['retryable'])));
+        return $this->processVerifiedEvent($intent['provider_code'],$verified['event']);
+    }
+
     public function receiveProviderEvent($providerCode, array $envelope)
     {
         $provider = $this->provider($providerCode);
         if ($provider === NULL) { return $this->result(FALSE, 'provider_unavailable'); }
         $verified = $provider->verifyAndNormalize($envelope);
+        if(!empty($verified['ok'])&&is_array($verified['subscriptionUpdate']??null)) {
+            return $this->updateSubscriptionState($providerCode,$verified['subscriptionUpdate']);
+        }
         if (!empty($verified['ok']) && !empty($verified['ignored'])) {
             $ignored=$verified['ignoredEvent']??NULL;
             if(is_array($ignored)&&$this->text($ignored['providerEventId']??NULL,191)!==NULL
@@ -136,7 +162,16 @@ class paymentservice extends ChisimbaObject
         if (empty($verified['ok']) || !is_array($verified['event'] ?? NULL)) {
             return array_merge($this->result(FALSE, 'unverified_event'),array('retryable'=>!empty($verified['retryable'])));
         }
-        $event = $verified['event'];
+        return $this->processVerifiedEvent($providerCode,$verified['event']);
+    }
+
+    private function processVerifiedEvent($providerCode,array $event)
+    {
+        if(is_array($event['renewal']??null)) {
+            $renewal=$this->ensureRenewalIntent($providerCode,$event['renewal']);
+            if(empty($renewal['ok'])) return $renewal;
+            $event['intentId']=$renewal['intentId'];
+        }
         if (!$this->validEvent($event)) { return $this->result(FALSE, 'invalid_provider_event'); }
         $claim = $this->events->claim(array(
             'provider_code'=>$providerCode,
@@ -152,11 +187,64 @@ class paymentservice extends ChisimbaObject
             if ($event['type'] === 'payment.succeeded' && is_array($intent)) {
                 $this->applyFulfilment($intent, $event['providerPaymentId']);
             }
+            if(is_array($event['subscription']??null)) $this->rememberSubscription($providerCode,$event);
             return $this->result(TRUE, 'duplicate_event_ignored', $event['intentId']);
         }
         $result = $this->applyEvent($providerCode, $event);
+        if(!empty($result['ok'])&&is_array($event['subscription']??null)) $this->rememberSubscription($providerCode,$event);
         $this->events->complete($claim['id'], $result['code']);
         return $result;
+    }
+
+    private function ensureRenewalIntent($providerCode,array $renewal)
+    {
+        $base=$this->intents->byId($this->hexId($renewal['baseIntentId']??null));
+        $reference=$this->text($renewal['reference']??null,191);
+        if($base===NULL||$reference===NULL) return $this->result(FALSE,'invalid_subscription_renewal');
+        $key=$providerCode.'-renewal:'.$reference;
+        $existing=$this->intents->byIdempotency($key);
+        if(is_array($existing)) return $this->result(TRUE,'renewal_intent_exists',$existing['id']);
+        $values=$base;
+        $values['id']=bin2hex(random_bytes(16));$values['state']='awaiting_approval';
+        $values['provider_reference']=$reference;$values['failure_code']=NULL;
+        $values['idempotency_key']=$key;
+        $values['correlation_id']='renewal:'.substr(hash('sha256',$reference),0,48);
+        $values['created_at']=$values['updated_at']=date('Y-m-d H:i:s');
+        if($this->intents->create($values)===FALSE) return $this->result(FALSE,'renewal_intent_failed');
+        $this->audit('payment.renewal_intent_created',$values,'requested');
+        return $this->result(TRUE,'renewal_intent_created',$values['id']);
+    }
+
+    private function rememberSubscription($providerCode,array $event)
+    {
+        $descriptor=$event['subscription'];$intent=$this->intents->byId($event['intentId']);
+        if(!is_array($intent)||$intent['purpose_type']!=='membership') return;
+        $customer=$this->text($descriptor['providerCustomerId']??null,191);
+        $plan=$this->text($descriptor['providerPlanId']??null,191);
+        if($customer===NULL||$plan===NULL)return;
+        $this->subscriptions->remember(array(
+            'provider_code'=>$providerCode,
+            'provider_subscription_id'=>$this->text($descriptor['providerSubscriptionId']??null,191),
+            'provider_customer_id'=>$customer,'provider_plan_id'=>$plan,
+            'base_intent_id'=>$intent['id'],'product_code'=>$intent['product_code'],'state'=>'active',
+        ));
+    }
+
+    private function updateSubscriptionState($providerCode,array $update)
+    {
+        $descriptor=is_array($update['descriptor']??null)?$update['descriptor']:array();
+        $customer=$this->text($descriptor['providerCustomerId']??null,191);
+        $plan=$this->text($descriptor['providerPlanId']??null,191);
+        $state=$this->enum($update['state']??null,array('active','non_renewing','disabled'));
+        if($customer===NULL||$plan===NULL||$state===NULL)return $this->result(FALSE,'invalid_subscription_update');
+        $existing=$this->subscriptions->byCustomerPlan($providerCode,$customer,$plan);
+        if(!is_array($existing))return $this->result(TRUE,'subscription_update_deferred');
+        $saved=$this->subscriptions->remember(array(
+            'provider_code'=>$providerCode,'provider_subscription_id'=>$this->text($descriptor['providerSubscriptionId']??null,191),
+            'provider_customer_id'=>$customer,'provider_plan_id'=>$plan,'base_intent_id'=>$existing['base_intent_id'],
+            'product_code'=>$existing['product_code'],'state'=>$state,
+        ));
+        return $this->result($saved!==NULL,$saved!==NULL?'subscription_updated':'subscription_update_failed',$existing['base_intent_id']);
     }
 
     private function applyEvent($providerCode, array $event)
@@ -248,6 +336,7 @@ class paymentservice extends ChisimbaObject
     {
         if ($code === 'fake') { return $this->getObject('fakepaymentprovider'); }
         if ($code === 'yoco') { return $this->getObject('yocopaymentprovider'); }
+        if ($code === 'paystack') { return $this->getObject('paystackpaymentprovider'); }
         return NULL;
     }
 

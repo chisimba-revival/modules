@@ -10,12 +10,13 @@ class payment_service extends controller
         $this->user=$this->getObject('user','security');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
-    public function requiresLogin($action){return (string)$action!=='yocowebhook';}
+    public function requiresLogin($action){return !in_array((string)$action,array('yocowebhook','paystackwebhook'),true);}
     public function dispatch($action){
         switch((string)$action){
             case 'buy': return $this->buy(); case 'fakecheckout': return $this->fakeCheckout();
             case 'deliverfake': return $this->deliverFake();
             case 'yocowebhook': return $this->yocoWebhook();
+            case 'paystackwebhook': return $this->paystackWebhook();
             case 'return': return $this->returned(); case 'products': return $this->products();
             case 'createproduct': return $this->createProduct(); case 'addprice': return $this->addPrice();
             case 'operations': return $this->operations(); case 'catalogue': return $this->catalogue();
@@ -45,7 +46,7 @@ class payment_service extends controller
     private function buy(){
         if(!$this->validPost()) return $this->catalogue('','invalid_request');
         $correlation='checkout:'.date('YmdHis').':'.bin2hex(random_bytes(6));
-        $provider=$this->payments->providerAvailable('yoco')?'yoco':'fake';
+        $provider=$this->payments->preferredProvider();
         $result=$this->payments->createIntentFromProduct($this->user->userId(),$this->param('product_code'),$provider,$correlation,$correlation);
         if(empty($result['ok'])) return $this->catalogue('',$result['code']);
         $configuredRoot=$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT');
@@ -55,9 +56,10 @@ class payment_service extends controller
             'successUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
             'cancelUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
             'failureUrl'=>$siteRoot.'index.php?module=payment-service&action=return&intent_id='.$result['intentId'],
+            'email'=>$this->user->email(),
         ));
         if(empty($started['ok'])) return $this->catalogue('',$started['code']);
-        if($provider==='yoco'&&!empty($started['approvalUrl'])) { header('Location: '.$started['approvalUrl'],true,303); exit; }
+        if($provider!=='fake'&&!empty($started['approvalUrl'])) { header('Location: '.$started['approvalUrl'],true,303); exit; }
         return $this->fakeCheckoutPage($result['intentId']);
     }
     private function fakeCheckoutPage($intentId,$message='',$error=''){
@@ -73,6 +75,7 @@ class payment_service extends controller
     private function returned($intentId=null,$message='',$error=''){
         $intent=$this->payments->intent($intentId?:$this->param('intent_id')); if(!$intent||($intent['user_id']!==$this->user->userId()&&!$this->authorization->can('payment.view'))) return $this->catalogue('','intent_not_found');
         $this->payments->recordBrowserReturn($intent['id'],$intent['provider_reference']);
+        if($intent['provider_code']==='paystack'){$this->payments->reconcileIntent($intent['id']);$intent=$this->payments->intent($intent['id'])?:$intent;}
         $this->setVar('paymentIntent',$intent); $this->common($message,$error); return 'return_tpl.php';
     }
     private function products($message='',$error=''){
@@ -99,7 +102,14 @@ class payment_service extends controller
         http_response_code($accepted?200:(!empty($result['retryable'])?503:403)); header('Content-Type: application/json');
         echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES); exit;
     }
-    private function common($message,$error){ $this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
+    private function paystackWebhook(){
+        $raw=file_get_contents('php://input');$signature=(string)($_SERVER['HTTP_X_PAYSTACK_SIGNATURE']??'');
+        $result=$this->payments->receiveProviderEvent('paystack',array('rawBody'=>(string)$raw,'headers'=>array('x-paystack-signature'=>$signature)));
+        $accepted=!empty($result['ok'])||in_array($result['code']??'',array('invalid_provider_event','intent_not_found'),true);
+        http_response_code($accepted?200:(!empty($result['retryable'])?503:403));header('Content-Type: application/json');
+        echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES);exit;
+    }
+    private function common($message,$error){ $provider=$this->payments->preferredProvider();$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$error); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function param($name){$value=$this->getParam($name,null);return is_scalar($value)?trim((string)$value):'';}
 }

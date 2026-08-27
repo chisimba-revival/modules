@@ -12,7 +12,7 @@ $expect(strpos($service,'recordBrowserReturn')!==false && strpos($service,"'awai
     'Browser returns must remain non-authoritative.');
 $expect(strpos($service,'verifyAndNormalize')!==false && strpos($service,"'unverified_event'")!==false,
     'Provider events must be verified before processing.');
-$expect(strpos($controller,"(string)\$action!=='yocowebhook'")!==false
+$expect(strpos($controller,"array('yocowebhook','paystackwebhook')")!==false
     && strpos($controller,"file_get_contents('php://input')")!==false
     && strpos($controller,"http_response_code(\$accepted?200:(!empty(\$result['retryable'])?503:403))")!==false,
     'The webhook endpoint must accept unauthenticated delivery while rejecting unverified events.');
@@ -39,10 +39,16 @@ $expect(str_contains($controller,"getContextDetails((string)\$product['purpose_i
     && str_contains($catalogue,'course-card payment-review-course'),
     'A private-course purchase must retain its course identity and lecturer confidence cues.');
 $expect(str_contains($catalogue,'Once-off payment')
-    && str_contains($catalogue,'Continue securely with Yoco')
+    && str_contains($catalogue,'Continue securely with <?=$provider?>')
     && str_contains($catalogue,'paymentLearnerName')
     && str_contains($catalogue,'never receives or stores your card details'),
     'Checkout review copy must explain the learner, billing model and secure handoff plainly.');
+$expect(str_contains($service,"'paystack'")&&str_contains($service,'preferredProvider')
+    &&str_contains($controller,"case 'paystackwebhook'")&&str_contains($controller,'reconcileIntent'),
+    'Paystack must be selectable, webhook-driven and independently verified on browser return.');
+$expect(str_contains($service,'ensureRenewalIntent')&&str_contains($service,'rememberSubscription')
+    &&str_contains($service,'payment.renewal_intent_created'),
+    'Every recurring charge must receive its own idempotent intent and durable subscription mapping.');
 $stores=file_get_contents($module.'/classes/dbpaymentintents_class_inc.php').file_get_contents($module.'/classes/dbpaymentevents_class_inc.php').file_get_contents($module.'/classes/dbpayments_class_inc.php');
 $expect(!preg_match('/->update\s*\(\s*array\s*\(/',$stores),'Payment stores must use the PHP 8 three-argument dbTable update contract.');
 fwrite(STDOUT,"PASS: provider-neutral payment service contract\n");

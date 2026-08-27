@@ -16,13 +16,14 @@ class UserStore { public function findByUserId($id){return array('userid'=>$id);
 class AuditStore { public $events=array(); public function append($v){$this->events[]=$v;return array('ok'=>true);} }
 class ProviderStub { public function isAvailable(){return true;} public function verifyAndNormalize($e){return array('ok'=>true,'event'=>$e['event']);} }
 class AdmissionSpy { public $calls=array(); public $revocations=array(); public function admitConfirmedPayment($course,$user,$reference,$correlation){$this->calls[]=func_get_args();return array('ok'=>true,'code'=>'admitted');} public function revokeConfirmedPayment($course,$user,$reference,$correlation){$this->revocations[]=func_get_args();return array('ok'=>true,'code'=>'revoked');} }
+class SubscriptionStore { public function remember($values){return $values;} }
 
 require dirname(__DIR__).'/classes/paymentservice_class_inc.php';
 $id=str_repeat('a',32);
 $intent=array('id'=>$id,'user_id'=>'user-1','purpose_type'=>'private_course','purpose_id'=>'course-1','product_code'=>'course','price_version'=>'v1','amount_minor'=>1000,'currency'=>'ZAR','provider_code'=>'fake','state'=>'awaiting_approval','correlation_id'=>'payment:test');
 $service=new paymentservice();
 $intents=new IntentStore($intent);$events=new EventStore();$payments=new PaymentStore();$audits=new AuditStore();$provider=new ProviderStub();$admissions=new AdmissionSpy();
-$service->objects=array('dbpaymentintents'=>$intents,'dbpaymentevents'=>$events,'dbpayments'=>$payments,'paymentcatalogservice'=>new stdClass(),'userservice'=>new UserStore(),'accounteventservice'=>$audits,'fakepaymentprovider'=>$provider,'privateadmissionservice'=>$admissions);
+$service->objects=array('dbpaymentintents'=>$intents,'dbpaymentevents'=>$events,'dbpayments'=>$payments,'dbpaymentsubscriptions'=>new SubscriptionStore(),'paymentcatalogservice'=>new stdClass(),'userservice'=>new UserStore(),'accounteventservice'=>$audits,'fakepaymentprovider'=>$provider,'privateadmissionservice'=>$admissions);
 $service->init();
 $expect=function($ok,$message){if(!$ok)throw new RuntimeException($message);};
 $service->recordBrowserReturn($id,'browser-reference');
