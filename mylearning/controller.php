@@ -19,6 +19,13 @@ class mylearning extends controller
             return null;
         }
         $this->setVar('learningOverview', $this->getObject('studentlearningoverview', 'context')->show());
+        $modules=$this->getObject('modules','modulecatalogue');
+        $membershipAvailable=$modules->checkIfRegistered('membership-service')
+            &&$modules->checkIfRegistered('payment-service');
+        $this->setVar('membershipAvailable',$membershipAvailable);
+        $this->setVar('membershipTier',$membershipAvailable
+            ?$this->getObject('membershipservice','membership-service')->effectiveTier($this->user->userId())
+            :'free');
         $this->setVar('upperBlocks', $this->contextBlocks->getContextBlocks(
             'mylearning', 'right'
         ));

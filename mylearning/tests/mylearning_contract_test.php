@@ -21,6 +21,12 @@ $checks = array(
         $controller,
         "getObject('studentlearningoverview', 'context')"
     ),
+    'membership purchase is a first-class learner journey' => str_contains(
+        $controller,
+        "getObject('membershipservice','membership-service')->effectiveTier"
+    ) && str_contains($template, 'student-membership-summary')
+        && str_contains($template, "'purpose'=>'membership'")
+        && str_contains($register, 'DEPENDS: payment-service'),
     'standard two-column student hub' => str_contains($template, 'setNumColumns(2)')
         && str_contains($template, "getObject('postloginmenu', 'toolbar')")
         && str_contains($template, 'chisimba-structural-sidebar mylearning-sidebar')

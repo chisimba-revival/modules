@@ -1,5 +1,10 @@
 <?php
 $language = $this->getObject('language', 'language');
+$membershipPanel='';
+if($membershipAvailable){
+    $tierLabel=match((string)$membershipTier){'tier_1'=>'Tier 1','tier_2'=>'Tier 2',default=>'Free'};
+    $membershipPanel='<section class="student-membership-summary"><div><p class="student-membership-summary__eyebrow">YOUR MEMBERSHIP</p><h2>'.$tierLabel.'</h2><p>Membership unlocks the learning available for your tier.</p></div><a class="button" href="'.$this->uri(array('action'=>'catalogue','purpose'=>'membership'),'payment-service').'">'.($membershipTier==='free'?'Explore memberships':'View membership').'</a></section>';
+}
 $editingSwitch = '';
 $upperEditor = '';
 $lowerEditor = '';
@@ -84,7 +89,7 @@ $layout->setLeftColumnContent(
     . '</aside>'
 );
 $layout->setMiddleColumnContent(
-    '<main class="mylearning-page">' . $learningOverview
+    '<main class="mylearning-page">' . $membershipPanel . $learningOverview
     . '<div id="middleblocks" class="mylearning-page__blocks">'
     . $wideBlocks . '</div>' . $wideEditor . '</main>'
 );

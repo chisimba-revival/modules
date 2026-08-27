@@ -22,6 +22,11 @@ $expect(str_contains($catalog,"\$period==='one_off'")&&str_contains($catalog,"\$
 $expect(str_contains($controller,"class_alias('payment_service','payment-service')"),'The hyphenated module id must resolve to its PHP controller class.');
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
+$catalogueTemplate=file_get_contents($root.'/templates/content/catalogue_tpl.php');
+$expect(str_contains($controller,"\$purpose=\$this->param('purpose')")
+    && str_contains($catalogueTemplate,'Choose your membership')
+    && str_contains($catalogueTemplate,'Review <?=$e($tierLabel'),
+    'Membership discovery must lead through tier choice and explicit purchase review.');
 $expect(str_contains($returnTemplate,'Open course')&&str_contains($returnTemplate,'Refresh payment status'),'The browser return must offer the next human action without treating the return as payment proof.');
 $expect(str_contains($returnTemplate,'Go to My Learning')
     && str_contains($returnTemplate,"if(!\$good)"),

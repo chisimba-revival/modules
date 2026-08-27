@@ -26,7 +26,10 @@ class payment_service extends controller
     private function catalogue($message='',$error=''){
         $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
         $requested=$this->param('product');
+        $purpose=$this->param('purpose');
+        if(!in_array($purpose,array('membership','private_course'),true))$purpose='';
         if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
+        elseif($purpose!=='') $products=array_values(array_filter($products,function($product)use($purpose){return (string)$product['purpose_type']===$purpose;}));
         $admissions=$this->getObject('privateadmissionservice','membership-service');
         $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
         $memberships=$this->getObject('membershipservice','membership-service');
@@ -47,7 +50,11 @@ class payment_service extends controller
             $product['course']=array('title'=>(string)($course['title']??$product['name']),'about'=>trim(strip_tags((string)($course['about']??''))),'image'=>$images->getContextImage((string)$product['purpose_id']),'lecturers'=>$lecturers);
         }
         unset($product);
-        $this->setVar('paymentProducts',$products); $this->common($message,$error); return 'catalogue_tpl.php';
+        $this->setVar('paymentProducts',$products);
+        $this->setVar('paymentRequestedProduct',$requested);
+        $this->setVar('paymentCataloguePurpose',$purpose);
+        $this->setVar('paymentEffectiveTier',$effectiveTier);
+        $this->common($message,$error); return 'catalogue_tpl.php';
     }
     private function buy(){
         if(!$this->validPost()) return $this->catalogue('','invalid_request');
