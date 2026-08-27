@@ -61,6 +61,36 @@ class contentblockbase extends ChisimbaObject
         return in_array($scheme, array('http', 'https'), true) ? $url : '';
     }
 
+    /**
+     * Convert recognised public video links to privacy-conscious player URLs.
+     *
+     * @param string $url Author-supplied video URL.
+     *
+     * @return string|null
+     */
+    private function recognisedVideoEmbedUrl($url)
+    {
+        $parts = parse_url($url);
+        $host = strtolower(isset($parts['host']) ? $parts['host'] : '');
+        $host = preg_replace('/^www\\./', '', $host);
+        $path = isset($parts['path']) ? trim($parts['path'], '/') : '';
+        if ($host === 'youtu.be' && preg_match('/^[A-Za-z0-9_-]{6,20}$/', $path)) {
+            return 'https://www.youtube-nocookie.com/embed/' . $path;
+        }
+        if (in_array($host, array('youtube.com', 'm.youtube.com', 'youtube-nocookie.com'), true)) {
+            parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
+            $id = isset($query['v']) ? $query['v'] : (preg_match('#^(?:shorts|embed)/([A-Za-z0-9_-]{6,20})#', $path, $match) ? $match[1] : '');
+            if (preg_match('/^[A-Za-z0-9_-]{6,20}$/', $id)) {
+                return 'https://www.youtube-nocookie.com/embed/' . $id;
+            }
+        }
+        if (in_array($host, array('vimeo.com', 'player.vimeo.com'), true)
+            && preg_match('#(?:video/)?([0-9]{6,12})#', $path, $match)) {
+            return 'https://player.vimeo.com/video/' . $match[1];
+        }
+        return null;
+    }
+
     public function setDataArr($blockKey)
     {
         $row = $this->db->findByKey($blockKey);
@@ -78,8 +108,16 @@ class contentblockbase extends ChisimbaObject
         $actionUrl = $this->safeUrl($row['action_url'] ?? '');
         $actionLabel = htmlspecialchars((string)($row['action_label'] ?? ''), ENT_QUOTES, 'UTF-8');
         if (($row['blocktype'] ?? '') === 'videohero') {
-            $video = htmlspecialchars($image, ENT_QUOTES, 'UTF-8');
-            $html = '<video class="content-block content-block--video-hero" controls playsinline preload="metadata" src="' . $video . '"></video>';
+            $embedUrl = $this->recognisedVideoEmbedUrl($image);
+            if ($embedUrl !== null) {
+                $html = '<div class="content-block content-block--video-hero"><iframe src="'
+                    . htmlspecialchars($embedUrl, ENT_QUOTES, 'UTF-8')
+                    . '" title="' . $title
+                    . '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+            } else {
+                $html = '<video class="content-block content-block--video-hero" controls playsinline preload="metadata" src="'
+                    . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '"></video>';
+            }
             return array(
                 'title' => false,
                 'blockContents' => $html,

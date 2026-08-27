@@ -22,8 +22,13 @@ $checks = array(
     'Video Hero has no visible copy or chrome' => str_contains($renderer, '<video class="content-block content-block--video-hero"')
         && str_contains($css, '.content-block.content-block--video-hero')
         && str_contains($css, 'background: transparent'),
-    'Video picker is constrained' => str_contains($template, "'policy' => 'video'")
+    'external URL is primary and picker is optional' => str_contains($template, 'type="url" id="contentblocks-video-url"')
+        && str_contains($template, "'policy' => 'video'")
         && str_contains($template, 'name="video_url"'),
+    'recognised providers use safe responsive embeds' => str_contains($renderer, 'youtube-nocookie.com/embed/')
+        && str_contains($renderer, 'player.vimeo.com/video/')
+        && str_contains($renderer, 'allowfullscreen')
+        && str_contains($css, 'aspect-ratio: 16 / 9'),
     'narrow Information spacing is compact' => str_contains($renderer, 'content-block--\' . $placement')
         && str_contains($css, '.content-block.content-block--information.content-block--normal .content-block__inner')
         && str_contains($css, 'padding: 1rem'),

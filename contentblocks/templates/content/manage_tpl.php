@@ -108,7 +108,7 @@ $this->appendArrayVar('headerParams', $pickerScript);
         <fieldset class="contentblocks-image-field contentblocks-video-hero-only">
           <legend><?= $e($l['videourl']) ?></legend>
           <p><?= $e($l['videohelp']) ?></p>
-          <input type="text" readonly id="contentblocks-video-url" name="video_url" value="<?= $e($imageValue) ?>">
+          <input type="url" id="contentblocks-video-url" name="video_url" value="<?= $e($imageValue) ?>" required>
           <div class="contentblocks-actions"><button type="button" id="contentblocks-choose-video"><?= $e($l['choosevideo']) ?></button><button type="button" id="contentblocks-remove-video"><?= $e($l['removevideo']) ?></button></div>
           <video id="contentblocks-video-preview" class="contentblocks-video-preview" src="<?= $e($imageValue) ?>" controls playsinline preload="metadata" <?= $imageValue === '' ? 'hidden' : '' ?>></video>
         </fieldset>

@@ -19,7 +19,7 @@ $register = file_get_contents($root . '/register.conf');
 $checks = array(
     'module version records presentation fix' => str_contains(
         $register,
-        'MODULE_VERSION: 1.013'
+        'MODULE_VERSION: 1.014'
     ),
     'Hero uses a compound semantic selector' => str_contains(
         $css,

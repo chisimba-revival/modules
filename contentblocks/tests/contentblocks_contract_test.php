@@ -42,10 +42,13 @@ $checks = array(
         && str_contains($register, 'TEXT: mod_contentblocks_normal|Side-column label|Side column'),
     'single-encoded action routes' => str_contains($template, 'html_entity_decode') && str_contains($template, '$moduleUrl(') && !str_contains($template, '$e($this->uri'),
     'File Manager image picker' => str_contains($template, 'ChisimbaFilePickerReceive') && str_contains($template, '\'policy\' => \'image\'') && str_contains($template, 'readonly id="contentblocks-image-url"'),
-    'File Manager video picker' => str_contains($template, '\'policy\' => \'video\'') && str_contains($template, 'readonly id="contentblocks-video-url"'),
+    'external video URL with optional File Manager picker' => str_contains($template, '\'policy\' => \'video\'')
+        && str_contains($template, 'type="url" id="contentblocks-video-url"')
+        && !str_contains($template, 'readonly id="contentblocks-video-url"'),
     'failed save is reported' => str_contains($controller, 'if (!$row)') && str_contains($controller, 'text(\'savefailed\')'),
     'distinct block types' => str_contains($controller, 'if ($type === \'hero\')') && str_contains($template, 'contentblocks-hero-only') && str_contains($template, 'contentblocks-type-help'),
     'text-free video hero rendering' => str_contains($base, '<video class="content-block content-block--video-hero" controls playsinline preload="metadata"')
+        && str_contains($base, '<div class="content-block content-block--video-hero"><iframe')
         && str_contains($controller, "\$type === 'videohero' ? '' : (string)\$this->getParam('body_html', '')")
         && str_contains($controller, "\$type === 'videohero' ? '0'"),
     'context plugin declaration' => str_contains($register, 'ISCONTEXTPLUGIN: 1'),
