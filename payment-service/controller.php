@@ -20,16 +20,26 @@ class payment_service extends controller
             case 'return': return $this->returned(); case 'products': return $this->products();
             case 'createproduct': return $this->createProduct(); case 'addprice': return $this->addPrice();
             case 'operations': return $this->operations(); case 'catalogue': return $this->catalogue();
+            case 'tiers': return $this->tiers(); case 'savetiers': return $this->saveTiers();
             default:return $this->user->isAdmin()?$this->products():($this->authorization->can('payment.view')?$this->operations():$this->catalogue());
         }
     }
+    private function tiers($message='',$error='',$editOpen=false){
+        $memberships=$this->getObject('membershipservice','membership-service');$effective=$memberships->effectiveTier($this->user->userId());
+        $products=array('tier_1'=>array(),'tier_2'=>array());foreach($this->catalog->listProducts(true) as $product){if(($product['purpose_type']??'')==='membership'&&isset($products[$product['purpose_id']])&&is_array($product['current_price']??null))$products[$product['purpose_id']][]=$product;}
+        $this->setVar('tierEffective',$effective);$this->setVar('tierProducts',$products);$this->setVar('tierContent',$this->getObject('tierpresentationservice')->all());$this->setVar('tierEditOpen',$editOpen);$this->common($message,$error);return 'tiers_tpl.php';
+    }
+    private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array('free','tier_1','tier_2') as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
     private function catalogue($message='',$error=''){
         $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
         $requested=$this->param('product');
         $purpose=$this->param('purpose');
+        $requestedTier=$this->param('tier');
+        if(!in_array($requestedTier,array('tier_1','tier_2'),true))$requestedTier='';
         if(!in_array($purpose,array('membership','private_course'),true))$purpose='';
         if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
         elseif($purpose!=='') $products=array_values(array_filter($products,function($product)use($purpose){return (string)$product['purpose_type']===$purpose;}));
+        if($requestedTier!=='')$products=array_values(array_filter($products,function($product)use($requestedTier){return (string)($product['purpose_id']??'')===$requestedTier;}));
         $admissions=$this->getObject('privateadmissionservice','membership-service');
         $products=array_values(array_filter($products,function($product)use($admissions,$userId){return $product['purpose_type']!=='private_course'||!$admissions->isAdmitted($product['purpose_id'],$userId);}));
         $memberships=$this->getObject('membershipservice','membership-service');

@@ -23,6 +23,8 @@ $expect(str_contains($controller,"class_alias('payment_service','payment-service
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
 $catalogueTemplate=file_get_contents($root.'/templates/content/catalogue_tpl.php');
+$tiersTemplate=file_get_contents($root.'/templates/content/tiers_tpl.php');
+$tierService=file_get_contents($root.'/classes/tierpresentationservice_class_inc.php');
 $expect(str_contains($controller,"\$purpose=\$this->param('purpose')")
     && str_contains($catalogueTemplate,'Choose your membership')
     && str_contains($catalogueTemplate,'Review <?=$e($tierLabel'),
@@ -35,6 +37,18 @@ $expect(str_contains($catalog,'productPage')&&str_contains($productDb,'countProd
 $expect(str_contains($productDb,'name LIKE')&&str_contains($productDb,'purpose_type')&&str_contains($productDb,'active=1'),'Product search, purpose and status filters must be applied by the server.');
 $expect(str_contains($productsTemplate,'Saved products pages')&&str_contains($productsTemplate,'Apply filters')&&str_contains($productsTemplate,'No products match these filters.'),'The product catalogue must expose accessible search, pagination and empty states.');
 $expect(str_contains($productsTemplate,'View payment activity')&&str_contains($register,'mod_payment_service_products|site'),'Product setup must be the discoverable administrator landing page with a route to payment activity.');
+$expect(str_contains($controller,"case 'tiers'")
+    && str_contains($tiersTemplate,'Your current tier')
+    && str_contains($tiersTemplate,'View <?=$e($label)?> courses')
+    && str_contains($tiersTemplate,'Upgrade to <?=$e($label)?>'),
+    'Membership comparison must show the current tier and connect course discovery to upgrade actions.');
+$expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
+    || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
+    'A tier upgrade must preserve its chosen tier while offering every published billing option.');
+$expect(str_contains($tierService,'dbpaymenttiercontent')
+    && str_contains($controller,'saveTiers()')
+    && str_contains($tiersTemplate,'Edit membership page'),
+    'Administrators must be able to edit tier summaries and comparison features without changing access policy.');
 $expect(str_contains($catalog,"byPurpose('private_course'")&&str_contains($productsTemplate,'canonical product for this course'),'A private course must have one clearly presented canonical product.');
 echo "PASS: versioned payment catalogue and fulfilment contract\n";
 ?>

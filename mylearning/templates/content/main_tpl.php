@@ -3,7 +3,7 @@ $language = $this->getObject('language', 'language');
 $membershipPanel='';
 if($membershipAvailable){
     $tierLabel=match((string)$membershipTier){'tier_1'=>'Tier 1','tier_2'=>'Tier 2',default=>'Free'};
-    $membershipPanel='<section class="student-membership-summary"><div><p class="student-membership-summary__eyebrow">YOUR MEMBERSHIP</p><h2>'.$tierLabel.'</h2><p>Membership unlocks the learning available for your tier.</p></div><a class="button" href="'.$this->uri(array('action'=>'catalogue','purpose'=>'membership'),'payment-service').'">'.($membershipTier==='free'?'Explore memberships':'View membership').'</a></section>';
+    $membershipPanel='<section class="student-membership-summary"><div><p class="student-membership-summary__eyebrow">YOUR MEMBERSHIP</p><h2>'.$tierLabel.'</h2><p>Membership unlocks the learning available for your tier.</p></div><a class="button" href="'.$this->uri(array('action'=>'tiers'),'payment-service').'">'.($membershipTier==='free'?'Explore memberships':'View membership').'</a></section>';
 }
 $editingSwitch = '';
 $upperEditor = '';
