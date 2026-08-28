@@ -73,6 +73,9 @@ ccCheck(strpos($pageView, "'mod_contextcontent_reorderchapterpages'") !== false
 ccCheck(strpos($chapterList, "render('list-ordered'") !== false
     && strpos($chapterList, '$reorderPagesLink->show()') !== false,
     'course content manager has no explicit chapter-order action');
+ccCheck(strpos($chapterList, '$manageOrderLink->show()') !== false
+    && strpos($chapterList, 'chisimba-chapter-contents-actions') !== false,
+    'expanded chapter contents do not expose the page-order manager');
 ccCheck(substr_count($orderClass, "AND pageorder > ' . \$page['pageorder'] . ' ORDER BY pageorder ASC") >= 2,
     'move-down must select the nearest following sibling');
 

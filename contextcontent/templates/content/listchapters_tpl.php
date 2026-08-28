@@ -431,10 +431,22 @@ foreach ($chapters as $chapter) {
                         'contextcontent',
                         'Show/Hide Contents'
                     );
+                    $manageOrderAction = '';
+                    if ($this->isValid('movepageup')) {
+                        $manageOrderLink = new link($this->uri(array(
+                            'action' => 'viewchapter',
+                            'id' => $chapter['chapterid']
+                        )));
+                        $manageOrderLink->link = $reorderPagesIcon . ' '
+                            . htmlspecialchars($reorderPagesLabel, ENT_QUOTES, 'UTF-8');
+                        $manageOrderLink->cssClass = 'button chisimba-button-secondary';
+                        $manageOrderAction = ' <span class="chisimba-chapter-contents-actions">'
+                            . $manageOrderLink->show() . '</span>';
+                    }
                     $chapterContents = '<button type="button" class="chisimba-chapter-contents-toggle"'
                         . ' aria-expanded="false" aria-controls="' . $tocId . '">'
                         . htmlspecialchars($toggleLabel, ENT_QUOTES, 'UTF-8')
-                        . '</button>'
+                        . '</button>' . $manageOrderAction
                         . '<div id="' . $tocId . '" class="chisimba-chapter-contents" hidden>'
                         . $chapterPages
                         . '</div>';
