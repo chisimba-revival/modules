@@ -954,11 +954,11 @@ class db_contextcontent_order extends dbtable {
 
         if ($page['parentid'] == 'root')
         {
-            $nextPageSQL = ' WHERE chapterid=\'' . $page['chapterid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder < ' . $page['pageorder'] . ' ORDER BY pageorder DESC';
+            $nextPageSQL = ' WHERE chapterid=\'' . $page['chapterid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder > ' . $page['pageorder'] . ' ORDER BY pageorder ASC';
         }
         else
         {
-            $nextPageSQL = ' WHERE parentid=\'' . $page['parentid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder < ' . $page['pageorder'] . ' ORDER BY pageorder DESC';
+            $nextPageSQL = ' WHERE parentid=\'' . $page['parentid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder > ' . $page['pageorder'] . ' ORDER BY pageorder ASC';
         }
         $nextPage = $this->getAll($nextPageSQL);
 
@@ -977,6 +977,31 @@ class db_contextcontent_order extends dbtable {
 
             return TRUE;
         }
+    }
+
+    public function reorderChapterPages($context, $chapter, array $pageIds)
+    {
+        if (!preg_match('/^[A-Za-z0-9._-]{1,255}$/', $context)
+            || !preg_match('/^[A-Za-z0-9_-]{1,64}$/', $chapter)) {
+            throw new InvalidArgumentException('Invalid course or chapter identity');
+        }
+        foreach ($pageIds as $pageId) {
+            if (!preg_match('/^[A-Za-z0-9_-]{1,64}$/', $pageId)) { throw new InvalidArgumentException('Invalid page identity'); }
+        }
+        if (count($pageIds) !== count(array_unique($pageIds))) { throw new InvalidArgumentException('Page order contains duplicates'); }
+        $rows = $this->getAll(" WHERE contextcode='$context' AND chapterid='$chapter' AND parentid='root' ORDER BY pageorder, lft");
+        $existing = array();
+        foreach ($rows as $row) { $existing[] = $row['id']; }
+        $expected = $existing; $submitted = $pageIds; sort($expected); sort($submitted);
+        if ($expected !== $submitted) { throw new InvalidArgumentException('Page order does not match this chapter'); }
+        $this->beginTransaction();
+        try {
+            foreach ($pageIds as $position => $pageId) { $this->update('id', $pageId, array('pageorder' => $position + 1)); }
+            $this->rebuildContext($context, $chapter);
+            $this->clearChapterPDF($chapter, $context);
+            $this->commitTransaction();
+        } catch (Throwable $error) { $this->rollbackTransaction(); throw $error; }
+        return true;
     }
 
     /**

@@ -214,6 +214,8 @@ class contextcontent extends controller {
                 return $this->addContent($this->getParam('chapter'), $this->getParam('id', ''));
             case 'savepage':
                 return $this->savePage();
+            case 'savepageorder':
+                return $this->savePageOrder();
             case 'useractivity':
                 return $this->userActivity();
 
@@ -401,7 +403,8 @@ class contextcontent extends controller {
             'movepageup', 'movepagedown', 'savechapter', 'updatechapter',
             'deletechapterconfirm', 'movechapterup', 'movechapterdown',
             'movetochapter', 'changebookmark', 'addcomment', 'uploadfile',
-            'createpagefromfile', 'previewdocumentimport', 'confirmdocumentimport'
+            'createpagefromfile', 'previewdocumentimport', 'confirmdocumentimport',
+            'savepageorder'
         ), true);
     }
 
@@ -1553,6 +1556,18 @@ class contextcontent extends controller {
         return $this->nextAction('viewpage', array('id' => $id, 'message' => 'movepageup', 'result' => $result));
     }
 
+    protected function savePageOrder()
+    {
+        $chapterId = trim((string) $this->getParam('chapter'));
+        $rawOrder = trim((string) $this->getParam('page_order'));
+        if (!preg_match('/^[A-Za-z0-9_,-]+$/', $rawOrder)) {
+            throw new InvalidArgumentException('Invalid page order');
+        }
+        $pageIds = array_values(array_filter(explode(',', $rawOrder), 'strlen'));
+        $this->objContentOrder->reorderChapterPages($this->contextCode, $chapterId, $pageIds);
+        return $this->nextAction('viewchapter', array('id' => $chapterId, 'message' => 'pageordersaved'));
+    }
+
     /**
      * Method to move a chapter up
      * @param string $id Record Id of the Chapter
@@ -1657,6 +1672,11 @@ class contextcontent extends controller {
             $this->setVar('chapterId', $id);
             $this->setVar('firstPage', $firstPage['id']);
             $this->setVar('chapterPageCount', is_array($chapterPages) ? count($chapterPages) : 0);
+            $canManageCourse = $this->objUser->isLoggedIn()
+                && ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer());
+            $this->setVar('canManageCourse', $canManageCourse);
+            $this->setVar('chapterPages', $chapterPages);
+            if ($canManageCourse) { $this->prepareMutationForm(); }
             $this->setVar('message', $this->getParam('message'));
             $this->setLayoutTemplate('layout_firstpage_tpl.php');
             return 'viewchapter_tpl.php';

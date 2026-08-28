@@ -21,6 +21,7 @@ $register = ccRead($root, 'register.conf');
 $picker = ccRead($root, 'templates/content/contenttypepicker_tpl.php');
 $chapterForm = ccRead($root, 'templates/content/addeditchapter_tpl.php');
 $emptyChapterForm = ccRead($root, 'templates/content/nochapters_tpl.php');
+$chapterOverview = ccRead($root, 'templates/content/viewchapter_tpl.php');
 
 ccCheck(strpos($titles, "'contenttype'") !== false, 'typed content identity column is missing');
 ccCheck(strpos($titles, "'providermodule'") !== false && strpos($titles, "'provideritemid'") !== false,
@@ -59,6 +60,10 @@ ccCheck(strpos($emptyChapterForm, "new textinput('chaptertitle')") !== false
     'empty-course chapter form still uses the identifier parameter name');
 ccCheck(strpos($controller, "getJavaScriptFile('jquery.livequery.js'") === false,
     'livequery is still loaded');
+ccCheck(strpos($controller, "'savepageorder'") !== false && strpos($controller, 'reorderChapterPages') !== false,
+    'secure page-order mutation is not connected');
+ccCheck(strpos($chapterOverview, 'draggable="true"') !== false && strpos($chapterOverview, 'Save order') !== false,
+    'chapter page-order interface is missing');
 
 ccCheck(strpos($picker, "str_replace('&amp;', '&', \$this->uri") !== false
     && strpos($picker, "htmlspecialchars(\$url, ENT_QUOTES, 'UTF-8')") !== false,
