@@ -22,6 +22,7 @@ $picker = ccRead($root, 'templates/content/contenttypepicker_tpl.php');
 $chapterForm = ccRead($root, 'templates/content/addeditchapter_tpl.php');
 $emptyChapterForm = ccRead($root, 'templates/content/nochapters_tpl.php');
 $chapterOverview = ccRead($root, 'templates/content/viewchapter_tpl.php');
+$orderClass = ccRead($root, 'classes/db_contextcontent_order_class_inc.php');
 
 ccCheck(strpos($titles, "'contenttype'") !== false, 'typed content identity column is missing');
 ccCheck(strpos($titles, "'providermodule'") !== false && strpos($titles, "'provideritemid'") !== false,
@@ -64,6 +65,8 @@ ccCheck(strpos($controller, "'savepageorder'") !== false && strpos($controller, 
     'secure page-order mutation is not connected');
 ccCheck(strpos($chapterOverview, 'draggable="true"') !== false && strpos($chapterOverview, 'Save order') !== false,
     'chapter page-order interface is missing');
+ccCheck(substr_count($orderClass, "AND pageorder > ' . \$page['pageorder'] . ' ORDER BY pageorder ASC") >= 2,
+    'move-down must select the nearest following sibling');
 
 ccCheck(strpos($picker, "str_replace('&amp;', '&', \$this->uri") !== false
     && strpos($picker, "htmlspecialchars(\$url, ENT_QUOTES, 'UTF-8')") !== false,

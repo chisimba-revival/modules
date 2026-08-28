@@ -1018,11 +1018,11 @@ class db_contextcontent_order extends dbtable {
 
         if ($page['parentid'] == 'root')
         {
-            $nextPageSQL = ' WHERE chapterid=\'' . $page['chapterid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder < ' . $page['pageorder'] . ' ORDER BY pageorder DESC';
+            $nextPageSQL = ' WHERE chapterid=\'' . $page['chapterid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder > ' . $page['pageorder'] . ' ORDER BY pageorder ASC';
         }
         else
         {
-            $nextPageSQL = ' WHERE parentid=\'' . $page['parentid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder < ' . $page['pageorder'] . ' ORDER BY pageorder DESC';
+            $nextPageSQL = ' WHERE parentid=\'' . $page['parentid'] . '\' AND contextcode =\'' . $page['contextcode'] . '\' AND pageorder > ' . $page['pageorder'] . ' ORDER BY pageorder ASC';
         }
         $nextPage = $this->getAll($nextPageSQL);
 
