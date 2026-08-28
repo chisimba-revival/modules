@@ -364,8 +364,9 @@ class contextcontent extends controller {
 
     private function validateRequestIdentifiers()
     {
-        if ($this->contextCode !== ''
-            && !preg_match('/^[A-Za-z0-9._-]{1,255}$/', (string) $this->contextCode)) {
+        $contextCode = (string) $this->contextCode;
+        if ($contextCode !== ''
+            && !preg_match('/^[A-Za-z0-9._-]{1,255}$/', $contextCode)) {
             throw new InvalidArgumentException('Invalid course code');
         }
         foreach (array('id', 'chapter', 'chapterid', 'pageid', 'parentnode', 'insert_after') as $name) {

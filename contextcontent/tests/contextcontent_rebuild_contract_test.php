@@ -53,6 +53,9 @@ ccCheck(strpos($controller, 'private function requireAuthorisedMutation') !== fa
     && strpos($controller, '$this->csrf->consume') !== false, 'mutation guard is incomplete');
 ccCheck(strpos($controller, 'private function requireCourseManager') !== false,
     'authoring-form authorisation is missing');
+ccCheck(strpos($controller, '$contextCode = (string) $this->contextCode;') !== false
+    && strpos($controller, "if (\$contextCode !== ''") !== false,
+    'missing active-course sessions are not normalised before identifier validation');
 ccCheck(strpos($chapterForm, "new textinput('chaptertitle')") !== false
     && strpos($controller, "getParam('chaptertitle')") !== false,
     'chapter titles must not collide with the chapter identifier parameter');
