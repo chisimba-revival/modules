@@ -46,6 +46,8 @@ if ($introduction !== '') echo '<div class="contextcontent-chapter-introduction"
 echo '<p class="contextcontent-chapter-meta">'.(int)$chapterPageCount.' '.htmlentities($itemLabel,ENT_QUOTES,'UTF-8').'</p><div class="contextcontent-chapter-actions">'.$startLink->show().'</div></section>';
 if (!empty($canManageCourse) && is_array($chapterPages) && count($chapterPages) > 1) {
     $escape = function ($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); };
+    $cancelOrderUrl = str_replace('&amp;', '&', $this->uri(array('action'=>'showcontextchapters')));
+    $cancelOrderLabel = $this->objLanguage->languageText('word_cancel', 'system', 'Cancel');
     echo '<section class="contextcontent-order-card" aria-labelledby="contextcontent-order-heading">'
         . '<h2 id="contextcontent-order-heading">Reorder learning items</h2>'
         . '<p>Drag items into the required order, or use the Move up and Move down buttons. Save when finished.</p>'
@@ -62,13 +64,16 @@ if (!empty($canManageCourse) && is_array($chapterPages) && count($chapterPages) 
             . '<span class="contextcontent-order-buttons"><button type="button" class="button contextcontent-order-up">Move up</button> '
             . '<button type="button" class="button contextcontent-order-down">Move down</button></span></li>';
     }
-    echo '</ol><button type="submit" class="button">Save order</button></form></section>';
+    echo '</ol><div class="contextcontent-order-actions"><button type="submit" class="button">Save order</button> '
+        . '<a class="button chisimba-button-secondary" href="'.$escape($cancelOrderUrl).'">'
+        . $escape($cancelOrderLabel).'</a></div></form></section>';
 }
 echo '</div>';
 ?>
 <style type="text/css">
 .contextcontent-order-card{margin:1.5rem 0;padding:1.5rem;border:1px solid #d9e1e3;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(38,50,56,.07)}
 .contextcontent-order-list{margin:1rem 0;padding:0;list-style:none}.contextcontent-order-list li{display:flex;gap:.8rem;align-items:center;margin:.55rem 0;padding:.8rem;border:1px solid #d9e1e3;border-radius:10px;background:#f8fafb}.contextcontent-order-list li.is-dragging{opacity:.45}.contextcontent-order-handle{cursor:grab;font-size:1.25rem}.contextcontent-order-title{flex:1;font-weight:700}.contextcontent-order-buttons{white-space:nowrap}@media(max-width:650px){.contextcontent-order-list li{align-items:flex-start;flex-wrap:wrap}.contextcontent-order-buttons{width:100%;padding-left:2rem}}
+.contextcontent-order-actions{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap}
 </style>
 <script type="text/javascript">
 (function(){var list=document.getElementById('contextcontent-order-list'),input=document.getElementById('contextcontent-page-order');if(!list||!input){return;}var dragging=null;function items(){return Array.prototype.slice.call(list.querySelectorAll('li[data-page-id]'));}function sync(){var rows=items();input.value=rows.map(function(row){return row.getAttribute('data-page-id');}).join(',');rows.forEach(function(row,index){row.querySelector('.contextcontent-order-up').disabled=index===0;row.querySelector('.contextcontent-order-down').disabled=index===rows.length-1;});}list.addEventListener('dragstart',function(event){dragging=event.target.closest('li[data-page-id]');if(!dragging){return;}dragging.classList.add('is-dragging');event.dataTransfer.effectAllowed='move';});list.addEventListener('dragend',function(){if(dragging){dragging.classList.remove('is-dragging');}dragging=null;sync();});list.addEventListener('dragover',function(event){event.preventDefault();if(!dragging){return;}var target=event.target.closest('li[data-page-id]');if(!target||target===dragging){return;}var rect=target.getBoundingClientRect();list.insertBefore(dragging,event.clientY<rect.top+rect.height/2?target:target.nextSibling);});list.addEventListener('click',function(event){var row=event.target.closest('li[data-page-id]');if(!row){return;}if(event.target.classList.contains('contextcontent-order-up')&&row.previousElementSibling){list.insertBefore(row,row.previousElementSibling);}if(event.target.classList.contains('contextcontent-order-down')&&row.nextElementSibling){list.insertBefore(row.nextElementSibling,row);}sync();});sync();}());

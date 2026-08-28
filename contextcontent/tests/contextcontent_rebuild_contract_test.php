@@ -67,6 +67,10 @@ ccCheck(strpos($controller, "'savepageorder'") !== false && strpos($controller, 
     'secure page-order mutation is not connected');
 ccCheck(strpos($chapterOverview, 'draggable="true"') !== false && strpos($chapterOverview, 'Save order') !== false,
     'chapter page-order interface is missing');
+ccCheck(strpos($chapterOverview, "languageText('word_cancel', 'system', 'Cancel')") !== false
+    && strpos($chapterOverview, "array('action'=>'showcontextchapters')") !== false
+    && strpos($chapterOverview, 'contextcontent-order-actions') !== false,
+    'page-order mode has no non-mutating cancel action');
 ccCheck(strpos($pageView, "'mod_contextcontent_reorderchapterpages'") !== false
     && strpos($pageView, "'action' => 'viewchapter'") !== false,
     'page authoring controls do not link to chapter ordering');
