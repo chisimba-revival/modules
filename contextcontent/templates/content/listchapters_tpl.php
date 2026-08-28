@@ -35,11 +35,17 @@ $addPageLabel = $this->objLanguage->languageText(
     'contextcontent',
     'Add a Page to this Chapter'
 );
+$reorderPagesLabel = $this->objLanguage->languageText(
+    'mod_contextcontent_reorderchapterpages',
+    'contextcontent',
+    'Reorder chapter pages'
+);
 
 $editIcon = $objIconService->render('pencil', array('decorative' => TRUE));
 $deleteIcon = $objIconService->render('trash-2', array('decorative' => TRUE));
 $addIcon = $objIconService->render('plus', array('decorative' => TRUE));
 $addPageIcon = $objIconService->render('plus', array('decorative' => TRUE));
+$reorderPagesIcon = $objIconService->render('list-ordered', array('decorative' => TRUE));
 $chapterIcon = $objIconService->render('book-open', array('decorative' => TRUE));
 $contextContentCsrf = isset($contextContentCsrf) ? (string) $contextContentCsrf : '';
 $moveUpIcon = $objIconService->render('chevron-left', array('decorative' => TRUE));
@@ -326,6 +332,12 @@ foreach ($chapters as $chapter) {
             $chapterLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $chapter['chapterid'])));
             $chapterLink->link = $chapter['chaptertitle'];
 
+            $reorderPagesLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $chapter['chapterid'])));
+            $reorderPagesLink->link = $reorderPagesIcon;
+            $reorderPagesLink->cssClass = 'chisimba-chapter-action chisimba-chapter-action-reorder';
+            $reorderPagesLink->extra = ' aria-label="' . htmlspecialchars($reorderPagesLabel, ENT_QUOTES, 'UTF-8')
+                . '" title="' . htmlspecialchars($reorderPagesLabel, ENT_QUOTES, 'UTF-8') . '"';
+
             if ($this->eventsEnabled) {
                 $ischapterlogged = $this->objContextActivityStreamer->getRecord($this->userId, $chapter['chapterid']);
             } else {
@@ -360,6 +372,7 @@ foreach ($chapters as $chapter) {
 
             if ($this->isValid('addpage')) {
                 $content .= ' ' . $addPageLink->show();
+                $content .= ' ' . $reorderPagesLink->show();
                 //$content .= ' '.$addPageFromFileLink->show();
             }
 

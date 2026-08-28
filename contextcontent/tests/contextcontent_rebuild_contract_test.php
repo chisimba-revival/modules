@@ -22,6 +22,8 @@ $picker = ccRead($root, 'templates/content/contenttypepicker_tpl.php');
 $chapterForm = ccRead($root, 'templates/content/addeditchapter_tpl.php');
 $emptyChapterForm = ccRead($root, 'templates/content/nochapters_tpl.php');
 $chapterOverview = ccRead($root, 'templates/content/viewchapter_tpl.php');
+$pageView = ccRead($root, 'templates/content/viewpage_tpl.php');
+$chapterList = ccRead($root, 'templates/content/listchapters_tpl.php');
 $orderClass = ccRead($root, 'classes/db_contextcontent_order_class_inc.php');
 
 ccCheck(strpos($titles, "'contenttype'") !== false, 'typed content identity column is missing');
@@ -65,6 +67,12 @@ ccCheck(strpos($controller, "'savepageorder'") !== false && strpos($controller, 
     'secure page-order mutation is not connected');
 ccCheck(strpos($chapterOverview, 'draggable="true"') !== false && strpos($chapterOverview, 'Save order') !== false,
     'chapter page-order interface is missing');
+ccCheck(strpos($pageView, "'mod_contextcontent_reorderchapterpages'") !== false
+    && strpos($pageView, "'action' => 'viewchapter'") !== false,
+    'page authoring controls do not link to chapter ordering');
+ccCheck(strpos($chapterList, "render('list-ordered'") !== false
+    && strpos($chapterList, '$reorderPagesLink->show()') !== false,
+    'course content manager has no explicit chapter-order action');
 ccCheck(substr_count($orderClass, "AND pageorder > ' . \$page['pageorder'] . ' ORDER BY pageorder ASC") >= 2,
     'move-down must select the nearest following sibling');
 

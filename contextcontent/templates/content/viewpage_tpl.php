@@ -77,22 +77,15 @@ if ((is_countable($list) ? count($list) : 0) == 0) {
 }
 
 if ($this->isValid('movepageup')) {
-
     $middle .= '<br />';
-
-    if ($isFirstPageOnLevel) {
-        $middle .= '<span style="color:grey;" title="' . $this->objLanguage->languageText('mod_contextcontent_isfirstpageonlevel', 'contextcontent') . '">' . $this->objLanguage->languageText('mod_contextcontent_movepageup', 'contextcontent') . '</span>';
-    } else {
-        $middle .= '<span class="contextcontent-secure-action-note">Reorder from the content manager</span>';
-    }
-
-    $middle .= ' / ';
-
-    if ($isLastPageOnLevel) {
-        $middle .= '<span style="color:grey;" title="' . $this->objLanguage->languageText('mod_contextcontent_islastpageonlevel', 'contextcontent') . '">' . $this->objLanguage->languageText('mod_contextcontent_movepagedown', 'contextcontent') . '</span>';
-    } else {
-        $middle .= '<span class="contextcontent-secure-action-note">Reorder from the content manager</span>';
-    }
+    $reorderLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $currentChapter)));
+    $reorderLink->link = $this->objLanguage->languageText(
+        'mod_contextcontent_reorderchapterpages',
+        'contextcontent',
+        'Reorder chapter pages'
+    );
+    $reorderLink->cssClass = 'contextcontent-reorder-link';
+    $middle .= $reorderLink->show();
 }
 
 
