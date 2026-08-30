@@ -22,6 +22,7 @@ $checks=array(
  'project summary includes progress and recency'=>str_contains($template,"'% complete'")&&str_contains($template,"'Updated '")&&str_contains($template,'kanban-column__heading'),
  'boards collapse accessibly'=>str_contains($template,'data-board-toggle aria-expanded="true"')&&str_contains($read('resources/kanban.js'),'is-collapsed'),
  'boards reorder within their stored scope'=>str_contains($controller,'inScope($board[\'scopetype\'],$board[\'scopeid\'],true)')&&str_contains($read('classes/dbkanbanboards_class_inc.php'),'setSortOrder'),
+ 'board ordering stays in place with JavaScript'=>str_contains($template,'data-board-reorder')&&str_contains($read('resources/kanban.js'),"matches('[data-board-reorder]')")&&str_contains($read('resources/kanban.js'),'function moveBoard')&&str_contains($controller,'return $json?$this->json(true,\'Board order updated.\')'),
  'add controls use compact density'=>str_contains($template,'kanban-add-task kanban-compact-actions')&&str_contains($template,'chisimba-cluster kanban-compact-actions'),
  'project summary has dedicated progress hierarchy'=>str_contains($template,'kanban-progress')&&str_contains($template,'<progress max="100"')&&str_contains($template,'kanban-board__management'),
  'module CSS does not redefine primitives'=>!str_contains($css,'.button{')&&!str_contains($css,'.chisimba-card{')&&!str_contains($css,'.chisimba-form-field{'),

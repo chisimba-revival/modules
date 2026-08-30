@@ -34,6 +34,15 @@
                 moveTask(task, column);
             });
         }
+        if (!event.defaultPrevented && event.target.matches('[data-board-reorder]')) {
+            event.preventDefault();
+            var reorderForm = event.target;
+            var board = reorderForm.closest('.kanban-board');
+            var direction = reorderForm.elements.direction.value;
+            post(reorderForm.action, {boardid: reorderForm.elements.boardid.value, direction: direction}, function () {
+                moveBoard(board, direction);
+            });
+        }
     });
     root.addEventListener('click', function (event) {
         var toggle = event.target.closest('[data-board-toggle]');
@@ -127,6 +136,33 @@
             button.textContent = 'Move ' + move.label;
             form.appendChild(button);
             actions.insertBefore(form, actions.firstChild);
+        });
+    }
+
+    function boardsInScope(board) {
+        return Array.from(root.querySelectorAll('.kanban-board')).filter(function (item) {
+            return item.dataset.boardScopeType === board.dataset.boardScopeType && item.dataset.boardScopeId === board.dataset.boardScopeId;
+        });
+    }
+
+    function moveBoard(board, direction) {
+        var boards = boardsInScope(board);
+        var position = boards.indexOf(board);
+        var target = position + (direction === 'up' ? -1 : 1);
+        if (position < 0 || !boards[target]) return;
+        if (direction === 'up') board.parentNode.insertBefore(board, boards[target]);
+        else board.parentNode.insertBefore(boards[target], board);
+        refreshBoardOrderControls(board);
+    }
+
+    function refreshBoardOrderControls(board) {
+        var boards = boardsInScope(board);
+        boards.forEach(function (item, index) {
+            item.querySelectorAll('[data-board-reorder]').forEach(function (form) {
+                var button = form.querySelector('button[type="submit"]');
+                if (!button) return;
+                button.disabled = (form.elements.direction.value === 'up' && index === 0) || (form.elements.direction.value === 'down' && index === boards.length - 1);
+            });
         });
     }
 
