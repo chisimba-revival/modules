@@ -13,6 +13,7 @@ $checks=array(
  'generic principals stored'=>str_contains($access,"'principaltype'")&&str_contains($access,"'principalid'")&&str_contains($access,"'permission'"),
  'shared skin primitives composed'=>str_contains($template,'chisimba-card')&&str_contains($template,'chisimba-form-field')&&str_contains($template,'chisimba-button-danger'),
  'task movement has keyboard controls'=>str_contains($template,"array('left'=>")&&str_contains($template,'>Move <?php echo $e($direction); ?></button>')&&str_contains($controller,"param('response')==='json'"),
+ 'task movement stays in place with JavaScript'=>str_contains($template,'data-task-move')&&str_contains($read('resources/kanban.js'),"matches('[data-task-move]')")&&str_contains($read('resources/kanban.js'),'function moveTask'),
  'workspace opts into full width'=>str_contains($template,'chisimba-structural-main--full')&&str_contains($template,'max-width:none'),
  'workspace has accessible fullscreen control'=>str_contains($template,'data-kanban-fullscreen')&&str_contains($template,'>Full screen</button>'),
  'board scope is an explicit selector'=>str_contains($template,'for="kanban-scope">Board scope')&&str_contains($template,'Personal — only your boards')&&str_contains($template,'Course — boards for this course')&&str_contains($template,'Site — organisation-wide boards')&&str_contains($template,"render('eye'"),
