@@ -1,0 +1,49 @@
+<?php
+if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
+class kanban extends controller
+{
+    const CSRF='kanban_mutation';
+    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess');
+    public function init(){
+        $this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');
+        $this->boards=$this->getObject('dbkanbanboards');$this->tasks=$this->getObject('dbkanbantasks');$this->subtasks=$this->getObject('dbkanbansubtasks');$this->access=$this->getObject('dbkanbanaccess');
+        $this->auth=$this->getObject('kanbanauthorizationservice');$this->service=$this->getObject('kanbanservice');
+        $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->setLayoutTemplate('kanban_layout_tpl.php');
+    }
+    public function requiresLogin($action){return true;}
+    public function dispatch($action){$action=(string)$action;if(in_array($action,$this->mutations,true))return $this->{$action}();return $this->index();}
+    private function index($message='',$error=''){
+        $scope=$this->requestedScope();$includeArchived=$this->boolParam('archived');
+        if($scope['type']==='personal'){$rows=array_merge($this->boards->ownedBy($this->user->userId(),$includeArchived),$this->boards->sharedWith($this->user->userId(),null,$includeArchived));}else{$rows=$this->boards->inScope($scope['type'],$scope['id'],$includeArchived);}
+        $rows=array_values(array_filter($rows,function($b){return $this->auth->allows($b,'view');}));
+        $rows=array_values(array_reduce($rows,function($carry,$board){$carry[$board['id']]=$board;return $carry;},array()));
+        if(!$this->auth->canCreate($scope['type'],$scope['id'])&&!$rows)return 'noaccess_tpl.php';
+        $this->setVar('kanbanBoards',$this->service->hydrate($rows));$this->setVar('kanbanCanCreate',$this->auth->canCreate($scope['type'],$scope['id']));$this->setVar('kanbanScope',$scope);$this->setVar('kanbanCsrf',$this->csrf->issue(self::CSRF));$this->setVar('kanbanMessage',$message);$this->setVar('kanbanError',$error);return 'index_tpl.php';
+    }
+    private function requestedScope(){
+        $type=$this->param('scope');$context=(string)$this->context->getContextCode();
+        if($type==='site')return array('type'=>'site','id'=>'root','label'=>'Site board');
+        if($type==='context'||($type===''&&$context!==''&&$context!=='root'))return array('type'=>'context','id'=>$context,'label'=>'Course board');
+        return array('type'=>'personal','id'=>(string)$this->user->userId(),'label'=>'Personal board');
+    }
+    private function saveproject(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$id=$this->id('boardid');$title=mb_substr($this->param('title'),0,255);if($title==='')return $this->index('','A board title is required.');if($id!==''){$board=$this->service->board($id,'manage');if(!$board)return $this->forbidden();$this->boards->saveBoard($id,array('title'=>$title,'description'=>$this->text('description')));}else{$scope=$this->requestedScope();if(!$this->auth->canCreate($scope['type'],$scope['id']))return $this->forbidden();$this->boards->createBoard(array('scopetype'=>$scope['type'],'scopeid'=>$scope['id'],'ownerid'=>$this->user->userId(),'title'=>$title,'description'=>$this->text('description'),'sortorder'=>time()));}return $this->index('Board saved.');}
+    private function archiveproject(){return $this->boardMutation(function($b){return $this->boards->saveBoard($b['id'],array('isarchived'=>empty($b['isarchived'])?1:0));},'Board archive state updated.');}
+    private function deleteproject(){return $this->boardMutation(function($b){foreach($this->tasks->forBoard($b['id']) as $task)$this->subtasks->removeForTask($task['id']);$this->tasks->removeForBoard($b['id']);$this->access->removeForBoard($b['id']);return $this->boards->removeBoard($b['id']);},'Board deleted.');}
+    private function savetask(){if(!$this->validPost())return $this->index('','Your session expired.');$id=$this->id('taskid');$board=$this->service->board($this->id('boardid'),'edit');$title=mb_substr($this->param('title'),0,255);if(!$board||$title==='')return $this->forbidden();$data=array('title'=>$title,'description'=>$this->text('description'),'notes'=>$this->text('notes'));if($id!==''){$task=$this->tasks->one($id);if(!$task||$task['boardid']!==$board['id'])return $this->forbidden();$this->tasks->saveTask($id,$data);}else{$data+=array('boardid'=>$board['id'],'status'=>'not_started','sortorder'=>time());$this->tasks->createTask($data);}return $this->index('Task saved.');}
+    private function deletetask(){if(!$this->validPost())return $this->index('','Your session expired.');$task=$this->tasks->one($this->id('taskid'));if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeForTask($task['id']);$this->tasks->removeTask($task['id']);return $this->index('Task deleted.');}
+    private function movetask(){if(!$this->validPost())return $this->json(false,'Your session expired.',403);$task=$this->tasks->one($this->id('taskid'));$status=$this->param('status');if(!$task||!in_array($status,array('not_started','in_progress','completed'),true)||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);$this->tasks->saveTask($task['id'],array('status'=>$status,'sortorder'=>(int)$this->param('sortorder')));return $this->json(true,'Task moved.');}
+    private function savesubtask(){if(!$this->validPost())return $this->index('','Your session expired.');$task=$this->tasks->one($this->id('taskid'));$title=$this->text('title');if(!$task||$title===''||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->createSubtask($task['id'],$title,time());return $this->index('Subtask added.');}
+    private function togglesubtask(){if(!$this->validPost())return $this->json(false,'Your session expired.',403);$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);$this->subtasks->saveSubtask($sub['id'],array('iscompleted'=>$this->boolParam('completed')?1:0));return $this->json(true,'Subtask updated.');}
+    private function deletesubtask(){if(!$this->validPost())return $this->index('','Your session expired.');$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeSubtask($sub['id']);return $this->index('Subtask deleted.');}
+    private function saveaccess(){if(!$this->validPost())return $this->index('','Your session expired.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();$grants=array();foreach(preg_split('/\r?\n/',$this->text('grants')) as $line){$parts=array_map('trim',explode(':',$line,2));if(count($parts)!==2||!preg_match('/^[A-Za-z0-9._@-]{1,191}$/',$parts[0]))continue;$userId=$this->user->getUserId($parts[0]);if($userId&&$this->auth->eligibleDirectUser($board,$userId))$grants[(string)$userId]=$parts[1];}$this->access->replaceUserGrants($board['id'],$grants,$this->user->userId());return $this->index('Sharing updated.');}
+    private function reorderprojects(){return $this->json(false,'Board reordering is not enabled in this first alpha.',422);}
+    private function boardMutation($callback,$message){if(!$this->validPost())return $this->index('','Your session expired.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();$callback($board);return $this->index($message);}
+    private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
+    private function forbidden(){http_response_code(403);return $this->index('','You do not have permission for that board.');}
+    private function json($ok,$message,$status=200){if(!headers_sent()){header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');http_response_code($status);}echo json_encode(array('ok'=>$ok,'message'=>$message,'csrfToken'=>$this->csrf->issue(self::CSRF)),JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
+    private function param($name){$v=$this->getParam($name,'');return is_scalar($v)?trim((string)$v):'';}
+    private function text($name){return mb_substr($this->param($name),0,10000);}
+    private function id($name){$v=$this->param($name);return preg_match('/^[a-f0-9]{32}$/',$v)?$v:'';}
+    private function boolParam($name){return in_array(strtolower($this->param($name)),array('1','true','yes','on'),true);}
+}
+?>
