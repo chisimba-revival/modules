@@ -41,7 +41,7 @@
         var board = toggle.closest('.kanban-board');
         var collapsed = board.classList.toggle('is-collapsed');
         toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        toggle.textContent = collapsed ? 'Expand' : 'Collapse';
+        toggle.querySelector('[data-board-toggle-label]').textContent = collapsed ? 'Expand' : 'Collapse';
     });
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
@@ -95,7 +95,10 @@
         });
         var total = Number(board.dataset.taskTotal) || 0;
         var completed = board.querySelector('.kanban-column[data-status="completed"]').querySelectorAll('.kanban-task').length;
-        board.querySelector('[data-board-progress]').textContent = (total ? Math.round(completed / total * 100) : 0) + '% complete';
+        var percentage = total ? Math.round(completed / total * 100) : 0;
+        board.querySelector('[data-board-progress]').textContent = percentage + '% complete';
+        board.querySelector('[data-board-progress-label]').textContent = percentage + '%';
+        board.querySelector('progress').value = percentage;
         refreshMoveControls(task, column.dataset.status);
     }
 

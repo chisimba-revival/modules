@@ -3,6 +3,14 @@
 .kanban-board__header h2 { margin: .15rem 0 .35rem; }
 .kanban-board__header form { margin: 0; }
 .kanban-board.is-collapsed .kanban-board__body { display: none; }
+.kanban-board.is-collapsed [data-board-toggle] .chisimba-icon { transform: rotate(180deg); }
+.kanban-board__summary-actions { display: grid; justify-items: end; gap: var(--chisimba-space-2); }
+.kanban-board__toggle { min-height: 1.9rem; padding: .32rem .62rem; font-size: .8rem; line-height: 1.15; }
+.kanban-board__toggle .chisimba-icon { transition: transform .18s ease; }
+.kanban-progress { display: grid; justify-items: end; gap: .25rem; min-width: 7rem; }
+.kanban-progress strong { color: var(--chisimba-warning); font-size: 1rem; }
+.kanban-progress progress { width: 7rem; height: .45rem; accent-color: var(--chisimba-success); }
+.kanban-board__management { margin-top: var(--chisimba-space-3); }
 .kanban-page-header { box-shadow: var(--chisimba-shadow-sm); }
 .kanban-scope-controls { width: 35rem; }
 .kanban-scope-form { max-width: none; margin: 0; }
@@ -11,6 +19,8 @@
 .kanban-compact-actions .button { min-height: 1.9rem; padding: .32rem .62rem; font-size: .8rem; line-height: 1.15; }
 .kanban-columns { display: grid; grid-template-columns: repeat(3, minmax(15rem, 1fr)); gap: var(--chisimba-space-4); margin-top: var(--chisimba-space-4); overflow-x: auto; }
 .kanban-column { min-height: 12rem; padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface-muted); }
+.kanban-board--empty .kanban-column { min-height: 7rem; }
+.kanban-board--empty .kanban-task-list { min-height: 3rem; }
 .kanban-column[data-status="not_started"] { background: color-mix(in srgb, var(--chisimba-danger) 9%, var(--chisimba-surface)); }
 .kanban-column[data-status="in_progress"] { background: color-mix(in srgb, var(--chisimba-warning) 9%, var(--chisimba-surface)); }
 .kanban-column[data-status="completed"] { background: color-mix(in srgb, var(--chisimba-success) 9%, var(--chisimba-surface)); }
@@ -27,6 +37,7 @@
 .kanban-subtask input:checked + span { text-decoration: line-through; color: var(--chisimba-text-muted); }
 .kanban-popover { margin-top: 1rem; padding: 1rem; border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface); }
 .kanban-sharing { margin-top: 1rem; }
+.kanban-add-task { margin-top: var(--chisimba-space-3); }
 .kanban-task__actions { justify-content: flex-end; margin-top: .7rem; }
 
 @media (max-width: 52rem) {
