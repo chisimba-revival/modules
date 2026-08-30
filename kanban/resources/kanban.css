@@ -2,12 +2,19 @@
 .kanban-board__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .kanban-board__header h2 { margin: .15rem 0 .35rem; }
 .kanban-board__header form { margin: 0; }
+.kanban-page-header { box-shadow: var(--chisimba-shadow-sm); }
+.kanban-scope-controls { width: 35rem; }
+.kanban-scope-form { max-width: none; margin: 0; }
+.kanban-scope-form > .chisimba-cluster { display: grid; grid-template-columns: minmax(18rem, 1fr) max-content auto; align-items: center; }
+.kanban-scope-form .button { white-space: nowrap; }
+.kanban-compact-actions .button { min-height: 1.9rem; padding: .32rem .62rem; font-size: .8rem; line-height: 1.15; }
 .kanban-columns { display: grid; grid-template-columns: repeat(3, minmax(15rem, 1fr)); gap: var(--chisimba-space-4); margin-top: var(--chisimba-space-4); overflow-x: auto; }
 .kanban-column { min-height: 12rem; padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface-muted); }
 .kanban-column[data-status="not_started"] { background: color-mix(in srgb, var(--chisimba-danger) 9%, var(--chisimba-surface)); }
 .kanban-column[data-status="in_progress"] { background: color-mix(in srgb, var(--chisimba-warning) 9%, var(--chisimba-surface)); }
 .kanban-column[data-status="completed"] { background: color-mix(in srgb, var(--chisimba-success) 9%, var(--chisimba-surface)); }
 .kanban-column > h3 { margin: .1rem 0 .8rem; }
+.kanban-column__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--chisimba-space-2); }
 .kanban-task-list { display: grid; gap: var(--chisimba-space-3); min-height: 8rem; }
 .kanban-task { padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-sm); background: var(--chisimba-surface); box-shadow: var(--chisimba-shadow-sm); }
 .kanban-task[draggable=true] { cursor: grab; }
@@ -24,4 +31,7 @@
 @media (max-width: 52rem) {
     .kanban-board__header { display: block; }
     .kanban-columns { grid-template-columns: minmax(15rem, 1fr); }
+    .kanban-scope-controls { width: 100%; }
+    .kanban-scope-form > .chisimba-cluster { grid-template-columns: minmax(0, 1fr) max-content auto; }
+    .kanban-scope-form > .chisimba-cluster { grid-template-columns: minmax(0, 1fr) auto; }
 }
