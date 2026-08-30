@@ -26,6 +26,7 @@ $checks=array(
  'add controls use compact density'=>str_contains($template,'kanban-add-task kanban-compact-actions')&&str_contains($template,'chisimba-cluster kanban-compact-actions'),
  'project summary has dedicated progress hierarchy'=>str_contains($template,'kanban-progress')&&str_contains($template,'<progress max="100"')&&str_contains($template,'kanban-board__management'),
  'module CSS does not redefine primitives'=>!str_contains($css,'.button{')&&!str_contains($css,'.chisimba-card{')&&!str_contains($css,'.chisimba-form-field{'),
- 'students are not enabled prematurely'=>!str_contains($read('register.conf'),'Students')
+ 'students are not enabled prematurely'=>!str_contains($read('register.conf'),'Students'),
+ 'site administrators can find Kanban'=>str_contains($read('register.conf'),'PAGE: admin_shared||columns-3|mod_kanban_title|site')&&str_contains($read('register.conf'),'SIDEMENU: postlogin-3|Site Admin||columns-3|mod_kanban_title|site')
 );
 foreach($checks as $name=>$ok){if(!$ok){fwrite(STDERR,"FAIL: $name\n");exit(1);}echo "PASS: $name\n";}
