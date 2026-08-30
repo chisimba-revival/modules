@@ -8,8 +8,7 @@
     if (fullscreenButton && root.requestFullscreen) {
         var updateFullscreenButton = function (active) {
             fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
-            fullscreenButton.setAttribute('aria-label', active ? 'Exit full screen' : 'Enter full screen');
-            fullscreenButton.setAttribute('title', active ? 'Exit full screen' : 'Enter full screen');
+            fullscreenButton.textContent = active ? 'Exit full screen' : 'Full screen';
         };
         fullscreenButton.addEventListener('click', function () {
             if (document.fullscreenElement) document.exitFullscreen().then(function () { updateFullscreenButton(false); });
