@@ -9,12 +9,10 @@ $icons=$this->getObject('iconservice','ui');
 <main class="chisimba-workspace chisimba-flow chisimba-structural-main chisimba-structural-main--full kanban-workspace" data-kanban data-move-url="<?php echo $e($url(array('action'=>'movetask'))); ?>" data-csrf="<?php echo $e($kanbanCsrf); ?>" data-scope="<?php echo $e($scopeType); ?>" style="width:100%;max-width:none;overflow:auto;background:var(--chisimba-background)">
     <header class="chisimba-page-header">
         <div><p class="chisimba-eyebrow"><?php echo $e($kanbanScope['label']); ?></p><h1>Kanban boards</h1><p>Plan work in personal, course or site scope.</p></div>
-        <nav class="chisimba-cluster" aria-label="Board scopes">
-            <a class="button chisimba-button-secondary" href="<?php echo $e($url(array('scope'=>'personal'))); ?>">Personal</a>
-            <?php if((string)$this->getObject('dbcontext','context')->getContextCode()!=='root'&&(string)$this->getObject('dbcontext','context')->getContextCode()!==''): ?><a class="button chisimba-button-secondary" href="<?php echo $e($url(array('scope'=>'context'))); ?>">Course</a><?php endif; ?>
-            <?php if($this->getObject('user','security')->isAdmin()): ?><a class="button chisimba-button-secondary" href="<?php echo $e($url(array('scope'=>'site'))); ?>">Site</a><?php endif; ?>
+        <div class="chisimba-cluster">
+            <form class="chisimba-form-field chisimba-form-field--compact" method="get" action="index.php"><input type="hidden" name="module" value="kanban"/><label for="kanban-scope">Board scope</label><div class="chisimba-cluster"><select id="kanban-scope" name="scope"><option value="personal" <?php echo $scopeType==='personal'?'selected':''; ?>>Personal — only your boards</option><?php if((string)$this->getObject('dbcontext','context')->getContextCode()!=='root'&&(string)$this->getObject('dbcontext','context')->getContextCode()!==''): ?><option value="context" <?php echo $scopeType==='context'?'selected':''; ?>>Course — boards for this course</option><?php endif; ?><?php if($this->getObject('user','security')->isAdmin()): ?><option value="site" <?php echo $scopeType==='site'?'selected':''; ?>>Site — organisation-wide boards</option><?php endif; ?></select><button class="button" type="submit">View boards</button></div></form>
             <button class="button chisimba-button-secondary" type="button" data-kanban-fullscreen aria-pressed="false">Full screen</button>
-        </nav>
+        </div>
     </header>
     <?php if($kanbanMessage!==''): ?><div class="chisimba-notice chisimba-notice--success" role="status"><?php echo $e($kanbanMessage); ?></div><?php endif; ?>
     <?php if($kanbanError!==''): ?><div class="chisimba-notice chisimba-notice--error" role="alert"><?php echo $e($kanbanError); ?></div><?php endif; ?>
