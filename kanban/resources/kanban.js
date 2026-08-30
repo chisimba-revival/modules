@@ -25,6 +25,14 @@
         var message = event.target.getAttribute('data-confirm');
         if (message && !window.confirm(message)) event.preventDefault();
     });
+    root.addEventListener('click', function (event) {
+        var toggle = event.target.closest('[data-board-toggle]');
+        if (!toggle) return;
+        var board = toggle.closest('.kanban-board');
+        var collapsed = board.classList.toggle('is-collapsed');
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggle.textContent = collapsed ? 'Expand' : 'Collapse';
+    });
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
         if (!task) return;

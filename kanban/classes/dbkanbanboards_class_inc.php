@@ -9,6 +9,7 @@ class dbkanbanboards extends dbTable
     public function sharedWith($userId,$scopeType=null,$archived=false){$sql='SELECT b.* FROM tbl_kanban_boards b INNER JOIN tbl_kanban_access a ON a.boardid=b.id WHERE a.principaltype=\'user\' AND a.principalid='.$this->q($userId).($scopeType===null?'':' AND b.scopetype='.$this->q($scopeType)).($archived?'':' AND b.isarchived=0').' ORDER BY b.isarchived,b.sortorder,b.title';$rows=$this->getArray($sql);return is_array($rows)?$rows:array();}
     public function createBoard(array $data){$now=date('Y-m-d H:i:s');$data=array_merge($data,array('id'=>bin2hex(random_bytes(16)),'isarchived'=>0,'datecreated'=>$now,'datemodified'=>$now));return $this->insert($data);}
     public function saveBoard($id,array $data){$data['datemodified']=date('Y-m-d H:i:s');return $this->update('id',$id,$data)!==false;}
+    public function setSortOrder($id,$sortOrder){return $this->update('id',$id,array('sortorder'=>(int)$sortOrder))!==false;}
     public function removeBoard($id){return $this->delete('id',$id)!==false;}
     private function q($v){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$v):"'".str_replace("'","''",(string)$v)."'";}
 }

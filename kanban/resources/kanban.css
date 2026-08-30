@@ -2,6 +2,7 @@
 .kanban-board__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .kanban-board__header h2 { margin: .15rem 0 .35rem; }
 .kanban-board__header form { margin: 0; }
+.kanban-board.is-collapsed .kanban-board__body { display: none; }
 .kanban-page-header { box-shadow: var(--chisimba-shadow-sm); }
 .kanban-scope-controls { width: 35rem; }
 .kanban-scope-form { max-width: none; margin: 0; }

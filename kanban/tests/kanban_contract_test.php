@@ -19,6 +19,8 @@ $checks=array(
  'columns use semantic skin colours'=>str_contains($css,'var(--chisimba-danger)')&&str_contains($css,'var(--chisimba-warning)')&&str_contains($css,'var(--chisimba-success)'),
  'board status uses shared pills'=>substr_count($template,'chisimba-pill')>=4&&str_contains($template,'Board task status'),
  'project summary includes progress and recency'=>str_contains($template,"'% complete'")&&str_contains($template,"'Updated '")&&str_contains($template,'kanban-column__heading'),
+ 'boards collapse accessibly'=>str_contains($template,'data-board-toggle aria-expanded="true"')&&str_contains($read('resources/kanban.js'),'is-collapsed'),
+ 'boards reorder within their stored scope'=>str_contains($controller,'inScope($board[\'scopetype\'],$board[\'scopeid\'],true)')&&str_contains($read('classes/dbkanbanboards_class_inc.php'),'setSortOrder'),
  'module CSS does not redefine primitives'=>!str_contains($css,'.button{')&&!str_contains($css,'.chisimba-card{')&&!str_contains($css,'.chisimba-form-field{'),
  'students are not enabled prematurely'=>!str_contains($read('register.conf'),'Students')
 );
