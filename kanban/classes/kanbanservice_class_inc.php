@@ -1,6 +1,6 @@
 <?php
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
-class kanbanservice extends object
+class kanbanservice extends controller
 {
     public function init(){ $this->boards=$this->getObject('dbkanbanboards');$this->tasks=$this->getObject('dbkanbantasks');$this->subtasks=$this->getObject('dbkanbansubtasks');$this->access=$this->getObject('dbkanbanaccess');$this->auth=$this->getObject('kanbanauthorizationservice'); }
     public function board($id,$permission='view'){$board=$this->boards->one($id);return $board&&$this->auth->allows($board,$permission)?$board:false;}

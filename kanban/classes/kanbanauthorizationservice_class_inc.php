@@ -1,6 +1,6 @@
 <?php
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
-class kanbanauthorizationservice extends object
+class kanbanauthorizationservice extends controller
 {
     private $rank=array('view'=>1,'edit'=>2,'manage'=>3);
     public function init(){ $this->user=$this->getObject('user','security');$this->groups=$this->getObject('managegroups','contextgroups');$this->access=$this->getObject('dbkanbanaccess'); }

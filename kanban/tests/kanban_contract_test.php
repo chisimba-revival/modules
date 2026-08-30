@@ -4,6 +4,7 @@ $required=array('controller.php','register.conf','classes/kanbanauthorizationser
 foreach($required as $file)if(!is_file($root.'/'.$file)){fwrite(STDERR,"FAIL: missing $file\n");exit(1);}
 $controller=$read('controller.php');$auth=$read('classes/kanbanauthorizationservice_class_inc.php');$access=$read('sql/tbl_kanban_access.sql');$template=$read('templates/content/index_tpl.php');$css=$read('resources/kanban.css');
 $checks=array(
+ 'services use the active framework base'=>str_contains($auth,'extends controller')&&str_contains($read('classes/kanbanservice_class_inc.php'),'extends controller'),
  'three board scopes'=>str_contains($controller,"'site'")&&str_contains($controller,"'context'")&&str_contains($controller,"'personal'"),
  'all mutations require native CSRF'=>str_contains($controller,'csrf->consume(self::CSRF'),
  'permission levels are ordered'=>str_contains($auth,"'view'=>1")&&str_contains($auth,"'edit'=>2")&&str_contains($auth,"'manage'=>3"),
