@@ -12,6 +12,11 @@ $checks=array(
  'direct grants remain lecturer or admin only'=>str_contains($auth,'eligibleDirectUser')&&str_contains($auth,'isContextLecturer')&&str_contains($auth,'inAdminGroup'),
  'generic principals stored'=>str_contains($access,"'principaltype'")&&str_contains($access,"'principalid'")&&str_contains($access,"'permission'"),
  'shared skin primitives composed'=>str_contains($template,'chisimba-card')&&str_contains($template,'chisimba-form-field')&&str_contains($template,'chisimba-button-danger'),
+ 'task movement has keyboard controls'=>str_contains($template,"array('left'=>")&&str_contains($template,'aria-label="Move task')&&str_contains($controller,"param('response')==='json'"),
+ 'workspace opts into full width'=>str_contains($template,'chisimba-structural-main--full')&&str_contains($template,'max-width:none'),
+ 'workspace has accessible fullscreen control'=>str_contains($template,'data-kanban-fullscreen')&&str_contains($template,'aria-pressed="false"'),
+ 'columns use semantic skin colours'=>str_contains($css,'var(--chisimba-danger)')&&str_contains($css,'var(--chisimba-warning)')&&str_contains($css,'var(--chisimba-success)'),
+ 'board status uses shared pills'=>substr_count($template,'chisimba-pill')>=4&&str_contains($template,'Board task status'),
  'module CSS does not redefine primitives'=>!str_contains($css,'.button{')&&!str_contains($css,'.chisimba-card{')&&!str_contains($css,'.chisimba-form-field{'),
  'students are not enabled prematurely'=>!str_contains($read('register.conf'),'Students')
 );

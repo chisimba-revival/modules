@@ -1,1 +1,27 @@
-.kanban-workspace{--chisimba-flow-space:1.25rem}.kanban-board__header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.kanban-board__header h2{margin:.15rem 0 .35rem}.kanban-board__header form{margin:0}.kanban-columns{display:grid;grid-template-columns:repeat(3,minmax(15rem,1fr));gap:var(--chisimba-space-4);margin-top:var(--chisimba-space-4);overflow-x:auto}.kanban-column{min-height:12rem;padding:var(--chisimba-space-3);border:1px solid var(--chisimba-border);border-radius:var(--chisimba-radius-md);background:var(--chisimba-surface-muted)}.kanban-column>h3{margin:.1rem 0 .8rem}.kanban-task-list{display:grid;gap:var(--chisimba-space-3);min-height:8rem}.kanban-task{padding:var(--chisimba-space-3);border:1px solid var(--chisimba-border);border-radius:var(--chisimba-radius-sm);background:var(--chisimba-surface);box-shadow:var(--chisimba-shadow-sm)}.kanban-task[draggable=true]{cursor:grab}.kanban-task.is-dragging{opacity:.45}.kanban-column.is-dragover{outline:3px solid var(--chisimba-focus);outline-offset:2px}.kanban-task h4{margin:0 0 .45rem}.kanban-subtasks{display:grid;gap:.45rem;margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--chisimba-border)}.kanban-subtask{display:flex;align-items:flex-start;gap:.45rem}.kanban-subtask input:checked+span{text-decoration:line-through;color:var(--chisimba-text-muted)}.kanban-popover{margin-top:1rem;padding:1rem;border:1px solid var(--chisimba-border);border-radius:var(--chisimba-radius-md);background:var(--chisimba-surface)}.kanban-sharing{margin-top:1rem}.kanban-task__actions{justify-content:flex-end;margin-top:.7rem}@media(max-width:52rem){.kanban-board__header{display:block}.kanban-columns{grid-template-columns:minmax(15rem,1fr)}}
+.kanban-workspace { --chisimba-flow-space: 1.25rem; }
+.kanban-board__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.kanban-board__header h2 { margin: .15rem 0 .35rem; }
+.kanban-board__header form { margin: 0; }
+.kanban-columns { display: grid; grid-template-columns: repeat(3, minmax(15rem, 1fr)); gap: var(--chisimba-space-4); margin-top: var(--chisimba-space-4); overflow-x: auto; }
+.kanban-column { min-height: 12rem; padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface-muted); }
+.kanban-column[data-status="not_started"] { background: color-mix(in srgb, var(--chisimba-danger) 9%, var(--chisimba-surface)); }
+.kanban-column[data-status="in_progress"] { background: color-mix(in srgb, var(--chisimba-warning) 9%, var(--chisimba-surface)); }
+.kanban-column[data-status="completed"] { background: color-mix(in srgb, var(--chisimba-success) 9%, var(--chisimba-surface)); }
+.kanban-column > h3 { margin: .1rem 0 .8rem; }
+.kanban-task-list { display: grid; gap: var(--chisimba-space-3); min-height: 8rem; }
+.kanban-task { padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-sm); background: var(--chisimba-surface); box-shadow: var(--chisimba-shadow-sm); }
+.kanban-task[draggable=true] { cursor: grab; }
+.kanban-task.is-dragging { opacity: .45; }
+.kanban-column.is-dragover { outline: 3px solid var(--chisimba-focus); outline-offset: 2px; }
+.kanban-task h4 { margin: 0 0 .45rem; }
+.kanban-subtasks { display: grid; gap: .45rem; margin-top: .8rem; padding-top: .7rem; border-top: 1px solid var(--chisimba-border); }
+.kanban-subtask { display: flex; align-items: flex-start; gap: .45rem; }
+.kanban-subtask input:checked + span { text-decoration: line-through; color: var(--chisimba-text-muted); }
+.kanban-popover { margin-top: 1rem; padding: 1rem; border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface); }
+.kanban-sharing { margin-top: 1rem; }
+.kanban-task__actions { justify-content: flex-end; margin-top: .7rem; }
+
+@media (max-width: 52rem) {
+    .kanban-board__header { display: block; }
+    .kanban-columns { grid-template-columns: minmax(15rem, 1fr); }
+}
