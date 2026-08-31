@@ -18,6 +18,7 @@ $checks=array(
     'course members can view course maps'=>str_contains($authorization,'userContext->isContextMember'),
     'graph relationships remain first class'=>str_contains($graph,'RELATIONSHIP_TYPES')&&!str_contains($graph,'parentId'),
     'containment integrity is validated'=>str_contains($graph,'two containment parents')&&str_contains($graph,'containsCycle'),
+    'source ordering is bounded for portable integer storage'=>str_contains($graph,'private function sortOrder')&&str_contains($graph,'2147483647'),
     'subgraph scope is explicit'=>str_contains($graph,"'descendants'")&&str_contains($graph,"'whole_map'")&&str_contains($graph,"'node'"),
     'Kenga v3 import is transactional and idempotent'=>str_contains($importer,"kenga_knowledge_document")&&str_contains($importer,'beginTransaction')&&str_contains($importer,'rollbackTransaction')&&str_contains($importer,'bySourceFingerprint'),
     'imports fail atomically on rejected graph rows'=>str_contains($importer,'if(!$this->nodes->addNode')&&str_contains($importer,'if(!$this->relationships->addRelationship'),
