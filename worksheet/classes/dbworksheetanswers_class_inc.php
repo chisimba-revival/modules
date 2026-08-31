@@ -21,6 +21,8 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class dbworksheetanswers extends dbTable
 {
+    /** Non-user value required by the legacy non-null lecturer column. */
+    const UNMARKED_LECTURER_ID = 'pending';
 
     /**
     * Constructor method to define the table
@@ -61,7 +63,7 @@ class dbworksheetanswers extends dbTable
                         'student_id' => $userId,
                         'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
                         'answer' => $answer,
-                        'lecturer_id' => '',
+                        'lecturer_id' => self::UNMARKED_LECTURER_ID,
                         'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     ));
             } else {
@@ -122,7 +124,7 @@ class dbworksheetanswers extends dbTable
             $result = $this->update('id', $answer['id'], array(
                 'mark' => NULL,
                 'comments' => NULL,
-                'lecturer_id' => '',
+                'lecturer_id' => self::UNMARKED_LECTURER_ID,
                 'datemarked' => NULL,
                 'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
