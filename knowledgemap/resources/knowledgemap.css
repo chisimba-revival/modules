@@ -34,7 +34,7 @@
 .knowmap-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--chisimba-space-1); }
 .knowmap-icon-grid .chisimba-icon-button { width: 2.25rem; min-width: 2.25rem; height: 2.25rem; }
 .knowmap-icon-clear { margin-top: var(--chisimba-space-3); }
-.knowmap-node__icon .chisimba-icon { width: 1.2rem; height: 1.2rem; }
+.knowmap-node__icon .chisimba-icon { width: 1.75rem; height: 1.75rem; stroke-width: 2.35; }
 @media (max-width: 70rem) { .knowmap-view__toolbar { flex-wrap: wrap; } .knowmap-view__identity { flex-basis: 14rem; } }
 .knowmap-style-popover { inset-block-start: calc(100% + var(--chisimba-space-2)); inset-inline-start: 0; z-index: 20; display: grid; grid-template-columns: minmax(8rem, 1fr) 5rem; gap: var(--chisimba-space-3); width: 18rem; }
 .knowmap-style-popover[hidden] { display: none; }
