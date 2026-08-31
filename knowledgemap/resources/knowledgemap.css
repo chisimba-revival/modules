@@ -13,7 +13,8 @@
 .knowmap-view.is-chrome-collapsed .knowmap-view__toolbar { position: absolute; inset-block-start: var(--chisimba-space-2); inset-inline-end: var(--chisimba-space-2); width: auto; padding: var(--chisimba-space-1); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); box-shadow: var(--chisimba-shadow-md); }
 .knowmap-view.is-chrome-collapsed .knowmap-view__toolbar > :not(.knowmap-view__persistent) { display: none; }
 .knowmap-view.is-chrome-collapsed .knowmap-view__persistent { margin: 0; padding: 0; border: 0; }
-.knowmap-view.is-chrome-collapsed .knowmap-save-status { display: none; }
+.knowmap-save-control.is-unsaved { color: var(--chisimba-danger); border-color: color-mix(in srgb, var(--chisimba-danger) 45%, var(--chisimba-border)); }
+.knowmap-save-control.is-saving { opacity: .65; }
 .knowmap-view__identity { min-width: min(30rem, 48vw); }
 .knowmap-view__identity h1 { margin: 0; font-size: 1.2rem; }
 .knowmap-view__toolbar > :last-child { margin-inline-start: auto; }
