@@ -752,6 +752,8 @@ public function dispatch($action=Null)
 				$tableId = $this->getParam("tableId", "");
 				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
+				$canEditRubric = !empty($tableInfo) && $this->canModifyRubric($tableInfo[0]);
+				$this->setVarByRef("canEditRubric", $canEditRubric);
 				$title = $tableInfo[0]['title'];
 				$description = $tableInfo[0]['description'];
 				$rows = $tableInfo[0]['rows'];
