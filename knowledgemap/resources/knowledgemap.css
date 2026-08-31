@@ -8,7 +8,11 @@
 .knowmap-card h3 { margin: var(--chisimba-space-1) 0; }
 .knowmap-card .button { justify-self: start; margin-top: auto; }
 .knowmap-card__meta { color: var(--chisimba-text-muted); font-size: .82rem; }
-.knowmap-view { display: flex; flex-direction: column; width: 100%; max-width: none; height: calc(100vh - 1rem); min-height: 32rem; overflow: hidden; }
+.knowmap-view { display: flex; flex-direction: column; width: 100%; max-width: none; height: calc(100vh - 12rem); min-height: 32rem; overflow: hidden; }
+.knowmap-view:fullscreen { width: 100vw; height: 100vh; margin: 0; padding: 0; background: var(--chisimba-surface); }
+.knowmap-exit-fullscreen { display: none; }
+.knowmap-view:fullscreen .knowmap-enter-fullscreen { display: none; }
+.knowmap-view:fullscreen .knowmap-exit-fullscreen { display: inline-flex; }
 .knowmap-view__toolbar { position: relative; z-index: 10; flex: 0 0 auto; border-radius: 0; }
 .knowmap-view.is-chrome-collapsed .knowmap-view__toolbar { position: absolute; inset-block-start: var(--chisimba-space-2); inset-inline-end: var(--chisimba-space-2); width: auto; padding: var(--chisimba-space-1); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); box-shadow: var(--chisimba-shadow-md); }
 .knowmap-view.is-chrome-collapsed .knowmap-view__toolbar > :not(.knowmap-view__persistent) { display: none; }
