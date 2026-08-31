@@ -750,6 +750,7 @@ public function dispatch($action=Null)
 			// View a rubric
 			case "viewtable":
 				$tableId = $this->getParam("tableId", "");
+				$this->setVarByRef("tableId", $tableId);
 				$indexOffset = $this->getRubricIndexOffset($tableId);
 				$tableInfo = $this->objDbRubricTables->listSingle($tableId);
 				$canEditRubric = !empty($tableInfo) && $this->canModifyRubric($tableInfo[0]);
