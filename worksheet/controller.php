@@ -119,7 +119,8 @@ class worksheet extends controller
         $lecturerActions = array(
             'add', 'deleteworksheet', 'saveworksheet', 'saveworksheetedit', 'worksheetinfo',
             'managequestions', 'savequestion', 'activate', 'updatestatus', 'viewstudentworksheet',
-            'savestudentmark', 'aiassistmark', 'aimarkingjob', 'editquestion', 'updatequestion', 'deletequestion', 'preview'
+            'savestudentmark', 'reopenstudentworksheet', 'aiassistmark', 'aimarkingjob',
+            'editquestion', 'updatequestion', 'deletequestion', 'preview'
         );
 
         if (in_array($action, $lecturerActions)) {
@@ -461,11 +462,46 @@ class worksheet extends controller
         $this->setVar('aiSuggestions', array());
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
+        $this->setVar('worksheetReopenToken', $stack['csrf']->issue('worksheet_reopen_submission'));
         if ($this->aiMarkingAvailable) {
             $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
         }
 
         return 'viewstudentworksheet_tpl.php';
+    }
+
+    /**
+     * Return a submitted formative worksheet to the student for revision.
+     *
+     * Existing answers remain available to edit, while marks, feedback and stale
+     * AI suggestions are cleared so that the next submission is assessed afresh.
+     *
+     * @return string Controller response.
+     * @author Derek Keats
+     */
+    private function __reopenstudentworksheet()
+    {
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('worksheet_reopen_submission', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction(NULL);
+        }
+
+        $resultId = (string) $this->getParam('id', '');
+        $result = $this->objWorksheetResults->getRow('id', $resultId);
+        if (!is_array($result)) {
+            return $this->nextAction(NULL, array('error'=>'resultnotavailable'));
+        }
+        $worksheet = $this->objWorksheet->getWorksheet($result['worksheet_id']);
+        if (!is_array($worksheet) || (string) $worksheet['context'] !== (string) $this->contextCode) {
+            return $this->nextAction(NULL, array('error'=>'unknownworksheet'));
+        }
+
+        $this->objWorksheetAnswers->resetMarks($result['worksheet_id'], $result['userid']);
+        $this->objWorksheetResults->reopenSubmission($resultId);
+        $this->objAiMarkingJobs->deleteForResult($resultId);
+
+        return $this->nextAction('worksheetinfo', array('id'=>$result['worksheet_id'], 'message'=>'worksheetreopened'));
     }
 
     private function __aiassistmark()
@@ -518,6 +554,7 @@ class worksheet extends controller
             $this->setVar('aiSuggestionError', '');
             $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
+            $this->setVar('worksheetReopenToken', $stack['csrf']->issue('worksheet_reopen_submission'));
             if ($this->aiMarkingAvailable) {
                 $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
             }

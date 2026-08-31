@@ -5,6 +5,8 @@ $marker = file_get_contents($root.'/classes/worksheetaimarker_class_inc.php');
 $jobs = file_get_contents($root.'/classes/dbworksheetaimarkingjobs_class_inc.php');
 $controller = file_get_contents($root.'/controller.php');
 $template = file_get_contents($root.'/templates/content/viewstudentworksheet_tpl.php');
+$answers = file_get_contents($root.'/classes/dbworksheetanswers_class_inc.php');
+$results = file_get_contents($root.'/classes/dbworksheetresults_class_inc.php');
 
 $checks = array(
     'availability delegates to canonical AI service' => str_contains($marker, "getObject('aiservice', 'ai')") && str_contains($marker, "->isAvailable()"),
@@ -16,6 +18,8 @@ $checks = array(
     'worker performs provider work' => str_contains($jobs, "getObject('worksheetaimarker', 'worksheet')->suggest"),
     'transient suggestions are removed after final save' => str_contains($controller, 'deleteForResult(') && str_contains($jobs, 'function deleteForResult'),
     'lecturer must explicitly save suggestions' => str_contains($template, "action'=>'savestudentmark'") && str_contains($template, 'aiSuggestions'),
+    'reopening requires lecturer POST and CSRF' => str_contains($controller, "consume('worksheet_reopen_submission'") && str_contains($controller, '__reopenstudentworksheet'),
+    'reopening retains answers and resets assessment state' => str_contains($answers, 'function resetMarks') && str_contains($results, 'function reopenSubmission'),
 );
 foreach ($checks as $label => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$label}\n"); exit(1); }

@@ -108,6 +108,32 @@ class dbworksheetanswers extends dbTable
     }
 
     /**
+     * Clear assessment state while retaining a student's formative answers.
+     *
+     * @param string $worksheet Worksheet identifier.
+     * @param string $student Student identifier.
+     * @return bool True when all matching answers were reset.
+     * @author Derek Keats
+     */
+    public function resetMarks($worksheet, $student)
+    {
+        $saved = true;
+        foreach ($this->getStudentAnswers($worksheet, $student) as $answer) {
+            $result = $this->update('id', $answer['id'], array(
+                'mark' => NULL,
+                'comments' => NULL,
+                'lecturer_id' => '',
+                'datemarked' => NULL,
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+            ));
+            if ($result === false) {
+                $saved = false;
+            }
+        }
+        return $saved;
+    }
+
+    /**
     * Method to insert a lecturers mark and comment on a students answer.
     * @param array $fields The fields and values to be updated in the database.
     * @param string $id The id of the answer being marked.

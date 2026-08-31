@@ -46,6 +46,14 @@ if ($worksheetResult == FALSE) {
 
 echo '<hr />';
 
+$reopenForm = new form('reopenstudentworksheet', $this->uri(array('action'=>'reopenstudentworksheet')));
+$reopenForm->addToForm((new hiddeninput('id', $worksheetResult['id']))->show());
+$reopenForm->addToForm((new hiddeninput('csrf_token', $worksheetReopenToken))->show());
+$reopenButton = new button('reopen', $this->objLanguage->languageText('mod_worksheet_reopensubmission', 'worksheet', 'Reopen for student'));
+$reopenButton->setToSubmit();
+$reopenForm->addToForm('<div class="worksheet-reopen"><p>'.$this->objLanguage->languageText('mod_worksheet_reopensubmission_help', 'worksheet', 'Allow the student to revise and submit this formative worksheet again. Existing answers will be retained.').'</p>'.$reopenButton->show().'</div>');
+echo $reopenForm->show();
+
 if (!empty($aiMarkingAvailable)) {
     $aiForm = new form('aiassistmark', $this->uri(array('action'=>'aiassistmark')));
     $aiForm->addToForm((new hiddeninput('id', $worksheetResult['id']))->show());

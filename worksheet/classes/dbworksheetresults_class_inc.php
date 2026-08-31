@@ -169,6 +169,22 @@ class dbworksheetresults extends dbtable
     }
 
     /**
+     * Reopen one submitted worksheet result for student revision.
+     *
+     * @param string $resultId Result identifier.
+     * @return mixed Database update result.
+     * @author Derek Keats
+     */
+    public function reopenSubmission($resultId)
+    {
+        return $this->update('id', $resultId, array(
+            'completed' => 'N',
+            'mark' => -1,
+            'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+        ));
+    }
+
+    /**
     * Delete results in a worksheet.
     * @param string $worksheetId The ID of the worksheet
     * @return void
