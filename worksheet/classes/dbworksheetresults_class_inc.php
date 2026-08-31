@@ -33,8 +33,8 @@ class dbworksheetresults extends dbtable
     public function setWorksheetCompleted($userId, $worksheet)
     {
         $existing = $this->getAll(
-            " WHERE worksheet_id='".$this->escape($worksheet)."'"
-            ." AND userid='".$this->escape($userId)."'"
+            ' WHERE worksheet_id='.$this->_db->quote($worksheet)
+            .' AND userid='.$this->_db->quote($userId)
             .' ORDER BY updated DESC, puid DESC LIMIT 1'
         );
         if (is_array($existing) && !empty($existing[0]['id'])) {
