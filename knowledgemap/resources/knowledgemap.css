@@ -48,7 +48,7 @@
 .knowmap-canvas.is-panning { cursor: grabbing; }
 .knowmap-lines, .knowmap-nodes { position: absolute; inset: 0; width: 2400px; height: 1500px; transform-origin: 0 0; }
 .knowmap-lines { pointer-events: none; overflow: visible; }
-.knowmap-line { fill: none; stroke: var(--chisimba-border-strong); stroke-width: 3; stroke-linecap: round; }
+.knowmap-line { fill: none; stroke: var(--chisimba-border-strong); stroke-width: 3.5; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .knowmap-node { position: absolute; display: flex; align-items: center; gap: var(--chisimba-space-2); width: 13.75rem; min-height: 3.5rem; padding: var(--chisimba-space-3); transform: translate(-50%, -50%); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); color: var(--chisimba-ink); background: var(--knowmap-node-colour, var(--chisimba-surface)); box-shadow: var(--chisimba-shadow-sm); cursor: pointer; text-align: left; }
 .knowmap-node:hover, .knowmap-node:focus-visible, .knowmap-node[aria-selected="true"] { outline: 3px solid var(--chisimba-focus); outline-offset: 2px; }
 .knowmap-node.is-dragging { opacity: .45; }
