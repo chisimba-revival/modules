@@ -134,13 +134,20 @@ $contentTypeClasses = array(
     'pdf' => ' contextcontent-resource',
     'zip_bundle' => ' contextcontent-resource',
     'external_reading' => ' contextcontent-resource',
+    'assessment_activity' => ' contextcontent-assessment',
 );
 $typeClass = isset($contentTypeClasses[$page['contenttype']])
     ? $contentTypeClasses[$page['contenttype']]
     : ' contextcontent-rich-text';
 $shortTextOpen = $page['contenttype'] === 'short_text' ? '<div class="contextcontent-phone-reading"><div class="contextcontent-phone-reading-speaker" aria-hidden="true"></div><div class="contextcontent-phone-reading-screen">' : '';
 $shortTextClose = $page['contenttype'] === 'short_text' ? '</div><div class="contextcontent-phone-reading-gesture" aria-hidden="true"></div></div>' : '';
-if ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="([A-Za-z0-9_-]+)"\\s+comment="([^"\\r\\n]+\\.zip)"\\s*\\/\\]/i', $page['pagecontent'], $zipToken)) {
+if ($page['contenttype'] === 'assessment_activity') {
+    $renderedPageContent = $this->getObject('assessmentpaletteservice', 'contextcontent')->render(
+        $page,
+        $this->contextCode,
+        $this->isValid('editpage')
+    );
+} elseif ($page['contenttype'] === 'zip_bundle' && preg_match('/\\[FILEPREVIEW\\s+id="([A-Za-z0-9_-]+)"\\s+comment="([^"\\r\\n]+\\.zip)"\\s*\\/\\]/i', $page['pagecontent'], $zipToken)) {
     $objFilePreview = $this->getObject('filepreview', 'filemanager');
     $zipPreview = $objFilePreview->previewFile($zipToken[1]);
     $zipDownload = '';

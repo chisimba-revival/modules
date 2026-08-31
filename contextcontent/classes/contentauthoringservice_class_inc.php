@@ -20,7 +20,11 @@ class contentauthoringservice extends ChisimbaObject
         $manageTransaction = !array_key_exists('manage_transaction', $input) || $input['manage_transaction'] !== false;
         if ($manageTransaction) { $this->titles->beginTransaction(); }
         try {
-            $titleId = $this->titles->createTypedTitle($data['contenttype']);
+            $titleId = $this->titles->createTypedTitle(
+                $data['contenttype'],
+                $data['providermodule'],
+                $data['provideritemid']
+            );
             $this->pages->createNativeBody($titleId, $data['title'], $data['body'], $data['language']);
             $placementId = $this->order->addPageToContext(
                 $titleId, $data['parentid'], $data['contextcode'], $data['chapterid'], '', '',
@@ -65,7 +69,9 @@ class contentauthoringservice extends ChisimbaObject
             'contenttype' => trim((string) ($input['contenttype'] ?? 'rich_text')),
             'title' => trim((string) ($input['title'] ?? '')),
             'body' => (string) ($input['body'] ?? ''),
-            'language' => trim((string) ($input['language'] ?? 'en'))
+            'language' => trim((string) ($input['language'] ?? 'en')),
+            'providermodule' => trim((string) ($input['providermodule'] ?? '')),
+            'provideritemid' => trim((string) ($input['provideritemid'] ?? ''))
         );
         if ($data['contextcode'] === '' || $data['chapterid'] === '' || $data['title'] === '') {
             throw new InvalidArgumentException('Course, chapter and title are required');
@@ -85,6 +91,11 @@ class contentauthoringservice extends ChisimbaObject
         }
         if ($editing && $data['placementid'] === '') { throw new InvalidArgumentException('Content ID is required'); }
         $this->registry->get($data['contenttype']);
+        if ($data['contenttype'] === 'assessment_activity'
+            && (!preg_match('/^[a-z][a-z0-9_-]{1,63}$/', $data['providermodule'])
+                || !preg_match('/^[A-Za-z0-9_-]{1,128}$/', $data['provideritemid']))) {
+            throw new InvalidArgumentException('A valid assessment provider and activity are required');
+        }
         if (!preg_match('/^[a-z]{2,3}$/', $data['language'])) { throw new InvalidArgumentException('Invalid language'); }
         if ($data['contenttype'] === 'short_text' && mb_strlen(trim(strip_tags($data['body']))) > 1200) {
             throw new InvalidArgumentException('Short text exceeds the 1200-character authoring limit');

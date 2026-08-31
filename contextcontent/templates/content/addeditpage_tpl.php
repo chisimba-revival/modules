@@ -32,6 +32,12 @@ $csrfInput = new hiddeninput('csrf_token', $contextContentCsrf);
 $form->addToForm($csrfInput->show());
 $typeInput = new hiddeninput('contenttype', $contentType);
 $form->addToForm($typeInput->show());
+if ($contentType === 'assessment_activity') {
+    $providerModule = isset($selectedAssessment) ? $selectedAssessment['provider']['key'] : $page['providermodule'];
+    $providerItemId = isset($selectedAssessment) ? $selectedAssessment['activity']['id'] : $page['provideritemid'];
+    $form->addToForm((new hiddeninput('providermodule', $providerModule))->show());
+    $form->addToForm((new hiddeninput('provideritemid', $providerItemId))->show());
+}
 $formTable = $this->newObject('htmltable', 'htmlelements');
 $formTable->cssClass = 'ctxtcnt-add-table';
 $this->appendArrayVar('headerParams', '<style type="text/css">.ctxtcnt-add-table{box-sizing:border-box;width:100%;max-width:100%;table-layout:fixed}.ctxtcnt-add-table td:first-child{width:240px}.ctxtcnt-add-table td{box-sizing:border-box;min-width:0}.contextcontent-page-title-input{box-sizing:border-box;width:100%!important;max-width:100%!important}@media(max-width:700px){.ctxtcnt-add-table,.ctxtcnt-add-table tbody,.ctxtcnt-add-table tr,.ctxtcnt-add-table td{display:block;width:100%!important}.ctxtcnt-add-table td:first-child{width:100%!important}}</style>');
@@ -56,6 +62,8 @@ if ($preserveSubmittedPageForm) {
     $menuTitle->value = htmlentities((string) $this->getParam('menutitle', ''), ENT_QUOTES, 'UTF-8');
 } elseif ($mode=='edit') {
     $menuTitle->value = htmlentities($page['menutitle']);
+} elseif ($contentType === 'assessment_activity' && isset($selectedAssessment)) {
+    $menuTitle->value = htmlentities($selectedAssessment['activity']['name'], ENT_QUOTES, 'UTF-8');
 }
 
 $label = new label ($this->objLanguage->languageText('mod_contextcontent_pagetitle','contextcontent'), 'input_menutitle');
@@ -264,6 +272,13 @@ if ($contentType === 'image_audio') {
         . $resourceField('resource_description','mod_contextcontent_resource_description',$values['resource_description'],true)
         . $resourceField('resource_source','mod_contextcontent_resource_source',$values['resource_source'],true) . '</section>';
     $this->appendArrayVar('headerParams', '<style type="text/css">.contextcontent-resource-authoring{max-width:720px;padding:1.25rem;border:1px solid #cfd8dc;border-radius:12px;background:#f7fafb}.contextcontent-resource-authoring .contextcontent-media-field{margin:1rem 0}.contextcontent-resource-authoring .contextcontent-media-field label{display:block;margin-bottom:.35rem;font-weight:700}.contextcontent-resource-authoring input[type=url],.contextcontent-resource-authoring textarea{box-sizing:border-box;width:100%;max-width:100%}.contextcontent-zip-selection{margin:.75rem 0;padding:.7rem .85rem;border:1px solid #cfd8dc;border-radius:6px;background:#fff;overflow-wrap:anywhere}</style>');
+} elseif ($contentType === 'assessment_activity') {
+    $assessmentName = isset($selectedAssessment)
+        ? $selectedAssessment['activity']['name'] : $page['menutitle'];
+    $editorMarkup = '<section class="chisimba-guidance-card"><h2>'
+        . htmlentities($assessmentName, ENT_QUOTES, 'UTF-8') . '</h2><p>'
+        . htmlentities($this->objLanguage->languageText('mod_contextcontent_assessment_selected', 'contextcontent'), ENT_QUOTES, 'UTF-8')
+        . '</p></section><input type="hidden" name="pagecontent" value="" />';
 } else {
     $editorMarkup = $htmlarea->show();
 }

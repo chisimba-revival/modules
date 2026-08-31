@@ -90,6 +90,7 @@ class contextcontent extends controller {
             $this->objContext = $this->getObject('dbcontext', 'context');
             $this->objAuthoring = $this->getObject('contentauthoringservice', 'contextcontent');
             $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
+            $this->objAssessmentPalette = $this->getObject('assessmentpaletteservice', 'contextcontent');
             $this->objTikTokVideo = $this->getObject('tiktokvideoservice', 'contextcontent');
             $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
             $this->objIngest = $this->getObject('ingestservice', 'ingestservice');
@@ -952,9 +953,11 @@ class contextcontent extends controller {
         if ($contentType === '') {
             $course = $this->objContext->getContext($this->contextCode);
             $format = isset($course['delivery_format']) ? $course['delivery_format'] : 'standard';
-            $this->setVar('contentTypes', $this->objContentTypes->all($format));
+            $this->setVar('contentTypes', $this->objContentTypes->forPalette('content', $format));
             $this->setVar('parent', '');
             $this->setVar('selectedContentType', '');
+            $this->setVar('activePalette', $this->getParam('palette', 'content') === 'assessment' ? 'assessment' : 'content');
+            $this->setVar('assessmentGroups', $this->objAssessmentPalette->all($this->contextCode));
             $this->setVarByRef('chapter', $chapter);
             return 'contenttypepicker_tpl.php';
         }
@@ -970,9 +973,22 @@ class contextcontent extends controller {
 
         $course = $this->objContext->getContext($this->contextCode);
         $format = isset($course['delivery_format']) ? $course['delivery_format'] : 'standard';
-        $this->setVar('contentTypes', $this->objContentTypes->all($format));
+        $this->setVar('contentTypes', $this->objContentTypes->forPalette('content', $format));
         $this->setVar('parent', $parent);
         $this->setVar('selectedContentType', $contentType);
+        $this->setVar('activePalette', $contentType === 'assessment_activity' ? 'assessment' : 'content');
+        $this->setVar('assessmentGroups', $this->objAssessmentPalette->all($this->contextCode));
+        if ($contentType === 'assessment_activity') {
+            $selection = $this->objAssessmentPalette->selection(
+                $this->getParam('providermodule', ''),
+                $this->getParam('provideritemid', ''),
+                $this->contextCode
+            );
+            if ($selection === false) {
+                return $this->nextAction('addpage', array('chapter' => $chapter, 'palette' => 'assessment'));
+            }
+            $this->setVar('selectedAssessment', $selection);
+        }
 
         return 'contenttypepicker_tpl.php';
     }
@@ -1196,6 +1212,14 @@ class contextcontent extends controller {
         $insertAfter = (string) $this->getParam('insert_after');
         $chapter = (string) $this->getParam('chapter');
         $contentType = (string) $this->getParam('contenttype', 'rich_text');
+        $providerModule = (string) $this->getParam('providermodule', '');
+        $providerItemId = (string) $this->getParam('provideritemid', '');
+        if ($contentType === 'assessment_activity'
+            && $this->objAssessmentPalette->selection(
+                $providerModule, $providerItemId, $this->contextCode
+            ) === false) {
+            return $this->nextAction('addpage', array('chapter' => $chapter, 'palette' => 'assessment'));
+        }
         if ($contentType === 'image_audio') { $pagecontent = $this->imageAudioBodyFromRequest(); }
         if ($contentType === 'video') { $pagecontent = $this->videoBodyFromRequest(); }
         if ($contentType === 'tiktok_video') { $pagecontent = $this->tiktokBodyFromRequest(); }
@@ -1210,7 +1234,9 @@ class contextcontent extends controller {
             'contenttype' => $contentType,
             'title' => $menutitle,
             'body' => $pagecontent,
-            'language' => $language
+            'language' => $language,
+            'providermodule' => $providerModule,
+            'provideritemid' => $providerItemId
         ));
 
         $this->setVar('mode', 'add');
@@ -1457,7 +1483,9 @@ class contextcontent extends controller {
                     'contextcode' => $this->contextCode, 'chapterid' => $page['chapterid'],
                     'placementid' => $pageId, 'parentid' => $parentnode,
                     'contenttype' => $page['contenttype'], 'title' => $menutitle,
-                    'body' => $pagecontent, 'language' => $page['language']
+                    'body' => $pagecontent, 'language' => $page['language'],
+                    'providermodule' => isset($page['providermodule']) ? $page['providermodule'] : '',
+                    'provideritemid' => isset($page['provideritemid']) ? $page['provideritemid'] : ''
                 ));
 
                 return $this->nextAction('viewpage', array('id' => $pageId, 'message' => 'pageupdated'));

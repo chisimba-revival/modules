@@ -6,6 +6,8 @@ $language = function ($key) {
 };
 $selectedContentType = isset($selectedContentType) ? (string) $selectedContentType : '';
 $hasSelectedType = $selectedContentType !== '';
+$activePalette = isset($activePalette) && $activePalette === 'assessment' ? 'assessment' : 'content';
+$assessmentGroups = isset($assessmentGroups) ? (array) $assessmentGroups : array();
 $aiMode = (string) $this->getParam('ai', '');
 $aiAvailable = false;
 try {
@@ -91,10 +93,33 @@ echo $heading->show();
     </main>
     <aside class="contextcontent-palette" aria-labelledby="contextcontent-palette-title">
         <div class="contextcontent-palette-header">
-            <h2 id="contextcontent-palette-title"><?php echo $language('mod_contextcontent_contentpalette'); ?></h2>
+            <nav aria-label="<?php echo $language('mod_contextcontent_palette_tabs'); ?>">
+                <a class="button chisimba-button-secondary chisimba-selectable" aria-current="<?php echo $activePalette === 'content' ? 'page' : 'false'; ?>" href="<?php echo htmlspecialchars(str_replace('&amp;', '&', $this->uri(array('action'=>'addpage','chapter'=>$chapter,'palette'=>'content'))), ENT_QUOTES, 'UTF-8'); ?>"><?php echo $language('mod_contextcontent_contentpalette'); ?></a>
+                <a class="button chisimba-button-secondary chisimba-selectable" aria-current="<?php echo $activePalette === 'assessment' ? 'page' : 'false'; ?>" href="<?php echo htmlspecialchars(str_replace('&amp;', '&', $this->uri(array('action'=>'addpage','chapter'=>$chapter,'palette'=>'assessment'))), ENT_QUOTES, 'UTF-8'); ?>"><?php echo $language('mod_contextcontent_assessmentpalette'); ?></a>
+            </nav>
+            <h2 id="contextcontent-palette-title"><?php echo $language($activePalette === 'assessment' ? 'mod_contextcontent_assessmentpalette' : 'mod_contextcontent_contentpalette'); ?></h2>
             <p><?php echo $language(($hasSelectedType || $hasAiWorkflow) ? 'mod_contextcontent_palette_locked' : 'mod_contextcontent_contentpalette_desc'); ?></p>
         </div>
         <div class="contextcontent-type-cards">
+<?php if ($activePalette === 'assessment' && !$hasSelectedType): ?>
+<?php if ($assessmentGroups === array()): ?>
+            <p><?php echo $language('mod_contextcontent_noassessments'); ?></p>
+<?php else: foreach ($assessmentGroups as $group): foreach ($group['activities'] as $activity):
+    $assessmentUrl = str_replace('&amp;', '&', $this->uri(array(
+        'action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent,
+        'contenttype'=>'assessment_activity',
+        'providermodule'=>$group['provider']['key'],
+        'provideritemid'=>$activity['id']
+    )));
+    $assessmentIcon = $objIconService->render('clipboard-check', array('decorative'=>TRUE));
+?>
+            <article class="contextcontent-type-card" draggable="true" data-content-type="assessment-<?php echo htmlspecialchars($activity['id'], ENT_QUOTES, 'UTF-8'); ?>" data-content-url="<?php echo htmlspecialchars($assessmentUrl, ENT_QUOTES, 'UTF-8'); ?>">
+                <div class="contextcontent-type-icon" aria-hidden="true"><?php echo $assessmentIcon; ?></div>
+                <div class="contextcontent-type-copy"><h3><?php echo htmlspecialchars($activity['name'], ENT_QUOTES, 'UTF-8'); ?></h3><p><?php echo htmlspecialchars($group['provider']['label'], ENT_QUOTES, 'UTF-8'); ?></p></div>
+                <a class="contextcontent-type-choice" href="<?php echo htmlspecialchars($assessmentUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="<?php echo $language('mod_contextcontent_addassessment') . ': ' . htmlspecialchars($activity['name'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $language('mod_contextcontent_addassessment'); ?></a>
+            </article>
+<?php endforeach; endforeach; endif; ?>
+<?php else: ?>
 <?php if ($aiAvailable && !$hasSelectedType && !$hasAiWorkflow):
     $aiUrl = str_replace('&amp;', '&', $this->uri(array('action'=>'addpage', 'chapter'=>$chapter, 'id'=>$parent, 'ai'=>'start')));
     $aiIcon = $objIconService->render('scroll-text', array('decorative'=>TRUE, 'class'=>'contextcontent-type-icon-svg'));
@@ -127,6 +152,7 @@ echo $heading->show();
 <?php endif; ?>
             </article>
 <?php endforeach; ?>
+<?php endif; ?>
         </div>
     </aside>
     <p class="contextcontent-builder-status" id="contextcontent-builder-status" aria-live="polite"></p>

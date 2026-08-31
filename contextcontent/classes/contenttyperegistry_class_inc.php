@@ -72,6 +72,15 @@ class contenttyperegistry extends ChisimbaObject
             'native' => true,
             'preferred_for' => 'all'
         ));
+        $this->register(array(
+            'key' => 'assessment_activity',
+            'icon' => 'clipboard-check',
+            'label' => $this->language->languageText('mod_contextcontent_type_assessment', 'contextcontent'),
+            'description' => $this->language->languageText('mod_contextcontent_type_assessment_desc', 'contextcontent'),
+            'native' => false,
+            'palette' => 'assessment',
+            'preferred_for' => 'all'
+        ));
     }
 
     public function register(array $definition)
@@ -108,6 +117,17 @@ class contenttyperegistry extends ChisimbaObject
             return $a === $b ? strcmp($left['label'], $right['label']) : $a - $b;
         });
         return $types;
+    }
+
+    public function forPalette($palette, $deliveryFormat = 'standard')
+    {
+        return array_values(array_filter(
+            $this->all($deliveryFormat),
+            static function ($type) use ($palette) {
+                $typePalette = isset($type['palette']) ? $type['palette'] : 'content';
+                return $typePalette === $palette;
+            }
+        ));
     }
 }
 ?>

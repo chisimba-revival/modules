@@ -9,11 +9,11 @@ class worksheetassessmentprovider extends ChisimbaObject
     public function listActivities($contextCode)
     {
         $filter = "context='".addslashes($contextCode)."'";
-        $records = $this->worksheets->getWorksheets($filter, 'id,name,classification');
+        $records = $this->worksheets->getWorksheets($filter, 'id,name,classification,activity_status');
         $activities = array();
         foreach ((array) $records as $record) {
             if (!empty($record['id']) && isset($record['name'])) {
-                $activities[] = array('id'=>$record['id'], 'name'=>$record['name'], 'classification'=>isset($record['classification']) ? $record['classification'] : 'unclassified');
+                $activities[] = array('id'=>$record['id'], 'name'=>$record['name'], 'classification'=>isset($record['classification']) ? $record['classification'] : 'unclassified', 'activity_status'=>isset($record['activity_status']) ? $record['activity_status'] : 'inactive');
             }
         }
         return $activities;
@@ -24,6 +24,19 @@ class worksheetassessmentprovider extends ChisimbaObject
             if ((string) $activity['id'] === (string) $activityId) { return $activity; }
         }
         return false;
+    }
+    public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
+    {
+        $activity = $this->getActivity($contextCode, $activityId);
+        if ($activity === false) { return false; }
+        if ($role !== 'author' && $activity['activity_status'] === 'inactive') { return false; }
+        return array(
+            'module' => 'worksheet',
+            'params' => array(
+                'action' => $role === 'author' ? 'worksheetinfo' : 'viewworksheet',
+                'id' => $activityId,
+            ),
+        );
     }
 }
 ?>
