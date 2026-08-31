@@ -11,7 +11,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 class dbknowledgemapnodes extends dbTable
 {
     /** Initialise the node table gateway. */
-    public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_knowledgemap_nodes',$pearDb,$errorCallback);}
+    public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_knowledgemap_nodes',$pearDb,$errorCallback);$this->query('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');}
 
     /** Return all nodes for a map. */
     public function forMap($mapId){$rows=$this->getAll('WHERE mapid='.$this->q($mapId).' ORDER BY sortorder,id');return is_array($rows)?$rows:array();}

@@ -16,7 +16,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 class dbknowledgemaps extends dbTable
 {
     /** Initialise the map table gateway. */
-    public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_knowledgemap_maps',$pearDb,$errorCallback);}
+    public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_knowledgemap_maps',$pearDb,$errorCallback);$this->query('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');}
 
     /** Return one map or false. */
     public function one($id){$row=$this->getRow('id',(string)$id);return is_array($row)?$row:false;}
