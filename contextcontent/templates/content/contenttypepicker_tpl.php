@@ -2,7 +2,15 @@
 $this->loadClass('htmlheading', 'htmlelements');
 
 $language = function ($key) {
-    return htmlspecialchars($this->objLanguage->languageText($key, 'contextcontent'), ENT_QUOTES, 'UTF-8');
+    $fallbacks = array(
+        'mod_contextcontent_assessmentpalette' => 'Assessments',
+        'mod_contextcontent_addassessment' => 'Add assessment',
+    );
+    $text = $this->objLanguage->languageText($key, 'contextcontent');
+    if (strpos($text, 'Language item not found:') === 0 && isset($fallbacks[$key])) {
+        $text = $fallbacks[$key];
+    }
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 };
 $selectedContentType = isset($selectedContentType) ? (string) $selectedContentType : '';
 $hasSelectedType = $selectedContentType !== '';
