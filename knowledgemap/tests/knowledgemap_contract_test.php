@@ -20,6 +20,8 @@ $checks=array(
     'containment integrity is validated'=>str_contains($graph,'two containment parents')&&str_contains($graph,'containsCycle'),
     'subgraph scope is explicit'=>str_contains($graph,"'descendants'")&&str_contains($graph,"'whole_map'")&&str_contains($graph,"'node'"),
     'Kenga v3 import is transactional and idempotent'=>str_contains($importer,"kenga_knowledge_document")&&str_contains($importer,'beginTransaction')&&str_contains($importer,'rollbackTransaction')&&str_contains($importer,'bySourceFingerprint'),
+    'imports fail atomically on rejected graph rows'=>str_contains($importer,'if(!$this->nodes->addNode')&&str_contains($importer,'if(!$this->relationships->addRelationship'),
+    'knowledge tables preserve full Unicode'=>count(array_filter(array('sql/tbl_knowledgemap_maps.sql','sql/tbl_knowledgemap_nodes.sql','sql/tbl_knowledgemap_relationships.sql','sql/tbl_knowledgemap_access.sql'),fn($file)=>str_contains($read($file),'utf8mb4_unicode_ci')))===4,
     'source migration preserves provenance'=>str_contains($read('sql/tbl_knowledgemap_maps.sql'),'sourcefingerprint')&&str_contains($read('sql/tbl_knowledgemap_maps.sql'),'sourcemetadata'),
     'provider discovery supports push and pull'=>str_contains($read('classes/knowledgemapproviderregistry_class_inc.php'),"array('push','pull','both')")&&str_contains($read('classes/knowledgemapproviderregistry_class_inc.php'),'KNOWLEDGE_MAP_PROVIDER_SCOPES'),
     'read-only embed syntax is visible'=>str_contains($template,'[knowmap id=')&&str_contains($read('classes/knowmapembedservice_class_inc.php'),'data-knowmap-readonly'),
