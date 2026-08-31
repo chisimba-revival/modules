@@ -20,6 +20,7 @@ $checks = array(
     'lecturer must explicitly save suggestions' => str_contains($template, "action'=>'savestudentmark'") && str_contains($template, 'aiSuggestions'),
     'reopening requires lecturer POST and CSRF' => str_contains($controller, "consume('worksheet_reopen_submission'") && str_contains($controller, '__reopenstudentworksheet'),
     'reopening retains answers and resets assessment state' => str_contains($answers, 'function resetMarks') && str_contains($results, 'function reopenSubmission'),
+    'resubmission updates the reopened attempt' => str_contains($results, "ORDER BY updated DESC, puid DESC LIMIT 1") && str_contains($results, "'completed' => 'Y'"),
 );
 foreach ($checks as $label => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$label}\n"); exit(1); }

@@ -32,6 +32,20 @@ class dbworksheetresults extends dbtable
 
     public function setWorksheetCompleted($userId, $worksheet)
     {
+        $existing = $this->getAll(
+            " WHERE worksheet_id='".$this->escape($worksheet)."'"
+            ." AND userid='".$this->escape($userId)."'"
+            .' ORDER BY updated DESC, puid DESC LIMIT 1'
+        );
+        if (is_array($existing) && !empty($existing[0]['id'])) {
+            return $this->update('id', $existing[0]['id'], array(
+                'completed' => 'Y',
+                'mark' => -1,
+                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+            ));
+        }
+
         return $this->insert(array(
                 'worksheet_id' => $worksheet,
                 'completed' => 'Y',
