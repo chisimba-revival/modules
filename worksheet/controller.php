@@ -377,7 +377,8 @@ class worksheet extends controller
         $questions = $this->objWorksheetQuestions->getQuestions($id);
         $this->setVarByRef('questions', $questions);
         $worksheetResult = $this->objWorksheetResults->getWorksheetResult($this->objUser->userId(), $id);
-        if ($worksheet['activity_status'] == 'open' && !$worksheetResult) {
+        if ($worksheet['activity_status'] == 'open'
+            && (!$worksheetResult || $worksheetResult['completed'] !== 'Y')) {
             return 'answerworksheet_tpl.php';
         } else {
             $this->setVarByRef('worksheetResult', $worksheetResult);
