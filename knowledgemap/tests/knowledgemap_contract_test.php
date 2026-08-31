@@ -43,6 +43,7 @@ $checks=array(
     'visual editor exposes direct graph actions'=>str_contains($template,'data-knowmap-action="add-child"')&&str_contains($template,'data-knowmap-action="add-sibling"')&&str_contains($template,'data-knowmap-node-form')&&str_contains($read('resources/knowledgemap.js'),'prototype.reparent'),
     'editor save is revision protected'=>str_contains($controller,"'save'")&&str_contains($read('classes/knowledgemapservice_class_inc.php'),'lockAtRevision')&&str_contains($read('classes/dbknowledgemaps_class_inc.php'),'FOR UPDATE'),
     'search collapse and links are first-class interactions'=>str_contains($template,'data-knowmap-search')&&str_contains($read('resources/knowledgemap.js'),'prototype.toggleCollapse')&&str_contains($read('resources/knowledgemap.js'),'prototype.setLink'),
+    'search composes compact accessible skin field'=>str_contains($template,'chisimba-search-field knowmap-search')&&str_contains($template,'chisimba-visually-hidden'),
     'module CSS composes rather than redefines primitives'=>!preg_match('/^\.button\s*\{/m',$css)&&!preg_match('/^\.chisimba-card\s*\{/m',$css)&&!preg_match('/^\.chisimba-toolbar\s*\{/m',$css),
     'all mutations use native CSRF'=>str_contains($controller,'csrf->consume(self::CSRF')
 );
