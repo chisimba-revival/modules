@@ -6,7 +6,7 @@
  * @package knowledgemap
  */
 $tablename = 'tbl_knowledgemap_maps';
-$options = array('comment' => 'Scoped Active Knowledge Maps', 'collate' => 'utf8mb4_unicode_ci', 'character_set' => 'utf8mb4');
+$options = array('comment' => 'Scoped Active Knowledge Maps', 'collate' => 'utf8mb4_unicode_ci', 'charset' => 'utf8mb4');
 $fields = array(
     'id' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
     'scopetype' => array('type' => 'text', 'length' => 16, 'notnull' => TRUE),

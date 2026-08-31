@@ -6,7 +6,7 @@
  * @package knowledgemap
  */
 $tablename = 'tbl_knowledgemap_relationships';
-$options = array('comment' => 'Typed Active Knowledge Map relationships', 'collate' => 'utf8mb4_unicode_ci', 'character_set' => 'utf8mb4');
+$options = array('comment' => 'Typed Active Knowledge Map relationships', 'collate' => 'utf8mb4_unicode_ci', 'charset' => 'utf8mb4');
 $fields = array(
     'id' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
     'mapid' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
