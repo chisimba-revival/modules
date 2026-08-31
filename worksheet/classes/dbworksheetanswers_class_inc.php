@@ -31,11 +31,23 @@ class dbworksheetanswers extends dbTable
     }
 
 
+    /**
+     * Save every answer posted for a worksheet submission.
+     *
+     * An unanswered worksheet has no lecturer yet, but the legacy schema requires
+     * lecturer_id to be non-null. Store an empty value until marking takes place.
+     *
+     * @param string $worksheetId Worksheet identifier.
+     * @param string $userId Student identifier.
+     * @return bool True only when every answer was persisted.
+     * @author Derek Keats
+     */
     public function saveAnswers($worksheetId, $userId)
     {
         $objWorksheetQuestion = $this->getObject('dbworksheetquestions');
 
         $questions = $objWorksheetQuestion->getQuestions($worksheetId, 0, FALSE);
+        $saved = true;
 
         foreach ($questions as $question)
         {
@@ -44,15 +56,16 @@ class dbworksheetanswers extends dbTable
             $id = $this->answerExists($question['id'], $userId);
 
             if ($id == FALSE) {
-                $this->insert(array(
+                $result = $this->insert(array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
                         'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
                         'answer' => $answer,
+                        'lecturer_id' => '',
                         'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     ));
             } else {
-                $this->update('id', $id, array(
+                $result = $this->update('id', $id, array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
                         'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
@@ -60,7 +73,12 @@ class dbworksheetanswers extends dbTable
                         'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     ));
             }
+            if ($result === false) {
+                $saved = false;
+            }
         }
+
+        return $saved;
     }
 
     public function saveMarks($student, $worksheet, $lecturer)

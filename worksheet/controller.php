@@ -414,7 +414,10 @@ class worksheet extends controller
         if ($this->getParam('user') != $this->objUser->userId()) {
             return $this->nextAction(NULL, array('error'=>'userswitched'));
         }
-        $this->objWorksheetAnswers->saveAnswers($id, $this->objUser->userId());
+        $answersSaved = $this->objWorksheetAnswers->saveAnswers($id, $this->objUser->userId());
+        if (!$answersSaved) {
+            return $this->nextAction('viewworksheet', array('error'=>'answersnotsaved', 'id'=>$id));
+        }
         if (isset($_POST['saveandclose'])) {
             $this->objWorksheetResults->setWorksheetCompleted($this->objUser->userId(), $id);
             return $this->nextAction(NULL, array('message'=>'worksheetsaved', 'id'=>$id));
