@@ -135,11 +135,4 @@ if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
     echo $table->show();
 }
 
-if ($this->isValid('add')) {
-    $addLink = new link ($this->uri(array('action'=>'add')));
-    $addLink->link = $this->objLanguage->languageText('mod_worksheet_createnewworksheet', 'worksheet', 'Create New Worksheet');
-
-    echo '<p>'.$addLink->show().'</p>';
-}
-
 ?>
