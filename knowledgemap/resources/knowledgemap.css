@@ -59,7 +59,8 @@
 .knowmap-node__drag:active { cursor: grabbing; }
 .knowmap-node__drag:focus-visible { outline: 2px solid var(--chisimba-focus); outline-offset: 2px; }
 .knowmap-node__drag--icon { width: auto; height: auto; border: 0; background: transparent; }
-.knowmap-node__collapse { position: absolute; inset-inline-end: .3rem; inset-block-start: 50%; width: 1.15rem; height: 1.15rem; min-width: 1.15rem; padding: 0; transform: translateY(-50%); border: 1px solid var(--chisimba-border-strong); border-radius: 50%; background: var(--chisimba-surface); font-size: .72rem; line-height: 1; }
+.knowmap-node__collapse { position: absolute; inset-inline-end: .22rem; inset-block-start: 50%; width: 1.5rem; height: 1.8rem; min-width: 1.5rem; padding: 0; transform: translateY(-50%); border: 0; border-radius: 0; color: currentColor; background: transparent; box-shadow: none; font-size: 1.45rem; font-weight: 800; line-height: 1; }
+.knowmap-node__collapse:hover, .knowmap-node__collapse:focus-visible { color: var(--chisimba-primary); background: transparent; }
 .knowmap-node:has(.knowmap-node__collapse) { padding-inline-end: 1.8rem; }
 .knowmap-node__quick-actions { position: absolute; inset-inline-end: -.72rem; inset-block-start: 50%; opacity: 0; pointer-events: none; transition: opacity .12s ease; }
 .knowmap-node:hover .knowmap-node__quick-actions, .knowmap-node:focus-within .knowmap-node__quick-actions, .knowmap-node[aria-selected="true"] .knowmap-node__quick-actions { opacity: 1; pointer-events: auto; }
