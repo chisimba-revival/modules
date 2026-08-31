@@ -33,12 +33,17 @@ class dbworksheetresults extends dbtable
     public function setWorksheetCompleted($userId, $worksheet)
     {
         $existing = $this->getAll(
-            ' WHERE worksheet_id='.$this->_db->quote($worksheet)
-            .' AND userid='.$this->_db->quote($userId)
-            .' ORDER BY updated DESC, puid DESC LIMIT 1'
+            " WHERE worksheet_id='{$worksheet}' ORDER BY updated DESC, puid DESC"
         );
-        if (is_array($existing) && !empty($existing[0]['id'])) {
-            return $this->update('id', $existing[0]['id'], array(
+        $existingId = '';
+        foreach ((array) $existing as $row) {
+            if ((string) $row['userid'] === (string) $userId) {
+                $existingId = (string) $row['id'];
+                break;
+            }
+        }
+        if ($existingId !== '') {
+            return $this->update('id', $existingId, array(
                 'completed' => 'Y',
                 'mark' => -1,
                 'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
