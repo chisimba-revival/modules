@@ -108,15 +108,4 @@ $form->addRule('mark', $this->objLanguage->languageText('mod_worksheet_validatio
 $form->addRule('mark', $this->objLanguage->languageText('mod_worksheet_validation_mark_req', 'worksheet', 'Please enter a mark'), 'required');
 echo $form->show();
 
-echo '<hr />';
-$infoLink = new link ($this->uri(array('action'=>'worksheetinfo', 'id'=>$id)));
-$infoLink->link = $this->objLanguage->languageText('mod_worksheet_worksheetinfo', 'worksheet', 'Worksheet Information');
-$addRemove = $this->objLanguage->languageText('mod_worksheet_addremovequestions', 'worksheet', 'Add / Remove Questions');
-$activateLink = new link ($this->uri(array('action'=>'activate', 'id'=>$id)));
-$activateLink->link = $this->objLanguage->languageText('mod_worksheet_activatedeactivateworksheet', 'worksheet', 'Activate / Deactivate Worksheet');
-echo '<p>'.$infoLink->show().' | '.$addRemove.' | '.$activateLink->show().'</p>';
-$link = new link ($this->uri(NULL));
-$link->link = $this->objLanguage->languageText('mod_worksheet_backtoworksheets', 'worksheet', 'Back to Worksheets');
-echo '<p>'.$link->show().'</p>';
-
 ?>

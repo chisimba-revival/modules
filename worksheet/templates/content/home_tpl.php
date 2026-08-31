@@ -10,7 +10,7 @@ $this->loadClass('confirm', 'utilities');
 $iconBase = $this->getResourceUri('icons/lucide/', 'ui');
 $addLabel = $this->objLanguage->languageText('mod_worksheet_createnewworksheet', 'worksheet');
 $viewLabel = $this->objLanguage->languageText('word_view', 'system');
-$editLabel = $this->objLanguage->languageText('word_edit', 'system');
+$editLabel = $this->objLanguage->languageText('mod_worksheet_editworksheet', 'worksheet', 'Edit worksheet information');
 $addLink = new link($this->uri(array('action'=>'add')));
 $addLink->title = $addLabel;
 $addLink->link = '<span class="worksheet-heading-action"><img src="'.$iconBase.'circle-plus.svg" width="20" height="20" alt="" aria-hidden="true" /></span>';
@@ -47,6 +47,7 @@ if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
         {
             $table->startRow();
                 $link = new link ($this->uri(array('action'=>'worksheetinfo', 'id'=>$worksheet['id'])));
+                $link->title = $this->objLanguage->languageText('mod_worksheet_openworksheet', 'worksheet', 'Open worksheet overview');
                 $link->link = $worksheet['name'];
                 $table->addCell($link->show());
                 $table->addCell($worksheet['questions']);

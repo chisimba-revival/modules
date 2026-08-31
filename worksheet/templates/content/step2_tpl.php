@@ -153,15 +153,4 @@ if ($worksheet['activity_status'] == 'inactive') {
     echo $form->show();
 }
 
-echo '<hr />';
-$infoLink = new link ($this->uri(array('action'=>'worksheetinfo', 'id'=>$id)));
-$infoLink->link = $this->objLanguage->languageText('mod_worksheet_worksheetinfo', 'worksheet', 'Worksheet Information');
-$activateLink = new link ($this->uri(array('action'=>'activate', 'id'=>$id)));
-$activateLink->link = $this->objLanguage->languageText('mod_worksheet_activatedeactivateworksheet', 'worksheet', 'Activate / Deactivate Worksheet');
-$addRemove = $this->objLanguage->languageText('mod_worksheet_addremovequestions', 'worksheet', 'Add / Remove Questions');
-echo '<p>'.$infoLink->show().' | '.$addRemove.' | '.$activateLink->show().'</p>';
-$link = new link ($this->uri(NULL));
-$link->link = $this->objLanguage->languageText('mod_worksheet_backtoworksheets', 'worksheet', 'Back to Worksheets');
-echo '<p>'.$link->show().'</p>';
-
 ?>

@@ -123,29 +123,4 @@ echo $fieldset->show();
 
 echo $form->show();
 
-echo '<hr />';
-
-/*
-$editLink = new link ($this->uri(array('action'=>'editworksheet', 'id'=>$id)));
-$editLink->link = $this->objLanguage->languageText('mod_worksheet_editworksheet', 'worksheet', 'Edit Worksheet');
-
-$deleteLink = new link ($this->uri(array('action'=>'deleteworksheet', 'id'=>$id)));
-$deleteLink->link = $this->objLanguage->languageText('mod_worksheet_deleteworksheet', 'worksheet', 'Delete Worksheet');
-*/
-
-$infoLink = new link ($this->uri(array('action'=>'worksheetinfo', 'id'=>$id)));
-$infoLink->link = $this->objLanguage->languageText('mod_worksheet_worksheetinfo', 'worksheet', 'Worksheet Information');
-
-$activateDeactivate = $this->objLanguage->languageText('mod_worksheet_activatedeactivateworksheet', 'worksheet', 'Activate / Deactivate Worksheet');
-
-$questionLink = new link ($this->uri(array('action'=>'managequestions', 'id'=>$id)));
-$questionLink->link = $this->objLanguage->languageText('mod_worksheet_addremovequestions', 'worksheet', 'Add / Remove Questions');
-
-echo '<p>'.$infoLink->show().' | './*$editLink->show().' | '.$deleteLink->show().' | '.*/$questionLink->show().' | '.$activateDeactivate.'</p>';
-
-$link = new link ($this->uri(NULL));
-$link->link = $this->objLanguage->languageText('mod_worksheet_backtoworksheets', 'worksheet', 'Back to Worksheets');
-
-echo '<p>'.$link->show().'</p>';
-
 ?>

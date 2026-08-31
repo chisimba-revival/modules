@@ -59,16 +59,6 @@ $deleteLink = new link ($this->uri(array('action'=>'deleteworksheet', 'id'=>$id)
 $deleteLink->link = $this->objLanguage->languageText('mod_worksheet_deleteworksheet', 'worksheet', 'Delete Worksheet');
 */
 
-$questionLink = new link ($this->uri(array('action'=>'managequestions', 'id'=>$id)));
-$questionLink->link = $this->objLanguage->languageText('mod_worksheet_addremovequestions', 'worksheet', 'Add/ Edit / Remove Questions');
-
-$activateLink = new link ($this->uri(array('action'=>'activate', 'id'=>$id)));
-$activateLink->link = $this->objLanguage->languageText('mod_worksheet_activatedeactivateworksheet', 'worksheet', 'Activate / Deactivate Worksheet');
-
-echo '<p>Worksheet Information | '/*.$editLink->show().' | '.$deleteLink->show().' | '*/.$questionLink->show().' | '.$activateLink->show().'</p>';
-
-echo '<hr />';
-
 $header = new htmlheading();
 $header->type = 3;
 
@@ -113,11 +103,5 @@ if ((is_countable($worksheetResults) ? count($worksheetResults) : 0) == 0 || $wo
 
     echo $table->show();
 }
-
-$link = new link ($this->uri(NULL));
-$link->link = $this->objLanguage->languageText('mod_worksheet_backtoworksheets', 'worksheet', 'Back to Worksheets');
-
-echo '<p>'.$link->show().'</p>';
-
 
 ?>
