@@ -2,6 +2,8 @@
 $root = dirname(__DIR__);
 $controller = file_get_contents($root . '/controller.php');
 $template = file_get_contents($root . '/templates/content/index_tpl.php');
+$editTemplate = file_get_contents($root . '/templates/content/addtest_tpl.php');
+$viewTemplate = file_get_contents($root . '/templates/content/viewtest_tpl.php');
 $register = file_get_contents($root . '/register.conf');
 $checks = array(
     'both routes use one canonical overview' => str_contains($controller, 'return $this->newHome($testId);')
@@ -28,6 +30,9 @@ $checks = array(
     'overview endpoint is lecturer protected' => str_contains($register, 'updateoverview|isContextLecturer'),
     'tests follow course chapter order' => str_contains($controller, "['chapterorder']")
         && str_contains($controller, 'usort($data, function ($left, $right)'),
+    'date editing preserves local time' => str_contains($editTemplate, "format('Y-m-d H:i')")
+        && str_contains($editTemplate, 'inTimezone'),
+    'date and time labels include time' => substr_count($viewTemplate, 'formatDateTime') >= 2,
 );
 foreach ($checks as $name => $ok) {
     if (!$ok) { fwrite(STDERR, "FAIL: $name\n"); exit(1); }

@@ -40,12 +40,12 @@ $this->setVar('heading', $mode==='edit' ? $editHeading : $addHeading);
 if (!empty($data)) {
     $row=$data[0]; $id=$row['id']; $name=$row['name']; $status=$row['status'];
     $startLocal=$this->objDate->inTimezone($row['startdate']); $closeLocal=$this->objDate->inTimezone($row['closingdate']);
-    $start=$startLocal===null?'':$startLocal->format('Y-m-d'); $close=$closeLocal===null?'':$closeLocal->format('Y-m-d');
+    $start=$startLocal===null?'':$startLocal->format('Y-m-d H:i'); $close=$closeLocal===null?'':$closeLocal->format('Y-m-d H:i');
     $timed=$row['timed']; $duration=(int)$row['duration']; $hour=$duration>0?floor($duration/60):0; $min=$duration>0?$duration%60:0;
     $testType=$row['testtype']; $qSequence=$row['qsequence']; $aSequence=$row['asequence']; $comLab=$row['comlab'];
     $description=$row['description']; $coursePermissions=$row['coursepermissions'];
 } else {
-    $today=$this->objDate->inTimezone($this->objDate->nowStorage())->format('Y-m-d');
+    $today=$this->objDate->inTimezone($this->objDate->nowStorage())->format('Y-m-d H:i');
     $id=''; $name=''; $status='inactive'; $start=$today; $close=$today; $timed=''; $hour=0; $min=0;
     $testType='Formative'; $qSequence='Sequential'; $aSequence='Sequential'; $comLab=''; $description=''; $coursePermissions='Private';
 }

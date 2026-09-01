@@ -98,7 +98,7 @@ $objTable->endRow();
 
 // Add Start date
 $objTable->startRow();
-$objTable->addCell('<b>'.$startdateLabel.'</b>: '.$this->objDate->formatDate($data['startdate']));
+$objTable->addCell('<b>'.$startdateLabel.'</b>: '.$this->objDate->formatDateTime($data['startdate']));
 $objTable->addCell('<b>'.$totalLabel.'</b>: '.$data['totalmark']);
 if ($data['timed']) {
     $duration = (0) .'&nbsp;'.$hoursLabel;
@@ -117,7 +117,7 @@ $objTable->endRow();
 
 // Add Cosing date
 $objTable->addRow(array(
-    '<b>'.$dateLabel.'</b>: '.$this->objDate->formatDate($data['closingdate'])
+    '<b>'.$dateLabel.'</b>: '.$this->objDate->formatDateTime($data['closingdate'])
 ));
 
 // Add test type

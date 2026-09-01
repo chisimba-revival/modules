@@ -63,10 +63,10 @@ if (!empty($data)) {
             $startDate = '';
             // Display Start date and closing date - display open test link accordingly
             if (isset($line['startdate']) && !empty($line['startdate'])) {
-                $startDate = $this->objDate->formatDate($line['startdate']);
+                $startDate = $this->objDate->formatDateTime($line['startdate']);
             }
             if (isset($line['closingdate']) && !empty($line['closingdate'])) {
-                $date = $this->objDate->formatDate($line['closingdate']);
+                $date = $this->objDate->formatDateTime($line['closingdate']);
             }
             if ($line['startdate'] < $this->objDate->nowStorage()) {
                 $closed = FALSE;
