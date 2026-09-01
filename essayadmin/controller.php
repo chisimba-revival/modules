@@ -511,13 +511,6 @@ class essayadmin extends controller
                 $this->objConfirm->setConfirm($objIcon->show(), $this->uri(array('action'=>'deletetopic', 'id'=>$topic['id'])), $this->objLanguage->code2Txt('mod_essayadmin_deletetopic','essayadmin', array('TOPIC'=>$topic['name'])));
                 $iconDelete = $this->objConfirm->show();
 
-                $objIcon->setIcon('paper');
-                $objIcon->title = $strViewEssays;
-                $objIcon->alt = $strViewEssays;
-                $objLink = new link($this->uri(array('action'=>'view', 'id'=>$topic['id'])));
-                $objLink->link = $objIcon->show();
-                $iconView = $objLink->show();
-
                 if ($topic['submitted'] == 0) {
                     $iconMark = '';
                 } else {
@@ -533,10 +526,9 @@ class essayadmin extends controller
                 $icons =
                     $iconEdit
                     .$iconDelete
-                    .$iconView
                     .$iconMark;
 
-                $percentage = $topic['percentage'];
+                $percentage = $topic['percentage'].'%';
 
 //                $date = $this->objDateformat->formatDate($topic['closing_date']);
                 if ($topic['bypass'] == '1') {
@@ -564,11 +556,6 @@ class essayadmin extends controller
         $links = '';
         $links .= $linkAddNewTopic;
 
-        if ($this->assignment) {
-            $objLink = new link($this->uri(array(), 'assignment'));
-            $objLink->link = $this->objLanguage->languageText('mod_assignment_name','assignment');
-            $links .= '<br />'.$objLink->show();
-        }
         return
             '<section class="chisimba-workspace"><div class="chisimba-actions">'.$links.'</div><div class="chisimba-table-wrap">'
             .$objTable->show().'</div></section>';
