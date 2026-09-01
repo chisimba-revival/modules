@@ -37,7 +37,7 @@ class worksheetdefaultrubric extends ChisimbaObject
             'id' => self::RUBRIC_ID,
             'contextCode' => 'root',
             'title' => 'Default worksheet rubric',
-            'description' => 'General written-answer rubric. High marks require accuracy and completeness. Suggested bands: 90-100 comprehensive; 75-89 strong with limited omissions; 50-74 partial with substantial omissions; 25-49 limited; 0-24 insufficient.',
+            'description' => 'General written-answer rubric requiring accuracy, completeness and sound reasoning.',
             'performances' => array('Insufficient', 'Developing', 'Competent', 'Excellent'),
             'criteria' => array(
                 array(

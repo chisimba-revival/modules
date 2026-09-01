@@ -9,6 +9,7 @@ $checks = array(
     'default has four assessment criteria' => substr_count($definition, "'objective' =>") === 4,
     'default includes completeness' => str_contains($definition, 'Coverage and completeness'),
     'template provisioning is versioned and non-destructive' => str_contains($service, 'ensureRubricTemplate') && str_contains($service, 'Existing data is never overwritten'),
+    'failed parent provisioning cannot retain orphan rows' => str_contains($service, 'Repair only orphaned rows') && str_contains($service, '$this->getRubric($id) === false'),
     'worker falls back to default rubric' => str_contains($worker, 'worksheetdefaultrubric') && str_contains($worker, '$defaultRubric'),
     'prompt reserves excellent scores for comprehensive answers' => str_contains($marker, 'Reserve 90-100 percent for comprehensive answers'),
 );

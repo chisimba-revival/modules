@@ -177,6 +177,11 @@ class rubricservice extends ChisimbaObject
             return false;
         }
 
+        // Repair only orphaned rows for this versioned ID after a failed parent insert.
+        $this->objRubricObjectives->deleteAll($id);
+        $this->objRubricPerformances->deleteAll($id);
+        $this->objRubricCells->deleteAll($id);
+
         $inserted = $this->objRubricTables->insert(array(
             'id' => $id,
             'contextCode' => isset($definition['contextCode']) ? (string) $definition['contextCode'] : 'root',
@@ -185,7 +190,7 @@ class rubricservice extends ChisimbaObject
             '`rows`' => count($criteria),
             '`cols`' => count($performances),
         ));
-        if (!$inserted) { return false; }
+        if (!$inserted || $this->getRubric($id) === false) { return false; }
 
         foreach ($performances as $column => $label) {
             $this->objRubricPerformances->insertSingle($id, $column, (string) $label);
