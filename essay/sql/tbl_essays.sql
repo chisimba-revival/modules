@@ -34,6 +34,9 @@ $fields = array(
     'notes'  =>  array(
       'type'    =>  'clob'
     ),
+    'model_essay'  =>  array(
+      'type'    =>  'clob'
+    ),
     'updated'  =>  array(
       'type'    =>  'timestamp'
    )

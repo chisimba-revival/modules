@@ -36,6 +36,7 @@ class essayadmin extends controller
         $this->dbtopic = $this->getObject('dbessay_topics', 'essay');
         $this->dbessays = $this->getObject('dbessays', 'essay');
         $this->dbbook = $this->getObject('dbessay_book', 'essay');
+        $this->objDefaultEssayRubric = $this->getObject('essaydefaultrubric', 'essay');
         // Get instances of the html elements:
         $this->loadclass('htmltable', 'htmlelements');
         $this->loadClass('checkbox', 'htmlelements');
@@ -169,6 +170,7 @@ class essayadmin extends controller
             $heading = $this->objLanguage->languageText('mod_essayadmin_edittopicarea','essayadmin').': '.$data[0]['name'];
             $this->setVarByRef('heading',$heading);
             $this->setVarByRef('data',$data);
+            $this->setVar('defaultRubric', $this->objDefaultEssayRubric->getStructuredRubric());
             $this->setLayoutTemplate('essayadmin_layout_tpl.php');
             return 'topic_tpl.php';
         //break;
@@ -273,6 +275,7 @@ class essayadmin extends controller
             $this->setVarByRef('topicname',$topic[0]['name']);
             $this->setVarByRef('heading',$heading);
             $this->setVarByRef('data',$data);
+            $this->setVar('defaultRubric', $this->objDefaultEssayRubric->getStructuredRubric());
             $this->setLayoutTemplate('essayadmin_layout_tpl.php');
             return 'addeditessay_tpl.php';
         //break;
@@ -305,6 +308,7 @@ class essayadmin extends controller
             $fields['topicid']=$topicAreaId;
             $fields['topic']=trim((string)$this->getParam('essaytopic', ''));
             $fields['notes']=$this->getParam('notes', '');
+            $fields['model_essay']=$this->getParam('model_essay', '');
             $topic = $this->dbtopic->getTopic($topicAreaId);
             if ($fields['topic'] === '' || empty($topic)
                 || (string)$topic[0]['context'] !== (string)$this->contextcode) {
