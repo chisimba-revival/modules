@@ -69,10 +69,10 @@ echo '<div class="gradebook-home-actions chisimba-actions">'
     .'</div>';
 
 echo '<section class="gradebook-home-section">';
-echo '<h2>'.$esc($L('classmarkmatrix')).'</h2>';
+echo '<h2>'.$esc($language->languageText('mod_gradebook_classmarkmatrix', 'gradebook', 'Class marks')).'</h2>';
 echo '<div class="chisimba-actions gradebook-matrix-display">'
-    .'<a class="button'.($matrixDisplay === 'percentage' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'percentage')).'">'.$esc($L('showpercentage')).'</a>'
-    .'<a class="button'.($matrixDisplay === 'year_mark' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'year_mark')).'">'.$esc($L('showyearmark')).'</a>'
+    .'<a class="button'.($matrixDisplay === 'percentage' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'percentage')).'">'.$esc($language->languageText('mod_gradebook_showpercentage', 'gradebook', 'Show as percentage')).'</a>'
+    .'<a class="button'.($matrixDisplay === 'year_mark' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'year_mark')).'">'.$esc($language->languageText('mod_gradebook_showyearmark', 'gradebook', 'Show as year mark')).'</a>'
     .'</div>';
 
 if ($studentCount === 0 || empty($planRows)) {
@@ -84,7 +84,7 @@ if ($studentCount === 0 || empty($planRows)) {
         $shortName = trim((string) ($planRow['item']['short_name'] ?? ''));
         echo '<th><abbr title="'.$esc($planRow['title']).'">'.$esc($shortName !== '' ? $shortName : $planRow['title']).'</abbr></th>';
     }
-    if ($matrixDisplay === 'year_mark') { echo '<th>'.$esc($L('yearmarktotal')).'</th>'; }
+    if ($matrixDisplay === 'year_mark') { echo '<th>'.$esc($language->languageText('mod_gradebook_yearmarktotal', 'gradebook', 'Year mark')).'</th>'; }
     echo '</tr></thead><tbody>';
 
     for ($i = 0; $i < $studentCount; $i++) {
