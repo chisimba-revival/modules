@@ -177,11 +177,14 @@ class essayadmin extends controller
             $id = $this->getParam('id', NULL);
             $fields = array();
             $fields['context']=$this->contextcode;
-            $fields['name']=$this->getParam('topicarea', '');
+            $fields['name']=trim((string)$this->getParam('topicarea', ''));
             $fields['description']=$this->getParam('description', '');
             $fields['instructions']=$this->getParam('instructions', '');
-            $fields['percentage']=$this->getParam('percentage', '');
-            $fields['closing_date']= $this->getParam('closing_date');
+            $fields['percentage']=max(0, min(100, (int)$this->getParam('percentage', 0)));
+            $fields['closing_date']=str_replace('T', ' ', trim((string)$this->getParam('closing_date')));
+            if ($fields['name'] === '') {
+                return $this->nextAction($id ? 'edittopic' : 'addtopic', array('id'=>$id, 'error'=>'topicrequired'));
+            }
             $force = $this->getParam('force',NULL);
             $bypass = $this->getParam('bypass',NULL);
             $fields['forceone'] = ($force == 'on')?'1':'0';
@@ -290,8 +293,14 @@ class essayadmin extends controller
 
             $fields=array();
             $fields['topicid']=$topicAreaId;
-            $fields['topic']=$this->getParam('essaytopic', '');
+            $fields['topic']=trim((string)$this->getParam('essaytopic', ''));
             $fields['notes']=$this->getParam('notes', '');
+            $topic = $this->dbtopic->getTopic($topicAreaId);
+            if ($fields['topic'] === '' || empty($topic)
+                || (string)$topic[0]['context'] !== (string)$this->contextcode) {
+                return $this->nextAction('addessay', array('id'=>$topicAreaId, 'error'=>'invalid'));
+            }
+            $this->dbessays->addEssay($fields, $id !== '' ? $id : NULL);
             // set confirmation message
             $message = $this->objLanguage->languageText('mod_essayadmin_confirmessay', 'essayadmin');
             $this->setSession('confirm', $message);
