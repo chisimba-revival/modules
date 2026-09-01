@@ -380,15 +380,24 @@ class essayadmin extends controller
             // Get topic ID
             $topic = $this->getParam('id');
             // Get book ID
-        	$book = $this->getParam('book');
+            $book = $this->getParam('book');
             $mark=$this->getParam('mark', '');
             $comment=$this->getParam('comment', '');
-            // upload file to database, overwrite original file
-            $fileDetails = $this->objFile->uploadFile('file');
+            $message = null;
+            $fileDetails = null;
+            if (!is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100) {
+                $message = 'Enter a mark from 0 to 100.';
+            } else {
+                if (!empty($_FILES['file']['name'])) {
+                    $fileDetails = $this->objFile->uploadFile('file');
+                }
+            }
 
-            if ($fileDetails === FALSE){
+            if ($message !== null) {
+                // Preserve the validation message set above.
+            } else if ($fileDetails === FALSE){
                 $message = $this->objLanguage->languageText('mod_essayadmin_uploadfailureunknown', 'essayadmin');
-            } else if (!$fileDetails['success']) {
+            } else if (is_array($fileDetails) && empty($fileDetails['success'])) {
                 switch ($fileDetails['reason']) {
                     case 'bannedfile':
                         $reason = $this->objLanguage->languageText('mod_essayadmin_fileupload_bannedfile', 'essayadmin');
@@ -414,11 +423,8 @@ class essayadmin extends controller
                 $message = $this->objLanguage->languageText('mod_essayadmin_uploadfailure', 'essayadmin')
                    .":&nbsp;" . $reason;
             } else {
-                $fields = array(
-                    'mark'=>$mark,
-                    'comment'=>$comment,
-                    'lecturerfileid'=>$fileDetails['fileid']
-                );
+                $fields = array('mark'=>(int)$mark, 'comment'=>$comment);
+                if (!empty($fileDetails['fileid'])) { $fields['lecturerfileid']=$fileDetails['fileid']; }
                 $this->dbbook->bookEssay($fields, $book);
                 // display success message
                 $message = NULL;
