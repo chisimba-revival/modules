@@ -13,7 +13,7 @@ $modelEditor->value = isset($record['model_essay']) ? $record['model_essay'] : '
 $rubricTitle = !empty($defaultRubric['title']) ? $defaultRubric['title'] : 'Default essay rubric';
 ?>
 <main class="chisimba-workspace">
-  <header class="chisimba-page-heading"><div><h1><?php echo $heading; ?></h1><p>Create the learner task and the reference material used for consistent marking.</p></div></header>
+  <p>Create the learner task and the reference material used for consistent marking.</p>
   <form class="chisimba-form chisimba-form--wide" method="post" action="<?php echo $this->uriForHtmlAttribute(array('action'=>'saveessay'), 'essayadmin'); ?>">
     <input type="hidden" name="id" value="<?php echo $esc($topicid); ?>">
     <input type="hidden" name="essay" value="<?php echo $esc($essayId); ?>">
