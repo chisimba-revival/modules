@@ -170,6 +170,12 @@ class gradebook extends controller {
                 }
                 return $this->saveAssessmentSheet();
                 break;
+            case 'assessmentResults':
+                if (!$this->mayManageAssessmentPlan()) {
+                    return $this->nextAction(NULL, array('error'=>'noaccess'));
+                }
+                return 'assessment_results_tpl.php';
+                break;
             //view the details of the assessment
             case 'assessmentDetails':
                 return "assignment_details_tpl.php";

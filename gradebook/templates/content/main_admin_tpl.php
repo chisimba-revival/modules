@@ -32,15 +32,6 @@ $firstNames = (array)$this->objGradebook->getStudentInContextInfo('firstname');
 $surnames = (array)$this->objGradebook->getStudentInContextInfo('surname');
 $studentCount = min(count($userIds), count($usernames), count($firstNames), count($surnames));
 
-$selectedLearnerId = trim((string)$this->getParam('learner_id', ''));
-$selectedLearnerIndex = null;
-for ($i = 0; $i < $studentCount; $i++) {
-    if ((string)$userIds[$i] === $selectedLearnerId) {
-        $selectedLearnerIndex = $i;
-        break;
-    }
-}
-
 $statusLabels = array(
     'not_attempted' => $L('result_notattempted'),
     'in_progress' => $L('result_inprogress'),
@@ -64,6 +55,7 @@ echo '<div class="gradebook-home chisimba-workspace">';
 echo '<h1>'.$esc($contextName).' '.$esc($L('title')).'</h1>';
 
 echo '<div class="gradebook-home-actions chisimba-actions">'
+    .'<a class="button" href="'.$this->uri(array('action'=>'assessmentResults')).'">'.$esc($L('viewByAssessment')).'</a>'
     .'<a class="button" href="'.$this->uri(array('action'=>'assessmentPlan')).'">'.$esc($L('assessmentplan')).'</a>'
     .'<a class="button" href="'.$this->uri(array('action'=>'assessmentSheet')).'">'.$esc($L('assessmentsheet')).'</a>'
     .'</div>';
@@ -88,10 +80,9 @@ if ($studentCount === 0 || empty($planRows)) {
     echo '</tr></thead><tbody>';
 
     for ($i = 0; $i < $studentCount; $i++) {
-        $detailUri = $this->uri(array('learner_id'=>$userIds[$i]));
         $name = trim($firstNames[$i].' '.$surnames[$i]);
         $yearMark = 0.0;
-        echo '<tr><th scope="row"><a href="'.$detailUri.'">'.$esc($name).'</a><br><small>'.$esc($usernames[$i]).'</small></th>';
+        echo '<tr><th scope="row">'.$esc($name).'<br><small>'.$esc($usernames[$i]).'</small></th>';
         foreach ($planRows as $planRow) {
             $result = array('status'=>'not_attempted', 'mark_percent'=>null);
             if (is_object($planRow['adapter']) && is_callable(array($planRow['adapter'], 'getStudentResult'))) {
@@ -115,6 +106,11 @@ if ($studentCount === 0 || empty($planRows)) {
 }
 
 echo '</section>';
+
+// The common lecturer journey ends with the class matrix. Detailed assessment
+// and learner views have their own focused pages and must not sit below it.
+echo '</div>';
+return;
 
 if ($selectedLearnerIndex !== null) {
     $learnerId = $userIds[$selectedLearnerIndex];
