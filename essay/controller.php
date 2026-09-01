@@ -631,11 +631,8 @@ function _onSuccess()
                     $objLink->title = $title;
                     $multiLink = $objLink->show();
 
-                    $objLink->link = $objIcon->show();
-                    $objLink->title = $title;
-                    $bookIcon = $objLink->show();
-
-                    $icons .= $bookIcon;
+                    // The linked title is the single booking action; do not
+                    // duplicate it with a second icon-only link.
                 }
                 if ($booked == ESSAY_BOOKEDBYSTUDENT) {
                     if (is_null($essaysubmit)) {
@@ -651,10 +648,7 @@ function _onSuccess()
                         $objLink->title = $title;
                         $multiLink = $objLink->show();
 
-                        $objLink->link = $objIcon->show();
-                        $unbookIcon = $objLink->show();
                         $message .= $this->objLanguage->languageText('mod_essay_bookedby', 'essay') . ' ' . $this->user;
-                        $icons .= $unbookIcon;
                     } else {
                         $multiLink = '<b>' . $essay['topic'] . '</b>';
                         if (is_null($essaymark)) {

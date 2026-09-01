@@ -1,108 +1,24 @@
 <?php
-/*
-* Template to view list of essays for a student.
-* @package essay
-*/
-$ret = "";
-$this->loadclass('htmltable','htmlelements');
-$this->loadClass('windowpop','htmlelements');
-$this->objDateformat = $this->newObject('dateandtime','utilities');
-
-$objLink = new link();
-$objIcon = $this->getObject('geticon','htmlelements');
-
-$this->setVar('heading', $this->objLanguage->code2Txt('mod_essay_listofessaysfor', 'essay', array('STUDENT'=>$this->user)));
-
-$objTable = new htmltable();
-$objTable->cellspacing=2;
-$objTable->cellpadding=5;
-
-$tableHeader=array();
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_topicarea','essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_essay','essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_closedate','essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_bypass', 'essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_datesubmitted','essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_mark','essay');
-$tableHeader[] = $this->objLanguage->languageText('mod_essay_upload','essay').' / '.$this->objLanguage->languageText('mod_essay_download','essay');
-$objTable->addHeader($tableHeader, 'heading');
-
-if (!empty($data)) {
-    $i=0;
-    foreach ($data as $item) {
-        $class = ($i++%2) ? 'even':'odd';
-        if ($item['mark']=='submit') {
-            // if essay hasn't been submitted, display submit icon
-            // check if closing date has passed
-            //echo "[{$item['date']}]";
-            //echo "[".date('Y-m-d H:i:s')."]";
-            if (date('Y-m-d H:i:s') > $item['date'] && $item['bypass'] == 'NO') {
-    	            $mark = '';
-    	            $multiLink = $this->objLanguage->languageText('mod_essay_closed', 'essay');
-            } else {
-                    $objIcon->setIcon('submit2');
-                    $objIcon->title = $this->objLanguage->languageText('mod_essay_uploadessay','essay');
-    	            $objIcon->extra = '';
-    	            $objLink->link($this->uri(array('action'=>'uploadessay', 'bookid'=>$item['id'])));
-                    $objLink->link = $objIcon->show();
-    	            $mark = '';
-    	            $multiLink = $objLink->show();
-            }
-        } else if (!is_null($item['mark'])) {
-            // if mark exists, display mark, download icon and view comments icon
-    	    if (!is_null($item['lecturerfileid'])) {
-    	        $objIcon->setIcon('download');
-    	        $objIcon->title = $this->objLanguage->languageText('mod_essay_downloadessay','essay');
-    	        $objIcon->extra = '';
-    	        $objLink->link($this->uri(array('action'=>'download','fileid'=>$item['lecturerfileid'])));
-    	        $objLink->link = $objIcon->show();
-    	        $multiLink = $objLink->show();
-            } else {
-    	        $multiLink = $this->objLanguage->languageText('mod_essay_nomarkedessayavailable', 'essay');
-    		}
-            $objIcon->setIcon('comment_view');
-            $objIcon->title = $this->objLanguage->languageText('mod_essay_viewcomment','essay');
-       	 	$viewCommentIcon = $objIcon->show();
-            $objPopup = new windowpop();
-        	$objPopup->set('location', $this->uri(array('action'=>'showcomment', 'book'=>$item['id'], 'essay'=>$item['essay'])));
-        	$objPopup->set('linktext',$viewCommentIcon);
-        	$objPopup->set('width', '600');
-        	$objPopup->set('height', '350');
-        	$objPopup->set('left', '200');
-        	$objPopup->set('top', '200');
-            $objPopup->putJs();
-            /*
-        	//$objPopup=$objPopup->show();
-            //$this->objIcon->extra="onclick=\"javascript:window.open('" .$this->uri(array('action'=>'showcomment','book'=>$item['id'],'essay'=>$item['essay']))."', "essaycomment", "width=400", "height=200", "scrollbars=1")\" ";
-            //$this->objIcon->title=$commenthead;
-            //$this->objLink->link('#');
-            //$this->objLink->link=$this->objIcon->show();
-            */
-            $mark = $item['mark'].'&nbsp;%<br />'.$objPopup->show();
-        } else {
-            $mark = '';
-            $multiLink = $this->objLanguage->languageText('mod_essay_submitted','essay');
-        }
-        $objTable->startRow();
-        $objTable->addCell($item['name'],'','','',$class);
-        //$objTable->addCell($item['essayid'],'','','',$class);
-        $objTable->addCell($item['essay'],'','','',$class);
-        $objTable->addCell($this->objDateformat->formatDate($item['date']),'','','',$class);
-    	$objTable->addCell($item['bypass'],'','','',$class);
-        if (empty($item['submitdate'])) {
-            $objTable->addCell('','','','',$class);
-        } else {
-            $objTable->addCell($this->objDateformat->formatDate($item['submitdate']),'','','',$class);
-        }
-        $objTable->addCell($mark,'','','',$class);
-        $objTable->addCell($multiLink,'','','center',$class);
-        $objTable->endRow();
-    }
-}
-$ret .= $objTable->show();
-
-$objLink->link($this->uri(''));
-$objLink->link=$this->objLanguage->languageText('mod_essay_essayhome','essay');
-$ret .= $objLink->show();
-echo "<div class='essay_main'>$ret</div>";
+/** Learner-facing Essay submission and result overview. @author Derek Keats */
+$e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+$icons=$this->getObject('iconservice','ui');
+$this->setVar('heading',$this->objLanguage->code2Txt('mod_essay_listofessaysfor','essay',array('STUDENT'=>$this->user)));
 ?>
+<section class="chisimba-workspace essay-submission-list">
+<?php if(empty($data)): ?><div class="chisimba-empty-state"><p>You have not booked an Essay yet.</p><a class="button" href="<?php echo $e($this->uri(array())); ?>"><?php echo $icons->render('arrow-left',array('decorative'=>true)); ?> View Essay topics</a></div>
+<?php else: foreach($data as $item):
+$closed=date('Y-m-d H:i:s')>$item['date']&&$item['bypass']==='NO';
+$submitted=!empty($item['studentfileid']);$marked=$item['mark']!==null&&$item['mark']!=='';
+$status=$marked?'Marked':($submitted?'Submitted':($closed?'Closed':'Ready to submit'));
+?>
+<article class="chisimba-card essay-submission-card">
+<header><div><p class="chisimba-eyebrow"><?php echo $e($item['name']); ?></p><h2><?php echo $e($item['essay']); ?></h2></div><span class="chisimba-status-badge"><?php echo $e($status); ?></span></header>
+<dl class="chisimba-summary-grid"><div><dt>Closing date</dt><dd><?php echo $e($this->objDateformat->formatDate($item['date'])); ?></dd></div><?php if(!empty($item['submitdate'])): ?><div><dt>Submitted</dt><dd><?php echo $e($this->objDateformat->formatDate($item['submitdate'])); ?></dd></div><?php endif; ?><?php if($marked): ?><div><dt>Mark</dt><dd><strong><?php echo $e($item['mark']); ?>%</strong></dd></div><?php endif; ?></dl>
+<?php if($marked&&!empty($item['comment'])): ?><div class="chisimba-feedback"><h3>Lecturer feedback</h3><p><?php echo nl2br($e($item['comment'])); ?></p></div><?php endif; ?>
+<div class="chisimba-actions">
+<?php if(!$marked&&!$closed): ?><a class="button" href="<?php echo $e($this->uri(array('action'=>'uploadessay','bookid'=>$item['id']))); ?>"><?php echo $icons->render('upload',array('decorative'=>true)); ?> <?php echo $submitted?'Replace submission':'Submit essay'; ?></a><?php endif; ?>
+<?php if($marked&&!empty($item['lecturerfileid'])): ?><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'download','fileid'=>$item['lecturerfileid']))); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download returned document</a><?php endif; ?>
+</div></article>
+<?php endforeach; endif; ?>
+<div class="chisimba-actions"><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array())); ?>"><?php echo $icons->render('arrow-left',array('decorative'=>true)); ?> Essay topics</a></div>
+</section>
