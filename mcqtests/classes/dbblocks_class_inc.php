@@ -176,7 +176,7 @@ class dbBlocks extends dbTable {
             $arrData = array();
             $arrData['categoryid'] = $arrayData['categoryid'];
             $arrData['visible'] = $this->TRUE;
-            $arrData['datelastupdated'] = date('Y-m-d H:i:s');
+            $arrData['datelastupdated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
             $arrData['updatedby'] = $this->objUser->userId();
             $arrData['title'] = $arrayData['title'];
             $arrData['side'] = $arrayData['side'];

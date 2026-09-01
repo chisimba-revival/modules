@@ -100,8 +100,9 @@ if (!empty($data)) {
     $name = '';
     $chapter = '';
     $status = '';
-    $start = date('Y-m-d H:i:s');
-    $close = date('Y-m-d H:i:s');
+    $nowLocal = $this->objDate->inTimezone($this->objDate->nowStorage());
+    $start = $nowLocal->format('Y-m-d H:i:s');
+    $close = $nowLocal->format('Y-m-d H:i:s');
     $timed = '';
     $hour = 0;
     $min = 0;

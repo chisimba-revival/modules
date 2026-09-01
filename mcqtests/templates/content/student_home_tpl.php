@@ -68,9 +68,9 @@ if (!empty($data)) {
             if (isset($line['closingdate']) && !empty($line['closingdate'])) {
                 $date = $this->objDate->formatDate($line['closingdate']);
             }
-            if ($line['startdate'] < date('Y-m-d H:i')) {
+            if ($line['startdate'] < $this->objDate->nowStorage()) {
                 $closed = FALSE;
-                if ($line['closingdate'] < date('Y-m-d H:i')) {
+                if ($line['closingdate'] < $this->objDate->nowStorage()) {
                     $startDate = $closedLabel;
                     $closed = TRUE;
                 } else {

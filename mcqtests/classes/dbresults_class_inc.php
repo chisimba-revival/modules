@@ -38,8 +38,9 @@ class dbresults extends dbtable {
      * @return string $id The new result id.
      */
     public function addResult($fields) {
-        $fields['starttime'] = date("Y-m-d H:i:s");
-        $fields['updated'] = date("Y-m-d H:i:s");
+        $now = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
+        $fields['starttime'] = $now;
+        $fields['updated'] = $now;
         $id = $this->insert($fields);
         return $id;
     }
@@ -213,8 +214,8 @@ class dbresults extends dbtable {
     public function addMark($id, $mark) {
         $this->update('id', $id, array(
                 'mark' => $mark,
-                'endtime' => date("Y-m-d H:i:s") ,
-                'updated' => date("Y-m-d H:i:s")
+                'endtime' => $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage(),
+                'updated' => $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage()
         ));
     }
 } // end of class

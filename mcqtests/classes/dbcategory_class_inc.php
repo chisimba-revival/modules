@@ -86,13 +86,13 @@ class dbcategory extends dbtable {
      * @return string $id The id of the inserted or updated category.
      */
     public function addCategory($fields, $id = NULL) {
-        $fields['timemodified'] = date('Y-m-d H:i:s');
+        $fields['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
         if ($id) {
-            $fields['timemodified'] = date('Y-m-d H:i:s');
+            $fields['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
             $fields['modifiedby'] = $this->userId;
             $this->update('id', $id, $fields);
         } else {
-            $fields['timecreated'] = date('Y-m-d H:i:s');
+            $fields['timecreated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
             $fields['createdby'] = $this->userId;
             $fields['contextcode'] = $this->contextCode;
             $id = $this->insert($fields);

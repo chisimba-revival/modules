@@ -142,7 +142,7 @@ class mcqtests extends controller {
         $this->dbResults = $this->newObject('dbresults');
         $this->objUser = $this->newObject('user', 'security');
         $this->objLanguage = $this->newObject('language', 'language');
-        $this->objDate = $this->newObject('dateandtime', 'utilities');
+        $this->objDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->objConfig = $this->newObject('altconfig', 'config');
         $this->objMkdir = $this->newObject('mkdir', 'files');
         $this->user = $this->objUser->fullname();
@@ -2562,16 +2562,14 @@ class mcqtests extends controller {
             $fields['timed'] = 0;
         }
         $fields['duration'] = ($data['hour'] * 60) + $data['min'];
-        $startDate = $data['start'];
-        $closeDate = $data['close'];
-        $fields['startdate'] = $startDate;
-        $fields['closingdate'] = $closeDate;
+        $fields['startdate'] = $this->localDateToStorage($data['start']);
+        $fields['closingdate'] = $this->localDateToStorage($data['close']);
         $fields['testtype'] = $data['testType'];
         $fields['qsequence'] = $data['qSequence'];
         $fields['asequence'] = $data['aSequence'];
         $fields['comlab'] = $data['comLab'];
         $fields['description'] = $data['description'];
-        $fields['updated'] = date('Y-m-d H:i:s');
+        $fields['updated'] = $this->objDate->nowStorage();
         $fields['coursePermissions'] = $data['coursePermissions'];
         $id = $this->dbTestadmin->addTest($fields, $id);
         return $id;
@@ -2615,16 +2613,14 @@ class mcqtests extends controller {
             $fields['timed'] = 0;
         }
         $fields['duration'] = ($this->getParam('hour', 0) * 60) + $this->getParam('min', 0);
-        $startDate = $this->getParam('start', '');
-        $closeDate = $this->getParam('close', '');
-        $fields['startdate'] = $startDate;
-        $fields['closingdate'] = $closeDate;
+        $fields['startdate'] = $this->localDateToStorage($this->getParam('start', ''));
+        $fields['closingdate'] = $this->localDateToStorage($this->getParam('close', ''));
         $fields['testtype'] = $this->getParam('testType');
         $fields['qsequence'] = $this->getParam('qSequence');
         $fields['asequence'] = $this->getParam('aSequence');
         $fields['comlab'] = $this->getParam('comLab');
         $fields['description'] = $this->getParam('description', '');
-        $fields['updated'] = date('Y-m-d H:i:s');
+        $fields['updated'] = $this->objDate->nowStorage();
         $id = $this->dbTestadmin->addTest($fields, $id);
         return $id;
     }
@@ -2951,6 +2947,23 @@ class mcqtests extends controller {
     public function formatDate($date) {
         $ret = $this->objDate->formatDate($date);
         return $ret;
+    }
+
+    /**
+     * Convert a date picker value in the configured site timezone to UTC storage.
+     *
+     * @param string $value Local date or date-time value.
+     * @return string|null Canonical UTC storage value, or null when invalid.
+     * @author Derek Keats
+     */
+    private function localDateToStorage($value)
+    {
+        $value = trim((string) $value);
+        foreach (array('Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d') as $format) {
+            $instant = $this->objDate->parseLocal($value, null, $format);
+            if ($instant !== null) { return $this->objDate->toStorage($instant); }
+        }
+        return null;
     }
 
     /**

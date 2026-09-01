@@ -256,7 +256,7 @@ $confirm = $this->getParam('confirm');
 if ($confirm == 'yes') {
     $msg = $this->getSession('confirm');
     $this->unsetSession('confirm');
-    $objMsg->setMessage($msg.'&nbsp;&nbsp;'.date('d/m/Y H:i'));
+    $objMsg->setMessage($msg.'&nbsp;&nbsp;'.$this->objDate->formatDateTime($this->objDate->nowStorage()));
     $str.= '<p>'.$objMsg->show() .'</p>';
 }
 

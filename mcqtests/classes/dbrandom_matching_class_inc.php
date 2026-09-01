@@ -46,18 +46,18 @@ class dbrandom_matching extends dbtable {
      * @return string $id The id of the inserted or updated Record.
      */
     public function addRecord($fields, $id = NULL) {
-        $fields['timemodified'] = date('Y-m-d H:i:s');
+        $fields['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
         //Check if the question has already been added
         $exists = $this->getRecords( 'questionid = "'.$fields["questionid"].'"');
         if(!empty($exists)){
             $id = $exists[0]["id"];
         }
         if ($id) {
-            $fields['timemodified'] = date('Y-m-d H:i:s');
+            $fields['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
             $fields['modifiedby'] = $this->userId;
             $this->update('id', $id, $fields);
         } else {
-            $fields['timecreated'] = date('Y-m-d H:i:s');
+            $fields['timecreated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
             $fields['createdby'] = $this->userId;
             $id = $this->insert($fields);
         }

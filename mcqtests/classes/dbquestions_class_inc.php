@@ -95,7 +95,7 @@ class dbquestions extends dbtable {
      * @return string $id The id of the inserted or updated question.
      */
     public function addQuestion($fields, $id = NULL, $saveAsNew = Null) {
-        $fields['updated'] = date('Y-m-d H:i:s');
+        $fields['updated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
         $inserting = 0;
         if ($saveAsNew == 1) {
             $inserting = 1;
@@ -133,7 +133,7 @@ class dbquestions extends dbtable {
      * @return string $id The id of the new question.
      */
     public function addNewQuestion($fields) {
-        $fields['updated'] = date('Y-m-d H:i:s');
+        $fields['updated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
         $id = $this->insert($fields);
         //Add record to blocks
         $arrData = array();

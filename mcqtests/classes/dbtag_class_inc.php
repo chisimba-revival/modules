@@ -62,9 +62,9 @@ class dbtag extends dbtable {
                     $fieldsT['rawname'] = $ot;
                     $fieldsT['tagtype'] = "default";
 
-                    $fieldsT['timemodified'] = date('Y-m-d H:i:s');
+                    $fieldsT['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
                     if ($id) {
-                        $fieldsT['timemodified'] = date('Y-m-d H:i:s');
+                        $fieldsT['timemodified'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
                         $fieldsT['modifiedby'] = $this->userId;
                         $this->update('id', $id, $fieldsT);
                     } else {
@@ -85,7 +85,7 @@ class dbtag extends dbtable {
                                 $this->dbTagInstance->addInstance($fieldsTI, Null);
                             }
                         } else {
-                            $fieldsT['timecreated'] = date('Y-m-d H:i:s');
+                            $fieldsT['timecreated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
                             $fieldsT['createdby'] = $this->userId;
                             $tagid = $this->insert($fieldsT);
                             $idArr[$count] = $tagid;

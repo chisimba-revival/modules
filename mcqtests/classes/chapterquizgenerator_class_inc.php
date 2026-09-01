@@ -80,7 +80,7 @@ class chapterquizgenerator extends ChisimbaObject
                     'status' => 'inactive', 'totalmark' => 0, 'percentage' => 0,
                     'duration' => 0, 'timed' => 0, 'testtype' => 'Formative',
                     'qsequence' => 'Sequential', 'asequence' => 'Scrambled',
-                    'comlab' => '', 'updated' => date('Y-m-d H:i:s'),
+                    'comlab' => '', 'updated' => $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage(),
                     'coursePermissions' => 'Private'
                 ));
                 if (empty($testId)) { throw new RuntimeException('test_insert_failed'); }

@@ -47,7 +47,7 @@ if (!empty($testId)) {
     $testData = $this->dbTestadmin->getTests('', 'name', $testId);
     $array = array(
         'item' => $testData[0]['name'],
-        'date' => $this->formatDate(date('Y-m-d H:i:s'))
+        'date' => $this->objDate->formatDateTime($this->objDate->nowStorage())
     );
     $confirm = $this->objLanguage->code2Txt('mod_mcqtests_emailconfirm', 'mcqtests', $array);
     echo "<font class='confirm'>".$confirm."</font>";
