@@ -81,7 +81,14 @@ class gradebookfunctions extends controller {
         $contextStudents = $this->userContext->getContextStudents($contextCode);
         if(!empty($contextStudents)) {
             foreach($contextStudents as $contextStudent) {
-                $ar[] = $this->objUser->getItemFromPkId($contextStudent["id"],$field);
+                $studentId = isset($contextStudent['id']) ? $contextStudent['id'] : '';
+                // Legacy data can contain simultaneous Lecturer and Student
+                // memberships. A lecturer must never become a learner row in
+                // Gradebook merely because that stale membership exists.
+                if ($studentId === '' || $this->objUser->isContextLecturer($studentId, $contextCode)) {
+                    continue;
+                }
+                $ar[] = $this->objUser->getItemFromPkId($studentId,$field);
             }
         }
         /*
