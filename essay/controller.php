@@ -407,6 +407,8 @@ class essay extends controller {
 
         $str = '';
 
+        $str .= '<div class="chisimba-notice"><strong>How Essays work:</strong> Choose one Essay prompt, prepare your full multi-page document outside Chisimba, then open <em>My Essays</em> to upload the finished file.</div>';
+
         $this->setVar('heading', $this->objLanguage->languageText('mod_essay_topicarea', 'essay') . ':&nbsp;' . $topicArea[0]['name']);
 
         $objTableTopicAreaInfo = new htmltable();
