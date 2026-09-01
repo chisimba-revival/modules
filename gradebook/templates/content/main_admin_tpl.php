@@ -104,7 +104,8 @@ if ($studentCount === 0 || empty($planRows)) {
                 $yearMark += $value;
             }
             $status = $statusLabels[$result['status']] ?? $result['status'];
-            echo '<td title="'.$esc($status).'">'.($value === null ? '&mdash;' : $esc($number($value)).'%').'</td>';
+            $valueSuffix = $matrixDisplay === 'percentage' ? '%' : '';
+            echo '<td title="'.$esc($status).'">'.($value === null ? '&mdash;' : $esc($number($value)).$valueSuffix).'</td>';
         }
         if ($matrixDisplay === 'year_mark') { echo '<td><strong>'.$esc($number($yearMark)).'%</strong></td>'; }
         echo '</tr>';
