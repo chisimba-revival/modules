@@ -476,13 +476,10 @@ function _onSuccess()
 </script>";
         $str .= $javaScript;
 
-        $objIcon = $this->objIcon;
-        $objIcon->setIcon('spinner');
-
         $objLayer = $this->newObject('layer', 'htmlelements');
         $objLayer->id = 'wait';
         $objLayer->visibility = 'hidden';
-        $objLayer->addToStr($objIcon->show() . '&nbsp;' . $this->objLanguage->languageText('mod_essay_pleasewait', 'essay'));
+        $objLayer->addToStr('<span role="status">' . $this->objLanguage->languageText('mod_essay_pleasewait', 'essay') . '</span>');
         $str .= $objLayer->show();
 
         $objLayer = $this->newObject('layer', 'htmlelements');
@@ -619,10 +616,6 @@ function _onSuccess()
 
                     $title = $this->objLanguage->languageText('mod_essay_bookessay', 'essay');
 
-                    $objIcon->setIcon('bullet');
-                    $objIcon->title = $title;
-                    $objIcon->extra = '';
-
                     $objLink = new link($this->uri(array('action' => 'bookessay', 'essay' => $id, 'id' => $topicArea[0]['id'])));
                     $objLink->extra = "onclick=\"javascript: return book(this.href);\"";
                     $objLink->link = $essay['topic'];
@@ -635,10 +628,6 @@ function _onSuccess()
                 if ($booked == ESSAY_BOOKEDBYSTUDENT) {
                     if (is_null($essaysubmit)) {
                         $title = $this->objLanguage->languageText('mod_essay_unbookessay', 'essay');
-
-                        $objIcon->setIcon('bullet');
-                        $objIcon->title = $title;
-                        $objIcon->extra = '';
 
                         $objLink = new link($this->uri(array('action' => 'unbookessay', 'essay' => $id, 'id' => $topicArea[0]['id'])));
                         $objLink->extra = "onclick=\"javascript: return unbook(this.href);\"";
@@ -670,23 +659,7 @@ function _onSuccess()
                     $multiLink = '<b>' . $essay['topic'] . '</b>';
                     $message = $this->objLanguage->languageText('mod_essay_statusalreadybooked', 'essay');
                 }
-                $maxLen = 10;
-                if (strlen($essay['notes']) <= $maxLen) {
-                    $notes = $essay['notes'];
-                } else {
-                    $notes = substr($essay['notes'], 0, $maxLen);
-                    $pos = strrpos($notes, ' ', 0);
-                    $notes = ($pos === FALSE ? $notes : substr($notes, 0, $pos)) . '...';
-                    // Display notes for essay in a pop-up window
-                    //$objIcon = $this->objIcon;
-                    $objIcon->setIcon('notes');
-                    $objIcon->title = $this->objLanguage->languageText('mod_essay_viewnotes', 'essay');
-                    //$objLink = $this->objLink;
-                    $objLink = new link('#');
-                    $objLink->link = $objIcon->show();
-                    $objLink->extra = "onclick=\"javascript: window.open('" . $this->uri(array('action' => 'shownotes', 'essay' => $id)) . "', 'essaynotes', 'width=400, height=200, scrollbars=1');\""; //height=\"18\" width=\"18\"
-                    $notes .= $objLink->show();
-                }
+                $notes = nl2br(htmlspecialchars((string)$essay['notes'], ENT_QUOTES, 'UTF-8'));
                 $objTable->startRow();
                 $objTable->addCell($i, '', '', '', $class);
                 $objTable->addCell($multiLink . '&nbsp;' . $message, '', '', '', $class);

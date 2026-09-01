@@ -5,7 +5,8 @@ $icons=$this->getObject('iconservice','ui');
 $row=!empty($data[0])?$data[0]:array();
 $id=(string)($row['id']??'');
 $closing=(string)($row['closing_date']??date('Y-m-d H:i:s',strtotime('+7 days')));
-$closingValue=$closing!==''?date('Y-m-d\TH:i',strtotime($closing)):'';
+$closingTimestamp=strtotime($closing);
+$closingDay=(int)date('j',$closingTimestamp);$closingMonth=(int)date('n',$closingTimestamp);$closingYear=(int)date('Y',$closingTimestamp);$closingTime=date('H:i',$closingTimestamp);
 $cancel=$id!==''?$this->uri(array('action'=>'view','id'=>$id)):$this->uri(array());
 ?>
 <form class="chisimba-form chisimba-workspace" method="post" action="<?php echo $e($this->uri(array('action'=>'savetopic'))); ?>">
@@ -13,7 +14,7 @@ $cancel=$id!==''?$this->uri(array('action'=>'view','id'=>$id)):$this->uri(array(
 <div class="chisimba-form-field"><label for="essay-topic-area">Topic area</label><input id="essay-topic-area" name="topicarea" value="<?php echo $e($row['name']??''); ?>" required maxlength="255"></div>
 <div class="chisimba-form-field"><label for="essay-topic-description">Description</label><textarea id="essay-topic-description" name="description" rows="4"><?php echo $e($row['description']??''); ?></textarea></div>
 <div class="chisimba-form-field"><label for="essay-topic-instructions"><?php echo $e($this->objLanguage->code2Txt('mod_essayadmin_instructions','essayadmin')); ?></label><textarea id="essay-topic-instructions" name="instructions" rows="5"><?php echo $e($row['instructions']??''); ?></textarea></div>
-<div class="chisimba-form-field"><label for="essay-topic-closing">Closing date and time</label><input id="essay-topic-closing" type="datetime-local" name="closing_date" value="<?php echo $e($closingValue); ?>"></div>
+<fieldset class="chisimba-form-field"><legend>Closing date and time</legend><div class="chisimba-date-time-fields"><label for="essay-closing-day">Day</label><select id="essay-closing-day" name="closing_day"><?php for($day=1;$day<=31;$day++): ?><option value="<?php echo $day; ?>"<?php echo $day===$closingDay?' selected':''; ?>><?php echo $day; ?></option><?php endfor; ?></select><label for="essay-closing-month">Month</label><select id="essay-closing-month" name="closing_month"><?php for($month=1;$month<=12;$month++): ?><option value="<?php echo $month; ?>"<?php echo $month===$closingMonth?' selected':''; ?>><?php echo $e(date('F',mktime(0,0,0,$month,1))); ?></option><?php endfor; ?></select><label for="essay-closing-year">Year</label><select id="essay-closing-year" name="closing_year"><?php for($year=(int)date('Y');$year<=(int)date('Y')+10;$year++): ?><option value="<?php echo $year; ?>"<?php echo $year===$closingYear?' selected':''; ?>><?php echo $year; ?></option><?php endfor; ?></select><label for="essay-closing-time">Time (24-hour)</label><input id="essay-closing-time" type="time" name="closing_time" value="<?php echo $e($closingTime); ?>" required></div></fieldset>
 <div class="chisimba-form-field"><label for="essay-topic-percentage">Percentage of year mark</label><input id="essay-topic-percentage" type="number" name="percentage" min="0" max="100" step="1" value="<?php echo $e($row['percentage']??0); ?>"></div>
 <label><input type="checkbox" name="force"<?php echo !empty($row['forceone'])?' checked':''; ?>> Force one student per essay</label>
 <label><input type="checkbox" name="bypass"<?php echo !empty($row['bypass'])?' checked':''; ?>> Bypass closing date</label>

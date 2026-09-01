@@ -181,7 +181,14 @@ class essayadmin extends controller
             $fields['description']=$this->getParam('description', '');
             $fields['instructions']=$this->getParam('instructions', '');
             $fields['percentage']=max(0, min(100, (int)$this->getParam('percentage', 0)));
-            $fields['closing_date']=str_replace('T', ' ', trim((string)$this->getParam('closing_date')));
+            $closingDay=(int)$this->getParam('closing_day',0);
+            $closingMonth=(int)$this->getParam('closing_month',0);
+            $closingYear=(int)$this->getParam('closing_year',0);
+            $closingTime=trim((string)$this->getParam('closing_time','23:59'));
+            if (!checkdate($closingMonth,$closingDay,$closingYear) || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/',$closingTime)) {
+                return $this->nextAction($id ? 'edittopic' : 'addtopic',array('id'=>$id,'error'=>'invalidclosingdate'));
+            }
+            $fields['closing_date']=sprintf('%04d-%02d-%02d %s:00',$closingYear,$closingMonth,$closingDay,$closingTime);
             if ($fields['name'] === '') {
                 return $this->nextAction($id ? 'edittopic' : 'addtopic', array('id'=>$id, 'error'=>'topicrequired'));
             }
@@ -503,24 +510,18 @@ class essayadmin extends controller
                 $objLink->title = $strViewEssays;
                 $linkView = $objLink->show();
 
-                $objIcon->title = $this->objLanguage->languageText('word_edit');
-                $iconEdit = $objIcon->getEditIcon($this->uri(array('action'=>'edittopic', 'id'=>$topic['id'])));
+                $editLabel=$this->objLanguage->languageText('word_edit');
+                $iconEdit='<a class="chisimba-icon-button" aria-label="'.htmlspecialchars($editLabel,ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(array('action'=>'edittopic','id'=>$topic['id'])),ENT_QUOTES,'UTF-8').'">'.$icons->render('pencil',array('decorative'=>true)).'</a>';
 
-                $objIcon->title = $this->objLanguage->languageText('word_delete');
-                $objIcon->setIcon('delete');
-                $this->objConfirm->setConfirm($objIcon->show(), $this->uri(array('action'=>'deletetopic', 'id'=>$topic['id'])), $this->objLanguage->code2Txt('mod_essayadmin_deletetopic','essayadmin', array('TOPIC'=>$topic['name'])));
+                $deleteIcon=$icons->render('trash-2',array('decorative'=>true));
+                $this->objConfirm->setConfirm($deleteIcon, $this->uri(array('action'=>'deletetopic', 'id'=>$topic['id'])), $this->objLanguage->code2Txt('mod_essayadmin_deletetopic','essayadmin', array('TOPIC'=>$topic['name'])));
                 $iconDelete = $this->objConfirm->show();
 
                 if ($topic['submitted'] == 0) {
                     $iconMark = '';
                 } else {
                     $strMarkEssays = $this->objLanguage->languageText('mod_essayadmin_markessays','essayadmin');
-                    $objIcon->setIcon('comment');
-                    $objIcon->title = $strMarkEssays;
-                    $objIcon->alt = $strMarkEssays;
-                    $objLink = new link($this->uri(array('action'=>'marktopic', 'id'=>$topic['id'])));
-                    $objLink->link = $objIcon->show();
-                    $iconMark = $objLink->show();
+                    $iconMark='<a class="chisimba-icon-button" aria-label="'.htmlspecialchars($strMarkEssays,ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(array('action'=>'marktopic','id'=>$topic['id'])),ENT_QUOTES,'UTF-8').'">'.$icons->render('check-check',array('decorative'=>true)).'</a>';
                 }
 
                 $icons =
@@ -586,16 +587,14 @@ class essayadmin extends controller
         $assignLabel=$this->objLanguage->languageText('mod_assignment_name','essayadmin');
         $percentLbl=$this->objLanguage->languageText('mod_essayadmin_percentyrmark','essayadmin');
         $noEssays = $this->objLanguage->code2Txt('mod_essayadmin_noessaysintopicarea','essayadmin');
+        $skinIcons=$this->getObject('iconservice','ui');
 
         // edit topic icon
-        $this->objIcon->title=$title1;
-        $topicEdit=$this->objIcon->getEditIcon($this->uri(array('action'=>'edittopic','id'=>$topic[0]['id'])));
+        $topicEdit='<a class="chisimba-icon-button" aria-label="'.htmlspecialchars($title1,ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(array('action'=>'edittopic','id'=>$topic[0]['id'])),ENT_QUOTES,'UTF-8').'">'.$skinIcons->render('pencil',array('decorative'=>true)).'</a>';
 
         // delete topic icon
-        $this->objIcon->title=$title2;
-        $this->objIcon->setIcon('delete');
         $this->objConfirm->setConfirm(
-            $this->objIcon->show(),
+            $skinIcons->render('trash-2',array('decorative'=>true)),
             $this->uri(
                 array(
                     'action'=>'deletetopic',
@@ -618,7 +617,7 @@ class essayadmin extends controller
             $msg = $this->getSession('confirm');
             $this->unsetSession('confirm');
             $objMsg = $this->newObject('timeoutmessage', 'htmlelements');
-            $objMsg->setMessage($msg.'&nbsp;'.date('d/m/Y H:i'));
+            $objMsg->setMessage($msg.'&nbsp;'.$this->objDateformat->formatDate(date('Y-m-d H:i:s')));
             $objMsg->setTimeOut(15000);
             $str .= '<p>'.$objMsg->show().'</p>';
         }
@@ -659,9 +658,8 @@ class essayadmin extends controller
         // Heading
 
         // add new essay icon
-        $this->objIcon->title=$title3;
-        $addicon=$this->objIcon->getAddIcon($this->uri(array('action'=>'addessay','id'=>$topic[0]['id'])));
-        $subhead.= '&nbsp;'.$addicon;
+        $addicon='<a class="button" href="'.htmlspecialchars($this->uri(array('action'=>'addessay','id'=>$topic[0]['id'])),ENT_QUOTES,'UTF-8').'">'.$skinIcons->render('plus',array('decorative'=>true)).' '.htmlspecialchars($title3,ENT_QUOTES,'UTF-8').'</a>';
+        $subhead.= ' '.$addicon;
 
         $objHead = new htmlHeading;
         $objHead->type=3;
@@ -688,19 +686,12 @@ class essayadmin extends controller
                 $class = ($i++%2)? 'even':'odd';
 
                 // edit essay
-                $objLink = new link($this->uri(array('action'=>'editessay','essay'=>$essay['id'],'id'=>$topic[0]['id'])));
-                $objLink->link = $essay['topic'];
-                $objLink->title = $title1;
-                $view = $objLink->show();
+                $view = htmlspecialchars($essay['topic'],ENT_QUOTES,'UTF-8');
 
-                $this->objIcon->title=$title1;
-                $this->objIcon->extra='';
-                $edit=$this->objIcon->getEditIcon($this->uri(array('action'=>'editessay','essay'=>$essay['id'],'id'=>$topic[0]['id'])));
+                $edit='<a class="chisimba-icon-button" aria-label="'.htmlspecialchars($title1,ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(array('action'=>'editessay','essay'=>$essay['id'],'id'=>$topic[0]['id'])),ENT_QUOTES,'UTF-8').'">'.$skinIcons->render('pencil',array('decorative'=>true)).'</a>';
                 // delete essay display confirmation
-                $this->objIcon->title=$title2;
-                $this->objIcon->setIcon('delete');
                 $this->objConfirm->setConfirm(
-                    $this->objIcon->show(),
+                    $skinIcons->render('trash-2',array('decorative'=>true)),
                     $this->uri(
                         array(
                             'action'=>'deleteessay',

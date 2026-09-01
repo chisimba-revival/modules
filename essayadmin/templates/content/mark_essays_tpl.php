@@ -23,6 +23,7 @@ $objTable2= new htmltable();
 $objLink = new link();
 $objLayer = new layer();
 $objPop = $this->newObject('windowpop','htmlelements');
+$icons = $this->getObject('iconservice','ui');
 
 // Set up language items
 $studentno = ucfirst($this->objLanguage->code2Txt('mod_essayadmin_studentno','essayadmin'));
@@ -91,11 +92,9 @@ if(!empty($data)){
             $this->objLink = new link($uriMark);
             $this->objLink->link = $item['mark'] !== null && $item['mark'] !== '' ? 'Review mark' : $markrow;
             $mark = ($item['mark'] !== null && $item['mark'] !== '' ? $item['mark'].'%' : $unmarked).'<br>'.$this->objLink->show();
-            $this->objIcon->setIcon('download');
-        	$this->objIcon->extra='';
-            $this->objIcon->title=$titledownload;
         	$this->objLink = new link($this->uri(array('action'=>'download','fileid'=>$item['studentfileid'])));
-        	$this->objLink->link=$this->objIcon->show();
+            $this->objLink->link=$icons->render('download',array('decorative'=>true));
+            $this->objLink->title=$titledownload;
             $loadicons=$this->objLink->show();
             /*
         	$this->objIcon->setIcon('submit2');
