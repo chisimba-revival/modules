@@ -69,6 +69,19 @@ echo $header->show();
 if ((is_countable($worksheetResults) ? count($worksheetResults) : 0) == 0 || $worksheetResults == FALSE) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->code2Txt('mod_worksheet_notstudentsattempt', 'worksheet', NULL, 'No [-readonlys-] have attempted the worksheet yet').'.</div>';
 } else {
+    $hasUnmarkedSubmissions = false;
+    foreach ($worksheetResults as $result) {
+        if ((string) $result['mark'] === '-1') { $hasUnmarkedSubmissions = true; break; }
+    }
+    if (!empty($aiMarkingAvailable) && $hasUnmarkedSubmissions) {
+        $batchForm = new form('aibatchmark', $this->uri(array('action'=>'aibatchmark')));
+        $batchForm->addToForm((new hiddeninput('id', $id))->show());
+        $batchForm->addToForm((new hiddeninput('csrf_token', $aiBatchMarkingToken))->show());
+        $batchButton = new button('aibatchmark', $this->objLanguage->languageText('mod_worksheet_ai_prepare_all', 'worksheet', 'Prepare AI suggestions for all'));
+        $batchButton->setToSubmit();
+        $batchForm->addToForm($batchButton->show());
+        echo '<div class="worksheet-ai-batch-action">'.$batchForm->show().'</div>';
+    }
     $table = $this->newObject('htmltable', 'htmlelements');
 
     $table->startHeaderRow();
@@ -76,6 +89,9 @@ if ((is_countable($worksheetResults) ? count($worksheetResults) : 0) == 0 || $wo
         $table->addHeaderCell($this->objLanguage->code2Txt('mod_worksheet_student', 'worksheet', NULL, '[-readonly-]'));
         $table->addHeaderCell($this->objLanguage->languageText('mod_worksheet_finalmark', 'worksheet', 'Final Mark'), 100);
         $table->addHeaderCell($this->objLanguage->languageText('mod_worksheet_datecompleted', 'worksheet', 'Date Completed'), 200);
+        if (!empty($aiMarkingAvailable)) {
+            $table->addHeaderCell($this->objLanguage->languageText('mod_worksheet_ai_status', 'worksheet', 'AI suggestions'), 150);
+        }
         $table->addHeaderCell($this->objLanguage->languageText('word_view', 'system', 'View'), 100);
     $table->endHeaderRow();
 
@@ -93,6 +109,28 @@ if ((is_countable($worksheetResults) ? count($worksheetResults) : 0) == 0 || $wo
 
             $table->addCell($mark);
             $table->addCell($objDateTime->formatDate($result['last_modified']));
+
+            if (!empty($aiMarkingAvailable)) {
+                if ((string) $result['mark'] !== '-1') {
+                    $aiStatus = $this->objLanguage->languageText('mod_worksheet_ai_marks_saved', 'worksheet', 'Marks saved');
+                } elseif (!isset($aiMarkingJobsByResult[$result['id']])) {
+                    $aiStatus = $this->objLanguage->languageText('mod_worksheet_ai_not_prepared', 'worksheet', 'Not prepared');
+                } else {
+                    $job = $aiMarkingJobsByResult[$result['id']];
+                    if ($job['status'] === 'completed') {
+                        $readyLink = new link($this->uri(array('action'=>'aimarkingjob', 'id'=>$job['id'])));
+                        $readyLink->link = $this->objLanguage->languageText('mod_worksheet_ai_ready_review', 'worksheet', 'Ready for review');
+                        $aiStatus = $readyLink->show();
+                    } elseif ($job['status'] === 'running') {
+                        $aiStatus = $this->objLanguage->languageText('mod_worksheet_ai_preparing', 'worksheet', 'Preparing');
+                    } elseif ($job['status'] === 'failed') {
+                        $aiStatus = '<span class="error">'.$this->objLanguage->languageText('mod_worksheet_ai_failed_short', 'worksheet', 'Failed').'</span>';
+                    } else {
+                        $aiStatus = $this->objLanguage->languageText('mod_worksheet_ai_queued', 'worksheet', 'Queued');
+                    }
+                }
+                $table->addCell($aiStatus);
+            }
 
             $link = new link ($this->uri(array('action'=>'viewstudentworksheet', 'id'=>$result['id'])));
             $link->link = $result['mark'] == '-1'

@@ -31,6 +31,33 @@ class dbworksheetaimarkingjobs extends dbTable
         return $row;
     }
 
+    /**
+     * Return the newest AI-marking job for each requested worksheet result.
+     *
+     * @param array $resultIds Worksheet result identifiers visible on the page.
+     * @param string $contextCode Current course context.
+     * @param string $userId Lecturer who created the jobs.
+     * @param bool $isAdmin Whether ownership filtering may be bypassed.
+     * @return array Jobs keyed by worksheet result identifier.
+     */
+    public function getLatestForResults($resultIds, $contextCode, $userId, $isAdmin = false)
+    {
+        $wanted = array_fill_keys(array_map('strval', (array) $resultIds), true);
+        if (empty($wanted)) { return array(); }
+        $sql = "SELECT id,result_id,status,error_code,date_updated,userid FROM tbl_worksheet_ai_marking_jobs"
+            ." WHERE contextcode='".$this->escape($contextCode)."'";
+        if (!$isAdmin) { $sql .= " AND userid='".$this->escape($userId)."'"; }
+        $sql .= ' ORDER BY date_created DESC';
+        $latest = array();
+        foreach ((array) $this->getArray($sql) as $row) {
+            $resultId = (string) ($row['result_id'] ?? '');
+            if (isset($wanted[$resultId]) && !isset($latest[$resultId])) {
+                $latest[$resultId] = $row;
+            }
+        }
+        return $latest;
+    }
+
     public function runOne()
     {
         $stale = date('Y-m-d H:i:s', time() - 900);

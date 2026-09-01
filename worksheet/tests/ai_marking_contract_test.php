@@ -15,6 +15,8 @@ $checks = array(
     'suggestions are bounded by question maximum' => str_contains($marker, 'min($limits[$answerId]'),
     'page request only enqueues provider work' => str_contains($controller, 'objAiMarkingJobs->enqueue') && !str_contains($controller, 'objAiMarker->suggest('),
     'enqueue action requires POST and CSRF' => str_contains($controller, "consume('worksheet_ai_marking'") && str_contains($controller, "REQUEST_METHOD"),
+    'batch enqueue action requires separate CSRF scope' => str_contains($controller, "consume('worksheet_ai_batch_marking'") && str_contains($controller, 'function __aibatchmark'),
+    'batch enqueue only targets unmarked submissions with answers' => str_contains($controller, "!== '-1'") && str_contains($controller, 'getStudentAnswers($worksheetId'),
     'saving final marks requires CSRF' => str_contains($controller, "consume('worksheet_save_marks'") && str_contains($template, "worksheetMarkToken"),
     'worker performs provider work' => str_contains($jobs, "getObject('worksheetaimarker', 'worksheet')->suggest"),
     'transient suggestions are removed after final save' => str_contains($controller, 'deleteForResult(') && str_contains($jobs, 'function deleteForResult'),

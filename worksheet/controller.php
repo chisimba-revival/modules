@@ -119,7 +119,7 @@ class worksheet extends controller
         $lecturerActions = array(
             'add', 'deleteworksheet', 'saveworksheet', 'saveworksheetedit', 'worksheetinfo',
             'managequestions', 'savequestion', 'activate', 'updatestatus', 'viewstudentworksheet',
-            'savestudentmark', 'reopenstudentworksheet', 'aiassistmark', 'aimarkingjob',
+            'savestudentmark', 'reopenstudentworksheet', 'aiassistmark', 'aibatchmark', 'aimarkingjob',
             'editquestion', 'updatequestion', 'deletequestion', 'preview'
         );
 
@@ -288,7 +288,7 @@ class worksheet extends controller
         $this->setVar('mode', 'edit');
         $id = $this->getParam('id');
         $worksheet = $this->objWorksheet->getWorksheet($id);
-        if ($worksheet == FALSE) {
+        if ($worksheet == FALSE || (string) $worksheet['context'] !== (string) $this->contextCode) {
             return $this->nextAction(NULL, array('error'=>'unknownworksheet'));
         }
 
@@ -298,6 +298,21 @@ class worksheet extends controller
         $this->setVarByRef('questions', $questions);
         $worksheetResults = $this->objWorksheetResults->getResults($id);
         $this->setVarByRef('worksheetResults', $worksheetResults);
+        $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
+        $aiJobs = array();
+        if ($this->aiMarkingAvailable && is_array($worksheetResults)) {
+            $resultIds = array();
+            foreach ($worksheetResults as $worksheetResult) { $resultIds[] = $worksheetResult['id']; }
+            $aiJobs = $this->objAiMarkingJobs->getLatestForResults(
+                $resultIds,
+                $this->contextCode,
+                $this->objUser->userId(),
+                $this->objUser->isAdmin()
+            );
+            $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $this->setVar('aiBatchMarkingToken', $stack['csrf']->issue('worksheet_ai_batch_marking'));
+        }
+        $this->setVarByRef('aiMarkingJobsByResult', $aiJobs);
         return 'worksheetinfo_tpl.php';
     }
 
@@ -521,6 +536,30 @@ class worksheet extends controller
         }
         $jobId = $this->objAiMarkingJobs->enqueue($this->contextCode, $this->objUser->userId(), $resultId);
         return empty($jobId) ? $this->nextAction('viewstudentworksheet', array('id'=>$resultId)) : $this->nextAction('aimarkingjob', array('id'=>$jobId));
+    }
+
+    /** Queue AI marking suggestions for every eligible unmarked submission. */
+    private function __aibatchmark()
+    {
+        if (!$this->aiMarkingAvailable) { return $this->nextAction(NULL); }
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) !== 'POST'
+            || !$stack['csrf']->consume('worksheet_ai_batch_marking', (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction(NULL);
+        }
+        $worksheetId = (string) $this->getParam('id', '');
+        $worksheet = $this->objWorksheet->getWorksheet($worksheetId);
+        if (!is_array($worksheet) || (string) $worksheet['context'] !== (string) $this->contextCode) {
+            return $this->nextAction(NULL, array('error'=>'unknownworksheet'));
+        }
+        foreach ((array) $this->objWorksheetResults->getResults($worksheetId) as $result) {
+            if ((string) ($result['mark'] ?? '-1') !== '-1') { continue; }
+            $answers = $this->objWorksheetAnswers->getStudentAnswers($worksheetId, $result['userid']);
+            if (is_array($answers) && count($answers) > 0) {
+                $this->objAiMarkingJobs->enqueue($this->contextCode, $this->objUser->userId(), $result['id']);
+            }
+        }
+        return $this->nextAction('worksheetinfo', array('id'=>$worksheetId, 'message'=>'aibatchqueued'));
     }
 
     private function __aimarkingjob()
