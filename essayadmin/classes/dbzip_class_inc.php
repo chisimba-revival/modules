@@ -12,6 +12,9 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class dbzip extends dbTable
 {
+	/** @var timeanddateservice Canonical UTC storage and site display service. */
+	public $objTimeAndDate;
+
 	//variable holding the user object
 	public $objUser;
 	
@@ -51,6 +54,7 @@ class dbzip extends dbTable
 		//context
 		$this->objContext =& $this->getObject('dbcontext', 'context');
 		$this->objContextCode = $this->objContext->getContextCode();
+		$this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
 	}
 
 		
@@ -72,6 +76,7 @@ class dbzip extends dbTable
 	/**
 	* function to insert data into the database
 	* the parsed parameters are
+	* @author Derek Keats
 	*/
     public function insertData($filename,$filepath,$fileurl)
     {
@@ -80,7 +85,7 @@ class dbzip extends dbTable
 			'filepath' => $filepath,
 			'fileurl' => $fileurl,
 			'creatorId' => $this->objUser->userId(),
-			'dateCreated' => date("Y/m/d H:i:s")));
+			'dateCreated' => $this->objTimeAndDate->nowStorage()));
     }
 
 	/**
@@ -99,6 +104,7 @@ class dbzip extends dbTable
 
 	/**
 	* function to obtain the difference between two submitted dates
+	* @author Derek Keats
 	*/
 
 	public function getDateDifference($date1,$date2)
@@ -107,9 +113,11 @@ class dbzip extends dbTable
 		$difference=0;
 		//initialization
 		$xdate1=0;
-		$xdate1=strtotime($date1);
+		$dateTime1=$this->objTimeAndDate->parseStorage($date1);
+		$xdate1=$dateTime1 === null ? 0 : $dateTime1->getTimestamp();
 		$xdate2=0;
-		$xdate2=strtotime($date2);
+		$dateTime2=$this->objTimeAndDate->parseStorage($date2);
+		$xdate2=$dateTime2 === null ? 0 : $dateTime2->getTimestamp();
 		$difference=$xdate1-$xdate2;
 		/**
 		* 1 day = (1*24)hours
@@ -135,7 +143,7 @@ class dbzip extends dbTable
 				* is greater than 1 days (86,400 seconds)
 				* delete the information from the row
 				*/
-				if($this->getDateDifference(date("Y-m-d H:i:s"),$farray["dateCreated"])>86400) {
+				if($this->getDateDifference($this->objTimeAndDate->nowStorage(),$farray["dateCreated"])>86400) {
 					//remove the db reference
 					$this->deleteById($farray["id"],$this->objUser->isAdmin());
 					//remove the actual file

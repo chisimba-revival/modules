@@ -21,6 +21,8 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class dbworksheetquestions extends dbTable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
 
     /**
     * Constructor method to define the table
@@ -32,6 +34,7 @@ class dbworksheetquestions extends dbTable
 
         $this->objUser = $this->getObject('user', 'security');
         $this->objWashout = $this->getObject('washout','utilities');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
 
@@ -48,6 +51,7 @@ class dbworksheetquestions extends dbTable
     */
     public function insertSingle($worksheet_id, $question, $answer, $question_worth)
     {
+        $now = $this->objTimeAndDate->nowStorage();
         $result = $this->insert(array(
                 'worksheet_id' => $worksheet_id,
                 'question' => $question,
@@ -55,8 +59,8 @@ class dbworksheetquestions extends dbTable
                 'question_worth' => $question_worth,
                 'question_order' => $this->getLastOrder($worksheet_id)+1,
                 'userid' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datelastupdated' => $now,
+                'updated' => $now
             ));
 
         if ($result != FALSE) {
@@ -69,13 +73,14 @@ class dbworksheetquestions extends dbTable
 
     public function updateQuestion($question_id, $question, $answer, $question_worth)
     {
+        $now = $this->objTimeAndDate->nowStorage();
         $result = $this->update('id', $question_id, array(
                 'question' => $question,
                 'model_answer' => $answer,
                 'question_worth' => $question_worth,
                 'userid' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datelastupdated' => $now,
+                'updated' => $now
             ));
 
         if ($result != FALSE) {
@@ -278,27 +283,6 @@ class dbworksheetquestions extends dbTable
         }
         return FALSE;
     }
- /*
- public function saveRecord($question_id, $question, $answer, $question_worth)
-    {
-        $result = $this->update('id', $question_id, array(
-                'question' => $question,
-                'model_answer' => $answer,
-                'question_worth' => $question_worth,
-                'userid' => $this->objUser->userId(),
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', mktime())
-            ));
-
-        if ($result != FALSE) {
-            $objWorksheetquestions = $this->getObject('dbworksheetquestions');
-            $question = $this->getQuestion($question_id);
-            $objWorksheet->saveRecord($question['worksheet_id']);
-
-
-       return $result;
-    }
-*/
 function updateQn($pkfield, $pkvalue, $fields)
  {
    $tablename='tbl_worksheet_questions';

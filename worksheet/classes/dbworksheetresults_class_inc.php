@@ -20,6 +20,8 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class dbworksheetresults extends dbtable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
     /**
     * Constructor function.
     */
@@ -27,6 +29,7 @@ class dbworksheetresults extends dbtable
     {
         parent::init('tbl_worksheet_results');
         $this->table='tbl_worksheet_results';
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
 
@@ -43,20 +46,22 @@ class dbworksheetresults extends dbtable
             }
         }
         if ($existingId !== '') {
+            $now = $this->objTimeAndDate->nowStorage();
             return $this->update('id', $existingId, array(
                 'completed' => 'Y',
                 'mark' => -1,
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'last_modified' => $now,
+                'updated' => $now,
             ));
         }
 
+        $now = $this->objTimeAndDate->nowStorage();
         return $this->insert(array(
                 'worksheet_id' => $worksheet,
                 'completed' => 'Y',
                 'userid' => $userId,
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'last_modified' => $now,
+                'updated' => $now,
             ));
     }
 
@@ -199,7 +204,7 @@ class dbworksheetresults extends dbtable
         return $this->update('id', $resultId, array(
             'completed' => 'N',
             'mark' => -1,
-            'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+            'updated' => $this->objTimeAndDate->nowStorage(),
         ));
     }
 

@@ -3,9 +3,13 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class dbgradebookassessmentplanitems extends dbtable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
+
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_gradebook_assessment_plan_items');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
     public function findByActivity($planId, $providerKey, $activityId)
@@ -30,7 +34,7 @@ class dbgradebookassessmentplanitems extends dbtable
 
     public function addItem(array $item)
     {
-        $now = date('Y-m-d H:i:s');
+        $now = $this->objTimeAndDate->nowStorage();
         $item['sort_order'] = count($this->getForPlan($item['plan_id'])) + 1;
         $item['status'] = 'active';
         $item['date_created'] = $now;
@@ -52,7 +56,7 @@ class dbgradebookassessmentplanitems extends dbtable
         }
         return $this->update('id', $item['id'], array(
             'weight' => number_format((float) $weight, 3, '.', ''),
-            'date_updated' => date('Y-m-d H:i:s')
+            'date_updated' => $this->objTimeAndDate->nowStorage()
         ));
     }
 
@@ -71,7 +75,7 @@ class dbgradebookassessmentplanitems extends dbtable
         if (!$item) { return false; }
         return $this->update('id', $item['id'], array(
             'short_name'=>(string) $shortName,
-            'date_updated'=>date('Y-m-d H:i:s'),
+            'date_updated'=>$this->objTimeAndDate->nowStorage(),
         ));
     }
 }

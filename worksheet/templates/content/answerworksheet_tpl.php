@@ -23,7 +23,7 @@ echo '<br />'.$header->show();
 
 echo $this->objWashout->parseText($worksheet['description']);
 
-$objDateTime = $this->getObject('dateandtime', 'utilities');
+$objDateTime = $this->getObject('timeanddateservice', 'timeanddate-service');
 
 $table = $this->newObject('htmltable', 'htmlelements');
 $table->startRow();

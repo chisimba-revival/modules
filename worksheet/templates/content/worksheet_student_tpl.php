@@ -59,8 +59,8 @@ foreach($ar as $line){
             $objLink->title = $markedLabel.' '.$worksheet;
             $link = $objLink->show();
         }else{
-            $closeTime=strtotime($line['closing_date']);
-            $curTime=time();
+            $closeInstant=$this->objTimeAndDate->parseStorage($line['closing_date']);
+            $isOpen=$closeInstant !== null && $this->objTimeAndDate->nowUtc() < $closeInstant;
             $completed = 0;
 
             if(isset($line['completed'])){
@@ -68,7 +68,7 @@ foreach($ar as $line){
             }
             if($completed){
                 $date=$worksheet.' '.$submittedLabel;
-            }else if($curTime < $closeTime){
+            }else if($isOpen){
                 $objLink->link($this->uri(array('action' => 'selectforanswer',
                 'id'=>$line['id'])));
                 $objLink->link = $line['name'];

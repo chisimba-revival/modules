@@ -30,8 +30,8 @@ $objTestresults = $this->getObject('dbresults','mcqtests');
 //worksheet object
 $objWorksheet = $this->getObject('dbworksheet','worksheet');
 $objWorksheetresults =& $this->getObject('dbworksheetresults','worksheet');
-//datetime object
-$objDatetime =& $this->getObject('dateandtime','utilities');
+// Canonical site-aware date and time service.
+$objDatetime = $this->getObject('timeanddateservice', 'timeanddate-service');
 //$objFormattedDate =& $this->getObject('simplecal','datetime');
 
 //context management

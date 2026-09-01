@@ -38,8 +38,8 @@ $objWorksheet =& $this->getObject('dbworksheet','worksheet');
 
 $objWorksheetresults =& $this->getObject('dbworksheetresults','worksheet');
 
-//datetime object
-$objDatetime =& $this->getObject('dateandtime','utilities');
+// Canonical site-aware date and time service.
+$objDatetime = $this->getObject('timeanddateservice', 'timeanddate-service');
 
 //number of students
 $numberStudents=0;

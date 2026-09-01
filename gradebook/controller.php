@@ -46,6 +46,9 @@ class gradebook extends controller {
     //context code object
     public $contextCode;
 
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
+
     /**
      * initilization function - declaration of required objects
      */
@@ -64,6 +67,7 @@ class gradebook extends controller {
         $this->objButtons = & $this->getObject('navbuttons', 'navigation');
         // Get an instance of the context object
         $this->objContext = $this->getObject('dbcontext','context');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         //Get context code
         $this->contextCode = $this->objContext->getContextCode();
     }
@@ -207,6 +211,11 @@ class gradebook extends controller {
                 $contextCode = $this->getParam("contextCode", NULL);
                 $closingDate = 0;
                 $closingDate = $this->getParam("closingDate", NULL);
+                $closingInstant = $this->objTimeAndDate->parseLocal((string) $closingDate, null, 'Y-m-d H:i');
+                if ($closingInstant === null) {
+                    return $this->nextAction('uploadMarks', array('error'=>'invaliddate'));
+                }
+                $closingDate = $this->objTimeAndDate->toStorage($closingInstant);
                 $description = 0;
                 $description = $this->getParam("description", NULL);
 
@@ -477,7 +486,7 @@ class gradebook extends controller {
                 ? max(0.0, min(100.0, (float) $result['mark_percent'])) : null;
             $closingDate = null;
             if (isset($item['closing_enabled']) && strtoupper((string) $item['closing_enabled']) === 'Y'
-                && !empty($item['closing_date']) && strtotime((string) $item['closing_date']) !== false) {
+                && !empty($item['closing_date']) && $this->objTimeAndDate->parseStorage($item['closing_date']) !== null) {
                 $closingDate = $item['closing_date'];
             }
 

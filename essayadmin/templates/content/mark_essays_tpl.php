@@ -212,7 +212,6 @@ $link2 = $objLink->show();
 /*
 //download submitted essays
 $filename = 0;
-//$filename = $essayadminpath.$zippedTopic.date("Y-m-d-Hms").".zip";
 
 $fileUploader = $this->getObject('fileuploader', 'files');
 
@@ -235,9 +234,6 @@ $results = $fileUploader->uploadFile('fileupload1'); // This corresponds with th
 //fclose ($fd);
 
 //make a record of this file
-//$this->objDbZip->insertData($zippedTopic.date("Y-m-d-Hms").".zip",$essayadminpath.$zippedTopic."/".$zippedTopic.date("Y-m-d-Hms").".zip",$essayadminDownloadLink.$zippedTopic."/".$zippedTopic.date("Y-m-d-Hms").".zip");
-
-//$this->objLink->link("$essayadminDownloadLink$zippedTopic".date("Y-m-d-Hms").".zip");
 */
 
 /*

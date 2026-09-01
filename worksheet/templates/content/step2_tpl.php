@@ -37,7 +37,7 @@ if ($worksheet['activity_status'] != 'inactive') {
 }
 echo $this->objWashout->parseText($worksheet['description']);
 
-$objDateTime = $this->getObject('dateandtime', 'utilities');
+$objDateTime = $this->getObject('timeanddateservice', 'timeanddate-service');
 $table = $this->newObject('htmltable', 'htmlelements');
 $table->startRow();
 $table->addCell('<strong>'.$this->objLanguage->languageText('mod_worksheet_closingdate', 'worksheet', 'Closing Date').'</strong>: '.$objDateTime->formatDate($worksheet['closing_date']), '55%');

@@ -75,12 +75,15 @@ class worksheet extends controller
     public $objAiMarker = NULL;
     public $aiMarkingAvailable = FALSE;
     public $objAiMarkingJobs = NULL;
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
 
     public function init()
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objConfig = $this->getObject('config', 'config');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->objLog=$this->newObject('logactivity', 'logger');
         $this->objLog->log();
 
@@ -244,8 +247,10 @@ class worksheet extends controller
         $activity_status = $this->getParam('activity_status');
         $classification = $this->getParam('classification', 'unclassified');
         if (!in_array($classification, array('formative', 'summative'), true)) { $classification = 'unclassified'; }
-        $closing_date = $date.' '.$time;
-        $lastUpdated = strftime('%Y-%m-%d %H:%M:%S', time());
+        $closingInstant = $this->objTimeAndDate->parseLocal($date.' '.$time);
+        if ($closingInstant === null) { return $this->nextAction('edit', array('id'=>$id, 'error'=>'invaliddate')); }
+        $closing_date = $this->objTimeAndDate->toStorage($closingInstant);
+        $lastUpdated = $this->objTimeAndDate->nowStorage();
 
         $id = $this->objWorksheet->updateWorkSheet($id, $this->contextCode, $title, $activity_status, $classification, $closing_date, $description, $this->objUser->userId(), $lastUpdated);
         return $this->nextAction('home');
@@ -260,7 +265,9 @@ class worksheet extends controller
         $activity_status = 'inactive';
         $classification = $this->getParam('classification', 'unclassified');
         if (!in_array($classification, array('formative', 'summative'), true)) { $classification = 'unclassified'; }
-        $closing_date = $date.' '.$time;
+        $closingInstant = $this->objTimeAndDate->parseLocal($date.' '.$time);
+        if ($closingInstant === null) { return $this->nextAction('add', array('error'=>'invaliddate')); }
+        $closing_date = $this->objTimeAndDate->toStorage($closingInstant);
         if ($this->eventsEnabled) {
             $message = $this->objUser->getSurname()." ".$this->objLanguage->languageText('mod_worksheet_newalert', 'worksheet')." ".$this->contextCode;
             $this->eventDispatcher->post($this->objActivityStreamer, "context", array(

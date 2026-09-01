@@ -74,13 +74,11 @@ $objTimePicker = $this->newObject('timepicker', 'htmlelements');
 
 if($mode == 'edit')
 {
-	$dt = explode(" ", $worksheet['closing_date']);
-	$date = explode(":", $dt[0]);
-	$datestr = $date[0]."-".$date[1]."-".$date[2];
-	$time = explode(":", $dt[1]);
-
-	$objDatePicker->setDefaultDate($dt[0]);
-	$objTimePicker->setSelected($dt[1]);
+	$closingLocal = $this->objTimeAndDate->inTimezone($worksheet['closing_date']);
+	if ($closingLocal !== null) {
+		$objDatePicker->setDefaultDate($closingLocal->format('Y-m-d'));
+		$objTimePicker->setSelected($closingLocal->format('H:i'));
+	}
 }
 $table->addCell($objDatePicker->show(), 250);
 $table->addCell($objTimePicker->show());

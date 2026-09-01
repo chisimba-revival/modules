@@ -23,6 +23,8 @@ class dbworksheetanswers extends dbTable
 {
     /** Non-user value required by the legacy non-null lecturer column. */
     const UNMARKED_LECTURER_ID = 'pending';
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
 
     /**
     * Constructor method to define the table
@@ -30,6 +32,7 @@ class dbworksheetanswers extends dbTable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_worksheet_answers');
         $this->table='tbl_worksheet_answers';
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
 
@@ -51,6 +54,7 @@ class dbworksheetanswers extends dbTable
         $questions = $objWorksheetQuestion->getQuestions($worksheetId, 0, FALSE);
         $saved = true;
 
+        $now = $this->objTimeAndDate->nowStorage();
         foreach ($questions as $question)
         {
             $answer = $this->getParam($question['id']);
@@ -61,18 +65,18 @@ class dbworksheetanswers extends dbTable
                 $result = $this->insert(array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
-                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                        'dateanswered' => $now,
                         'answer' => $answer,
                         'lecturer_id' => self::UNMARKED_LECTURER_ID,
-                        'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                        'updated' => $now,
                     ));
             } else {
                 $result = $this->update('id', $id, array(
                         'question_id' => $question['id'],
                         'student_id' => $userId,
-                        'dateanswered' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                        'dateanswered' => $now,
                         'answer' => $answer,
-                        'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                        'updated' => $now,
                     ));
             }
             if ($result === false) {
@@ -95,7 +99,7 @@ class dbworksheetanswers extends dbTable
                 'mark' => $this->getParam($answer['id'], 0),
                 'comments' => $this->getParam('comment_'.$answer['id']),
                 'lecturer_id' => $lecturer,
-                'datemarked' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'datemarked' => $this->objTimeAndDate->nowStorage(),
             ));
             if ($result) {
                 $finalMark += $this->getParam($answer['id'], 0);
@@ -126,7 +130,7 @@ class dbworksheetanswers extends dbTable
                 'comments' => NULL,
                 'lecturer_id' => self::UNMARKED_LECTURER_ID,
                 'datemarked' => NULL,
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'updated' => $this->objTimeAndDate->nowStorage(),
             ));
             if ($result === false) {
                 $saved = false;

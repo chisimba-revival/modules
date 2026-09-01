@@ -162,7 +162,7 @@ class functions_worksheet extends ChisimbaObject
 							$mytable->addCell($worksheet['description'],"500","","","","bgcolor='#FFFFFF' colspan='2'");
 							$mytable->endRow();
 
-							$objDateTime = $this->getObject('dateandtime', 'utilities');
+							$objDateTime = $this->getObject('timeanddateservice', 'timeanddate-service');
 
 							//			$table = $this->newObject('htmltable', 'htmlelements');
 							//			$table->border = 1;

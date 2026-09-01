@@ -22,6 +22,9 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class dbessay_topics extends dbTable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
+
     /**
     * Constructor method to define the table
     */
@@ -29,17 +32,19 @@ class dbessay_topics extends dbTable
     {
         parent::init('tbl_essay_topics');
         $this->table='tbl_essay_topics';
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
     /**
     * Insert topic information into the database, or update topic if an id is provided.
     * @param array $fields The table fields and values to be inserted in the database
     * @param string $id The id of the topic to be updated, default=NULL
-    * @return
+    * @return mixed Topic identifier.
+    * @author Derek Keats
     */
     public function addTopic($fields,$id=NULL)
     {
-        $fields['last_modified'] = date('Y-m-d H:i:s', time());
+        $fields['last_modified'] = $this->objTimeAndDate->nowStorage();
         if(!empty($id)){
             $this->update('id',$id,$fields);
             return $id;

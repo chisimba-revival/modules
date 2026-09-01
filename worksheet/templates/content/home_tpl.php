@@ -103,15 +103,9 @@ if ((is_countable($worksheets) ? count($worksheets) : 0) == 0) {
                             break;
                         case 'open':
 
-                            // Fix automatic closure
-                            /*if (strtotime(date('Y-m-d  H:i:s')) > strtotime($worksheet['closing_date'])) {
-                                $worksheet['activity_status'] = 'closed';
-                                $link = $worksheet['name'];
-                            } else {*/
-                                $link = new link ($this->uri(array('action'=>'viewworksheet', 'id'=>$worksheet['id'])));
-                                $link->link = $worksheet['name'];
-                                $link = $link->show();
-                            //}
+                            $link = new link ($this->uri(array('action'=>'viewworksheet', 'id'=>$worksheet['id'])));
+                            $link->link = $worksheet['name'];
+                            $link = $link->show();
 
                             break;
                         default:

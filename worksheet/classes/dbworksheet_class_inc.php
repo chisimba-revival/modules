@@ -20,6 +20,8 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class dbworksheet extends dbTable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
 
     /**
     * Constructor method to define the table
@@ -30,6 +32,7 @@ class dbworksheet extends dbTable
         $this->table = 'tbl_worksheet';
 
         $this->objUser = $this->getObject('user', 'security');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
     /**
@@ -162,6 +165,7 @@ class dbworksheet extends dbTable
     */
     public function insertWorkSheet($context, $chapter, $worksheet_name, $activity_status, $classification, $closing_date, $description)
     {
+        $now = $this->objTimeAndDate->nowStorage();
         $id = $this->insert(array(
                 'context' => $context,
                 'chapter' => $chapter,
@@ -171,8 +175,8 @@ class dbworksheet extends dbTable
                 'closing_date' => $closing_date,
                 'description' => $description,
                 'userid' => $this->objUser->userId(),
-                'last_modified' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                'updated' => strftime('%Y-%m-%d %H:%M:%S', time())));
+                'last_modified' => $now,
+                'updated' => $now));
         return $id;
     }
 

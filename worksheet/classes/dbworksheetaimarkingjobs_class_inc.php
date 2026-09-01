@@ -4,9 +4,12 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 
 class dbworksheetaimarkingjobs extends dbTable
 {
+    /** @var timeanddateservice Canonical UTC storage and site display service. */
+    public $objTimeAndDate;
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init($tableName !== null ? $tableName : 'tbl_worksheet_ai_marking_jobs', $pearDb, $errorCallback);
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
     }
 
     public function enqueue($contextCode, $userId, $resultId)
@@ -16,7 +19,7 @@ class dbworksheetaimarkingjobs extends dbTable
         $active = $this->getArray("SELECT id FROM tbl_worksheet_ai_marking_jobs WHERE userid='".$this->escape($userId)."' AND result_id='".$this->escape($resultId)."' AND status IN ('queued','running') ORDER BY date_created DESC LIMIT 1");
         if (is_array($active) && isset($active[0]['id'])) { return $active[0]['id']; }
         $id = bin2hex(random_bytes(16));
-        $now = date('Y-m-d H:i:s');
+        $now = $this->objTimeAndDate->nowStorage();
         $this->insert(array('id'=>$id, 'contextcode'=>(string) $contextCode, 'userid'=>(string) $userId, 'result_id'=>$resultId, 'status'=>'queued', 'result_json'=>json_encode(array()), 'error_code'=>null, 'date_created'=>$now, 'date_updated'=>$now, 'date_completed'=>null));
         return $id;
     }
@@ -80,11 +83,11 @@ class dbworksheetaimarkingjobs extends dbTable
 
     public function runOne()
     {
-        $stale = date('Y-m-d H:i:s', time() - 900);
+        $stale = $this->objTimeAndDate->toStorage($this->objTimeAndDate->nowUtc()->modify('-15 minutes'));
         $rows = $this->getArray("SELECT * FROM tbl_worksheet_ai_marking_jobs WHERE status='queued' OR (status='running' AND date_updated<'".$stale."') ORDER BY date_created ASC LIMIT 1");
         if (!is_array($rows) || !isset($rows[0])) { return array('selected'=>0); }
         $row = $rows[0];
-        $this->update('id', $row['id'], array('status'=>'running', 'date_updated'=>date('Y-m-d H:i:s')));
+        $this->update('id', $row['id'], array('status'=>'running', 'date_updated'=>$this->objTimeAndDate->nowStorage()));
         $results = $this->getObject('dbworksheetresults', 'worksheet');
         $worksheets = $this->getObject('dbworksheet', 'worksheet');
         $questionsDb = $this->getObject('dbworksheetquestions', 'worksheet');
@@ -115,7 +118,7 @@ class dbworksheetaimarkingjobs extends dbTable
                 $outcome = $this->getObject('worksheetaimarker', 'worksheet')->suggest($worksheet, $questions, $answers, $rubrics);
             }
         }
-        $done = date('Y-m-d H:i:s');
+        $done = $this->objTimeAndDate->nowStorage();
         $this->update('id', $row['id'], array('status'=>!empty($outcome['ok']) ? 'completed' : 'failed', 'result_json'=>json_encode($outcome['suggestions'] ?? array()), 'error_code'=>!empty($outcome['ok']) ? null : (string) ($outcome['error'] ?? 'provider_failed'), 'date_updated'=>$done, 'date_completed'=>$done));
         return array('selected'=>1, 'completed'=>1, 'jobId'=>$row['id']);
     }

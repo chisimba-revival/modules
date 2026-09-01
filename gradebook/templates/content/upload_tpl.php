@@ -110,7 +110,8 @@ $this->TableOptions->endRow();
 //closing date
 $this->TableOptions->startRow();
 $this->TableOptions->addCell("<strong>".$objLanguage->languageText('mod_gradebook_closingDate','gradebook').":</strong>","30%",NULL,"left");
-$objClosingDate = new textinput('closingDate',date('Y-m-d H:m'));
+$objNowLocal = $this->objTimeAndDate->inTimezone($this->objTimeAndDate->nowStorage());
+$objClosingDate = new textinput('closingDate',$objNowLocal->format('Y-m-d H:i'));
 $objClosingDate->size="20";
 $objClosingDate->extra = " readonly = 'READONLY'";
 $objIcon->setIcon('select_date');
@@ -119,7 +120,6 @@ $url = 0;
 
 $this->TableOptions->addCell($this->objpopcal->show('closingDate','yes','no',$objClosingDate->value));
 $this->TableOptions->endRow(); 
-//$url = $this->uri(array('action'=>'', 'field'=>'document.upload.closingDate', 'fieldvalue'=>date('Y-m-d H:m')), 'popupcalendar');
 /*$onclick = 0;
 $onclick = "javascript:window.open('" .$url."', 'popupcal', 'width=320, height=410, scrollbars=1, resize=yes')";
 $objDateLink = new link('#');
