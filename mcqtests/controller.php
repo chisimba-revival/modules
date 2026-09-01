@@ -217,7 +217,7 @@ class mcqtests extends controller {
             //    $this->unsetSession('qData');
             //    return $this->nextAction(NULL, array());
             case 'newhome':
-                if ($this->objCond->isContextMember('Students')) {
+                if ($this->isLearnerOnly()) {
                     $this->unsetSession('taketest');
                     return $this->studentHome();
                 } else {
@@ -1195,7 +1195,7 @@ class mcqtests extends controller {
                 $this->setVarByRef('totalmark', $totalmark);
                 return 'list_test_tpl.php';
             case 'attempthistory':
-                if ($this->objCond->isContextMember('Students')) {
+                if ($this->isLearnerOnly()) {
                     return $this->nextAction('newhome');
                 }
                 $testId = $this->getParam('id');
@@ -1688,14 +1688,14 @@ class mcqtests extends controller {
             case 'viewcalcq':
                 return $this->viewCalcQ();
             case 'studenthome2':
-                if ($this->objCond->isContextMember('Students')) {
+                if ($this->isLearnerOnly()) {
                     return $this->studentHome2();
                 }
             case 'home2':
                 return $this->home2();
             default:
 
-                if ($this->objCond->isContextMember('Students')) {
+                if ($this->isLearnerOnly()) {
                     $this->unsetSession('taketest');
                     return $this->studentHome();
                 } else {
@@ -2210,6 +2210,20 @@ class mcqtests extends controller {
         } else {
             return FALSE; //parent::isValid ( $action );
         }
+    }
+
+    /**
+     * Decide whether the current user should receive the learner journey.
+     * Lecturer authority takes precedence over simultaneous or stale student
+     * membership so course authors never lose their management interface.
+     *
+     * @return bool True only for a student without test-management authority.
+     * @author Derek Keats
+     */
+    private function isLearnerOnly()
+    {
+        return !$this->isValid('add')
+            && $this->objCond->isContextMember('Students');
     }
 
     /**
