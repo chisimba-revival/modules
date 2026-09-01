@@ -747,15 +747,10 @@ class essayadmin extends controller
 
         $links = '';
 
-        $objLink = new link($this->uri(array('action'=>'addessay','id'=>$topic[0]['id'])));
-        $objLink->link = $title3;
-        $objLink->title = $title3;
-        $links .= $objLink->show();
-
         $objLink = new link($this->uri(array('action'=>'marktopic', 'id'=>$topic[0]['id'])));
         $objLink->link = $viewSubmitted;
         $objLink->title = $viewSubmitted;
-        $links .= '<br />'.$objLink->show();
+        $links .= $objLink->show();
 
         $strHome = $this->objLanguage->languageText('mod_essayadmin_home','essayadmin');
         $objLink = new link($this->uri(array()));
