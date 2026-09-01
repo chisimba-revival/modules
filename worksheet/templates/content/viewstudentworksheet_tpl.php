@@ -51,7 +51,7 @@ $reopenForm->addToForm((new hiddeninput('id', $worksheetResult['id']))->show());
 $reopenForm->addToForm((new hiddeninput('csrf_token', $worksheetReopenToken))->show());
 $reopenButton = new button('reopen', $this->objLanguage->languageText('mod_worksheet_reopensubmission', 'worksheet', 'Reopen for student'));
 $reopenButton->setToSubmit();
-$reopenForm->addToForm('<div class="worksheet-reopen"><p>'.$this->objLanguage->languageText('mod_worksheet_reopensubmission_help', 'worksheet', 'Allow the student to revise and submit this formative worksheet again. Existing answers will be retained.').'</p>'.$reopenButton->show().'</div>');
+$reopenForm->addToForm('<div class="worksheet-review-action"><p>'.$this->objLanguage->languageText('mod_worksheet_reopensubmission_help', 'worksheet', 'Allow the student to revise and submit this formative worksheet again. Existing answers will be retained.').'</p><div class="chisimba-form-actions">'.$reopenButton->show().'</div></div>');
 echo $reopenForm->show();
 
 if (!empty($aiMarkingAvailable)) {
@@ -60,7 +60,7 @@ if (!empty($aiMarkingAvailable)) {
     $aiForm->addToForm((new hiddeninput('csrf_token', $aiMarkingToken))->show());
     $aiButton = new button('aiassist', $this->objLanguage->languageText('mod_worksheet_ai_suggest', 'worksheet', 'Suggest marks with AI'));
     $aiButton->setToSubmit();
-    $aiForm->addToForm('<div class="worksheet-ai-assist"><p>'.$this->objLanguage->languageText('mod_worksheet_ai_explanation', 'worksheet', 'AI can draft marks and feedback for your review. Nothing is saved until you choose Save marks.').'</p>'.$aiButton->show().'</div>');
+    $aiForm->addToForm('<div class="worksheet-review-action"><p>'.$this->objLanguage->languageText('mod_worksheet_ai_explanation', 'worksheet', 'AI can draft marks and feedback for your review. Nothing is saved until you choose Save marks.').'</p><div class="chisimba-form-actions">'.$aiButton->show().'</div></div>');
     echo $aiForm->show();
 }
 if (!empty($aiSuggestionError)) {
@@ -77,56 +77,66 @@ $form->addToForm($hiddenInput->show());
 $hiddenInput = new hiddeninput('csrf_token', $worksheetMarkToken);
 $form->addToForm($hiddenInput->show());
 
+$renderRubric = function ($rubric) {
+    $html = '<div class="worksheet-review-rubric">';
+    $html .= '<h3>'.htmlspecialchars($rubric['title'], ENT_QUOTES, 'UTF-8').'</h3>';
+    $html .= '<div class="chisimba-table-wrap"><table class="chisimba-table worksheet-rubric-table"><thead><tr>';
+    $html .= '<th>'.$this->objLanguage->languageText('mod_worksheet_rubric_criteria', 'worksheet', 'Rubric criteria').'</th>';
+    foreach ($rubric['performances'] as $performance) {
+        $html .= '<th>'.htmlspecialchars($performance['label'], ENT_QUOTES, 'UTF-8').'</th>';
+    }
+    $html .= '</tr></thead><tbody>';
+    foreach ($rubric['criteria'] as $criterion) {
+        $html .= '<tr><th>'.htmlspecialchars($criterion['objective'], ENT_QUOTES, 'UTF-8').'</th>';
+        foreach ($criterion['levels'] as $level) {
+            $html .= '<td>'.htmlspecialchars($level['description'], ENT_QUOTES, 'UTF-8').'</td>';
+        }
+        $html .= '</tr>';
+    }
+    return $html.'</tbody></table></div></div>';
+};
+
+// A shared worksheet rubric is orientation for the whole review, not repeated question content.
+$sharedRubric = null;
+$rubricSignatures = array();
+foreach ((array) $structuredRubrics as $rubric) {
+    $signature = hash('sha256', json_encode($rubric));
+    $rubricSignatures[$signature] = $rubric;
+}
+if (count($rubricSignatures) === 1) {
+    $sharedRubric = reset($rubricSignatures);
+    $form->addToForm('<section class="worksheet-review-shared-rubric"><h2>'
+        .$this->objLanguage->languageText('mod_worksheet_rubric', 'worksheet', 'Rubric')
+        .'</h2>'.$renderRubric($sharedRubric).'</section>');
+}
+
 $counter = 1;
 foreach ($questions as $question)
 {
-    $str = '<div class="newForumContainer">';
-    $str .= '<div class="newForumTopic">';
-    $str .= '<strong>'.$this->objLanguage->languageText('mod_worksheet_question', 'worksheet', 'Question').' '.$counter.':</strong><br />';
+    $str = '<section class="worksheet-review-question">';
+    $str .= '<header class="worksheet-review-question__header">';
+    $str .= '<h2>'.$this->objLanguage->languageText('mod_worksheet_question', 'worksheet', 'Question').' '.$counter.'</h2>';
+    $str .= '<span class="worksheet-review-question__worth">'.$question['question_worth'].' '
+        .$this->objLanguage->languageText('mod_worksheet_marks', 'worksheet', 'Marks').'</span>';
+    $str .= '</header><div class="worksheet-review-question__prompt">';
     $str .= $this->objWashout->parseText($question['question']);
-    $str .= '<strong>'.$this->objLanguage->languageText('mod_worksheet_marks', 'worksheet', 'Marks').'</strong> ('.$question['question_worth'].')';
     $str .= '</div>';
-    $str .= '<div class="newForumContent">';
 
     $studentAnswer = $this->objWorksheetAnswers->getAnswer($question['id'], $worksheetResult['userid']);
 
     if ($studentAnswer != FALSE) {
-        $str .= $studentAnswer['answer'];
-        $str .= '</div><div class="newForumContent">';
-        $str .= '<p><strong>'.$this->objLanguage->languageText('mod_worksheet_markanswer', 'worksheet', 'Mark Answer').':</strong></p>';
+        $str .= '<div class="worksheet-review-block worksheet-review-block--response"><h3>'
+            .$this->objLanguage->languageText('mod_worksheet_studentanswer', 'worksheet', 'Student answer')
+            .'</h3><div class="worksheet-review-prose">'.$studentAnswer['answer'].'</div></div>';
+        $str .= '<div class="worksheet-review-block worksheet-review-block--model"><h3>'
+            .$this->objLanguage->languageText('mod_worksheet_modelanswer', 'worksheet', 'Model Answer')
+            .'</h3><div class="worksheet-review-prose">'.nl2br(htmlentities($question['model_answer'])).'</div></div>';
 
-        $table = $this->newObject('htmltable', 'htmlelements');
-        $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_worksheet_modelanswer', 'worksheet', 'Model Answer').':', 180);
-        $table->addCell(nl2br(htmlentities($question['model_answer'])));
-        $table->endRow();
-
-        if (isset($structuredRubrics[$question['id']])) {
+        if ($sharedRubric === null && isset($structuredRubrics[$question['id']])) {
             $rubric = $structuredRubrics[$question['id']];
-            $rubricHtml = '<strong>'.htmlspecialchars($rubric['title'], ENT_QUOTES, 'UTF-8').'</strong>';
-            $rubricHtml .= '<table class="table table-bordered worksheet-rubric-table"><thead><tr>';
-            $rubricHtml .= '<th>'.$this->objLanguage->languageText('mod_worksheet_rubric_criteria', 'worksheet', 'Rubric criteria').'</th>';
-            foreach ($rubric['performances'] as $performance) {
-                $rubricHtml .= '<th>'.htmlspecialchars($performance['label'], ENT_QUOTES, 'UTF-8').'</th>';
-            }
-            $rubricHtml .= '</tr></thead><tbody>';
-            foreach ($rubric['criteria'] as $criterion) {
-                $rubricHtml .= '<tr><th>'.htmlspecialchars($criterion['objective'], ENT_QUOTES, 'UTF-8').'</th>';
-                foreach ($criterion['levels'] as $level) {
-                    $rubricHtml .= '<td>'.htmlspecialchars($level['description'], ENT_QUOTES, 'UTF-8').'</td>';
-                }
-                $rubricHtml .= '</tr>';
-            }
-            $rubricHtml .= '</tbody></table>';
-
-            $table->startRow();
-            $table->addCell($this->objLanguage->languageText('mod_worksheet_rubric', 'worksheet', 'Rubric').':');
-            $table->addCell($rubricHtml);
-            $table->endRow();
+            $str .= $renderRubric($rubric);
         }
 
-        $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_worksheet_mark', 'worksheet', 'Mark').':');
         $slider = $this->newObject('slider', 'htmlelements');
         $slider->name = $studentAnswer['id'];
         $slider->maxValue = $question['question_worth'];
@@ -135,25 +145,21 @@ foreach ($questions as $question)
         } elseif ($studentAnswer['mark'] != '') {
             $slider->value = $studentAnswer['mark'];
         }
-        $table->addCell($slider->show());
-        $table->endRow();
-
-        $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_worksheet_comment', 'worksheet', 'Comment').':');
+        $str .= '<div class="worksheet-review-fields"><div class="chisimba-form-field worksheet-review-mark"><label>'
+            .$this->objLanguage->languageText('mod_worksheet_mark', 'worksheet', 'Mark')
+            .'</label>'.$slider->show().'</div>';
         $textArea = new textarea('comment_'.$studentAnswer['id']);
         $textArea->value = !empty($aiSuggestions[$studentAnswer['id']])
             ? $aiSuggestions[$studentAnswer['id']]['feedback']
             : $studentAnswer['comments'];
-        $table->addCell($textArea->show());
-        $table->endRow();
-
-        $str .= $table->show();
+        $str .= '<div class="chisimba-form-field worksheet-review-comment"><label>'
+            .$this->objLanguage->languageText('mod_worksheet_comment', 'worksheet', 'Comment')
+            .'</label>'.$textArea->show().'</div></div>';
     } else {
         $str .= '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_worksheet_notanswered', 'worksheet', 'Not answered').'</div>';
     }
 
-    $str .= '</div>';
-    $str .= '</div>';
+    $str .= '</section>';
     $form->addToForm($str);
     $counter++;
 }
@@ -163,7 +169,7 @@ $markActionLabel = $worksheetResult['mark'] == '-1'
     : $this->objLanguage->languageText('mod_worksheet_updatemarks', 'worksheet', 'Update marks');
 $button = new button ('save', $markActionLabel);
 $button->setToSubmit();
-$form->addToForm('<p align="center">'.$button->show().'</p>');
+$form->addToForm('<div class="chisimba-form-actions worksheet-review-save">'.$button->show().'</div>');
 echo $form->show();
 
 $link = new link ($this->uri(NULL));
