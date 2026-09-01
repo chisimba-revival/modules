@@ -8,6 +8,9 @@ $checks = array(
         && str_contains($controller, "isContextMember('Students')"),
     'lecturer overview exposes create test' => str_contains($template, "'action' => 'addstep'")
         && str_contains($template, "mod_mcqtests_addtest"),
+    'primary actions use current-colour skin icons' => str_contains($template, "getObject('iconservice', 'ui')")
+        && str_contains($template, "render('circle-plus'")
+        && str_contains($template, "render('sparkles'"),
 );
 foreach ($checks as $label => $passed) {
     if (!$passed) { fwrite(STDERR, 'FAIL: '.$label.PHP_EOL); exit(1); }

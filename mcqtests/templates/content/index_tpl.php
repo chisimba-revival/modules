@@ -7,6 +7,7 @@ $u = fn($params, $module = 'mcqtests') => html_entity_decode(
     'UTF-8'
 );
 $t = fn($key, $fallback) => $this->objLanguage->languageText($key, 'mcqtests', $fallback);
+$icons = $this->getObject('iconservice', 'ui');
 $iconBase = $this->getResourceUri('icons/lucide/', 'ui');
 $canManage = $this->isValid('add');
 $formatClosing = function ($value) use ($t) {
@@ -33,12 +34,12 @@ $updateUrl = $u(array('action' => 'updateoverview'));
         <?php if ($canManage): ?>
             <div class="chisimba-form-actions mcq-overview__create-actions">
                 <a class="button" href="<?php echo $e($u(array('action' => 'addstep'))); ?>">
-                    <img src="<?php echo $e($iconBase . 'circle-plus.svg'); ?>" width="18" height="18" alt="" aria-hidden="true" />
+                    <?php echo $icons->render('circle-plus', array('decorative'=>true)); ?>
                     <?php echo $e($t('mod_mcqtests_addtest', 'Create test')); ?>
                 </a>
                 <?php if (!empty($aiAvailable) && !empty($chapterQuizMissingCount)): ?>
                     <a class="button" href="<?php echo $e($u(array('action' => 'aichapterquizzes'))); ?>">
-                        <img src="<?php echo $e($iconBase . 'sparkles.svg'); ?>" width="18" height="18" alt="" aria-hidden="true" />
+                        <?php echo $icons->render('sparkles', array('decorative'=>true)); ?>
                         <?php echo $e(sprintf($t('mod_mcqtests_ai_missing_chapter_button', 'Generate missing chapter quizzes (%d)'), $chapterQuizMissingCount)); ?>
                     </a>
                 <?php endif; ?>
