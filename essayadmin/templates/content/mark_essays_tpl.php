@@ -87,15 +87,10 @@ if(!empty($data)){
             } else {
                 $submitdate = '*internal error*';
             }
-            if($item['mark']){
-                $mark=$item['mark'].'%';
-            }else{
-    			$uriMark = 0;
-    			$uriMark = $this->uri(array('action'=>'upload','book'=>$item['id'],'id'=>$item['topicid']));
-    			$this->objLink = new link($uriMark);
-    			$this->objLink->link=$markrow;
-                $mark=$unmarked.'<br>'.$this->objLink->show();
-            }
+            $uriMark = $this->uri(array('action'=>'upload','book'=>$item['id'],'id'=>$item['topicid']));
+            $this->objLink = new link($uriMark);
+            $this->objLink->link = $item['mark'] !== null && $item['mark'] !== '' ? 'Review mark' : $markrow;
+            $mark = ($item['mark'] !== null && $item['mark'] !== '' ? $item['mark'].'%' : $unmarked).'<br>'.$this->objLink->show();
             $this->objIcon->setIcon('download');
         	$this->objIcon->extra='';
             $this->objIcon->title=$titledownload;

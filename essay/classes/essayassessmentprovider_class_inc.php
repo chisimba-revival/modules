@@ -18,7 +18,7 @@ class essayassessmentprovider extends ChisimbaObject
         $activities = array();
         foreach ((array) $records as $record) {
             if (!empty($record['id']) && isset($record['name'])) {
-                $activities[] = array('id'=>$record['id'], 'name'=>$record['name'], 'classification'=>'manual_marking');
+                $activities[] = array('id'=>$record['id'], 'name'=>$record['name'], 'classification'=>'formative');
             }
         }
         return $activities;
