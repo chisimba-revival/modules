@@ -69,7 +69,7 @@ class worksheetaimarker extends ChisimbaObject
         $result = $this->aiService->execute(array(
             'consumer' => 'worksheet',
             'task' => 'suggest_worksheet_marks',
-            'instructions' => 'Suggest a mark and concise constructive feedback for every supplied answer. Use only the question, model answer, maximum mark, and rubric supplied. Apply every rubric criterion when one is present. Never exceed maximumMark. These are suggestions for a human lecturer, so do not claim the result is final.',
+            'instructions' => 'Suggest a mark and concise constructive feedback for every supplied answer. Use only the question, model answer, maximum mark, and rubric supplied. Apply every rubric criterion when one is present. Evaluate coverage of the essential knowledge in the model answer as well as correctness, reasoning, relevance and clarity. Reserve 90-100 percent for comprehensive answers with only trivial omissions; use 75-89 percent for strong answers with limited omissions; 50-74 percent for partial answers with substantial omissions; 25-49 percent for limited answers; and 0-24 percent for absent, irrelevant or fundamentally incorrect answers. Never exceed maximumMark. These are suggestions for a human lecturer, so do not claim the result is final.',
             'input' => json_encode(array('worksheet' => (string) ($worksheet['name'] ?? ''), 'answers' => $items)),
             'schemaName' => 'worksheet_marking_suggestions',
             'schema' => $schema,

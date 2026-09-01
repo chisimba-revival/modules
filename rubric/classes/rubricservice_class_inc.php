@@ -154,5 +154,49 @@ class rubricservice extends ChisimbaObject
 
         return $rubric;
     }
+
+    /**
+     * Provision an immutable-by-convention, versioned system rubric template.
+     *
+     * Existing data is never overwritten. A changed template must use a new ID,
+     * which keeps assessments reproducible while allowing future improvements.
+     *
+     * @param array $definition Neutral rubric definition.
+     * @return bool
+     * @author Derek Keats
+     */
+    public function ensureRubricTemplate(array $definition)
+    {
+        $id = isset($definition['id']) ? trim((string) $definition['id']) : '';
+        if ($id === '' || $this->getRubric($id) !== false) {
+            return $id !== '';
+        }
+        $performances = isset($definition['performances']) ? (array) $definition['performances'] : array();
+        $criteria = isset($definition['criteria']) ? (array) $definition['criteria'] : array();
+        if ($performances === array() || $criteria === array()) {
+            return false;
+        }
+
+        $inserted = $this->objRubricTables->insert(array(
+            'id' => $id,
+            'contextCode' => isset($definition['contextCode']) ? (string) $definition['contextCode'] : 'root',
+            'title' => (string) ($definition['title'] ?? ''),
+            'description' => (string) ($definition['description'] ?? ''),
+            '`rows`' => count($criteria),
+            '`cols`' => count($performances),
+        ));
+        if (!$inserted) { return false; }
+
+        foreach ($performances as $column => $label) {
+            $this->objRubricPerformances->insertSingle($id, $column, (string) $label);
+        }
+        foreach ($criteria as $row => $criterion) {
+            $this->objRubricObjectives->insertSingle($id, $row, (string) ($criterion['objective'] ?? ''));
+            foreach ((array) ($criterion['levels'] ?? array()) as $column => $description) {
+                $this->objRubricCells->insertSingle($id, $row, $column, (string) $description);
+            }
+        }
+        return true;
+    }
 }
 ?>

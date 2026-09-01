@@ -53,10 +53,13 @@ class dbworksheetaimarkingjobs extends dbTable
                     $modules = $this->getObject('modules', 'modulecatalogue');
                     if ($modules->checkIfRegistered('rubric')) {
                         $service = $this->getObject('rubricservice', 'rubric');
+                        $defaultRubric = $this->getObject('worksheetdefaultrubric', 'worksheet')->getStructuredRubric();
                         foreach ($questions as $question) {
                             if (!empty($question['rubric_id'])) {
                                 $rubric = $service->getStructuredRubric($question['rubric_id']);
                                 if ($rubric !== false) { $rubrics[$question['id']] = $rubric; }
+                            } elseif ($defaultRubric !== false) {
+                                $rubrics[$question['id']] = $defaultRubric;
                             }
                         }
                     }
