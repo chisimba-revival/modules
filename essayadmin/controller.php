@@ -52,7 +52,7 @@ class essayadmin extends controller
 		$this->objFile = $this->newObject('upload', 'filemanager');
         // Get an instance of the confirmation object
         $this->objConfirm = $this->getObject('confirm', 'utilities');
-       	$this->objDateformat = $this->newObject('dateandtime','utilities');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice','timeanddate-service');
         // Get an instance of the language object
         $this->objLanguage = $this->getObject('language', 'language');
         // Get an instance of the user object
@@ -188,7 +188,12 @@ class essayadmin extends controller
             if (!checkdate($closingMonth,$closingDay,$closingYear) || !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/',$closingTime)) {
                 return $this->nextAction($id ? 'edittopic' : 'addtopic',array('id'=>$id,'error'=>'invalidclosingdate'));
             }
-            $fields['closing_date']=sprintf('%04d-%02d-%02d %s:00',$closingYear,$closingMonth,$closingDay,$closingTime);
+            $localClosing=sprintf('%04d-%02d-%02d %s:00',$closingYear,$closingMonth,$closingDay,$closingTime);
+            $closingInstant=$this->objTimeAndDate->parseLocal($localClosing);
+            if ($closingInstant === null) {
+                return $this->nextAction($id ? 'edittopic' : 'addtopic',array('id'=>$id,'error'=>'invalidclosingdate'));
+            }
+            $fields['closing_date']=$this->objTimeAndDate->toStorage($closingInstant);
             if ($fields['name'] === '') {
                 return $this->nextAction($id ? 'edittopic' : 'addtopic', array('id'=>$id, 'error'=>'topicrequired'));
             }
@@ -535,7 +540,7 @@ class essayadmin extends controller
                 if ($topic['bypass'] == '1') {
                     $date = '';
                 } else {
-                    $date = $this->objDateformat->formatDate($topic['closing_date']);
+                    $date = $this->objTimeAndDate->formatDateTime($topic['closing_date']);
                 }
 
                 $markedSubmitted = $topic['submitted'].' / '.$topic['marked'];
@@ -617,7 +622,7 @@ class essayadmin extends controller
             $msg = $this->getSession('confirm');
             $this->unsetSession('confirm');
             $objMsg = $this->newObject('timeoutmessage', 'htmlelements');
-            $objMsg->setMessage($msg.'&nbsp;'.$this->objDateformat->formatDate(date('Y-m-d H:i:s')));
+            $objMsg->setMessage($msg.'&nbsp;'.$this->objTimeAndDate->formatDateTime($this->objTimeAndDate->nowStorage()));
             $objMsg->setTimeOut(15000);
             $str .= '<p>'.$objMsg->show().'</p>';
         }
@@ -642,7 +647,7 @@ class essayadmin extends controller
         $objTable2->addCell($topic[0]['percentage'].'%','','','','even');
         $objTable2->endRow();
 
-        $date = $this->objDateformat->formatDate($topic[0]['closing_date']);
+        $date = $this->objTimeAndDate->formatDateTime($topic[0]['closing_date']);
         $objTable2->startRow();
         $objTable2->addCell('<b>'.$duedate.'</b>','','','','odd');
         //$objTable2->addCell($topic[0]['closing_date'].' %','80%','','','even');

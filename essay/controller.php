@@ -81,7 +81,7 @@ class essay extends controller {
         $this->objHelp = $this->newObject('helplink', 'help');
         //$this->objDate = $this->newObject('simplecal','datetime');
         $this->objDate = $this->newObject('datepicker', 'htmlelements');
-        $this->objDateformat = $this->newObject('dateandtime', 'utilities');
+        $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->objFile = $this->newObject('upload', 'filemanager');
         // Log this call if registered
         if (!$this->objModules->checkIfRegistered('logger', 'logger')) {
@@ -220,7 +220,7 @@ class essay extends controller {
                     return $this->nextAction('uploadessay', array('bookid'=>$bookId, 'error'=>'uploadfailed'));
                 }
                 $fileId = $fileDetails['fileid'];
-                $fields = array('studentfileid' => $fileId, 'submitdate' => date('Y-m-d H:i:s'));
+                $fields = array('studentfileid' => $fileId, 'submitdate' => $this->objTimeAndDate->nowStorage());
                 $this->dbbook->bookEssay($fields, $bookId);
                 $this->objFileRegister->registerUse($fileId, 'essay', 'tbl_essay_book', $bookId, 'studentfileid', $this->contextcode, '', TRUE);
                 return $this->nextAction('viewallessays');
@@ -324,7 +324,7 @@ class essay extends controller {
                 if ($topic['bypass'] == 1) {
                     $date = $this->objLanguage->languageText('mod_essay_n_a', 'essay');
                 } else {
-                    $date = $this->objDateformat->formatDate($topic['date']);
+                    $date = $this->objTimeAndDate->formatDateTime($topic['date']);
                 }
                 $objLink = new link($this->uri(array('action' => 'view', 'id' => $topic['id'])));
                 $objLink->link = $topic['name'];
@@ -432,7 +432,7 @@ class essay extends controller {
 
         $objTableTopicAreaInfo->startRow();
         $objTableTopicAreaInfo->addCell('<b>' . $this->objLanguage->languageText('mod_essay_closedate', 'essay') . ':</b>', '', '', '', '');
-        $objTableTopicAreaInfo->addCell($this->objDateformat->formatDate($topicArea[0]['closing_date']), '', '', '', '');
+        $objTableTopicAreaInfo->addCell($this->objTimeAndDate->formatDateTime($topicArea[0]['closing_date']), '', '', '', '');
         $objTableTopicAreaInfo->endRow();
 
         //$objLayer=$this->objLayer;

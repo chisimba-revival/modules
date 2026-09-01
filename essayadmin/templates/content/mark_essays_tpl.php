@@ -10,7 +10,6 @@ if (!isset($topic)) {
 }
 
 
-$this->objDateformat =  $this->newObject('dateandtime', 'utilities');
 $this->objFile= $this->newObject('upload','filemanager');
 
 $this->loadClass('htmltable','htmlelements');
@@ -84,7 +83,7 @@ if(!empty($data)){
         // if essay submitted: allow download
         if($item['studentfileid']){
             if (!is_null($item['submitdate'])) {
-                $submitdate = $this->objDateformat->formatDate($item['submitdate']);
+                $submitdate = $this->objTimeAndDate->formatDateTime($item['submitdate']);
             } else {
                 $submitdate = '*internal error*';
             }
@@ -122,7 +121,7 @@ if(!empty($data)){
         /*
         $objTable->addCell($studentLink,'','','',$class);
 		$objTable->addCell($item['essay'],'','','',$class);
-        $objTable->addCell($this->objDateformat->formatDate($item['submitdate']),'','','',$class);
+        $objTable->addCell($this->objTimeAndDate->formatDateTime($item['submitdate']),'','','',$class);
         $objTable->addCell($mark,'','','center',$class);
         $objTable->addCell($loadicons,'','','center',$class,' colspan=2');
         */

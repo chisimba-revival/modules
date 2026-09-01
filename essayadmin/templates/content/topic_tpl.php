@@ -5,8 +5,9 @@ $icons=$this->getObject('iconservice','ui');
 $row=!empty($data[0])?$data[0]:array();
 $id=(string)($row['id']??'');
 $closing=(string)($row['closing_date']??date('Y-m-d H:i:s',strtotime('+7 days')));
-$closingTimestamp=strtotime($closing);
-$closingDay=(int)date('j',$closingTimestamp);$closingMonth=(int)date('n',$closingTimestamp);$closingYear=(int)date('Y',$closingTimestamp);$closingTime=date('H:i',$closingTimestamp);
+$closingLocal=$this->objTimeAndDate->inTimezone($closing);
+if($closingLocal===null){$closingLocal=new DateTimeImmutable('+7 days',new DateTimeZone($this->objTimeAndDate->siteTimezone()));}
+$closingDay=(int)$closingLocal->format('j');$closingMonth=(int)$closingLocal->format('n');$closingYear=(int)$closingLocal->format('Y');$closingTime=$closingLocal->format('H:i');
 $cancel=$id!==''?$this->uri(array('action'=>'view','id'=>$id)):$this->uri(array());
 ?>
 <form class="chisimba-form chisimba-workspace" method="post" action="<?php echo $e($this->uri(array('action'=>'savetopic'))); ?>">

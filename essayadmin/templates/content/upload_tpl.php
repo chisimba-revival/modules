@@ -7,13 +7,13 @@ if(empty($data)){echo '<div class="error">This Essay submission is not available
 $topicdata=$this->dbtopic->getTopic($data[0]['topicid']);
 $essay=$this->dbessays->getEssay($data[0]['essayid'],'topic');
 $studentname=$this->objUser->fullname($data[0]['studentid']);
-$isLate=!empty($data[0]['submitdate'])&&strtotime($data[0]['submitdate'])>strtotime($topicdata[0]['closing_date']);
+$isLate=!empty($data[0]['submitdate'])&&$data[0]['submitdate']>$topicdata[0]['closing_date'];
 $download=$this->uri(array('action'=>'download','fileid'=>$data[0]['studentfileid']));
 $displayMark=($mark==='0'&&$data[0]['mark']!==null&&$data[0]['mark']!=='')?$data[0]['mark']:$mark;
 $displayComment=($comment===''&&!empty($data[0]['comment']))?$data[0]['comment']:$comment;
 ?>
 <section class="chisimba-workspace">
-<div class="chisimba-summary-card"><h2><?php echo $e($essay[0]['topic']??'Essay'); ?></h2><p><strong>Student:</strong> <?php echo $e($studentname); ?></p><p><strong><?php echo $isLate?'Submitted late':'Submitted'; ?>:</strong> <?php echo $e($this->objDateformat->formatDate($data[0]['submitdate'])); ?></p><p><a class="button chisimba-button-secondary" href="<?php echo $e($download); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download submission</a></p></div>
+<div class="chisimba-summary-card"><h2><?php echo $e($essay[0]['topic']??'Essay'); ?></h2><p><strong>Student:</strong> <?php echo $e($studentname); ?></p><p><strong><?php echo $isLate?'Submitted late':'Submitted'; ?>:</strong> <?php echo $e($this->objTimeAndDate->formatDateTime($data[0]['submitdate'])); ?></p><p><a class="button chisimba-button-secondary" href="<?php echo $e($download); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download submission</a></p></div>
 <form class="chisimba-form" method="post" enctype="multipart/form-data" action="<?php echo $e($this->uri(array('action'=>'uploadsubmit'))); ?>">
 <input type="hidden" name="id" value="<?php echo $e($topic); ?>"><input type="hidden" name="book" value="<?php echo $e($book); ?>">
 <div class="chisimba-form-field"><label for="essay-mark">Mark (%)</label><input id="essay-mark" name="mark" type="number" min="0" max="100" step="1" value="<?php echo $e($displayMark); ?>" required></div>
