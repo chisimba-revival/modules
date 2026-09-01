@@ -55,5 +55,24 @@ class dbgradebookassessmentplanitems extends dbtable
             'date_updated' => date('Y-m-d H:i:s')
         ));
     }
+
+    /**
+     * Save the concise spreadsheet column label for an assessment item.
+     *
+     * @param string $planId Assessment plan identifier.
+     * @param string $itemId Assessment item identifier.
+     * @param string $shortName Validated short column label.
+     * @return mixed Database update result or false.
+     * @author Derek Keats
+     */
+    public function saveShortName($planId, $itemId, $shortName)
+    {
+        $item = $this->findForPlan($planId, $itemId);
+        if (!$item) { return false; }
+        return $this->update('id', $item['id'], array(
+            'short_name'=>(string) $shortName,
+            'date_updated'=>date('Y-m-d H:i:s'),
+        ));
+    }
 }
 ?>

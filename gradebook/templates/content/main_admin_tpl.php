@@ -47,6 +47,18 @@ $statusLabels = array(
     'submitted' => $L('result_submitted'),
     'marked' => $L('result_marked')
 );
+$planRows = array();
+foreach ((array)$planItems as $item) {
+    $provider = $registry->get($item['provider_key']);
+    $adapter = $provider ? $registry->adapter($item['provider_key']) : false;
+    $activity = is_object($adapter) && is_callable(array($adapter, 'getActivity'))
+        ? $adapter->getActivity($contextCode, $item['activity_id']) : false;
+    $planRows[] = array(
+        'item'=>$item, 'provider'=>$provider, 'adapter'=>$adapter,
+        'title'=>is_array($activity) && !empty($activity['name']) ? $activity['name'] : $item['name'],
+    );
+}
+$matrixDisplay = (string) $this->getParam('display', 'percentage') === 'year_mark' ? 'year_mark' : 'percentage';
 
 echo '<div class="gradebook-home chisimba-workspace">';
 echo '<h1>'.$esc($contextName).' '.$esc($L('title')).'</h1>';
@@ -57,37 +69,45 @@ echo '<div class="gradebook-home-actions chisimba-actions">'
     .'</div>';
 
 echo '<section class="gradebook-home-section">';
-echo '<h2>'.$esc($L('learnersummary')).'</h2>';
+echo '<h2>'.$esc($L('classmarkmatrix')).'</h2>';
+echo '<div class="chisimba-actions gradebook-matrix-display">'
+    .'<a class="button'.($matrixDisplay === 'percentage' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'percentage')).'">'.$esc($L('showpercentage')).'</a>'
+    .'<a class="button'.($matrixDisplay === 'year_mark' ? '' : ' chisimba-button-secondary').'" href="'.$this->uri(array('display'=>'year_mark')).'">'.$esc($L('showyearmark')).'</a>'
+    .'</div>';
 
-if ($studentCount === 0) {
+if ($studentCount === 0 || empty($planRows)) {
     echo '<p>'.$esc($L('nostudents')).'</p>';
 } else {
-    echo '<div class="chisimba-table-wrap"><table class="chisimba-table gradebook-summary-table">'
-        .'<thead><tr>'
-        .'<th>'.$esc($L('studentNumber')).'</th>'
-        .'<th>'.$esc($L('student')).'</th>'
-        .'<th>'.$esc($L('assessmentscompleted')).'</th>'
-        .'<th>'.$esc($L('totalassessments')).'</th>'
-        .'</tr></thead><tbody>';
+    echo '<div class="chisimba-table-wrap"><table class="chisimba-table gradebook-mark-matrix"><thead><tr>'
+        .'<th>'.$esc($L('student')).'</th>';
+    foreach ($planRows as $planRow) {
+        $shortName = trim((string) ($planRow['item']['short_name'] ?? ''));
+        echo '<th><abbr title="'.$esc($planRow['title']).'">'.$esc($shortName !== '' ? $shortName : $planRow['title']).'</abbr></th>';
+    }
+    if ($matrixDisplay === 'year_mark') { echo '<th>'.$esc($L('yearmarktotal')).'</th>'; }
+    echo '</tr></thead><tbody>';
 
     for ($i = 0; $i < $studentCount; $i++) {
-        $resultRows = $this->studentAssessmentRows($userIds[$i]);
-        $completed = 0;
-        foreach ($resultRows as $resultRow) {
-            if ($resultRow['mark_percent'] !== null) {
-                $completed++;
-            }
-        }
-
         $detailUri = $this->uri(array('learner_id'=>$userIds[$i]));
         $name = trim($firstNames[$i].' '.$surnames[$i]);
-
-        echo '<tr>'
-            .'<td>'.$esc($usernames[$i]).'</td>'
-            .'<td><a href="'.$detailUri.'">'.$esc($name).'</a></td>'
-            .'<td>'.$esc($completed).'</td>'
-            .'<td>'.$esc(count($planItems)).'</td>'
-            .'</tr>';
+        $yearMark = 0.0;
+        echo '<tr><th scope="row"><a href="'.$detailUri.'">'.$esc($name).'</a><br><small>'.$esc($usernames[$i]).'</small></th>';
+        foreach ($planRows as $planRow) {
+            $result = array('status'=>'not_attempted', 'mark_percent'=>null);
+            if (is_object($planRow['adapter']) && is_callable(array($planRow['adapter'], 'getStudentResult'))) {
+                $candidate = $planRow['adapter']->getStudentResult($contextCode, $planRow['item']['activity_id'], $userIds[$i], $planRow['item']['result_rule'] ?? 'latest_completed');
+                if (is_array($candidate) && !empty($candidate['status'])) { $result = $candidate; }
+            }
+            $value = is_numeric($result['mark_percent']) ? (float) $result['mark_percent'] : null;
+            if ($value !== null && $matrixDisplay === 'year_mark') {
+                $value = $value * max(0.0, (float) $planRow['item']['weight']) / 100;
+                $yearMark += $value;
+            }
+            $status = $statusLabels[$result['status']] ?? $result['status'];
+            echo '<td title="'.$esc($status).'">'.($value === null ? '&mdash;' : $esc($number($value)).'%').'</td>';
+        }
+        if ($matrixDisplay === 'year_mark') { echo '<td><strong>'.$esc($number($yearMark)).'%</strong></td>'; }
+        echo '</tr>';
     }
 
     echo '</tbody></table></div>';
@@ -141,22 +161,6 @@ if ($selectedLearnerIndex !== null) {
 
 echo '<section class="gradebook-home-section">';
 echo '<h2>'.$esc($L('viewByAssessment')).'</h2>';
-
-$planRows = array();
-foreach ((array)$planItems as $item) {
-    $provider = $registry->get($item['provider_key']);
-    $adapter = $provider ? $registry->adapter($item['provider_key']) : false;
-    $activity = is_object($adapter) && is_callable(array($adapter, 'getActivity'))
-        ? $adapter->getActivity($contextCode, $item['activity_id'])
-        : false;
-    $planRows[] = array(
-        'item'=>$item,
-        'provider'=>$provider,
-        'adapter'=>$adapter,
-        'title'=>is_array($activity) && !empty($activity['name'])
-            ? $activity['name'] : $item['name']
-    );
-}
 
 $selectedItemId = trim((string)$this->getParam('plan_item', ''));
 $selectedItemId = $selectedItemId === '' && count($planRows) === 1

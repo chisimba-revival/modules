@@ -10,6 +10,7 @@ $fields = array(
     'provider_module' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
     'activity_id' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
     'name' => array('type' => 'text', 'length' => 255, 'notnull' => TRUE),
+    'short_name' => array('type' => 'text', 'length' => 16, 'notnull' => TRUE, 'default' => ''),
     'sort_order' => array('type' => 'integer', 'length' => 11, 'notnull' => TRUE, 'default' => 0),
     'weight' => array('type' => 'decimal', 'length' => 12, 'scale' => 3, 'notnull' => TRUE, 'default' => 0),
     'include_in_course_mark' => array('type' => 'text', 'length' => 1, 'notnull' => TRUE, 'default' => 'Y'),

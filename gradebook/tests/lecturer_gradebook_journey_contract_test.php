@@ -7,9 +7,10 @@ $controller = file_get_contents(dirname(__DIR__).'/controller.php');
 $checks = array(
     'learner summary does not expose duplicate plan date state' => !str_contains($home, "L('opennow')"),
     'single assessment opens its result list directly' => str_contains($home, 'count($planRows) === 1'),
-    'Assessment Sheet includes class marks matrix' => str_contains($sheet, 'gradebook-mark-matrix'),
-    'class matrix shows provider-owned percentages' => str_contains($sheet, "getStudentResult"),
-    'numeric class marks do not repeat marked status' => str_contains($sheet, "else { echo '&mdash;<br><small>'"),
+    'Gradebook home includes the primary class marks matrix' => str_contains($home, 'gradebook-mark-matrix'),
+    'class matrix shows provider-owned percentages' => str_contains($home, "getStudentResult"),
+    'class matrix supports percentage and year-mark modes' => str_contains($home, "'display'=>'percentage'") && str_contains($home, "'display'=>'year_mark'"),
+    'class matrix uses short assessment names' => str_contains($home, "['short_name']"),
     'Assessment Sheet has persistent Gradebook navigation' => str_contains($sheet, 'mod_gradebook_gradebooknavigation') && !str_contains($sheet, 'mod_gradebook_backtoassessmentplan'),
     'plan rows carry adapters for result lookup' => str_contains($controller, "'adapter' => \$adapter"),
 );

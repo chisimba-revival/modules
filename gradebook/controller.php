@@ -371,6 +371,7 @@ class gradebook extends controller {
             'provider_module' => $provider['module_id'],
             'activity_id' => $activityId,
             'name' => $activity['name'],
+            'short_name' => $this->defaultAssessmentShortName($providerKey, $items->getForPlan($planId)),
             'weight' => '0.000',
             'include_in_course_mark' => 'Y',
             'required_for_completion' => 'N',
@@ -402,20 +403,41 @@ class gradebook extends controller {
             return $this->nextAction('assessmentSheet');
         }
         $submitted = $this->getParam('weight', array());
-        if (!is_array($submitted)) {
+        $shortNames = $this->getParam('short_name', array());
+        if (!is_array($submitted) || !is_array($shortNames)) {
             return $this->nextAction('assessmentSheet', array('planerror'=>'invalidweights'));
         }
         $items = $this->getObject('dbgradebookassessmentplanitems', 'gradebook');
+        $seenShortNames = array();
         foreach ($submitted as $itemId => $weight) {
+            $shortName = strtoupper(trim((string) ($shortNames[$itemId] ?? '')));
             if (!preg_match('/^[A-Za-z0-9_]+$/', (string) $itemId) || !is_numeric($weight)
-                || (float) $weight < 0 || (float) $weight > 100) {
+                || (float) $weight < 0 || (float) $weight > 100
+                || !preg_match('/^[A-Z0-9_-]{1,16}$/', $shortName)
+                || isset($seenShortNames[$shortName])) {
                 return $this->nextAction('assessmentSheet', array('planerror'=>'invalidweights'));
             }
+            $seenShortNames[$shortName] = true;
             if (!$items->saveWeight($plan['id'], $itemId, $weight)) {
+                return $this->nextAction('assessmentSheet', array('planerror'=>'savefailed'));
+            }
+            if (!$items->saveShortName($plan['id'], $itemId, $shortName)) {
                 return $this->nextAction('assessmentSheet', array('planerror'=>'savefailed'));
             }
         }
         return $this->nextAction('assessmentSheet', array('planmessage'=>'weights_saved'));
+    }
+
+    /** Generate a compact, predictable initial Gradebook column label. */
+    private function defaultAssessmentShortName($providerKey, $existingItems)
+    {
+        $prefixes = array('worksheet'=>'WKS', 'essay'=>'ESS', 'mcqtests'=>'QUIZ', 'assignment'=>'ASN', 'offlineassessment'=>'OFF');
+        $prefix = isset($prefixes[$providerKey]) ? $prefixes[$providerKey] : strtoupper(substr(preg_replace('/[^a-z0-9]/i', '', $providerKey), 0, 4));
+        $count = 1;
+        foreach ((array) $existingItems as $item) {
+            if ((string) ($item['provider_key'] ?? '') === (string) $providerKey) { $count++; }
+        }
+        return $prefix.$count;
     }
 
     /**
