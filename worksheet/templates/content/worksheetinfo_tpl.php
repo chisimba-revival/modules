@@ -95,7 +95,9 @@ if ((is_countable($worksheetResults) ? count($worksheetResults) : 0) == 0 || $wo
             $table->addCell($objDateTime->formatDate($result['last_modified']));
 
             $link = new link ($this->uri(array('action'=>'viewstudentworksheet', 'id'=>$result['id'])));
-            $link->link = $this->objLanguage->languageText('word_view', 'system', 'View');
+            $link->link = $result['mark'] == '-1'
+                ? $this->objLanguage->languageText('mod_worksheet_marksubmission', 'worksheet', 'Mark submission')
+                : $this->objLanguage->languageText('mod_worksheet_reviewmarks', 'worksheet', 'Review marks');
 
             $table->addCell($link->show());
         $table->endRow();

@@ -158,7 +158,10 @@ foreach ($questions as $question)
     $counter++;
 }
 
-$button = new button ('save', $this->objLanguage->languageText('mod_worksheet_savemarks', 'worksheet', 'Save Marks'));
+$markActionLabel = $worksheetResult['mark'] == '-1'
+    ? $this->objLanguage->languageText('mod_worksheet_savemarks', 'worksheet', 'Save Marks')
+    : $this->objLanguage->languageText('mod_worksheet_updatemarks', 'worksheet', 'Update marks');
+$button = new button ('save', $markActionLabel);
 $button->setToSubmit();
 $form->addToForm('<p align="center">'.$button->show().'</p>');
 echo $form->show();

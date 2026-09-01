@@ -5,6 +5,7 @@ $marker = file_get_contents($root.'/classes/worksheetaimarker_class_inc.php');
 $jobs = file_get_contents($root.'/classes/dbworksheetaimarkingjobs_class_inc.php');
 $controller = file_get_contents($root.'/controller.php');
 $template = file_get_contents($root.'/templates/content/viewstudentworksheet_tpl.php');
+$worksheetInfo = file_get_contents($root.'/templates/content/worksheetinfo_tpl.php');
 $answers = file_get_contents($root.'/classes/dbworksheetanswers_class_inc.php');
 $results = file_get_contents($root.'/classes/dbworksheetresults_class_inc.php');
 
@@ -22,6 +23,7 @@ $checks = array(
     'reopening retains answers and resets assessment state' => str_contains($answers, 'function resetMarks') && str_contains($results, 'function reopenSubmission'),
     'resubmission updates the reopened attempt' => str_contains($results, "ORDER BY updated DESC, puid DESC") && str_contains($results, '$existingId') && str_contains($results, "'completed' => 'Y'"),
     'unmarked answers use a non-null lecturer sentinel' => str_contains($answers, "UNMARKED_LECTURER_ID = 'pending'") && !str_contains($answers, "'lecturer_id' => ''"),
+    'saved marks remain explicitly reviewable' => str_contains($worksheetInfo, 'mod_worksheet_reviewmarks') && str_contains($template, 'mod_worksheet_updatemarks'),
 );
 foreach ($checks as $label => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$label}\n"); exit(1); }
