@@ -33,6 +33,51 @@ $heading = new htmlheading(); $heading->type = 1; $heading->str = $this->objLang
 <aside class="assessment-sheet-summary" aria-live="polite"><span><strong><?php echo $this->objLanguage->languageText('mod_gradebook_totalallocated', 'gradebook'); ?></strong>: <span id="assessment-sheet-total">0</span>%</span><span><strong><?php echo $this->objLanguage->languageText('mod_gradebook_remaining', 'gradebook'); ?></strong>: <span id="assessment-sheet-remaining">100</span>%</span></aside>
 <p class="assessment-sheet-actions"><button type="submit"><img src="<?php echo $iconUri; ?>list-checks.svg" alt="" aria-hidden="true"><span><?php echo $this->objLanguage->languageText('mod_gradebook_saveassessmentsheet', 'gradebook'); ?></span></button></p>
 </form><?php } ?>
+
+<?php
+$studentIds = (array) $this->objGradebook->getStudentInContextInfo('userid');
+$studentNumbers = (array) $this->objGradebook->getStudentInContextInfo('username');
+$studentFirstNames = (array) $this->objGradebook->getStudentInContextInfo('firstname');
+$studentSurnames = (array) $this->objGradebook->getStudentInContextInfo('surname');
+$studentTotal = min(count($studentIds), count($studentNumbers), count($studentFirstNames), count($studentSurnames));
+$statusLabels = array(
+    'not_attempted'=>$this->objLanguage->languageText('mod_gradebook_result_notattempted', 'gradebook'),
+    'in_progress'=>$this->objLanguage->languageText('mod_gradebook_result_inprogress', 'gradebook'),
+    'submitted'=>$this->objLanguage->languageText('mod_gradebook_result_submitted', 'gradebook'),
+    'marked'=>$this->objLanguage->languageText('mod_gradebook_result_marked', 'gradebook'),
+);
+$formatPercent = function ($value) {
+    return rtrim(rtrim(number_format((float) $value, 1, '.', ''), '0'), '.').'%';
+};
+?>
+<section class="assessment-sheet-panel gradebook-mark-matrix" aria-labelledby="gradebook-mark-matrix-title">
+<header class="assessment-sheet-panel-head"><img src="<?php echo $iconUri; ?>table-2.svg" alt="" aria-hidden="true"><h2 id="gradebook-mark-matrix-title"><?php echo $this->objLanguage->languageText('mod_gradebook_classmarkmatrix', 'gradebook', 'Class marks'); ?></h2></header>
+<?php if ($studentTotal === 0 || empty($rows)) { ?>
+<p class="assessment-sheet-empty"><?php echo $this->objLanguage->languageText('mod_gradebook_classmarkmatrix_empty', 'gradebook', 'Add learners and Assessment Sheet activities to see the class marks table.'); ?></p>
+<?php } else { ?>
+<div class="chisimba-table-wrap"><table class="chisimba-table"><thead><tr>
+<th><?php echo $this->objLanguage->languageText('mod_gradebook_student', 'gradebook', 'Student'); ?></th>
+<?php foreach ($rows as $row) { ?><th><?php echo htmlspecialchars($row['title'], ENT_QUOTES, 'UTF-8'); ?></th><?php } ?>
+</tr></thead><tbody>
+<?php for ($studentIndex=0; $studentIndex<$studentTotal; $studentIndex++) { ?>
+<tr><th scope="row"><?php echo htmlspecialchars(trim($studentFirstNames[$studentIndex].' '.$studentSurnames[$studentIndex]), ENT_QUOTES, 'UTF-8'); ?><br><small><?php echo htmlspecialchars($studentNumbers[$studentIndex], ENT_QUOTES, 'UTF-8'); ?></small></th>
+<?php foreach ($rows as $row) {
+    $result = array('status'=>'not_attempted', 'mark_percent'=>null);
+    if (is_object($row['adapter']) && is_callable(array($row['adapter'], 'getStudentResult'))) {
+        $candidate = $row['adapter']->getStudentResult(
+            $this->contextCode,
+            $row['item']['activity_id'],
+            $studentIds[$studentIndex],
+            !empty($row['item']['result_rule']) ? $row['item']['result_rule'] : 'latest_completed'
+        );
+        if (is_array($candidate) && !empty($candidate['status'])) { $result = $candidate; }
+    }
+    $status = isset($statusLabels[$result['status']]) ? $statusLabels[$result['status']] : $result['status'];
+?><td><?php echo is_numeric($result['mark_percent']) ? '<strong>'.$formatPercent($result['mark_percent']).'</strong>' : '&mdash;'; ?><br><small><?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?></small></td><?php } ?>
+</tr><?php } ?>
+</tbody></table></div>
+<?php } ?>
+</section>
 <p class="assessment-sheet-back"><a href="<?php echo $this->uri(array('action'=>'assessmentPlan')); ?>"><?php echo $this->objLanguage->languageText('mod_gradebook_backtoassessmentplan', 'gradebook'); ?></a></p>
 </div>
 <script>(function(){function update(){var total=0,subtotals={},els=document.getElementsByClassName('assessment-weight');for(var i=0;i<els.length;i++){var value=parseFloat(els[i].value)||0,classification=els[i].getAttribute('data-classification');total+=value;subtotals[classification]=(subtotals[classification]||0)+value;}var format=function(value){return value.toFixed(1).replace(/\.?(?:0+)$/,'');};document.getElementById('assessment-sheet-total').textContent=format(total);document.getElementById('assessment-sheet-remaining').textContent=format(100-total);var labels=document.getElementsByClassName('assessment-sheet-subtotal-value');for(var j=0;j<labels.length;j++){labels[j].textContent=format(subtotals[labels[j].getAttribute('data-classification')]||0);}}var fields=document.getElementsByClassName('assessment-weight');for(var i=0;i<fields.length;i++){fields[i].addEventListener('input',update);}if(document.getElementById('assessment-sheet-total')){update();}}());</script>

@@ -48,27 +48,6 @@ $statusLabels = array(
     'marked' => $L('result_marked')
 );
 
-$now = time();
-$isOpenNow = function ($item) use ($now) {
-    if (isset($item['opening_enabled'])
-        && strtoupper((string)$item['opening_enabled']) === 'Y'
-        && !empty($item['opening_date'])) {
-        $opening = strtotime((string)$item['opening_date']);
-        if ($opening !== false && $now < $opening) {
-            return false;
-        }
-    }
-    if (isset($item['closing_enabled'])
-        && strtoupper((string)$item['closing_enabled']) === 'Y'
-        && !empty($item['closing_date'])) {
-        $closing = strtotime((string)$item['closing_date']);
-        if ($closing !== false && $now > $closing) {
-            return false;
-        }
-    }
-    return true;
-};
-
 echo '<div class="gradebook-home chisimba-workspace">';
 echo '<h1>'.$esc($contextName).' '.$esc($L('title')).'</h1>';
 
@@ -89,7 +68,6 @@ if ($studentCount === 0) {
         .'<th>'.$esc($L('student')).'</th>'
         .'<th>'.$esc($L('assessmentscompleted')).'</th>'
         .'<th>'.$esc($L('totalassessments')).'</th>'
-        .'<th>'.$esc($L('opennow')).'</th>'
         .'</tr></thead><tbody>';
 
     for ($i = 0; $i < $studentCount; $i++) {
@@ -101,13 +79,6 @@ if ($studentCount === 0) {
             }
         }
 
-        $openNow = 0;
-        foreach ((array)$planItems as $item) {
-            if ($isOpenNow($item)) {
-                $openNow++;
-            }
-        }
-
         $detailUri = $this->uri(array('learner_id'=>$userIds[$i]));
         $name = trim($firstNames[$i].' '.$surnames[$i]);
 
@@ -116,7 +87,6 @@ if ($studentCount === 0) {
             .'<td><a href="'.$detailUri.'">'.$esc($name).'</a></td>'
             .'<td>'.$esc($completed).'</td>'
             .'<td>'.$esc(count($planItems)).'</td>'
-            .'<td>'.$esc($openNow).'</td>'
             .'</tr>';
     }
 
@@ -189,6 +159,8 @@ foreach ((array)$planItems as $item) {
 }
 
 $selectedItemId = trim((string)$this->getParam('plan_item', ''));
+$selectedItemId = $selectedItemId === '' && count($planRows) === 1
+    ? (string) $planRows[0]['item']['id'] : $selectedItemId;
 $selectedRow = false;
 foreach ($planRows as $row) {
     if ((string)$row['item']['id'] === $selectedItemId) {

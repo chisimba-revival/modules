@@ -484,6 +484,7 @@ class gradebook extends controller {
                 'item' => $item,
                 'title' => is_array($activity) && isset($activity['name']) ? $activity['name'] : $item['name'],
                 'provider' => $provider ? $provider['label'] : $item['provider_module'],
+                'adapter' => $adapter,
                 'classification' => is_array($activity) && !empty($activity['classification']) ? $activity['classification'] : 'unclassified',
                 'available' => is_array($activity)
             );
