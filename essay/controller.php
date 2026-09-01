@@ -285,6 +285,7 @@ class essay extends controller {
 
         // Table
         $objTable = new htmltable();
+        $objTable->cssClass = 'chisimba-table';
         //$objTable->row_attributes=' height="25"';
         $objTable->cellpadding = 2;
         $objTable->cellspacing = 2;
@@ -340,12 +341,10 @@ class essay extends controller {
             $objTable->addCell($this->objLanguage->code2Txt('mod_essay_notopics', 'essay'), '', '', '', 'noRecordsMessage', 'colspan="3"');
             $objTable->endRow();
         }
-        $links = '';
-        $objLink = new link($this->uri(array(
-                            'action' => 'viewallessays'
-                        )));
-        $objLink->link = $this->objLanguage->languageText('mod_essay_viewbookedsubmitted', 'essay');
-        $links .= $objLink->show();
+        $icons = $this->getObject('iconservice', 'ui');
+        $allEssaysUrl = htmlspecialchars($this->uri(array('action'=>'viewallessays')), ENT_QUOTES, 'UTF-8');
+        $allEssaysText = htmlspecialchars($this->objLanguage->languageText('mod_essay_viewbookedsubmitted', 'essay'), ENT_QUOTES, 'UTF-8');
+        $links = '<div class="chisimba-actions"><a class="button" href="'.$allEssaysUrl.'">'.$icons->render('list', array('decorative'=>true)).' '.$allEssaysText.'</a></div>';
         if ($this->assignment) {
             $objLink = new link($this->uri(array(''), 'assignment'));
             $objLink->link = $this->objLanguage->languageText('mod_assignment_name', 'assignment');
@@ -353,9 +352,8 @@ class essay extends controller {
         }
         $objLayer = $this->objLayer;
         $objLayer->border = 0;
-        $objLayer->str =
-                $objTable->show()
-                . $links;
+        $objLayer->str = '<section class="chisimba-workspace"><div class="chisimba-table-wrap">'
+                .$objTable->show().'</div>'.$links.'</section>';
         return $objLayer->show();
     }
 

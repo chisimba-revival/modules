@@ -471,17 +471,13 @@ class essayadmin extends controller
         $this->setVarByRef('heading', $heading);
 
         $strAddNewTopic = $this->objLanguage->languageText('mod_essayadmin_addnewtopicarea','essayadmin');
-        // Icon for add new topic
         $objIcon = $this->objIcon;
-        $objIcon->title = $strAddNewTopic;
-        $iconAddTopic = $objIcon->getAddIcon($this->uri(array('action'=>'addtopic')));
-        $heading .= '&nbsp;'.$iconAddTopic;
-
-        $objLink = new link($this->uri(array('action'=>'addtopic')));
-        $objLink->link = $strAddNewTopic;
-        $linkAddNewTopic = $objLink->show();
+        $icons = $this->getObject('iconservice', 'ui');
+        $linkAddNewTopic = '<a class="button" href="'.htmlspecialchars($this->uri(array('action'=>'addtopic')), ENT_QUOTES, 'UTF-8').'">'
+            .$icons->render('plus', array('decorative'=>true)).' '.htmlspecialchars($strAddNewTopic, ENT_QUOTES, 'UTF-8').'</a>';
 
         $objTable = $this->newObject('htmltable', 'htmlelements');
+        $objTable->cssClass = 'chisimba-table';
         $objTable->cellpadding = 2;
         $objTable->cellspacing = 2;
 
@@ -570,8 +566,8 @@ class essayadmin extends controller
             $links .= '<br />'.$objLink->show();
         }
         return
-            $objTable->show()
-            .$links;
+            '<section class="chisimba-workspace"><div class="chisimba-actions">'.$links.'</div><div class="chisimba-table-wrap">'
+            .$objTable->show().'</div></section>';
     }
 
     /**
