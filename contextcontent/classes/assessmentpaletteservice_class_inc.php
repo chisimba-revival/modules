@@ -15,8 +15,16 @@ class assessmentpaletteservice extends ChisimbaObject
         } catch (Throwable $failure) {
             return array();
         }
+        $contextModules = $this->getObject('dbcontextmodules', 'context');
+        $enabledModules = array_map(
+            'strtolower',
+            (array) $contextModules->getContextModules($contextCode)
+        );
         $groups = array();
         foreach ($registry->all() as $provider) {
+            if (!in_array(strtolower($provider['module_id']), $enabledModules, true)) {
+                continue;
+            }
             $adapter = $registry->adapter($provider['key']);
             if (!is_object($adapter)
                 || !is_callable(array($adapter, 'listActivities'))

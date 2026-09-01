@@ -45,6 +45,19 @@ class mcqtestsassessmentprovider extends ChisimbaObject
         return false;
     }
 
+    /** Open test management for authors or the attempt journey for learners. */
+    public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
+    {
+        if ($this->getActivity($contextCode, $activityId) === false) { return false; }
+        return array(
+            'module'=>'mcqtests',
+            'params'=>array(
+                'action'=>$role === 'author' ? 'view' : 'answertest',
+                'id'=>$activityId,
+            ),
+        );
+    }
+
     /** Return a normalised learner result without exposing legacy sentinels. */
     public function getStudentResult($contextCode, $activityId, $userId, $rule = 'latest_completed')
     {

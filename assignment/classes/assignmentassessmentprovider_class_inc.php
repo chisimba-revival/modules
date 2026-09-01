@@ -49,6 +49,13 @@ class assignmentassessmentprovider extends ChisimbaObject
         return false;
     }
 
+    /** Open the same assignment journey used by the module for either role. */
+    public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
+    {
+        if ($this->getActivity($contextCode, $activityId) === false) { return false; }
+        return array('module'=>'assignment', 'params'=>array('action'=>'view', 'id'=>$activityId));
+    }
+
     /** Return the newest submission, distinguishing submitted from marked. */
     public function getStudentResult($contextCode, $activityId, $userId, $rule = 'latest_completed')
     {

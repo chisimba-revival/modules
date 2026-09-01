@@ -14,7 +14,13 @@ $service = $read('classes/assessmentpaletteservice_class_inc.php');
 $authoring = $read('classes/contentauthoringservice_class_inc.php');
 $picker = $read('templates/content/contenttypepicker_tpl.php');
 $view = $read('templates/content/viewpage_tpl.php');
-$worksheet = file_get_contents($root . '/../worksheet/classes/worksheetassessmentprovider_class_inc.php');
+$providerFiles = array('worksheet', 'assignment', 'essay', 'mcqtests', 'offlineassessment');
+$providers = array();
+foreach ($providerFiles as $module) {
+    $providers[$module] = file_get_contents(
+        $root . '/../' . $module . '/classes/' . $module . 'assessmentprovider_class_inc.php'
+    );
+}
 
 $required = array(
     array($service, "getObject('assessmentproviderregistry', 'gradebook')"),
@@ -24,9 +30,14 @@ $required = array(
     array($picker, 'mod_contextcontent_assessmentpalette'),
     array($picker, "'contenttype'=>'assessment_activity'"),
     array($view, "\$page['contenttype'] === 'assessment_activity'"),
-    array((string) $worksheet, 'getLaunchTarget'),
-    array((string) $worksheet, "'action' => \$role === 'author' ? 'worksheetinfo' : 'viewworksheet'"),
+    array($service, "getObject('dbcontextmodules', 'context')"),
+    array($service, "['module_id']"),
+    array((string) $providers['worksheet'], 'getLaunchTarget'),
+    array((string) $providers['worksheet'], "'action' => \$role === 'author' ? 'worksheetinfo' : 'viewworksheet'"),
 );
+foreach ($providers as $module => $provider) {
+    $required[] = array((string) $provider, 'getLaunchTarget');
+}
 foreach ($required as $contract) {
     if (strpos($contract[0], $contract[1]) === false) {
         fwrite(STDERR, "FAIL: incomplete provider-backed assessment palette\n");

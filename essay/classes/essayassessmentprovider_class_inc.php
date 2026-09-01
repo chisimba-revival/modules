@@ -25,5 +25,11 @@ class essayassessmentprovider extends ChisimbaObject
         }
         return false;
     }
+    /** Open the selected essay topic using the module's role-aware view. */
+    public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
+    {
+        if ($this->getActivity($contextCode, $activityId) === false) { return false; }
+        return array('module'=>'essay', 'params'=>array('action'=>'view', 'id'=>$activityId));
+    }
 }
 ?>
