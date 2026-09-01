@@ -5,6 +5,9 @@ $language = function ($key) {
     $fallbacks = array(
         'mod_contextcontent_assessmentpalette' => 'Assessments',
         'mod_contextcontent_addassessment' => 'Add assessment',
+        'mod_contextcontent_palette_tabs' => 'Learning item palettes',
+        'mod_contextcontent_type_assessment' => 'Assessment activity',
+        'mod_contextcontent_type_assessment_desc' => 'An activity supplied by a course assessment tool.',
     );
     $text = $this->objLanguage->languageText($key, 'contextcontent');
     if (strpos($text, 'Language item not found:') === 0 && isset($fallbacks[$key])) {

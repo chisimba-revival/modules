@@ -28,6 +28,8 @@ $required = array(
     array($authoring, "\$data['providermodule']"),
     array($authoring, "\$data['provideritemid']"),
     array($picker, 'mod_contextcontent_assessmentpalette'),
+    array($picker, "'mod_contextcontent_palette_tabs' => 'Learning item palettes'"),
+    array($picker, "'mod_contextcontent_type_assessment' => 'Assessment activity'"),
     array($picker, "'contenttype'=>'assessment_activity'"),
     array($view, "\$page['contenttype'] === 'assessment_activity'"),
     array($service, "getObject('dbcontextmodules', 'context')"),
