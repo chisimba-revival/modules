@@ -212,11 +212,14 @@ class essay extends controller {
             //break;
             case 'uploadsubmit':
                 // Upload an essay for marking
-                //--JO'C deprecated or a marked essay & marks & comment
-                // Get booking ID
                 $bookId = $this->getParam('bookid');
-                // Get file ID
-                $fileId = $this->getParam('file');
+                $booking = $this->dbbook->getBooking("WHERE id='".addslashes($bookId)."' AND studentid='".addslashes($this->userId)."' AND context='".addslashes($this->contextcode)."'");
+                if (empty($booking)) { return $this->nextAction('viewallessays', array('error'=>'invalidbooking')); }
+                $fileDetails = $this->objFile->uploadFile('essayfile');
+                if ($fileDetails === false || empty($fileDetails['success']) || empty($fileDetails['fileid'])) {
+                    return $this->nextAction('uploadessay', array('bookid'=>$bookId, 'error'=>'uploadfailed'));
+                }
+                $fileId = $fileDetails['fileid'];
                 $fields = array('studentfileid' => $fileId, 'submitdate' => date('Y-m-d H:i:s'));
                 $this->dbbook->bookEssay($fields, $bookId);
                 $this->objFileRegister->registerUse($fileId, 'essay', 'tbl_essay_book', $bookId, 'studentfileid', $this->contextcode, '', TRUE);

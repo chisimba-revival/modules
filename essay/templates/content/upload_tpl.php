@@ -1,78 +1,16 @@
 <?php
-/*
-* Template for uploading essays.
-* @package essay
-*/
-
-// set up html elements
-//$this->loadclass('htmltable','htmlelements');
-//$objLayer=$this->objLayer;
-
-// set up language items
-//$essayhead=$this->objLanguage->languageText('mod_essay_essay', 'essay');
-//$btnupload=$this->objLanguage->languageText('mod_essay_upload' ,'essay');
-//$uploadhead=$btnupload.' '.$essayhead;
-//$head=$uploadhead;
-//$btnexit=;
-//$wordstudent=ucwords($this->objLanguage->languageText('mod_context_readonly'));
-
-// Get booked essays in topic area
-$data = $this->dbbook->getBooking("WHERE id='{$bookId}'");
-// Get essay data
-$essay = $this->dbessays->getEssay($data[0]['essayid'], 'topic');
-// Get essay title
-$essayTitle = $essay[0]['topic'];
-
-$this->setVar('heading', $this->objLanguage->languageText('mod_essay_uploadessay','essay'));
-
-$str = '';
-
-$str .= '<b>'.$this->objLanguage->languageText('mod_essay_essay','essay').':</b> '.$essayTitle.'<br />';
-
-/*
-// display confirmation message
-if (empty($message)) {
-    $confirmMessage = '';
-} else {
-    $objMessage = $this->newObject('timeoutmessage','htmlelements');
-    $objMessage->setMessage($message);
-    $confirmMessage = $objMessage->show();
-}
-$str .= $confirmMessage;
-*/
-
-//new file upload functionality
-//$this->loadclass('selectfile','filemanager');
-//$objSelectFile = $this->newObject('selectfile', 'filemanager');
-//$objSelectFile->name = 'uploadessay';
-//$objSelectFile->context = false;
-//$objSelectFile->workgroup = false;
-
-// File input field for file manager
-// Setup selectfile object
-$objSelectFile = $this->newObject('selectfile','filemanager');
-$objSelectFile->name = 'file';
-$str .= $objSelectFile->show().'<br />';
-
-$objUploadButton = new button('submit', $this->objLanguage->languageText('word_save')); //$this->objLanguage->languageText('mod_essay_upload' ,'essay')
-$objUploadButton->setToSubmit();
-$buttonUpload = $objUploadButton->show();
-
-/*
-$objSubmitButton = new button('submit', $this->objLanguage->languageText('word_exit'));
-$objSubmitButton->setToSubmit();
-$buttonSubmit = $objSubmitButton->show();
-*/
-
-$objCancelButton = new button('cancel', $this->objLanguage->languageText('word_cancel'));
-$returnUrl = $this->uri(array('action' => 'viewallessays'));
-$objCancelButton->setOnClick("javascript: window.location='{$returnUrl}';");
-$buttonCancel = $objCancelButton->show();
-
-$str .= '<br />'.$buttonUpload.'&nbsp;'.$buttonCancel.'<br />'; //$buttonSubmit
-
-$objForm = new form('upload', $this->uri(array('action'=>'uploadsubmit','bookid'=>$bookId)));
-$objForm->extra = " enctype='multipart/form-data'";
-$objForm->addToForm($str);
-echo $objForm->show();
+/** Direct, accessible learner Essay submission form. @author Derek Keats */
+$e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+$icons=$this->getObject('iconservice','ui');
+$bookings=$this->dbbook->getBooking("WHERE id='".addslashes($bookId)."' AND studentid='".addslashes($this->userId)."' AND context='".addslashes($contextcode)."'");
+if (empty($bookings)) { echo '<div class="error">This Essay booking is not available.</div>'; return; }
+$essay=$this->dbessays->getEssay($bookings[0]['essayid'],'topic');
+$essayTitle=$essay[0]['topic']??'';
+$this->setVar('heading',$this->objLanguage->languageText('mod_essay_uploadessay','essay'));
 ?>
+<section class="chisimba-workspace"><h2><?php echo $e($essayTitle); ?></h2>
+<p>Select the finished document you want to submit. Submitting another file replaces the current submission until marking begins.</p>
+<form class="chisimba-form" method="post" enctype="multipart/form-data" action="<?php echo $e($this->uri(array('action'=>'uploadsubmit','bookid'=>$bookId))); ?>">
+<div class="chisimba-form-field"><label for="essay-file">Essay document</label><input id="essay-file" name="essayfile" type="file" required accept=".pdf,.doc,.docx,.odt,.rtf,.txt"></div>
+<div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $icons->render('upload',array('decorative'=>true)); ?> Submit essay</button><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'viewallessays'))); ?>"><?php echo $icons->render('x',array('decorative'=>true)); ?> Cancel</a></div>
+</form></section>
