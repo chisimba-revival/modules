@@ -381,6 +381,10 @@ class essayadmin extends controller
             $topic = $this->getParam('id');
             // Get book ID
             $book = $this->getParam('book');
+            $booking = $this->dbbook->getBooking("WHERE id='".addslashes($book)."' AND topicid='".addslashes($topic)."' AND context='".addslashes($this->contextcode)."'");
+            if (empty($booking)) {
+                return $this->nextAction(null, array('error'=>'invalidsubmission'));
+            }
             $mark=$this->getParam('mark', '');
             $comment=$this->getParam('comment', '');
             $message = null;

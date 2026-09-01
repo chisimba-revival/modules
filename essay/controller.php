@@ -320,7 +320,7 @@ class essay extends controller {
         if (!empty($topicData)) {
             foreach ($topicData as $topic) {
                 $class = ($i++ % 2) ? 'even' : 'odd';
-                $percentage = $topic['percentage'];
+                $percentage = $topic['percentage'].'%';
                 if ($topic['bypass'] == 1) {
                     $date = $this->objLanguage->languageText('mod_essay_n_a', 'essay');
                 } else {
@@ -343,7 +343,7 @@ class essay extends controller {
         }
         $icons = $this->getObject('iconservice', 'ui');
         $allEssaysUrl = htmlspecialchars($this->uri(array('action'=>'viewallessays')), ENT_QUOTES, 'UTF-8');
-        $allEssaysText = htmlspecialchars($this->objLanguage->languageText('mod_essay_viewbookedsubmitted', 'essay'), ENT_QUOTES, 'UTF-8');
+        $allEssaysText = 'My Essays';
         $links = '<div class="chisimba-actions"><a class="button" href="'.$allEssaysUrl.'">'.$icons->render('list', array('decorative'=>true)).' '.$allEssaysText.'</a></div>';
         if ($this->assignment) {
             $objLink = new link($this->uri(array(''), 'assignment'));
