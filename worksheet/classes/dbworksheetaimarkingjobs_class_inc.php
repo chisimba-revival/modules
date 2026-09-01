@@ -32,6 +32,26 @@ class dbworksheetaimarkingjobs extends dbTable
     }
 
     /**
+     * Return the newest completed AI draft retained for a worksheet submission.
+     *
+     * @param string $resultId Worksheet result identifier.
+     * @param string $contextCode Current course context.
+     * @param string $userId Lecturer who requested the draft.
+     * @param bool $isAdmin Whether ownership filtering may be bypassed.
+     * @return array|false Completed job with decoded suggestions, or false.
+     * @author Derek Keats
+     */
+    public function getLatestCompletedForResult($resultId, $contextCode, $userId, $isAdmin = false)
+    {
+        $sql = "SELECT id FROM tbl_worksheet_ai_marking_jobs WHERE result_id='".$this->escape($resultId)."'"
+            ." AND contextcode='".$this->escape($contextCode)."' AND status='completed'";
+        if (!$isAdmin) { $sql .= " AND userid='".$this->escape($userId)."'"; }
+        $rows = $this->getArray($sql.' ORDER BY date_completed DESC,date_created DESC LIMIT 1');
+        if (!is_array($rows) || empty($rows[0]['id'])) { return false; }
+        return $this->getOwned($rows[0]['id'], $contextCode, $userId, $isAdmin);
+    }
+
+    /**
      * Return the newest AI-marking job for each requested worksheet result.
      *
      * @param array $resultIds Worksheet result identifiers visible on the page.
@@ -100,7 +120,7 @@ class dbworksheetaimarkingjobs extends dbTable
         return array('selected'=>1, 'completed'=>1, 'jobId'=>$row['id']);
     }
 
-    /** Remove transient AI suggestions after the lecturer saves final marks. */
+    /** Remove AI suggestions when a reopened submission makes the draft stale. */
     public function deleteForResult($resultId)
     {
         $rows = $this->getArray("SELECT id FROM tbl_worksheet_ai_marking_jobs WHERE result_id='".$this->escape($resultId)."'");

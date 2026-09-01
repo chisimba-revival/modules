@@ -475,12 +475,23 @@ class worksheet extends controller
         $this->setVarByRef('structuredRubrics', $structuredRubrics);
         $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
         $this->setVar('aiSuggestions', array());
+        $this->setVar('aiSuggestionsApplied', false);
+        $aiRecoveryJob = false;
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
         $this->setVar('worksheetReopenToken', $stack['csrf']->issue('worksheet_reopen_submission'));
         if ($this->aiMarkingAvailable) {
-            $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
+            $aiRecoveryJob = $this->objAiMarkingJobs->getLatestCompletedForResult(
+                $resultId,
+                $this->contextCode,
+                $this->objUser->userId(),
+                $this->objUser->isAdmin()
+            );
+            if ($aiRecoveryJob === false) {
+                $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
+            }
         }
+        $this->setVarByRef('aiRecoveryJob', $aiRecoveryJob);
 
         return 'viewstudentworksheet_tpl.php';
     }
@@ -533,6 +544,15 @@ class worksheet extends controller
         $worksheet = $this->objWorksheet->getWorksheet($result['worksheet_id']);
         if ($worksheet == FALSE || $worksheet['context'] !== $this->contextCode) {
             return $this->nextAction(NULL, array('error'=>'unknownworksheet'));
+        }
+        $existingDraft = $this->objAiMarkingJobs->getLatestCompletedForResult(
+            $resultId,
+            $this->contextCode,
+            $this->objUser->userId(),
+            $this->objUser->isAdmin()
+        );
+        if (is_array($existingDraft)) {
+            return $this->nextAction('aimarkingjob', array('id'=>$existingDraft['id']));
         }
         $jobId = $this->objAiMarkingJobs->enqueue($this->contextCode, $this->objUser->userId(), $resultId);
         return empty($jobId) ? $this->nextAction('viewstudentworksheet', array('id'=>$resultId)) : $this->nextAction('aimarkingjob', array('id'=>$jobId));
@@ -590,13 +610,12 @@ class worksheet extends controller
             $this->setVarByRef('structuredRubrics', $rubrics);
             $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
             $this->setVar('aiSuggestions', $job['suggestions']);
+            $this->setVar('aiSuggestionsApplied', true);
+            $this->setVar('aiRecoveryJob', false);
             $this->setVar('aiSuggestionError', '');
             $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $this->setVar('worksheetMarkToken', $stack['csrf']->issue('worksheet_save_marks'));
             $this->setVar('worksheetReopenToken', $stack['csrf']->issue('worksheet_reopen_submission'));
-            if ($this->aiMarkingAvailable) {
-                $this->setVar('aiMarkingToken', $stack['csrf']->issue('worksheet_ai_marking'));
-            }
             return 'viewstudentworksheet_tpl.php';
         }
         $this->setVarByRef('aiMarkingJob', $job);
@@ -614,9 +633,6 @@ class worksheet extends controller
         $worksheet = $this->getParam('worksheet');
         $this->objWorksheetAnswers->saveMarks($student, $worksheet, $this->objUser->userId());
         $resultId = $this->objWorksheetResults->getWorksheetResult($student, $worksheet);
-        if (is_array($resultId) && !empty($resultId['id'])) {
-            $this->objAiMarkingJobs->deleteForResult($resultId['id']);
-        }
         return $this->nextAction('viewstudentworksheet', array('id'=>$resultId['id'], 'message'=>'worksheetmarked'));
     }
 

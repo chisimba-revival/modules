@@ -54,7 +54,14 @@ $reopenButton->setToSubmit();
 $reopenForm->addToForm('<div class="worksheet-review-action"><p>'.$this->objLanguage->languageText('mod_worksheet_reopensubmission_help', 'worksheet', 'Allow the student to revise and submit this formative worksheet again. Existing answers will be retained.').'</p><div class="chisimba-form-actions">'.$reopenButton->show().'</div></div>');
 echo $reopenForm->show();
 
-if (!empty($aiMarkingAvailable)) {
+if (!empty($aiMarkingAvailable) && !empty($aiRecoveryJob)) {
+    $recoverLink = new link($this->uri(array('action'=>'aimarkingjob', 'id'=>$aiRecoveryJob['id'])));
+    $recoverLink->link = $this->objLanguage->languageText('mod_worksheet_ai_recover', 'worksheet', 'Recover AI suggestions');
+    $recoverLink->cssClass = 'button chisimba-button-secondary';
+    echo '<div class="worksheet-review-action"><p>'
+        .$this->objLanguage->languageText('mod_worksheet_ai_recover_help', 'worksheet', 'The original AI draft has been retained. Recovering it will replace the values shown in this form, but will not change saved marks until you choose Update marks.')
+        .'</p><div class="chisimba-form-actions worksheet-review-recover">'.$recoverLink->show().'</div></div>';
+} elseif (!empty($aiMarkingAvailable) && empty($aiSuggestionsApplied)) {
     $aiForm = new form('aiassistmark', $this->uri(array('action'=>'aiassistmark')));
     $aiForm->addToForm((new hiddeninput('id', $worksheetResult['id']))->show());
     $aiForm->addToForm((new hiddeninput('csrf_token', $aiMarkingToken))->show());
