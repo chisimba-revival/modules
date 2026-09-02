@@ -6,8 +6,12 @@ class systemmanagementservice extends ChisimbaObject
     private $config; private $clock; private $user; private $notices;
     /** Load canonical configuration, identity, time and notice services. */
     public function init(){$this->config=$this->getObject('dbsysconfig','sysconfig');$this->clock=$this->getObject('timeanddateservice','timeanddate-service');$this->user=$this->getObject('user','security');$this->notices=$this->getObject('dbsystemnotices');}
-    /** Return the current maintenance configuration and effective state. */
-    public function maintenance(){ $start=$this->value('MAINTENANCE_START_AT');$end=$this->value('MAINTENANCE_END_AT');$now=$this->clock->nowStorage();$active=$this->value('MAINTENANCE_ENABLED')==='1'&&($start===''||$start<=$now)&&($end===''||$end>$now);return array('enabled'=>$this->value('MAINTENANCE_ENABLED')==='1','active'=>$active,'message'=>$this->value('MAINTENANCE_MESSAGE'),'start'=>$start,'end'=>$end); }
+    /**
+     * Return the maintenance plan and manually controlled live state.
+     *
+     * Planned dates are advisory. They must never change site availability.
+     */
+    public function maintenance(){ $active=$this->value('MAINTENANCE_ENABLED')==='1';return array('enabled'=>$active,'active'=>$active,'message'=>$this->value('MAINTENANCE_MESSAGE'),'start'=>$this->value('MAINTENANCE_START_AT'),'end'=>$this->value('MAINTENANCE_END_AT')); }
     /** Decide whether this request must be sent to the offline surface. */
     public function shouldBlock($module){return $this->maintenance()['active']&&!$this->user->isAdmin()&&!in_array((string)$module,array('security','systemmanagement'),true);}
     /** Return active notices applicable to the signed-in user's broad role. */
