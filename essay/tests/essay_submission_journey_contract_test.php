@@ -16,7 +16,7 @@ $checks=array(
  'concurrent edits remain dirty'=>str_contains($writer,'revision!==savingRevision'),
  'final submission is deliberate'=>str_contains($writer,'Submit for marking')&&str_contains($writer,"action'=>'submitwritten"),
  'written and upload choices coexist'=>str_contains($viewer,'Write essay')&&str_contains($viewer,'Upload document instead'),
- 'written submission has independent snapshot'=>str_contains($database,"'draft_html'")&&str_contains($database,"'submission_html'")&&str_contains($database,"'submission_type' => 'written'"),
+ 'written submission has independent snapshot'=>str_contains($database,"'draft_html'")&&str_contains($database,"'submission_html'")&&str_contains($database,"'submission_mode' => 'written'"),
  'learner draft endpoints use CSRF'=>str_contains($controller,'DRAFT_CSRF')&&str_contains($controller,'SUBMIT_CSRF')&&str_contains($controller,'->consume('),
 );
 $failed=false; foreach($checks as $name=>$ok){echo ($ok?'PASS: ':'FAIL: ').$name.PHP_EOL;$failed=$failed||!$ok;} exit($failed?1:0);

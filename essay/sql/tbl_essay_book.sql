@@ -47,6 +47,19 @@ $fields = array(
       'type'    =>  'text',
       'length'  =>  32
     ),
+    'submission_mode' => array(
+      'type' => 'text',
+      'length' => 16
+    ),
+    'submission_html' => array(
+      'type' => 'clob'
+    ),
+    'submission_text' => array(
+      'type' => 'clob'
+    ),
+    'draft_updated' => array(
+      'type' => 'timestamp'
+    ),
     'lecturerfileid'  =>  array(
       'type'    =>  'text',
       'length'  =>  32
@@ -67,16 +80,6 @@ $fields = array(
     ),
     'draft_html'  =>  array(
       'type'    =>  'clob'
-    ),
-    'draft_updated'  =>  array(
-      'type'    =>  'timestamp'
-    ),
-    'submission_html'  =>  array(
-      'type'    =>  'clob'
-    ),
-    'submission_type'  =>  array(
-      'type'    =>  'text',
-      'length'  =>  16
     ),
     'updated'  =>  array(
       'type'    =>  'timestamp'

@@ -139,7 +139,8 @@ class dbessay_book extends dbTable
             'draft_html' => (string)$bodyHtml,
             'draft_updated' => $submittedAt,
             'submission_html' => (string)$bodyHtml,
-            'submission_type' => 'written',
+            'submission_text' => trim(html_entity_decode(strip_tags((string)$bodyHtml), ENT_QUOTES, 'UTF-8')),
+            'submission_mode' => 'written',
             'studentfileid' => null,
             'submitdate' => $submittedAt,
         ));

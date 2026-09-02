@@ -302,7 +302,7 @@ class essay extends essaymanagementbase {
                     return $this->nextAction('uploadessay', array('bookid'=>$bookId, 'error'=>'uploadfailed'));
                 }
                 $fileId = $fileDetails['fileid'];
-                $fields = array('studentfileid' => $fileId, 'submission_html'=>null, 'submission_type'=>'upload', 'submitdate' => $this->objTimeAndDate->nowStorage());
+                $fields = array('studentfileid' => $fileId, 'submission_html'=>null, 'submission_text'=>null, 'submission_mode'=>'upload', 'submitdate' => $this->objTimeAndDate->nowStorage());
                 $this->dbbook->bookEssay($fields, $bookId);
                 $this->objFileRegister->registerUse($fileId, 'essay', 'tbl_essay_book', $bookId, 'studentfileid', $this->contextcode, '', TRUE);
                 return $this->nextAction('viewallessays');
