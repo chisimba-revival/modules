@@ -19,6 +19,7 @@ class mylearning extends controller
             return null;
         }
         $this->setVar('learningOverview', $this->getObject('studentlearningoverview', 'context')->show());
+        $this->setVar('dueItems', $this->getObject('studentdueitems', 'mylearning')->show());
         $modules=$this->getObject('modules','modulecatalogue');
         $membershipAvailable=$modules->checkIfRegistered('membership-service')
             &&$modules->checkIfRegistered('payment-service');

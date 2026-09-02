@@ -89,7 +89,7 @@ $layout->setLeftColumnContent(
     . '</aside>'
 );
 $layout->setMiddleColumnContent(
-    '<main class="mylearning-page">' . $membershipPanel . $learningOverview
+    '<main class="mylearning-page">' . $membershipPanel . $dueItems . $learningOverview
     . '<div id="middleblocks" class="mylearning-page__blocks">'
     . $wideBlocks . '</div>' . $wideEditor . '</main>'
 );

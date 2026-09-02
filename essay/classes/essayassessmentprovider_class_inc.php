@@ -14,11 +14,17 @@ class essayassessmentprovider extends ChisimbaObject
     public function listActivities($contextCode)
     {
         $filter = "context='".addslashes($contextCode)."'";
-        $records = $this->topics->getTopic(null, 'id,name', $filter);
+        $records = $this->topics->getTopic(null, 'id,name,closing_date,bypass', $filter);
         $activities = array();
         foreach ((array) $records as $record) {
             if (!empty($record['id']) && isset($record['name'])) {
-                $activities[] = array('id'=>$record['id'], 'name'=>$record['name'], 'classification'=>'formative');
+                $activities[] = array(
+                    'id'=>$record['id'],
+                    'name'=>$record['name'],
+                    'classification'=>'formative',
+                    'closing_date'=>isset($record['closing_date']) ? $record['closing_date'] : null,
+                    'bypass'=>!empty($record['bypass']),
+                );
             }
         }
         return $activities;
