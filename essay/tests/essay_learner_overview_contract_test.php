@@ -13,6 +13,8 @@ $checks=array(
 'duplicate booking icon removed'=>!str_contains($controller,'$icons .= $bookIcon')&&!str_contains($controller,'$icons .= $unbookIcon'),
 'essay titles are not booking controls'=>!str_contains($controller,'$objLink->link = $essay[\'topic\']'),
 'booking uses explicit actions'=>str_contains($controller,'Book this essay')&&str_contains($controller,'Go to booked essay')&&str_contains($controller,'Release booking'),
+'obsolete booking instruction is not rendered'=>!str_contains($controller,"languageText('mod_essay_explainbook'"),
+'booked journey has one primary destination'=>!str_contains($controller,'$myEssaysUrl = htmlspecialchars'),
 'learner mutations require active membership'=>str_contains($controller,'hasActiveLearnerContext()')&&str_contains($controller,'topicBelongsToActiveContext'),
 'booking IDs must belong to the selected topic'=>str_contains($controller,'essayBelongsToTopic'),
 'known course recovery is explicit'=>str_contains($recovery,'You are not in this course')&&str_contains($recovery,'Enter course'),

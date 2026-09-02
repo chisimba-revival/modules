@@ -659,8 +659,6 @@ class essay extends essaymanagementbase {
         $objHeading->str = $this->objLanguage->languageText('mod_essay_essays', 'essay');
         $str .= $objHeading->show();
 
-        $str .= '<p>' . $this->objLanguage->languageText('mod_essay_explainbook', 'essay') . '</p>';
-
         $javaScript = "<script language=\"JavaScript\" type=\"text/javascript\">
 function book(uri)
 {
@@ -703,10 +701,8 @@ function _onSuccess()
         $links = '';
 
         $icons = $this->getObject('iconservice', 'ui');
-        $myEssaysUrl = htmlspecialchars($this->uri(array('action' => 'viewallessays')), ENT_QUOTES, 'UTF-8');
         $homeUrl = htmlspecialchars($this->uri(array()), ENT_QUOTES, 'UTF-8');
         $links .= '<div class="chisimba-actions">'
-            . '<a class="button" href="'.$myEssaysUrl.'">'.$icons->render('file-text', array('decorative'=>true)).' My Essays</a>'
             . '<a class="button chisimba-button-secondary" href="'.$homeUrl.'">'.$icons->render('list', array('decorative'=>true)).' Essay topics</a>'
             . '</div>';
 
