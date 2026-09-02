@@ -6,7 +6,7 @@ class systemmanagement extends controller
     private const CSRF='systemmanagement_mutation';
     private $user; private $config; private $notices; private $service; private $clock; private $csrf;
     /** Initialise the operational services. */
-    public function init(){$this->user=$this->getObject('user','security');$this->config=$this->getObject('dbsysconfig','sysconfig');$this->notices=$this->getObject('dbsystemnotices');$this->service=$this->getObject('systemmanagementservice');$this->clock=$this->getObject('timeanddateservice','timeanddate-service');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$this->getResourceUri('systemmanagement.css').'"/>');}
+    public function init(){$this->user=$this->getObject('user','security');$this->config=$this->getObject('dbsysconfig','sysconfig');$this->notices=$this->getObject('dbsystemnotices');$this->service=$this->getObject('systemmanagementservice');$this->clock=$this->getObject('timeanddateservice','timeanddate-service');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$this->getResourceUri('systemmanagement.css').'"/>');$this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('systemmanagement.js').'"></script>');}
     /** Require authentication for the console but permit the public offline page. */
     public function requiresLogin($action){return (string)$action!=='offline';}
     /** Route administration mutations and the offline display. */
