@@ -3,15 +3,17 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 class offlineassessment extends controller
 {
  public $objLanguage;
- private $user; private $perm; private $context; private $contextCode; private $assessments; private $types; private $marks; private $history; private $userContext;
+ private $user; private $perm; private $context; private $contextCode; private $assessments; private $types; private $marks; private $history; private $userContext; private $courseLauncher;
  public function init(){
   $this->user=$this->getObject('user','security'); $this->objLanguage=$this->getObject('language','language'); $this->perm=$this->getObject('contextcondition','contextpermissions');
   $this->context=$this->getObject('dbcontext','context'); $this->contextCode=$this->context->getContextCode(); $this->userContext=$this->getObject('usercontext','context');
+  $this->courseLauncher=$this->getObject('courseawarelaunchservice','context');
   $this->assessments=$this->getObject('dbofflineassessments','offlineassessment'); $this->types=$this->getObject('dbofflineassessmenttypes','offlineassessment'); $this->marks=$this->getObject('dbofflineassessmentmarks','offlineassessment'); $this->history=$this->getObject('dbofflineassessmentmarkhistory','offlineassessment');
  }
  private function mayManage(){ return $this->user->isAdmin() || $this->perm->isContextMember('Lecturers'); }
  private function assessment(){ $id=trim((string)$this->getParam('id','')); return $this->assessments->findInContext($id,$this->contextCode); }
  public function dispatch($action){
+  if(!$this->courseLauncher->mayUseActiveCourse($this->user->userId(),'offlineassessment')) return $this->nextAction('courseactivitydenied',array(),'context');
   if(!$this->mayManage()) return $this->nextAction(null,array('error'=>'noaccess'),'_default');
   $this->types->ensureSeeds($this->user->userId()); $action=$this->getParam('action',null);
   switch($action){

@@ -120,6 +120,7 @@ class assignment extends controller {
         $this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 
         $this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
+        $this->courseLauncher = $this->getObject('courseawarelaunchservice', 'context');
 
         if ($this->objModuleCatalogue->checkIfRegistered('activitystreamer')) {
             $this->objActivityStreamer = $this->getObject('activityops', 'activitystreamer');
@@ -153,7 +154,10 @@ class assignment extends controller {
      */
     public function dispatch($action) {
         if (!$this->objContext->isInContext()) {
-            return "needtojoin_tpl.php";
+            return $this->nextAction('courseactivitydenied', array(), 'context');
+        }
+        if (!$this->courseLauncher->mayUseActiveCourse($this->objUser->userId(), 'assignment')) {
+            return $this->nextAction('courseactivitydenied', array(), 'context');
         }
         if (!$this->isValid($action)) {
             return $this->nextAction(NULL, array('error' => 'nopermission'));

@@ -97,6 +97,7 @@ class worksheet extends controller
         $this->objWorksheetResults = $this->getObject('dbworksheetresults', 'worksheet');
         $this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
         $this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
+        $this->courseLauncher = $this->getObject('courseawarelaunchservice', 'context');
 
         if ($this->objModuleCatalogue->checkIfRegistered('rubric')) {
             $this->objRubricService = $this->getObject('rubricservice', 'rubric');
@@ -139,6 +140,9 @@ class worksheet extends controller
 
     public function dispatch($action='home')
     {
+        if (!$this->courseLauncher->mayUseActiveCourse($this->objUser->userId(), 'worksheet')) {
+            return $this->nextAction('courseactivitydenied', array(), 'context');
+        }
         if ($this->contextCode == '') {
             return $this->nextAction(NULL, array('error'=>'notincontext'), '_default');
         }

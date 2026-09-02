@@ -150,6 +150,7 @@ class mcqtests extends controller {
         $this->email = $this->objUser->email($this->userId);
         $this->objWashout = $this->getObject('washout', 'utilities');
         $this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
+        $this->courseLauncher = $this->getObject('courseawarelaunchservice', 'context');
         $this->objQuestionMatching = $this->newObject('dbquestion_matching');
         $this->objMultiAnswers = $this->newObject('dbquestion_multianswers');
         $this->objQuestionNumerical = $this->newObject('dbquestion_numerical');
@@ -197,6 +198,9 @@ class mcqtests extends controller {
      * @return
      */
     public function dispatch($action) {
+        if (!$this->courseLauncher->mayUseActiveCourse($this->userId, 'mcqtests')) {
+            return $this->nextAction('courseactivitydenied', array(), 'context');
+        }
         if ($this->contextCode == '') {
             return $this->nextAction(NULL, NULL, '_default');
         }
