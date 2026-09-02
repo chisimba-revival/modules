@@ -4,7 +4,13 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 class dbsystemnotices extends dbTable
 {
     /** Bind this gateway to its owned table. */
-    public function init(){parent::init('tbl_systemmanagement_notices');}
+    public function init(
+        $tableName = null,
+        $pearDb = null,
+        $errorCallback = 'globalPearErrorCallback'
+    ) {
+        parent::init('tbl_systemmanagement_notices', $pearDb, $errorCallback);
+    }
     /** Return notices newest first for the administration console. */
     public function allNotices(){return $this->getAll(' ORDER BY datecreated DESC');}
     /** Return notices active at one canonical UTC storage instant. */
