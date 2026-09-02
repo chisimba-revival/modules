@@ -120,6 +120,8 @@ class studentdueitems extends ChisimbaObject
             'providerLabel'=>(string) $provider['label'],
             'due'=>$due,
             'status'=>$status,
+            'markPercent'=>is_array($result) && isset($result['mark_percent'])
+                && is_numeric($result['mark_percent']) ? (float) $result['mark_percent'] : null,
             'url'=>$url,
         );
     }
@@ -176,6 +178,15 @@ class studentdueitems extends ChisimbaObject
                 $completed = in_array($item['status'], array('marked', 'completed'), true);
                 $overdue = !$completed && $item['due'] < new DateTimeImmutable('now', $zone);
                 $tone = $completed ? 'complete' : ($overdue ? 'overdue' : 'upcoming');
+                $now = new DateTimeImmutable('now', $zone);
+                $days = (int) $now->setTime(0, 0)->diff($item['due']->setTime(0, 0))->format('%r%a');
+                $statusLabels = array(
+                    'submitted'=>$text('calendar_submitted', 'Submitted'),
+                    'marked'=>$text('calendar_marked', 'Marked'),
+                    'in_progress'=>$text('calendar_in_progress', 'In progress'),
+                    'completed'=>$text('calendar_complete', 'Complete'),
+                );
+                $statusLabel = $statusLabels[$item['status']] ?? '';
                 $html .= '<article class="dashboard-agenda-item dashboard-agenda-item--' . $tone . '">'
                     . '<time datetime="' . $e($item['due']->format(DATE_ATOM)) . '"><strong>'
                     . $e($item['due']->format('j')) . '</strong><span>' . $e($item['due']->format('M')) . '</span></time>'
@@ -183,7 +194,20 @@ class studentdueitems extends ChisimbaObject
                     . $e($item['course']) . ' · ' . $e($item['providerLabel']) . '</span><h3>'
                     . $e($item['title']) . '</h3><span class="dashboard-agenda-item__due">'
                     . $e($overdue ? $text('calendar_overdue', 'Overdue') : $this->time->formatDateTime($item['due']))
-                    . '</span></div>';
+                    . '</span><div class="dashboard-agenda-item__status">';
+                if (!$completed && !$overdue) {
+                    $html .= '<span class="dashboard-days-badge" title="' . $e($text('calendar_days_remaining', 'Days remaining')) . '"><strong>'
+                        . $days . '</strong><small>' . $e($text('calendar_days', 'days')) . '</small></span>';
+                }
+                if ($statusLabel !== '') {
+                    $html .= '<span class="semantic-pill">' . $e($statusLabel) . '</span>';
+                }
+                if ($item['markPercent'] !== null) {
+                    $html .= '<span class="dashboard-mark" title="' . $e($text('calendar_mark', 'Mark')) . '">'
+                        . $this->icons->render('percent', array('decorative'=>true)) . '<strong>'
+                        . $e(number_format($item['markPercent'], 1)) . '</strong></span>';
+                }
+                $html .= '</div></div>';
                 if ($item['url'] !== '') {
                     $openLabel = $text('calendar_open', 'Open activity');
                     $html .= '<a class="icon-button dashboard-agenda-item__action" href="' . $e($item['url'])

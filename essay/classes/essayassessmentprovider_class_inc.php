@@ -6,10 +6,12 @@ class essayassessmentprovider extends ChisimbaObject
 {
     private $topics;
     private $bookings;
+    private $user;
     public function init()
     {
         $this->topics = $this->getObject('dbessay_topics', 'essay');
         $this->bookings = $this->getObject('dbessay_book', 'essay');
+        $this->user = $this->getObject('user', 'security');
     }
     public function listActivities($contextCode)
     {
@@ -40,7 +42,25 @@ class essayassessmentprovider extends ChisimbaObject
     public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
     {
         if ($this->getActivity($contextCode, $activityId) === false) { return false; }
-        return array('module'=>'essay', 'params'=>array('action'=>'view', 'id'=>$activityId));
+        $essayAction = 'view';
+        if ($role !== 'author') {
+            $result = $this->getStudentResult(
+                $contextCode,
+                $activityId,
+                $this->user->userId()
+            );
+            if (($result['status'] ?? 'not_attempted') !== 'not_attempted') {
+                $essayAction = 'viewallessays';
+            }
+        }
+        return array(
+            'module'=>'essay',
+            'params'=>array(
+                'action'=>$essayAction,
+                'id'=>$essayAction === 'view' ? $activityId : '',
+                'targetcontext'=>$contextCode,
+            ),
+        );
     }
 
     /**

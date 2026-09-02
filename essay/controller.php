@@ -121,6 +121,14 @@ class essay extends essaymanagementbase {
         }
         $this->setVarByRef('contextcode', $this->contextcode);
         $this->setVarByRef('context', $this->context);
+        $scopedActions = array(null, '', 'view', 'bookessay', 'unbookessay', 'viewallessays', 'uploadessay', 'uploadsubmit');
+        if (in_array($action, $scopedActions, true) && !$this->hasActiveLearnerContext()) {
+            return $this->courseRecovery($action);
+        }
+        if (in_array($action, array('view', 'bookessay', 'unbookessay'), true)
+            && !$this->topicBelongsToActiveContext($this->getParam('id'))) {
+            return $this->courseRecovery($action);
+        }
         //$topicid=$this->getParam('id');
         switch ($action) {
             case 'view':
@@ -266,6 +274,65 @@ class essay extends essaymanagementbase {
                 return 'topic_tpl.php';
         }
         //return $template;
+    }
+
+    /** Require a real enrolled course before learner-owned Essay operations. */
+    private function hasActiveLearnerContext()
+    {
+        if ($this->contextcode === '' || $this->contextcode === 'root') { return false; }
+        $contexts = (array) $this->getObject('usercontext', 'context')->getUserContext($this->userId);
+        return in_array($this->contextcode, $contexts, true);
+    }
+
+    /** Prevent a topic URL from operating against a stale or unrelated course. */
+    private function topicBelongsToActiveContext($topicId)
+    {
+        $topic = $this->dbtopic->getTopic(trim((string) $topicId), 'id,context');
+        return is_array($topic) && isset($topic[0]['context'])
+            && (string) $topic[0]['context'] === (string) $this->contextcode;
+    }
+
+    /** Render a deliberate recovery journey instead of querying the root scope. */
+    private function courseRecovery($requestedAction)
+    {
+        $courses = array();
+        $userContext = $this->getObject('usercontext', 'context');
+        $targetCode = trim((string) $this->getParam('targetcontext', ''));
+        if ($targetCode === '' && in_array($requestedAction, array('view', 'bookessay', 'unbookessay'), true)) {
+            $topic = $this->dbtopic->getTopic(trim((string) $this->getParam('id')), 'id,context');
+            if (is_array($topic) && isset($topic[0]['context'])) {
+                $targetCode = (string) $topic[0]['context'];
+            }
+        }
+        foreach (array_values(array_unique((array) $userContext->getUserContext($this->userId))) as $code) {
+            $details = $this->objContext->getContextDetails($code);
+            if (!is_array($details) || empty($details['title'])) { continue; }
+            $courses[] = array(
+                'code'=>(string) $code,
+                'title'=>(string) $details['title'],
+                'url'=>$this->uri(array(
+                    'action'=>'joincontext',
+                    'contextcode'=>$code,
+                    'contextmodule'=>'essay',
+                    'contextaction'=>in_array($requestedAction, array('view', 'viewallessays'), true)
+                        ? $requestedAction : '',
+                    'contextdata'=>(string) $this->getParam('id', ''),
+                ), 'context'),
+            );
+        }
+        usort($courses, static function ($left, $right) { return strcasecmp($left['title'], $right['title']); });
+        $targetCourse = null;
+        foreach ($courses as $course) {
+            if ($course['code'] === $targetCode) {
+                $targetCourse = $course;
+                break;
+            }
+        }
+        $this->setVar('targetCourse', $targetCourse);
+        $this->setVar('recoveryCourses', $courses);
+        $this->setVar('heading', 'Choose a course');
+        $this->setLayoutTemplate('essay_layout_tpl.php');
+        return 'context_required_tpl.php';
     }
 
     /**
@@ -514,17 +581,13 @@ function _onSuccess()
 
         $links = '';
 
-        $objLink = new link($this->uri(array('action' => 'viewallessays', 'id' => $topic[0]['id'])));
-        $text = $this->objLanguage->languageText('mod_essay_viewbookedsubmitted', 'essay');
-        $objLink->link = $text;
-        $objLink->title = $text;
-        $links .= '<br />' . $objLink->show();
-
-        $objLink = new link($this->uri(array()));
-        $text = $this->objLanguage->languageText('mod_essay_essayhome', 'essay');
-        $objLink->link = $text;
-        $objLink->title = $text;
-        $links .= '<br />' . $objLink->show();
+        $icons = $this->getObject('iconservice', 'ui');
+        $myEssaysUrl = htmlspecialchars($this->uri(array('action' => 'viewallessays')), ENT_QUOTES, 'UTF-8');
+        $homeUrl = htmlspecialchars($this->uri(array()), ENT_QUOTES, 'UTF-8');
+        $links .= '<div class="chisimba-actions">'
+            . '<a class="button" href="'.$myEssaysUrl.'">'.$icons->render('file-text', array('decorative'=>true)).' My Essays</a>'
+            . '<a class="button chisimba-button-secondary" href="'.$homeUrl.'">'.$icons->render('list', array('decorative'=>true)).' Essay topics</a>'
+            . '</div>';
 
         $str .= $links;
 
@@ -576,31 +639,22 @@ function _onSuccess()
             $essaymark = $studentBooking[0]['mark'];
         }
 
-        $str = '';
-
-        /*
-          $objLink = new link();
-          $objLink->cssId = 'essaytableanchor';
-          $str .= $objLink->show();
-         */
-        $str .= "<a id=\"essaytableanchor\"></a>";
-
-        $objTable = new htmltable();
-        $objTable->cellpadding = 2;
-        $objTable->cellspacing = 2;
-
-        $tableHeader = array();
-        $tableHeader[] = '#';
-        $tableHeader[] = $this->objLanguage->languageText('mod_essay_essay', 'essay');
-        $tableHeader[] = $this->objLanguage->languageText('mod_essay_notes', 'essay');
-        $tableHeader[] = $this->objLanguage->languageText('mod_essay_mark', 'essay');
-        $tableHeader[] = '&nbsp;';
-        $objTable->addHeader($tableHeader, 'heading');
+        $e = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+        $plainNotes = static function ($value) use ($e) {
+            $text = preg_replace('/<\s*br\s*\/?>/i', "\n", (string) $value);
+            $text = preg_replace('/<\/(p|div|li|h[1-6])\s*>/i', "\n", $text);
+            return nl2br($e(trim(html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8'))));
+        };
+        $icons = $this->getObject('iconservice', 'ui');
+        $myEssaysUrl = $this->uri(array('action'=>'viewallessays'));
+        $str = '<a id="essaytableanchor"></a><div class="assessment-choice-grid">';
 
         if (!empty($essays)) {
             $i = 0;
             foreach ($essays as $essay) {
-                $class = ($i++ % 2) ? 'even' : 'odd';
+                $i++;
                 $id = $essay['id'];
                 // Check if student booked essay
                 if ($studentessay) {
@@ -631,75 +685,51 @@ function _onSuccess()
                     }
                 }
 
-                $objIcon = $this->objIcon;
-                $objLink = $this->objLink;
-                //$message = '';
-                $message = '<br />';
+                $message = '';
                 $mark = '';
-                $icons = '';
+                $action = '';
                 if ($booked == ESSAY_CANBOOK) {
-
-                    $title = $this->objLanguage->languageText('mod_essay_bookessay', 'essay');
-
-                    $objLink = new link($this->uri(array('action' => 'bookessay', 'essay' => $id, 'id' => $topicArea[0]['id'])));
-                    $objLink->extra = "onclick=\"javascript: return book(this.href);\"";
-                    $objLink->link = $essay['topic'];
-                    $objLink->title = $title;
-                    $multiLink = $objLink->show();
-
-                    // The linked title is the single booking action; do not
-                    // duplicate it with a second icon-only link.
+                    $url = $this->uri(array('action'=>'bookessay', 'essay'=>$id, 'id'=>$topicArea[0]['id']));
+                    $action = '<a class="button" href="'.$e($url).'" onclick="return book(this.href);">'
+                        .$icons->render('bookmark-plus', array('decorative'=>true)).' Book this essay</a>';
+                    $message = 'Available';
                 }
                 if ($booked == ESSAY_BOOKEDBYSTUDENT) {
                     if (is_null($essaysubmit)) {
-                        $title = $this->objLanguage->languageText('mod_essay_unbookessay', 'essay');
-
-                        $objLink = new link($this->uri(array('action' => 'unbookessay', 'essay' => $id, 'id' => $topicArea[0]['id'])));
-                        $objLink->extra = "onclick=\"javascript: return unbook(this.href);\"";
-                        $objLink->link = $essay['topic'];
-                        $objLink->title = $title;
-                        $multiLink = $objLink->show();
-
-                        $message .= $this->objLanguage->languageText('mod_essay_bookedby', 'essay') . ' ' . $this->user;
+                        $releaseUrl = $this->uri(array('action'=>'unbookessay', 'essay'=>$id, 'id'=>$topicArea[0]['id']));
+                        $message = 'Booked for you';
+                        $action = '<a class="button" href="'.$e($myEssaysUrl).'">'.$icons->render('arrow-right', array('decorative'=>true)).' Go to booked essay</a>'
+                            . '<a class="button chisimba-button-secondary" href="'.$e($releaseUrl).'" onclick="if(!confirm(\'Release this essay booking?\')){return false;}return unbook(this.href);">'
+                            . $icons->render('bookmark-minus', array('decorative'=>true)).' Release booking</a>';
                     } else {
-                        $multiLink = '<b>' . $essay['topic'] . '</b>';
                         if (is_null($essaymark)) {
                             $message = $this->objLanguage->languageText('mod_essay_statussubmitted', 'essay');
                         } else {
-                            //$objMark = $this->getObject('markimage', 'utilities');
-                            //$objMark->value = $essaymark;
-                            //$objMark->percentage = TRUE;
-                            //$objMark->fontsize = 15;
-                            //$mark = $objMark->show(); //.'&nbsp;'.$essaymark.'&nbsp;%';
-                            $mark = '<span style="color: red;">' . $essaymark . '&nbsp;%</span>';
+                            $mark = '<span class="dashboard-mark">'.$icons->render('percent', array('decorative'=>true)).'<strong>'.$e($essaymark).'</strong></span>';
                             $message = $this->objLanguage->languageText('mod_essay_statusmarked', 'essay');
                         }
+                        $action = '<a class="button" href="'.$e($myEssaysUrl).'">'.$icons->render('arrow-right', array('decorative'=>true)).' Go to My Essays</a>';
                     }
                 }
                 if ($booked == ESSAY_CANNOTBOOK) {
-                    $multiLink = '<b>' . $essay['topic'] . '</b>';
                     $message = $this->objLanguage->languageText('mod_essay_statuscannotbook', 'essay');
                 }
                 if ($booked == ESSAY_BOOKED) {
-                    $multiLink = '<b>' . $essay['topic'] . '</b>';
                     $message = $this->objLanguage->languageText('mod_essay_statusalreadybooked', 'essay');
                 }
-                $notes = nl2br(htmlspecialchars((string)$essay['notes'], ENT_QUOTES, 'UTF-8'));
-                $objTable->startRow();
-                $objTable->addCell($i, '', '', '', $class);
-                $objTable->addCell($multiLink . '&nbsp;' . $message, '', '', '', $class);
-                $objTable->addCell($notes, '', '', '', $class);
-                $objTable->addCell($mark, '', '', 'center', $class);
-                $objTable->addCell($icons, '', '', '', $class);
-                $objTable->endRow();
+                $str .= '<article class="assessment-choice-card"><header><span class="semantic-pill">'.$e($message).'</span>'
+                    .$mark.'<h2>'.$e($essay['topic']).'</h2></header>';
+                if (trim(strip_tags((string) $essay['notes'])) !== '') {
+                    $str .= '<div class="assessment-choice-card__notes"><strong>Guidance</strong><p>'.$plainNotes($essay['notes']).'</p></div>';
+                }
+                if ($action !== '') { $str .= '<div class="chisimba-actions">'.$action.'</div>'; }
+                $str .= '</article>';
             }
         } else {
-            $objTable->startRow();
-            $objTable->addCell($this->objLanguage->languageText('mod_essay_noessaysintopicarea', 'essay'), '', '', '', 'noRecordsMessage', 'colspan="5"');
-            $objTable->endRow();
+            $str .= '<div class="dashboard-empty-state"><span>'.$icons->render('file-text', array('decorative'=>true)).'</span><p>'
+                .$e($this->objLanguage->languageText('mod_essay_noessaysintopicarea', 'essay')).'</p></div>';
         }
-        $str .= $objTable->show();
-        return $str;
+        return $str.'</div>';
     }
 
     /**

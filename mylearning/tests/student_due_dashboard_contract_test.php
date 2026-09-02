@@ -22,6 +22,10 @@ $checks = array(
     'actions have tooltip and accessible name' => strpos($service, 'aria-label=') !== false
         && strpos($service, 'title=') !== false
         && strpos($service, "render('arrow-right'") !== false,
+    'shows days and result status' => strpos($service, 'dashboard-days-badge') !== false
+        && strpos($service, 'dashboard-agenda-item__status') !== false,
+    'shows an available mark as a percentage' => strpos($service, "render('percent'") !== false
+        && strpos($service, "['mark_percent']") !== false,
     'essay provider exposes its due date' => strpos($essay, "'closing_date'=>") !== false,
     'manifest declares dependencies' => strpos($register, 'DEPENDS: gradebook') !== false
         && strpos($register, 'DEPENDS: timeanddate-service') !== false,
