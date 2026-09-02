@@ -5,9 +5,9 @@ $recovery=file_get_contents(__DIR__.'/../templates/content/context_required_tpl.
 $provider=file_get_contents(__DIR__.'/../classes/essayassessmentprovider_class_inc.php');
 $checks=array(
 'card-based overview'=>str_contains($template,'essay-submission-card'),
-'status is explicit'=>str_contains($template,'Ready to submit')&&str_contains($template,'Marked'),
+'status is explicit'=>str_contains($template,'Ready to write')&&str_contains($template,'Draft saved')&&str_contains($template,'Marked'),
 'feedback is inline'=>str_contains($template,'Lecturer feedback'),
-'replacement before marking'=>str_contains($template,'Replace submission'),
+'revision before marking'=>str_contains($template,'Review or revise essay'),
 'duplicate booking icon removed'=>!str_contains($controller,'$icons .= $bookIcon')&&!str_contains($controller,'$icons .= $unbookIcon'),
 'essay titles are not booking controls'=>!str_contains($controller,'$objLink->link = $essay[\'topic\']'),
 'booking uses explicit actions'=>str_contains($controller,'Book this essay')&&str_contains($controller,'Go to booked essay')&&str_contains($controller,'Release booking'),

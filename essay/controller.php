@@ -27,6 +27,9 @@ require_once dirname(__FILE__).'/classes/essaymanagementbase_class_inc.php';
  */
 class essay extends essaymanagementbase {
 
+    const DRAFT_CSRF = 'essay_written_draft';
+    const SUBMIT_CSRF = 'essay_written_submit';
+
     /**
      * Initialization method.
      */
@@ -83,6 +86,9 @@ class essay extends essaymanagementbase {
         $this->objDate = $this->newObject('datepicker', 'htmlelements');
         $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->objFile = $this->newObject('upload', 'filemanager');
+        $this->htmlCleaner = $this->getObject('htmlcleaner', 'utilities');
+        $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        $this->csrf = $nativeAuth['csrf'];
         // Log this call if registered
         if (!$this->objModules->checkIfRegistered('logger', 'logger')) {
             //Get the activity logger class
@@ -121,7 +127,7 @@ class essay extends essaymanagementbase {
         }
         $this->setVarByRef('contextcode', $this->contextcode);
         $this->setVarByRef('context', $this->context);
-        $scopedActions = array(null, '', 'view', 'bookessay', 'unbookessay', 'viewallessays', 'uploadessay', 'uploadsubmit');
+        $scopedActions = array(null, '', 'view', 'bookessay', 'unbookessay', 'viewallessays', 'writeessay', 'savedraft', 'submitwritten', 'uploadessay', 'uploadsubmit');
         if (in_array($action, $scopedActions, true) && !$this->hasActiveLearnerContext()) {
             return $this->courseRecovery($action);
         }
@@ -215,6 +221,60 @@ class essay extends essaymanagementbase {
                 $this->setLayoutTemplate('essay_layout_tpl.php');
                 return 'view_essays_tpl.php';
             //break;
+            case 'writeessay':
+                $booking = $this->editableWrittenBooking($this->getParam('bookid'));
+                if ($booking === false) {
+                    return $this->nextAction('viewallessays', array('error'=>'invalidbooking'));
+                }
+                $essay = $this->dbessays->getEssay($booking['essayid'], 'topic');
+                $body = trim((string)($booking['draft_html'] ?? '')) !== ''
+                    ? (string)$booking['draft_html'] : (string)($booking['submission_html'] ?? '');
+                $this->setVar('writtenBooking', $booking);
+                $this->setVar('writtenEssayTitle', (string)($essay[0]['topic'] ?? 'Essay'));
+                $this->setVar('writtenEssayBody', $body);
+                $this->setVar('writtenDraftToken', $this->csrf->issue(self::DRAFT_CSRF));
+                $this->setVar('writtenSubmitToken', $this->csrf->issue(self::SUBMIT_CSRF));
+                $this->setLayoutTemplate('essay_layout_tpl.php');
+                return 'write_tpl.php';
+            case 'savedraft':
+                $booking = $this->editableWrittenBooking($this->getParam('bookid'));
+                $valid = $this->isPost() && $this->csrf->consume(
+                    self::DRAFT_CSRF,
+                    (string)$this->getParam('csrf_token', '')
+                );
+                $saved = false;
+                if ($valid && $booking !== false) {
+                    $clean = $this->htmlCleaner->cleanHtml((string)$this->getParam('body_html', ''));
+                    $saved = $this->dbbook->saveWrittenDraft(
+                        $booking['id'],
+                        $clean,
+                        $this->objTimeAndDate->nowStorage()
+                    ) !== false;
+                }
+                $this->setVar('draftResponse', array(
+                    'ok'=>$saved,
+                    'csrf'=>$this->csrf->issue(self::DRAFT_CSRF),
+                    'savedAt'=>$saved ? $this->objTimeAndDate->nowStorage() : null,
+                ));
+                $this->setPageTemplate(null);
+                $this->setLayoutTemplate(null);
+                return 'draft_json_tpl.php';
+            case 'submitwritten':
+                $booking = $this->editableWrittenBooking($this->getParam('bookid'));
+                if (!$this->isPost() || $booking === false
+                    || !$this->csrf->consume(self::SUBMIT_CSRF, (string)$this->getParam('csrf_token', ''))) {
+                    return $this->nextAction('viewallessays', array('error'=>'invalidsubmission'));
+                }
+                $clean = trim($this->htmlCleaner->cleanHtml((string)$this->getParam('body_html', '')));
+                if (trim(strip_tags($clean)) === '') {
+                    return $this->nextAction('writeessay', array('bookid'=>$booking['id'], 'error'=>'emptyessay'));
+                }
+                $this->dbbook->submitWrittenEssay(
+                    $booking['id'],
+                    $clean,
+                    $this->objTimeAndDate->nowStorage()
+                );
+                return $this->nextAction('viewallessays', array('submitted'=>'written'));
             /*
               case 'viewessays':
               // display students essays details
@@ -235,14 +295,14 @@ class essay extends essaymanagementbase {
             case 'uploadsubmit':
                 // Upload an essay for marking
                 $bookId = $this->getParam('bookid');
-                $booking = $this->dbbook->getBooking("WHERE id='".addslashes($bookId)."' AND studentid='".addslashes($this->userId)."' AND context='".addslashes($this->contextcode)."'");
-                if (empty($booking)) { return $this->nextAction('viewallessays', array('error'=>'invalidbooking')); }
+                $booking = $this->editableWrittenBooking($bookId);
+                if ($booking === false) { return $this->nextAction('viewallessays', array('error'=>'invalidbooking')); }
                 $fileDetails = $this->objFile->uploadFile('essayfile');
                 if ($fileDetails === false || empty($fileDetails['success']) || empty($fileDetails['fileid'])) {
                     return $this->nextAction('uploadessay', array('bookid'=>$bookId, 'error'=>'uploadfailed'));
                 }
                 $fileId = $fileDetails['fileid'];
-                $fields = array('studentfileid' => $fileId, 'submitdate' => $this->objTimeAndDate->nowStorage());
+                $fields = array('studentfileid' => $fileId, 'submission_html'=>null, 'submission_type'=>'upload', 'submitdate' => $this->objTimeAndDate->nowStorage());
                 $this->dbbook->bookEssay($fields, $bookId);
                 $this->objFileRegister->registerUse($fileId, 'essay', 'tbl_essay_book', $bookId, 'studentfileid', $this->contextcode, '', TRUE);
                 return $this->nextAction('viewallessays');
@@ -278,6 +338,39 @@ class essay extends essaymanagementbase {
                 return 'topic_tpl.php';
         }
         //return $template;
+    }
+
+    /**
+     * Return an owned, open and unmarked booking that may still be edited.
+     *
+     * @param string $bookingId Booking identifier.
+     * @return array|false
+     * @author Derek Keats
+     */
+    private function editableWrittenBooking($bookingId)
+    {
+        $booking = $this->dbbook->getOwnedBooking($bookingId, $this->userId, $this->contextcode);
+        if ($booking === false || ($booking['mark'] ?? null) !== null && ($booking['mark'] ?? '') !== '') {
+            return false;
+        }
+        $topic = $this->dbtopic->getTopic($booking['topicid'], 'closing_date,bypass');
+        if (empty($topic)) {
+            return false;
+        }
+        $closed = $this->objTimeAndDate->nowStorage() > (string)$topic[0]['closing_date']
+            && empty($topic[0]['bypass']);
+        return $closed ? false : $booking;
+    }
+
+    /**
+     * Confirm that a learner mutation arrived as an HTTP POST.
+     *
+     * @return bool
+     * @author Derek Keats
+     */
+    private function isPost()
+    {
+        return strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
     }
 
     /** Require a real enrolled course before learner-owned Essay operations. */
@@ -509,7 +602,7 @@ class essay extends essaymanagementbase {
 
         $str = '';
 
-        $str .= '<div class="chisimba-notice"><strong>How Essays work:</strong> Choose one Essay prompt, prepare your full multi-page document outside Chisimba, then open <em>My Essays</em> to upload the finished file.</div>';
+        $str .= '<div class="chisimba-notice"><strong>How Essays work:</strong> Choose <em>Book this essay</em>, then choose <em>Go to booked essay</em> to write and save your work in Chisimba. You may upload a document instead if needed.</div>';
 
         $this->setVar('heading', $this->objLanguage->languageText('mod_essay_topicarea', 'essay') . ':&nbsp;' . $topicArea[0]['name']);
 

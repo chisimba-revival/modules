@@ -89,6 +89,63 @@ class dbessay_book extends dbTable
     }
 
     /**
+     * Return one booking owned by a learner in the active course.
+     *
+     * @param string $bookingId Booking identifier.
+     * @param string $studentId Learner identifier.
+     * @param string $contextCode Course identifier.
+     * @return array|false
+     * @author Derek Keats
+     */
+    public function getOwnedBooking($bookingId, $studentId, $contextCode)
+    {
+        $rows = $this->getBooking(
+            "WHERE id='".addslashes((string)$bookingId)."'"
+            ." AND studentid='".addslashes((string)$studentId)."'"
+            ." AND context='".addslashes((string)$contextCode)."'"
+        );
+        return empty($rows) ? false : $rows[0];
+    }
+
+    /**
+     * Persist a cleaned learner draft without changing submission state.
+     *
+     * @param string $bookingId Booking identifier.
+     * @param string $bodyHtml Cleaned Essay HTML.
+     * @param string $updatedAt Canonical storage timestamp.
+     * @return mixed
+     * @author Derek Keats
+     */
+    public function saveWrittenDraft($bookingId, $bodyHtml, $updatedAt)
+    {
+        return $this->update('id', $bookingId, array(
+            'draft_html' => (string)$bodyHtml,
+            'draft_updated' => $updatedAt,
+        ));
+    }
+
+    /**
+     * Submit the current written draft as the assessable Essay snapshot.
+     *
+     * @param string $bookingId Booking identifier.
+     * @param string $bodyHtml Cleaned Essay HTML.
+     * @param string $submittedAt Canonical storage timestamp.
+     * @return mixed
+     * @author Derek Keats
+     */
+    public function submitWrittenEssay($bookingId, $bodyHtml, $submittedAt)
+    {
+        return $this->update('id', $bookingId, array(
+            'draft_html' => (string)$bodyHtml,
+            'draft_updated' => $submittedAt,
+            'submission_html' => (string)$bodyHtml,
+            'submission_type' => 'written',
+            'studentfileid' => null,
+            'submitdate' => $submittedAt,
+        ));
+    }
+
+    /**
     * Method to get a list of topics is the context.
     * Each topic shows number of submissions and number marked.
     * @param string $context The current context

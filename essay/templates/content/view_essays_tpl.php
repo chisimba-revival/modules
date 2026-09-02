@@ -8,15 +8,16 @@ $this->setVar('heading',$this->objLanguage->code2Txt('mod_essay_listofessaysfor'
 <?php if(empty($data)): ?><div class="chisimba-empty-state"><p>You have not booked an Essay yet.</p><a class="button" href="<?php echo $e($this->uri(array())); ?>"><?php echo $icons->render('arrow-left',array('decorative'=>true)); ?> View Essay topics</a></div>
 <?php else: foreach($data as $item):
 $closed=$this->objTimeAndDate->nowStorage()>$item['date']&&$item['bypass']==='NO';
-$submitted=!empty($item['studentfileid']);$marked=$item['mark']!==null&&$item['mark']!=='';
-$status=$marked?'Marked':($submitted?'Submitted':($closed?'Closed':'Ready to submit'));
+$submitted=!empty($item['studentfileid'])||trim((string)($item['submission_html']??''))!=='';
+$hasDraft=trim((string)($item['draft_html']??''))!=='';$marked=$item['mark']!==null&&$item['mark']!=='';
+$status=$marked?'Marked':($submitted?'Submitted':($closed?'Closed':($hasDraft?'Draft saved':'Ready to write')));
 ?>
 <article class="chisimba-card essay-submission-card">
 <header><div><p class="chisimba-eyebrow"><?php echo $e($item['name']); ?></p><h2><?php echo $e($item['essay']); ?></h2></div><span class="chisimba-status-badge"><?php echo $e($status); ?></span></header>
 <dl class="chisimba-summary-grid"><div><dt>Closing date</dt><dd><?php echo $e($this->objTimeAndDate->formatDateTime($item['date'])); ?></dd></div><?php if(!empty($item['submitdate'])): ?><div><dt>Submitted</dt><dd><?php echo $e($this->objTimeAndDate->formatDateTime($item['submitdate'])); ?></dd></div><?php endif; ?><?php if($marked): ?><div><dt>Mark</dt><dd><strong><?php echo $e($item['mark']); ?>%</strong></dd></div><?php endif; ?></dl>
 <?php if($marked&&!empty($item['comment'])): ?><div class="chisimba-feedback"><h3>Lecturer feedback</h3><p><?php echo nl2br($e($item['comment'])); ?></p></div><?php endif; ?>
 <div class="chisimba-actions">
-<?php if(!$marked&&!$closed): ?><a class="button" href="<?php echo $e($this->uri(array('action'=>'uploadessay','bookid'=>$item['id']))); ?>"><?php echo $icons->render('upload',array('decorative'=>true)); ?> <?php echo $submitted?'Replace submission':'Submit essay'; ?></a><?php endif; ?>
+<?php if(!$marked&&!$closed): ?><a class="button" href="<?php echo $e($this->uri(array('action'=>'writeessay','bookid'=>$item['id']))); ?>"><?php echo $icons->render('edit-3',array('decorative'=>true)); ?> <?php echo $submitted?'Review or revise essay':($hasDraft?'Continue writing':'Write essay'); ?></a><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'uploadessay','bookid'=>$item['id']))); ?>"><?php echo $icons->render('upload',array('decorative'=>true)); ?> Upload document instead</a><?php endif; ?>
 <?php if($marked&&!empty($item['lecturerfileid'])): ?><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'download','fileid'=>$item['lecturerfileid']))); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download returned document</a><?php endif; ?>
 </div></article>
 <?php endforeach; endif; ?>

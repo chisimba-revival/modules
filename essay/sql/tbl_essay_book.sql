@@ -65,6 +65,19 @@ $fields = array(
     'comment'  =>  array(
       'type'    =>  'clob'
     ),
+    'draft_html'  =>  array(
+      'type'    =>  'clob'
+    ),
+    'draft_updated'  =>  array(
+      'type'    =>  'timestamp'
+    ),
+    'submission_html'  =>  array(
+      'type'    =>  'clob'
+    ),
+    'submission_type'  =>  array(
+      'type'    =>  'text',
+      'length'  =>  16
+    ),
     'updated'  =>  array(
       'type'    =>  'timestamp'
     )
