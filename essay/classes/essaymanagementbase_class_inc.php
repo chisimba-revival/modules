@@ -435,16 +435,17 @@ class essaymanagementbase extends controller
             }
             $mark=$this->getParam('mark', '');
             $comment=$this->getParam('comment', '');
-            $integrityAdjustment=(int)$this->getParam('integrity_adjustment',0);
+            $lecturerDeduction=(int)$this->getParam('lecturer_deduction',0);
+            $integrityAdjustment=-$lecturerDeduction;
             $integrityReason=trim((string)$this->getParam('integrity_reason',''));
             $message = null;
             $fileDetails = null;
             if (!is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100) {
                 $message = 'Enter a mark from 0 to 100.';
-            } else if ($integrityAdjustment > 0 || $integrityAdjustment < -100) {
-                $message = 'An academic integrity adjustment must be from 0 to minus 100.';
-            } else if ($integrityAdjustment !== 0 && $integrityReason === '') {
-                $message = 'Record the reason for an academic integrity adjustment.';
+            } else if ($lecturerDeduction < 0 || $lecturerDeduction > 100) {
+                $message = 'An additional deduction must be from 0 to 100 percentage points.';
+            } else if ($lecturerDeduction !== 0 && $integrityReason === '') {
+                $message = 'Record the reason for an additional deduction.';
             } else {
                 if (!empty($_FILES['file']['name'])) {
                     $fileDetails = $this->objFile->uploadFile('file');

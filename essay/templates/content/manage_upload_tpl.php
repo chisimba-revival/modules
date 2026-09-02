@@ -15,8 +15,12 @@ $displayComment=($comment===''&&!empty($data[0]['comment']))?$data[0]['comment']
 $suggestion=is_array($aiSuggestion??null)?$aiSuggestion:array();
 $review=(array)($suggestion['authorshipReview']??array());
 $adjustment=(int)($data[0]['integrity_adjustment']??0);
+$deduction=max(0,-$adjustment);
 $adjustmentReason=(string)($data[0]['integrity_reason']??'');
-if (empty($suggestion) && $adjustment !== 0 && $data[0]['mark'] !== null && $data[0]['mark'] !== '') { $displayMark=(int)$data[0]['mark']-$adjustment; }
+if (!empty($suggestion) && ($data[0]['mark']===null||$data[0]['mark']==='') && $mark==='0') { $displayMark=(int)($suggestion['mark']??0); }
+if (!empty($suggestion) && $displayComment==='') { $displayComment=(string)($suggestion['feedback']??''); }
+if ($adjustment !== 0 && $data[0]['mark'] !== null && $data[0]['mark'] !== '') { $displayMark=(int)$data[0]['mark']-$adjustment; }
+$initialFinal=max(0,min(100,(int)$displayMark-$deduction));
 ?>
 <section class="chisimba-workspace">
 <div class="chisimba-summary-card"><h2><?php echo $e($essay[0]['topic']??'Essay'); ?></h2><p><strong>Student:</strong> <?php echo $e($studentname); ?></p><p><strong><?php echo $isLate?'Submitted late':'Submitted'; ?>:</strong> <?php echo $e($this->objTimeAndDate->formatDateTime($data[0]['submitdate'])); ?></p><?php if(!$written): ?><p><a class="button chisimba-button-secondary" href="<?php echo $e($download); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download submission</a></p><?php endif; ?></div>
@@ -37,11 +41,13 @@ if (empty($suggestion) && $adjustment !== 0 && $data[0]['mark'] !== null && $dat
 <?php else: ?><p>No discussion points were generated. This does not establish who wrote the Essay.</p><?php endif; ?></section><?php endif; ?>
 <form class="chisimba-form" method="post" enctype="multipart/form-data" action="<?php echo $e($this->uri(array('action'=>'uploadsubmit'))); ?>">
 <input type="hidden" name="id" value="<?php echo $e($topic); ?>"><input type="hidden" name="book" value="<?php echo $e($book); ?>">
-<div class="chisimba-form-field"><label for="essay-mark">Mark before any integrity adjustment (%)</label><input id="essay-mark" name="mark" type="number" min="0" max="100" step="1" value="<?php echo $e($displayMark); ?>" required></div>
+<div class="chisimba-form-field"><label for="essay-mark">Lecturer mark (%)</label><input id="essay-mark" name="mark" type="number" min="0" max="100" step="1" value="<?php echo $e($displayMark); ?>" required><p class="form-help">Review or change the AI suggestion before saving.</p></div>
 <div class="chisimba-form-field"><label for="essay-comment">Feedback</label><textarea id="essay-comment" name="comment" rows="7"><?php echo $e($displayComment); ?></textarea></div>
-<fieldset><legend>Lecturer-controlled academic integrity adjustment</legend><p class="form-help">Optional. AI observations never apply this adjustment. Use it only after your own review and institutional process.</p>
-<div class="chisimba-form-field"><label for="essay-integrity-adjustment">Adjustment (0 to -100)</label><input id="essay-integrity-adjustment" name="integrity_adjustment" type="number" min="-100" max="0" step="1" value="<?php echo $e($adjustment); ?>"></div>
-<div class="chisimba-form-field"><label for="essay-integrity-reason">Recorded reason</label><textarea id="essay-integrity-reason" name="integrity_reason" rows="3"><?php echo $e($adjustmentReason); ?></textarea></div></fieldset>
+<details<?php echo $deduction>0?' open':''; ?>><summary>Optional additional deduction</summary><fieldset><legend>Additional deduction</legend><p class="form-help">This is never added by AI. Use it only after your own review and applicable institutional process.</p>
+<div class="chisimba-form-field"><label for="essay-lecturer-deduction">Deduct percentage points (0 to 100)</label><input id="essay-lecturer-deduction" name="lecturer_deduction" type="number" min="0" max="100" step="1" value="<?php echo $e($deduction); ?>"></div>
+<div class="chisimba-form-field"><label for="essay-deduction-reason">Reason for deduction</label><textarea id="essay-deduction-reason" name="integrity_reason" rows="3"><?php echo $e($adjustmentReason); ?></textarea></div></fieldset></details>
+<div class="chisimba-summary-card" role="status"><strong>Calculated final mark: <output id="essay-final-mark"><?php echo $initialFinal; ?></output>%</strong></div>
 <div class="chisimba-form-field"><label for="essay-return-file">Returned document <span class="form-help">(optional)</span></label><input id="essay-return-file" name="file" type="file" accept=".pdf,.doc,.docx,.odt,.rtf,.txt"></div>
-<div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $icons->render('save',array('decorative'=>true)); ?> Save mark</button><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'marktopic','id'=>$topic))); ?>"><?php echo $icons->render('x',array('decorative'=>true)); ?> Cancel</a></div>
+<div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $icons->render('save',array('decorative'=>true)); ?> Save final mark</button><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'marktopic','id'=>$topic))); ?>"><?php echo $icons->render('x',array('decorative'=>true)); ?> Cancel</a></div>
 </form></section>
+<script>(function(){var mark=document.getElementById('essay-mark'),deduction=document.getElementById('essay-lecturer-deduction'),output=document.getElementById('essay-final-mark');function update(){var m=Math.max(0,Math.min(100,Number(mark.value)||0)),d=Math.max(0,Math.min(100,Number(deduction.value)||0));output.textContent=Math.max(0,m-d);}mark.addEventListener('input',update);deduction.addEventListener('input',update);update();}());</script>

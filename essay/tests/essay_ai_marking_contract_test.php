@@ -10,8 +10,8 @@ $checks=array(
  'marker forbids AI authorship classification'=>str_contains($marker,'never classify the author as AI or human'),
  'completed drafts remain recoverable'=>str_contains($jobs,'getLatestCompleted'),
  'batch and single actions use CSRF'=>str_contains($controller,"consume('essay_ai_marking'")&&str_contains($controller,"consume('essay_ai_batch_marking'"),
- 'integrity adjustment requires a reason'=>str_contains($controller,"integrityAdjustment !== 0 && \$integrityReason === ''"),
- 'integrity control is lecturer-facing and explicit'=>str_contains($form,'Lecturer-controlled academic integrity adjustment'),
+ 'additional deduction requires a reason'=>str_contains($controller,"lecturerDeduction !== 0 && \$integrityReason === ''"),
+ 'deduction is lecturer-facing and explicit'=>str_contains($form,'Optional additional deduction')&&str_contains($form,'Calculated final mark'),
  'queue table is installer managed'=>str_contains($register,'TABLE: tbl_essay_ai_marking_jobs'),
 );
 $failed=array_keys(array_filter($checks,fn($passed)=>!$passed));if($failed){fwrite(STDERR,"Failed: ".implode('; ',$failed).PHP_EOL);exit(1);}echo "Essay AI marking contract passed (".count($checks)." checks).\n";
