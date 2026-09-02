@@ -43,6 +43,13 @@ $topiclist=$this->objLanguage->languageText('word_back').' '.strtolower($this->o
 $topichome=$this->objLanguage->languageText('mod_essayadmin_name', 'essayadmin').' '.$this->objLanguage->languageText('word_home');
 $noessays=$this->objLanguage->languageText('mod_essayadmin_nosubmittedessays', 'essayadmin');
 $rubricLabel = $this->objLanguage->languageText('mod_rubric_name', 'rubric');
+$aiJobs = is_array($aiMarkingJobs ?? null) ? $aiMarkingJobs : array();
+if (!empty($aiMarkingAvailable)) {
+    echo '<form method="post" class="chisimba-form-actions" action="'.htmlspecialchars($this->uri(array('action'=>'aibatchmark')),ENT_QUOTES,'UTF-8').'">'
+        .'<input type="hidden" name="id" value="'.htmlspecialchars((string)$topicdata[0]['id'],ENT_QUOTES,'UTF-8').'">'
+        .'<input type="hidden" name="csrf_token" value="'.htmlspecialchars((string)$aiBatchToken,ENT_QUOTES,'UTF-8').'">'
+        .'<button class="button" type="submit">'.$icons->render('sparkles',array('decorative'=>true)).' Suggest all unmarked Essays with AI</button></form>';
+}
 
 /**
 * new language items added 20/mar/06
@@ -81,7 +88,7 @@ if(!empty($data)){
         $class = ($i++%2) ? 'even':'odd';
 
         // if essay submitted: allow download
-        if($item['studentfileid']){
+        if(!empty($item['submitdate']) && (!empty($item['studentfileid']) || trim((string)($item['submission_text']??''))!=='')){
             if (!is_null($item['submitdate'])) {
                 $submitdate = $this->objTimeAndDate->formatDateTime($item['submitdate']);
             } else {
@@ -91,10 +98,17 @@ if(!empty($data)){
             $this->objLink = new link($uriMark);
             $this->objLink->link = $item['mark'] !== null && $item['mark'] !== '' ? 'Review mark' : $markrow;
             $mark = ($item['mark'] !== null && $item['mark'] !== '' ? $item['mark'].'%' : $unmarked).'<br>'.$this->objLink->show();
-        	$this->objLink = new link($this->uri(array('action'=>'download','fileid'=>$item['studentfileid'])));
-            $this->objLink->link=$icons->render('download',array('decorative'=>true));
-            $this->objLink->title=$titledownload;
-            $loadicons=$this->objLink->show();
+            if (!empty($item['studentfileid'])) {
+                $this->objLink = new link($this->uri(array('action'=>'download','fileid'=>$item['studentfileid'])));
+                $this->objLink->link=$icons->render('download',array('decorative'=>true));
+                $this->objLink->title=$titledownload;
+                $loadicons=$this->objLink->show();
+            } else {
+                $loadicons=$icons->render('file-text',array('decorative'=>true));
+            }
+            if (isset($aiJobs[$item['id']])) {
+                $loadicons.=' '.htmlspecialchars(ucfirst((string)$aiJobs[$item['id']]['status']),ENT_QUOTES,'UTF-8');
+            }
             /*
         	$this->objIcon->setIcon('submit2');
         	$this->objIcon->title=$titleupload;

@@ -102,7 +102,7 @@ class essay extends essaymanagementbase {
      * @return string The template
      */
     public function dispatch($action) {        
-        $managementActions = array('addtopic','edit','edittopic','savetopic','delete','deletetopic','addessay','editessay','saveessay','deleteessay','mark','marktopic','upload');
+        $managementActions = array('addtopic','edit','edittopic','savetopic','delete','deletetopic','addessay','editessay','saveessay','deleteessay','mark','marktopic','upload','aiassistmark','aibatchmark','aimarkingjob');
         if (in_array((string) $action, $managementActions, true)
             || ($action === 'view' && $this->canManageEssays())
             || ($action === 'uploadsubmit' && $this->getParam('book', '') !== '')

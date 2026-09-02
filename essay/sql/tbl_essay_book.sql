@@ -78,6 +78,13 @@ $fields = array(
     'comment'  =>  array(
       'type'    =>  'clob'
     ),
+    'integrity_adjustment' => array(
+      'type' => 'integer',
+      'length' => 4
+    ),
+    'integrity_reason' => array(
+      'type' => 'clob'
+    ),
     'draft_html'  =>  array(
       'type'    =>  'clob'
     ),

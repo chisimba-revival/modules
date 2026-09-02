@@ -37,6 +37,8 @@ class essaymanagementbase extends controller
         $this->dbessays = $this->getObject('dbessays', 'essay');
         $this->dbbook = $this->getObject('dbessay_book', 'essay');
         $this->objDefaultEssayRubric = $this->getObject('essaydefaultrubric', 'essay');
+        $this->objAiMarkingJobs = $this->getObject('dbessayaimarkingjobs', 'essay');
+        $this->aiMarkingAvailable = $this->getObject('essayaimarker', 'essay')->isAvailable();
         // Get instances of the html elements:
         $this->loadclass('htmltable', 'htmlelements');
         $this->loadClass('checkbox', 'htmlelements');
@@ -355,8 +357,36 @@ class essaymanagementbase extends controller
             $this->setVar('heading', $this->objLanguage->code2Txt('mod_essayadmin_submittedessaysintopicarea','essayadmin', array('TOPICAREA'=>$topicdata[0]['name'])));
             $this->setVarByRef('topicdata',$topicdata);
             $this->setVarByRef('data',$data);
+            $this->setVar('aiMarkingAvailable', $this->aiMarkingAvailable);
+            $this->setVar('aiMarkingJobs', $this->objAiMarkingJobs->listForTopic($topicAreaId,$this->contextcode,$this->userId,$this->objUser->isAdmin()));
+            $this->setVar('aiBatchToken', $this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('essay_ai_batch_marking'));
             $this->setLayoutTemplate('essay_management_layout_tpl.php');
             return 'manage_mark_essays_tpl.php';
+        case 'aiassistmark':
+            $stack=$this->getObject('nativeauthwebcomposition','security')->build();$book=(string)$this->getParam('book','');
+            if(!$this->aiMarkingAvailable||strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST'||!$stack['csrf']->consume('essay_ai_marking',(string)$this->getParam('csrf_token',''))){return $this->nextAction(null);}
+            $booking=$this->dbbook->getRow('id',$book);
+            if(!is_array($booking)||(string)$booking['context']!==(string)$this->contextcode||empty($booking['submitdate'])){return $this->nextAction(null,array('error'=>'invalidsubmission'));}
+            $existing=$this->objAiMarkingJobs->getLatestCompleted($book,$this->contextcode,$this->userId,$this->objUser->isAdmin());
+            if(is_array($existing)){return $this->nextAction('aimarkingjob',array('id'=>$existing['id']));}
+            return $this->nextAction('aimarkingjob',array('id'=>$this->objAiMarkingJobs->enqueue($this->contextcode,$this->userId,$book)));
+        case 'aibatchmark':
+            $stack=$this->getObject('nativeauthwebcomposition','security')->build();$topic=(string)$this->getParam('id','');
+            if(!$this->aiMarkingAvailable||strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST'||!$stack['csrf']->consume('essay_ai_batch_marking',(string)$this->getParam('csrf_token',''))){return $this->nextAction(null);}
+            $topicRows=$this->dbtopic->getTopic($topic);
+            if(empty($topicRows[0])||(string)$topicRows[0]['context']!==(string)$this->contextcode){return $this->nextAction(null);}
+            foreach((array)$this->dbbook->getBooking("WHERE topicid='".addslashes($topic)."' AND context='".addslashes($this->contextcode)."'") as $booking){if(!empty($booking['submitdate'])&&($booking['mark']===null||$booking['mark']==='')){$this->objAiMarkingJobs->enqueue($this->contextcode,$this->userId,$booking['id']);}}
+            return $this->nextAction('marktopic',array('id'=>$topic,'message'=>'aibatchqueued'));
+        case 'aimarkingjob':
+            $job=$this->objAiMarkingJobs->getOwned($this->getParam('id',''),$this->contextcode,$this->userId,$this->objUser->isAdmin());
+            if(!is_array($job)){return $this->nextAction(null);}
+            if($job['status']==='completed'){
+                $booking=$this->dbbook->getRow('id',$job['booking_id']);if(!is_array($booking)){return $this->nextAction(null);}
+                $this->setVar('aiSuggestion',$job['suggestion']);
+                $this->setSession('mark',(string)($job['suggestion']['mark']??0));$this->setSession('comment',(string)($job['suggestion']['feedback']??''));
+                return $this->nextAction('upload',array('id'=>$booking['topicid'],'book'=>$booking['id'],'ai_job'=>$job['id']));
+            }
+            $this->setVar('aiMarkingJob',$job);$this->setLayoutTemplate('essay_management_layout_tpl.php');return 'ai_marking_progress_tpl.php';
         case 'download':
             $this->setVar('fileId', $this->getParam('fileid'));
             $this->setPageTemplate(NULL);
@@ -381,6 +411,10 @@ class essaymanagementbase extends controller
             $this->setVar('message', $message);
             $this->setVar('mark', $mark);
             $this->setVar('comment', $comment);
+            $recovery=$this->objAiMarkingJobs->getLatestCompleted($id,$this->contextcode,$this->userId,$this->objUser->isAdmin());
+            $this->setVar('aiSuggestion',is_array($recovery)?$recovery['suggestion']:array());
+            $this->setVar('aiMarkingAvailable',$this->aiMarkingAvailable);
+            $this->setVar('aiMarkingToken',$this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('essay_ai_marking'));
             //
             $this->setVarByRef('heading', $this->objLanguage->languageText('mod_essayadmin_markessay','essayadmin'));
             $this->setVar('topic', $topic);
@@ -401,10 +435,16 @@ class essaymanagementbase extends controller
             }
             $mark=$this->getParam('mark', '');
             $comment=$this->getParam('comment', '');
+            $integrityAdjustment=(int)$this->getParam('integrity_adjustment',0);
+            $integrityReason=trim((string)$this->getParam('integrity_reason',''));
             $message = null;
             $fileDetails = null;
             if (!is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100) {
                 $message = 'Enter a mark from 0 to 100.';
+            } else if ($integrityAdjustment > 0 || $integrityAdjustment < -100) {
+                $message = 'An academic integrity adjustment must be from 0 to minus 100.';
+            } else if ($integrityAdjustment !== 0 && $integrityReason === '') {
+                $message = 'Record the reason for an academic integrity adjustment.';
             } else {
                 if (!empty($_FILES['file']['name'])) {
                     $fileDetails = $this->objFile->uploadFile('file');
@@ -441,7 +481,8 @@ class essaymanagementbase extends controller
                 $message = $this->objLanguage->languageText('mod_essayadmin_uploadfailure', 'essayadmin')
                    .":&nbsp;" . $reason;
             } else {
-                $fields = array('mark'=>(int)$mark, 'comment'=>$comment);
+                $finalMark=max(0,min(100,(int)$mark+$integrityAdjustment));
+                $fields = array('mark'=>$finalMark, 'comment'=>$comment, 'integrity_adjustment'=>$integrityAdjustment, 'integrity_reason'=>$integrityReason);
                 if (!empty($fileDetails['fileid'])) { $fields['lecturerfileid']=$fileDetails['fileid']; }
                 $this->dbbook->bookEssay($fields, $book);
                 // display success message
