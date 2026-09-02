@@ -7,11 +7,13 @@ class essayassessmentprovider extends ChisimbaObject
     private $topics;
     private $bookings;
     private $user;
+    private $launcher;
     public function init()
     {
         $this->topics = $this->getObject('dbessay_topics', 'essay');
         $this->bookings = $this->getObject('dbessay_book', 'essay');
         $this->user = $this->getObject('user', 'security');
+        $this->launcher = $this->getObject('courseawarelaunchservice', 'context');
     }
     public function listActivities($contextCode)
     {
@@ -53,13 +55,13 @@ class essayassessmentprovider extends ChisimbaObject
                 $essayAction = 'viewallessays';
             }
         }
-        return array(
-            'module'=>'essay',
-            'params'=>array(
+        return $this->launcher->target(
+            $contextCode,
+            'essay',
+            array(
                 'action'=>$essayAction,
                 'id'=>$essayAction === 'view' ? $activityId : '',
-                'targetcontext'=>$contextCode,
-            ),
+            )
         );
     }
 

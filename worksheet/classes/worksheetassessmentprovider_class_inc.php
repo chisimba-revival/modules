@@ -6,12 +6,14 @@ class worksheetassessmentprovider extends ChisimbaObject
 {
     private $worksheets;
     private $results;
+    private $launcher;
 
     /** Initialise the provider-owned activity and result stores. */
     public function init()
     {
         $this->worksheets = $this->getObject('dbworksheet', 'worksheet');
         $this->results = $this->getObject('dbworksheetresults', 'worksheet');
+        $this->launcher = $this->getObject('courseawarelaunchservice', 'context');
     }
 
     /** Return Worksheet activities available to a Gradebook assessment plan. */
@@ -82,12 +84,13 @@ class worksheetassessmentprovider extends ChisimbaObject
         $activity = $this->getActivity($contextCode, $activityId);
         if ($activity === false) { return false; }
         if ($role !== 'author' && $activity['activity_status'] === 'inactive') { return false; }
-        return array(
-            'module' => 'worksheet',
-            'params' => array(
+        return $this->launcher->target(
+            $contextCode,
+            'worksheet',
+            array(
                 'action' => $role === 'author' ? 'worksheetinfo' : 'viewworksheet',
                 'id' => $activityId,
-            ),
+            )
         );
     }
 }

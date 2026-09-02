@@ -14,6 +14,7 @@ $checks=array(
 'learner mutations require active membership'=>str_contains($controller,'hasActiveLearnerContext()')&&str_contains($controller,'topicBelongsToActiveContext'),
 'booking IDs must belong to the selected topic'=>str_contains($controller,'essayBelongsToTopic'),
 'known course recovery is explicit'=>str_contains($recovery,'You are not in this course')&&str_contains($recovery,'Enter course'),
-'dashboard route carries target course'=>str_contains($provider,"'targetcontext'=>\$contextCode"),
+'dashboard route uses shared course launcher'=>str_contains($provider,"getObject('courseawarelaunchservice'")
+    && str_contains($provider, '->target('),
 );
 $failed=false;foreach($checks as $name=>$ok){echo($ok?'PASS: ':'FAIL: ').$name.PHP_EOL;$failed=$failed||!$ok;}exit($failed?1:0);

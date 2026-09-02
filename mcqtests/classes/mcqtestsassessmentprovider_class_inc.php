@@ -9,11 +9,13 @@ class mcqtestsassessmentprovider extends ChisimbaObject
 {
     private $tests;
     private $results;
+    private $launcher;
 
     public function init()
     {
         $this->tests = $this->getObject('dbtestadmin', 'mcqtests');
         $this->results = $this->getObject('dbresults', 'mcqtests');
+        $this->launcher = $this->getObject('courseawarelaunchservice', 'context');
     }
 
     public function listActivities($contextCode)
@@ -49,12 +51,13 @@ class mcqtestsassessmentprovider extends ChisimbaObject
     public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
     {
         if ($this->getActivity($contextCode, $activityId) === false) { return false; }
-        return array(
-            'module'=>'mcqtests',
-            'params'=>array(
+        return $this->launcher->target(
+            $contextCode,
+            'mcqtests',
+            array(
                 'action'=>$role === 'author' ? 'view' : 'answertest',
                 'id'=>$activityId,
-            ),
+            )
         );
     }
 

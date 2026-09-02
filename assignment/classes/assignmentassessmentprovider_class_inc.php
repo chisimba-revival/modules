@@ -9,11 +9,13 @@ class assignmentassessmentprovider extends ChisimbaObject
 {
     private $assignments;
     private $submissions;
+    private $launcher;
 
     public function init()
     {
         $this->assignments = $this->getObject('dbassignment', 'assignment');
         $this->submissions = $this->getObject('dbassignmentsubmit', 'assignment');
+        $this->launcher = $this->getObject('courseawarelaunchservice', 'context');
     }
 
     public function listActivities($contextCode)
@@ -53,7 +55,11 @@ class assignmentassessmentprovider extends ChisimbaObject
     public function getLaunchTarget($contextCode, $activityId, $role = 'learner')
     {
         if ($this->getActivity($contextCode, $activityId) === false) { return false; }
-        return array('module'=>'assignment', 'params'=>array('action'=>'view', 'id'=>$activityId));
+        return $this->launcher->target(
+            $contextCode,
+            'assignment',
+            array('action'=>'view', 'id'=>$activityId)
+        );
     }
 
     /** Return the newest submission, distinguishing submitted from marked. */

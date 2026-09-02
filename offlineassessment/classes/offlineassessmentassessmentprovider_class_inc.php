@@ -3,8 +3,8 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 /** Read-only Gradebook adapter. Offline Assessment remains owner of activities and marks. */
 class offlineassessmentassessmentprovider extends ChisimbaObject
 {
- private $assessments; private $marks;
- public function init(){ $this->assessments=$this->getObject('dbofflineassessments','offlineassessment'); $this->marks=$this->getObject('dbofflineassessmentmarks','offlineassessment'); }
+ private $assessments; private $marks; private $launcher;
+ public function init(){ $this->assessments=$this->getObject('dbofflineassessments','offlineassessment'); $this->marks=$this->getObject('dbofflineassessmentmarks','offlineassessment'); $this->launcher=$this->getObject('courseawarelaunchservice','context'); }
  public function listActivities($contextCode){
   $out=array(); foreach($this->assessments->getForContext($contextCode) as $r){ if(($r['status']??'active')!=='active') continue; $out[]=array('id'=>$r['id'],'name'=>$r['name'],'classification'=>$r['classification'],'total_mark'=>(float)$r['maximum_mark'],'closing_date'=>null); } return $out;
  }
@@ -12,7 +12,7 @@ class offlineassessmentassessmentprovider extends ChisimbaObject
  /** Return the lecturer mark sheet; offline assessments have no learner launch. */
  public function getLaunchTarget($contextCode,$activityId,$role='learner'){
   if(!$this->getActivity($contextCode,$activityId) || $role!=='author')return false;
-  return array('module'=>'offlineassessment','params'=>array('action'=>'marks','id'=>$activityId));
+  return $this->launcher->target($contextCode,'offlineassessment',array('action'=>'marks','id'=>$activityId));
  }
  public function getStudentResult($contextCode,$activityId,$userId,$rule='latest_completed'){
   $a=$this->getActivity($contextCode,$activityId); if(!$a || $a['total_mark']<=0)return array('status'=>'not_attempted','mark_percent'=>null);
