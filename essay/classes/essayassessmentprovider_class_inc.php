@@ -69,7 +69,8 @@ class essayassessmentprovider extends ChisimbaObject
      * Return the learner's current result for one Essay topic.
      *
      * The booking table is the Essay module's source of truth: booking means
-     * started, a student file means submitted, and a numeric mark means marked.
+     * started, a submission timestamp means submitted, and a numeric mark means
+     * marked. The timestamp covers both in-Chisimba writing and file uploads.
      *
      * @author Derek Keats
      * @return array{status:string,mark_percent:?float}
@@ -91,7 +92,7 @@ class essayassessmentprovider extends ChisimbaObject
         if ($row['mark'] !== null && $row['mark'] !== '') {
             return array('status'=>'marked', 'mark_percent'=>(float) $row['mark']);
         }
-        if (!empty($row['studentfileid'])) {
+        if (!empty($row['submitdate'])) {
             return array('status'=>'submitted', 'mark_percent'=>null);
         }
         return array('status'=>'in_progress', 'mark_percent'=>null);

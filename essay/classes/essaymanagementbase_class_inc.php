@@ -516,7 +516,10 @@ class essaymanagementbase extends controller
         $topics = array();
         if(!empty($rs)){
             foreach($rs as $key=>$item){
-                $bookings = $this->dbbook->getBooking("WHERE topicid='".$item['id']."'", "COUNT(studentfileid) AS submitted, COUNT(mark) AS marked");
+                $bookings = $this->dbbook->getBooking(
+                    "WHERE topicid='".$item['id']."' AND context='".addslashes($this->contextcode)."'",
+                    "SUM(CASE WHEN submitdate IS NOT NULL THEN 1 ELSE 0 END) AS submitted, COUNT(mark) AS marked"
+                );
                 $topics[$key]['id'] = $item['id'];
                 $topics[$key]['name'] = $item['name'];
                 $topics[$key]['closing_date'] = $item['closing_date'];
