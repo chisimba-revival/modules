@@ -129,6 +129,10 @@ class essay extends essaymanagementbase {
             && !$this->topicBelongsToActiveContext($this->getParam('id'))) {
             return $this->courseRecovery($action);
         }
+        if (in_array($action, array('bookessay', 'unbookessay'), true)
+            && !$this->essayBelongsToTopic($this->getParam('essay'), $this->getParam('id'))) {
+            return $this->courseRecovery($action);
+        }
         //$topicid=$this->getParam('id');
         switch ($action) {
             case 'view':
@@ -290,6 +294,14 @@ class essay extends essaymanagementbase {
         $topic = $this->dbtopic->getTopic(trim((string) $topicId), 'id,context');
         return is_array($topic) && isset($topic[0]['context'])
             && (string) $topic[0]['context'] === (string) $this->contextcode;
+    }
+
+    /** Ensure a booking request cannot combine unrelated topic and Essay IDs. */
+    private function essayBelongsToTopic($essayId, $topicId)
+    {
+        $essay = $this->dbessays->getEssay(trim((string) $essayId), 'id,topicid');
+        return is_array($essay) && isset($essay[0]['topicid'])
+            && (string) $essay[0]['topicid'] === (string) $topicId;
     }
 
     /** Render a deliberate recovery journey instead of querying the root scope. */
