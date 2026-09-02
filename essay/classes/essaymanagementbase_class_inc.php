@@ -435,17 +435,27 @@ class essaymanagementbase extends controller
             }
             $mark=$this->getParam('mark', '');
             $comment=$this->getParam('comment', '');
-            $lecturerDeduction=(int)$this->getParam('lecturer_deduction',0);
-            $integrityAdjustment=-$lecturerDeduction;
+            $useAiSuggestion=(string)$this->getParam('use_ai_suggestion','')==='1';
+            $lecturerAdjustment=(int)$this->getParam('lecturer_adjustment',0);
+            $integrityAdjustment=$useAiSuggestion?$lecturerAdjustment:0;
             $integrityReason=trim((string)$this->getParam('integrity_reason',''));
+            $aiBaseMark=null;
+            if ($useAiSuggestion) {
+                $recovery=$this->objAiMarkingJobs->getLatestCompleted($book,$this->contextcode,$this->userId,$this->objUser->isAdmin());
+                if (is_array($recovery) && isset($recovery['suggestion']['mark']) && is_numeric($recovery['suggestion']['mark'])) {
+                    $aiBaseMark=max(0,min(100,(int)$recovery['suggestion']['mark']));
+                }
+            }
             $message = null;
             $fileDetails = null;
-            if (!is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100) {
+            if ($useAiSuggestion && $aiBaseMark===null) {
+                $message = 'The retained AI suggestion could not be found. Review the submission and enter a final mark manually.';
+            } else if (!$useAiSuggestion && (!is_numeric($mark) || (float)$mark < 0 || (float)$mark > 100)) {
                 $message = 'Enter a mark from 0 to 100.';
-            } else if ($lecturerDeduction < 0 || $lecturerDeduction > 100) {
-                $message = 'An additional deduction must be from 0 to 100 percentage points.';
-            } else if ($lecturerDeduction !== 0 && $integrityReason === '') {
-                $message = 'Record the reason for an additional deduction.';
+            } else if ($lecturerAdjustment < -100 || $lecturerAdjustment > 100) {
+                $message = 'The lecturer adjustment must be from -100 to 100 percentage points.';
+            } else if ($lecturerAdjustment !== 0 && $integrityReason === '') {
+                $message = 'Record the reason for the lecturer adjustment.';
             } else {
                 if (!empty($_FILES['file']['name'])) {
                     $fileDetails = $this->objFile->uploadFile('file');
@@ -482,7 +492,8 @@ class essaymanagementbase extends controller
                 $message = $this->objLanguage->languageText('mod_essayadmin_uploadfailure', 'essayadmin')
                    .":&nbsp;" . $reason;
             } else {
-                $finalMark=max(0,min(100,(int)$mark+$integrityAdjustment));
+                $baseMark=$useAiSuggestion?$aiBaseMark:(int)$mark;
+                $finalMark=max(0,min(100,$baseMark+$integrityAdjustment));
                 $fields = array('mark'=>$finalMark, 'comment'=>$comment, 'integrity_adjustment'=>$integrityAdjustment, 'integrity_reason'=>$integrityReason);
                 if (!empty($fileDetails['fileid'])) { $fields['lecturerfileid']=$fileDetails['fileid']; }
                 $this->dbbook->bookEssay($fields, $book);
