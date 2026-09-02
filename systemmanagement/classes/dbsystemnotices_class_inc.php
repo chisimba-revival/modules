@@ -9,7 +9,7 @@ class dbsystemnotices extends dbTable
         $pearDb = null,
         $errorCallback = 'globalPearErrorCallback'
     ) {
-        parent::init('tbl_systemmanagement_notices', $pearDb, $errorCallback);
+        parent::init('tbl_systemmanagement_notices');
     }
     /** Return notices newest first for the administration console. */
     public function allNotices(){return $this->getAll(' ORDER BY datecreated DESC');}
