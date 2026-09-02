@@ -14,12 +14,14 @@ class dbsystemnotices extends dbTable
     /** Return notices newest first for the administration console. */
     public function allNotices(){return $this->getAll(' ORDER BY datecreated DESC');}
     /** Return notices active at one canonical UTC storage instant. */
-    public function activeAt($now){$q=$this->_objDb->quote($now);return $this->getAll(" WHERE (starts_at IS NULL OR starts_at <= {$q}) AND (ends_at IS NULL OR ends_at > {$q}) ORDER BY datecreated DESC");}
+    public function activeAt($now){$q=$this->quoteValue($now);return $this->getAll(" WHERE (starts_at IS NULL OR starts_at <= {$q}) AND (ends_at IS NULL OR ends_at > {$q}) ORDER BY datecreated DESC");}
     /** Store a validated notice. */
     public function createNotice(array $data){return $this->insert($data);}
     /** Delete one notice by generated identifier. */
     public function removeNotice($id){return $this->delete('id',$id);}
     /** Return whether a user belongs to a lecturer group in any course. */
-    public function userLectures($userId){$q=$this->_objDb->quote((string)$userId);$rows=$this->getArray("SELECT 1 FROM tbl_perms_groupusers gu JOIN tbl_perms_perm_users pu ON pu.perm_user_id=gu.perm_user_id JOIN tbl_perms_groups g ON g.group_id=gu.group_id WHERE pu.auth_user_id={$q} AND g.group_define_name LIKE '%^Lecturers' LIMIT 1");return !empty($rows);}
+    public function userLectures($userId){$q=$this->quoteValue($userId);$rows=$this->getArray("SELECT 1 FROM tbl_perms_groupusers gu JOIN tbl_perms_perm_users pu ON pu.perm_user_id=gu.perm_user_id JOIN tbl_perms_groups g ON g.group_id=gu.group_id WHERE pu.auth_user_id={$q} AND g.group_define_name LIKE '%^Lecturers' LIMIT 1");return !empty($rows);}
+    /** Quote a scalar with the framework database adapter. */
+    private function quoteValue($value){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'";}
 }
 ?>
