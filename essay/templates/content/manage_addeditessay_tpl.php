@@ -1,5 +1,5 @@
 <?php
-/** Accessible long-form essay authoring form using shared skin primitives. @package essayadmin @author Derek Keats */
+/** Accessible long-form essay authoring form using shared skin primitives. @package essay @author Derek Keats */
 $esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $record = !empty($data[0]) ? $data[0] : array();
 $essayId = isset($record['id']) ? (string) $record['id'] : '';
@@ -14,7 +14,7 @@ $rubricTitle = !empty($defaultRubric['title']) ? $defaultRubric['title'] : 'Defa
 ?>
 <main class="chisimba-workspace">
   <p>Create the learner task and the reference material used for consistent marking.</p>
-  <form class="chisimba-form chisimba-form--wide" method="post" action="<?php echo $this->uriForHtmlAttribute(array('action'=>'saveessay'), 'essayadmin'); ?>">
+  <form class="chisimba-form chisimba-form--wide" method="post" action="<?php echo $this->uriForHtmlAttribute(array('action'=>'saveessay'), 'essay'); ?>">
     <input type="hidden" name="id" value="<?php echo $esc($topicid); ?>">
     <input type="hidden" name="essay" value="<?php echo $esc($essayId); ?>">
     <div class="chisimba-form-field">
@@ -38,7 +38,7 @@ $rubricTitle = !empty($defaultRubric['title']) ? $defaultRubric['title'] : 'Defa
     </section>
     <div class="chisimba-form-actions">
       <button class="button" type="submit"><?php echo $icons->render('save', array('decorative'=>true, 'class'=>'chisimba-action-icon')); ?><span>Save essay</span></button>
-      <a class="button chisimba-button-secondary" href="<?php echo $this->uriForHtmlAttribute(array('action'=>'view', 'id'=>$topicid), 'essayadmin'); ?>"><?php echo $icons->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon')); ?><span>Cancel</span></a>
+      <a class="button chisimba-button-secondary" href="<?php echo $this->uriForHtmlAttribute(array('action'=>'view', 'id'=>$topicid), 'essay'); ?>"><?php echo $icons->render('x', array('decorative'=>true, 'class'=>'chisimba-action-icon')); ?><span>Cancel</span></a>
     </div>
   </form>
 </main>

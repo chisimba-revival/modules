@@ -1,5 +1,5 @@
 <?php
-/** Accessible topic-area authoring form using shared skin primitives. @author Derek Keats */
+/** Accessible Essay topic-area authoring form using shared skin primitives. @package essay @author Derek Keats */
 $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 $icons=$this->getObject('iconservice','ui');
 $row=!empty($data[0])?$data[0]:array();

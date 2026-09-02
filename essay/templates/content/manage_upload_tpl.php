@@ -1,5 +1,5 @@
 <?php
-/** Accessible Essay marking form for PHP 8.5. @author Derek Keats */
+/** Accessible Essay marking form for PHP 8.5. @package essay @author Derek Keats */
 $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 $icons=$this->getObject('iconservice','ui');
 $data=$this->dbbook->getBooking("WHERE id='".addslashes($book)."'");

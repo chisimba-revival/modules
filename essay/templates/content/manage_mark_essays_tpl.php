@@ -1,7 +1,7 @@
 <?php
 /**
 * Template to display submitted/marked essays.
-* @package essayadmin
+* @package essay
 */
 
 // Avoid undefined variable crap

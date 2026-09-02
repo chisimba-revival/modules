@@ -3,7 +3,7 @@
 /**
  *
  *
- * @version $Id$
+ * Consolidated Essay access-denied template.
  * @copyright 2010
  */
 

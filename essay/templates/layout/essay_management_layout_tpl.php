@@ -1,7 +1,7 @@
 <?php
 /*
 * Layout template for essay management.
-* @package essayadmin
+* @package essay
 */
 
 /**

@@ -11,6 +11,8 @@ define('ESSAY_BOOKEDBYSTUDENT', 2);
 define('ESSAY_BOOKED', 3);
 define('ESSAY_CANNOTBOOK', 4);
 
+require_once dirname(__FILE__).'/classes/essaymanagementbase_class_inc.php';
+
 /**
  * Controller class for the essay module.
  * Students are provided with functionality for booking an essay and uploading it for marking.
@@ -23,20 +25,18 @@ define('ESSAY_CANNOTBOOK', 4);
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @version $Id$
  */
-class essay extends controller {
+class essay extends essaymanagementbase {
 
     /**
      * Initialization method.
      */
     public function init() {        
+        parent::init();
         // Load scriptaclous since we can no longer guarantee it is there
         $scriptaculous = $this->getObject('scriptaculous', 'prototype');
         $this->appendArrayVar('headerParams', $scriptaculous->show('text/javascript'));
         //$this->objModules = $this->newObject('modules','modulecatalogue');
         $this->objModules = $this->newObject('modules', 'modulecatalogue');
-        if (!$this->objModules->checkIfRegistered('essayadmin')) {
-            return $this->nextAction(NULL, array('error' => 'notincontext'), '_default');
-        }
         $this->assignment = FALSE;
         if ($this->objModules->checkIfRegistered('Assignment Management', 'assignment')) {
             $this->assignment = TRUE;
@@ -97,6 +97,16 @@ class essay extends controller {
      * @return string The template
      */
     public function dispatch($action) {        
+        $managementActions = array('addtopic','edit','edittopic','savetopic','delete','deletetopic','addessay','editessay','saveessay','deleteessay','mark','marktopic','upload');
+        if (in_array((string) $action, $managementActions, true)
+            || ($action === 'view' && $this->canManageEssays())
+            || ($action === 'uploadsubmit' && $this->getParam('book', '') !== '')
+            || ($action === 'download' && $this->getParam('fileid', '') !== '')) {
+            return parent::dispatch($action);
+        }
+        if (($action === null || $action === '') && $this->canManageEssays()) {
+            return parent::dispatch($action);
+        }
         $this->setVar('pageSuppressXML', true);
         $this->userId = $this->objUser->userId();
         $this->user = $this->objUser->fullname();
@@ -256,6 +266,19 @@ class essay extends controller {
                 return 'topic_tpl.php';
         }
         //return $template;
+    }
+
+    /**
+     * Determine whether the current user should enter the lecturer workflow.
+     *
+     * @return bool
+     * @author Derek Keats
+     */
+    private function canManageEssays()
+    {
+        $contextCode = $this->objContext->getContextCode();
+        return $this->objUser->isAdmin()
+            || ($contextCode !== '' && $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode));
     }
 
     /**

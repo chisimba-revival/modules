@@ -1,6 +1,6 @@
 <?php
 /** Contract checks for the Essay marking journey. @author Derek Keats */
-$controller=file_get_contents(__DIR__.'/../controller.php');$template=file_get_contents(__DIR__.'/../templates/content/upload_tpl.php');
+$controller=file_get_contents(__DIR__.'/../classes/essaymanagementbase_class_inc.php');$template=file_get_contents(__DIR__.'/../templates/content/manage_upload_tpl.php');
 $checks=array(
 'no obsolete date helper'=>!str_contains($template,'getDateDifference'),
 'mark constrained to 0-100'=>str_contains($template,'min="0" max="100"')&&str_contains($controller,'(float)$mark > 100'),

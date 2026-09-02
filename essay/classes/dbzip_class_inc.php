@@ -1,5 +1,5 @@
 <?php
-/* ----------- zip class extends dbTable for tbl_essay_zipfiles------------*/
+/* Essay ZIP-file database model. */
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run'])
     {

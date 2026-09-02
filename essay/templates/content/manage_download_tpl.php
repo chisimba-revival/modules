@@ -1,7 +1,7 @@
 <?php
 /**
 * Template for downloading essays.
-* @package essayadmin
+* @package essay
 */
 
 $objFiles = $this->getObject('dbfile','filemanager');
