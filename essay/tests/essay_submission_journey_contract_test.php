@@ -18,5 +18,6 @@ $checks=array(
  'written and upload choices coexist'=>str_contains($viewer,'Write essay')&&str_contains($viewer,'Upload document instead'),
  'written submission has independent snapshot'=>str_contains($database,"'draft_html'")&&str_contains($database,"'submission_html'")&&str_contains($database,"'submission_mode' => 'written'"),
  'learner draft endpoints use CSRF'=>str_contains($controller,'DRAFT_CSRF')&&str_contains($controller,'SUBMIT_CSRF')&&str_contains($controller,'->consume('),
+ 'PHP 8.5-safe HTML purification'=>str_contains($controller,'objEngine->purifier->purify')&&!str_contains($controller,"getObject('htmlcleaner'"),
 );
 $failed=false; foreach($checks as $name=>$ok){echo ($ok?'PASS: ':'FAIL: ').$name.PHP_EOL;$failed=$failed||!$ok;} exit($failed?1:0);

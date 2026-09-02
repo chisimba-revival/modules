@@ -60,11 +60,6 @@ class manageviews_essay extends ChisimbaObject
                 $data[$key]['name'] = $topic[0]['name'];
                 $data[$key]['date'] = $topic[0]['closing_date'];
                 $data[$key]['bypass'] = $topic[0]['bypass']?'YES':'NO';
-                if (empty($item['studentfileid']) && empty($item['submission_html'])) {
-                    $data[$key]['mark'] = 'submit';
-                } else {
-                    $data[$key]['mark'] = $item['mark'];
-                }
             }
         }
         return $data;

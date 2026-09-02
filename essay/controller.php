@@ -86,7 +86,6 @@ class essay extends essaymanagementbase {
         $this->objDate = $this->newObject('datepicker', 'htmlelements');
         $this->objTimeAndDate = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->objFile = $this->newObject('upload', 'filemanager');
-        $this->htmlCleaner = $this->getObject('htmlcleaner', 'utilities');
         $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->csrf = $nativeAuth['csrf'];
         // Log this call if registered
@@ -244,28 +243,32 @@ class essay extends essaymanagementbase {
                 );
                 $saved = false;
                 if ($valid && $booking !== false) {
-                    $clean = $this->htmlCleaner->cleanHtml((string)$this->getParam('body_html', ''));
+                    $clean = $this->cleanWrittenEssay((string)$this->getParam('body_html', ''));
                     $saved = $this->dbbook->saveWrittenDraft(
                         $booking['id'],
                         $clean,
                         $this->objTimeAndDate->nowStorage()
                     ) !== false;
                 }
-                $this->setVar('draftResponse', array(
+                $payload = array(
                     'ok'=>$saved,
                     'csrf'=>$this->csrf->issue(self::DRAFT_CSRF),
                     'savedAt'=>$saved ? $this->objTimeAndDate->nowStorage() : null,
-                ));
-                $this->setPageTemplate(null);
-                $this->setLayoutTemplate(null);
-                return 'draft_json_tpl.php';
+                );
+                if (!headers_sent()) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    header('Cache-Control: private, no-store');
+                    header('X-Content-Type-Options: nosniff');
+                }
+                echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
             case 'submitwritten':
                 $booking = $this->editableWrittenBooking($this->getParam('bookid'));
                 if (!$this->isPost() || $booking === false
                     || !$this->csrf->consume(self::SUBMIT_CSRF, (string)$this->getParam('csrf_token', ''))) {
                     return $this->nextAction('viewallessays', array('error'=>'invalidsubmission'));
                 }
-                $clean = trim($this->htmlCleaner->cleanHtml((string)$this->getParam('body_html', '')));
+                $clean = trim($this->cleanWrittenEssay((string)$this->getParam('body_html', '')));
                 if (trim(strip_tags($clean)) === '') {
                     return $this->nextAction('writeessay', array('bookid'=>$booking['id'], 'error'=>'emptyessay'));
                 }
@@ -371,6 +374,19 @@ class essay extends essaymanagementbase {
     private function isPost()
     {
         return strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST';
+    }
+
+    /**
+     * Purify learner-authored rich text through the engine's PHP 8.5-safe
+     * HTML security boundary.
+     *
+     * @param string $html Submitted editor HTML.
+     * @return string
+     * @author Derek Keats
+     */
+    private function cleanWrittenEssay($html)
+    {
+        return (string)$this->objEngine->purifier->purify((string)$html);
     }
 
     /** Require a real enrolled course before learner-owned Essay operations. */
