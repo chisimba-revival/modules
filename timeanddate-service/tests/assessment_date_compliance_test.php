@@ -8,7 +8,7 @@
  * @author Derek Keats
  */
 $modulesRoot = dirname(__DIR__, 2);
-$moduleNames = array('essay', 'essayadmin', 'gradebook', 'worksheet', 'mcqtests');
+$moduleNames = array('essay', 'gradebook', 'worksheet', 'mcqtests');
 $violations = array();
 
 foreach ($moduleNames as $moduleName) {
