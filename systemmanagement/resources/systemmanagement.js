@@ -31,6 +31,13 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         linkDateRange('maintenance-start', 'maintenance-end');
-        linkDateRange('notice-start', 'notice-end');
+        var emailForm = document.querySelector('[data-maintenance-email]');
+        if (emailForm) {
+            emailForm.addEventListener('submit', function (event) {
+                if (!window.confirm('Send this maintenance email to the selected audience now?')) {
+                    event.preventDefault();
+                }
+            });
+        }
     });
 }());
