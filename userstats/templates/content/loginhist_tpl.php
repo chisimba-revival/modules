@@ -83,14 +83,14 @@ if (isset($ar)) {
     }
 
     //Add the table header linked for email
-    $emailLabel = $this->objLanguage->languageText("phrase_emailAddress");
+    $emailLabel = $this->objLanguage->languageText("phrase_emailaddress", "system", "Email address");
     if ($this->getParam('order', 'surname') != 'emailAddress') {
         $emailLabel = $this->uri(array(
            'action' => 'viewloginhistory',
            'order' => 'emailaddress'), 'userstats');
         //Make it a link
         $link->href = $emailLabel;
-        $link->link = $this->objLanguage->languageText("phrase_emailAddress");
+        $link->link = $this->objLanguage->languageText("phrase_emailaddress", "system", "Email address");
         $emailLabel = $link->show();
     }
 
