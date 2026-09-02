@@ -21,7 +21,7 @@ class studentdueitems extends ChisimbaObject
     private $providers;
     private $time;
     private $language;
-    private $icon;
+    private $icons;
 
     /** Initialise collaborating read-only services. */
     public function init()
@@ -33,7 +33,7 @@ class studentdueitems extends ChisimbaObject
         $this->providers = $this->getObject('assessmentproviderregistry', 'gradebook');
         $this->time = $this->getObject('timeanddateservice', 'timeanddate-service');
         $this->language = $this->getObject('language', 'language');
-        $this->icon = $this->getObject('geticon', 'htmlelements');
+        $this->icons = $this->getObject('iconservice', 'ui');
     }
 
     /** Return the complete accessible dashboard calendar markup. */
@@ -53,7 +53,8 @@ class studentdueitems extends ChisimbaObject
     public function items($userId)
     {
         $items = array();
-        foreach ((array) $this->userContext->getUserContext($userId) as $contextCode) {
+        $contextCodes = array_values(array_unique((array) $this->userContext->getUserContext($userId)));
+        foreach ($contextCodes as $contextCode) {
             $context = $this->contexts->getContextDetails($contextCode);
             if (!is_array($context) || empty($context['title'])) {
                 continue;
@@ -185,12 +186,10 @@ class studentdueitems extends ChisimbaObject
                     . '</span></div>';
                 if ($item['url'] !== '') {
                     $openLabel = $text('calendar_open', 'Open activity');
-                    $this->icon->setIcon('next');
-                    $this->icon->title = $openLabel;
                     $html .= '<a class="icon-button dashboard-agenda-item__action" href="' . $e($item['url'])
                         . '" aria-label="' . $e($openLabel . ': ' . $item['title'])
                         . '" title="' . $e($openLabel) . '"><span aria-hidden="true">'
-                        . $this->icon->show() . '</span></a>';
+                        . $this->icons->render('arrow-right', array('decorative'=>true)) . '</span></a>';
                 }
                 $html .= '</article>';
             }

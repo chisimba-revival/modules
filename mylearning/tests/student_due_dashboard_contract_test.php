@@ -14,12 +14,14 @@ $checks = array(
         && strpos($service, '$this->providers->adapter(') !== false,
     'only enabled course tools contribute' => strpos($service, 'getContextModules($contextCode)') !== false
         && strpos($service, 'isset($enabled[$provider[\'module_id\']])') !== false,
+    'duplicate role memberships do not duplicate due items' => strpos($service, 'array_unique(') !== false,
     'uses canonical time service' => strpos($service, "getObject('timeanddateservice', 'timeanddate-service')") !== false,
     'normalises result and launch target' => strpos($service, 'getStudentResult(') !== false
         && strpos($service, 'getLaunchTarget(') !== false,
     'provider failures are isolated' => strpos($service, 'catch (Throwable $failure)') !== false,
     'actions have tooltip and accessible name' => strpos($service, 'aria-label=') !== false
-        && strpos($service, 'title=') !== false,
+        && strpos($service, 'title=') !== false
+        && strpos($service, "render('arrow-right'") !== false,
     'essay provider exposes its due date' => strpos($essay, "'closing_date'=>") !== false,
     'manifest declares dependencies' => strpos($register, 'DEPENDS: gradebook') !== false
         && strpos($register, 'DEPENDS: timeanddate-service') !== false,
