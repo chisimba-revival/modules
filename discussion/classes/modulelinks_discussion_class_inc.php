@@ -1,127 +1,107 @@
 <?php
-
-/* -------------------- dbTable class ----------------*/
-// security check - must be included in all scripts
-
-if (!$GLOBALS['kewl_entry_point_run'])
-{
-    die("You cannot view this page directly");
+/**
+ * Secure course-content activity provider for Discussion.
+ *
+ * @package discussion
+ * @author Derek Keats
+ */
+if (!$GLOBALS['kewl_entry_point_run']) {
+    die('You cannot view this page directly');
 }
-
 
 class modulelinks_discussion extends ChisimbaObject
 {
+    /** @var object */
+    private $discussions;
+    /** @var object */
+    private $topics;
+    /** @var object */
+    private $user;
 
+    /** Initialise bounded read dependencies. */
     public function init()
     {
-        $this->loadClass('treenode','tree');
-        $this->objDiscussion =& $this->getObject('dbdiscussion', 'discussion');
-        $this->objTopics =& $this->getObject('dbtopic', 'discussion');
-        $this->objPost =& $this->getObject('dbpost', 'discussion');
+        $this->discussions = $this->getObject('dbdiscussion', 'discussion');
+        $this->topics = $this->getObject('dbtopic', 'discussion');
+        $this->user = $this->getObject('user', 'security');
     }
-    
+
+    /** Return a small navigation tree for the active course. */
     public function show()
     {
-        $rootNode = new treenode (array('link'=>$this->uri(NULL, 'discussion'), 'text'=>'Discussion', 'preview'=>'sffas'));
-        
-        $nodesArray = array();
-        
-        $discussions = $this->objDiscussion->getContextDiscussions();
-        
-        foreach ($discussions as $discussion)
-        {
-            $node = new treenode(array('link'=>$this->uri(array('action'=>'discussion', 'id'=>$discussion['id'])), 'text'=>$discussion['discussion_name']));
-            
-            $nodesArray['discussion_'.$discussion['id']] =& $node;
-            $rootNode->addItem($nodesArray['discussion_'.$discussion['id']]);
-            
-            $topics = $this->objTopics->showTopicsInDiscussion($discussion['id'], '1');
-            
-            foreach ($topics as $topic)
-            {
-                $node = new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$topic['topic_id'])), 'text'=>$topic['post_title']));
-                
-                $nodesArray['topic_'.$topic['topic_id']] =& $node;
-                $nodesArray['post_'.$topic['first_post']] =& $node;
-                $nodesArray['discussion_'.$topic['discussion_id']]->addItem($nodesArray['topic_'.$topic['topic_id']]);
-                
-                $posts = $this->objPost->getThread($topic['topic_id']);
-                
-                foreach ($posts as $post)
-                {
-                    
-                    
-                    if ($post['post_parent'] != '0') {
-                        $node = new treenode(array('link'=>$this->uri(array('action'=>'viewtopic', 'id'=>$post['topic_id'], 'post'=>$post['post_id'])), 'text'=>$post['post_title']));
-                
-                        $nodesArray['post_'.$post['post_id']] =& $node;
-                        $nodesArray['post_'.$post['post_parent']]->addItem($nodesArray['post_'.$post['post_id']]);
-                    }
-                }
-            }
-
-        }
-
-        
-        return $rootNode;
+        $this->loadClass('treenode', 'tree');
+        return new treenode(array(
+            'link' => $this->uri(array(), 'discussion'),
+            'text' => 'Discussion',
+        ));
     }
-    
+
     /**
-     * 
-     *Method to get a set of links for a context
-     *@param string $contextCode
-     *@return array
-     * @access public
+     * Return canonical discussions and topics addable to course content.
+     * Replies are mutable conversation records and are deliberately excluded.
+     *
+     * @param string $contextCode Course identifier supplied by contextcontent.
+     * @return array
      */
     public function getContextLinks($contextCode)
-    {          
-        $bigArr = array();
-
-        $discussions = $this->objDiscussion->getContextDiscussions($contextCode);
-        
-        foreach ($discussions as $discussion)
-        {
-            
-            $discussionArray = array();    
-            $discussionArray['menutext'] = $discussion['discussion_name'];
-            $discussionArray['description'] = $discussion['discussion_name'];
-            $discussionArray['itemid'] = $discussion['id'];
-            $discussionArray['moduleid'] = 'discussion';
-            $discussionArray['params'] = array('action' => 'discussion','id' => $discussion['id']);
-            $bigArr[] = $discussionArray;
-            
-            $topics = $this->objTopics->showTopicsInDiscussion($discussion['id'], '1');
-            
-            foreach ($topics as $topic)
-            {
-                $topicArray = array();    
-                $topicArray['menutext'] = 'Topic - '.$topic['post_title'];
-                $topicArray['description'] = 'topic description';
-                $topicArray['itemid'] = $topic['topic_id'];
-                $topicArray['moduleid'] = 'discussion';
-                $topicArray['params'] = array('action' => 'viewtopic', 'id' => $topic['topic_id']);
-                $bigArr[] = $topicArray;
-                
-                $posts = $this->objPost->getThread($topic['topic_id']);
-                
-                foreach ($posts as $post)
-                {
-                    if ($post['post_parent'] != '0') {
-                
-                        $postArray = array();    
-                        $postArray['menutext'] = 'Post - '.$post['post'];
-                        $postArray['description'] = 'Post description';
-                        $postArray['itemid'] = $post['topic_id'];
-                        $postArray['moduleid'] = 'discussion';
-                        $postArray['params'] = array('action' => 'viewtopic', 'post'=>$post['post_id']);
-                        $bigArr[] = $postArray;
-                    }
-                }
-            }
-
+    {
+        $contextCode = trim((string) $contextCode);
+        if (!$this->validIdentifier($contextCode) || $contextCode === 'root') {
+            return array();
         }
-        
-        return $bigArr;
+        $links = array();
+        $discussions = $this->discussions->getContextDiscussions($contextCode);
+        if (!is_array($discussions)) {
+            return $links;
+        }
+        foreach ($discussions as $discussion) {
+            if (!$this->validIdentifier($discussion['id'])) {
+                continue;
+            }
+            $links[] = $this->activity(
+                $discussion['discussion_name'],
+                $discussion['discussion_description'],
+                'discussion:' . $discussion['id'],
+                array('action' => 'discussion', 'id' => $discussion['id'])
+            );
+            $topics = $this->topics->showTopicsInDiscussion(
+                $discussion['id'],
+                $this->user->userId()
+            );
+            if (!is_array($topics)) {
+                continue;
+            }
+            foreach ($topics as $topic) {
+                if (!$this->validIdentifier($topic['topic_id'])) {
+                    continue;
+                }
+                $title = stripslashes((string) $topic['post_title']);
+                $links[] = $this->activity(
+                    'Topic: ' . $title,
+                    'Open this topic in ' . $discussion['discussion_name'] . '.',
+                    'topic:' . $topic['topic_id'],
+                    array('action' => 'viewtopic', 'id' => $topic['topic_id'])
+                );
+            }
+        }
+        return $links;
+    }
+
+    /** Build the legacy-compatible activity descriptor. */
+    private function activity($title, $description, $itemId, array $params)
+    {
+        return array(
+            'menutext' => trim(strip_tags((string) $title)),
+            'description' => trim(strip_tags((string) $description)),
+            'itemid' => $itemId,
+            'moduleid' => 'discussion',
+            'params' => $params,
+        );
+    }
+
+    /** Accept only identifiers safe for routing and database lookup. */
+    private function validIdentifier($value)
+    {
+        return preg_match('/^[A-Za-z0-9_-]{1,128}$/', (string) $value) === 1;
     }
 }
-?>

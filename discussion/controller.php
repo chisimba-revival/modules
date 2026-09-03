@@ -150,9 +150,8 @@ class discussion extends controller {
                 $this->objFiles = & $this->getObject('dbfile', 'filemanager');
                 $this->loadClass('link', 'htmlelements');
 
-                if (strtolower($this->getParam('passthroughlogin')) == 'true') {
-                        $this->updatePassThroughLogin();
-                }
+                // Course changes must pass through context's canonical launcher.
+                // Discussion never changes active scope from a query parameter.
                 $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
                 $this->showFullName = $this->objSysConfig->getValue('SHOWFULLNAME', 'discussion');
                 if ($this->showFullName == '') {
@@ -238,6 +237,10 @@ class discussion extends controller {
         public function dispatch($action = Null) {
                 $this->setLayoutTemplate('discussion_layout.php');
                 //$this->setVar('pageSuppressXML', TRUE);
+
+                if (!$this->resourceBelongsToActiveScope($action)) {
+                        return $this->nextAction('courseactivitydenied', array(), 'context');
+                }
 
                 switch ($action) {
                         case 'savepostratingup' :
@@ -2131,32 +2134,68 @@ class discussion extends controller {
         }
 
         /**
-         * Method to update a passthrough login, log user into required course
+         * Confirm an addressable conversation belongs to the active scope.
+         *
+         * @param string|null $action Requested controller action.
+         * @return bool
          */
-        public function updatePassThroughLogin() {
-                $objDiscussionPassThrough = $this->getObject('discussion_passthrough');
-                switch ($this->getParam('action')) {
-                        case 'discussion':
-                                $discussion = $objDiscussionPassThrough->getContextFromDiscussion($this->getParam('id'));
-                                break;
-                        case 'viewtopic':
-                        case 'flatview':
-                        case 'singlethreadview':
-                        case 'thread':
-                        case 'moderatetopic':
-                                $discussion = $objDiscussionPassThrough->getContextFromTopic($this->getParam('id'));
-                                break;
-                        case 'postreply':
-                                $discussion = $objDiscussionPassThrough->getContextFromPost($this->getParam('id'));
-                                break;
-                        default:
-                                $discussion = '';
-                                break;
+        private function resourceBelongsToActiveScope($action) {
+                if ($action === 'savepostreply') {
+                        return $this->replyTargetBelongsToActiveScope();
                 }
-                if ($discussion != '' && $discussion != FALSE) {
-                        $this->contextObject->joinContext($discussion);
+                $discussionActions = array('discussion', 'newtopic', 'savenewtopic');
+                $topicActions = array(
+                        'viewtopic', 'thread', 'singlethreadview', 'flatview',
+                        'moderatetopic', 'viewtopicmindmap', 'generatetopicmindmap'
+                );
+                $postActions = array('postreply', 'showeditpostpopup');
+                $bounded = array_merge($discussionActions, $topicActions, $postActions);
+                if (!in_array($action, $bounded, true)) {
+                        return true;
                 }
-                return;
+                $parameter = $action === 'savenewtopic' ? 'discussion' : 'id';
+                $id = trim((string) $this->getParam($parameter, ''));
+                if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $id) !== 1) {
+                        return false;
+                }
+                if (in_array($action, $discussionActions, true)) {
+                        $resource = $this->objDiscussion->getDiscussion($id);
+                } elseif (in_array($action, $topicActions, true)) {
+                        $resource = $this->objTopic->getTopicDiscussionDetails($id);
+                } else {
+                        $resource = $this->objPost->getPostDiscussionDetails($id);
+                }
+                $allowed = is_array($resource)
+                        && isset($resource['discussion_context'])
+                        && hash_equals(
+                                (string) $this->contextCode,
+                                (string) $resource['discussion_context']
+                        );
+                return $allowed;
+        }
+
+        /** Validate the complete parent/topic/discussion relationship for a reply. */
+        private function replyTargetBelongsToActiveScope() {
+                $parent = trim((string) $this->getParam('parent', ''));
+                $topic = trim((string) $this->getParam('topicid', ''));
+                $discussion = trim((string) $this->getParam('discussionid', ''));
+                foreach (array($parent, $topic, $discussion) as $identifier) {
+                        if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $identifier) !== 1) {
+                                return false;
+                        }
+                }
+                $parentRecord = $this->objPost->getRow('id', $parent);
+                $discussionRecord = $this->objDiscussion->getDiscussion($discussion);
+                return is_array($parentRecord)
+                        && is_array($discussionRecord)
+                        && isset($parentRecord['topic_id'], $parentRecord['discussion_id'])
+                        && hash_equals($topic, (string) $parentRecord['topic_id'])
+                        && hash_equals($discussion, (string) $parentRecord['discussion_id'])
+                        && isset($discussionRecord['discussion_context'])
+                        && hash_equals(
+                                (string) $this->contextCode,
+                                (string) $discussionRecord['discussion_context']
+                        );
         }
 
         /**
