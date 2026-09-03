@@ -372,9 +372,17 @@ class block_discussionadmin extends ChisimbaObject {
                         $selected = ($default['id'] ?? '') === $discussion['id'] ? ' selected' : '';
                         $defaultOptions .= '<option value="' . $escape($discussion['id']) . '"' . $selected . '>' . $escape($discussion['discussion_name']) . '</option>';
                 }
-                $defaultForm = '<form class="chisimba-card chisimba-form discussion-admin-default" method="post" action="'
-                        . $escape($this->uri(array('module' => 'discussion', 'action' => 'setdefaultdiscussion'))) . '"><div><h2>Default discussion</h2><p>This is the first discussion used when a course or site needs a general forum.</p></div><div class="chisimba-form-field"><label for="discussion-default">Use as default</label><select id="discussion-default" name="discussion">'
-                        . $defaultOptions . '</select></div><div class="chisimba-form-actions"><button class="button" type="submit">Save default</button></div></form>';
+                if ($defaultOptions === '') {
+                        $defaultForm = '<section class="chisimba-card discussion-admin-default discussion-admin-default--empty" aria-labelledby="discussion-default-heading">'
+                                . '<div><h2 id="discussion-default-heading">Default discussion</h2><p>Create a discussion before choosing the default for this scope.</p></div>'
+                                . '<span class="discussion-setting-badge discussion-setting-badge--off">'
+                                . $icons->render('circle-dashed', array('decorative' => true)) . ' Not configured</span></section>';
+                } else {
+                        $defaultForm = '<form class="chisimba-card chisimba-form discussion-admin-default" method="post" action="'
+                                . $escape($this->uri(array('module' => 'discussion', 'action' => 'setdefaultdiscussion'))) . '"><div><h2>Default discussion</h2><p>This is the first discussion used when this scope needs a general conversation space.</p></div><div class="chisimba-form-field discussion-admin-default__field"><label for="discussion-default">Use as default</label><select id="discussion-default" name="discussion">'
+                                . $defaultOptions . '</select></div><div class="chisimba-form-actions"><button class="button chisimba-button-compact" type="submit">'
+                                . $icons->render('save', array('decorative' => true)) . '<span>Save default</span></button></div></form>';
+                }
 
                 $cards = '';
                 foreach ($this->contextDiscussions as $discussion) {
@@ -398,21 +406,21 @@ class block_discussionadmin extends ChisimbaObject {
                         $archive = ($discussion['archivedate'] ?? '') && $discussion['archivedate'] !== '0000-00-00'
                                 ? '<p class="discussion-admin-card__archive">Shows topics from ' . $escape($discussion['archivedate']) . ' onward.</p>'
                                 : '';
-                        $delete = $isDefault ? '' : '<a class="button chisimba-button-danger" href="' . $escape($deleteUrl) . '">'
-                                . $icons->render('trash-2', array('decorative' => true)) . ' Delete</a>';
+                        $delete = $isDefault ? '' : '<a class="chisimba-icon-button chisimba-button-danger" href="' . $escape($deleteUrl) . '" aria-label="Delete ' . $escape($discussion['discussion_name']) . '" title="Delete">'
+                                . $icons->render('trash-2', array('decorative' => true)) . '</a>';
                         $cards .= '<article class="chisimba-card discussion-admin-card"><header><div><div class="discussion-admin-card__title"><h2><a href="' . $escape($viewUrl) . '">'
                                 . $escape($discussion['discussion_name']) . '</a></h2>' . ($isDefault ? '<span class="discussion-default-badge">Default</span>' : '')
                                 . '</div><p>' . $escape(strip_tags((string) ($discussion['discussion_description'] ?? ''))) . '</p></div></header><div class="discussion-setting-list" aria-label="Discussion settings">'
-                                . $badges . '</div>' . $archive . '<div class="chisimba-form-actions"><a class="button chisimba-button-secondary" href="' . $escape($viewUrl) . '">'
-                                . $icons->render('messages-square', array('decorative' => true)) . ' Open</a><a class="button" href="' . $escape($editUrl) . '">'
-                                . $icons->render('settings', array('decorative' => true)) . ' Edit settings</a>' . $delete . '</div></article>';
+                                . $badges . '</div>' . $archive . '<div class="chisimba-form-actions discussion-admin-card__actions"><a class="chisimba-icon-button" href="' . $escape($viewUrl) . '" aria-label="Open ' . $escape($discussion['discussion_name']) . '" title="Open discussion">'
+                                . $icons->render('messages-square', array('decorative' => true)) . '</a><a class="chisimba-icon-button" href="' . $escape($editUrl) . '" aria-label="Edit ' . $escape($discussion['discussion_name']) . ' settings" title="Edit settings">'
+                                . $icons->render('settings', array('decorative' => true)) . '</a>' . $delete . '</div></article>';
                 }
                 if ($cards === '') {
-                        $cards = '<section class="chisimba-card discussion-empty-state"><h2>No discussions yet</h2><p>Create the first discussion for this scope.</p></section>';
+                        $cards = '<section class="chisimba-card discussion-empty-state"><div class="discussion-empty-state__icon">' . $icons->render('messages-square', array('decorative' => true)) . '</div><div><h2>No discussions yet</h2><p>Create the first discussion for this scope.</p></div></section>';
                 }
 
-                return '<main class="chisimba-workspace chisimba-flow discussion-workspace"><header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Administration</p><h1>Discussions</h1><p>Manage the places where people exchange ideas, questions and feedback in ' . $escape($this->contextTitle ?: 'this scope') . '.</p></div><a class="button" href="'
-                        . $escape($createUrl) . '">' . $icons->render('plus', array('decorative' => true)) . ' Create discussion</a></header>'
+                return '<main class="chisimba-workspace chisimba-flow discussion-workspace"><header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Administration</p><h1>Discussions</h1><p>Manage the places where people exchange ideas, questions and feedback in ' . $escape($this->contextTitle ?: 'this scope') . '.</p></div><a class="button chisimba-button-compact" href="'
+                        . $escape($createUrl) . '">' . $icons->render('plus', array('decorative' => true)) . '<span>Create discussion</span></a></header>'
                         . $notice . $defaultForm . '<section class="discussion-admin-grid" aria-label="Available discussions">' . $cards . '</section></main>';
         }
 

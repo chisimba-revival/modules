@@ -147,9 +147,22 @@
 .discussion-admin-default {
     display: grid;
     grid-template-columns: minmax(0, 1.5fr) minmax(14rem, 1fr) auto;
-    align-items: end;
+    align-items: center;
     gap: 1rem;
     padding: 1.25rem;
+}
+
+.discussion-admin-default--empty {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.discussion-admin-default__field {
+    margin: 0;
+}
+
+.discussion-admin-default__field select {
+    width: 100%;
+    min-width: 14rem;
 }
 
 .discussion-admin-default h2,
@@ -215,6 +228,38 @@
     margin-block-start: auto;
 }
 
+.discussion-admin-card__actions {
+    justify-content: flex-end;
+    padding-block-start: .25rem;
+    border-block-start: 1px solid var(--chisimba-border, #d8dee5);
+}
+
+.discussion-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 9rem;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.discussion-empty-state h2,
+.discussion-empty-state p {
+    margin-block: 0 .3rem;
+}
+
+.discussion-empty-state__icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    color: var(--chisimba-primary, #0877c9);
+    background: var(--chisimba-primary-soft, #eaf4fb);
+}
+
 .discussion-admin-card__archive {
     color: var(--chisimba-text-muted, #59636e);
 }
@@ -223,6 +268,10 @@
     .discussion-admin-default {
         grid-template-columns: 1fr;
         align-items: stretch;
+    }
+
+    .discussion-admin-default--empty {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -12,6 +12,8 @@ $checks = array(
     'Derek Keats remains an author' => preg_match('/^MODULE_AUTHORS:.*Derek Keats/m', $register) === 1,
     'admin interface uses responsive cards' => str_contains($admin, 'buildModernAdmin') && str_contains($admin, 'discussion-admin-grid') && str_contains($admin, 'discussion-admin-card'),
     'admin interface uses skin actions and icons' => str_contains($admin, "getObject('iconservice', 'ui')") && str_contains($admin, 'chisimba-form-actions') && str_contains($admin, 'chisimba-button-danger'),
+    'card actions use accessible skin icon buttons' => str_contains($admin, 'class="chisimba-icon-button"') && str_contains($admin, 'aria-label="Open ') && str_contains($admin, "render('save'"),
+    'empty and default states remain distinct cards' => str_contains($admin, 'discussion-admin-default--empty') && str_contains($admin, 'discussion-empty-state__icon'),
     'modern admin path has no layout table' => !str_contains(substr($admin, strrpos($admin, 'private function buildModernAdmin')), 'htmlTable'),
     'legacy block title is suppressed' => str_contains($admin, "\$this->title = ''"),
     'Lobby administration uses an explicit bounded scope' => str_contains($admin, "\$this->contextCode = 'root';") && str_contains($admin, 'getAllContextDiscussions($this->contextCode)'),
