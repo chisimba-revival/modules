@@ -4,8 +4,8 @@ $tablename='tbl_discussion_ai_marking_jobs';
 $options=array('comment'=>'Human-reviewed Discussion AI marking suggestions','collate'=>'utf8_general_ci','character_set'=>'utf8');
 $fields=array(
  'id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),'contextcode'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),
- 'discussion_id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),'student_id'=>array('type'=>'text','length'=>25,'notnull'=>TRUE),
- 'requester_id'=>array('type'=>'text','length'=>25,'notnull'=>TRUE),'status'=>array('type'=>'text','length'=>20,'notnull'=>TRUE),
+ 'discussion_id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),'student_id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),
+ 'requester_id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),'status'=>array('type'=>'text','length'=>20,'notnull'=>TRUE),
  'rubric_version'=>array('type'=>'text','length'=>80,'notnull'=>TRUE),'evidence_json'=>array('type'=>'clob'),
  'result_json'=>array('type'=>'clob'),'error_code'=>array('type'=>'text','length'=>80),
  'date_created'=>array('type'=>'timestamp','notnull'=>TRUE),'date_updated'=>array('type'=>'timestamp','notnull'=>TRUE),'date_completed'=>array('type'=>'timestamp')

@@ -326,6 +326,8 @@ class discussion extends controller {
                                 return $this->saveDiscussionMark();
                         case 'requestdiscussionaimark':
                                 return $this->requestDiscussionAiMark();
+                        case 'requestdiscussionaibatch':
+                                return $this->requestDiscussionAiBatch();
 
                         case 'deletediscussion':
                                 return $this->deleteDiscussion($this->getParam('id'));
@@ -1338,6 +1340,7 @@ class discussion extends controller {
 
         /** Show the manual and AI-assisted marking workspace. */
         private function markDiscussion() {
+                if(!$this->objDiscussion->ensureAssessmentStorage()){return $this->nextAction('administration',array('message'=>'assessmentsettingsfailed'));}
                 $discussion = $this->objDiscussion->getDiscussion($this->getParam('id'));
                 if (!is_array($discussion) || ($discussion['assessment_enabled'] ?? 'N') !== 'Y') {
                         return $this->nextAction('administration');
@@ -1364,35 +1367,56 @@ class discussion extends controller {
                 $rubric = $this->getObject('discussiondefaultrubric')->getStructuredRubric();
                 $aiAvailable = $this->getObject('discussionaimarker')->isAvailable();
                 $markingMode = true;
+                $batchCsrf = $this->csrf->issue($this->markBatchCsrfContext($discussion['id']));
                 $this->setVarByRef('discussionAssessment', $discussion);
                 $this->setVarByRef('discussionStudents', $students);
                 $this->setVarByRef('discussionRubric', $rubric);
                 $this->setVarByRef('discussionAiAvailable', $aiAvailable);
                 $this->setVarByRef('discussionMarkingMode', $markingMode);
+                $this->setVarByRef('discussionBatchCsrf', $batchCsrf);
                 return 'discussion_administration.php';
         }
 
         /** Save a lecturer-reviewed rubric result. */
         private function saveDiscussionMark() {
                 $discussionId=trim((string)$this->getParam('id'));$studentId=trim((string)$this->getParam('student_id'));
-                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'save'))) { return $this->nextAction('administration', array('message'=>'invalidrequest')); }
-                if (!$this->isContextStudent($studentId)) { return $this->nextAction('markdiscussion', array('id'=>$discussionId,'message'=>'invalidstudent')); }
-                $rubric=$this->getObject('discussiondefaultrubric')->getStructuredRubric();if(!is_array($rubric)){return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'rubricunavailable'));}
+                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'save'))) { return $this->markingFailure($discussionId,'Invalid or expired review request.','invalidrequest'); }
+                if (!$this->isContextStudent($studentId)) { return $this->markingFailure($discussionId,'This learner is not in the active course.','invalidstudent'); }
+                $rubric=$this->getObject('discussiondefaultrubric')->getStructuredRubric();if(!is_array($rubric)){return $this->markingFailure($discussionId,'The marking rubric is unavailable.','rubricunavailable');}
                 $scores=(array)$this->getParam('criterion',array());$review=array();$total=0;
                 foreach($rubric['criteria'] as $index=>$criterion){$maximum=(float)$criterion['maximumMark'];$score=filter_var($scores[$index]??null,FILTER_VALIDATE_FLOAT);if($score===false){$score=0;}$score=max(0,min($maximum,(float)$score));$review[]=array('objective'=>$criterion['objective'],'score'=>$score,'maximumMark'=>$maximum);$total+=$score;}
                 $discussion=$this->objDiscussion->getDiscussion($discussionId);$maximum=max(1,(float)($discussion['assessment_total_mark']??100));$mark=($total/100)*$maximum;$feedback=mb_substr(trim((string)$this->getParam('feedback','')),0,2000);$aiJobId=trim((string)$this->getParam('ai_job_id',''))?:null;
                 if($aiJobId!==null){$job=$this->getObject('dbdiscussionaimarkingjobs')->getScoped($aiJobId,$this->contextCode,$this->userId,$this->objUser->isAdmin());if(!is_array($job)||(string)$job['discussion_id']!==$discussionId||(string)$job['student_id']!==$studentId||$job['status']!=='completed'){$aiJobId=null;}}
-                $this->getObject('dbdiscussionassessmentmarks')->saveMark($discussionId,$studentId,$mark,$feedback,$this->userId,json_encode($review),$aiJobId);
+                $saved=$this->getObject('dbdiscussionassessmentmarks')->saveMark($discussionId,$studentId,$mark,$feedback,$this->userId,json_encode($review),$aiJobId);
+                if(!$saved){return $this->markingFailure($discussionId,'The reviewed mark could not be saved.','marksavefailed');}
+                if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>true,'message'=>'Reviewed mark saved.','studentId'=>$studentId,'mark'=>$mark,'maximum'=>$maximum,'csrfToken'=>$this->csrf->issue($this->markCsrfContext($discussionId,$studentId,'save'))));}
                 return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'marksaved'));
         }
 
         /** Queue an evidence-bounded AI marking draft. */
         private function requestDiscussionAiMark() {
                 $discussionId=trim((string)$this->getParam('id'));$studentId=trim((string)$this->getParam('student_id'));
-                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'ai'))) { return $this->nextAction('administration', array('message'=>'invalidrequest')); }
-                if ($this->isContextStudent($studentId)) {$this->getObject('dbdiscussionaimarkingjobs')->enqueue($this->contextCode,$discussionId,$studentId,$this->userId);}
+                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'ai'))) { return $this->markingFailure($discussionId,'Invalid or expired AI request.','invalidrequest'); }
+                if(!$this->isContextStudent($studentId)){return $this->markingFailure($discussionId,'This learner is not in the active course.','invalidstudent');}
+                if(!count((array)$this->objPost->getAssessmentEvidence($discussionId,$studentId))){return $this->markingFailure($discussionId,'This learner has no contributions to assess.','noevidence');}
+                $jobId=$this->getObject('dbdiscussionaimarkingjobs')->enqueue($this->contextCode,$discussionId,$studentId,$this->userId);if(!$jobId){return $this->markingFailure($discussionId,'The AI suggestion could not be queued.','aiqueuefailed');}
+                if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>true,'message'=>'AI suggestion queued.','studentId'=>$studentId,'jobId'=>$jobId,'csrfToken'=>$this->csrf->issue($this->markCsrfContext($discussionId,$studentId,'ai'))));}
                 return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'aiqueued'));
         }
+
+        /** Queue AI suggestions for at most ten visible, evidence-bearing learners. */
+        private function requestDiscussionAiBatch() {
+                $discussionId=trim((string)$this->getParam('id'));$studentIds=array_values(array_unique(array_map('strval',(array)$this->getParam('student_ids',array()))));
+                if(!$this->validManagementMutation($this->markBatchCsrfContext($discussionId))){return $this->markingFailure($discussionId,'Invalid or expired batch request.','invalidrequest');}
+                $studentIds=array_slice($studentIds,0,10);$queued=array();
+                foreach($studentIds as $studentId){if(!$this->isContextStudent($studentId)||!count((array)$this->objPost->getAssessmentEvidence($discussionId,$studentId))){continue;}$jobId=$this->getObject('dbdiscussionaimarkingjobs')->enqueue($this->contextCode,$discussionId,$studentId,$this->userId);if($jobId){$queued[]=$studentId;}}
+                if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>true,'message'=>count($queued).' AI suggestion'.(count($queued)===1?'':'s').' queued.','studentIds'=>$queued,'csrfToken'=>$this->csrf->issue($this->markBatchCsrfContext($discussionId))));}
+                return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'aiqueued'));
+        }
+
+        private function wantsMarkingJson(){return (string)$this->getParam('response_format','')==='json'||str_contains(strtolower((string)($_SERVER['HTTP_ACCEPT']??'')),'application/json');}
+        private function sendMarkingJson($payload,$status=200){http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo json_encode($payload,JSON_UNESCAPED_SLASHES);die();}
+        private function markingFailure($discussionId,$message,$code){if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>false,'message'=>$message,'code'=>$code),400);}return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>$code));}
 
         /** Confirm the target is currently a learner in the active course. */
         private function isContextStudent($studentId) {
@@ -2245,7 +2269,7 @@ class discussion extends controller {
                 $discussionActions = array(
                         'discussion', 'newtopic', 'savenewtopic', 'editdiscussion',
                         'editdiscussionsave', 'deletediscussion', 'markdiscussion',
-                        'savediscussionmark', 'requestdiscussionaimark',
+                        'savediscussionmark', 'requestdiscussionaimark', 'requestdiscussionaibatch',
                         'deletediscussionconfirm', 'changevisibilityconfirm',
                         'setdefaultdiscussion', 'updatediscussionsetting'
                 );
@@ -2291,7 +2315,7 @@ class discussion extends controller {
                 $managementActions = array(
                         'administration', 'creatediscussion', 'savediscussion',
                         'editdiscussion', 'editdiscussionsave', 'markdiscussion',
-                        'savediscussionmark', 'requestdiscussionaimark', 'deletediscussion',
+                        'savediscussionmark', 'requestdiscussionaimark', 'requestdiscussionaibatch', 'deletediscussion',
                         'deletediscussionconfirm', 'changevisibilityconfirm',
                         'setdefaultdiscussion', 'updatediscussionsetting'
                 );
@@ -2316,6 +2340,10 @@ class discussion extends controller {
         /** Derive a server-controlled CSRF namespace for one marking action. */
         private function markCsrfContext($discussionId,$studentId,$operation) {
                 return 'discussion_mark_'.hash('sha256',(string)$discussionId.'|'.(string)$studentId.'|'.(string)$operation);
+        }
+
+        private function markBatchCsrfContext($discussionId) {
+                return 'discussion_b_'.hash('sha256',(string)$discussionId);
         }
 
         /** Return an allow-listed Y/N request value. */

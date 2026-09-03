@@ -382,14 +382,14 @@ class dbdiscussion extends dbTable {
                 // recorded even though the installer did not add fields to the
                 // existing table. Check and repair that partial upgrade before
                 // issuing an update that refers to the new fields.
-                if (!$this->ensureAssessmentColumns()) {
+                if (!$this->ensureAssessmentStorage()) {
                         return false;
                 }
                 return $this->update('id', $discussionId, $settings);
         }
 
         /** Ensure fields introduced for assessed Discussions exist. */
-        private function ensureAssessmentColumns() {
+        public function ensureAssessmentStorage() {
                 $columns = array(
                         'course_activity_enabled' => "CHAR(1) NOT NULL DEFAULT 'N'",
                         'assessment_enabled' => "CHAR(1) NOT NULL DEFAULT 'N'",
@@ -406,15 +406,33 @@ class dbdiscussion extends dbTable {
                         }
                 }
                 $tables = array(
-                        "CREATE TABLE IF NOT EXISTS tbl_discussion_assessment_marks (id VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, user_id VARCHAR(25) NOT NULL, mark DOUBLE NOT NULL, feedback VARCHAR(2000) NULL, rubric_json LONGTEXT NULL, ai_job_id VARCHAR(32) NULL, marker_id VARCHAR(25) NOT NULL, date_created DATETIME NULL, date_updated DATETIME NULL, PRIMARY KEY (id), INDEX tbl_discussion_assessment_marks_idx (discussion_id, user_id)) CHARACTER SET utf8 COLLATE utf8_general_ci",
-                        "CREATE TABLE IF NOT EXISTS tbl_discussion_ai_marking_jobs (id VARCHAR(32) NOT NULL, contextcode VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, student_id VARCHAR(25) NOT NULL, requester_id VARCHAR(25) NOT NULL, status VARCHAR(20) NOT NULL, rubric_version VARCHAR(80) NOT NULL, evidence_json LONGTEXT NULL, result_json LONGTEXT NULL, error_code VARCHAR(80) NULL, date_created DATETIME NOT NULL, date_updated DATETIME NOT NULL, date_completed DATETIME NULL, PRIMARY KEY (id), INDEX discussion_ai_jobs_resource (discussion_id, student_id), INDEX discussion_ai_jobs_status (status, date_updated)) CHARACTER SET utf8 COLLATE utf8_general_ci"
+                        "CREATE TABLE IF NOT EXISTS tbl_discussion_assessment_marks (id VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, user_id VARCHAR(32) NOT NULL, mark DOUBLE NOT NULL, feedback VARCHAR(2000) NULL, rubric_json LONGTEXT NULL, ai_job_id VARCHAR(32) NULL, marker_id VARCHAR(32) NOT NULL, date_created DATETIME NULL, date_updated DATETIME NULL, PRIMARY KEY (id), INDEX tbl_discussion_assessment_marks_idx (discussion_id, user_id)) CHARACTER SET utf8 COLLATE utf8_general_ci",
+                        "CREATE TABLE IF NOT EXISTS tbl_discussion_ai_marking_jobs (id VARCHAR(32) NOT NULL, contextcode VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, student_id VARCHAR(32) NOT NULL, requester_id VARCHAR(32) NOT NULL, status VARCHAR(20) NOT NULL, rubric_version VARCHAR(80) NOT NULL, evidence_json LONGTEXT NULL, result_json LONGTEXT NULL, error_code VARCHAR(80) NULL, date_created DATETIME NOT NULL, date_updated DATETIME NOT NULL, date_completed DATETIME NULL, PRIMARY KEY (id), INDEX discussion_ai_jobs_resource (discussion_id, student_id), INDEX discussion_ai_jobs_status (status, date_updated)) CHARACTER SET utf8 COLLATE utf8_general_ci"
                 );
                 foreach ($tables as $statement) {
                         if ($this->query($statement) === false) {
                                 return false;
                         }
                 }
+                $identityColumns = array(
+                        'tbl_discussion_assessment_marks' => array('user_id', 'marker_id'),
+                        'tbl_discussion_ai_marking_jobs' => array('student_id', 'requester_id')
+                );
+                foreach ($identityColumns as $table => $names) {
+                        foreach ($names as $name) {
+                                $existing = $this->query("SHOW COLUMNS FROM " . $table . " LIKE '" . $name . "'");
+                                $type = strtolower((string)($existing[0]['Type'] ?? $existing[0]['type'] ?? ''));
+                                if ($type !== 'varchar(32)' && $this->query('ALTER TABLE ' . $table . ' MODIFY COLUMN ' . $name . ' VARCHAR(32) NOT NULL') === false) {
+                                        return false;
+                                }
+                        }
+                }
                 return true;
+        }
+
+        /** Backward-compatible name retained for older integration checks. */
+        private function ensureAssessmentColumns() {
+                return $this->ensureAssessmentStorage();
         }
 
         /**
