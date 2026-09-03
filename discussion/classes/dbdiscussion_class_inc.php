@@ -132,7 +132,7 @@ class dbdiscussion extends dbTable {
          */
         function showAllDiscussions($context = null) {
                 $sql = 'SELECT tbl_discussion.id AS discussion_id, tbl_discussion. *,
-        count( DISTINCT topicCountLink.id ) AS topics, count( DISTINCT postCountLink.id ) AS posts
+        count( DISTINCT topicCountLink.id ) AS actual_topics, count( DISTINCT postCountLink.id ) AS actual_posts
         FROM tbl_discussion LEFT JOIN tbl_discussion_topic AS topicCountLink ON ( topicCountLink.discussion_id = tbl_discussion.id )
         LEFT JOIN tbl_discussion_post AS postCountLink ON ( postCountLink.topic_id = topicCountLink.id )  ';
 
