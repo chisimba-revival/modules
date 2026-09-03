@@ -397,8 +397,112 @@ class block_discussionview extends ChisimbaObject {
         return $tblAdmin->show() . $tblTopic->show();
     }
 
+    /**
+     * Render the current forum as a responsive topic workspace.
+     *
+     * @return string
+     */
+    private function buildModernDiscussionView()
+    {
+        $escape = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+        $icons = $this->getObject('iconservice', 'ui');
+        $translatedDate = $this->getObject('translatedatedifference', 'utilities');
+        $topics = $this->objTopic->showTopicsInDiscussion(
+            $this->discussionid,
+            $this->objUser->userId($this->objUser->userName()),
+            null,
+            $this->getSession('sortorder', 'date'),
+            $this->getParam('direction', $this->getSession('sortdirection', 'asc')),
+            null,
+            null
+        );
+        if (!is_array($topics)) {
+            $topics = array();
+        }
+        $canStart = $this->objUser->isCourseAdmin($this->contextCode)
+            || $this->discussionDetails['studentstarttopic'] === 'Y';
+        $isLocked = $this->discussionDetails['discussionlocked'] === 'Y';
+        $newTopicUrl = $this->uri(array(
+            'action' => 'newtopic',
+            'id' => $this->discussionid,
+            'type' => $this->discussionDetails['discussion_type'],
+        ));
+        $html = '<main class="discussion-workspace"><header class="discussion-workspace__hero">'
+            . '<div><p class="discussion-workspace__eyebrow">Discussion</p><h1>'
+            . $escape($this->discussionDetails['discussion_name']) . '</h1>';
+        if (!empty($this->discussionDetails['description'])) {
+            $html .= '<p>' . $escape($this->discussionDetails['description']) . '</p>';
+        }
+        $html .= '</div><div class="discussion-workspace__actions">';
+        if ($canStart && !$isLocked) {
+            $html .= '<a class="button" href="' . $escape($newTopicUrl) . '">'
+                . $icons->render('message-square-plus', array('decorative' => true))
+                . ' ' . $escape($this->objLanguage->languageText(
+                    'mod_discussion_startnewtopic', 'discussion'
+                )) . '</a>';
+        }
+        $html .= '</div></header>';
+        if ($isLocked) {
+            $html .= '<div class="chisimba-notice chisimba-notice--warning" role="status">'
+                . $icons->render('lock', array('decorative' => true))
+                . ' This discussion is read-only.</div>';
+        }
+        $html .= '<section class="discussion-topic-list" aria-label="Topics">';
+        if ($topics === array()) {
+            $html .= '<div class="chisimba-card discussion-empty-state">'
+                . $icons->render('messages-square', array('decorative' => true))
+                . '<h2>' . $escape($this->objLanguage->languageText(
+                    'mod_discussion_nopostsindiscussion', 'discussion'
+                )) . '</h2><p>' . $escape($this->objLanguage->languageText(
+                    'mod_discussion_clicklinkstarttopic', 'discussion'
+                )) . '.</p></div>';
+        } else {
+            foreach ($topics as $topic) {
+                $topicUrl = $this->uri(array(
+                    'action' => 'viewtopic',
+                    'id' => $topic['topic_id'],
+                    'type' => $this->discussionDetails['discussion_type'],
+                ));
+                $author = $this->showFullName
+                    ? trim($topic['firstname'] . ' ' . $topic['surname'])
+                    : $topic['username'];
+                $lastAuthor = $this->showFullName
+                    ? trim($topic['lastfirstname'] . ' ' . $topic['lastsurname'])
+                    : $topic['lastusername'];
+                $statusIcon = $topic['topicstatus'] === 'OPEN' ? 'message-circle' : 'lock';
+                $html .= '<article class="chisimba-card discussion-topic-card">'
+                    . '<div class="discussion-topic-card__status">'
+                    . $icons->render($statusIcon, array('decorative' => true))
+                    . '</div><div class="discussion-topic-card__body">'
+                    . '<div class="discussion-topic-card__title-row"><h2><a href="'
+                    . $escape($topicUrl) . '">' . $escape(stripslashes($topic['post_title']))
+                    . '</a></h2>';
+                if ((string) $topic['sticky'] === '1') {
+                    $html .= '<span class="chisimba-badge">'
+                        . $icons->render('pin', array('decorative' => true))
+                        . ' Sticky</span>';
+                }
+                $html .= '</div><p class="discussion-topic-card__author">Started by '
+                    . $escape($author) . '</p><dl class="discussion-topic-card__metrics">'
+                    . '<div><dt>Replies</dt><dd>' . (int) $topic['replies'] . '</dd></div>'
+                    . '<div><dt>Views</dt><dd>' . (int) $topic['views'] . '</dd></div>'
+                    . '<div class="discussion-topic-card__latest"><dt>Latest activity</dt><dd>'
+                    . $escape($translatedDate->getDifference($topic['lastdate']))
+                    . ' by ' . $escape($lastAuthor) . '</dd></div></dl></div></article>';
+            }
+        }
+        return $html . '</section></main>';
+    }
+
+    /**
+     * Return the modern forum view.
+     *
+     * @return string
+     */
     public function show() {
-        return $this->buildDiscussionView();
+        return $this->buildModernDiscussionView();
     }
 
 }

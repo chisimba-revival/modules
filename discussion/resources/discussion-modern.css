@@ -234,3 +234,104 @@
         text-align: left !important;
     }
 }
+
+.discussion-workspace {
+    display: grid;
+    gap: 1.5rem;
+    width: min(100%, 72rem);
+    margin-inline: auto;
+}
+
+.discussion-workspace__hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.discussion-workspace__hero h1,
+.discussion-topic-card h2 {
+    margin-block: 0;
+}
+
+.discussion-workspace__eyebrow,
+.discussion-topic-card__author,
+.discussion-topic-card__metrics dt {
+    color: var(--chisimba-text-muted, #59636e);
+}
+
+.discussion-workspace__eyebrow,
+.discussion-topic-card__author {
+    margin-block: 0 .35rem;
+}
+
+.discussion-workspace__actions,
+.discussion-topic-card__title-row,
+.discussion-topic-card__metrics {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.discussion-topic-list {
+    display: grid;
+    gap: .85rem;
+}
+
+.discussion-topic-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.discussion-topic-card__status {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: var(--chisimba-action-primary, #0877c9);
+    background: var(--chisimba-surface-subtle, #eef5fb);
+}
+
+.discussion-topic-card__metrics {
+    margin-block: .8rem 0;
+}
+
+.discussion-topic-card__metrics div {
+    display: grid;
+    gap: .1rem;
+}
+
+.discussion-topic-card__metrics dt {
+    font-size: .84rem;
+}
+
+.discussion-topic-card__metrics dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+.discussion-topic-card__latest {
+    margin-inline-start: auto;
+    text-align: end;
+}
+
+@media (max-width: 42rem) {
+    .discussion-workspace__hero {
+        display: grid;
+    }
+
+    .discussion-workspace__actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .discussion-topic-card__latest {
+        width: 100%;
+        margin-inline-start: 0;
+        text-align: start;
+    }
+}
