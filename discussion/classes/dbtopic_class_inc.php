@@ -68,7 +68,7 @@ class dbtopic extends dbTable {
         }
         // provide support for tangents
 
-        $this->insert(array(
+        return $this->insert(array(
                 'id'              => $id,
                 'discussion_id'        => $discussion_id,
                 'type_id'         => $type_id,
@@ -78,10 +78,8 @@ class dbtopic extends dbTable {
                 'lft'                => $leftPointer,
                 'rght'                => $rightPointer,
                 'userId'          => $userID,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'dateLastUpdated' => date('Y-m-d H:i:s')
         ));
-
-        return $this->getLastInsertId();
     }
 
     /**
@@ -122,12 +120,10 @@ class dbtopic extends dbTable {
      * @param string $post_id: Record ID of the Post
      */
     function updateFirstPost($topic_id, $post_id) {
-        $this->update('id', $topic_id, array(
+        return $this->update('id', $topic_id, array(
                 'first_post'    => $post_id,
                 'last_post'    => $post_id
         ));
-
-        return;
     }
 
     /**

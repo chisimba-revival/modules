@@ -75,7 +75,7 @@ class block_newtopic extends ChisimbaObject {
         $temporaryId = '';
         $details ='';
                 // Check if form is a result of server-side validation or not'
-        if ($this->getParam('message') == 'missing') {
+        if (in_array($this->getParam('message'), array('missing', 'savefailed'), true)) {
             $details = $this->getSession($this->getParam('tempid'));
 //            $this->setVarByRef('details', $details);
             $temporaryId = $details['temporaryId'];
@@ -101,7 +101,10 @@ class block_newtopic extends ChisimbaObject {
         $header->str = $discussionLink->show() . ' - ' . $this->objLanguage->languageText('mod_discussion_postnewmessage', 'discussion');
         $mode = $this->getVar('mode');
         if ($mode == 'fix') {
-            echo '<span class="noRecordsMessage error"><strong>' . $this->objLanguage->languageText('mod_discussion_messageisblank', 'discussion') . '</strong><br />&nbsp;</span>';
+            $errorText = $this->getParam('message') === 'savefailed'
+                ? $this->objLanguage->languageText('mod_discussion_savefailed', 'discussion', 'Your topic could not be sent. Your work has been preserved; please try again.')
+                : $this->objLanguage->languageText('mod_discussion_messageisblank', 'discussion');
+            echo '<div class="chisimba-notice chisimba-notice--error" role="alert"><strong>' . htmlspecialchars($errorText, ENT_QUOTES, 'UTF-8') . '</strong></div>';
         }
         //table
         $addTable = $this->getObject('htmltable', 'htmlelements');
@@ -212,6 +215,9 @@ class block_newtopic extends ChisimbaObject {
         $editor = &$this->newObject('htmlarea', 'htmlelements');
         $editor->toolbarSet = 'simple';
         $editor->setName('message');
+        if ($mode == 'fix' && isset($details['message'])) {
+            $editor->setContent($details['message']);
+        }
 
         $objContextCondition = &$this->getObject('contextcondition', 'contextpermissions');
         $this->isContextLecturer = $objContextCondition->isContextMember('Lecturers');

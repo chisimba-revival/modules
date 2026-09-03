@@ -178,7 +178,7 @@ class dbPost extends dbTable {
                         $level += 1;
                 }
 
-                $this->insert(array(
+                return $this->insert(array(
                     'id' => $id,
                     'post_parent' => $post_parent,
                     'post_tangent_parent' => $post_tangent_parent,
@@ -188,10 +188,8 @@ class dbPost extends dbTable {
                     'lft' => $leftPointer,
                     'rght' => $rightPointer,
                     'level' => $level,
-                    'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                    'datelastupdated' => date('Y-m-d H:i:s')
                 ));
-
-                return $this->getLastInsertId();
         }
 
         /**

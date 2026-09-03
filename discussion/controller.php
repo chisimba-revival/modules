@@ -631,16 +631,47 @@ class discussion extends controller {
                         $tangentParent = '0';
                         $post_tangent_parent = 0;
                 }
-                $topic_id = $this->objTopic->insertSingle(
-                        $discussion_id, $type_id, $tangentParent, // tangent parent
-                        $this->userId, $post_title
-                );
-
-                $this->objDiscussion->updateLastTopic($discussion_id, $topic_id);
-                $post_id = $this->objPost->insertSingle($post_parent, $post_tangent_parent, $discussion_id, $topic_id, $this->userId);
-                $this->objPostText->insertSingle($post_id, $post_title, $post_text, $language, $original_post, $this->userId);
-                $this->objTopic->updateFirstPost($topic_id, $post_id);
-                $this->objDiscussion->updateLastPost($discussion_id, $post_id);
+                $this->objTopic->beginTransaction();
+                try {
+                        $topic_id = $this->objTopic->insertSingle(
+                                $discussion_id, $type_id, $tangentParent,
+                                $this->userId, $post_title
+                        );
+                        if (!$topic_id) {
+                                throw new RuntimeException('topic_insert_failed');
+                        }
+                        $post_id = $this->objPost->insertSingle($post_parent, $post_tangent_parent, $discussion_id, $topic_id, $this->userId);
+                        if (!$post_id) {
+                                throw new RuntimeException('post_insert_failed');
+                        }
+                        $post_text_id = $this->objPostText->insertSingle($post_id, $post_title, $post_text, $language, $original_post, $this->userId);
+                        if (!$post_text_id) {
+                                throw new RuntimeException('post_text_insert_failed');
+                        }
+                        if ($this->objTopic->updateFirstPost($topic_id, $post_id) === false
+                                || $this->objDiscussion->updateLastTopic($discussion_id, $topic_id) === false
+                                || $this->objDiscussion->updateLastPost($discussion_id, $post_id) === false) {
+                                throw new RuntimeException('topic_finalisation_failed');
+                        }
+                        $this->objTopic->commitTransaction();
+                } catch (Throwable $error) {
+                        $this->objTopic->rollbackTransaction();
+                        $details = array(
+                                'replytype' => $replyType,
+                                'type' => $type_id,
+                                'title' => $post_title,
+                                'message' => $post_text,
+                                'language' => $language,
+                                'temporaryId' => $tempPostId
+                        );
+                        $this->setSession($tempPostId, $details);
+                        return $this->nextAction('newtopic', array(
+                                'id' => $discussion_id,
+                                'type' => $this->discussiontype,
+                                'message' => 'savefailed',
+                                'tempid' => $tempPostId
+                        ));
+                }
                 // Insert topic details into lucene search
                 $this->objTopic->insertTopicSearch($topic_id, $post_title, $post_text, $this->userId, $discussion_id);
                 // Handle Sticky Topics
