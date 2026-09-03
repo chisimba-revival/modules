@@ -13,6 +13,7 @@ $checks = array(
     'admin interface uses skin actions and icons' => str_contains($admin, "getObject('iconservice', 'ui')") && str_contains($admin, 'chisimba-form-actions') && str_contains($admin, 'chisimba-button-danger'),
     'modern admin path has no layout table' => !str_contains(substr($admin, strrpos($admin, 'private function buildModernAdmin')), 'htmlTable'),
     'legacy block title is suppressed' => str_contains($admin, "\$this->title = ''"),
+    'Lobby administration uses an explicit bounded scope' => str_contains($admin, "\$this->contextCode = 'root';") && str_contains($admin, 'getAllContextDiscussions($this->contextCode)'),
 );
 foreach ($checks as $label => $passed) {
     echo ($passed ? 'PASS: ' : 'FAIL: ') . $label . PHP_EOL;

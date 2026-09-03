@@ -39,6 +39,10 @@ class block_discussionadmin extends ChisimbaObject {
                 // If not in context, set code to be 'root' called 'Lobby'
                 $this->contextTitle = $this->contextObject->getTitle();
                 $this->contextCode = $this->contextObject->getContextCode();
+                if (trim((string) $this->contextCode) === '') {
+                        $this->contextCode = 'root';
+                        $this->contextTitle = 'Lobby';
+                }
                 $this->objLanguage = $this->getObject('language', 'language');
                 // Discussion Classes
                 $this->objDiscussion = & $this->getObject('dbdiscussion');
