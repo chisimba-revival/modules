@@ -1359,6 +1359,7 @@ class discussion extends controller {
                         $students[$index]['evidence'] = $posts->getAssessmentEvidence($discussion['id'], $studentId);
                         $students[$index]['mark'] = $marks[$studentId] ?? null;
                         $students[$index]['ai'] = $this->getObject('dbdiscussionaimarkingjobs')->latest($discussion['id'], $studentId, $this->contextCode, $this->userId, $this->objUser->isAdmin());
+                        $students[$index]['ai_status'] = $this->getObject('dbdiscussionaimarkingjobs')->latestStatus($discussion['id'], $studentId, $this->contextCode);
                         $students[$index]['save_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'save'));
                         $students[$index]['ai_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'ai'));
                 }

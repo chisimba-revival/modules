@@ -169,9 +169,9 @@ class dbPost extends dbTable {
                 } else {
                         $lastRightPointer = $this->getPostRightPointer($post_parent);
                         $updateRightSQL = 'UPDATE tbl_discussion_post SET rght = rght + 2 WHERE rght > ' . ($lastRightPointer - 1);
-                        $this->getArray($updateRightSQL);
+                        $this->query($updateRightSQL);
                         $updateLeftSQL = 'UPDATE tbl_discussion_post SET lft = lft + 2 WHERE lft > ' . ($lastRightPointer - 1);
-                        $this->getArray($updateLeftSQL);
+                        $this->query($updateLeftSQL);
 
                         $leftPointer = $lastRightPointer;
                         $rightPointer = $lastRightPointer + 1;
