@@ -51,6 +51,7 @@ class dbPostText extends dbTable
         // Clean up &nbsp;'s
         $post_text = $this->cleanUpPostText($post_text);
 
+        $now = date('Y-m-d H:i:s');
         return $this->insert(array(
     		'id'                    => $id,
     		'post_id'               => $post_id,
@@ -59,8 +60,10 @@ class dbPostText extends dbTable
     		'language'              => $language,
             'original_post'         => $original_post,
             'userId'                => $userId,
+            'modifierid'            => $userId,
             'wordcount'             => $this->objTextStats->count_words(strip_tags($post_text)),
-            'dateLastUpdated'       => date('Y-m-d H:i:s')
+            'datecreated'           => $now,
+            'dateLastUpdated'       => $now
     	));
     }
 

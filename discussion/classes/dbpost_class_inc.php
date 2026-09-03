@@ -178,6 +178,7 @@ class dbPost extends dbTable {
                         $level += 1;
                 }
 
+                $now = date('Y-m-d H:i:s');
                 return $this->insert(array(
                     'id' => $id,
                     'post_parent' => $post_parent,
@@ -185,10 +186,12 @@ class dbPost extends dbTable {
                     'topic_id' => $topic_id,
                     'post_order' => $this->getLastPostOrder($topic_id),
                     'userId' => $userId,
+                    'modifierid' => $userId,
                     'lft' => $leftPointer,
                     'rght' => $rightPointer,
                     'level' => $level,
-                    'datelastupdated' => date('Y-m-d H:i:s')
+                    'datecreated' => $now,
+                    'datelastupdated' => $now
                 ));
         }
 

@@ -25,7 +25,7 @@
  *
  */
 $objBlocks = $this->getObject('blockfilter', 'dynamiccanvas');
-$this->appendArrayVar('headerParams', '<link rel="stylesheet" type="text/css" href="modules/discussion/resources/discussion-modern.css" />');
+$this->appendArrayVar('headerParams', '<link rel="stylesheet" type="text/css" href="packages/discussion/resources/discussion-modern.css" />');
 $pageContent = $this->getVar('pageContent');
 $pageContent = $objBlocks->parse($pageContent);
 echo $pageContent;
