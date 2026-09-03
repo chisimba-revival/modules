@@ -489,7 +489,7 @@ class block_discussionview extends ChisimbaObject {
                     . '<div><dt>Replies</dt><dd>' . (int) $topic['replies'] . '</dd></div>'
                     . '<div><dt>Views</dt><dd>' . (int) $topic['views'] . '</dd></div>'
                     . '<div class="discussion-topic-card__latest"><dt>Latest activity</dt><dd>'
-                    . $escape($translatedDate->getDifference($topic['lastdate']))
+                    . $escape(strip_tags($translatedDate->getDifference($topic['lastdate'])))
                     . ' by ' . $escape($lastAuthor) . '</dd></div></dl></div></article>';
             }
         }

@@ -14,6 +14,7 @@ $checks = array(
     'topics use semantic cards' => str_contains($block, '<article class="chisimba-card discussion-topic-card">'),
     'icons come from the skin service' => str_contains($block, "getObject('iconservice', 'ui')"),
     'metrics use definition-list semantics' => str_contains($block, '<dl class="discussion-topic-card__metrics">'),
+    'relative dates cannot leak formatter markup' => str_contains($block, 'strip_tags($translatedDate->getDifference'),
     'small-screen treatment exists' => str_contains($css, '@media (max-width: 42rem)'),
     'Derek Keats remains an author' => str_contains(file_get_contents($module . '/register.conf'), 'Derek Keats'),
 );
