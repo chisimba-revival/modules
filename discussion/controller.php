@@ -1088,7 +1088,14 @@ class discussion extends controller {
          * Method to save a reply to a topic
          */
         public function saveReply() {
-
+                $postParent = trim((string)$this->getParam('parent',''));
+                if (!$this->validManagementMutation('disc_reply_' . hash('sha256', $postParent))) {
+                        return $this->moderationDenied();
+                }
+                $parentPostDetails = $this->objPost->getPostWithText($postParent);
+                if (!is_array($parentPostDetails)) {
+                        return $this->moderationDenied();
+                }
                 $tempPostId = $this->objUser->userId() . '_' . time()/* $_POST['temporaryId'] */;
                 //set the temporary ID so it can be used by other functions
                 $this->setVarByref('attachment_tempid', $tempPostId);
@@ -1097,23 +1104,21 @@ class discussion extends controller {
                 //reply type
                 $replyType = $this->objLanguage->languageText('word_reply', 'system');
                 //parentID
-                $postParent = $this->getParam('parent');
                 $post_parent = $postParent;
                 $post_tangent_parent = 0;
                 //
 
-                $parentPostDetails = $this->objPost->getRow('id', $postParent);
                 //get the discussion ID
-                $discussion_id = $this->getParam('discussionid');
+                $discussion_id = $parentPostDetails['discussion_id'];
                 //get topic ID
-                $topic_id = $this->getParam('topicid');
+                $topic_id = $parentPostDetails['topic_id'];
                 //we need this because IE is failing to pass it over
                 $this->setSession('current_topic_id', $topic_id);
                 $type_id = $this->getSession('discussionType'); //$_POST['discussionType'];
                 //get the post title
-                $post_title = $this->getParam('posttitle');
+                $post_title = trim((string)$this->getParam('posttitle'));
                 $post_text = $this->getParam('message');
-                $language = $this->getParam('lang');
+                $language = trim((string)$this->getParam('lang', 'eng')) ?: 'eng';
 //                $language = 'en';
                 // A reply is the original-language version of its own post.
                 // Only translated copies use original_post = 0.
@@ -1126,11 +1131,11 @@ class discussion extends controller {
                 //     - trim whitespace
                 if (trim(strip_tags(str_replace('&nbsp;', '', $post_text))) == '') {
                         // Capture details to put in array - Preserve User's work
-                        $details = array('replytype' => $replyType, 'title' => $post_title, 'language' => $language, 'temporaryId' => $tempPostId);
+                        $details = array('replytype' => $replyType, 'title' => $post_title, 'language' => $language, 'message' => $post_text, 'temporaryId' => $tempPostId);
                         // set array as a session
                         $this->setSession($tempPostId, $details);
                         // Redirect back to for
-//                        return $this->nextAction('postreply', array('id' => $postParent, 'type' => $this->discussiontype, 'message' => 'missing', 'tempid' => $tempPostId));
+                        return $this->nextAction('postreply', array('id' => $postParent, 'type' => $this->discussiontype, 'message' => 'missing', 'tempid' => $tempPostId));
                 } else {
                         $this->unsetSession($tempPostId);
                 }
@@ -1180,7 +1185,7 @@ class discussion extends controller {
                 $this->objDiscussionNotifications->postCreated($post_id,$topic_id,$discussion_id,$this->contextCode,$this->userId,$this->objUser->fullname(),$post_title,$discussionDetails['discussion_name'],$replyUrl,true);
                 // Attachment Handling
 //                $this->handleAttachments($post_id, $tempPostId);
-//                return $this->nextAction('viewtopic', array('message' => 'replysaved', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype, 'email' => $emailSuccess));
+                return $this->nextAction('viewtopic', array('message' => 'replysaved', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype, 'email' => $emailSuccess));
 //                return $this->uri(array('action' => 'viewtopic', 'id' => $parentPostDetails['topic_id']));
         }
 

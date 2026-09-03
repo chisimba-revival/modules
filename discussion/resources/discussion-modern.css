@@ -512,7 +512,7 @@
 .discussion-mark-total { color: var(--chisimba-text,#17212b); font-weight: 700; }
 .discussion-moderation .chisimba-page-header h1 a { color: inherit; text-decoration-thickness: .08em; text-underline-offset: .16em; }
 .discussion-moderation-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
-.discussion-moderation-action { padding: 0; align-self: start; }
+.discussion-moderation-action { padding: 0; align-self: start; overflow: hidden; }
 .discussion-moderation-action > summary { display: flex; align-items: center; gap: .65rem; padding: 1rem 1.25rem; cursor: pointer; font-weight: 700; }
 .discussion-moderation-action > form { display: grid; gap: 1rem; padding: 0 1.25rem 1.25rem; border-block-start: 1px solid var(--chisimba-border,#d5dde5); }
 .discussion-moderation-action fieldset,.discussion-moderation-action label { display: grid; gap: .6rem; }
@@ -521,6 +521,9 @@
 .discussion-moderation-danger { border-color: var(--chisimba-danger,#b42318); }
 .discussion-moderation--assessed .discussion-moderation-danger { display: none; }
 .discussion-moderation--assessed .discussion-moderation-action:has(form[action*="moderate_moveto"]) { display: none; }
+.discussion-reply-context { padding: 1rem 1.25rem; border-inline-start: .3rem solid var(--chisimba-accent,#0878c9); }
+.discussion-reply-context p { margin: 0; }
+.discussion-reply-context p + p { margin-block-start: .5rem; color: var(--chisimba-muted,#536273); }
 
 .discussion-topic-modern__header {
     display: grid;

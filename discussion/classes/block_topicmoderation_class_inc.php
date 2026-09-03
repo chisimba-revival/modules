@@ -41,12 +41,12 @@ class block_topicmoderation extends ChisimbaObject {
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
         $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
-        $this->title = "Moderate topic";
+        $this->title = '';
         // Get Context Code Settings
         $this->contextObject = & $this->getObject('dbcontext', 'context');
         $id = $this->getParam('id');
         $topic = $this->objTopic->getTopicDetails($id);
-        $this->title =  $this->objLanguage->languageText('mod_discussion_moderatetopic', 'discussion', 'Moderate Topic') . ': ' . $topic['post_title'];
+        $this->title = '';
         
         $this->contextCode = $this->contextObject->getContextCode();
         $style = '<style type="text/css">

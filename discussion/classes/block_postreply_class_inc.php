@@ -31,7 +31,7 @@ class block_postreply extends ChisimbaObject {
 
     //put your code here
     function init() {
-        $this->title = "Post Reply";
+        $this->title = '';
 
         $this->objUser = $this->getObject('user', 'security');
         $this->objPost = $this->getObject('dbpost', 'discussion');
@@ -44,9 +44,66 @@ class block_postreply extends ChisimbaObject {
         // Discussion Ratings
         $this->objDiscussionRatings = & $this->getObject('dbdiscussion_ratings');
         $this->objPostRatings = & $this->getObject('dbpost_ratings');
+        $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
 
     function buildForm() {
+        $escape = static fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+        $postID = trim((string)$this->getParam('id'));
+        $post = $this->objPost->getPostWithText($postID);
+        if (!is_array($post)) {
+            return '<main class="chisimba-workspace"><section class="chisimba-card discussion-empty-state"><h1>Post unavailable</h1><p>The contribution you wanted to reply to could not be found.</p></section></main>';
+        }
+        $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
+        if (!is_array($discussion)) {
+            return '<main class="chisimba-workspace"><section class="chisimba-card discussion-empty-state"><h1>Discussion unavailable</h1></section></main>';
+        }
+        $topic = $this->objTopic->getTopicDetails($post['topic_id']);
+        $topicTitle = (string)($topic['post_title'] ?? $post['post_title'] ?? 'Discussion topic');
+        $parentTitle = trim((string)($post['post_title'] ?? ''));
+        $defaultTitle = stripos($parentTitle, 'Re:') === 0 ? $parentTitle : 'Re: ' . $parentTitle;
+        $details = array();
+        $error = '';
+        if ($this->getParam('message') === 'missing') {
+            $saved = $this->getSession($this->getParam('tempid'));
+            if (is_array($saved)) {
+                $details = $saved;
+                $defaultTitle = (string)($saved['title'] ?? $defaultTitle);
+            }
+            $error = '<p class="chisimba-notice chisimba-notice--error" role="alert">Write a message before sending your reply.</p>';
+        }
+        $languageCodes = $this->getObject('languagecode', 'language');
+        $language = $languageCodes->getISO($this->objLanguage->currentLanguage());
+        $editor = $this->newObject('htmlarea', 'htmlelements');
+        $editor->setName('message');
+        $editor->setContent((string)($details['message'] ?? ''));
+        $editor->setRows(12);
+        $editor->setColumns('100');
+        $editor->context = $this->contextCode !== 'root';
+        $author = trim((string)($post['firstname'] ?? '') . ' ' . (string)($post['surname'] ?? ''));
+        if ($author === '') {
+            $author = (string)($post['username'] ?? 'a participant');
+        }
+        $excerpt = trim(preg_replace('/\s+/', ' ', strip_tags((string)($post['post_text'] ?? ''))));
+        if (strlen($excerpt) > 360) {
+            $excerpt = substr($excerpt, 0, 357) . '…';
+        }
+        $type = trim((string)$this->getParam('type', $discussion['discussion_type'] ?? 'context')) ?: 'context';
+        $topicUrl = $this->uri(array('action' => 'viewtopic', 'id' => $post['topic_id'], 'type' => $type));
+        $action = $this->uri(array('action' => 'savepostreply', 'type' => $type));
+        $token = $this->csrf->issue('disc_reply_' . hash('sha256', $postID));
+        return '<main class="chisimba-workspace chisimba-flow discussion-workspace discussion-reply">'
+            . '<header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Discussion reply</p><h1>Reply to ' . $escape($author) . '</h1><p>In <a href="' . $escape($topicUrl) . '">' . $escape($topicTitle) . '</a></p></div></header>'
+            . $error
+            . '<aside class="chisimba-card discussion-reply-context" aria-label="Contribution being replied to"><p><strong>' . $escape($author) . '</strong> wrote</p><p>' . $escape($excerpt) . '</p></aside>'
+            . '<form id="postReplyForm" class="chisimba-card chisimba-form discussion-compose-modern" method="post" action="' . $escape($action) . '">'
+            . '<input type="hidden" name="csrf_token" value="' . $escape($token) . '"><input type="hidden" name="parent" value="' . $escape($postID) . '">'
+            . '<div class="chisimba-form-field"><label for="posttitle">Subject</label><input id="posttitle" name="posttitle" maxlength="160" value="' . $escape($defaultTitle) . '" required></div>'
+            . '<input type="hidden" name="lang" value="' . $escape($language) . '">'
+            . '<div class="chisimba-form-field"><label for="message">Message</label>' . $editor->show() . '</div>'
+            . '<div class="chisimba-form-actions"><button class="button" type="submit">Send reply</button><a class="button chisimba-button-secondary" href="' . $escape($topicUrl) . '">Cancel</a></div>'
+            . '</form></main>';
+        /* Legacy form retained below for reference until the remaining inline reply callers are retired. */
         //get the recordid
 //        $post_id = $this->getParam('id');
 //        $objHighlightLabels = $this->getObject('highlightlabels', 'htmlelements');
@@ -107,7 +164,6 @@ class block_postreply extends ChisimbaObject {
     //]]>
 </script>
 ';
-        $postID = $this->getParam('id');
         return $this->objPost->showPostReplyForm($postID).$js;
     }
 
