@@ -133,14 +133,14 @@ class block_discussionlist extends ChisimbaObject {
 //                                $tpcs = "Topic";
                                         }
                                         $psts = "";
-                                        if ($discussion['post'] > 1 || $discussion['post'] == 0) {
+                                        if ($discussion['posts'] > 1 || $discussion['posts'] == 0) {
                                                 $psts = $this->objLanguage->languageText('word_posts', 'system');
                                         } else {
                                                 $psts = substr($this->objLanguage->languageText('word_posts', 'system'), 0, 4);
 //                                $psts = "Post";
                                         }
                                         $tblclass->addCell('<span class="numberindicator">' . $discussion['topics'] . '</span>' . '<br/>' . $tpcs, 100, NULL, 'center');
-                                        $tblclass->addCell('<span class="numberindicator" >' . $discussion['post'] . '</span>' . '<br/>' . $psts, 100, NULL, 'center');
+                                        $tblclass->addCell('<span class="numberindicator" >' . $discussion['posts'] . '</span>' . '<br/>' . $psts, 100, NULL, 'center');
                                         $post = $this->objPost->getLastPost($discussion['id']);
                                         if ($post == FALSE) {
                                                 $postDetails = '<em>' . $this->objLanguage->languageText('mod_discussion_nopostsyet', 'discussion') . '</em>';
