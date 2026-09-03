@@ -55,6 +55,9 @@ class modulelinks_discussion extends ChisimbaObject
             return $links;
         }
         foreach ($discussions as $discussion) {
+            if (($discussion['course_activity_enabled'] ?? 'N') !== 'Y') {
+                continue;
+            }
             if (!$this->validIdentifier($discussion['id'])) {
                 continue;
             }
