@@ -32,7 +32,7 @@ class assessmentpaletteservice extends ChisimbaObject
                 continue;
             }
             $activities = array();
-            foreach ((array) $adapter->listActivities($contextCode) as $activity) {
+            foreach ((array) $adapter->listActivities($contextCode, 'palette') as $activity) {
                 if (empty($activity['id']) || !isset($activity['name'])) { continue; }
                 $activities[] = array(
                     'id' => (string) $activity['id'],

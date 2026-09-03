@@ -389,6 +389,7 @@ class block_discussionadmin extends ChisimbaObject {
                         $isDefault = ($discussion['defaultdiscussion'] ?? 'N') === 'Y';
                         $viewUrl = $this->uri(array('module' => 'discussion', 'action' => 'discussion', 'id' => $discussion['id']));
                         $editUrl = $this->uri(array('module' => 'discussion', 'action' => 'editdiscussion', 'id' => $discussion['id']));
+                        $markUrl = $this->uri(array('module' => 'discussion', 'action' => 'markdiscussion', 'id' => $discussion['id']));
                         $deleteUrl = $this->uri(array('module' => 'discussion', 'action' => 'deletediscussion', 'id' => $discussion['id']));
                         $flags = array(
                                 'Visible' => ($discussion['discussion_visible'] ?? 'N') === 'Y',
@@ -412,7 +413,7 @@ class block_discussionadmin extends ChisimbaObject {
                                 . $escape($discussion['discussion_name']) . '</a></h2>' . ($isDefault ? '<span class="discussion-default-badge">Default</span>' : '')
                                 . '</div><p>' . $escape(strip_tags((string) ($discussion['discussion_description'] ?? ''))) . '</p></div></header><div class="discussion-setting-list" aria-label="Discussion settings">'
                                 . $badges . '</div>' . $archive . '<div class="chisimba-form-actions discussion-admin-card__actions"><a class="chisimba-icon-button" href="' . $escape($viewUrl) . '" aria-label="Open ' . $escape($discussion['discussion_name']) . '" title="Open discussion">'
-                                . $icons->render('messages-square', array('decorative' => true)) . '</a><a class="chisimba-icon-button" href="' . $escape($editUrl) . '" aria-label="Edit ' . $escape($discussion['discussion_name']) . ' settings" title="Edit settings">'
+                                . $icons->render('messages-square', array('decorative' => true)) . '</a>' . (($discussion['assessment_enabled'] ?? 'N') === 'Y' ? '<a class="chisimba-icon-button" href="' . $escape($markUrl) . '" aria-label="Mark ' . $escape($discussion['discussion_name']) . '" title="Mark discussion">' . $icons->render('graduation-cap', array('decorative' => true)) . '</a>' : '') . '<a class="chisimba-icon-button" href="' . $escape($editUrl) . '" aria-label="Edit ' . $escape($discussion['discussion_name']) . ' settings" title="Edit settings">'
                                 . $icons->render('settings', array('decorative' => true)) . '</a>' . $delete . '</div></article>';
                 }
                 if ($cards === '') {

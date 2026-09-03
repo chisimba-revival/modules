@@ -369,6 +369,16 @@ class dbdiscussion extends dbTable {
                 $objIndexData->luceneIndex($docId, $docDate, $url, $title, $contents, $teaser, $module, $userId, NULL, NULL, $context);
         }
 
+        /** Save course-content and assessment metadata owned by Discussion. */
+        public function saveAssessmentSettings($discussionId, $courseActivity, $assessmentEnabled, $classification, $totalMark) {
+                return $this->update('id', $discussionId, array(
+                        'course_activity_enabled' => $courseActivity,
+                        'assessment_enabled' => $assessmentEnabled,
+                        'assessment_classification' => $classification,
+                        'assessment_total_mark' => $totalMark
+                ));
+        }
+
         /**
          * Method to update the visibility of a discussion
          *

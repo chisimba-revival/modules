@@ -1,0 +1,4 @@
+<?php
+/** Process bounded Discussion AI-marking suggestion jobs. @author Derek Keats */
+require_once dirname(__DIR__,3).'/config/config.inc.php';
+try{$worker=(new engine())->getObject('dbdiscussionaimarkingjobs','discussion');$limit=isset($argv[1])?filter_var($argv[1],FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>20))):5;if($limit===false)throw new InvalidArgumentException('Batch size must be from 1 to 20.');$summary=array('selected'=>0,'completed'=>0,'failed'=>0);for($step=0;$step<$limit;$step++){$result=$worker->runOne();if(empty($result['selected']))break;$summary['selected']++;$summary['completed']+=(int)($result['completed']??0);$summary['failed']+=(int)($result['failed']??0);}echo json_encode($summary,JSON_UNESCAPED_SLASHES).PHP_EOL;}catch(Throwable $exception){fwrite(STDERR,'Discussion AI marking worker failed: '.$exception->getMessage().PHP_EOL);exit(1);}

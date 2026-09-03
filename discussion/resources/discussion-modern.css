@@ -451,6 +451,18 @@
     gap: .45rem;
 }
 
+.discussion-assessment-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.discussion-assessment-fields label {
+    display: grid;
+    gap: .45rem;
+    font-weight: 700;
+}
+
 .discussion-date-field {
     margin-block-start: 1rem;
 }
@@ -458,6 +470,19 @@
 .discussion-editor__actions {
     padding-block-start: .25rem;
 }
+
+.discussion-rubric-summary,
+.discussion-learner-mark { padding: clamp(1rem, 3vw, 1.5rem); }
+.discussion-rubric-weights { display: flex; flex-wrap: wrap; gap: .5rem; }
+.discussion-learner-mark { display: grid; gap: 1rem; }
+.discussion-learner-mark > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.discussion-learner-mark h2 { margin: 0; }
+.discussion-mark-form { display: grid; gap: 1rem; }
+.discussion-mark-criteria { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+.discussion-mark-criterion { display: grid; grid-template-columns: minmax(0,1fr) 6rem; gap: .5rem 1rem; padding: 1rem; border: 1px solid var(--chisimba-border,#d5dde5); border-radius: var(--chisimba-radius,.5rem); }
+.discussion-mark-criterion label { display: grid; font-weight: 700; }
+.discussion-mark-criterion label span,.discussion-mark-criterion p { color: var(--chisimba-text-muted,#59636e); font-size: .88rem; }
+.discussion-mark-criterion p { grid-column: 1/-1; margin: 0; }
 
 @media (max-width: 42rem) {
     .discussion-settings-grid {
@@ -467,6 +492,12 @@
     .discussion-setting-control--wide {
         grid-column: auto;
     }
+
+    .discussion-assessment-fields {
+        grid-template-columns: 1fr;
+    }
+    .discussion-mark-criteria { grid-template-columns: 1fr; }
+    .discussion-learner-mark > header { display: grid; }
 
     .discussion-editor__actions .button {
         width: 100%;

@@ -320,6 +320,12 @@ class discussion extends controller {
 
                         case 'editdiscussionsave':
                                 return $this->editDiscussionSave();
+                        case 'markdiscussion':
+                                return $this->markDiscussion();
+                        case 'savediscussionmark':
+                                return $this->saveDiscussionMark();
+                        case 'requestdiscussionaimark':
+                                return $this->requestDiscussionAiMark();
 
                         case 'deletediscussion':
                                 return $this->deleteDiscussion($this->getParam('id'));
@@ -1267,6 +1273,7 @@ class discussion extends controller {
                 // Needs to be worked on
                 $moderation = 'N';
                 $discussion = $this->objDiscussion->insertSingle($discussion_context, $discussion_workgroup, $discussion_name, $discussion_description, $defaultDiscussion, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation);
+                $this->saveAssessmentSettings($discussion);
                 return $this->nextAction('administration', array('message' => 'discussioncreated', 'id' => $discussion));
         }
 
@@ -1321,7 +1328,68 @@ class discussion extends controller {
                         }
                 }
                 $this->objDiscussion->updateSingle($discussion_id, $discussion_name, $discussion_description, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation, $archiveDate);
+                $this->saveAssessmentSettings($discussion_id);
                 return $this->nextAction('administration', array('message' => 'discussionupdated', 'id' => $discussion_id));
+        }
+
+        /** Show the manual and AI-assisted marking workspace. */
+        private function markDiscussion() {
+                $discussion = $this->objDiscussion->getDiscussion($this->getParam('id'));
+                if (!is_array($discussion) || ($discussion['assessment_enabled'] ?? 'N') !== 'Y') {
+                        return $this->nextAction('administration');
+                }
+                $students = (array) $this->getObject('usercontext', 'context')->getContextStudents($this->contextCode);
+                $lecturerIds=array();foreach((array)$this->getObject('usercontext','context')->getContextLecturers($this->contextCode) as $lecturer){if(!empty($lecturer['id'])){$lecturerIds[(string)$lecturer['id']]=true;}}
+                $students=array_values(array_filter($students,static function($student)use($lecturerIds){$id=(string)($student['id']??'');return $id!==''&&!isset($lecturerIds[$id]);}));
+                $marks = $this->getObject('dbdiscussionassessmentmarks')->getForDiscussion($discussion['id']);
+                $posts = $this->objPost;
+                foreach ($students as $index => $student) {
+                        $studentId = (string) ($student['id'] ?? '');
+                        $students[$index]['profile'] = array(
+                                'firstname'=>$this->objUser->getItemFromPkId($studentId, 'firstname'),
+                                'surname'=>$this->objUser->getItemFromPkId($studentId, 'surname'),
+                                'username'=>$this->objUser->getItemFromPkId($studentId, 'username'),
+                        );
+                        $students[$index]['evidence'] = $posts->getAssessmentEvidence($discussion['id'], $studentId);
+                        $students[$index]['mark'] = $marks[$studentId] ?? null;
+                        $students[$index]['ai'] = $this->getObject('dbdiscussionaimarkingjobs')->latest($discussion['id'], $studentId, $this->contextCode, $this->userId, $this->objUser->isAdmin());
+                        $students[$index]['save_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'save'));
+                        $students[$index]['ai_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'ai'));
+                }
+                $this->setVar('discussionAssessment', $discussion);
+                $this->setVar('discussionStudents', $students);
+                $this->setVar('discussionRubric', $this->getObject('discussiondefaultrubric')->getStructuredRubric());
+                $this->setVar('discussionAiAvailable', $this->getObject('discussionaimarker')->isAvailable());
+                return 'discussion_marking.php';
+        }
+
+        /** Save a lecturer-reviewed rubric result. */
+        private function saveDiscussionMark() {
+                $discussionId=trim((string)$this->getParam('id'));$studentId=trim((string)$this->getParam('student_id'));
+                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'save'))) { return $this->nextAction('administration', array('message'=>'invalidrequest')); }
+                if (!$this->isContextStudent($studentId)) { return $this->nextAction('markdiscussion', array('id'=>$discussionId,'message'=>'invalidstudent')); }
+                $rubric=$this->getObject('discussiondefaultrubric')->getStructuredRubric();if(!is_array($rubric)){return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'rubricunavailable'));}
+                $scores=(array)$this->getParam('criterion',array());$review=array();$total=0;
+                foreach($rubric['criteria'] as $index=>$criterion){$maximum=(float)$criterion['maximumMark'];$score=filter_var($scores[$index]??null,FILTER_VALIDATE_FLOAT);if($score===false){$score=0;}$score=max(0,min($maximum,(float)$score));$review[]=array('objective'=>$criterion['objective'],'score'=>$score,'maximumMark'=>$maximum);$total+=$score;}
+                $discussion=$this->objDiscussion->getDiscussion($discussionId);$maximum=max(1,(float)($discussion['assessment_total_mark']??100));$mark=($total/100)*$maximum;$feedback=mb_substr(trim((string)$this->getParam('feedback','')),0,2000);$aiJobId=trim((string)$this->getParam('ai_job_id',''))?:null;
+                if($aiJobId!==null){$job=$this->getObject('dbdiscussionaimarkingjobs')->getScoped($aiJobId,$this->contextCode,$this->userId,$this->objUser->isAdmin());if(!is_array($job)||(string)$job['discussion_id']!==$discussionId||(string)$job['student_id']!==$studentId||$job['status']!=='completed'){$aiJobId=null;}}
+                $this->getObject('dbdiscussionassessmentmarks')->saveMark($discussionId,$studentId,$mark,$feedback,$this->userId,json_encode($review),$aiJobId);
+                return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'marksaved'));
+        }
+
+        /** Queue an evidence-bounded AI marking draft. */
+        private function requestDiscussionAiMark() {
+                $discussionId=trim((string)$this->getParam('id'));$studentId=trim((string)$this->getParam('student_id'));
+                if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'ai'))) { return $this->nextAction('administration', array('message'=>'invalidrequest')); }
+                if ($this->isContextStudent($studentId)) {$this->getObject('dbdiscussionaimarkingjobs')->enqueue($this->contextCode,$discussionId,$studentId,$this->userId);}
+                return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'aiqueued'));
+        }
+
+        /** Confirm the target is currently a learner in the active course. */
+        private function isContextStudent($studentId) {
+                foreach((array)$this->getObject('usercontext','context')->getContextLecturers($this->contextCode) as $lecturer){if(hash_equals((string)($lecturer['id']??''),(string)$studentId)){return false;}}
+                foreach((array)$this->getObject('usercontext','context')->getContextStudents($this->contextCode) as $student){if(hash_equals((string)($student['id']??''),(string)$studentId)){return true;}}
+                return false;
         }
 
         /**
@@ -2167,7 +2235,8 @@ class discussion extends controller {
                 }
                 $discussionActions = array(
                         'discussion', 'newtopic', 'savenewtopic', 'editdiscussion',
-                        'editdiscussionsave', 'deletediscussion',
+                        'editdiscussionsave', 'deletediscussion', 'markdiscussion',
+                        'savediscussionmark', 'requestdiscussionaimark',
                         'deletediscussionconfirm', 'changevisibilityconfirm',
                         'setdefaultdiscussion', 'updatediscussionsetting'
                 );
@@ -2211,7 +2280,8 @@ class discussion extends controller {
         private function mayManageDiscussionAction($action) {
                 $managementActions = array(
                         'administration', 'creatediscussion', 'savediscussion',
-                        'editdiscussion', 'editdiscussionsave', 'deletediscussion',
+                        'editdiscussion', 'editdiscussionsave', 'markdiscussion',
+                        'savediscussionmark', 'requestdiscussionaimark', 'deletediscussion',
                         'deletediscussionconfirm', 'changevisibilityconfirm',
                         'setdefaultdiscussion', 'updatediscussionsetting'
                 );
@@ -2225,18 +2295,36 @@ class discussion extends controller {
         }
 
         /** Accept only POST mutations carrying a valid one-time token. */
-        private function validManagementMutation() {
+        private function validManagementMutation($context = self::CSRF_MANAGE) {
                 return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST'
                         && $this->csrf->consume(
-                                self::CSRF_MANAGE,
+                                $context,
                                 (string) $this->getParam('csrf_token', '')
                         );
+        }
+
+        /** Derive a server-controlled CSRF namespace for one marking action. */
+        private function markCsrfContext($discussionId,$studentId,$operation) {
+                return 'discussion_mark:'.hash('sha256',(string)$discussionId.'|'.(string)$studentId.'|'.(string)$operation);
         }
 
         /** Return an allow-listed Y/N request value. */
         private function yesNo($name, $default) {
                 $value = strtoupper(trim((string) $this->getParam($name, $default)));
                 return in_array($value, array('Y', 'N'), true) ? $value : $default;
+        }
+
+        /** Persist course-only assessment settings with bounded values. */
+        private function saveAssessmentSettings($discussionId) {
+                $courseActivity = $this->contextCode === 'root' ? 'N' : $this->yesNo('course_activity_enabled', 'N');
+                $assessment = $courseActivity === 'Y' ? $this->yesNo('assessment_enabled', 'N') : 'N';
+                $classification = strtolower(trim((string) $this->getParam('assessment_classification', 'formative')));
+                if (!in_array($classification, array('formative', 'summative'), true)) {
+                        $classification = 'formative';
+                }
+                $totalMark = filter_var($this->getParam('assessment_total_mark', 100), FILTER_VALIDATE_FLOAT);
+                $totalMark = $totalMark !== false ? max(1, min(10000, (float) $totalMark)) : 100;
+                return $this->objDiscussion->saveAssessmentSettings($discussionId, $courseActivity, $assessment, $classification, $totalMark);
         }
 
         /** Validate the complete parent/topic/discussion relationship for a reply. */

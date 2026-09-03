@@ -398,6 +398,15 @@ if(!document.getElementById && document.all) {
         $settings .= $setting('attachments', 'Attachments', 'Allow files to be added to posts.', $value('attachments', 'Y'));
         $settings .= $setting('subscriptions', 'Notifications', 'Allow email and notification subscriptions.', $value('subscriptions', 'Y'));
         $settings .= $setting('ratings', 'Post ratings', 'Allow participants to rate posts.', $value('ratingsenabled', 'N'));
+        if ($this->contextCode !== 'root') {
+            $settings .= $setting('course_activity_enabled', 'Available as a course activity', 'Allow this discussion to be added to course chapters from the Assessments palette.', $value('course_activity_enabled', 'N'));
+            $settings .= $setting('assessment_enabled', 'Marked discussion', 'Allow lecturers to mark participation and include it in the Assessment Plan and Gradebook.', $value('assessment_enabled', 'N'));
+            $classification = $value('assessment_classification', 'formative');
+            $settings .= '<fieldset class="discussion-setting-control discussion-setting-control--wide"><legend>Assessment settings</legend><p>Used only when this is a marked discussion.</p><div class="discussion-assessment-fields"><label for="discussion-classification">Classification<select id="discussion-classification" name="assessment_classification"><option value="formative"'
+                . ($classification === 'formative' ? ' selected' : '') . '>Formative</option><option value="summative"'
+                . ($classification === 'summative' ? ' selected' : '') . '>Summative</option></select></label><label for="discussion-total-mark">Total mark<input id="discussion-total-mark" type="number" name="assessment_total_mark" min="1" max="10000" step="0.01" value="'
+                . $escape($value('assessment_total_mark', '100')) . '"></label></div></fieldset>';
+        }
 
         $archive = '';
         if ($editing) {

@@ -122,7 +122,10 @@ echo $heading->show();
         'providermodule'=>$group['provider']['key'],
         'provideritemid'=>$activity['id']
     )));
-    $assessmentIcon = $objIconService->render('clipboard-check', array('decorative'=>TRUE));
+    $assessmentIcon = $objIconService->render(
+        isset($group['provider']['icon']) ? $group['provider']['icon'] : 'clipboard-check',
+        array('decorative'=>TRUE)
+    );
 ?>
             <article class="contextcontent-type-card" draggable="true" data-content-type="assessment-<?php echo htmlspecialchars($activity['id'], ENT_QUOTES, 'UTF-8'); ?>" data-content-url="<?php echo htmlspecialchars($assessmentUrl, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="contextcontent-type-icon" aria-hidden="true"><?php echo $assessmentIcon; ?></div>

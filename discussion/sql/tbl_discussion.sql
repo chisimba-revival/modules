@@ -34,7 +34,7 @@ $fields = array(
 		),
     'discussion_description' => array(
 		'type' => 'text',
-		'length' => 255,
+		'length' => 2000,
         'notnull' => 1
 		),
     'discussion_visible' => array(
@@ -99,6 +99,29 @@ $fields = array(
         'notnull' => TRUE,
         'default' => 'Y'
 		),
+    'course_activity_enabled' => array(
+        'type' => 'text',
+        'length' => 1,
+        'notnull' => TRUE,
+        'default' => 'N'
+        ),
+    'assessment_enabled' => array(
+        'type' => 'text',
+        'length' => 1,
+        'notnull' => TRUE,
+        'default' => 'N'
+        ),
+    'assessment_classification' => array(
+        'type' => 'text',
+        'length' => 16,
+        'notnull' => TRUE,
+        'default' => 'formative'
+        ),
+    'assessment_total_mark' => array(
+        'type' => 'float',
+        'notnull' => TRUE,
+        'default' => 100
+        ),
     'moderation' => array(
 		'type' => 'text',
 		'length' => 1,

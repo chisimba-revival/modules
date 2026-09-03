@@ -85,6 +85,8 @@ class assessmentproviderregistry extends ChisimbaObject
         $categoryKey = isset($definition['ASSESSMENT_PROVIDER_CATEGORY']) ? trim($definition['ASSESSMENT_PROVIDER_CATEGORY']) : '';
         $descriptionKey = isset($definition['ASSESSMENT_PROVIDER_DESCRIPTION']) ? trim($definition['ASSESSMENT_PROVIDER_DESCRIPTION']) : '';
         $adapterClass = isset($definition['ASSESSMENT_PROVIDER_CLASS']) ? trim($definition['ASSESSMENT_PROVIDER_CLASS']) : '';
+        $icon = isset($definition['ASSESSMENT_PROVIDER_ICON'])
+            ? trim($definition['ASSESSMENT_PROVIDER_ICON']) : 'clipboard-check';
 
         if (!preg_match('/^[a-z][a-z0-9_]{1,63}$/', $key)
             || $labelKey === '' || $categoryKey === '' || $descriptionKey === '' || $adapterClass === '') {
@@ -112,6 +114,7 @@ class assessmentproviderregistry extends ChisimbaObject
             'label' => $this->objLanguage->languageText($labelKey, $moduleId),
             'category' => $this->objLanguage->languageText($categoryKey, $moduleId),
             'description' => $this->objLanguage->languageText($descriptionKey, $moduleId)
+            ,'icon' => preg_match('/^[a-z0-9-]{1,64}$/', $icon) ? $icon : 'clipboard-check'
         );
     }
 
