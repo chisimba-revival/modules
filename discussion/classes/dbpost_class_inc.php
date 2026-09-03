@@ -277,7 +277,7 @@ class dbPost extends dbTable {
                 $sql = 'SELECT tbl_discussion_post.*, tbl_discussion_post_text.*, tbl_users.firstname, tbl_users.surname, tbl_users.username,
         tbl_discussion_post_attachment.attachment_id, replypost.id AS replypost, languagecheck.id AS anotherlanguage, tbl_discussion_post_ratings.rating FROM tbl_discussion_post
         INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post.id = tbl_discussion_post_text.post_id AND tbl_discussion_post_text.original_post = "1")
-        LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
+        LEFT JOIN tbl_users ON (tbl_discussion_post.userId = tbl_users.userId OR tbl_discussion_post.userId = tbl_users.id)
         LEFT JOIN tbl_discussion_post_attachment ON (tbl_discussion_post.id = tbl_discussion_post_attachment.post_id)
         LEFT JOIN tbl_discussion_post AS replypost ON (tbl_discussion_post.id = replypost.post_parent)
         LEFT JOIN tbl_discussion_post_text AS languagecheck ON (tbl_discussion_post.id = languagecheck.post_id AND languagecheck.original_post="0" AND tbl_discussion_post_text.language != languagecheck.language)
@@ -299,7 +299,7 @@ class dbPost extends dbTable {
         tbl_discussion_post_attachment.attachment_id, replypost.id AS replypost, languagecheck.id AS anotherlanguage, tbl_discussion_post_ratings.rating
         FROM tbl_discussion_post
         INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post.id = tbl_discussion_post_text.post_id  AND tbl_discussion_post_text.original_post = \'1\')
-        LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
+        LEFT JOIN tbl_users ON (tbl_discussion_post.userId = tbl_users.userId OR tbl_discussion_post.userId = tbl_users.id)
         LEFT JOIN tbl_discussion_post_attachment ON (tbl_discussion_post.id = tbl_discussion_post_attachment.post_id)
         LEFT JOIN tbl_discussion_post AS replypost ON (tbl_discussion_post.id = replypost.post_parent)
         LEFT JOIN tbl_discussion_post_text AS languagecheck ON (tbl_discussion_post.id = languagecheck.post_id AND languagecheck.original_post=\'0\' AND tbl_discussion_post_text.language != languagecheck.language)
@@ -321,7 +321,7 @@ class dbPost extends dbTable {
         FROM tbl_discussion_post INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post.id = tbl_discussion_post_text.post_id AND tbl_discussion_post_text.original_post=\'1\')
         INNER JOIN tbl_discussion_topic ON (tbl_discussion_topic.id = tbl_discussion_post.topic_id)
         INNER JOIN tbl_discussion ON (tbl_discussion.id = tbl_discussion_topic.discussion_id)
-        LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
+        LEFT JOIN tbl_users ON (tbl_discussion_post.userId = tbl_users.userId OR tbl_discussion_post.userId = tbl_users.id)
         LEFT JOIN tbl_discussion_post_attachment ON (tbl_discussion_post.id = tbl_discussion_post_attachment.post_id)
         LEFT JOIN tbl_discussion_post AS replyPost ON (tbl_discussion_post.id = replyPost.post_parent)
         LEFT JOIN tbl_discussion_post_text AS languagecheck ON (tbl_discussion_post.id = languagecheck.post_id AND languagecheck.original_post=\'0\' AND tbl_discussion_post_text.language != languagecheck.language)
@@ -348,7 +348,7 @@ class dbPost extends dbTable {
         FROM tbl_discussion_post
         INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post.id = tbl_discussion_post_text.post_id )
         INNER JOIN tbl_discussion_topic ON (tbl_discussion_post.topic_id = tbl_discussion_topic.id)
-        LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
+        LEFT JOIN tbl_users ON (tbl_discussion_post.userId = tbl_users.userId OR tbl_discussion_post.userId = tbl_users.id)
         LEFT JOIN tbl_discussion_post_attachment ON (tbl_discussion_post.id = tbl_discussion_post_attachment.post_id)
         LEFT JOIN tbl_discussion_post AS replyPost ON (tbl_discussion_post.id = replyPost.post_parent)
         LEFT JOIN tbl_discussion_post_text AS languagecheck ON (tbl_discussion_post.id = languagecheck.post_id  AND tbl_discussion_post_text.language != languagecheck.language)
@@ -375,7 +375,7 @@ class dbPost extends dbTable {
         FROM tbl_discussion_post
         INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post.id = tbl_discussion_post_text.post_id )
         INNER JOIN tbl_discussion_topic ON (tbl_discussion_post.topic_id = tbl_discussion_topic.id)
-        LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
+        LEFT JOIN tbl_users ON (tbl_discussion_post.userId = tbl_users.userId OR tbl_discussion_post.userId = tbl_users.id)
         LEFT JOIN tbl_discussion_post_attachment ON (tbl_discussion_post.id = tbl_discussion_post_attachment.post_id)
         LEFT JOIN tbl_discussion_post AS replyPost ON (tbl_discussion_post.id = replyPost.post_parent)
         LEFT JOIN tbl_discussion_post_text AS languagecheck ON (tbl_discussion_post.id = languagecheck.post_id AND tbl_discussion_post_text.language != languagecheck.language)
@@ -1105,6 +1105,13 @@ class dbPost extends dbTable {
                 $this->appendArrayVar('headerParams', $this->getTranslationAjaxScript());
                 return $return . $this->getjavascriptFile('effects.js', 'discussion');
 //         }
+        }
+
+        /** Return stored post markup through Discussion's established script and washout filters. */
+        public function renderSafePostText($text) {
+                return $this->objWashoutFilters->parseText(
+                        $this->objScriptClear->removeScript(stripslashes((string)$text))
+                );
         }
 
         /**

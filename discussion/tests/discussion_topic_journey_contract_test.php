@@ -18,12 +18,19 @@ $checks = array(
         && str_contains($block, "render('shield-check'")
         && str_contains($block, "render('plus'"),
     'topic has semantic post region' => str_contains($block, 'aria-label="Topic posts"'),
+    'posts render exactly once in bounded articles' => str_contains($block, 'buildModernPostStream')
+        && str_contains($block, '<article id="post-')
+        && !str_contains(substr($block, strrpos($block, 'private function buildModernTopic')), 'displayFlatThread('),
+    'post authors are visible' => str_contains($block, 'discussion-post__meta')
+        && str_contains($block, '$author=trim('),
+    'reply relationships are explicit' => str_contains($block, 'Replying to <a href="#post-')
+        && str_contains($block, 'post_parent'),
     'notifications use an accessible details panel' => str_contains($block, '<details class="chisimba-card discussion-topic-notifications">')
         && str_contains($block, '<legend>Notify me about this conversation</legend>'),
     'notification save returns to topic' => str_contains($controller, "nextAction('flatview'")
         && str_contains($controller, "'subscriptionupdated'"),
     'responsive topic treatment exists' => str_contains($css, '.discussion-topic-modern__header')
-        && str_contains($css, '.discussion-topic-modern__posts .newDiscussionContainer'),
+        && str_contains($css, '.discussion-post'),
     'legacy profile image is removed from topic layout' => str_contains($css, '.discussion-topic-modern__posts .discussionProfileImg'),
     'Derek Keats remains an author' => str_contains(file_get_contents($module . '/register.conf'), 'Derek Keats'),
 );

@@ -510,6 +510,17 @@
 .discussion-mark-criterion p { grid-column: 1/-1; margin: 0; }
 .discussion-review-controls,.discussion-mark-actions { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
 .discussion-mark-total { color: var(--chisimba-text,#17212b); font-weight: 700; }
+.discussion-moderation .chisimba-page-header h1 a { color: inherit; text-decoration-thickness: .08em; text-underline-offset: .16em; }
+.discussion-moderation-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; }
+.discussion-moderation-action { padding: 0; align-self: start; }
+.discussion-moderation-action > summary { display: flex; align-items: center; gap: .65rem; padding: 1rem 1.25rem; cursor: pointer; font-weight: 700; }
+.discussion-moderation-action > form { display: grid; gap: 1rem; padding: 0 1.25rem 1.25rem; border-block-start: 1px solid var(--chisimba-border,#d5dde5); }
+.discussion-moderation-action fieldset,.discussion-moderation-action label { display: grid; gap: .6rem; }
+.discussion-moderation-action fieldset { margin: 0; padding: 1rem 0 0; border: 0; }
+.discussion-moderation-action select,.discussion-moderation-action textarea { width: 100%; max-width: 100%; }
+.discussion-moderation-danger { border-color: var(--chisimba-danger,#b42318); }
+.discussion-moderation--assessed .discussion-moderation-danger { display: none; }
+.discussion-moderation--assessed .discussion-moderation-action:has(form[action*="moderate_moveto"]) { display: none; }
 
 .discussion-topic-modern__header {
     display: grid;
@@ -554,8 +565,20 @@
 
 .discussion-topic-modern__posts {
     display: grid;
-    gap: 1rem;
+    gap: .8rem;
 }
+
+.discussion-post { display: grid; gap: .85rem; margin-inline-start: calc(var(--discussion-depth,0) * 1.25rem); padding: 1rem 1.2rem; border-inline-start: calc(.2rem + var(--discussion-depth,0) * .08rem) solid color-mix(in srgb,var(--chisimba-primary,#0878be) 35%,var(--chisimba-border,#d5dde5)); }
+.discussion-post > header { display: flex; justify-content: space-between; gap: 1rem; padding-block-end: .7rem; border-block-end: 1px solid var(--chisimba-border,#d5dde5); }
+.discussion-post h2,.discussion-post p { margin: 0; }
+.discussion-post h2 { margin-block: .2rem; font-size: 1.05rem; }
+.discussion-post__context { color: var(--chisimba-text-muted,#59636e); font-size: .88rem; }
+.discussion-post__context a { font-weight: 700; }
+.discussion-post__meta { display: flex; gap: .65rem; flex-wrap: wrap; color: var(--chisimba-text-muted,#59636e); font-size: .9rem; }
+.discussion-post__number { display: grid; place-items: center; align-self: start; min-width: 2rem; min-height: 2rem; border-radius: 999px; color: var(--chisimba-primary-text,#075b91); background: var(--chisimba-primary-surface,#e8f4fb); font-weight: 700; }
+.discussion-post__content { line-height: 1.6; }
+.discussion-post__content > :first-child { margin-block-start: 0; }
+.discussion-post__content > :last-child { margin-block-end: 0; }
 
 .discussion-topic-modern__posts .discussionProfileImg,
 .discussion-topic-modern__posts .discussionPointer2,
@@ -661,7 +684,9 @@
     }
     .discussion-mark-criteria { grid-template-columns: 1fr; }
     .discussion-review-progress { grid-template-columns: 1fr; }
+    .discussion-moderation-grid { grid-template-columns: 1fr; }
     .discussion-review-section > header,.discussion-learner-mark > summary { align-items: stretch; flex-direction: column; }
+    .discussion-post { margin-inline-start: calc(var(--discussion-depth,0) * .45rem); }
 
     .discussion-editor__actions .button {
         width: 100%;

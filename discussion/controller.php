@@ -430,6 +430,9 @@ class discussion extends controller {
                         case 'moderatepostdeleteconfirm':
                                 return $this->deletePostConfirm();
 
+                        case 'deleteownpost':
+                                return $this->deleteOwnPost();
+
                         case 'translationajax':
                                 return $this->translationAjax();
 
@@ -920,6 +923,8 @@ class discussion extends controller {
          * Dynamically remove a post
          */
         function removePost() {
+                // Retired insecure AJAX deletion path. All deletions use explicit, scoped POST actions.
+                return $this->moderationDenied();
                 //get the post id
                 $post_id = $this->getParam('postid');
                 //get the topic id
@@ -1662,10 +1667,12 @@ class discussion extends controller {
          * Method to save a change in the topic status
          */
         public function changeTopicStatus() {
-                $topic_id = $_POST['topic'];
-                $status = $_POST['topic_status'];
-                $reason = $_POST['reason'];
-                $this->objTopic->changeTopicStatus($topic_id, $status, $reason, $this->userId);
+                $topic_id = trim((string)$this->getParam('topic',''));
+                if(!$this->validModerationMutation('changetopicstatus',$topic_id)){return $this->moderationDenied();}
+                $status = strtoupper(trim((string)$this->getParam('topic_status','')));
+                if(!in_array($status,array('OPEN','CLOSE'),true)){return $this->moderationDenied();}
+                $reason = mb_substr(trim(strip_tags((string)$this->getParam('reason',''))),0,4000);
+                if($this->objTopic->changeTopicStatus($topic_id, $status, $reason, $this->userId)===false){return $this->moderationDenied();}
                 return $this->nextAction('viewtopic', array('message' => 'statuschanged', 'id' => $topic_id, 'type' => $this->discussiontype));
         }
 
@@ -1910,40 +1917,41 @@ class discussion extends controller {
          */
         public function moderateDeleteTopic() {
                 // Get Topic Info
-                $topicInfo = $this->objTopic->getTopicDetails($_POST['id']);
+                $id=trim((string)$this->getParam('id',''));if(!$this->validModerationMutation('moderate_deletetopic',$id)){return $this->moderationDenied();}$topicInfo = $this->objTopic->getTopicDetails($id);if(!is_array($topicInfo)||$this->isAssessedDiscussion($topicInfo['discussion_id'])){return $this->moderationDenied();}
                 // Check if a delete request is confirmed
-                if ($_POST['delete'] != '1') {
-                        $returnArray = array('id' => $_POST['id'], 'message' => 'deletecancelled');
+                if ((string)$this->getParam('delete','0') !== '1') {
+                        $returnArray = array('id' => $id, 'message' => 'deletecancelled');
 
                         // Attempt to get default option for tangents and add to array to preserve user's work.
                         if (isset($_POST['tangentoption'])) {
-                                $returnArray['option'] = $_POST['tangentoption'];
+                                $returnArray['option'] = $this->getParam('tangentoption');
                         }
                         // If not return to moderation page, with message, delete cancelled.
                         return $this->nextAction('moderatetopic', $returnArray);
                 } else {
                         // Check if we are deleting a tangent.
                         if ($topicInfo['topic_tangent_parent'] != '0') {
-                                $results = $this->objTopic->deleteTopic($_POST['id']);
+                                $results = $this->objTopic->deleteTopic($id);
                                 $this->objDiscussion->updateDiscussionAfterDelete($topicInfo['discussion_id']);
                                 return $this->nextAction('viewtopic', array('id' => $topicInfo['topic_tangent_parent'], 'message' => 'tangentdeleted'));
                         } else { // Deleting a topic with tangents
-                                if (isset($_POST['tangentoption']) && $_POST['tangentoption'] == 'delete') {
-                                        $results = $this->objTopic->deleteTopic($_POST['id']);
-                                        $results = $this->objTopic->deleteTangents($_POST['id']);
+                                $tangentOption=(string)$this->getParam('tangentoption','');
+                                if ($tangentOption === 'delete') {
+                                        $results = $this->objTopic->deleteTopic($id);
+                                        $results = $this->objTopic->deleteTangents($id);
                                         $this->objDiscussion->updateDiscussionAfterDelete($topicInfo['discussion_id']);
                                         return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'topictangentsdeleted'));
-                                } else if (isset($_POST['tangentoption']) && $_POST['tangentoption'] == 'move') {
-                                        $this->objTopic->moveTangentsToAnotherTopic($_POST['id'], $_POST['topicmove']);
-                                        $results = $this->objTopic->deleteTopic($_POST['id']);
+                                } else if ($tangentOption === 'move') {
+                                        $target=trim((string)$this->getParam('topicmove',''));if(!$this->sameDiscussionTopic($target,$topicInfo['discussion_id'],$id)){return $this->moderationDenied();}$this->objTopic->moveTangentsToAnotherTopic($id, $target);
+                                        $results = $this->objTopic->deleteTopic($id);
                                         $this->objDiscussion->updateDiscussionAfterDelete($topicInfo['discussion_id']);
                                         return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'topicdeletedtangentsmoved'));
-                                } else if (isset($_POST['tangentoption']) && $_POST['tangentoption'] == 'newtopic') {
-                                        $this->objTopic->moveAllTangentsToRootTopic($_POST['id']);
-                                        $results = $this->objTopic->deleteTopic($_POST['id']);
+                                } else if ($tangentOption === 'newtopic') {
+                                        $this->objTopic->moveAllTangentsToRootTopic($id);
+                                        $results = $this->objTopic->deleteTopic($id);
                                         return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'topicdeletedtangentsmovedtoroot'));
                                 } else { // Simply delete topic - has no tangents
-                                        $results = $this->objTopic->deleteTopic($_POST['id']);
+                                        $results = $this->objTopic->deleteTopic($id);
                                         $this->objDiscussion->updateDiscussionAfterDelete($topicInfo['discussion_id']);
                                         return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'topicdeleted'));
                                 }
@@ -1955,22 +1963,20 @@ class discussion extends controller {
          * Method to move a topic as a tangent of another topic - moderation option
          */
         public function moderateMoveTangent() {
-                $id = $_POST['id'];
-                $topicmove = $_POST['topicmove'];
+                $id = trim((string)$this->getParam('id',''));if(!$this->validModerationMutation('moderate_movetotangent',$id)){return $this->moderationDenied();}
+                $topicmove = trim((string)$this->getParam('topicmove',''));
                 // Get Topic Info
-                $topicInfo = $this->objTopic->getTopicDetails($_POST['id']);
+                $topicInfo = $this->objTopic->getTopicDetails($id);if(!is_array($topicInfo)||$this->isAssessedDiscussion($topicInfo['discussion_id'])||!$this->sameDiscussionTopic($topicmove,$topicInfo['discussion_id'],$id)){return $this->moderationDenied();}
                 $this->objTopic->moveTopicToTangent($id, $topicmove);
                 $this->objTopic->moveTangentsToAnotherTopic($id, $topicmove);
                 return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'topicmovetotangent', 'topic' => $id));
         }
 
         public function moderateMoveNewDiscussion() {
-                $topic = $this->getParam('id');
-                $discussion = $this->getParam('discussionmove');
+                $topic = trim((string)$this->getParam('id',''));if(!$this->validModerationMutation('moderate_movetodiscussion',$topic)){return $this->moderationDenied();}
+                $discussion = trim((string)$this->getParam('discussionmove',''));$sourceTopic=$this->objTopic->getTopicDetails($topic);if(!is_array($sourceTopic)||$this->isAssessedDiscussion($sourceTopic['discussion_id'])){return $this->moderationDenied();}$target=$this->objDiscussion->getDiscussion($discussion);
 
-                if ($topic != '' && $discussion != '') {
-                        $this->objTopic->switchTopicDiscussion($topic, $discussion);
-                }
+                if(!is_array($target)||!hash_equals((string)$this->contextCode,(string)($target['discussion_context']??''))){return $this->moderationDenied();}$this->objTopic->switchTopicDiscussion($topic, $discussion);
                 return $this->nextAction('discussion', array('id' => $discussion, 'message' => 'topicmovedtonewdiscussion', 'topic' => $topic));
         }
 
@@ -1979,23 +1985,24 @@ class discussion extends controller {
          */
         public function moderateMoveNewTopic() {
                 // Get Topic Info
-                $topicInfo = $this->objTopic->getTopicDetails($_POST['id']);
+                $id=trim((string)$this->getParam('id',''));if(!$this->validModerationMutation('moderate_movetonewtopic',$id)){return $this->moderationDenied();}$topicInfo = $this->objTopic->getTopicDetails($id);if(!is_array($topicInfo)||$this->isAssessedDiscussion($topicInfo['discussion_id'])||($topicInfo['topic_tangent_parent']??'0')==='0'){return $this->moderationDenied();}
                 // Check if a delete request is confirmed
-                if ($_POST['delete'] != '1') {
+                if ((string)$this->getParam('delete','0') !== '1') {
                         // If not return to moderation page, with message, delete cancelled.
-                        return $this->nextAction('moderatetopic', array('id' => $_POST['id'], 'message' => 'movenewtopiccancelled'));
+                        return $this->nextAction('moderatetopic', array('id' => $id, 'message' => 'movenewtopiccancelled'));
                 } else {
-                        $this->objTopic->moveTangentToRootTopic($_POST['id']);
-                        return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'tangentmovedtonewtopic', 'topic' => $_POST['id']));
+                        $this->objTopic->moveTangentToRootTopic($id);
+                        return $this->nextAction('discussion', array('id' => $topicInfo['discussion_id'], 'message' => 'tangentmovedtonewtopic', 'topic' => $id));
                 }
         }
 
         /**
          * Method to Update the Sticky Status of a Topic
          */
-        public function moderateStickyTopic($topic_id, $status) {
-                $id = $topic_id;
-                $sticky = $status;
+        public function moderateStickyTopic($topic_id=null, $status=null) {
+                $id = trim((string)($topic_id??$this->getParam('id','')));if(!$this->validModerationMutation('moderate_topicsticky',$id)){return $this->moderationDenied();}
+                $sticky = (string)($status??$this->getParam('stickytopic',''));
+                if(!in_array($sticky,array('0','1'),true)){return $this->moderationDenied();}
                 if ($sticky == '1') {
                         $this->objTopic->makeTopicSticky($id);
                 } else {
@@ -2275,9 +2282,12 @@ class discussion extends controller {
                 );
                 $topicActions = array(
                         'viewtopic', 'thread', 'singlethreadview', 'flatview',
-                        'moderatetopic', 'viewtopicmindmap', 'generatetopicmindmap'
+                        'moderatetopic', 'changetopicstatus', 'moderate_deletetopic',
+                        'moderate_movetotangent', 'moderate_movetodiscussion',
+                        'moderate_movetonewtopic', 'moderate_topicsticky',
+                        'viewtopicmindmap', 'generatetopicmindmap'
                 );
-                $postActions = array('postreply', 'showeditpostpopup');
+                $postActions = array('postreply', 'showeditpostpopup', 'deleteownpost', 'moderatepost', 'moderatepostdeleteconfirm');
                 $bounded = array_merge($discussionActions, $topicActions, $postActions);
                 if (!in_array($action, $bounded, true)) {
                         return true;
@@ -2286,6 +2296,7 @@ class discussion extends controller {
                         'savenewtopic' => 'discussion',
                         'setdefaultdiscussion' => 'discussion',
                         'updatediscussionsetting' => 'discussion_id',
+                        'changetopicstatus' => 'topic',
                         'showeditpostpopup' => 'post_id'
                 );
                 $parameter = isset($parameterMap[$action])
@@ -2317,7 +2328,10 @@ class discussion extends controller {
                         'editdiscussion', 'editdiscussionsave', 'markdiscussion',
                         'savediscussionmark', 'requestdiscussionaimark', 'requestdiscussionaibatch', 'deletediscussion',
                         'deletediscussionconfirm', 'changevisibilityconfirm',
-                        'setdefaultdiscussion', 'updatediscussionsetting'
+                        'setdefaultdiscussion', 'updatediscussionsetting', 'moderatetopic',
+                        'changetopicstatus', 'moderate_deletetopic', 'moderate_movetotangent',
+                        'moderate_movetodiscussion', 'moderate_movetonewtopic', 'moderate_topicsticky',
+                        'moderatepost', 'moderatepostdeleteconfirm'
                 );
                 if (!in_array($action, $managementActions, true)) {
                         return true;
@@ -2344,6 +2358,20 @@ class discussion extends controller {
 
         private function markBatchCsrfContext($discussionId) {
                 return 'discussion_b_'.hash('sha256',(string)$discussionId);
+        }
+
+        private function validModerationMutation($action,$topicId) {
+                return $this->validManagementMutation('disc_mod_'.hash('sha256',(string)$action.'|'.(string)$topicId));
+        }
+
+        private function moderationDenied() {
+                return $this->nextAction('courseactivitydenied',array(),'context');
+        }
+
+        private function sameDiscussionTopic($topicId,$discussionId,$excludedId='') {
+                if($topicId===''||($excludedId!==''&&hash_equals((string)$excludedId,(string)$topicId))){return false;}
+                $target=$this->objTopic->getTopicDetails($topicId);
+                return is_array($target)&&hash_equals((string)$discussionId,(string)($target['discussion_id']??''));
         }
 
         /** Return an allow-listed Y/N request value. */
@@ -2450,6 +2478,7 @@ class discussion extends controller {
                 if ($post == NULL) {
                         return $this->nextAction(NULL, array('message' => 'postyoutriedtomoderatedoesnotexist'));
                 }
+                if($this->isAssessedDiscussion($post['discussion_id'])){return $this->moderationDenied();}
                 // Redirect to Topic Moderation if First Post
                 if ($post['postleft'] == 1) {
                         return $this->nextAction('moderatetopic', array('id' => $post['topic_id']));
@@ -2477,18 +2506,36 @@ class discussion extends controller {
          *
          */
         public function deletePostConfirm() {
-                $post = $this->objPost->getPostWithText($_POST['id']);
+                $id=trim((string)$this->getParam('id',''));$post = $this->objPost->getPostWithText($id);
                 if ($post == NULL) {
                         return $this->nextAction(NULL, array('message' => 'postyoutriedtodeletedoesnotexist'));
                 }
-                if ($_POST['confirmdelete'] == 'Y') {
-                        $this->objPost->deletePostAndReplies($_POST['id']);
+                if($this->isAssessedDiscussion($post['discussion_id'])||!$this->validManagementMutation('disc_postdel_'.hash('sha256',$id))){return $this->moderationDenied();}
+                if ((string)$this->getParam('confirmdelete','N') === 'Y') {
+                        $this->objPost->deletePostAndReplies($id);
                         $this->objTopic->updateTopicAfterDelete($post['topic_id']);
                         $this->objDiscussion->updateDiscussionAfterDelete($post['discussion_id']);
                         return $this->nextAction('viewtopic', array('id' => $post['topic_id'], 'message' => 'posthasbeendeleted'));
                 } else {
-                        return $this->nextAction('viewtopic', array('id' => $post['topic_id'], 'post' => $_POST['id'], 'message' => 'postdeletecancelled'));
+                        return $this->nextAction('viewtopic', array('id' => $post['topic_id'], 'post' => $id, 'message' => 'postdeletecancelled'));
                 }
+        }
+
+        /** Allow a learner to withdraw only their own fresh, unanswered reply. */
+        private function deleteOwnPost() {
+                $id=trim((string)$this->getParam('id',''));$post=$this->objPost->getPostWithText($id);
+                if(!is_array($post)||!$this->validManagementMutation('disc_own_'.hash('sha256',$id))||!$this->mayDeleteOwnPost($post)){return $this->moderationDenied();}
+                $this->objPost->deletePostAndReplies($id);$this->objTopic->updateTopicAfterDelete($post['topic_id']);$this->objDiscussion->updateDiscussionAfterDelete($post['discussion_id']);
+                return $this->nextAction('viewtopic',array('id'=>$post['topic_id'],'message'=>'posthasbeendeleted'));
+        }
+
+        private function mayDeleteOwnPost($post) {
+                $created=strtotime((string)($post['datelastupdated']??''));
+                return is_array($post)&&($post['post_parent']??'0')!=='0'&&empty($post['replypost'])&&hash_equals((string)$this->userId,(string)($post['userid']??''))&&$created!==false&&time()-$created>=0&&time()-$created<=120;
+        }
+
+        private function isAssessedDiscussion($discussionId) {
+                $discussion=$this->objDiscussion->getDiscussion($discussionId);return is_array($discussion)&&($discussion['assessment_enabled']??'N')==='Y';
         }
 
         /**

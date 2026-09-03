@@ -32,6 +32,7 @@ class block_postdelete extends ChisimbaObject {
         $this->title = "Delete post/reply";
         $this->objPost = $this->getObject('dbpost', 'discussion');
         $this->objLanguage = $this->getObject('language', 'language');
+        $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
 
     function biuldForm() {
@@ -60,6 +61,7 @@ class block_postdelete extends ChisimbaObject {
             $form = new form('deletepost', $this->uri(array('action' => 'moderatepostdeleteconfirm')));
             $hiddenId = new hiddeninput('id', $post['post_id']);
             $form->addToForm($hiddenId->show());
+            $form->addToForm('<input type="hidden" name="csrf_token" value="'.htmlspecialchars($this->csrf->issue('disc_postdel_'.hash('sha256',(string)$post['post_id'])),ENT_QUOTES,'UTF-8').'">');
 
             $form->addToForm('<h3><strong>' . $this->objLanguage->languageText('mod_discussion_confirmdeletepost', 'discussion') . '</strong></h3>');
 

@@ -58,6 +58,7 @@ class block_flatview extends ChisimbaObject {
                 $this->objIcon = $this->newObject('geticon', 'htmlelements');
                 $this->objTopic = $this->getObject('dbtopic', 'discussion');
                 $this->objDateTime = & $this->getObject('dateandtime', 'utilities');
+                $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
                 $this->title=NULL;
                 $this->js = '
 <script type="text/javascript">
@@ -422,7 +423,7 @@ class block_flatview extends ChisimbaObject {
                                 . $icons->render('save', array('decorative'=>true)) . '<span>Save preferences</span></button></div></form></details>';
                 }
 
-                $thread = $this->objPost->displayFlatThread($topicId);
+                $thread = $this->buildModernPostStream($topicId,$discussionType,$icons,$discussion);
                 $tangents = ($post['topic_tangent_parent'] ?? '0') === '0' ? $this->objTopic->showTangentsTable($topicId) : '';
                 $this->title = $this->objLanguage->languageText('mod_discussion_replytotopic', 'discussion') . $post['post_title'];
                 return '<main class="chisimba-workspace chisimba-flow discussion-workspace discussion-topic-modern"><header class="chisimba-page-header chisimba-card discussion-topic-modern__header"><div><p class="chisimba-eyebrow">'
@@ -430,6 +431,22 @@ class block_flatview extends ChisimbaObject {
                         . '</h1><p>Follow the conversation, contribute evidence and respond to other participants.</p></div><div class="chisimba-form-actions discussion-topic-modern__actions">'
                         . $actions . '</div></header>' . $notice . $subscription . $tangents
                         . '<section class="discussion-topic-modern__posts" aria-label="Topic posts">' . $thread . '</section></main>';
+        }
+
+        /** Render each post exactly once with explicit author and reply context. */
+        private function buildModernPostStream($topicId,$discussionType,$icons,$discussion) {
+                $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');$posts=(array)$this->objPost->getFlatThread($topicId);$byId=array();
+                foreach($posts as $item){$byId[(string)$item['post_id']]=$item;}$html='';
+                foreach($posts as $index=>$item){$postId=(string)$item['post_id'];$parentId=(string)($item['post_parent']??'0');$author=trim((string)($item['firstname']??'').' '.(string)($item['surname']??''));if($author===''){$author=trim((string)($item['username']??''))?:'Unknown participant';}$depth=max(0,min(4,(int)($item['level']??1)-1));$context='Started by '.$author;
+                        if($parentId!=='0'&&isset($byId[$parentId])){$parent=$byId[$parentId];$parentAuthor=trim((string)($parent['firstname']??'').' '.(string)($parent['surname']??''));if($parentAuthor===''){$parentAuthor=trim((string)($parent['username']??''))?:'another participant';}$context='Replying to <a href="#post-'.$e($parentId).'">'.$e($parentAuthor).': '.stripslashes($e($parent['post_title']??'post')).'</a>';}
+                        $actions='';if($this->objPost->repliesAllowed){$actions.='<a class="button chisimba-button-secondary chisimba-button-compact" href="'.$e($this->uri(array('action'=>'postreply','id'=>$postId,'type'=>$discussionType))).'">'.$icons->render('reply',array('decorative'=>true)).'<span>Reply to this post</span></a>';}
+                        $assessed=($discussion['assessment_enabled']??'N')==='Y';$created=strtotime((string)($item['datelastupdated']??''));$fresh=$created!==false&&time()-$created>=0&&time()-$created<=120;$own=hash_equals((string)$this->objUser->userId(),(string)($item['userid']??''));
+                        if($assessed&&$parentId!=='0'&&empty($item['replypost'])&&$fresh&&$own){$csrf=$this->csrf->issue('disc_own_'.hash('sha256',$postId));$actions.='<form method="post" action="'.$e($this->uri(array('action'=>'deleteownpost'))).'"><input type="hidden" name="csrf_token" value="'.$e($csrf).'"><input type="hidden" name="id" value="'.$e($postId).'"><button class="button chisimba-button-danger chisimba-button-compact" type="submit">'.$icons->render('trash-2',array('decorative'=>true)).'<span>Delete my reply</span></button></form>';}
+                        if(!$assessed&&$this->objPost->showModeration){$actions.='<a class="button chisimba-button-secondary chisimba-button-compact" href="'.$e($this->uri(array('action'=>'moderatepost','id'=>$postId,'type'=>$discussionType))).'">'.$icons->render('shield-check',array('decorative'=>true)).'<span>Moderate post</span></a>';}
+                        $date=$this->objDateTime->formatDateOnly($item['datelastupdated']).' at '.$this->objDateTime->formatTime($item['datelastupdated']);$content=$this->objPost->renderSafePostText((string)($item['post_text']??''));
+                        $html.='<article id="post-'.$e($postId).'" class="chisimba-card discussion-post" style="--discussion-depth:'.$depth.'"><header><div><p class="discussion-post__context">'.$context.'</p><h2>'.$e(stripslashes((string)($item['post_title']??'Untitled post'))).'</h2><p class="discussion-post__meta"><strong>'.$e($author).'</strong><span>'.$e($date).'</span></p></div><span class="discussion-post__number">'.($index+1).'</span></header><div class="discussion-post__content">'.$content.'</div>'.($actions!==''?'<footer class="chisimba-form-actions">'.$actions.'</footer>':'').'</article>';
+                }
+                return $html;
         }
 
         function show() {

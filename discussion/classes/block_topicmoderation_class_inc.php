@@ -40,6 +40,7 @@ class block_topicmoderation extends ChisimbaObject {
         $this->userId = $this->objUser->userId();
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
+        $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
         $this->title = "Moderate topic";
         // Get Context Code Settings
         $this->contextObject = & $this->getObject('dbcontext', 'context');
@@ -53,7 +54,7 @@ class block_topicmoderation extends ChisimbaObject {
 </style>';
     }
 
-    function buildForm() {
+    function buildLegacyForm() {
         $html = "";
         $id = $this->getParam('id');
         $topic = $this->objTopic->getTopicDetails($id);
@@ -425,6 +426,35 @@ class block_topicmoderation extends ChisimbaObject {
 
         $html .= '<p align="center">' . $returnLink->show() . ' / ' . $returnDiscussionLink->show() . '</p>';
         return $objHighlightLabels->show().$html;
+    }
+
+    /** Render the moderation actions as a semantic, course-scoped workspace. */
+    function buildForm() {
+        $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+        $topic=$this->objTopic->getTopicDetails(trim((string)$this->getParam('id')));
+        if(!is_array($topic)){return '<main class="chisimba-workspace"><section class="chisimba-card discussion-empty-state"><h1>Topic unavailable</h1></section></main>';}
+        $discussion=$this->objDiscussion->getDiscussion($topic['discussion_id']);
+        if(!is_array($discussion)){return '<main class="chisimba-workspace"><section class="chisimba-card discussion-empty-state"><h1>Discussion unavailable</h1></section></main>';}
+        $topicId=(string)$topic['topic_id'];$discussionId=(string)$topic['discussion_id'];$type=trim((string)$this->getParam('type','context'))?:'context';
+        $topicUrl=$this->uri(array('action'=>'viewtopic','id'=>$topicId,'type'=>$type));$discussionUrl=$this->uri(array('action'=>'discussion','id'=>$discussionId,'type'=>$type));
+        $token=function($action)use($topicId,$e){return '<input type="hidden" name="csrf_token" value="'.$e($this->csrf->issue('disc_mod_'.hash('sha256',$action.'|'.$topicId))).'">';};
+        $hidden='<input type="hidden" name="id" value="'.$e($topicId).'">';$icons=$this->getObject('iconservice','ui');
+        $otherDiscussions=(array)$this->objDiscussion->otherDiscussions($discussionId,$this->contextCode);
+        $otherTopics=(array)$this->objTopic->showTopicsInDiscussion($discussionId,$this->userId,null,null,null,' AND tbl_discussion_topic.id != "'.addslashes($topicId).'" ');
+        ob_start(); ?>
+<main class="chisimba-workspace chisimba-flow discussion-workspace discussion-moderation<?php echo ($discussion['assessment_enabled']??'N')==='Y'?' discussion-moderation--assessed':''; ?>">
+<header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Topic moderation</p><h1><a href="<?php echo $e($topicUrl); ?>"><?php echo $e($topic['post_title']); ?></a></h1><p>In <a href="<?php echo $e($discussionUrl); ?>"><?php echo $e($discussion['discussion_name']); ?></a></p></div></header>
+<p>Choose the action you need. Nothing changes until its clearly labelled button is selected.</p>
+<?php if(($discussion['assessment_enabled']??'N')==='Y'): ?><p class="chisimba-notice">This is an assessed discussion. Topics and established contributions cannot be moved or deleted.</p><?php endif; ?>
+<section class="discussion-moderation-grid">
+<details class="chisimba-card discussion-moderation-action"><summary><?php echo $icons->render('lock',array('decorative'=>true)); ?><span>Open or close replies</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'changetopicstatus'))); ?>"><?php echo $token('changetopicstatus'); ?><input type="hidden" name="topic" value="<?php echo $e($topicId); ?>"><fieldset><legend>Reply status</legend><label><input type="radio" name="topic_status" value="OPEN"<?php echo ($topic['topicstatus']??'')==='OPEN'?' checked':''; ?>> Open — learners may reply</label><label><input type="radio" name="topic_status" value="CLOSE"<?php echo ($topic['topicstatus']??'')==='CLOSE'?' checked':''; ?>> Closed — new replies are prevented</label></fieldset><label>Reason for closing<textarea name="reason" rows="5" maxlength="4000"><?php echo $e(strip_tags((string)($topic['lockreason']??''))); ?></textarea></label><button class="button" type="submit">Save reply status</button></form></details>
+<?php if(($topic['topic_tangent_parent']??'0')==='0'): ?><details class="chisimba-card discussion-moderation-action"><summary><?php echo $icons->render('pin',array('decorative'=>true)); ?><span>Pin or unpin topic</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'moderate_topicsticky'))); ?>"><?php echo $token('moderate_topicsticky').$hidden; ?><fieldset><legend>Topic position</legend><label><input type="radio" name="stickytopic" value="1"<?php echo (string)($topic['sticky']??'0')==='1'?' checked':''; ?>> Pinned at the top</label><label><input type="radio" name="stickytopic" value="0"<?php echo (string)($topic['sticky']??'0')!=='1'?' checked':''; ?>> Standard ordering</label></fieldset><button class="button" type="submit">Save topic position</button></form></details><?php endif; ?>
+<?php if($otherDiscussions): ?><details class="chisimba-card discussion-moderation-action"><summary><?php echo $icons->render('folder-input',array('decorative'=>true)); ?><span>Move to another discussion</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'moderate_movetodiscussion'))); ?>"><?php echo $token('moderate_movetodiscussion').$hidden; ?><label>Destination discussion<select name="discussionmove" required><?php foreach($otherDiscussions as $item): ?><option value="<?php echo $e($item['discussion_id']); ?>"><?php echo $e($item['discussion_name']); ?></option><?php endforeach; ?></select></label><button class="button" type="submit">Move topic</button></form></details><?php endif; ?>
+<?php if($otherTopics): ?><details class="chisimba-card discussion-moderation-action"><summary><?php echo $icons->render('corner-down-right',array('decorative'=>true)); ?><span>Make this a tangent</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'moderate_movetotangent'))); ?>"><?php echo $token('moderate_movetotangent').$hidden; ?><label>Parent topic<select name="topicmove" required><?php foreach($otherTopics as $item): ?><option value="<?php echo $e($item['topic_id']); ?>"><?php echo $e($item['post_title']); ?></option><?php endforeach; ?></select></label><button class="button" type="submit">Move as tangent</button></form></details><?php endif; ?>
+<?php if(($topic['topic_tangent_parent']??'0')!=='0'): ?><details class="chisimba-card discussion-moderation-action"><summary><?php echo $icons->render('corner-up-left',array('decorative'=>true)); ?><span>Make this a main topic</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'moderate_movetonewtopic'))); ?>"><?php echo $token('moderate_movetonewtopic').$hidden; ?><input type="hidden" name="delete" value="1"><p>This tangent will become an independent topic in the same discussion.</p><button class="button" type="submit">Make main topic</button></form></details><?php endif; ?>
+<details class="chisimba-card discussion-moderation-action discussion-moderation-danger"><summary><?php echo $icons->render('trash-2',array('decorative'=>true)); ?><span>Delete topic</span></summary><form method="post" action="<?php echo $e($this->uri(array('action'=>'moderate_deletetopic'))); ?>"><?php echo $token('moderate_deletetopic').$hidden; ?><input type="hidden" name="delete" value="1"><?php if((is_countable($this->objTopic->getTangents($topicId))?count($this->objTopic->getTangents($topicId)):0)>0): ?><fieldset><legend>Existing tangents</legend><label><input type="radio" name="tangentoption" value="newtopic" checked> Keep tangents as main topics</label><label><input type="radio" name="tangentoption" value="delete"> Delete tangents too</label><?php if($otherTopics): ?><label><input type="radio" name="tangentoption" value="move"> Move tangents to <select name="topicmove"><?php foreach($otherTopics as $item): ?><option value="<?php echo $e($item['topic_id']); ?>"><?php echo $e($item['post_title']); ?></option><?php endforeach; ?></select></label><?php endif; ?></fieldset><?php endif; ?><p>This permanently removes the topic and its posts.</p><button class="button chisimba-button-danger" type="submit">Delete topic permanently</button></form></details>
+</section></main>
+<?php $html=ob_get_contents();ob_end_clean();return $html;
     }
 
     function show() {
