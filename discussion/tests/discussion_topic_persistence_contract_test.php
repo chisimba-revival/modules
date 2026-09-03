@@ -19,6 +19,7 @@ $checks = array(
     'forum action and empty state use skin primitives' => str_contains($view, "getObject('iconservice', 'ui')") && str_contains($view, "cssClass = 'button'") && str_contains($view, 'chisimba-card discussion-empty-state') && !str_contains($view, 'newTopicIcon'),
     'composer is semantic and responsive' => str_contains($form, 'buildModernEntryForm') && str_contains($form, 'discussion-choice-grid') && str_contains($form, 'chisimba-form-actions') && !str_contains(substr($form, strrpos($form, 'private function buildModernEntryForm')), 'htmltable'),
     'attachment picker is course scoped' => str_contains($form, "\$selectFile->context = \$this->contextCode !== 'root'"),
+    'legacy composer block title is suppressed' => str_contains($form, "\$this->title = ''"),
 );
 foreach ($checks as $label => $passed) {
     echo ($passed ? 'PASS: ' : 'FAIL: ') . $label . PHP_EOL;

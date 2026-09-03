@@ -28,7 +28,7 @@ class block_discussionadmin extends ChisimbaObject {
 
         //put your code here
         public function init() {
-                $this->title = "Admin block";
+                $this->title = '';
                 $this->loadClass('form', 'htmlelements');
                 $this->loadClass('button', 'htmlelements');
                 $this->loadClass('dropdown', 'htmlelements');

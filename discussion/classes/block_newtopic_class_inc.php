@@ -51,7 +51,7 @@ class block_newtopic extends ChisimbaObject {
         $this->objTopicSubscriptions = & $this->getObject('dbtopicsubscriptions');
         // Load Discussion Subscription classes
         $this->objDiscussionSubscriptions = & $this->getObject('dbdiscussionsubscriptions');
-        $this->title = "<h1>{$this->objLanguage->languageText('mod_discussion_startnewtopic','discussion')}</h1>";
+        $this->title = '';
     }
 
     public function biuldEntryForm() {

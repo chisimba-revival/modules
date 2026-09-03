@@ -11,6 +11,7 @@ $checks = array(
     'admin interface uses responsive cards' => str_contains($admin, 'buildModernAdmin') && str_contains($admin, 'discussion-admin-grid') && str_contains($admin, 'discussion-admin-card'),
     'admin interface uses skin actions and icons' => str_contains($admin, "getObject('iconservice', 'ui')") && str_contains($admin, 'chisimba-form-actions') && str_contains($admin, 'chisimba-button-danger'),
     'modern admin path has no layout table' => !str_contains(substr($admin, strrpos($admin, 'private function buildModernAdmin')), 'htmlTable'),
+    'legacy block title is suppressed' => str_contains($admin, "\$this->title = ''"),
 );
 foreach ($checks as $label => $passed) {
     echo ($passed ? 'PASS: ' : 'FAIL: ') . $label . PHP_EOL;
