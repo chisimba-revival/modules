@@ -1182,7 +1182,8 @@ class discussion extends controller {
                 } else {
                         $emailSuccess = NULL;
                 }
-                $this->objDiscussionNotifications->postCreated($post_id,$topic_id,$discussion_id,$this->contextCode,$this->userId,$this->objUser->fullname(),$post_title,$discussionDetails['discussion_name'],$replyUrl,true);
+                $notificationTopic = $this->objTopic->getTopicDetails($topic_id);
+                $this->objDiscussionNotifications->postCreated($post_id,$topic_id,$discussion_id,$this->contextCode,$this->userId,$this->objUser->fullname(),$notificationTopic['post_title'] ?? $post_title,$discussionDetails['discussion_name'],$replyUrl,true);
                 // Attachment Handling
 //                $this->handleAttachments($post_id, $tempPostId);
                 return $this->nextAction('viewtopic', array('message' => 'replysaved', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype, 'email' => $emailSuccess));

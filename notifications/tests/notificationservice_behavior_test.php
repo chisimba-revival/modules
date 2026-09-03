@@ -4,6 +4,7 @@ $GLOBALS['kewl_entry_point_run']=true;
 class ChisimbaObject {
     public $services=array();
     public function getObject($name,$module=null){return $this->services[$name];}
+    public function uri($params,$module){return 'index.php?'.http_build_query(array_merge(array('module'=>$module),$params),'','&amp;');}
 }
 require __DIR__.'/../classes/notificationservice_class_inc.php';
 require __DIR__.'/../../discussion/classes/discussionnotificationpublisher_class_inc.php';
@@ -25,6 +26,7 @@ $recipients=new class {
 };
 $service=new notificationservice();$service->services=array('dbnotificationevents'=>$events,'dbnotificationrecipients'=>$recipients);$service->init();
 $publisher=new discussionnotificationpublisher();$publisher->services=array('notificationservice'=>$service,
+    'courseawarelaunchservice'=>new class {public function target($course,$module,$params){return array('module'=>'context','params'=>array('action'=>'launchcourseactivity','coursecode'=>$course,'targetmodule'=>$module));}},
     'dbdiscussionsubscriptions'=>new class {public function recipientUserIds($id){return array('author','learner','learner');}},
     'dbtopicsubscriptions'=>new class {public function recipientUserIds($id){return array('learner','other');}});
 $publisher->init();
@@ -32,7 +34,7 @@ $publish=fn($id)=>$publisher->postCreated($id,'topic','discussion','course','aut
 $out=$publish('post');
 check($out['ok']&&$out['recipientCount']===2,'Reply goes to unique subscribers excluding its author');
 check(array_column($recipients->stored,'user_id')===array('learner','other'),'Topic and discussion subscribers are combined');
-check(array_values($events->stored)[0]['target_url']==='index.php?a=1&b=2','Notification target has usable query parameters');
+check(array_values($events->stored)[0]['target_url']==='index.php?module=context&action=launchcourseactivity&coursecode=course&targetmodule=discussion','Notification target uses course entry with usable query parameters');
 $again=$publish('post');
 check($again['code']==='already_published'&&count($recipients->stored)===2,'Retry does not duplicate recipient notifications');
 $recipients->failWrite=true;$out=$publish('failed');
