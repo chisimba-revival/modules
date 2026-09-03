@@ -84,3 +84,7 @@ Use one deterministic idempotency key for the logical event/recipient set. Do no
 ## Extending the system
 
 New producers add namespaced event types such as `assessment.mark.released`. New channel adapters subscribe to stored events and maintain their own delivery attempts; they do not change recipient read state. Retention must preserve operational and educational audit needs while minimising personal data. Provider errors and credentials must never appear in client payloads.
+
+## Discussion integration
+
+Discussion is the first producer. After a topic or reply is stored, `discussionnotificationpublisher` resolves user IDs from the existing discussion and topic subscriptions, removes the author, and publishes `discussion.topic.created` or `discussion.reply.created`. The immutable post ID is the idempotency boundary. Notification payloads contain identifiers and navigation metadata, never the post body. Discussion does not send email itself; a later preference-aware channel worker will project eligible notification events into Communications.

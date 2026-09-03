@@ -83,6 +83,21 @@ class dbtopicsubscriptions extends dbtable
         $sql = 'SELECT DISTINCT emailAddress FROM tbl_discussion_subscribe_topic INNER JOIN tbl_users ON ( tbl_discussion_subscribe_topic.userid = tbl_users.userid ) WHERE topic_id = "'.$topic_id.'"';
         return $this->getArray($sql);
     }
+
+    /** Return user identifiers subscribed to a topic for notification delivery. */
+    public function recipientUserIds($topicId)
+    {
+        $rows = $this->getAll(' WHERE topic_id=' . $this->quoteValue($topicId));
+        return array_values(array_unique(array_filter(array_column((array) $rows, 'userid'))));
+    }
+
+    /** Quote one identifier through the active database adapter. */
+    private function quoteValue($value)
+    {
+        $db = $this->objEngine->getDbObj();
+        return method_exists($db, 'quoteSmart') ? $db->quoteSmart((string) $value)
+            : "'" . str_replace("'", "''", (string) $value) . "'";
+    }
     
     function unsubscribeUserFromTopic($userId,$topic_id){
             $sql = "DELETE FROM tbl_discussion_subscribe_topic WHERE userid='{$userId}' AND topic_id='{$topic_id}'";

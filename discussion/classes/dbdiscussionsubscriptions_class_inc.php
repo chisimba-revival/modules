@@ -69,6 +69,21 @@ class dbdiscussionsubscriptions extends dbtable
         $sql = 'SELECT DISTINCT emailAddress FROM tbl_discussion_subscribe_discussion INNER JOIN tbl_users ON ( tbl_discussion_subscribe_discussion.userid = tbl_users.userid ) WHERE discussion_id = "'.$discussion_id.'"';
         return $this->getArray($sql);
     }
+
+    /** Return user identifiers subscribed to a discussion for notification delivery. */
+    public function recipientUserIds($discussionId)
+    {
+        $rows = $this->getAll(' WHERE discussion_id=' . $this->quoteValue($discussionId));
+        return array_values(array_unique(array_filter(array_column((array) $rows, 'userid'))));
+    }
+
+    /** Quote one identifier through the active database adapter. */
+    private function quoteValue($value)
+    {
+        $db = $this->objEngine->getDbObj();
+        return method_exists($db, 'quoteSmart') ? $db->quoteSmart((string) $value)
+            : "'" . str_replace("'", "''", (string) $value) . "'";
+    }
     
     
 }

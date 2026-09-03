@@ -95,6 +95,7 @@ class discussion extends controller {
 
                 // Discussion Email Class
                 $this->objDiscussionEmail = & $this->getObject('discussionemail');
+                $this->objDiscussionNotifications = $this->getObject('discussionnotificationpublisher');
 
                 // Load Discussion Subscription classes
                 $this->objDiscussionSubscriptions = & $this->getObject('dbdiscussionsubscriptions');
@@ -670,11 +671,11 @@ class discussion extends controller {
                 if ($discussionDetails['subscriptions'] == 'Y') {
                         //http://localhost/nextgen/index.php?module=discussion&action=postreply&id=gen8Srv57Nme40_1&type=context
                         $replyUrl = $this->uri(array('action' => 'flatview', 'id' => $topic_id));
-                        $emailSuccess = $this->objDiscussionEmail->sendEmail($topic_id, $post_title, $post_text, $discussionDetails['discussion_name'], $this->userId, $replyUrl);
                         $emailSuccess = NULL;
                 } else {
                         $emailSuccess = NULL;
                 }
+                $this->objDiscussionNotifications->postCreated($post_id,$topic_id,$discussion_id,$this->contextCode,$this->userId,$this->objUser->fullname(),$post_title,$discussionDetails['discussion_name'],$this->uri(array('action'=>'viewtopic','id'=>$topic_id,'post'=>$post_id,'context'=>$this->contextCode),'discussion'),false);
                 // End Email Post
                 return $this->nextAction('viewtopic', array('message' => 'save', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype, 'email' => $emailSuccess));
         }
@@ -1116,12 +1117,11 @@ class discussion extends controller {
                 $discussionDetails['subscriptions'] = "Y";
                 if ($discussionDetails['subscriptions'] == 'Y') {
                         $replyUrl = $this->uri(array('action' => 'viewtopic', 'id' => $topic_id, 'post' => $post_id, 'context' => $this->contextCode), 'discussion');
-//                        $emailSuccess = $this->objDiscussionEmail->sendEmail($topic_id, $post_title, $post_text, $discussionDetails['discussion_name'], $this->userId, $replyUrl);
                         $emailSuccess = NULL;
                 } else {
                         $emailSuccess = NULL;
                 }
-                $this->objDiscussionEmail->sendEmail($topic_id, $post_title, $post_text, $discussionDetails['discussion_name'], $this->userId, $replyUrl);
+                $this->objDiscussionNotifications->postCreated($post_id,$topic_id,$discussion_id,$this->contextCode,$this->userId,$this->objUser->fullname(),$post_title,$discussionDetails['discussion_name'],$replyUrl,true);
                 // Attachment Handling
 //                $this->handleAttachments($post_id, $tempPostId);
 //                return $this->nextAction('viewtopic', array('message' => 'replysaved', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype, 'email' => $emailSuccess));
