@@ -2122,15 +2122,16 @@ function loadTranslation(post, lang) {
                 return $this->getLastInsertId();
         }
 
-        /** Return bounded, plain-text evidence for one learner in one discussion. */
+        /** Return all contributions; bound individual excerpts, never silently omit later posts. */
         public function getAssessmentEvidence($discussionId, $userId) {
                 $discussion = str_replace("'", "''", (string) $discussionId);
                 $learner = str_replace("'", "''", (string) $userId);
                 $sql = "SELECT p.id AS post_id,p.topic_id,p.datecreated,t.post_title,t.post_text "
                         . "FROM tbl_discussion_post p INNER JOIN tbl_discussion_topic topic ON topic.id=p.topic_id "
                         . "INNER JOIN tbl_discussion_post_text t ON t.post_id=p.id "
-                        . "WHERE topic.discussion_id='" . $discussion . "' AND p.userid='" . $learner . "' "
-                        . "AND t.original_post IN ('1','Y') ORDER BY p.datecreated ASC LIMIT 500";
+                        . "INNER JOIN tbl_users u ON (p.userid=u.id OR p.userid=u.userid) "
+                        . "WHERE topic.discussion_id='" . $discussion . "' AND (u.id='" . $learner . "' OR u.userid='" . $learner . "') "
+                        . "AND t.original_post IN ('1','Y') ORDER BY p.datecreated ASC,p.id ASC,t.id ASC";
                 $evidence = array();
                 foreach ((array) $this->getArray($sql) as $row) {
                         $evidence[] = array(
@@ -2139,6 +2140,7 @@ function loadTranslation(post, lang) {
                                 'date'=>(string) $row['datecreated'],
                                 'title'=>mb_substr(trim(strip_tags((string) $row['post_title'])), 0, 160),
                                 'text'=>mb_substr(trim(strip_tags((string) $row['post_text'])), 0, 8000),
+                                'revision'=>hash('sha256', (string)$row['post_title'] . "\0" . (string)$row['post_text']),
                         );
                 }
                 return $evidence;

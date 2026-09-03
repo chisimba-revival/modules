@@ -10,6 +10,7 @@ $fields = array(
     'feedback'=>array('type'=>'text','length'=>2000),
     'rubric_json'=>array('type'=>'clob'),
     'ai_job_id'=>array('type'=>'text','length'=>32),
+    'evidence_fingerprint'=>array('type'=>'text','length'=>64),
     'marker_id'=>array('type'=>'text','length'=>32,'notnull'=>1),
     'date_created'=>array('type'=>'timestamp'),
     'date_updated'=>array('type'=>'timestamp')

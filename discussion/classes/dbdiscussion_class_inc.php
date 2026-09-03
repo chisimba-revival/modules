@@ -414,6 +414,11 @@ class dbdiscussion extends dbTable {
                                 return false;
                         }
                 }
+                $fingerprintColumn = $this->query("SHOW COLUMNS FROM tbl_discussion_assessment_marks LIKE 'evidence_fingerprint'");
+                if ((!is_array($fingerprintColumn) || !$fingerprintColumn)
+                        && $this->query('ALTER TABLE tbl_discussion_assessment_marks ADD COLUMN evidence_fingerprint VARCHAR(64) NULL') === false) {
+                        return false;
+                }
                 $identityColumns = array(
                         'tbl_discussion_assessment_marks' => array('user_id', 'marker_id'),
                         'tbl_discussion_ai_marking_jobs' => array('student_id', 'requester_id')

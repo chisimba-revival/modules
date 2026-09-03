@@ -1360,6 +1360,7 @@ class discussion extends controller {
                 $students=array_values(array_filter($students,static function($student)use($lecturerIds){$id=(string)($student['id']??'');return $id!==''&&!isset($lecturerIds[$id]);}));
                 $marks = $this->getObject('dbdiscussionassessmentmarks')->getForDiscussion($discussion['id']);
                 $posts = $this->objPost;
+                $assessmentState = $this->getObject('discussionassessmentstate');
                 foreach ($students as $index => $student) {
                         $studentId = (string) ($student['id'] ?? '');
                         $students[$index]['profile'] = array(
@@ -1369,7 +1370,9 @@ class discussion extends controller {
                         );
                         $students[$index]['evidence'] = $posts->getAssessmentEvidence($discussion['id'], $studentId);
                         $students[$index]['mark'] = $marks[$studentId] ?? null;
-                        $students[$index]['ai'] = $this->getObject('dbdiscussionaimarkingjobs')->latest($discussion['id'], $studentId, $this->contextCode, $this->userId, $this->objUser->isAdmin());
+                        $students[$index]['evidence_fingerprint'] = $assessmentState->fingerprint($students[$index]['evidence']);
+                        $students[$index]['needs_review'] = $assessmentState->needsReview($students[$index]['mark'], $students[$index]['evidence']);
+                        $students[$index]['ai'] = $this->getObject('dbdiscussionaimarkingjobs')->latest($discussion['id'], $studentId, $this->contextCode, $this->userId, $this->objUser->isAdmin(), $students[$index]['evidence']);
                         $students[$index]['ai_status'] = $this->getObject('dbdiscussionaimarkingjobs')->latestStatus($discussion['id'], $studentId, $this->contextCode);
                         $students[$index]['save_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'save'));
                         $students[$index]['ai_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'ai'));
@@ -1392,12 +1395,16 @@ class discussion extends controller {
                 $discussionId=trim((string)$this->getParam('id'));$studentId=trim((string)$this->getParam('student_id'));
                 if (!$this->validManagementMutation($this->markCsrfContext($discussionId,$studentId,'save'))) { return $this->markingFailure($discussionId,'Invalid or expired review request.','invalidrequest'); }
                 if (!$this->isContextStudent($studentId)) { return $this->markingFailure($discussionId,'This learner is not in the active course.','invalidstudent'); }
+                $assessmentState=$this->getObject('discussionassessmentstate');
+                $evidence=$this->objPost->getAssessmentEvidence($discussionId,$studentId);
+                $evidenceFingerprint=$assessmentState->fingerprint($evidence);
+                if(!hash_equals($evidenceFingerprint,(string)$this->getParam('evidence_fingerprint',''))){return $this->markingFailure($discussionId,'Contributions changed while this review was open. Reload the page and review the latest evidence before saving.','evidencechanged');}
                 $rubric=$this->getObject('discussiondefaultrubric')->getStructuredRubric();if(!is_array($rubric)){return $this->markingFailure($discussionId,'The marking rubric is unavailable.','rubricunavailable');}
                 $scores=(array)$this->getParam('criterion',array());$review=array();$total=0;
                 foreach($rubric['criteria'] as $index=>$criterion){$maximum=(float)$criterion['maximumMark'];$rawScore=$scores[$index]??null;$score=filter_var($rawScore,FILTER_VALIDATE_FLOAT);if($rawScore===null||$rawScore===''||$score===false){return $this->markingFailure($discussionId,'Enter a score for every rubric criterion before saving.','incompletereview');}$score=max(0,min($maximum,(float)$score));$review[]=array('objective'=>$criterion['objective'],'score'=>$score,'maximumMark'=>$maximum);$total+=$score;}
                 $discussion=$this->objDiscussion->getDiscussion($discussionId);$maximum=max(1,(float)($discussion['assessment_total_mark']??100));$mark=($total/100)*$maximum;$feedback=mb_substr(trim((string)$this->getParam('feedback','')),0,2000);$aiJobId=trim((string)$this->getParam('ai_job_id',''))?:null;
-                if($aiJobId!==null){$job=$this->getObject('dbdiscussionaimarkingjobs')->getScoped($aiJobId,$this->contextCode,$this->userId,$this->objUser->isAdmin());if(!is_array($job)||(string)$job['discussion_id']!==$discussionId||(string)$job['student_id']!==$studentId||$job['status']!=='completed'){$aiJobId=null;}}
-                $saved=$this->getObject('dbdiscussionassessmentmarks')->saveMark($discussionId,$studentId,$mark,$feedback,$this->userId,json_encode($review),$aiJobId);
+                if($aiJobId!==null){$job=$this->getObject('dbdiscussionaimarkingjobs')->getScoped($aiJobId,$this->contextCode,$this->userId,$this->objUser->isAdmin());if(!is_array($job)||(string)$job['discussion_id']!==$discussionId||(string)$job['student_id']!==$studentId||$job['status']!=='completed'||!$assessmentState->jobMatches($job,$evidence)){$aiJobId=null;}}
+                $saved=$this->getObject('dbdiscussionassessmentmarks')->saveMark($discussionId,$studentId,$mark,$feedback,$this->userId,json_encode($review),$aiJobId,$evidenceFingerprint);
                 if(!$saved){return $this->markingFailure($discussionId,'The reviewed mark could not be saved.','marksavefailed');}
                 if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>true,'message'=>'Reviewed mark saved.','studentId'=>$studentId,'mark'=>$mark,'maximum'=>$maximum,'csrfToken'=>$this->csrf->issue($this->markCsrfContext($discussionId,$studentId,'save'))));}
                 return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>'marksaved'));
@@ -1426,7 +1433,17 @@ class discussion extends controller {
 
         private function wantsMarkingJson(){return (string)$this->getParam('response_format','')==='json'||str_contains(strtolower((string)($_SERVER['HTTP_ACCEPT']??'')),'application/json');}
         private function sendMarkingJson($payload,$status=200){http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo json_encode($payload,JSON_UNESCAPED_SLASHES);die();}
-        private function markingFailure($discussionId,$message,$code){if($this->wantsMarkingJson()){$this->sendMarkingJson(array('ok'=>false,'message'=>$message,'code'=>$code),400);}return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>$code));}
+        private function markingFailure($discussionId,$message,$code){
+                if($this->wantsMarkingJson()){
+                        $payload=array('ok'=>false,'message'=>$message,'code'=>$code);
+                        $action=strtolower((string)$this->getParam('action',''));
+                        if($action==='requestdiscussionaibatch'){$context=$this->markBatchCsrfContext($discussionId);}
+                        else{$context=$this->markCsrfContext($discussionId,(string)$this->getParam('student_id',''),$action==='requestdiscussionaimark'?'ai':'save');}
+                        $payload['csrfToken']=$this->csrf->issue($context);
+                        $this->sendMarkingJson($payload,400);
+                }
+                return $this->nextAction('markdiscussion',array('id'=>$discussionId,'message'=>$code));
+        }
 
         /** Confirm the target is currently a learner in the active course. */
         private function isContextStudent($studentId) {
@@ -2401,27 +2418,17 @@ class discussion extends controller {
         /** Validate the complete parent/topic/discussion relationship for a reply. */
         private function replyTargetBelongsToActiveScope() {
                 $parent = trim((string) $this->getParam('parent', ''));
-                $topic = trim((string) $this->getParam('topicid', ''));
-                $discussion = trim((string) $this->getParam(
-                        'discussionid',
-                        $this->getParam('discussion_id', '')
-                ));
-                foreach (array($parent, $topic, $discussion) as $identifier) {
-                        if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $identifier) !== 1) {
-                                return false;
-                        }
+                if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $parent) !== 1) {
+                        return false;
                 }
-                $parentRecord = $this->objPost->getRow('id', $parent);
-                $discussionRecord = $this->objDiscussion->getDiscussion($discussion);
-                return is_array($parentRecord)
-                        && is_array($discussionRecord)
-                        && isset($parentRecord['topic_id'], $parentRecord['discussion_id'])
-                        && hash_equals($topic, (string) $parentRecord['topic_id'])
-                        && hash_equals($discussion, (string) $parentRecord['discussion_id'])
-                        && isset($discussionRecord['discussion_context'])
+                // Topic and discussion are derived from this parent during save;
+                // never trust duplicate relationship identifiers from the browser.
+                $resource = $this->objPost->getPostDiscussionDetails($parent);
+                return is_array($resource)
+                        && isset($resource['discussion_context'])
                         && hash_equals(
                                 (string) $this->contextCode,
-                                (string) $discussionRecord['discussion_context']
+                                (string) $resource['discussion_context']
                         );
         }
 
