@@ -107,6 +107,7 @@ class block_newtopic extends ChisimbaObject {
         $addTable = $this->getObject('htmltable', 'htmlelements');
         $addTable->width = '99%';
         $addTable->cellpadding = 10;
+        $addTable->cssClass = 'discussion-compose';
         //title
         $titleInput = new textinput('title');
         $titleInput->size = 50;
@@ -134,15 +135,11 @@ class block_newtopic extends ChisimbaObject {
             $discussionType->addOption($element['id'], $element['type_name']);
         }
         $counter = 0;
-        $objIcon = & $this->getObject('geticon', 'htmlelements');
-
         $objRadioButton = new radio('discussionType');
         $objRadioButton->setTableColumns(3);
         $objRadioButton->setBreakSpace('table');
         foreach ($discussionTypes as $element) {
-            $objIcon->setIcon($element['type_icon'], NULL, 'icons/discussion/');
-
-            $objRadioButton->addOption($element['id'], $objIcon->show() . ' ' . htmlentities($element['type_name']));
+            $objRadioButton->addOption($element['id'], htmlentities($element['type_name']));
 
             //$objRadioButton->extra = 'onclick="changeLabel();"';
         }
@@ -169,10 +166,8 @@ class block_newtopic extends ChisimbaObject {
 
             $sticky = new radio('stickytopic');
 
-            $objIcon->setIcon('sticky_yes');
-            $sticky->addOption('1', $objIcon->show() . $this->objLanguage->languageText('word_yes'));
-            $objIcon->setIcon('sticky_no');
-            $sticky->addOption('0', $objIcon->show() . $this->objLanguage->languageText('word_no'));
+            $sticky->addOption('1', $this->objLanguage->languageText('word_yes'));
+            $sticky->addOption('0', $this->objLanguage->languageText('word_no'));
             $sticky->setSelected('0');
             $sticky->setBreakSpace(' &nbsp; ');
             $addTable->addCell($sticky->show());
@@ -298,13 +293,13 @@ class block_newtopic extends ChisimbaObject {
         $addTable->addCell(' ');
 
         $submitButton = new button('submitform', $this->objLanguage->languageText('word_submit'));
-        $submitButton->value = $this->objLanguage->languageText('phrase_save','system');
-        $submitButton->cssClass = 'save';
+        $submitButton->value = $this->objLanguage->languageText('word_send', 'system', 'Send');
+        $submitButton->cssClass = 'button';
 //$submitButton->setToSubmit();
         $submitButton->extra = ' onclick="SubmitForm()"';
 
         $cancelButton = new button('cancel', $this->objLanguage->languageText('word_cancel'));
-        $cancelButton->cssClass = 'cancel';
+        $cancelButton->cssClass = 'button chisimba-button-secondary';
         $returnUrl = $this->uri(array('action' => 'discussion', 'id' => $discussionId, 'type' => $discussiontype));
         $cancelButton->setOnClick("window.location='$returnUrl'");
 

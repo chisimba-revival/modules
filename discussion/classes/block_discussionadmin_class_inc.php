@@ -95,6 +95,7 @@ class block_discussionadmin extends ChisimbaObject {
                 $table->cellpadding = '5';
                 $table->border = '0';
                 $table->width = '98%';
+                $table->cssClass = 'chisimba-table discussion-admin-table';
                 $table->startHeaderRow();
 //                $table->addCell('<p style=" layout-flow : vertical-ideographic;">Default</p>');
                 $table->addHeaderCell($this->objLanguage->languageText('mod_discussion_wordName', 'discussion'));
@@ -129,7 +130,7 @@ class block_discussionadmin extends ChisimbaObject {
 
                         $editLink = new link($this->uri(array('module' => 'discussion', 'action' => 'editdiscussion', 'id' => $discussion['id'])));
                         $editLink->link = $this->objLanguage->languageText('word_edit', 'system');
-                        $editLink->title = $this->objLanguage->languageText('mod_discussion_editDiscussionSettings', 'discussion');
+                        $editLink->title = $this->objLanguage->languageText('mod_discussion_editdiscussionsettings', 'discussion', 'Edit discussion settings');
 
                         $table->addCell($discussionLinkStr . $discussionLink->show() . ' (' . $editLink->show() . ')');
 
@@ -263,7 +264,7 @@ class block_discussionadmin extends ChisimbaObject {
                         $objIcon->setIcon('edit');
                         $editLink->link = $objIcon->show();
                         $editLink->alt = $this->objLanguage->languageText('word_edit', 'discussion');
-                        $editLink->title = $this->objLanguage->languageText('mod_discussion_editDiscussionSettings', 'discussion');
+                        $editLink->title = $this->objLanguage->languageText('mod_discussion_editdiscussionsettings', 'discussion', 'Edit discussion settings');
 
                         $editDeleteLink = $editLink->show();
 
@@ -286,8 +287,8 @@ class block_discussionadmin extends ChisimbaObject {
                 
                 $createLink = new link($this->uri(array('module' => 'discussion', 'action' => 'creatediscussion')));
                 $objIcon->setIcon('notes');
-                $createLink->cssClass = "sexybutton";
-                $createLink->link = $objIcon->show().'<br/><label class="menu" >'.$this->objLanguage->languageText('mod_discussion_createNewDiscussion', 'discussion', 'Create new discussion').'</label>';
+                $createLink->cssClass = 'button';
+                $createLink->link = $this->objLanguage->languageText('mod_discussion_createNewDiscussion', 'discussion', 'Create new discussion');
                 
 //                $backToDiscussionListLink = new link($this->uri(NULL));
 //                $backToDiscussionListLink->link = $this->objLanguage->languageText('mod_discussion_backtodiscussionindex', 'discussion');
@@ -299,7 +300,7 @@ class block_discussionadmin extends ChisimbaObject {
 
                 $form->addToForm('<fieldset>');
 
-                $discussionLabel = new label('<nobr>* ' . $this->objLanguage->languageText('mod_discussion_defaultDiscussion', 'discussion', 'Default Discussion') . ' &nbsp;&nbsp;/&nbsp;&nbsp; ' . $this->objLanguage->languageText('mod_discussion_setDefaultDiscussion', 'discussion', 'Set defualt discussion') . ':</nobr>', 'input_discussion');
+                $discussionLabel = new label('* ' . $this->objLanguage->languageText('mod_discussion_defaultDiscussion', 'discussion', 'Default discussion') . ' / ' . $this->objLanguage->languageText('mod_discussion_setDefaultDiscussion', 'discussion', 'Set default discussion') . ':', 'input_discussion');
                 $form->addToForm($discussionLabel->show(), 100);
 
                 $discussionType = new dropdown('discussion');
@@ -315,7 +316,7 @@ class block_discussionadmin extends ChisimbaObject {
                 $form->addToForm($discussionType->show());
 
                 $submitButton = new button('submitform', $this->objLanguage->languageText('word_submit', 'system', 'Submit'));
-                $submitButton->cssClass = 'save';
+                $submitButton->cssClass = 'button';
                 $submitButton->setToSubmit();
 
                 $form->addToForm($submitButton->show());

@@ -1298,7 +1298,11 @@ class dbPost extends dbTable {
          */
         function getLastPost($discussion) {
                 $sql = 'SELECT tbl_discussion_post_text. * , tbl_discussion_post.topic_id, tbl_users.firstname, tbl_users.surname, tbl_users.username
-        FROM tbl_discussion_post INNER JOIN tbl_discussion_post_text ON ( tbl_discussion_post_text.post_id = tbl_discussion_post.id AND tbl_discussion_post_text.original_post=\'1\')
+        FROM tbl_discussion_post INNER JOIN tbl_discussion_post_text ON (tbl_discussion_post_text.id = (
+            SELECT latest_text.id FROM tbl_discussion_post_text AS latest_text
+            WHERE latest_text.post_id = tbl_discussion_post.id
+            ORDER BY latest_text.original_post DESC, latest_text.dateLastUpdated DESC LIMIT 1
+        ))
         INNER JOIN tbl_discussion_topic ON ( tbl_discussion_post.topic_id = tbl_discussion_topic.id )
         LEFT  JOIN tbl_users ON ( tbl_discussion_post.userId = tbl_users.userId )
         WHERE tbl_discussion_topic.discussion_id = \'' . $discussion . '\'

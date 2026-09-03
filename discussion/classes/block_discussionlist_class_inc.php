@@ -60,6 +60,7 @@ class block_discussionlist extends ChisimbaObject {
                 $tblclass->cellpadding = '5';
                 $tblclass->border = '0';
                 $tblclass->width = '100%';
+                $tblclass->cssClass = 'discussion-forum-list';
 //                $tblclass->startHeaderRow();
 //                $tblclass->addHeaderCell('&nbsp;', 10, 'center');
 //                $tblclass->addHeaderCell('<strong>' . $this->objLanguage->languageText('mod_discussion', 'discussion') . '</strong>', '40%');
@@ -83,9 +84,8 @@ class block_discussionlist extends ChisimbaObject {
                 if ($this->objUser->isCourseAdmin($this->contextCode)) {
                         $administrationLink = new link($this->uri(array('module' => 'discussion', 'action' => 'administration')));
 //                        $administrationLink->link = $this->objLanguage->languageText('mod_discussion_discussionadministration', 'discussion');
-                        $administrationLink->cssClass = "sexybutton";
-                        $this->objIcon->setIcon('settings');
-                        $administrationLink->link = $this->objIcon->show() . "<br/><label class='menu' >{$this->objLanguage->languageText('mod_discussion_discussionadministration', 'discussion')} </label>";
+                        $administrationLink->cssClass = 'button chisimba-button-secondary';
+                        $administrationLink->link = $this->objLanguage->languageText('mod_discussion_discussionadministration', 'discussion');
                         $admintable->addHeaderCell($administrationLink->show(), NULL, NULL, 'center', NULL);
 //                        $homeForm->addToForm('<br/>' . $administrationLink->show());
                 }

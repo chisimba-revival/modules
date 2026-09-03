@@ -1,0 +1,65 @@
+.discussion_main,
+.discussion-compose,
+.discussion-admin-table {
+    width: 100% !important;
+}
+
+.discussion-forum-list {
+    border-collapse: separate;
+    border-spacing: 0 .75rem;
+}
+
+.discussion-forum-list > tbody > tr {
+    background: var(--chisimba-surface, #fff);
+    box-shadow: var(--chisimba-shadow-sm, 0 1px 3px rgb(15 23 42 / 12%));
+}
+
+.discussion-forum-list td {
+    padding: 1rem;
+    border-block: 1px solid var(--chisimba-border, #d9e0e8);
+}
+
+.discussion-compose {
+    display: block;
+}
+
+.discussion-compose > tbody,
+.discussion-compose > tbody > tr,
+.discussion-compose > tbody > tr > td {
+    display: block;
+    width: 100% !important;
+}
+
+.discussion-compose > tbody > tr {
+    margin-block: 0 1.25rem;
+}
+
+.discussion-compose > tbody > tr > td:first-child {
+    margin-block-end: .4rem;
+    font-weight: 700;
+}
+
+.discussion-compose input[type="text"],
+.discussion-compose select,
+.discussion-compose textarea {
+    max-width: 100%;
+}
+
+.discussion-admin-table {
+    min-width: 58rem;
+}
+
+.discussion-admin-table td,
+.discussion-admin-table th {
+    padding: .7rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 48rem) {
+    .discussion-forum-list > tbody > tr,
+    .discussion-forum-list td {
+        display: block;
+        width: 100% !important;
+        text-align: left !important;
+    }
+}
