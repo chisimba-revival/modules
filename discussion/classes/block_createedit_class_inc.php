@@ -419,7 +419,7 @@ if(!document.getElementById && document.all) {
             . $escape($value('discussion_name')) . '" autocomplete="off"><p class="chisimba-field-help">Use a short name that tells people what belongs here.</p></div><div class="chisimba-form-field"><label for="discussion-description">Description</label><textarea id="discussion-description" name="description" rows="6" maxlength="2000" required>'
             . $escape($value('discussion_description')) . '</textarea><p class="chisimba-field-help">Explain the purpose of this discussion. Plain text only.</p></div></section><section aria-labelledby="discussion-settings-heading"><h2 id="discussion-settings-heading">Participation and access</h2><div class="discussion-settings-grid">'
             . $settings . $archive . '</div></section><div class="chisimba-form-actions discussion-editor__actions"><button class="button chisimba-button-compact" type="submit">'
-            . $icons->render('save', array('decorative' => true)) . '<span>' . ($editing ? 'Save changes' : 'Create discussion') . '</span></button><a class="button chisimba-button-secondary chisimba-button-compact" href="'
+            . $icons->render($editing ? 'save' : 'plus', array('decorative' => true)) . '<span>' . ($editing ? 'Save changes' : 'Create discussion') . '</span></button><a class="button chisimba-button-secondary chisimba-button-compact" href="'
             . $escape($cancelUrl) . '">' . $icons->render('x', array('decorative' => true)) . '<span>Cancel</span></a></div></form></main>';
     }
 

@@ -24,7 +24,7 @@ $contracts = array(
         && strpos($controller, "mb_substr(trim((string) \$this->getParam('description')), 0, 2000)") !== false,
     'boolean settings use an allow-list' => strpos($controller, "in_array(\$value, array('Y', 'N'), true)") !== false,
     'archive date is parsed strictly' => strpos($controller, "createFromFormat('!Y-m-d'") !== false,
-    'skin icon buttons are used' => strpos($block, "->render('save'") !== false
+    'skin icon buttons are used' => strpos($block, "\$editing ? 'save' : 'plus'") !== false
         && strpos($block, 'chisimba-button-compact') !== false,
     'form layout is responsive' => strpos($css, '.discussion-settings-grid') !== false
         && strpos($css, 'grid-template-columns: 1fr;') !== false,
