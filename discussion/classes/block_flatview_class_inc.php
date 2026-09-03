@@ -336,8 +336,104 @@ class block_flatview extends ChisimbaObject {
                 return $elements;
         }
 
+        /**
+         * Build the current topic journey without legacy layout tables or bitmap actions.
+         *
+         * The existing post renderer remains the source of reply, attachment and rating
+         * behaviour; this method gives that behaviour a semantic, responsive shell.
+         *
+         * @return string
+         */
+        private function buildModernTopic() {
+                $escape = static function ($value) {
+                        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+                };
+                $topicId = trim((string) $this->getParam('id'));
+                $post = $this->objPost->getRootPost($topicId);
+                if (!is_array($post)) {
+                        return '<main class="chisimba-workspace discussion-workspace"><section class="chisimba-card discussion-empty-state"><h1>Topic unavailable</h1><p>This topic could not be found.</p></section></main>';
+                }
+                $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
+                if (!is_array($discussion)) {
+                        return '<main class="chisimba-workspace discussion-workspace"><section class="chisimba-card discussion-empty-state"><h1>Discussion unavailable</h1><p>This discussion could not be found.</p></section></main>';
+                }
+
+                $discussionType = trim((string) $this->getParam('type', 'context')) ?: 'context';
+                $discussionLocked = $this->objDiscussion->checkIfDiscussionLocked($post['discussion_id']);
+                $topicLocked = ($post['status'] ?? '') === 'CLOSE';
+                if ($discussionLocked || $topicLocked) {
+                        $this->objPost->repliesAllowed = FALSE;
+                        $this->objPost->editingPostsAllowed = FALSE;
+                        $this->objPost->discussionLocked = (bool) $discussionLocked;
+                } elseif ($this->objUser->isCourseAdmin($this->contextCode)) {
+                        $this->objPost->showModeration = TRUE;
+                }
+                if (($discussion['ratingsenabled'] ?? 'N') === 'Y') {
+                        $this->objPost->discussionRatingsArray = $this->objDiscussionRatings->getDiscussionRatings($post['discussion_id']);
+                        $this->objPost->showRatings = TRUE;
+                } else {
+                        $this->objPost->showRatings = FALSE;
+                }
+
+                $icons = $this->getObject('iconservice', 'ui');
+                $discussionUrl = $this->uri(array('action'=>'discussion','id'=>$post['discussion_id'],'type'=>$discussionType));
+                $actions = '<a class="button chisimba-button-secondary chisimba-button-compact" href="' . $escape($discussionUrl) . '">'
+                        . $icons->render('arrow-left', array('decorative'=>true)) . '<span>Back to discussion</span></a>';
+                if (!$discussionLocked && $this->objUser->isCourseAdmin($this->contextCode) && $discussionType !== 'workgroup' && $this->objUser->isLoggedIn()) {
+                        $actions .= '<a class="button chisimba-button-secondary chisimba-button-compact" href="'
+                                . $escape($this->uri(array('action'=>'moderatetopic','id'=>$post['topic_id'],'type'=>$discussionType))) . '">'
+                                . $icons->render('shield-check', array('decorative'=>true)) . '<span>Moderate topic</span></a>';
+                        $actions .= '<a class="button chisimba-button-compact" href="'
+                                . $escape($this->uri(array('action'=>'newtopic','id'=>$post['discussion_id'],'type'=>$discussionType))) . '">'
+                                . $icons->render('plus', array('decorative'=>true)) . '<span>Start a new topic</span></a>';
+                }
+
+                $messageMap = array(
+                        'save' => 'Your topic was posted.',
+                        'postupdated' => 'Your post was updated.',
+                        'replysaved' => 'Your reply was posted.',
+                        'deletesuccess' => 'The post was removed.',
+                        'subscriptionupdated' => 'Notification preferences updated.'
+                );
+                $messageKey = (string) $this->getParam('message');
+                $notice = isset($messageMap[$messageKey])
+                        ? '<div class="chisimba-notice chisimba-notice--success" role="status">' . $escape($messageMap[$messageKey]) . '</div>'
+                        : '';
+                if ($discussionLocked || $topicLocked) {
+                        $notice .= '<div class="chisimba-notice" role="status">This topic is read-only because '
+                                . ($discussionLocked ? 'the discussion' : 'the topic') . ' is locked.</div>';
+                }
+
+                $subscription = '';
+                if (($discussion['subscriptions'] ?? 'N') === 'Y' && $this->objUser->isLoggedIn()) {
+                        $discussionSubscribed = $this->dbDiscussionSubscriptions->isSubscribedToDiscussion($discussion['id'], $this->objUser->userId());
+                        $topicSubscribed = $this->dbDiscussionPost->isSubscribedToTopic($topicId, $this->objUser->userId());
+                        $selected = $discussionSubscribed ? 'subscribetoall' : ($topicSubscribed ? 'subscribetopic' : 'nosubscription');
+                        $choice = static function ($value, $label) use ($selected, $escape) {
+                                return '<label class="discussion-choice"><input type="radio" name="subscription" value="' . $escape($value) . '"'
+                                        . ($selected === $value ? ' checked' : '') . '><span>' . $escape($label) . '</span></label>';
+                        };
+                        $subscription = '<details class="chisimba-card discussion-topic-notifications"><summary>'
+                                . $icons->render('bell', array('decorative'=>true)) . '<span>Notification preferences</span></summary><form method="post" action="'
+                                . $escape($this->uri(array('action'=>'usersubscription'))) . '"><input type="hidden" name="discussion_id" value="'
+                                . $escape($discussion['id']) . '"><input type="hidden" name="topic_id" value="' . $escape($topicId) . '"><fieldset><legend>Notify me about this conversation</legend><div class="discussion-choice-grid">'
+                                . $choice('nosubscription', 'Do not notify me') . $choice('subscribetopic', 'Replies to this topic')
+                                . $choice('subscribetoall', 'All activity in this discussion') . '</div></fieldset><div class="chisimba-form-actions"><button class="button chisimba-button-compact" type="submit">'
+                                . $icons->render('save', array('decorative'=>true)) . '<span>Save preferences</span></button></div></form></details>';
+                }
+
+                $thread = $this->objPost->displayFlatThread($topicId);
+                $tangents = ($post['topic_tangent_parent'] ?? '0') === '0' ? $this->objTopic->showTangentsTable($topicId) : '';
+                $this->title = $this->objLanguage->languageText('mod_discussion_replytotopic', 'discussion') . $post['post_title'];
+                return '<main class="chisimba-workspace chisimba-flow discussion-workspace discussion-topic-modern"><header class="chisimba-page-header chisimba-card discussion-topic-modern__header"><div><p class="chisimba-eyebrow">'
+                        . $escape($discussion['discussion_name']) . '</p><h1>' . $escape(stripslashes($post['post_title']))
+                        . '</h1><p>Follow the conversation, contribute evidence and respond to other participants.</p></div><div class="chisimba-form-actions discussion-topic-modern__actions">'
+                        . $actions . '</div></header>' . $notice . $subscription . $tangents
+                        . '<section class="discussion-topic-modern__posts" aria-label="Topic posts">' . $thread . '</section></main>';
+        }
+
         function show() {
-                return $this->buildform();
+                return $this->buildModernTopic();
         }
 
 }

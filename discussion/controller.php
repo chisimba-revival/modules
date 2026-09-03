@@ -1273,8 +1273,11 @@ class discussion extends controller {
                 // Needs to be worked on
                 $moderation = 'N';
                 $discussion = $this->objDiscussion->insertSingle($discussion_context, $discussion_workgroup, $discussion_name, $discussion_description, $defaultDiscussion, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation);
-                $this->saveAssessmentSettings($discussion);
-                return $this->nextAction('administration', array('message' => 'discussioncreated', 'id' => $discussion));
+                $assessmentSaved = $this->saveAssessmentSettings($discussion);
+                return $this->nextAction('administration', array(
+                        'message' => $assessmentSaved ? 'discussioncreated' : 'assessmentsettingsfailed',
+                        'id' => $discussion
+                ));
         }
 
         /**
@@ -1327,9 +1330,12 @@ class discussion extends controller {
                                 $archiveDate = $candidate;
                         }
                 }
-                $this->objDiscussion->updateSingle($discussion_id, $discussion_name, $discussion_description, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation, $archiveDate);
-                $this->saveAssessmentSettings($discussion_id);
-                return $this->nextAction('administration', array('message' => 'discussionupdated', 'id' => $discussion_id));
+                $discussionSaved = $this->objDiscussion->updateSingle($discussion_id, $discussion_name, $discussion_description, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation, $archiveDate);
+                $assessmentSaved = $this->saveAssessmentSettings($discussion_id);
+                return $this->nextAction('administration', array(
+                        'message' => $discussionSaved && $assessmentSaved ? 'discussionupdated' : 'assessmentsettingsfailed',
+                        'id' => $discussion_id
+                ));
         }
 
         /** Show the manual and AI-assisted marking workspace. */
@@ -1356,11 +1362,15 @@ class discussion extends controller {
                         $students[$index]['save_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'save'));
                         $students[$index]['ai_csrf'] = $this->csrf->issue($this->markCsrfContext($discussion['id'], $studentId, 'ai'));
                 }
-                $this->setVar('discussionAssessment', $discussion);
-                $this->setVar('discussionStudents', $students);
-                $this->setVar('discussionRubric', $this->getObject('discussiondefaultrubric')->getStructuredRubric());
-                $this->setVar('discussionAiAvailable', $this->getObject('discussionaimarker')->isAvailable());
-                return 'discussion_marking.php';
+                $rubric = $this->getObject('discussiondefaultrubric')->getStructuredRubric();
+                $aiAvailable = $this->getObject('discussionaimarker')->isAvailable();
+                $markingMode = true;
+                $this->setVarByRef('discussionAssessment', $discussion);
+                $this->setVarByRef('discussionStudents', $students);
+                $this->setVarByRef('discussionRubric', $rubric);
+                $this->setVarByRef('discussionAiAvailable', $aiAvailable);
+                $this->setVarByRef('discussionMarkingMode', $markingMode);
+                return 'discussion_administration.php';
         }
 
         /** Save a lecturer-reviewed rubric result. */
@@ -2305,7 +2315,7 @@ class discussion extends controller {
 
         /** Derive a server-controlled CSRF namespace for one marking action. */
         private function markCsrfContext($discussionId,$studentId,$operation) {
-                return 'discussion_mark:'.hash('sha256',(string)$discussionId.'|'.(string)$studentId.'|'.(string)$operation);
+                return 'discussion_mark_'.hash('sha256',(string)$discussionId.'|'.(string)$studentId.'|'.(string)$operation);
         }
 
         /** Return an allow-listed Y/N request value. */
@@ -2455,9 +2465,7 @@ class discussion extends controller {
          */
         function subscribeUserToDiscussion() {
                 $discussion_id = $this->getParam('discussion_id');
-                $this->objDiscussionSubscriptions->subscribeUserToDiscussion($discussion_id, $this->objUser->userId());
-                echo "<h1>discussioned</h1>";
-//                die();
+                return $this->objDiscussionSubscriptions->subscribeUserToDiscussion($discussion_id, $this->objUser->userId());
         }
 
         /**
@@ -2468,10 +2476,7 @@ class discussion extends controller {
                 $discussion_id = $this->getParam('discussion_id');
                 $objTopic = &$this->getObject('dbtopicsubscriptions', 'discussion');
                 $this->objDiscussionSubscriptions->unsubscribeUserFromDiscussion($discussion_id, $this->objUser->userId());
-                if ($objTopic->subscribeUserToTopic($topic_id, $this->objUser->userId())) {
-                        echo "<h1>topiced</h1>";
-                }
-//                die();
+                return $objTopic->subscribeUserToTopic($topic_id, $this->objUser->userId());
         }
 
         /**
@@ -2482,32 +2487,29 @@ class discussion extends controller {
                 $topic_id = $this->getParam('topic_id');
                 $objTopic = &$this->getObject('dbtopicsubscriptions', 'discussion');
                 $objTopic->unsubscribeUserFromTopic($this->objUser->userId(), $topic_id);
-                $this->objDiscussionSubscriptions->unsubscribeUserFromDiscussion($discussion_id, $this->objUser->userId());
-                echo "<h1>unsubscribed</h1>";
+                return $this->objDiscussionSubscriptions->unsubscribeUserFromDiscussion($discussion_id, $this->objUser->userId());
         }
 
         /**
          * Remove the user from the subscription list
          */
         function usersubscription() {
-//                if ($this->objUser->isLoggedIn()) {
-                //get the the user's choice
+                $topicId = trim((string) $this->getParam('topic_id'));
                 $userChoice = $this->getParam('subscription');
                 if (!empty($userChoice)) {
                         switch ($userChoice) {
                                 case 'nosubscription':
-                                        return $this->unsubscribeUser();
+                                        $this->unsubscribeUser();
                                         break;
                                 case 'subscribetopic':
-//                                $topic_id = $this->getParam('topic_id');
-                                        return $this->subscribeUserToTopic();
+                                        $this->subscribeUserToTopic();
                                         break;
                                 case 'subscribetoall':
-                                        return $this->subscribeUserToDiscussion();
+                                        $this->subscribeUserToDiscussion();
                                         break;
                         }
-//                }
                 }
+                return $this->nextAction('flatview', array('id'=>$topicId, 'message'=>'subscriptionupdated'));
         }
 
         /**

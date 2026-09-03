@@ -1,4 +1,8 @@
 <?php
+if (!empty($discussionMarkingMode)) {
+    include __DIR__ . '/discussion_marking.php';
+    return;
+}
 
 //Sending display to 1 column layout
 //ob_start();

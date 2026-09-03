@@ -359,9 +359,13 @@ class block_discussionadmin extends ChisimbaObject {
                         'discussiondeleted' => 'Discussion deleted.'
                 );
                 $messageKey = (string) $this->getParam('message');
-                $notice = isset($messageMap[$messageKey])
-                        ? '<div class="chisimba-notice chisimba-notice--success" role="status">' . $escape($messageMap[$messageKey]) . '</div>'
-                        : '';
+                if ($messageKey === 'assessmentsettingsfailed') {
+                        $notice = '<div class="chisimba-notice chisimba-notice--error" role="alert">The discussion was saved, but its assessment settings could not be stored. Ask an administrator to apply the latest Discussion module update.</div>';
+                } else {
+                        $notice = isset($messageMap[$messageKey])
+                                ? '<div class="chisimba-notice chisimba-notice--success" role="status">' . $escape($messageMap[$messageKey]) . '</div>'
+                                : '';
+                }
 
                 $default = $this->objDiscussion->getDefaultDiscussion($this->contextCode);
                 $defaultOptions = '';

@@ -325,7 +325,7 @@ class dbdiscussion extends dbTable {
          */
         function updateSingle($discussion_id, $discussion_name, $discussion_description, $discussion_visible, $discussion_locked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation, $archiveDate) {
 
-                $this->update('id', $discussion_id, array(
+                $updated = $this->update('id', $discussion_id, array(
                     'discussion_name' => $discussion_name,
                     'discussion_description' => $discussion_description,
                     'discussion_visible' => $discussion_visible,
@@ -367,16 +367,54 @@ class dbdiscussion extends dbTable {
 
                 // Add to Index
                 $objIndexData->luceneIndex($docId, $docDate, $url, $title, $contents, $teaser, $module, $userId, NULL, NULL, $context);
+                return $updated !== false;
         }
 
         /** Save course-content and assessment metadata owned by Discussion. */
         public function saveAssessmentSettings($discussionId, $courseActivity, $assessmentEnabled, $classification, $totalMark) {
-                return $this->update('id', $discussionId, array(
+                $settings = array(
                         'course_activity_enabled' => $courseActivity,
                         'assessment_enabled' => $assessmentEnabled,
                         'assessment_classification' => $classification,
                         'assessment_total_mark' => $totalMark
-                ));
+                );
+                // Older installations may already have the new module version
+                // recorded even though the installer did not add fields to the
+                // existing table. Check and repair that partial upgrade before
+                // issuing an update that refers to the new fields.
+                if (!$this->ensureAssessmentColumns()) {
+                        return false;
+                }
+                return $this->update('id', $discussionId, $settings);
+        }
+
+        /** Ensure fields introduced for assessed Discussions exist. */
+        private function ensureAssessmentColumns() {
+                $columns = array(
+                        'course_activity_enabled' => "CHAR(1) NOT NULL DEFAULT 'N'",
+                        'assessment_enabled' => "CHAR(1) NOT NULL DEFAULT 'N'",
+                        'assessment_classification' => "VARCHAR(16) NOT NULL DEFAULT 'formative'",
+                        'assessment_total_mark' => "DOUBLE NOT NULL DEFAULT 100"
+                );
+                foreach ($columns as $name => $definition) {
+                        $existing = $this->query("SHOW COLUMNS FROM tbl_discussion LIKE '" . $name . "'");
+                        if (is_array($existing) && count($existing) > 0) {
+                                continue;
+                        }
+                        if ($this->query('ALTER TABLE tbl_discussion ADD COLUMN ' . $name . ' ' . $definition) === false) {
+                                return false;
+                        }
+                }
+                $tables = array(
+                        "CREATE TABLE IF NOT EXISTS tbl_discussion_assessment_marks (id VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, user_id VARCHAR(25) NOT NULL, mark DOUBLE NOT NULL, feedback VARCHAR(2000) NULL, rubric_json LONGTEXT NULL, ai_job_id VARCHAR(32) NULL, marker_id VARCHAR(25) NOT NULL, date_created DATETIME NULL, date_updated DATETIME NULL, PRIMARY KEY (id), INDEX tbl_discussion_assessment_marks_idx (discussion_id, user_id)) CHARACTER SET utf8 COLLATE utf8_general_ci",
+                        "CREATE TABLE IF NOT EXISTS tbl_discussion_ai_marking_jobs (id VARCHAR(32) NOT NULL, contextcode VARCHAR(32) NOT NULL, discussion_id VARCHAR(32) NOT NULL, student_id VARCHAR(25) NOT NULL, requester_id VARCHAR(25) NOT NULL, status VARCHAR(20) NOT NULL, rubric_version VARCHAR(80) NOT NULL, evidence_json LONGTEXT NULL, result_json LONGTEXT NULL, error_code VARCHAR(80) NULL, date_created DATETIME NOT NULL, date_updated DATETIME NOT NULL, date_completed DATETIME NULL, PRIMARY KEY (id), INDEX discussion_ai_jobs_resource (discussion_id, student_id), INDEX discussion_ai_jobs_status (status, date_updated)) CHARACTER SET utf8 COLLATE utf8_general_ci"
+                );
+                foreach ($tables as $statement) {
+                        if ($this->query($statement) === false) {
+                                return false;
+                        }
+                }
+                return true;
         }
 
         /**

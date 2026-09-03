@@ -1,6 +1,7 @@
 <?php
 /** Lecturer-reviewed Discussion marking workspace. @author Derek Keats */
 $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');$icons=$this->getObject('iconservice','ui');$discussion=(array)$discussionAssessment;$rubric=(array)$discussionRubric;$students=(array)$discussionStudents;
+ob_start();
 ?>
 <main class="chisimba-workspace chisimba-flow discussion-workspace discussion-marking">
 <header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Discussion assessment</p><h1><?php echo $e($discussion['discussion_name']??'Marked discussion'); ?></h1><p>Review each learner’s participation and quality evidence. AI suggestions remain editable drafts until you save them.</p></div><a class="button chisimba-button-secondary chisimba-button-compact" href="<?php echo $e($this->uri(array('action'=>'administration'),'discussion')); ?>"><?php echo $icons->render('arrow-left',array('decorative'=>true)); ?><span>Discussion administration</span></a></header>
@@ -13,3 +14,8 @@ $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');$icons
 <div class="discussion-mark-criteria"><?php foreach((array)($rubric['criteria']??array()) as $index=>$criterion): $draft=$suggested[$index]??array();$prior=$savedRubric[$index]??array();$score=$draft['score']??($prior['score']??0); ?><div class="discussion-mark-criterion"><label for="criterion-<?php echo $e($student['id'].'-'.$index); ?>"><?php echo $e($criterion['objective']); ?><span>Maximum <?php echo $e($criterion['maximumMark']); ?></span></label><input id="criterion-<?php echo $e($student['id'].'-'.$index); ?>" type="number" name="criterion[<?php echo $index; ?>]" min="0" max="<?php echo $e($criterion['maximumMark']); ?>" step="0.5" value="<?php echo $e($score); ?>" required><?php if(!empty($draft['rationale'])): ?><p><?php echo $e($draft['rationale']); ?><?php if(!empty($draft['evidencePostIds'])): ?> <strong>Evidence:</strong> <?php foreach((array)$draft['evidencePostIds'] as $postId): if(!isset($evidenceById[(string)$postId]))continue;$item=$evidenceById[(string)$postId]; ?><a href="<?php echo $e($this->uri(array('action'=>'viewtopic','id'=>$item['topicId'],'post'=>$postId),'discussion')); ?>"><?php echo $e($item['title']?:$postId); ?></a> <?php endforeach; ?><?php endif; ?></p><?php endif; ?></div><?php endforeach; ?></div>
 <div class="chisimba-form-field"><label for="feedback-<?php echo $e($student['id']); ?>">Lecturer feedback</label><textarea id="feedback-<?php echo $e($student['id']); ?>" name="feedback" rows="5" maxlength="2000"><?php echo $e($ai['feedback']??($saved['feedback']??'')); ?></textarea></div><div class="chisimba-form-actions"><button class="button chisimba-button-compact" type="submit"><?php echo $icons->render('check',array('decorative'=>true)); ?><span>Save reviewed mark</span></button></div></form></article>
 <?php endforeach; ?></main>
+<?php
+$pageContent = ob_get_contents();
+ob_end_clean();
+$this->setVar('pageContent', $pageContent);
+?>

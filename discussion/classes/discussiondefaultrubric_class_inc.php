@@ -3,7 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class discussiondefaultrubric extends ChisimbaObject
 {
-    const RUBRIC_ID = 'discussion-participation-quality-v1';
+    const RUBRIC_ID = 'discussion-participation-v1';
     public function getStructuredRubric()
     {
         $service=$this->getObject('rubricservice','rubric');
@@ -17,7 +17,7 @@ class discussiondefaultrubric extends ChisimbaObject
     {
         return array(
             'id'=>self::RUBRIC_ID,'contextCode'=>'root','title'=>'Discussion participation and quality',
-            'description'=>'Default evidence-based rubric for the consistency, relevance, reasoning and constructive quality of course discussion contributions.',
+            'description'=>'Evidence-based rubric for consistent, relevant, well-reasoned and constructive discussion.',
             'performances'=>array('Insufficient','Developing','Competent','Excellent'),
             'criteria'=>array(
                 array('objective'=>'Participation, consistency and development','maximumMark'=>25,'levels'=>array('Makes no meaningful contribution.','Contributes rarely or in a concentrated burst with limited continuity.','Contributes regularly across the discussion period, with sound sustained quality or visible improvement.','Sustains timely, purposeful participation at a high standard, or develops meaningfully toward that standard, while helping the conversation progress.')),
