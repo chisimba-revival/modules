@@ -1108,11 +1108,9 @@ class discussion extends controller {
                 $post_text = $this->getParam('message');
                 $language = $this->getParam('lang');
 //                $language = 'en';
-                if (strlen($postParent) == 0) {
-                        $original_post = 1;
-                } else {
-                        $original_post = 0;
-                }
+                // A reply is the original-language version of its own post.
+                // Only translated copies use original_post = 0.
+                $original_post = 1;
                 $level = $parentPostDetails['level'];
                 // Some Server side validation - Redirect Form - Check details of the post
                 // Validation
@@ -2263,7 +2261,8 @@ class discussion extends controller {
                 $parameterMap = array(
                         'savenewtopic' => 'discussion',
                         'setdefaultdiscussion' => 'discussion',
-                        'updatediscussionsetting' => 'discussion_id'
+                        'updatediscussionsetting' => 'discussion_id',
+                        'showeditpostpopup' => 'post_id'
                 );
                 $parameter = isset($parameterMap[$action])
                         ? $parameterMap[$action] : 'id';
@@ -2342,7 +2341,10 @@ class discussion extends controller {
         private function replyTargetBelongsToActiveScope() {
                 $parent = trim((string) $this->getParam('parent', ''));
                 $topic = trim((string) $this->getParam('topicid', ''));
-                $discussion = trim((string) $this->getParam('discussionid', ''));
+                $discussion = trim((string) $this->getParam(
+                        'discussionid',
+                        $this->getParam('discussion_id', '')
+                ));
                 foreach (array($parent, $topic, $discussion) as $identifier) {
                         if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $identifier) !== 1) {
                                 return false;

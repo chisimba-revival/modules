@@ -1771,7 +1771,7 @@ function clearForTangent()
                 $sql = 'SELECT tbl_discussion.* FROM tbl_discussion_post
         INNER JOIN tbl_discussion_topic ON ( tbl_discussion_post.topic_id = tbl_discussion_topic.id)
         INNER JOIN tbl_discussion ON ( tbl_discussion_topic.discussion_id = tbl_discussion.id)
-        WHERE tbl_discussion_topic.id = \'' . $post_id . '\' GROUP BY tbl_discussion_post.id LIMIT 1';
+        WHERE tbl_discussion_post.id = \'' . $post_id . '\' GROUP BY tbl_discussion_post.id LIMIT 1';
 
                 $discussion = $this->getArray($sql);
 
