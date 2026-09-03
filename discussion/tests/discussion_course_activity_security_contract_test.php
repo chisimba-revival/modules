@@ -16,6 +16,8 @@ $checks = array(
     'provider does not expose individual replies' => !str_contains($provider, 'getThread('),
     'provider contains no placeholder descriptions' => !str_contains($provider, 'topic description') && !str_contains($provider, 'sffas'),
     'launches are checked before dispatch' => str_contains($controller, 'resourceBelongsToActiveScope($action)'),
+    'management requires the active scope role' => str_contains($controller, 'mayManageDiscussionAction($action)') && str_contains($controller, 'isCourseAdmin($this->contextCode)'),
+    'management mutations are object scoped' => str_contains($controller, "'editdiscussionsave', 'deletediscussion'") && str_contains($controller, "'setdefaultdiscussion' => 'discussion'"),
     'cross-scope comparisons are timing safe' => str_contains($controller, 'hash_equals('),
     'reply relationship is validated' => str_contains($controller, 'replyTargetBelongsToActiveScope()'),
     'query parameters cannot switch courses' => !str_contains($controller, 'passthroughlogin') && !str_contains($controller, 'updatePassThroughLogin'),

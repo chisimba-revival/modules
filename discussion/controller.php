@@ -238,6 +238,9 @@ class discussion extends controller {
                 $this->setLayoutTemplate('discussion_layout.php');
                 //$this->setVar('pageSuppressXML', TRUE);
 
+                if (!$this->mayManageDiscussionAction($action)) {
+                        return $this->nextAction('courseactivitydenied', array(), 'context');
+                }
                 if (!$this->resourceBelongsToActiveScope($action)) {
                         return $this->nextAction('courseactivitydenied', array(), 'context');
                 }
@@ -2143,7 +2146,12 @@ class discussion extends controller {
                 if ($action === 'savepostreply') {
                         return $this->replyTargetBelongsToActiveScope();
                 }
-                $discussionActions = array('discussion', 'newtopic', 'savenewtopic');
+                $discussionActions = array(
+                        'discussion', 'newtopic', 'savenewtopic', 'editdiscussion',
+                        'editdiscussionsave', 'deletediscussion',
+                        'deletediscussionconfirm', 'changevisibilityconfirm',
+                        'setdefaultdiscussion', 'updatediscussionsetting'
+                );
                 $topicActions = array(
                         'viewtopic', 'thread', 'singlethreadview', 'flatview',
                         'moderatetopic', 'viewtopicmindmap', 'generatetopicmindmap'
@@ -2153,7 +2161,13 @@ class discussion extends controller {
                 if (!in_array($action, $bounded, true)) {
                         return true;
                 }
-                $parameter = $action === 'savenewtopic' ? 'discussion' : 'id';
+                $parameterMap = array(
+                        'savenewtopic' => 'discussion',
+                        'setdefaultdiscussion' => 'discussion',
+                        'updatediscussionsetting' => 'discussion_id'
+                );
+                $parameter = isset($parameterMap[$action])
+                        ? $parameterMap[$action] : 'id';
                 $id = trim((string) $this->getParam($parameter, ''));
                 if (preg_match('/^[A-Za-z0-9_-]{1,128}$/', $id) !== 1) {
                         return false;
@@ -2172,6 +2186,23 @@ class discussion extends controller {
                                 (string) $resource['discussion_context']
                         );
                 return $allowed;
+        }
+
+        /** Require site administration in Lobby or course administration in a course. */
+        private function mayManageDiscussionAction($action) {
+                $managementActions = array(
+                        'administration', 'creatediscussion', 'savediscussion',
+                        'editdiscussion', 'editdiscussionsave', 'deletediscussion',
+                        'deletediscussionconfirm', 'changevisibilityconfirm',
+                        'setdefaultdiscussion', 'updatediscussionsetting'
+                );
+                if (!in_array($action, $managementActions, true)) {
+                        return true;
+                }
+                if ($this->contextCode === 'root') {
+                        return $this->objUser->isAdmin();
+                }
+                return $this->objUser->isCourseAdmin($this->contextCode);
         }
 
         /** Validate the complete parent/topic/discussion relationship for a reply. */
