@@ -29,7 +29,7 @@ if ($this->getParam('message') == 'translationsaved') {
 echo $postDisplay;
 
 $link = new link ($this->uri(array('action'=>'viewtopic', 'id'=>$post['topic_id'], 'post'=>$post['post_id'])));
-$link->link = 'Return to Topic';
+$link->link = 'Topic: '.stripslashes($post['post_title']);
 
 echo '<p align="center">'.$link->show().'</p>';
 

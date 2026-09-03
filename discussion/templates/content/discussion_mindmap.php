@@ -16,7 +16,7 @@ $objFreeMindMap->setMindMap($map.'&ext=.mm');
 echo $objFreeMindMap->show();
 
 $link = new link ($this->uri(array('action'=>'discussion', 'id'=>$discussion['id'])));
-$link->link = 'Return to Discussion - '.$discussion['discussion_name'];
+$link->link = 'Discussion: '.$discussion['discussion_name'];
 
 echo '<p align="center">'.$link->show().'</p>';
 

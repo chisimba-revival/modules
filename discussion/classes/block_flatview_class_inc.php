@@ -378,7 +378,7 @@ class block_flatview extends ChisimbaObject {
                 $icons = $this->getObject('iconservice', 'ui');
                 $discussionUrl = $this->uri(array('action'=>'discussion','id'=>$post['discussion_id'],'type'=>$discussionType));
                 $actions = '<a class="button chisimba-button-secondary chisimba-button-compact" href="' . $escape($discussionUrl) . '">'
-                        . $icons->render('arrow-left', array('decorative'=>true)) . '<span>Back to discussion</span></a>';
+                        . $icons->render('messages-square', array('decorative'=>true)) . '<span>Discussion: ' . $escape($discussion['discussion_name']) . '</span></a>';
                 if (!$discussionLocked && $this->objUser->isCourseAdmin($this->contextCode) && $discussionType !== 'workgroup' && $this->objUser->isLoggedIn()) {
                         $actions .= '<a class="button chisimba-button-secondary chisimba-button-compact" href="'
                                 . $escape($this->uri(array('action'=>'moderatetopic','id'=>$post['topic_id'],'type'=>$discussionType))) . '">'
