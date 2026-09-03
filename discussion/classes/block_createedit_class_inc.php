@@ -9,6 +9,7 @@
  * Description of block_createedit_class_inc
  *
  * @author monwabisi
+ * @author Derek Keats
  */
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']) {
@@ -33,7 +34,7 @@ class block_createedit extends ChisimbaObject {
         $this->loadClass('label', 'htmlelements');
         $this->loadClass('radio', 'htmlelements');
         $this->loadClass('htmlheading', 'htmlelements');
-        $this->title = "Create edit";
+        $this->title = '';
         $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
         // Get Context Code Settings
         $this->contextObject = & $this->getObject('dbcontext', 'context');
@@ -46,6 +47,10 @@ class block_createedit extends ChisimbaObject {
 
         // If not in context, set code to be 'root' called 'Lobby'
         $this->contextTitle = $this->contextObject->getTitle();
+        if (trim((string) $this->contextCode) === '') {
+            $this->contextCode = 'root';
+            $this->contextTitle = 'Lobby';
+        }
     }
 
     function biuldForm() {
@@ -339,8 +344,88 @@ if(!document.getElementById && document.all) {
         return $html;
     }
 
-    function show() {
-        return $this->biuldForm();
+    /**
+     * Render the modern create/edit workspace.
+     *
+     * @return string Accessible, responsive discussion settings form.
+     */
+    private function buildModernForm() {
+        $escape = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+        $icons = $this->getObject('iconservice', 'ui');
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        $token = $csrf->issue('discussion_manage');
+        $id = trim((string) $this->getParam('id', ''));
+        $editing = (string) $this->getParam('action') === 'editdiscussion';
+        $discussion = $editing ? $this->objDiscussion->getDiscussion($id) : array();
+        if (!is_array($discussion)) {
+            $discussion = array();
+            $editing = false;
+        }
+        $value = static function ($key, $default = '') use ($discussion) {
+            return isset($discussion[$key]) ? (string) $discussion[$key] : $default;
+        };
+        $checked = static function ($actual, $expected) {
+            return strtoupper((string) $actual) === $expected ? ' checked' : '';
+        };
+        $setting = static function ($name, $label, $help, $current) use ($escape, $checked) {
+            return '<fieldset class="discussion-setting-control"><legend>' . $escape($label)
+                . '</legend><p>' . $escape($help) . '</p><div class="discussion-choice-row">'
+                . '<label><input type="radio" name="' . $escape($name) . '" value="Y"'
+                . $checked($current, 'Y') . '> Yes</label><label><input type="radio" name="'
+                . $escape($name) . '" value="N"' . $checked($current, 'N') . '> No</label></div></fieldset>';
+        };
+
+        $title = $editing ? 'Edit discussion' : 'Create discussion';
+        $intro = $editing
+            ? 'Update how this discussion works for ' . ($this->contextTitle ?: 'this scope') . '.'
+            : 'Create a focused place for ideas, questions and feedback in ' . ($this->contextTitle ?: 'this scope') . '.';
+        $formAction = $editing ? 'editdiscussionsave' : 'savediscussion';
+        $actionUrl = $this->uri(array('module' => 'discussion', 'action' => $formAction));
+        $cancelUrl = $this->uri(array('module' => 'discussion', 'action' => 'administration'));
+        $settings = '';
+        if ($editing) {
+            $settings .= $setting('lockdiscussion', 'Lock discussion', 'Keep existing content readable but prevent new posts.', $value('discussionlocked', 'N'));
+        }
+        if ($editing && $value('defaultdiscussion', 'N') === 'Y') {
+            $settings .= '<fieldset class="discussion-setting-control"><legend>Visible</legend><p>The default discussion must remain visible.</p><input type="hidden" name="visible" value="Y"><span class="discussion-setting-badge discussion-setting-badge--on">'
+                . $icons->render('check', array('decorative' => true)) . ' Yes</span></fieldset>';
+        } else {
+            $settings .= $setting('visible', 'Visible', 'Make this discussion available to people in this scope.', $value('discussion_visible', 'Y'));
+        }
+        $settings .= $setting('student', 'Students can start topics', 'Allow learners to begin new conversations.', $value('studentstarttopic', 'Y'));
+        $settings .= $setting('attachments', 'Attachments', 'Allow files to be added to posts.', $value('attachments', 'Y'));
+        $settings .= $setting('subscriptions', 'Notifications', 'Allow email and notification subscriptions.', $value('subscriptions', 'Y'));
+        $settings .= $setting('ratings', 'Post ratings', 'Allow participants to rate posts.', $value('ratingsenabled', 'N'));
+
+        $archive = '';
+        if ($editing) {
+            $archiveDate = $value('archivedate');
+            $archiving = $archiveDate !== '' && $archiveDate !== '0000-00-00' ? 'Y' : 'N';
+            $archive = '<fieldset class="discussion-setting-control discussion-setting-control--wide"><legend>Archive date</legend><p>Optionally hide topics older than this date.</p><div class="discussion-choice-row"><label><input type="radio" name="archivingRadio" value="N"'
+                . $checked($archiving, 'N') . '> Do not archive</label><label><input type="radio" name="archivingRadio" value="Y"'
+                . $checked($archiving, 'Y') . '> Archive older topics</label></div><label class="discussion-date-field" for="discussion-archive-date">Show topics from<input id="discussion-archive-date" type="date" name="archivedate" value="'
+                . $escape($archiving === 'Y' ? $archiveDate : date('Y-m-d')) . '"></label></fieldset>';
+        }
+
+        $hidden = '<input type="hidden" name="csrf_token" value="' . $escape($token) . '">';
+        if ($editing) {
+            $hidden .= '<input type="hidden" name="id" value="' . $escape($id) . '">';
+        }
+        return '<main class="chisimba-workspace chisimba-flow discussion-workspace discussion-editor"><header class="chisimba-page-header chisimba-card"><div><p class="chisimba-eyebrow">Discussion administration</p><h1>'
+            . $escape($title) . '</h1><p>' . $escape($intro) . '</p></div></header><form class="chisimba-card chisimba-form discussion-editor__form" method="post" action="'
+            . $escape($actionUrl) . '">' . $hidden . '<section class="discussion-editor__identity" aria-labelledby="discussion-details-heading"><h2 id="discussion-details-heading">Discussion details</h2><div class="chisimba-form-field"><label for="discussion-name">Name</label><input id="discussion-name" name="name" type="text" maxlength="50" required value="'
+            . $escape($value('discussion_name')) . '" autocomplete="off"><p class="chisimba-field-help">Use a short name that tells people what belongs here.</p></div><div class="chisimba-form-field"><label for="discussion-description">Description</label><textarea id="discussion-description" name="description" rows="6" maxlength="2000" required>'
+            . $escape($value('discussion_description')) . '</textarea><p class="chisimba-field-help">Explain the purpose of this discussion. Plain text only.</p></div></section><section aria-labelledby="discussion-settings-heading"><h2 id="discussion-settings-heading">Participation and access</h2><div class="discussion-settings-grid">'
+            . $settings . $archive . '</div></section><div class="chisimba-form-actions discussion-editor__actions"><button class="button chisimba-button-compact" type="submit">'
+            . $icons->render('save', array('decorative' => true)) . '<span>' . ($editing ? 'Save changes' : 'Create discussion') . '</span></button><a class="button chisimba-button-secondary chisimba-button-compact" href="'
+            . $escape($cancelUrl) . '">' . $icons->render('x', array('decorative' => true)) . '<span>Cancel</span></a></div></form></main>';
+    }
+
+    /** @return string Rendered block content. */
+    public function show() {
+        return $this->buildModernForm();
     }
 
 }

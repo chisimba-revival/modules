@@ -384,3 +384,92 @@
         text-align: start;
     }
 }
+
+.discussion-editor {
+    width: min(100%, 64rem);
+}
+
+.discussion-editor__form {
+    display: grid;
+    gap: 1.75rem;
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.discussion-editor__form h2 {
+    margin-block: 0 1rem;
+}
+
+.discussion-editor__identity {
+    display: grid;
+    gap: 1rem;
+}
+
+.discussion-editor textarea {
+    width: 100%;
+    min-height: 9rem;
+    resize: vertical;
+}
+
+.discussion-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.discussion-setting-control {
+    min-width: 0;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border, #d5dde5);
+    border-radius: var(--chisimba-radius, .5rem);
+}
+
+.discussion-setting-control legend {
+    padding-inline: .25rem;
+    font-weight: 700;
+}
+
+.discussion-setting-control p {
+    margin-block: 0 .75rem;
+    color: var(--chisimba-text-muted, #59636e);
+}
+
+.discussion-setting-control--wide {
+    grid-column: 1 / -1;
+}
+
+.discussion-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem 1.25rem;
+}
+
+.discussion-choice-row label,
+.discussion-date-field {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.discussion-date-field {
+    margin-block-start: 1rem;
+}
+
+.discussion-editor__actions {
+    padding-block-start: .25rem;
+}
+
+@media (max-width: 42rem) {
+    .discussion-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .discussion-setting-control--wide {
+        grid-column: auto;
+    }
+
+    .discussion-editor__actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+}

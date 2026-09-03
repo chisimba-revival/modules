@@ -17,6 +17,11 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class discussion extends controller {
 
+        private const CSRF_MANAGE = 'discussion_manage';
+
+        /** @var object */
+        private $csrf;
+
         /**
          *
          * @var string Used to determine whether the discussion is for context
@@ -73,6 +78,9 @@ class discussion extends controller {
                 $this->objAltConfig = $this->getObject("altconfig", "config");
                 // General Classes
                 $this->objUser = & $this->getObject('user', 'security');
+                $this->csrf = $this->getObject(
+                        'nativeauthwebcomposition', 'security'
+                )->build()['csrf'];
                 $this->userId = $this->objUser->userId();
                 $this->isLoggedIn = $this->objUser->isLoggedIn();
                 $this->objLanguage = & $this->getObject('language', 'language');
@@ -1239,17 +1247,23 @@ class discussion extends controller {
          * Method to Save a Newly Created Discussion
          */
         public function saveDiscussion() {
+                if (!$this->validManagementMutation()) {
+                        return $this->nextAction('administration', array('message' => 'invalidrequest'));
+                }
                 $discussion_context = $this->contextCode;
                 $discussion_workgroup = '';
-                $discussion_name = $this->getParam('name');
-                $discussion_description = $this->getParam('description');
+                $discussion_name = mb_substr(trim((string) $this->getParam('name')), 0, 50);
+                $discussion_description = mb_substr(trim((string) $this->getParam('description')), 0, 2000);
+                if ($discussion_name === '' || $discussion_description === '') {
+                        return $this->nextAction('creatediscussion', array('message' => 'missing'));
+                }
                 $defaultDiscussion = 'N';
-                $discussion_visible = $this->getParam('visible');
+                $discussion_visible = $this->yesNo('visible', 'Y');
                 $discussionLocked = 'N';
-                $ratingsenabled = $this->getParam('ratings');
-                $studentstarttopic = $this->getParam('student');
-                $attachments = $this->getParam('attachments');
-                $subscriptions = $this->getParam('subscriptions');
+                $ratingsenabled = $this->yesNo('ratings', 'N');
+                $studentstarttopic = $this->yesNo('student', 'Y');
+                $attachments = $this->yesNo('attachments', 'Y');
+                $subscriptions = $this->yesNo('subscriptions', 'Y');
                 // Needs to be worked on
                 $moderation = 'N';
                 $discussion = $this->objDiscussion->insertSingle($discussion_context, $discussion_workgroup, $discussion_name, $discussion_description, $defaultDiscussion, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation);
@@ -1280,26 +1294,31 @@ class discussion extends controller {
          * @return string Template - redirects back to discussion admin
          */
         public function editDiscussionSave() {
-                $discussion_id = $this->getParam('id');
-                $discussion_name = stripslashes($this->getParam('name'));
-                $discussion_description = stripslashes($this->getParam('description'));
-                $discussion_visible = $this->getParam('visible');
-                $discussionLocked = $this->getParam('lockdiscussion');
-                if ($discussion_visible == 'default') {
-                        $discussion_visible = 'Y';
+                if (!$this->validManagementMutation()) {
+                        return $this->nextAction('administration', array('message' => 'invalidrequest'));
                 }
-                $ratingsenabled = $this->getParam('ratings');
-                $studentstarttopic = $this->getParam('student');
-                $attachments = $this->getParam('attachments');
-                $subscriptions = $this->getParam('subscriptions');
+                $discussion_id = $this->getParam('id');
+                $discussion_name = mb_substr(trim((string) $this->getParam('name')), 0, 50);
+                $discussion_description = mb_substr(trim((string) $this->getParam('description')), 0, 2000);
+                if ($discussion_name === '' || $discussion_description === '') {
+                        return $this->nextAction('editdiscussion', array('id' => $discussion_id, 'message' => 'missing'));
+                }
+                $discussion_visible = $this->yesNo('visible', 'Y');
+                $discussionLocked = $this->yesNo('lockdiscussion', 'N');
+                $ratingsenabled = $this->yesNo('ratings', 'N');
+                $studentstarttopic = $this->yesNo('student', 'Y');
+                $attachments = $this->yesNo('attachments', 'Y');
+                $subscriptions = $this->yesNo('subscriptions', 'Y');
                 // Needs to be worked on
                 $moderation = 'N';
                 // Archiving
-                $doArchive = $this->getParam('archivingRadio');
-                if ($doArchive == 'Y') {
-                        $archiveDate = $this->getParam('archivedate');
-                } else {
-                        $archiveDate = NULL;
+                $archiveDate = NULL;
+                if ($this->yesNo('archivingRadio', 'N') === 'Y') {
+                        $candidate = trim((string) $this->getParam('archivedate', ''));
+                        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $candidate);
+                        if ($parsed !== false && $parsed->format('Y-m-d') === $candidate) {
+                                $archiveDate = $candidate;
+                        }
                 }
                 $this->objDiscussion->updateSingle($discussion_id, $discussion_name, $discussion_description, $discussion_visible, $discussionLocked, $ratingsenabled, $studentstarttopic, $attachments, $subscriptions, $moderation, $archiveDate);
                 return $this->nextAction('administration', array('message' => 'discussionupdated', 'id' => $discussion_id));
@@ -2203,6 +2222,21 @@ class discussion extends controller {
                         return $this->objUser->isAdmin();
                 }
                 return $this->objUser->isCourseAdmin($this->contextCode);
+        }
+
+        /** Accept only POST mutations carrying a valid one-time token. */
+        private function validManagementMutation() {
+                return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST'
+                        && $this->csrf->consume(
+                                self::CSRF_MANAGE,
+                                (string) $this->getParam('csrf_token', '')
+                        );
+        }
+
+        /** Return an allow-listed Y/N request value. */
+        private function yesNo($name, $default) {
+                $value = strtoupper(trim((string) $this->getParam($name, $default)));
+                return in_array($value, array('Y', 'N'), true) ? $value : $default;
         }
 
         /** Validate the complete parent/topic/discussion relationship for a reply. */
