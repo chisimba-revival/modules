@@ -55,6 +55,17 @@
     vertical-align: middle;
 }
 
+.discussion-empty-state {
+    margin: 1rem auto;
+    max-width: 42rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    text-align: center;
+}
+
+.discussion-empty-state h2 {
+    margin-block-start: 0;
+}
+
 @media (max-width: 48rem) {
     .discussion-forum-list > tbody > tr,
     .discussion-forum-list td {

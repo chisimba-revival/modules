@@ -68,16 +68,14 @@ class block_discussionview extends ChisimbaObject {
      */
     public function buildDiscussionView() {
 //                $this->title = $this->discussionDetails['discussion_name'];
-        $newTopicIcon = $this->getObject('geticon', 'htmlelements');
-        $newTopicIcon->setIcon('notes');
-        $newTopicIcon->alt = $this->objLanguage->languageText('mod_discussion_startnewtopic', 'discussion');
-        $newTopicIcon->title = $this->objLanguage->languageText('mod_discussion_startnewtopic', 'discussion');
+        $icons = $this->getObject('iconservice', 'ui');
 //        $discussiontype = & $this->getVar('discussiontype');
         $tblTopic = $this->newObject('htmltable', 'htmlelements');
         $objTranslatedDate = $this->getObject('translatedatedifference', 'utilities');
         // Link to start new topic
         $newTopicLink = new link($this->uri(array('action' => 'newtopic', 'id' => $this->discussionid, 'type' => $this->discussionDetails['discussion_type'])));
-        $newTopicLink->link = $newTopicIcon->show();
+        $newTopicLink->link = $icons->render('message-square-plus', array('decorative' => true)) . ' '
+            . $this->objLanguage->languageText('mod_discussion_startnewtopic', 'discussion');
 
 // Start of First Row
 
@@ -137,8 +135,7 @@ class block_discussionview extends ChisimbaObject {
         if ($this->objUser->isCourseAdmin($this->contextCode) || $this->discussionDetails['studentstarttopic'] == 'Y') {
 //                                $header->str .= ' ' . $newTopicLink->show();
 //                                $tblAdmin->addCell($newTopicLink->show(),NULL,NULL,'center');
-            $newTopicLink->cssClass = "sexybutton";
-            $newTopicLink->link .= "<br/><label class='menu' >{$this->objLanguage->languageText('mod_discussion_startnewtopic', 'discussion')}";
+            $newTopicLink->cssClass = 'button';
             $tblTopic->addHeaderCell($newTopicLink->show(), NULL, NULL, 'center', NULL);
         }
         $tblTopic->endHeaderRow();
@@ -388,8 +385,8 @@ class block_discussionview extends ChisimbaObject {
             }
         } else {
 
-            $noposts = '<div class="noRecordsMessage">';
-            $noposts .= $this->objLanguage->languageText('mod_discussion_nopostsindiscussion', 'discussion') . '.<br /><br />' . $this->objLanguage->languageText('mod_discussion_clicklinkstarttopic', 'discussion') . '.';
+            $noposts = '<div class="chisimba-card discussion-empty-state">';
+            $noposts .= '<h2>' . $this->objLanguage->languageText('mod_discussion_nopostsindiscussion', 'discussion') . '</h2><p>' . $this->objLanguage->languageText('mod_discussion_clicklinkstarttopic', 'discussion') . '.</p>';
             $noposts .= '</div>';
 
             $tblTopic->startRow();
