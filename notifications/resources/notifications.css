@@ -1,1 +1,28 @@
 .notifications-centre__count{display:inline-grid;min-width:1.7rem;height:1.7rem;padding:0 .35rem;place-items:center;border-radius:999px;background:var(--chisimba-primary);color:var(--chisimba-on-primary,#fff);font-size:.8rem;vertical-align:middle}.notifications-centre__toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1rem}.notifications-centre [data-notification-list]{display:grid;gap:.75rem}.notifications-centre .chisimba-notification{margin:0}.notifications-centre .chisimba-notification.is-unread{box-shadow:inset .25rem 0 var(--chisimba-primary)}.notifications-centre .chisimba-notification h2{margin:0 0 .35rem;font-size:1.05rem}
+/* Scoped overrides keep the preview independent of legacy toolbar menus. */
+#navigation .toolbar-notification-item{position:relative;overflow:visible}
+#navigation .notification-toolbar{position:relative;color:var(--chisimba-ink,#111)}
+#navigation .notification-toolbar>summary{display:flex;align-items:center;gap:.45rem;cursor:pointer;padding:.65rem .8rem;list-style:none;font-weight:600;border-radius:.5rem}
+#navigation .notification-toolbar>summary::-webkit-details-marker{display:none}
+#navigation .notification-toolbar>summary:hover,#navigation .notification-toolbar[open]>summary{background:var(--chisimba-primary-soft,#e7f4fd)}
+#navigation .notification-toolbar [data-notification-count]{background:#b42318;color:white;border-radius:1rem;padding:.1rem .4rem;font-size:.75rem;line-height:1.3}
+#navigation .notification-toolbar [hidden]{display:none!important}
+#navigation .notification-toolbar__panel{position:absolute;right:0;top:calc(100% + .4rem);z-index:10000;width:min(25rem,calc(100vw - 2rem));box-sizing:border-box;background:#fff;border:1px solid #ddd;border-radius:.85rem;box-shadow:0 12px 35px #0002;overflow:hidden;text-align:left;white-space:normal}
+#navigation .notification-toolbar__panel header,#navigation .notification-toolbar__panel footer{display:flex;align-items:center;justify-content:space-between;padding:1rem;background:#f8f9fa}
+#navigation .notification-toolbar__panel [data-notification-list]{max-height:min(60vh,32rem);overflow:auto;overscroll-behavior:contain}
+#navigation .notification-toolbar__panel .chisimba-notification{display:block;border:0;border-bottom:1px solid #e5e7eb;border-radius:0;padding:1rem;margin:0;background:white;color:#444;box-shadow:none}
+#navigation .notification-toolbar__panel .is-unread{background:#f3f9ff;box-shadow:inset 3px 0 #0084e7}
+#navigation .notification-toolbar__panel h2{font-size:1rem;margin:0 0 .4rem;line-height:1.4;color:#111}
+#navigation .notification-toolbar__panel p{margin:0 0 .5rem;line-height:1.5;overflow-wrap:anywhere}
+#navigation .notification-toolbar__panel a{display:inline;color:#005b9f;padding:0;float:none;background:none;text-decoration:underline;font-size:.9rem}
+#navigation .notification-toolbar__panel button,.notifications-centre [data-mark-read]{border:1px solid #ccd5dc;border-radius:.4rem;padding:.35rem .6rem;background:white;color:#005b9f;font:inherit;font-size:.85rem;cursor:pointer}
+.notification-actions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+#navigation .notification-toolbar__panel [data-notification-error],#navigation .notification-toolbar__panel .notification-empty{padding:1rem}
+#navigation .notification-toolbar__panel [data-notification-error]{color:#b42318}
+.notification-toolbar summary:focus-visible,.notification-toolbar button:focus-visible,.notification-toolbar a:focus-visible{outline:3px solid #0084e7;outline-offset:3px}
+@media(max-width:600px){#navigation .notification-toolbar__panel{position:fixed;top:7rem;left:1rem;right:1rem;width:auto}}
+#navigation li.toolbar-notification-item{width:auto;min-width:9rem}
+#navigation .notification-toolbar>summary>svg{flex:0 0 18px;width:18px;height:18px}
+
+#navigation .notification-toolbar__panel{font-weight:400}
+#navigation .notification-toolbar__panel strong{font-weight:600}

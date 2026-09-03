@@ -88,3 +88,11 @@ New producers add namespaced event types such as `assessment.mark.released`. New
 ## Discussion integration
 
 Discussion is the first producer. After a topic or reply is stored, `discussionnotificationpublisher` resolves user IDs from the existing discussion and topic subscriptions, removes the author, and publishes `discussion.topic.created` or `discussion.reply.created`. The immutable post ID is the idempotency boundary. Notification payloads contain identifiers and navigation metadata, never the post body. Discussion does not send email itself; a later preference-aware channel worker will project eligible notification events into Communications.
+
+## Toolbar preview and read-token renewal
+
+When the module is installed, the authenticated toolbar offers an Updates bell with an unread count and the five most recent notifications. The preview fetches on opening; the count refreshes every minute while the page is visible and on returning to the page. Reading is explicit: opening the preview or following an update does not mark it read. Close, Escape, and clicking outside dismiss the preview. The full centre supports unread filtering and pagination.
+
+Read responses include a replacement `csrfToken`, including an `invalid_csrf` response. Clients must retain that replacement before the next mutation. After an expired token, the web client asks the user to retry the read action. Read actions update both the preview and centre without navigation. Links in this web client are restricted to HTTP(S) destinations on the current origin; notification text is escaped.
+
+Install Notifications with the normal module catalogue installer before expecting events or toolbar controls. The framework toolbar integration is optional when the module is absent. This feature provides in-app notifications only; email delivery remains the responsibility of Communications. Install the matching module code before enabling the framework integration on another site.
