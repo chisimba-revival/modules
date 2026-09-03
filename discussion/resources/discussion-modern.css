@@ -66,6 +66,84 @@
     margin-block-start: 0;
 }
 
+.discussion-workspace {
+    max-width: 72rem;
+    margin-inline: auto;
+}
+
+.discussion-compose-modern {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.discussion-compose-modern fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.discussion-compose-modern legend,
+.discussion-compose-modern label {
+    font-weight: 700;
+}
+
+.discussion-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: .65rem;
+    margin-block-start: .5rem;
+}
+
+.discussion-choice {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    min-height: 2.75rem;
+    padding: .65rem .8rem;
+    border: 1px solid var(--chisimba-border, #d9e0e8);
+    border-radius: var(--chisimba-radius-md, .5rem);
+    background: var(--chisimba-surface, #fff);
+    cursor: pointer;
+}
+
+.discussion-choice:has(input:checked) {
+    border-color: var(--chisimba-primary, #0877bd);
+    background: var(--chisimba-primary-soft, #edf7ff);
+}
+
+.discussion-compose__compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.discussion-compose__compact legend {
+    margin-block-end: .45rem;
+}
+
+.discussion-compose__hint {
+    margin: .2rem 0 .55rem;
+    color: var(--chisimba-text-muted, #59636e);
+}
+
+.discussion-file-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: .5rem;
+}
+
+.discussion-file-picker input[type="text"] {
+    width: 100% !important;
+}
+
+@media (max-width: 36rem) {
+    .discussion-file-picker {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 48rem) {
     .discussion-forum-list > tbody > tr,
     .discussion-forum-list td {

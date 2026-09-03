@@ -17,6 +17,8 @@ $checks = array(
     'required audit columns are populated' => str_contains($post, "'modifierid' => \$userId") && str_contains($post, "'datecreated' => \$now") && str_contains($text, "'modifierid'            => \$userId") && str_contains($text, "'datecreated'           => \$now"),
     'forum totals use actual records' => str_contains($discussion, 'AS actual_topics') && str_contains($discussion, 'AS actual_posts') && str_contains($list, "\$discussion['actual_topics']") && str_contains($list, "\$discussion['actual_posts']"),
     'forum action and empty state use skin primitives' => str_contains($view, "getObject('iconservice', 'ui')") && str_contains($view, "cssClass = 'button'") && str_contains($view, 'chisimba-card discussion-empty-state') && !str_contains($view, 'newTopicIcon'),
+    'composer is semantic and responsive' => str_contains($form, 'buildModernEntryForm') && str_contains($form, 'discussion-choice-grid') && str_contains($form, 'chisimba-form-actions') && !str_contains(substr($form, strrpos($form, 'private function buildModernEntryForm')), 'htmltable'),
+    'attachment picker is course scoped' => str_contains($form, "\$selectFile->context = \$this->contextCode !== 'root'"),
 );
 foreach ($checks as $label => $passed) {
     echo ($passed ? 'PASS: ' : 'FAIL: ') . $label . PHP_EOL;
