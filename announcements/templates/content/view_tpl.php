@@ -1,80 +1,59 @@
 <?php
-
-$this->loadClass('link', 'htmlelements');
-$this->loadClass('htmlheading', 'htmlelements');
-$objDateTime = $this->getObject('dateandtime', 'utilities');
-
-$header = new htmlHeading();
-$header->type = 1;
-$header->str = $announcement['title'];
-$outStr="";
-// Check if User has permission
-if ($this->checkPermission($announcement['id'])) {
-    $objIcon = $this->newObject('geticon', 'htmlelements');
-    $objIcon->setIcon('edit');
-    $editLink = new link ($this->uri(array('action'=>'edit', 'id'=>$announcement['id'])));
-    $editLink->link = $objIcon->show();
-    $header->str .= ' '.$editLink->show();
-}
-if ($this->checkPermission($announcement['id'])) {
-    $objIcon = $this->newObject('geticon', 'htmlelements');
-    $objIcon->setIcon('delete');
-    $editLink = new link ($this->uri(array('action'=>'edit', 'id'=>$announcement['id'])));
-    $editLink->link = $objIcon->show();
-    //Removed by Wesley Nitscke .. cannot edit an announcement once it has been sent out.. post a new one rather
-   // $header->str .= ' '.$editLink->show();
-    $deleteArray = array('action'=>'delete', 'id'=>$announcement['id']);
-    $deleteLink = $objIcon->getDeleteIconWithConfirm($announcement['id'], $deleteArray, 'announcements');
-    $header->str .= ' '.$deleteLink;
-}
-$outStr = $header->show();
+$e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+$txt=fn($key,$fallback)=>$this->objLanguage->languageText($key,'announcements',$fallback);
+$systxt=fn($key,$fallback)=>$this->objLanguage->code2Txt($key,'announcements',NULL,$fallback);
+$icons=$this->getObject('iconservice','ui');
+$dateTime=$this->getObject('timeanddateservice','timeanddate-service');
+$washout=$this->getObject('washout','utilities');
+$canManage=$this->checkPermission($announcement['id']);
 $typeLabels=array(
-    'whats_new'=>$this->objLanguage->languageText('mod_announcements_whatsnew','announcements','What’s new'),
-    'general'=>$this->objLanguage->languageText('mod_announcements_general','announcements','General announcement'),
-    'service'=>$this->objLanguage->languageText('mod_announcements_service','announcements','Service notice')
+    'whats_new'=>$txt('mod_announcements_whatsnew','What’s new'),
+    'general'=>$txt('mod_announcements_general','General announcement'),
+    'service'=>$txt('mod_announcements_service','Service notice')
 );
-$announcementType=(string)($announcement['announcement_type']??'general');
-$outStr .= '<p><strong>'.$this->objLanguage->languageText('mod_announcements_type','announcements','Type').':</strong> '.htmlspecialchars($typeLabels[$announcementType]??$typeLabels['general'],ENT_QUOTES,'UTF-8').'</p>';
-$outStr .=  '<p><strong>By:</strong> '.$this->objUser->fullName($announcement['createdby']).' - '.$objDateTime->formatDate($announcement['createdon']);
-if ($announcement['contextid'] == 'site') {
-    $outStr .= ' - <strong>'
-      . $this->objLanguage->languageText('word_type', 'system', 'Type')
-      .':</strong> '.$this->objLanguage->languageText(
-        'mod_announcements_siteannouncement', 'announcements', 'Site Announcement'
-      ) . '</p>';
-} else {
-    $outStr .= '<br /><strong>'
-      . $this->objLanguage->languageText(
-        'mod_announcements_announcementtype', 'announcements', 'Announcement Type'
-      ) . ':</strong> ' . ucwords($this->objLanguage->code2Txt(
-        'mod_announcements_contextannouncement', 'announcements',
-        NULL, '[-context-] Announcement')
-      ).' - ';
-    $contexts = $this->objAnnouncements->getMessageContexts($announcement['id']);
-    if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
-        $divider = '';
-        foreach ($contexts as $context)
-        {
-            $outStr .=  $divider . $this->objContext->getTitle($context);
-            $divider = ', ';
-        }
-        $outStr .= '</p>';
+$type=(string)($announcement['announcement_type']??'general');
+$published=$announcement['publish_at']?:$announcement['createdon'];
+$scope=$announcement['contextid']==='site'
+    ?$txt('mod_announcements_siteword','Site')
+    :ucfirst($systxt('mod_announcements_contextscope','[-context-]'));
+$scopeDetails=array();
+if($announcement['contextid']==='context'){
+    foreach((array)$this->objAnnouncements->getMessageContexts($announcement['id']) as $context){
+        $scopeDetails[]=$this->objContext->getTitle($context);
     }
 }
-$outStr .=  $announcement['message'];
-if(!empty($announcement['resource_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['resource_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_userguide','announcements','Further information').'</a></p>';
-// Render the outer wrapped layer
-$objWashOut = $this->getObject('washout', 'utilities');
-$ret = $objWashOut->parseText($outStr);
-
-$backLink = new link ($this->uri(NULL));
-$backLink->link = $this->objLanguage->languageText('mod_announcements_back', 'announcements', 'Back to Announcements');
-$addLink = new link ($this->uri(array('action'=>'add')));
-$addLink->link = $this->objLanguage->languageText('mod_announcements_postnewannouncement', 'announcements', 'Post New Announcement');
-$outStr = "<div class='linkwrapper'><div class='modulehome'></div><div class='modulehomelink'>" . $backLink->show() . "</div></div>";
-if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
-    $outStr .=  "<div class='linkwrapper'><div class='adminadd'></div><div class='adminaddlink'>" . $addLink->show() . "</div></div>";
-}
-echo  "<div class='announcements'><div class='outerwrapper'>"
-      . $ret .  $outStr . "</div></div>";
 ?>
+<main class="chisimba-workspace chisimba-flow announcements-detail">
+    <header class="chisimba-page-header chisimba-card announcements-detail__header">
+        <div>
+            <p class="chisimba-eyebrow"><?php echo $e($typeLabels[$type]??$typeLabels['general']);?></p>
+            <h1><?php echo $e($announcement['title']);?></h1>
+            <p><?php echo $e($txt('mod_announcements_detailhelp','An announcement shared with you.'));?></p>
+        </div>
+        <?php if($canManage):?>
+            <div class="chisimba-form-actions">
+                <a class="button chisimba-button-secondary chisimba-button-compact" href="<?php echo $e($this->uri(array('action'=>'edit','id'=>$announcement['id'])));?>"><?php echo $icons->render('pencil',array('decorative'=>true));?><span><?php echo $e($this->objLanguage->languageText('word_edit','system','Edit'));?></span></a>
+                <a class="button chisimba-button-danger chisimba-button-compact" href="<?php echo $e($this->uri(array('action'=>'delete','id'=>$announcement['id'])));?>" onclick="<?php echo $e('return confirm('.json_encode($txt('mod_announcements_deleteconfirm','Delete this announcement?')).');');?>"><?php echo $icons->render('trash-2',array('decorative'=>true));?><span><?php echo $e($this->objLanguage->languageText('word_delete','system','Delete'));?></span></a>
+            </div>
+        <?php endif;?>
+    </header>
+
+    <article class="chisimba-card announcements-detail__card">
+        <dl class="announcements-detail__meta">
+            <div><dt><?php echo $e($txt('mod_announcements_published','Published'));?></dt><dd><?php echo $e($dateTime->formatDateTime($published));?></dd></div>
+            <div><dt><?php echo $e($this->objLanguage->languageText('word_by','system','By'));?></dt><dd><?php echo $e($this->objUser->fullName($announcement['createdby']));?></dd></div>
+            <div><dt><?php echo $e($txt('mod_announcements_scope','Scope'));?></dt><dd><?php echo $e($scope);?><?php echo $scopeDetails?' · '.$e(implode(', ',$scopeDetails)):'';?></dd></div>
+        </dl>
+        <div class="announcements-detail__message"><?php echo $washout->parseText($announcement['message']);?></div>
+        <?php if(!empty($announcement['resource_url'])):?>
+            <p><a class="button chisimba-button-secondary" href="<?php echo $e($announcement['resource_url']);?>"><?php echo $icons->render('external-link',array('decorative'=>true));?><span><?php echo $e($txt('mod_announcements_userguide','Further information'));?></span></a></p>
+        <?php endif;?>
+    </article>
+
+    <nav class="chisimba-form-actions announcements-detail__navigation" aria-label="<?php echo $e($txt('mod_announcements_actions','Announcement actions'));?>">
+        <a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(NULL));?>"><?php echo $icons->render('list',array('decorative'=>true));?><span><?php echo $e($txt('mod_announcements_allannouncements','All announcements'));?></span></a>
+        <?php if($isAdmin||(is_countable($lecturerContext)?count($lecturerContext):0)>0):?>
+            <a class="button" href="<?php echo $e($this->uri(array('action'=>'add')));?>"><?php echo $icons->render('plus',array('decorative'=>true));?><span><?php echo $e($txt('mod_announcements_postannouncement','Publish announcement'));?></span></a>
+        <?php endif;?>
+    </nav>
+</main>

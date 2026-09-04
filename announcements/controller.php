@@ -79,7 +79,7 @@ class announcements extends controller
 			$this->lecturerContext = array_values(array_unique(array_merge((array)$this->lecturerContext, $allContexts)));
 			$this->setVar('lecturerContext', $this->lecturerContext);
 		}
-		$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$this->getResourceUri('announcements.css').'">');
+		$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$this->getResourceUri('announcements.css').'?v=406">');
 		if($this->objModuleCatalogue->checkIfRegistered('activitystreamer'))
 		{
 			$this->objActivityStreamer = $this->getObject('activityops', 'activitystreamer');

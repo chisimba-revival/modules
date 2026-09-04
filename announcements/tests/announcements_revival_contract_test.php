@@ -8,6 +8,7 @@ $schema = file_get_contents($root . '/sql/tbl_announcements.sql');
 $publisher = file_get_contents($root . '/classes/announcementnotificationpublisher_class_inc.php');
 $block = file_get_contents($root . '/classes/block_whatsnewauthors_class_inc.php');
 $archive = file_get_contents($root . '/templates/content/home_tpl.php');
+$detail = file_get_contents($root . '/templates/content/view_tpl.php');
 $checks = array(
     'Feed is not loaded during initialisation' => strpos(
         substr($controller, 0, strpos($controller, 'public function __feed()')),
@@ -31,6 +32,7 @@ $checks = array(
     'Archive has one publishing action' => substr_count($archive, "'action' => 'add'") === 1,
     'Archive uses shared icons and ordinary pagination' => strpos($archive, "getObject('iconservice', 'ui')") !== false && strpos($archive, "'page' => \$page + 1") !== false,
     'Obsolete AJAX viewer is gone' => !file_exists($root . '/resources/announceview.js') && strpos($controller, '__getajax') === false && strpos($archive, "newObject('pagination'") === false,
+    'Detail uses shared skin primitives' => strpos($detail, 'chisimba-page-header chisimba-card') !== false && strpos($detail, "getObject('iconservice','ui')") !== false && strpos($detail, 'linkwrapper') === false && strpos($detail, 'modulehome') === false,
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
