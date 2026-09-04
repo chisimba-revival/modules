@@ -137,7 +137,7 @@ class studentdueitems extends ChisimbaObject
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
         };
         $text = function ($key, $fallback) {
-            return $this->language->languageText('mod_mylearning_' . $key, 'mylearning', $fallback);
+            return $this->language->code2Txt('mod_mylearning_' . $key, 'mylearning', null, $fallback);
         };
         $zone = new DateTimeZone($this->time->siteTimezone());
         $today = new DateTimeImmutable('today', $zone);

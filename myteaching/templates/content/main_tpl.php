@@ -1,7 +1,7 @@
 <?php
 $language = $this->getObject('language', 'language');
 $managementNotice = !empty($managingDashboard)
-    ? '<section class="chisimba-notice chisimba-notice--info"><strong>Managing the My Teaching page</strong><p>Changes to dashboard blocks affect the shared teaching experience. Course cards below remain limited to courses where this account is part of the teaching team.</p></section>'
+    ? '<section class="chisimba-notice chisimba-notice--info"><strong>Managing the My Teaching page</strong><p>' . htmlspecialchars($language->code2Txt('mod_myteaching_managehelp','myteaching',null,'Changes to dashboard blocks affect the shared teaching experience. [-context-] cards below remain limited to [-contexts-] where this account is part of the teaching team.'),ENT_QUOTES,'UTF-8') . '</p></section>'
     : '';
 $editingSwitch = '';
 $upperEditor = '';

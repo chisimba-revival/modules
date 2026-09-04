@@ -13,6 +13,7 @@ $checks=array(
  'providers may supply their exact review queue'=>str_contains($service,"getOutstandingReviewCount"),
  'assessment actions have stable values and launch targets'=>str_contains($service,"['provider'].'|'")&&str_contains($service,"['activity']")&&str_contains($service,"getLaunchTarget')")&&str_contains($service,"['url']"),
  'visible author and learner roles are abstracted'=>str_contains($register,'Your [-author-] overview')&&str_contains($register,'[-readonlys-]'),
+ 'visible class language is abstracted'=>str_contains($register,'See your [-contexts-]')&&str_contains($register,'Enter [-context-]')&&str_contains($register,'Manage [-context-]'),
 );
 foreach($checks as $label=>$passed){if(!$passed){fwrite(STDERR,"FAIL: $label\n");exit(1);}}
 echo "PASS: My Teaching provides role-safe course insight placeholders.\n";
