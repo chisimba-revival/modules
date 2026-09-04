@@ -87,7 +87,7 @@ $layout->setLeftColumnContent(
     . '</aside>'
 );
 $layout->setMiddleColumnContent(
-    '<main class="myteaching-page">' . $managementNotice . $teachingOverview
+    '<main class="myteaching-page">' . $managementNotice . $teachingOverview . $teachingInsights
     . '<div id="middleblocks" class="myteaching-page__blocks">'
     . $wideBlocks . '</div>' . $wideEditor . '</main>'
 );
