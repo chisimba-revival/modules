@@ -41,7 +41,7 @@ class mylearning extends controller
         $this->setVar('wideBlocks', $this->contextBlocks->getContextBlocks(
             'mylearning', 'middle'
         ));
-        $this->setVar('mayEditBlocks', $this->user->isAdmin());
+        $this->setVar('mayEditBlocks', $managing);
         $this->setVar('availableNarrowBlocks', $this->availableBlocks(false));
         $this->setVar('availableWideBlocks', $this->availableBlocks(true));
         return 'main_tpl.php';

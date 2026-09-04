@@ -10,10 +10,10 @@ $checks = array(
         $register,
         'MODULE_ID: mylearning'
     ),
-    'administrator management is discoverable' => str_contains(
+    'management stays out of the site admin workbench' => !str_contains(
         $register,
         'PAGE: admin_common'
-    ) && str_contains($register, 'admin_common|manage') && str_contains($register, 'mod_mylearning_manage'),
+    ) && str_contains($register, 'mod_mylearning_manage'),
     'personal view is student scoped and management is explicit' => str_contains($controller, 'mayView')
         && str_contains($controller, "\$action === 'manage'")
         && str_contains($controller, 'getContextWhereStudent')
