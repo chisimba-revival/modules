@@ -28,3 +28,4 @@
 .announcements-archive__pagination a{padding:.65rem .85rem;border:1px solid var(--chisimba-border,#cbd5df);background:#fff}
 .announcements-archive__pagination a:last-child{margin-left:auto}
 @media(max-width:700px){.announcements-archive__header{align-items:stretch;flex-direction:column}.announcements-archive__publish{align-self:flex-start}.announcements-archive__item{grid-template-columns:1fr}.announcements-archive__icon{width:2.35rem;height:2.35rem}}
+.announcement-latest{list-style:none;margin:0;padding:0}.announcement-latest li+li{border-top:1px solid var(--chisimba-border,#d7dde3);margin-top:.9rem;padding-top:.9rem}.announcement-latest p{margin:.3rem 0}.announcement-latest__heading time{color:var(--chisimba-muted,#66727d);font-weight:700}.announcement-latest__heading a{font-weight:600}.announcement-latest__excerpt{color:var(--chisimba-text,#243342)}

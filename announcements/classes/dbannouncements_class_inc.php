@@ -408,7 +408,8 @@ class dbAnnouncements extends dbTable {
     public function getLatestAuthorUpdates($limit=3) {
         $limit=max(1,min(10,(int)$limit));
         $now=$this->quoteValue($this->now());
-        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND audience='authors' AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
+        $cutoff=$this->quoteValue(date('Y-m-d H:i:s',strtotime($this->now())-(7*86400)));
+        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND audience='authors' AND COALESCE(publish_at,createdon)>={$cutoff} AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
     }
 
     /** Resolve active notification recipients for a site or selected contexts. */
