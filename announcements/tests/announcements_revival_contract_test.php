@@ -20,6 +20,8 @@ $checks = array(
     'Publication dimensions are stored independently' => strpos($schema, "'announcement_type'") !== false && strpos($schema, "'audience'") !== false,
     'Content model has one optional resource URL' => strpos($schema, "'resource_url'") !== false && strpos($schema, "'summary'") === false && strpos($schema, "'download_url'") === false,
     'Sidebar excerpt comes from the message' => strpos($block, "strip_tags((string)\$row['message'])") !== false,
+    'Scope uses one selector' => strpos($form, 'id="announcement-scope"') !== false && strpos($form, 'type="radio" name="recipienttarget"') === false,
+    'Introduction preserves context terminology' => strpos($register, 'selected groups or [-contexts-]') !== false,
     'Updates delivery is explicit and idempotent' => strpos($publisher, "'idempotencyKey'=>'announcement:'") !== false,
     'Instructor product update block is registered' => strpos($register, 'BLOCK: whatsnewauthors') !== false && strpos($block, 'getLatestAuthorUpdates(3)') !== false,
 );
