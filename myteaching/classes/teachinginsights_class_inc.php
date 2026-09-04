@@ -32,15 +32,11 @@ class teachinginsights extends ChisimbaObject
   usort($queue,fn($a,$b)=>strcasecmp($a['name'],$b['name']));return $queue;
  }
  private function text($key,$fallback,$tokens=null){return $tokens===null?$this->language->languageText('mod_myteaching_'.$key,'myteaching',$fallback):$this->language->code2Txt('mod_myteaching_'.$key,'myteaching',$tokens,$fallback);}
- public function show(){
-  if(!$this->user->isLoggedIn())return '';$courses=$this->courseInsights($this->user->userId());if(!$courses)return '';
+ public function renderCard(array $course){
   $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
-  $html='<section class="teaching-insights" aria-labelledby="teaching-insights-title"><header><p class="student-learning-overview__eyebrow">'.$e($this->text('insights_eyebrow','Your [-author-] overview',array())).'</p><h2 id="teaching-insights-title">'.$e($this->text('insights_title','What is happening in your courses')).'</h2><p>'.$e($this->text('insights_intro','A course-by-course view of participation, progress and work awaiting attention.')).'</p></header><div class="teaching-insights__courses">';
-  foreach($courses as $course){$progress=$course['progress']===null?'Not available':$course['progress'].'%';$html.='<article class="teaching-insight-course"><h3>'.$e($course['title']).'</h3><dl><div><dt>'.$e($this->text('students','[-readonlys-]',array())).'</dt><dd>'.$course['students'].'</dd></div><div><dt>'.$e($this->text('average_progress','Average progress')).'</dt><dd>'.$e($progress).'</dd></div><div><dt>'.$e($this->text('outstanding','Assessments outstanding')).'</dt><dd>'.array_sum(array_column($course['outstanding'],'count')).'</dd></div></dl><div class="teaching-insight-course__queue"><label for="assessment-'.$e($course['code']).'">'.$e($this->text('select_assessment','Select work awaiting marking')).'</label><select id="assessment-'.$e($course['code']).'" data-course="'.$e($course['code']).'">';
+  $progress=$course['progress']===null?'Not available':$course['progress'].'%';$html='<div class="teaching-insight-course"><dl><div><dt>'.$e($this->text('students','[-readonlys-]',array())).'</dt><dd>'.$course['students'].'</dd></div><div><dt>'.$e($this->text('average_progress','Average progress')).'</dt><dd>'.$e($progress).'</dd></div><div><dt>'.$e($this->text('outstanding','Assessments outstanding')).'</dt><dd>'.array_sum(array_column($course['outstanding'],'count')).'</dd></div></dl><div class="teaching-insight-course__queue"><label for="assessment-'.$e($course['code']).'">'.$e($this->text('select_assessment','Select work awaiting marking')).'</label><select id="assessment-'.$e($course['code']).'" data-course="'.$e($course['code']).'">';
    if(!$course['outstanding'])$html.='<option value="">'.$e($this->text('no_outstanding','Nothing awaiting marking')).'</option>';else{foreach($course['outstanding'] as $item)$html.='<option value="'.$e($item['provider'].'|'.$item['activity']).'">'.$e($item['name'].' — '.$item['count']).'</option>';}
-   $html.='</select><button type="button" class="button" disabled title="Action links will be connected as assessment services expose them.">'.$e($this->text('action_later','Open action')).'</button></div></article>';
-  }
-  return $html.'</div></section>';
+  return $html.'</select><button type="button" class="button" disabled title="Action links will be connected as assessment services expose them.">'.$e($this->text('action_later','Open action')).'</button></div></div>';
  }
 }
 ?>

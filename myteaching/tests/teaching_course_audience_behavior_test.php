@@ -9,6 +9,7 @@ $overview->services=array(
  'usercontext'=>new class {public function getContextWhereLecturer($user){return array('teaching-b','teaching-a','teaching-a');}},
  'dbcontext'=>new class {public function getContextDetails($code){return array('title'=>$code==='teaching-a'?'Algebra':'Biology','status'=>'Published');}},
  'contextimage'=>new class {public function getContextImage($code){return $code==='teaching-a'?'/contextimage/teaching-a.jpg':false;}},
+ 'teachinginsights'=>new class {public function courseInsights($user){return array();}public function renderCard($course){return '';}},
 );
 $overview->init();$courses=$overview->courses('mixed-user');
 if(array_column($courses,'code')!==array('teaching-a','teaching-b'))throw new RuntimeException('Teaching audience leaked or duplicated');
