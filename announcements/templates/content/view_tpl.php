@@ -62,8 +62,7 @@ if ($announcement['contextid'] == 'site') {
     }
 }
 $outStr .=  $announcement['message'];
-if(!empty($announcement['guide_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['guide_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_userguide','announcements','User guide').'</a></p>';
-if(!empty($announcement['download_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['download_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_download','announcements','Download').'</a></p>';
+if(!empty($announcement['resource_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['resource_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_userguide','announcements','Further information').'</a></p>';
 // Render the outer wrapped layer
 $objWashOut = $this->getObject('washout', 'utilities');
 $ret = $objWashOut->parseText($outStr);

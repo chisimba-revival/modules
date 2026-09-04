@@ -18,6 +18,8 @@ $checks = array(
     'Publishing cannot invoke legacy email' => substr_count($controller, '$email = FALSE;') === 2,
     'Description covers site and context audiences' => strpos($register, 'selected site or [-context-] audiences') !== false,
     'Publication dimensions are stored independently' => strpos($schema, "'announcement_type'") !== false && strpos($schema, "'audience'") !== false,
+    'Content model has one optional resource URL' => strpos($schema, "'resource_url'") !== false && strpos($schema, "'summary'") === false && strpos($schema, "'download_url'") === false,
+    'Sidebar excerpt comes from the message' => strpos($block, "strip_tags((string)\$row['message'])") !== false,
     'Updates delivery is explicit and idempotent' => strpos($publisher, "'idempotencyKey'=>'announcement:'") !== false,
     'Instructor product update block is registered' => strpos($register, 'BLOCK: whatsnewauthors') !== false && strpos($block, 'getLatestAuthorUpdates(3)') !== false,
 );

@@ -37,9 +37,7 @@ $fields = array(
 	),
 	'announcement_type' => array('type' => 'text', 'length' => 32, 'default' => 'general'),
 	'audience' => array('type' => 'text', 'length' => 32, 'default' => 'everyone'),
-	'summary' => array('type' => 'clob'),
-	'guide_url' => array('type' => 'text', 'length' => 2048),
-	'download_url' => array('type' => 'text', 'length' => 2048),
+	'resource_url' => array('type' => 'text', 'length' => 2048),
 	'publish_at' => array('type' => 'timestamp'),
 	'expires_at' => array('type' => 'timestamp'),
 	'show_in_latest' => array('type' => 'integer', 'length' => 1, 'default' => 0)

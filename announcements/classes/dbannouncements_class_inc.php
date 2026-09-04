@@ -78,9 +78,7 @@ class dbAnnouncements extends dbTable {
                     'contextid' => $type,
                     'announcement_type' => $metadata['announcement_type'] ?? 'general',
                     'audience' => $metadata['audience'] ?? 'everyone',
-                    'summary' => $metadata['summary'] ?? '',
-                    'guide_url' => $metadata['guide_url'] ?? '',
-                    'download_url' => $metadata['download_url'] ?? '',
+                    'resource_url' => $metadata['resource_url'] ?? '',
                     'publish_at' => $metadata['publish_at'] ?? $this->now(),
                     'expires_at' => $metadata['expires_at'] ?? NULL,
                     'show_in_latest' => !empty($metadata['show_in_latest']) ? 1 : 0

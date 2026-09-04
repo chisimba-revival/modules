@@ -68,7 +68,16 @@ class announcements extends controller
         $this->setVar('isAdmin', $this->isAdmin);
 		//Load Module Catalogue Class
 		$this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
-		$this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
+        $this->objContextGroups = $this->getObject('managegroups', 'contextgroups');
+		if ($this->isAdmin) {
+			$allContexts = array();
+			foreach ((array)$this->objContext->getAll() as $contextRow) {
+				if (!empty($contextRow['contextcode'])) $allContexts[] = $contextRow['contextcode'];
+			}
+			$this->lecturerContext = array_values(array_unique(array_merge((array)$this->lecturerContext, $allContexts)));
+			$this->setVar('lecturerContext', $this->lecturerContext);
+		}
+		$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$this->getResourceUri('announcements.css').'">');
 		if($this->objModuleCatalogue->checkIfRegistered('activitystreamer'))
 		{
 			$this->objActivityStreamer = $this->getObject('activityops', 'activitystreamer');
@@ -323,7 +332,7 @@ class announcements extends controller
             return 'addedit_tpl.php';
         } else if ($mode == 'add' || $mode == 'fixup') //  || $mode == 'save'
         {
-            $metadata=array('announcement_type'=>$announcementType,'audience'=>$audience,'summary'=>$this->getParam('summary',''),'guide_url'=>$this->safeUrl($this->getParam('guide_url','')),'download_url'=>$this->safeUrl($this->getParam('download_url','')),'show_in_latest'=>$this->getParam('show_in_latest')==='Y');
+            $metadata=array('announcement_type'=>$announcementType,'audience'=>$audience,'resource_url'=>$this->safeUrl($this->getParam('resource_url','')),'show_in_latest'=>$this->getParam('show_in_latest')==='Y');
             $result = $this->objAnnouncements->addAnnouncement($title, $message, $recipienttarget, $contexts, $email, $metadata);
             if($result!==FALSE&&$notify){$metadata['id']=$result;$metadata['title']=$title;$metadata['message']=$message;$this->objAnnouncementNotifications->publish($metadata,$recipienttarget==='context'?$contexts:array());}
             //add to activity streamer/log
