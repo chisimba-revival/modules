@@ -6,7 +6,7 @@ $checks=array(
  'course-author scope'=>str_contains($controller,'getContextWhereLecturer(')&&str_contains($overview,'getContextWhereLecturer($userId)')&&!str_contains($overview,'getUserContext('),
  'explicit administrator management'=>str_contains($controller,"\$action==='manage'")&&!str_contains($reg,'admin_common|manage')&&str_contains($view,'Managing the My Teaching page'),
  'separate block layout'=>substr_count($controller,"getContextBlocks('myteaching'")===1&&str_contains($controller,"addBlock(\$blockId,\$side,'myteaching'")&&str_contains($view,"theModule = 'myteaching'"),
- 'course entry retains management intent'=>str_contains($overview,"'contextaction'=>'controlpanel'")&&str_contains($overview,'Manage course'),
+ 'course entry separates teaching and management'=>str_contains($overview,"'contextaction'=>'controlpanel'")&&str_contains($overview,'Manage course')&&str_contains($overview,'Enter course')&&str_contains($overview,"'action'=>'leavecontext'")&&str_contains($overview,'Leave [-context-]'),
  'no learner obligations'=>!str_contains($controller,'studentdueitems')&&!str_contains($overview,'getStudentResult'),
 );
 foreach($checks as $label=>$ok){if(!$ok){fwrite(STDERR,"FAIL: $label\n");exit(1);}}echo "PASS: My Teaching is author-scoped with separate administrator management.\n";

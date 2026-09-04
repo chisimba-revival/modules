@@ -52,7 +52,10 @@ class discussionassessmentprovider extends ChisimbaObject
         $available = $this->listActivities($contextCode, 'palette');
         foreach ($available as $activity) {
             if ($activity['id'] === (string) $activityId) {
-                return $this->launcher->target($contextCode, 'discussion', array('action'=>'discussion', 'id'=>$activityId));
+                return $this->launcher->target($contextCode, 'discussion', array(
+                    'action'=>$role === 'author' ? 'markdiscussion' : 'discussion',
+                    'id'=>$activityId
+                ));
             }
         }
         return false;
@@ -69,5 +72,20 @@ class discussionassessmentprovider extends ChisimbaObject
         }
         $percentage = ((float) $mark['mark'] / max(1, (float) $activity['total_mark'])) * 100;
         return array('status'=>'marked', 'mark_percent'=>max(0, min(100, $percentage)));
+    }
+
+    /** Count the same evidence-review queue shown in the author workspace. */
+    public function getOutstandingReviewCount($contextCode, $activityId, array $studentIds)
+    {
+        if ($this->getActivity($contextCode, $activityId) === false) { return 0; }
+        $marks = $this->marks->getForDiscussion($activityId);
+        $state = $this->getObject('discussionassessmentstate', 'discussion');
+        $count = 0;
+        foreach ($studentIds as $studentId) {
+            $evidence = $this->posts->getAssessmentEvidence($activityId, $studentId);
+            $mark = isset($marks[$studentId]) ? $marks[$studentId] : null;
+            if ($state->needsReview($mark, $evidence)) { $count++; }
+        }
+        return $count;
     }
 }

@@ -7,9 +7,10 @@ $overview=new teachingcourseoverview();
 $overview->services=array(
  'user'=>new class {public function isLoggedIn(){return true;}public function userId(){return 'mixed-user';}},
  'usercontext'=>new class {public function getContextWhereLecturer($user){return array('teaching-b','teaching-a','teaching-a');}},
- 'dbcontext'=>new class {public function getContextDetails($code){return array('title'=>$code==='teaching-a'?'Algebra':'Biology','status'=>'Published');}},
+ 'dbcontext'=>new class {public function getContextDetails($code){return array('title'=>$code==='teaching-a'?'Algebra':'Biology','status'=>'Published');}public function getContextCode(){return 'root';}},
  'contextimage'=>new class {public function getContextImage($code){return $code==='teaching-a'?'/contextimage/teaching-a.jpg':false;}},
  'teachinginsights'=>new class {public function courseInsights($user){return array();}public function renderCard($course){return '';}},
+ 'language'=>new class {public function code2Txt($key,$module,$tokens,$fallback){return 'Leave course';}},
 );
 $overview->init();$courses=$overview->courses('mixed-user');
 if(array_column($courses,'code')!==array('teaching-a','teaching-b'))throw new RuntimeException('Teaching audience leaked or duplicated');
