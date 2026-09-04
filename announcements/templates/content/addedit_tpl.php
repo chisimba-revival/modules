@@ -159,18 +159,6 @@ if ($mode == 'add') {
     }
 }
 
-// Email to users
-$table->startRow();
-$email2Users = new radio ('email');
-$email2Users->addOption('N', $this->objLanguage->languageText('word_no', 'system', 'No'));
-$email2Users->addOption('Y', $this->objLanguage->languageText('word_yes', 'system', 'Yes'));
-$objSysConfig = $this->getObject ('dbsysconfig','sysconfig');
-$email2Users->setSelected(strtoupper($objSysConfig->getValue('EMAIL_DEFAULT_SETTING', 'announcements', 'FALSE'))==='TRUE'?'Y':'N');
-$email2Users->setBreakSpace(' &nbsp; ');
-$table->addCell($this->objLanguage->languageText('mod_announcements_emailtousers', 'announcements', 'Email to Users'));
-$table->addCell($email2Users->show());
-$table->endRow();
-
 // Message
 $table->startRow();
 $htmlArea = $this->newObject('htmlarea', 'htmlelements');

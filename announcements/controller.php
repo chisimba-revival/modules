@@ -48,8 +48,6 @@ class announcements extends controller
         $this->objDate = $this->getObject('dateandtime', 'utilities');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objConfig = $this->getObject('altconfig', 'config');
-        //feed creator subsystem
-        $this->objFeedCreator = $this->getObject('feeder', 'feed');
         $this->objAnnouncements = $this->getObject('dbannouncements');
         $this->userId = $this->objUser->userId();
         $objUserContext = $this->getObject('usercontext', 'context');
@@ -164,6 +162,12 @@ class announcements extends controller
      */
     public function __feed()
     {
+        if (!$this->objModuleCatalogue->checkIfRegistered('feed')) {
+            return $this->nextAction(NULL, array(
+                'error' => 'feedunavailable'
+            ));
+        }
+        $this->objFeedCreator = $this->getObject('feeder', 'feed');
         //get ther username
         $username = $this->getParam("username");
         //$username = "admin";
@@ -290,9 +294,10 @@ class announcements extends controller
         $title = $this->getParam('title');
         $recipienttarget = $this->getParam('recipienttarget');
         $contexts = $this->getParam('contexts', array());
-        $email = $this->getParam('email');
         $message = $this->getParam('message');
-        $email = ($email == 'Y');
+        // External delivery will be restored through Communications. Publishing
+        // must remain usable without the retired legacy Mail module.
+        $email = FALSE;
         if (
             ($mode == 'add'
             || $mode == 'fixup')
@@ -473,11 +478,10 @@ class announcements extends controller
         $id = $this->getParam('id');
         $title = $this->getParam('title');
         $message = $this->getParam('message');
-        $email = $this->getParam('email');
         $mode = $this->getParam('mode');
         $recipienttarget = $this->getParam('recipienttarget');
         $contexts = $this->getParam('contexts');
-        $email = ($email == 'Y') ? TRUE : FALSE;
+        $email = FALSE;
         if (!$this->checkPermission($id)) {
             return $this->nextAction(NULL, array('error'=>'nopermission'));
         } else {
