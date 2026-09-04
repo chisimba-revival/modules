@@ -14,4 +14,13 @@
             </change>
         </data>
     </update>
+    <update><table>tbl_announcements</table><version>0.392</version><description>Add announcement type</description><data><add><name>announcement_type</name><type>text</type><length>32</length><default>general</default></add></data></update>
+    <update><table>tbl_announcements</table><version>0.393</version><description>Add announcement audience</description><data><add><name>audience</name><type>text</type><length>32</length><default>everyone</default></add></data></update>
+    <update><table>tbl_announcements</table><version>0.394</version><description>Add announcement summary</description><data><add><name>summary</name><type>clob</type></add></data></update>
+    <update><table>tbl_announcements</table><version>0.395</version><description>Add guide URL</description><data><add><name>guide_url</name><type>text</type><length>2048</length></add></data></update>
+    <update><table>tbl_announcements</table><version>0.396</version><description>Add download URL</description><data><add><name>download_url</name><type>text</type><length>2048</length></add></data></update>
+    <update><table>tbl_announcements</table><version>0.397</version><description>Add publication time</description><data><add><name>publish_at</name><type>timestamp</type></add></data></update>
+    <update><table>tbl_announcements</table><version>0.398</version><description>Add expiry time</description><data><add><name>expires_at</name><type>timestamp</type></add></data></update>
+    <update><table>tbl_announcements</table><version>0.399</version><description>Add latest-block eligibility</description><data><add><name>show_in_latest</name><type>integer</type><length>1</length><default>0</default></add></data></update>
+    <update><table>tbl_announcements</table><version>0.400</version><description>Allow descriptive announcement titles</description><data><change><title><definition><type>text</type><length>255</length></definition></title></change></data></update>
 </updates>

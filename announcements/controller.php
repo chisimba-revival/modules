@@ -49,6 +49,7 @@ class announcements extends controller
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objAnnouncements = $this->getObject('dbannouncements');
+        $this->objAnnouncementNotifications = $this->getObject('announcementnotificationpublisher');
         $this->userId = $this->objUser->userId();
         $objUserContext = $this->getObject('usercontext', 'context');
         if(!empty($this->userId)){
@@ -298,6 +299,16 @@ class announcements extends controller
         // External delivery will be restored through Communications. Publishing
         // must remain usable without the retired legacy Mail module.
         $email = FALSE;
+        $announcementType = $this->getParam('announcement_type', 'general');
+        $audience = $this->getParam('audience', 'everyone');
+        $notify = $this->getParam('notify') === 'Y';
+        if (!in_array($announcementType, array('whats_new','general','service'), TRUE)
+            || !in_array($audience, array('everyone','admins','authors','readonlys'), TRUE)
+            || ($recipienttarget === 'context' && $announcementType !== 'general')
+            || ($recipienttarget === 'site' && !$this->isAdmin)
+            || ($recipienttarget === 'context' && !$this->mayPublishToContexts($contexts))) {
+            return $this->nextAction(NULL, array('error'=>'nopermission'));
+        }
         if (
             ($mode == 'add'
             || $mode == 'fixup')
@@ -312,7 +323,9 @@ class announcements extends controller
             return 'addedit_tpl.php';
         } else if ($mode == 'add' || $mode == 'fixup') //  || $mode == 'save'
         {
-            $result = $this->objAnnouncements->addAnnouncement($title, $message, $recipienttarget, $contexts, $email);
+            $metadata=array('announcement_type'=>$announcementType,'audience'=>$audience,'summary'=>$this->getParam('summary',''),'guide_url'=>$this->safeUrl($this->getParam('guide_url','')),'download_url'=>$this->safeUrl($this->getParam('download_url','')),'show_in_latest'=>$this->getParam('show_in_latest')==='Y');
+            $result = $this->objAnnouncements->addAnnouncement($title, $message, $recipienttarget, $contexts, $email, $metadata);
+            if($result!==FALSE&&$notify){$metadata['id']=$result;$metadata['title']=$title;$metadata['message']=$message;$this->objAnnouncementNotifications->publish($metadata,$recipienttarget==='context'?$contexts:array());}
             //add to activity streamer/log
             if($this->eventsEnabled)
             {
@@ -503,6 +516,11 @@ class announcements extends controller
             return $this->nextAction(NULL);
         }
     }
+
+    /** Require authorship of every selected context unless site admin. */
+    private function mayPublishToContexts($contexts){if($this->isAdmin)return !empty($contexts);$contexts=array_values(array_unique((array)$contexts));return $contexts&&count(array_diff($contexts,(array)$this->lecturerContext))===0;}
+    /** Keep optional resource links on HTTP(S) only. */
+    private function safeUrl($url){$url=trim((string)$url);return $url===''||preg_match('#^https?://#i',$url)?$url:'';}
 }
 
 ?>

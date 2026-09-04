@@ -28,6 +28,13 @@ if ($this->checkPermission($announcement['id'])) {
     $header->str .= ' '.$deleteLink;
 }
 $outStr = $header->show();
+$typeLabels=array(
+    'whats_new'=>$this->objLanguage->languageText('mod_announcements_whatsnew','announcements','What’s new'),
+    'general'=>$this->objLanguage->languageText('mod_announcements_general','announcements','General announcement'),
+    'service'=>$this->objLanguage->languageText('mod_announcements_service','announcements','Service notice')
+);
+$announcementType=(string)($announcement['announcement_type']??'general');
+$outStr .= '<p><strong>'.$this->objLanguage->languageText('mod_announcements_type','announcements','Type').':</strong> '.htmlspecialchars($typeLabels[$announcementType]??$typeLabels['general'],ENT_QUOTES,'UTF-8').'</p>';
 $outStr .=  '<p><strong>By:</strong> '.$this->objUser->fullName($announcement['createdby']).' - '.$objDateTime->formatDate($announcement['createdon']);
 if ($announcement['contextid'] == 'site') {
     $outStr .= ' - <strong>'
@@ -55,6 +62,8 @@ if ($announcement['contextid'] == 'site') {
     }
 }
 $outStr .=  $announcement['message'];
+if(!empty($announcement['guide_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['guide_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_userguide','announcements','User guide').'</a></p>';
+if(!empty($announcement['download_url']))$outStr.='<p><a href="'.htmlspecialchars($announcement['download_url'],ENT_QUOTES,'UTF-8').'">'.$this->objLanguage->languageText('mod_announcements_download','announcements','Download').'</a></p>';
 // Render the outer wrapped layer
 $objWashOut = $this->getObject('washout', 'utilities');
 $ret = $objWashOut->parseText($outStr);

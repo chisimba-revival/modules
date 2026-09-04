@@ -67,7 +67,7 @@ class dbAnnouncements extends dbTable {
      * @param boolean $email Should Announcement be emailed to users
      * @return string Insert Id
      */
-    public function addAnnouncement($title, $message, $type='site', $contexts=array(), $email=TRUE) {
+    public function addAnnouncement($title, $message, $type='site', $contexts=array(), $email=TRUE, array $metadata=array()) {
         // Insert
         $messageId = $this->insert(array(
                     'title' => $title,
@@ -75,7 +75,15 @@ class dbAnnouncements extends dbTable {
                     //'title' => $title,
                     'createdon' => $this->now(),
                     'createdby' => $this->objUser->userId(),
-                    'contextid' => $type
+                    'contextid' => $type,
+                    'announcement_type' => $metadata['announcement_type'] ?? 'general',
+                    'audience' => $metadata['audience'] ?? 'everyone',
+                    'summary' => $metadata['summary'] ?? '',
+                    'guide_url' => $metadata['guide_url'] ?? '',
+                    'download_url' => $metadata['download_url'] ?? '',
+                    'publish_at' => $metadata['publish_at'] ?? $this->now(),
+                    'expires_at' => $metadata['expires_at'] ?? NULL,
+                    'show_in_latest' => !empty($metadata['show_in_latest']) ? 1 : 0
                 ));
 
         if ($type == 'site') {
@@ -379,6 +387,29 @@ class dbAnnouncements extends dbTable {
 
         return $this->getArray($sql);
     }
+
+    /** Return published instructor-facing product updates for the sidebar. */
+    public function getLatestAuthorUpdates($limit=3) {
+        $limit=max(1,min(10,(int)$limit));
+        $now=$this->quoteValue($this->now());
+        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND announcement_type='whats_new' AND audience='authors' AND show_in_latest=1 AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
+    }
+
+    /** Resolve active notification recipients for a site or selected contexts. */
+    public function recipientUserIds($audience, array $contexts=array()) {
+        $audience=(string)$audience;$join='';$where='u.isactive=1';
+        if($audience!=='everyone'||$contexts){$join=' JOIN tbl_perms_perm_users pu ON pu.auth_user_id=u.userid JOIN tbl_perms_groupusers gu ON gu.perm_user_id=pu.perm_user_id JOIN tbl_perms_groups g ON g.group_id=gu.group_id';}
+        if($audience==='admins')$where.=" AND g.group_define_name='Site Admin'";
+        elseif($audience==='authors')$where.=" AND (g.group_define_name='Lecturers' OR g.group_define_name LIKE '%^Lecturers')";
+        elseif($audience==='readonlys')$where.=" AND (g.group_define_name='Students' OR g.group_define_name LIKE '%^Students')";
+        elseif($audience!=='everyone')return array();
+        if($contexts){$parts=array();foreach(array_unique($contexts) as $code)$parts[]="g.group_define_name LIKE ".$this->quoteValue((string)$code.'^%');$where.=' AND ('.implode(' OR ',$parts).')';}
+        $rows=$this->getArray("SELECT DISTINCT u.userid FROM tbl_users u{$join} WHERE {$where} ORDER BY u.userid");
+        return array_values(array_filter(array_map(fn($row)=>(string)($row['userid']??''),$rows)));
+    }
+
+    /** Quote one scalar through the active framework database adapter. */
+    private function quoteValue($value){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'";}
 
     /**
      * Method to get a list of announcements for a particular context
