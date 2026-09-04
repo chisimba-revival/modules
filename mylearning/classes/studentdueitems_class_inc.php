@@ -53,7 +53,11 @@ class studentdueitems extends ChisimbaObject
     public function items($userId)
     {
         $items = array();
-        $contextCodes = array_values(array_unique((array) $this->userContext->getUserContext($userId)));
+        // A site administrator or lecturer may belong to many courses without
+        // owing their learner work. My Learning is strictly student-scoped.
+        $contextCodes = array_values(array_unique(
+            (array) $this->userContext->getContextWhereStudent($userId)
+        ));
         foreach ($contextCodes as $contextCode) {
             $context = $this->contexts->getContextDetails($contextCode);
             if (!is_array($context) || empty($context['title'])) {

@@ -10,13 +10,14 @@ $checks = array(
         $register,
         'MODULE_ID: mylearning'
     ),
-    'administrator preview is discoverable' => str_contains(
+    'administrator management is discoverable' => str_contains(
         $register,
         'PAGE: admin_common'
-    ) && str_contains($register, 'mod_mylearning_viewstudentpage'),
-    'students and administrators may view' => str_contains($controller, 'mayView')
-        && str_contains($controller, 'isAdmin()')
-        && str_contains($controller, 'getContextWhereStudent'),
+    ) && str_contains($register, 'admin_common|manage') && str_contains($register, 'mod_mylearning_manage'),
+    'personal view is student scoped and management is explicit' => str_contains($controller, 'mayView')
+        && str_contains($controller, "\$action === 'manage'")
+        && str_contains($controller, 'getContextWhereStudent')
+        && !str_contains($controller, "if (\$this->user->isAdmin()) { return true; }"),
     'learning state comes from the shared overview' => str_contains(
         $controller,
         "getObject('studentlearningoverview', 'context')"

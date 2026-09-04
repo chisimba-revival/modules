@@ -5,23 +5,28 @@ class mylearning extends controller
     public function init()
     {
         $this->user = $this->getObject('user', 'security');
+        $this->objLanguage = $this->getObject('language', 'language');
         $this->userContext = $this->getObject('usercontext', 'context');
         $this->contextBlocks = $this->getObject('dbcontextblocks', 'context');
         $this->dynamicBlocks = $this->getObject('dynamicblocks', 'blocks');
     }
     public function dispatch($action)
     {
-        if (!$this->mayView()) { return 'noaccess_tpl.php'; }
-        if (in_array($action, array(
+        $blockAction = in_array($action, array(
             'renderblock', 'addblock', 'removeblock', 'moveblock'
-        ), true)) {
+        ), true);
+        if ($blockAction && $this->user->isAdmin()) {
             $this->dispatchBlockAction($action);
             return null;
         }
+        $managing = $action === 'manage' && $this->user->isAdmin();
+        if (!$managing && !$this->mayView()) { return 'noaccess_tpl.php'; }
+        $this->setVar('managingDashboard', $managing);
         $this->setVar('learningOverview', $this->getObject('studentlearningoverview', 'context')->show());
         $this->setVar('dueItems', $this->getObject('studentdueitems', 'mylearning')->show());
         $modules=$this->getObject('modules','modulecatalogue');
-        $membershipAvailable=$modules->checkIfRegistered('membership-service')
+        $membershipAvailable=!$managing
+            &&$modules->checkIfRegistered('membership-service')
             &&$modules->checkIfRegistered('payment-service');
         $this->setVar('membershipAvailable',$membershipAvailable);
         $this->setVar('membershipTier',$membershipAvailable
@@ -130,7 +135,6 @@ class mylearning extends controller
     private function mayView()
     {
         if (!$this->user->isLoggedIn()) { return false; }
-        if ($this->user->isAdmin()) { return true; }
         return count((array) $this->userContext->getContextWhereStudent($this->user->userId())) > 0;
     }
 }

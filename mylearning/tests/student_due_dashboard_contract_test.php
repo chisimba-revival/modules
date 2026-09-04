@@ -15,6 +15,8 @@ $checks = array(
     'only enabled course tools contribute' => strpos($service, 'getContextModules($contextCode)') !== false
         && strpos($service, 'isset($enabled[$provider[\'module_id\']])') !== false,
     'duplicate role memberships do not duplicate due items' => strpos($service, 'array_unique(') !== false,
+    'student dashboard uses student course roles only' => strpos($service, 'getContextWhereStudent($userId)') !== false
+        && strpos($service, 'getUserContext($userId)') === false,
     'uses canonical time service' => strpos($service, "getObject('timeanddateservice', 'timeanddate-service')") !== false,
     'normalises result and launch target' => strpos($service, 'getStudentResult(') !== false
         && strpos($service, 'getLaunchTarget(') !== false,

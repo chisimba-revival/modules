@@ -1,9 +1,12 @@
 <?php
 $language = $this->getObject('language', 'language');
+$managementNotice = !empty($managingDashboard)
+    ? '<section class="chisimba-notice chisimba-notice--info"><strong>Managing the My Learning page</strong><p>Changes to dashboard blocks affect the shared student experience. Course cards and due work below remain limited to courses where this account is enrolled as a student.</p></section>'
+    : '';
 $membershipPanel='';
 if($membershipAvailable){
     $tierLabel=match((string)$membershipTier){'tier_1'=>'Tier 1','tier_2'=>'Tier 2',default=>'Free'};
-    $membershipPanel='<section class="student-membership-summary"><div><p class="student-membership-summary__eyebrow">YOUR MEMBERSHIP</p><h2>'.$tierLabel.'</h2><p>Membership unlocks the learning available for your tier.</p></div><a class="button" href="'.$this->uri(array('action'=>'tiers'),'payment-service').'">'.($membershipTier==='free'?'Explore memberships':'View membership').'</a></section>';
+    $membershipPanel='<section class="student-membership-summary"><div><p class="student-membership-summary__eyebrow">YOUR MEMBERSHIP</p><h2>'.$tierLabel.'</h2><p>Membership unlocks the learning available for your tier.</p></div><a class="button" href="'.$this->uri(array('action'=>'tiers','purpose'=>'membership'),'payment-service').'">'.($membershipTier==='free'?'Explore memberships':'View membership').'</a></section>';
 }
 $editingSwitch = '';
 $upperEditor = '';
@@ -89,7 +92,7 @@ $layout->setLeftColumnContent(
     . '</aside>'
 );
 $layout->setMiddleColumnContent(
-    '<main class="mylearning-page">' . $membershipPanel . $dueItems . $learningOverview
+    '<main class="mylearning-page">' . $managementNotice . $membershipPanel . $dueItems . $learningOverview
     . '<div id="middleblocks" class="mylearning-page__blocks">'
     . $wideBlocks . '</div>' . $wideEditor . '</main>'
 );
