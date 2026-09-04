@@ -1,1 +1,30 @@
 .announcements-publisher{max-width:70rem;margin-inline:auto}.announcements-publisher__form{padding:clamp(1rem,2.5vw,2rem);display:grid;gap:1.35rem}.announcements-publisher__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.announcements-publisher__wide{grid-column:1/-1}.announcements-publisher input[type=text],.announcements-publisher input[type=url],.announcements-publisher input:not([type]){box-sizing:border-box;width:100%;max-width:none}.announcements-publisher fieldset{border:1px solid var(--chisimba-border,#d6dde3);border-radius:.75rem;padding:1rem;display:grid;gap:.65rem}.announcements-publisher legend{font-weight:700;padding-inline:.35rem}.announcements-publisher__contexts{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.5rem;padding-top:.4rem}.announcements-publisher label{font-weight:600}.announcements-publisher small{color:var(--chisimba-muted,#5f6b76)}.announcements-publisher__visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:700px){.announcements-publisher__grid{grid-template-columns:1fr}}
+
+.announcements-archive{max-width:74rem;margin:0 auto;padding:clamp(1rem,2.5vw,2rem)}
+.announcements-archive__header{display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem}
+.announcements-archive__header h1{margin:.15rem 0 .35rem;font-size:clamp(2rem,4vw,3rem)}
+.announcements-archive__header p{margin:0;color:var(--chisimba-muted,#596775)}
+.announcements-archive__eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--chisimba-primary,#0678c8)!important}
+.announcements-archive__publish,.announcements-archive__pagination a{display:inline-flex;align-items:center;gap:.5rem;border-radius:.5rem;text-decoration:none;font-weight:700}
+.announcements-archive__publish{padding:.75rem 1rem;background:var(--chisimba-primary,#0678c8);color:#fff;white-space:nowrap}
+.announcements-archive__publish svg,.announcements-archive__read svg,.announcements-archive__pagination svg{width:1.05rem;height:1.05rem}
+.announcements-archive__list{display:grid;gap:.75rem}
+.announcements-archive__item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;padding:1.15rem;border:1px solid var(--chisimba-border,#d7dde3);border-radius:.8rem;background:#fff}
+.announcements-archive__icon{display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:.7rem;background:#e7f4fc;color:#006eb8}
+.announcements-archive__item--service .announcements-archive__icon{background:#fff0e7;color:#a84000}
+.announcements-archive__item--whats-new .announcements-archive__icon{background:#eef7e9;color:#347528}
+.announcements-archive__icon svg{width:1.35rem;height:1.35rem}
+.announcements-archive__meta{display:flex;flex-wrap:wrap;gap:.45rem 1rem;color:var(--chisimba-muted,#596775);font-size:.86rem}
+.announcements-archive__meta span{font-weight:700}
+.announcements-archive__body h2{font-size:1.15rem;margin:.35rem 0}
+.announcements-archive__body h2 a{color:inherit;text-decoration:none}
+.announcements-archive__body>p{margin:.25rem 0 .65rem;color:#344454}
+.announcements-archive__read{display:inline-flex;align-items:center;gap:.35rem;font-weight:700;text-decoration:none}
+.announcements-archive__empty{text-align:center;padding:3rem 1rem;border:1px dashed var(--chisimba-border,#cbd5df);border-radius:.8rem;background:#f8fafc}
+.announcements-archive__empty>svg{width:2.5rem;height:2.5rem;color:var(--chisimba-primary,#0678c8)}
+.announcements-archive__empty h2{margin:.7rem 0 .25rem}
+.announcements-archive__empty p{margin:0;color:var(--chisimba-muted,#596775)}
+.announcements-archive__pagination{display:flex;justify-content:space-between;gap:1rem;margin-top:1.25rem}
+.announcements-archive__pagination a{padding:.65rem .85rem;border:1px solid var(--chisimba-border,#cbd5df);background:#fff}
+.announcements-archive__pagination a:last-child{margin-left:auto}
+@media(max-width:700px){.announcements-archive__header{align-items:stretch;flex-direction:column}.announcements-archive__publish{align-self:flex-start}.announcements-archive__item{grid-template-columns:1fr}.announcements-archive__icon{width:2.35rem;height:2.35rem}}

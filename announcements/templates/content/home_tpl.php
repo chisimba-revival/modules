@@ -1,120 +1,68 @@
 <?php
-// Initialise variables
-$userContexts=array();
-$allAnn = "";
-$courseAnn ="";
-$content="";
-
-// Load the viewer javascript
-$this->appendArrayVar('headerParams',
-$this->getJavaScriptFile('announceview.js',
-    'announcements'));
-
-$this->loadClass('htmlheading', 'htmlelements');
-$this->loadClass('link', 'htmlelements');
-
-$objIcon = $this->newObject('geticon', 'htmlelements');
-$objIcon->setIcon('add');
-
-$addLink = new link ($this->uri(array('action'=>'add')));
-$addLink->link = $objIcon->show();
-
-$cc = $this->objContext->getContextCode();
-if ($cc != '') {
-    $numContextAnnouncements = $this->objAnnouncements->getNumContextAnnouncements($cc);
-    $header = new htmlHeading();
-    $header->type = 1;
-    $header->str = ucwords($this->objLanguage->code2Txt('mod_announcements_contextannouncements',
-      'announcements', NULL, '[-context-] Announcements'))
-      . ' - <span class="coursetitle">' . $this->objContext->getTitle($cc)
-      . '</span> ('.$numContextAnnouncements.')';
-
-    if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
-        $header->str .= ' '.$addLink->show();
-    }
-
-    $courseAnn .=  $header->show();
-
-    $objPagination = $this->newObject('pagination', 'navigation');
-    $objPagination->module = 'announcements';
-    $objPagination->action = 'getcontextajax';
-    $objPagination->id = 'pagenavigation_context';
-
-    $itemsPerPage = ($numContextAnnouncements - ($numContextAnnouncements % $this->itemsPerPage)) / $this->itemsPerPage;
-    if ($numContextAnnouncements % $this->itemsPerPage != 0) {
-        $itemsPerPage++;
-    }
-
-    $objPagination->numPageLinks = $itemsPerPage;
-
-    $courseAnn .= $objPagination->show();
-    $courseAnn = "\n<div class='outerwrapper'>$courseAnn</div>\n";
-    // Course announcements rendered here.
-    $content.= $courseAnn;
-}
-
-// All announcements below.
-$userId = $this->objUser->userId();
-$objUserContext = $this->getObject('usercontext', 'context');
-if(!empty($userId)){
-    $userContext = $objUserContext->getUserContext($this->userId);
-    // Remove the current context from the array.
-    foreach ($userContext as $context) {
-        if ($context !== $cc) {
-            $userContexts[] = $context;
-        }
-    }
-    unset($userContext);
-}
-$numAnnouncements = $this->objAnnouncements->getNumAnnouncements($userContexts);
-$header = new htmlHeading();
-$header->type = 1;
-$header->str = $this->objLanguage->languageText(
-  'mod_announcements_myannouncements', 'announcements',
-  'All My Announcements'
-).' ('.$numAnnouncements.')';
-
-if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
-    $header->str .= ' '.$addLink->show();
-}
-
-$allAnn .= $header->show();
-
-$objPagination = $this->newObject('pagination', 'navigation');
-$objPagination->module = 'announcements';
-$objPagination->action = 'getajax';
-$objPagination->id = 'pagenavigation_all';
-
-$itemsPerPage = ($numAnnouncements - ($numAnnouncements % $this->itemsPerPage)) / $this->itemsPerPage;
-if ($numAnnouncements % $this->itemsPerPage != 0) {
-    $itemsPerPage++;
-}
-$objPagination->numPageLinks = $itemsPerPage;
-$allAnn .= $objPagination->show();
-$allAnn  = "\n<div class='outerwrapper'>$allAnn </div>\n";
-$addLink = new link ($this->uri(array('action'=>'add')));
-$addLink->link = $this->objLanguage->languageText('mod_announcements_postnewannouncement', 'announcements', 'Post New Announcement');
-$content.= $allAnn;
-
-// Add new announcement link
-if ($isAdmin || (is_countable($lecturerContext) ? count($lecturerContext) : 0) > 0) {
-    $content.= "<div class='linkwrapper'><div class='adminadd'></div><div class='adminaddlink'>" . $addLink->show() . "</div></div>";
-}
-
-$cssLayout = $this->newObject('csslayout', 'htmlelements');
-$cssLayout->setNumColumns(2);
-
-$toolbar = $this->getObject('contextsidebar', 'context');
-
-// Initialize left column
-$leftSideColumn = $toolbar->show();
-$this->objFeatureBox = $this->newObject('featurebox', 'navigation');
-//$leftSideColumn=$this->objFeatureBox->show($blocktitle, $leftSideColumn);
-$cssLayout->setLeftColumnContent($leftSideColumn);
-$cssLayout->setMiddleColumnContent(
-  "<div class='announcements'>"
-  . $content . "</div>");
-//$cssLayout->setRightColumnContent($this->objAnnouncementsTools->getRightBlocks());
-
-echo $cssLayout->show();
+$escape = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
+$icons = $this->getObject('iconservice', 'ui');
+$dateTime = $this->getObject('dateandtime', 'utilities');
+$typeLabels = array(
+    'whats_new' => $this->objLanguage->languageText('mod_announcements_whatsnew', 'announcements', 'What’s new'),
+    'general' => $this->objLanguage->languageText('mod_announcements_general', 'announcements', 'General announcement'),
+    'service' => $this->objLanguage->languageText('mod_announcements_service', 'announcements', 'Service notice'),
+);
+$title = $this->objLanguage->languageText('mod_announcements_archiveheading', 'announcements', 'Announcements');
+$intro = $this->objLanguage->languageText('mod_announcements_archivehelp', 'announcements', 'News, notices and information shared with you.');
+$publish = $this->objLanguage->languageText('mod_announcements_postannouncement', 'announcements', 'Publish announcement');
 ?>
+<main class="announcements-archive">
+    <header class="announcements-archive__header">
+        <div>
+            <p class="announcements-archive__eyebrow"><?php echo $escape($this->objLanguage->languageText('mod_announcements_updateslabel', 'announcements', 'Updates')); ?></p>
+            <h1><?php echo $escape($title); ?></h1>
+            <p><?php echo $escape($intro); ?></p>
+        </div>
+        <?php if ($canPublish): ?>
+            <a class="announcements-archive__publish" href="<?php echo $escape($this->uri(array('action' => 'add'))); ?>">
+                <?php echo $icons->render('plus', array('decorative' => true)); ?><span><?php echo $escape($publish); ?></span>
+            </a>
+        <?php endif; ?>
+    </header>
+
+    <?php if (!$announcements): ?>
+        <section class="announcements-archive__empty">
+            <?php echo $icons->render('megaphone', array('decorative' => true)); ?>
+            <h2><?php echo $escape($this->objLanguage->languageText('mod_announcements_noannouncements', 'announcements', 'There are no announcements')); ?></h2>
+            <p><?php echo $escape($this->objLanguage->languageText('mod_announcements_emptyhelp', 'announcements', 'New announcements will appear here when they are published.')); ?></p>
+        </section>
+    <?php else: ?>
+        <div class="announcements-archive__list">
+            <?php foreach ($announcements as $announcement):
+                $type = (string) ($announcement['announcement_type'] ?? 'general');
+                $date = $announcement['publish_at'] ?: $announcement['createdon'];
+                $viewUrl = $this->uri(array('action' => 'view', 'id' => $announcement['id']));
+                $excerpt = trim(preg_replace('/\s+/', ' ', strip_tags((string) $announcement['message'])));
+                if (mb_strlen($excerpt) > 240) $excerpt = mb_substr($excerpt, 0, 237) . '…';
+            ?>
+                <article class="announcements-archive__item announcements-archive__item--<?php echo $escape(str_replace('_', '-', $type)); ?>">
+                    <div class="announcements-archive__icon"><?php echo $icons->render($type === 'service' ? 'triangle-alert' : ($type === 'whats_new' ? 'sparkles' : 'megaphone'), array('decorative' => true)); ?></div>
+                    <div class="announcements-archive__body">
+                        <div class="announcements-archive__meta">
+                            <span><?php echo $escape($typeLabels[$type] ?? $typeLabels['general']); ?></span>
+                            <time datetime="<?php echo $escape(substr((string) $date, 0, 10)); ?>"><?php echo $escape($dateTime->formatDate($date)); ?></time>
+                        </div>
+                        <h2><a href="<?php echo $escape($viewUrl); ?>"><?php echo $escape($announcement['title']); ?></a></h2>
+                        <?php if ($excerpt !== ''): ?><p><?php echo $escape($excerpt); ?></p><?php endif; ?>
+                        <a class="announcements-archive__read" href="<?php echo $escape($viewUrl); ?>">
+                            <span><?php echo $escape($this->objLanguage->languageText('mod_announcements_readannouncement', 'announcements', 'Read announcement')); ?></span>
+                            <?php echo $icons->render('arrow-right', array('decorative' => true)); ?>
+                        </a>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($page > 0 || $hasNext): ?>
+        <nav class="announcements-archive__pagination" aria-label="<?php echo $escape($this->objLanguage->languageText('mod_announcements_paginationlabel', 'announcements', 'Announcement pages')); ?>">
+            <?php if ($page > 0): ?><a href="<?php echo $escape($this->uri(array('page' => $page - 1))); ?>"><?php echo $icons->render('arrow-left', array('decorative' => true)); ?><span><?php echo $escape($this->objLanguage->languageText('word_previous', 'system', 'Previous')); ?></span></a><?php endif; ?>
+            <?php if ($hasNext): ?><a href="<?php echo $escape($this->uri(array('page' => $page + 1))); ?>"><span><?php echo $escape($this->objLanguage->languageText('word_next', 'system', 'Next')); ?></span><?php echo $icons->render('arrow-right', array('decorative' => true)); ?></a><?php endif; ?>
+        </nav>
+    <?php endif; ?>
+</main>

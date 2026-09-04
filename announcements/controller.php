@@ -43,6 +43,8 @@ class announcements extends controller
     */
     public function init()
     {
+        $this->userContexts = array();
+        $this->lecturerContext = array();
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext = $this->getObject('dbcontext','context');
         $this->objDate = $this->getObject('dateandtime', 'utilities');
@@ -279,10 +281,26 @@ class announcements extends controller
     */
     private function __home()
     {
-        //use own template here
         $this->setLayoutTemplate(NULL);
-        //$numAnnouncements = $this->objAnnouncements->getNumAnnouncements($this->userContext);
-        //$this->setVarByRef('numAnnouncements', $numAnnouncements);
+        $page = max(0, (int) $this->getParam('page', 0));
+        $contexts = $this->userContexts;
+        $currentContext = $this->objContext->getContextCode();
+        if ($currentContext !== '') $contexts[] = $currentContext;
+        $audiences = array('everyone');
+        if ($this->isAdmin) $audiences[] = 'admins';
+        if (count((array) $this->lecturerContext) > 0) $audiences[] = 'authors';
+        $studentContexts = (array) $this->getObject('usercontext', 'context')->getContextWhereStudent($this->userId);
+        if ($studentContexts) {
+            $audiences[] = 'readonlys';
+            $contexts = array_merge($contexts, $studentContexts);
+        }
+        $rows = $this->objAnnouncements->getVisibleAnnouncements(array_values(array_unique($contexts)), array_values(array_unique($audiences)), $this->itemsPerPage + 1, $page * $this->itemsPerPage);
+        $hasNext = count($rows) > $this->itemsPerPage;
+        if ($hasNext) array_pop($rows);
+        $this->setVar('announcements', $rows);
+        $this->setVar('page', $page);
+        $this->setVar('hasNext', $hasNext);
+        $this->setVar('canPublish', $this->isAdmin || count((array) $this->lecturerContext) > 0);
         return 'home_tpl.php';
     }
 
@@ -364,111 +382,6 @@ class announcements extends controller
             $this->setVarByRef('announcement', $announcement);
             return 'view_tpl.php';
         }
-    }
-
-    /**
-     * Method to respond via ajax for a listing of all announcements
-     */
-    private function __getajax()
-    {
-        $page = $this->getParam('page', 0);
-        $announcements = $this->objAnnouncements->getAllAnnouncements($this->userContexts, $this->itemsPerPage, $page);
-        if ((is_countable($announcements) ? count($announcements) : 0) == 0) {
-            echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_announcements_noannouncements', 'announcements', 'There are no announcements').'</div>';
-        } else {
-            return $this->generateAjaxResponse($announcements);
-        }
-    }
-
-    /**
-     * Method to respond via ajax for a listing of the current context announcements
-     */
-    private function __getcontextajax()
-    {
-        $page = $this->getParam('page', 0);
-        $announcements = $this->objAnnouncements->getContextAnnouncements(
-          $this->objContext->getContextCode(), $this->itemsPerPage, $page
-        );
-        if ((is_countable($announcements) ? count($announcements) : 0) == 0) {
-            echo '<div class="noRecordsMessage">'
-              .$this->objLanguage->languageText(
-                'mod_announcements_noannouncements', 'announcements',
-                'There are no announcements'
-              ) .'</div>';
-        } else {
-            return $this->generateAjaxResponse($announcements);
-        }
-    }
-
-    /**
-     * Method to convert db results into a table before responding via ajax
-     */
-    private function generateAjaxResponse($announcements)
-    {
-        $this->loadClass('link', 'htmlelements');
-            $this->loadClass('htmlheading', 'htmlelements');
-            $objDateTime = $this->getObject('dateandtime', 'utilities');
-            $objTrimString = $this->getObject('trimstr', 'strings');
-            $table = $this->newObject('htmltable', 'htmlelements');
-			//$table->width= '80%';
-            $table->startHeaderRow();
-            $table->addHeaderCell($this->objLanguage->languageText('word_date', 'system', 'Date'), "180");
-            $table->addHeaderCell($this->objLanguage->languageText('word_title', 'system', 'Title'));
-            $table->addHeaderCell($this->objLanguage->languageText('word_by', 'system', 'By'), "200");
-            $table->addHeaderCell($this->objLanguage->languageText('word_type', 'system', 'Type'), "70");
-			$table->addHeaderCell('&nbsp;', "70");
-			$table->endHeaderRow();
-            // Initialise class for odd even.
-            $rowClass = 'even';
-            foreach ($announcements as $announcement)
-            {
-                $rowClass = ($rowClass == 'even')? 'odd' : 'even';
-                $link = new link ($this->uri(array('action'=>'view', 'id'=>$announcement['id'])));
-                $link->link = $announcement['title'];
-
-
-                $vLink = '<a class="an_vw_msg" href="javascript:void(null)" id="'
-                  . $announcement['id'] . '">'
-                  . $announcement['title'] . '</a>';
-                $message = "<div id='msg_" . $announcement['id']
-                  . "' class='announcement_hider' style='display: none;'>"
-                  . $announcement['message'] . "</div>";
-
-
-                //Get and set the edit icon
-                $objEdIcon = $this->getObject('geticon', 'htmlelements');
-                $objEdIcon->setIcon('edit');
-                //Link to edit using the edit icon
-                $editLink = new link ($this->uri(array('action'=>'edit', 'id'=>$announcement['id'])));
-                $editLink->link = $objEdIcon->show();
-                //Get and set the delete icon
-                $objIcon = $this->getObject('geticon', 'htmlelements');
-                $objIcon->setIcon('delete');
-                //Link to delete using the delete icon
-                $deleteArray = array('action'=>'delete', 'id'=>$announcement['id']);
-                $deleteLink = $objIcon->getDeleteIconWithConfirm($announcement['id'], $deleteArray, 'announcements');
-                $table->startRow($rowClass);
-                $table->addCell($objDateTime->formatDate($announcement['createdon']), "180");
-
-
-                $table->addCell($vLink . "<br />" . $message);
-
-
-                $table->addCell($this->objUser->fullName($announcement['createdby']), "200");
-                if ($announcement['contextid'] == 'site') {
-                    $type = $this->objLanguage->languageText('mod_announcements_siteword', 'announcements', 'Site');
-                } else {
-                    $type = ucwords($this->objLanguage->code2Txt('mod_context_context', 'context', NULL, '[-context-]'));
-                }
-                $table->addCell($type, "70");
-				if ($this->checkPermission($announcement['id'])) {
-					$table->addCell($editLink->show()."&nbsp;&nbsp;".$deleteLink, "70");
-				} else {
-                    $table->addCell("&nbsp;", "70");
-                }
-                $table->endRow();
-            }
-            echo $table->show();
     }
 
     /**

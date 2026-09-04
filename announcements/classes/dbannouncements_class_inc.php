@@ -361,6 +361,24 @@ class dbAnnouncements extends dbTable {
         return $this->getArray($sql);
     }
 
+    /** Return active site and context announcements visible to this user. */
+    public function getVisibleAnnouncements(array $contexts, array $audiences, $limit, $offset)
+    {
+        $audienceSql = array();
+        foreach ($audiences as $audience) $audienceSql[] = $this->quoteValue($audience);
+        if (!$audienceSql) return array();
+        $scope = array("a.contextid = 'site'");
+        foreach ($contexts as $context) $scope[] = 'ac.contextid = ' . $this->quoteValue($context);
+        $limit = max(1, min(100, (int) $limit));
+        $offset = max(0, (int) $offset);
+        $now = $this->quoteValue($this->now());
+        $sql = 'SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid = a.id '
+            . 'WHERE (' . implode(' OR ', $scope) . ') AND a.audience IN (' . implode(',', $audienceSql) . ') '
+            . "AND (a.publish_at IS NULL OR a.publish_at <= {$now}) AND (a.expires_at IS NULL OR a.expires_at > {$now}) "
+            . 'ORDER BY COALESCE(a.publish_at,a.createdon) DESC ' . "LIMIT {$offset},{$limit}";
+        return $this->getArray($sql);
+    }
+
     /**
      * Method to get a list of site announcements
      *

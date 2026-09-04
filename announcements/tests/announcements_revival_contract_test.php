@@ -7,6 +7,7 @@ $form = file_get_contents($root . '/templates/content/addedit_tpl.php');
 $schema = file_get_contents($root . '/sql/tbl_announcements.sql');
 $publisher = file_get_contents($root . '/classes/announcementnotificationpublisher_class_inc.php');
 $block = file_get_contents($root . '/classes/block_whatsnewauthors_class_inc.php');
+$archive = file_get_contents($root . '/templates/content/home_tpl.php');
 $checks = array(
     'Feed is not loaded during initialisation' => strpos(
         substr($controller, 0, strpos($controller, 'public function __feed()')),
@@ -24,6 +25,10 @@ $checks = array(
     'Introduction preserves context terminology' => strpos($register, 'selected groups or [-contexts-]') !== false,
     'Updates delivery is explicit and idempotent' => strpos($publisher, "'idempotencyKey'=>'announcement:'") !== false,
     'Instructor product update block is registered' => strpos($register, 'BLOCK: whatsnewauthors') !== false && strpos($block, 'getLatestAuthorUpdates(3)') !== false,
+    'Archive is not a top-level menu item' => strpos($register, 'MENU_CATEGORY:') === false && strpos($register, 'SIDEMENU:') === false,
+    'Archive has one publishing action' => substr_count($archive, "'action' => 'add'") === 1,
+    'Archive uses shared icons and ordinary pagination' => strpos($archive, "getObject('iconservice', 'ui')") !== false && strpos($archive, "'page' => \$page + 1") !== false,
+    'Obsolete AJAX viewer is gone' => !file_exists($root . '/resources/announceview.js') && strpos($controller, '__getajax') === false && strpos($archive, "newObject('pagination'") === false,
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
