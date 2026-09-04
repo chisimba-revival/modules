@@ -350,7 +350,7 @@ class announcements extends controller
             return 'addedit_tpl.php';
         } else if ($mode == 'add' || $mode == 'fixup') //  || $mode == 'save'
         {
-            $metadata=array('announcement_type'=>$announcementType,'audience'=>$audience,'resource_url'=>$this->safeUrl($this->getParam('resource_url','')),'show_in_latest'=>$this->getParam('show_in_latest')==='Y');
+            $metadata=array('announcement_type'=>$announcementType,'audience'=>$audience,'resource_url'=>$this->safeUrl($this->getParam('resource_url','')),'show_in_latest'=>$audience==='authors');
             $result = $this->objAnnouncements->addAnnouncement($title, $message, $recipienttarget, $contexts, $email, $metadata);
             if($result!==FALSE&&$notify){$metadata['id']=$result;$metadata['title']=$title;$metadata['message']=$message;$this->objAnnouncementNotifications->publish($metadata,$recipienttarget==='context'?$contexts:array());}
             //add to activity streamer/log

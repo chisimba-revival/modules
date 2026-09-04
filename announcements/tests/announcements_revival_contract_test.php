@@ -21,6 +21,7 @@ $checks = array(
     'Publication dimensions are stored independently' => strpos($schema, "'announcement_type'") !== false && strpos($schema, "'audience'") !== false,
     'Content model has one optional resource URL' => strpos($schema, "'resource_url'") !== false && strpos($schema, "'summary'") === false && strpos($schema, "'download_url'") === false,
     'Sidebar excerpt comes from the message' => strpos($block, "strip_tags((string)\$row['message'])") !== false,
+    'Author audience alone controls the instructor block' => strpos($controller, "'show_in_latest'=>\$audience==='authors'") !== false && strpos($form, 'name="show_in_latest"') === false && strpos(file_get_contents($root . '/classes/dbannouncements_class_inc.php'), "audience='authors'") !== false,
     'Scope uses one selector' => strpos($form, 'id="announcement-scope"') !== false && strpos($form, 'type="radio" name="recipienttarget"') === false,
     'Introduction preserves context terminology' => strpos($register, 'selected groups or [-contexts-]') !== false,
     'Updates delivery is explicit and idempotent' => strpos($publisher, "'idempotencyKey'=>'announcement:'") !== false,

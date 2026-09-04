@@ -404,11 +404,11 @@ class dbAnnouncements extends dbTable {
         return $this->getArray($sql);
     }
 
-    /** Return published instructor-facing product updates for the sidebar. */
+    /** Return active site announcements addressed to authors for the sidebar. */
     public function getLatestAuthorUpdates($limit=3) {
         $limit=max(1,min(10,(int)$limit));
         $now=$this->quoteValue($this->now());
-        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND announcement_type='whats_new' AND audience='authors' AND show_in_latest=1 AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
+        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND audience='authors' AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
     }
 
     /** Resolve active notification recipients for a site or selected contexts. */
