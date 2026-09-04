@@ -179,37 +179,47 @@ class studentdueitems extends ChisimbaObject
                 . '<p>' . $e($text('calendar_clear_help', 'New due items will appear here automatically.')) . '</p></div></div>';
         } else {
             foreach (array_slice($visible, 0, 8) as $item) {
+                $finishedSubmission = in_array(
+                    $item['status'], array('submitted', 'marked', 'completed'), true
+                );
                 $completed = in_array($item['status'], array('marked', 'completed'), true);
-                $overdue = !$completed && $item['due'] < new DateTimeImmutable('now', $zone);
-                $tone = $completed ? 'complete' : ($overdue ? 'overdue' : 'upcoming');
+                $overdue = !$finishedSubmission
+                    && $item['due'] < new DateTimeImmutable('now', $zone);
+                $tone = $completed ? 'complete'
+                    : ($item['status'] === 'submitted' ? 'pending'
+                    : ($overdue ? 'overdue' : 'upcoming'));
                 $now = new DateTimeImmutable('now', $zone);
                 $days = (int) $now->setTime(0, 0)->diff($item['due']->setTime(0, 0))->format('%r%a');
                 $statusLabels = array(
-                    'submitted'=>$text('calendar_submitted', 'Submitted'),
+                    'submitted'=>$text('calendar_awaiting_marking', 'Awaiting marking'),
                     'marked'=>$text('calendar_marked', 'Marked'),
                     'in_progress'=>$text('calendar_in_progress', 'In progress'),
                     'completed'=>$text('calendar_complete', 'Complete'),
                 );
                 $statusLabel = $statusLabels[$item['status']] ?? '';
+                if ($item['status'] === 'marked' && $item['markPercent'] !== null) {
+                    $percentage = round($item['markPercent'], 1);
+                    $statusLabel .= ' (' . $percentage . '%)';
+                }
+                $dueLabel = $finishedSubmission && $statusLabel !== ''
+                    ? $statusLabel
+                    : ($overdue
+                        ? $text('calendar_overdue', 'Overdue')
+                        : $this->time->formatDateTime($item['due']));
                 $html .= '<article class="dashboard-agenda-item dashboard-agenda-item--' . $tone . '">'
                     . '<time datetime="' . $e($item['due']->format(DATE_ATOM)) . '"><strong>'
                     . $e($item['due']->format('j')) . '</strong><span>' . $e($item['due']->format('M')) . '</span></time>'
                     . '<div class="dashboard-agenda-item__body"><span class="dashboard-agenda-item__meta">'
                     . $e($item['course']) . ' · ' . $e($item['providerLabel']) . '</span><h3>'
                     . $e($item['title']) . '</h3><span class="dashboard-agenda-item__due">'
-                    . $e($overdue ? $text('calendar_overdue', 'Overdue') : $this->time->formatDateTime($item['due']))
+                    . $e($dueLabel)
                     . '</span><div class="dashboard-agenda-item__status">';
-                if (!$completed && !$overdue) {
+                if (!$finishedSubmission && !$overdue) {
                     $html .= '<span class="dashboard-days-badge" title="' . $e($text('calendar_days_remaining', 'Days remaining')) . '"><strong>'
                         . $days . '</strong><small>' . $e($text('calendar_days', 'days')) . '</small></span>';
                 }
-                if ($statusLabel !== '') {
+                if (!$finishedSubmission && $statusLabel !== '') {
                     $html .= '<span class="semantic-pill">' . $e($statusLabel) . '</span>';
-                }
-                if ($item['markPercent'] !== null) {
-                    $html .= '<span class="dashboard-mark" title="' . $e($text('calendar_mark', 'Mark')) . '">'
-                        . $this->icons->render('percent', array('decorative'=>true)) . '<strong>'
-                        . $e(number_format($item['markPercent'], 1)) . '</strong></span>';
                 }
                 $html .= '</div></div>';
                 if ($item['url'] !== '') {
