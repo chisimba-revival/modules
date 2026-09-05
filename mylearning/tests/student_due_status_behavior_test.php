@@ -5,7 +5,10 @@ class ChisimbaObject {}
 require dirname(__DIR__) . '/classes/studentdueitems_class_inc.php';
 $service=new studentdueitems();
 $set=function($name,$value)use($service){$p=new ReflectionProperty($service,$name);$p->setAccessible(true);$p->setValue($service,$value);};
-$set('language',new class {public function languageText($key,$module,$fallback){return $fallback;}});
+$set('language',new class {
+    public function languageText($key,$module,$fallback){return $fallback;}
+    public function code2Txt($key,$module,$params,$fallback){return $fallback;}
+});
 $set('time',new class {public function siteTimezone(){return 'Africa/Johannesburg';}public function formatDateTime($date){return 'DUE DATE';}});
 $set('icons',new class {public function render($name,$options){return '<svg></svg>';}});
 $past=new DateTimeImmutable('yesterday',new DateTimeZone('Africa/Johannesburg'));

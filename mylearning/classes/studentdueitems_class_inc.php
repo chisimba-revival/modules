@@ -59,42 +59,76 @@ class studentdueitems extends ChisimbaObject
             (array) $this->userContext->getContextWhereStudent($userId)
         ));
         foreach ($contextCodes as $contextCode) {
-            $context = $this->contexts->getContextDetails($contextCode);
-            if (!is_array($context) || empty($context['title'])) {
+            $items = array_merge(
+                $items,
+                $this->itemsForContext($contextCode, $userId)
+            );
+        }
+        usort($items, static function ($left, $right) {
+            return $left['due'] <=> $right['due'];
+        });
+        return $items;
+    }
+
+    /** Return provider-backed due work belonging to one class. */
+    public function itemsForContext($contextCode, $userId)
+    {
+        $items = array();
+        $context = $this->contexts->getContextDetails($contextCode);
+        if (!is_array($context) || empty($context['title'])) {
+            return $items;
+        }
+        $enabled = array_flip((array) $this->contextModules->getContextModules(
+            $contextCode
+        ));
+        $gated = strtolower((string) ($context['navigation_mode'] ?? ''))
+            === 'gated';
+        foreach ((array) $this->providers->all() as $provider) {
+            if (!isset($enabled[$provider['module_id']])
+                || ($gated && $provider['module_id'] === 'mcqtests')) {
                 continue;
             }
-            $enabled = array_flip((array) $this->contextModules->getContextModules($contextCode));
-            foreach ((array) $this->providers->all() as $provider) {
-                if (!isset($enabled[$provider['module_id']])) {
+            try {
+                $adapter = $this->providers->adapter($provider['key']);
+                if (!$adapter) {
                     continue;
                 }
-                try {
-                    $adapter = $this->providers->adapter($provider['key']);
-                    if (!$adapter) {
-                        continue;
+                foreach ((array) $adapter->listActivities($contextCode) as $activity) {
+                    $item = $this->normalise(
+                        $provider,
+                        $adapter,
+                        $activity,
+                        $contextCode,
+                        $context['title'],
+                        $userId
+                    );
+                    if ($item !== null) {
+                        $items[] = $item;
                     }
-                    foreach ((array) $adapter->listActivities($contextCode) as $activity) {
-                        $item = $this->normalise(
-                            $provider,
-                            $adapter,
-                            $activity,
-                            $contextCode,
-                            $context['title'],
-                            $userId
-                        );
-                        if ($item !== null) {
-                            $items[] = $item;
-                        }
-                    }
-                } catch (Throwable $failure) {
-                    // Optional assessment modules must never break My Learning.
                 }
+            } catch (Throwable $failure) {
+                // One optional provider must not hide the remaining due work.
             }
         }
         usort($items, static function ($left, $right) {
             return $left['due'] <=> $right['due'];
         });
         return $items;
+    }
+
+    /** Return unfinished class work suitable for direct learner navigation. */
+    public function actionableItemsForContext($contextCode, $userId)
+    {
+        return array_values(array_filter(
+            $this->itemsForContext($contextCode, $userId),
+            static function ($item) {
+                return !in_array(
+                    $item['status'],
+                    array('submitted', 'marked', 'completed'),
+                    true
+                ) && !empty($item['target']['module']);
+            }
+        ));
     }
 
     /** Normalise one provider-owned activity or exclude it from the calendar. */
@@ -127,7 +161,92 @@ class studentdueitems extends ChisimbaObject
             'markPercent'=>is_array($result) && isset($result['mark_percent'])
                 && is_numeric($result['mark_percent']) ? (float) $result['mark_percent'] : null,
             'url'=>$url,
+            'target'=>$target,
         );
+    }
+
+    /** Render the current class's unfinished due work on its start page. */
+    public function showForContext($contextCode, $userId)
+    {
+        $zone = new DateTimeZone($this->time->siteTimezone());
+        $today = new DateTimeImmutable('today', $zone);
+        $items = array_values(array_filter(
+            $this->actionableItemsForContext($contextCode, $userId),
+            static function ($item) use ($today) {
+                return $item['due'] < $today->modify('+42 days');
+            }
+        ));
+        $e = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+        $text = function ($key, $fallback) {
+            return $this->language->code2Txt(
+                'mod_mylearning_' . $key,
+                'mylearning',
+                null,
+                $fallback
+            );
+        };
+        $html = '<section class="dashboard-panel context-due-work" '
+            . 'aria-labelledby="context-due-work-title"><header '
+            . 'class="dashboard-panel__header"><div><p class="dashboard-eyebrow">'
+            . $e($text('context_due_eyebrow', 'Your work')) . '</p><h2 '
+            . 'id="context-due-work-title">'
+            . $e($text('context_due_title', 'What’s due'))
+            . '</h2><p>'
+            . $e($text('context_due_intro', 'Work requiring your attention in this [-context-].'))
+            . '</p></div><span class="semantic-pill semantic-pill--info">'
+            . count($items) . ' ' . $e($text('calendar_due', 'due'))
+            . '</span></header>';
+        $byDate = array();
+        foreach ($items as $item) {
+            $byDate[$item['due']->format('Y-m-d')][] = $item;
+        }
+        $html .= '<div class="dashboard-date-strip" role="list" aria-label="'
+            . $e($text('calendar_next_days', 'Next seven days')) . '">';
+        for ($offset = 0; $offset < 7; $offset++) {
+            $date = $today->modify('+' . $offset . ' days');
+            $key = $date->format('Y-m-d');
+            $count = isset($byDate[$key]) ? count($byDate[$key]) : 0;
+            $html .= '<div class="dashboard-date-chip'
+                . ($offset === 0 ? ' dashboard-date-chip--today' : '')
+                . ($count > 0 ? ' dashboard-date-chip--active' : '')
+                . '" role="listitem" title="' . $e($count . ' '
+                    . $text('calendar_items', 'items')) . '"><span>'
+                . $e($date->format('D')) . '</span><strong>'
+                . $date->format('j') . '</strong>'
+                . ($count > 0 ? '<i aria-hidden="true">' . $count . '</i>' : '')
+                . '</div>';
+        }
+        $html .= '</div><div class="dashboard-agenda">';
+        if ($items === array()) {
+            $html .= '<div class="dashboard-empty-state"><span '
+                . 'class="dashboard-empty-state__icon" aria-hidden="true">✓</span>'
+                . '<div><h3>'
+                . $e($text('context_due_clear', 'Nothing due soon'))
+                . '</h3><p>'
+                . $e($text('context_due_clear_help', 'New dated work in this [-context-] will appear here.'))
+                . '</p></div></div>';
+        }
+        foreach (array_slice($items, 0, 6) as $item) {
+            $html .= '<article class="dashboard-agenda-item"><time datetime="'
+                . $e($item['due']->format(DATE_ATOM)) . '"><strong>'
+                . $e($item['due']->format('j')) . '</strong><span>'
+                . $e($item['due']->format('M')) . '</span></time><div '
+                . 'class="dashboard-agenda-item__body"><span '
+                . 'class="dashboard-agenda-item__meta">'
+                . $e($item['providerLabel']) . '</span><h3>'
+                . $e($item['title']) . '</h3><span '
+                . 'class="dashboard-agenda-item__due">'
+                . $e($this->time->formatDateTime($item['due']))
+                . '</span></div><a class="icon-button '
+                . 'dashboard-agenda-item__action" href="' . $e($item['url'])
+                . '" aria-label="' . $e($text('calendar_open', 'Open activity')
+                    . ': ' . $item['title']) . '">'
+                . $this->icons->render('arrow-right', array('decorative'=>true))
+                . '</a></article>';
+        }
+        return $html . '</div></section>';
     }
 
     /** Render a compact calendar strip and prioritised upcoming-work agenda. */

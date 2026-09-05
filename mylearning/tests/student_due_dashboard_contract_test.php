@@ -12,14 +12,24 @@ $checks = array(
     'calendar precedes course overview' => strpos($template, '$dueItems . $learningOverview') !== false,
     'discovers generic assessment adapters' => strpos($service, '$this->providers->all()') !== false
         && strpos($service, '$this->providers->adapter(') !== false,
-    'only enabled course tools contribute' => strpos($service, 'getContextModules($contextCode)') !== false
+    'only enabled course tools contribute' => strpos($service, 'getContextModules(') !== false
         && strpos($service, 'isset($enabled[$provider[\'module_id\']])') !== false,
     'duplicate role memberships do not duplicate due items' => strpos($service, 'array_unique(') !== false,
     'student dashboard uses student course roles only' => strpos($service, 'getContextWhereStudent($userId)') !== false
         && strpos($service, 'getUserContext($userId)') === false,
     'uses canonical time service' => strpos($service, "getObject('timeanddateservice', 'timeanddate-service')") !== false,
     'normalises result and launch target' => strpos($service, 'getStudentResult(') !== false
-        && strpos($service, 'getLaunchTarget(') !== false,
+        && strpos($service, 'getLaunchTarget(') !== false
+        && strpos($service, "'target'=>\$target") !== false,
+    'current class reuses due items without bypassing gated MCQs' =>
+        strpos($service, 'actionableItemsForContext') !== false
+        && strpos($service, "\$provider['module_id'] === 'mcqtests'") !== false
+        && strpos($service, "=== 'gated'") !== false,
+    'current class start page renders direct due-work actions' =>
+        strpos($service, 'showForContext') !== false
+        && strpos($service, 'context-due-work') !== false
+        && substr_count($service, 'dashboard-date-strip') >= 2
+        && strpos($service, "'context_due_clear', 'Nothing due soon'") !== false,
     'provider failures are isolated' => strpos($service, 'catch (Throwable $failure)') !== false,
     'actions have tooltip and accessible name' => strpos($service, 'aria-label=') !== false
         && strpos($service, 'title=') !== false
