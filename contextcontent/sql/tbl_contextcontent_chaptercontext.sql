@@ -21,6 +21,12 @@ $fields = array(
         'length' => 255,
         'notnull' => TRUE
         ),
+    'sectionid' => array(
+        'type' => 'text',
+        'length' => 32,
+        'notnull' => TRUE,
+        'default' => ''
+        ),
     'chapterorder' => array(
         'type' => 'integer',
         'length' => 11,
