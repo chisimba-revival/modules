@@ -1,4 +1,5 @@
 <?php
+echo $this->getObject('contextualhelp', 'help')->show('rubric', 'creating-and-editing-rubrics');
 $esc = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $icons = $this->getObject('iconservice', 'ui');
 $icon = static function ($name) use ($icons) {

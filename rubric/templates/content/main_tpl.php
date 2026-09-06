@@ -2,6 +2,7 @@
 $esc = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
+echo $this->getObject('contextualhelp', 'help')->show('rubric', 'creating-and-editing-rubrics');
 $lang = static function ($key, $module = 'rubric', $default = null) use ($objLanguage) {
     return $objLanguage->languageText($key, $module, $default);
 };
