@@ -14,6 +14,7 @@ $link->link = $worksheet['name'];
 $header->str = $this->objLanguage->languageText('mod_worksheet_worksheet', 'worksheet', 'Worksheet').': '.$link->show();
 
 echo '<br />'.$header->show();
+echo $this->getObject('contextualhelp', 'help')->show('worksheet', 'ai-assisted-marking');
 echo $this->objWashout->parseText($worksheet['description']);
 
 $objDateTime = $this->getObject('timeanddateservice', 'timeanddate-service');
