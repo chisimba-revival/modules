@@ -9,6 +9,7 @@ $publisher = file_get_contents($root . '/classes/announcementnotificationpublish
 $block = file_get_contents($root . '/classes/block_whatsnewauthors_class_inc.php');
 $archive = file_get_contents($root . '/templates/content/home_tpl.php');
 $detail = file_get_contents($root . '/templates/content/view_tpl.php');
+$helpProvider = file_get_contents($root . '/classes/helpcontent_class_inc.php');
 $checks = array(
     'Feed is not loaded during initialisation' => strpos(
         substr($controller, 0, strpos($controller, 'public function __feed()')),
@@ -34,6 +35,11 @@ $checks = array(
     'Archive uses shared icons and ordinary pagination' => strpos($archive, "getObject('iconservice', 'ui')") !== false && strpos($archive, "'page' => \$page + 1") !== false,
     'Obsolete AJAX viewer is gone' => !file_exists($root . '/resources/announceview.js') && strpos($controller, '__getajax') === false && strpos($archive, "newObject('pagination'") === false,
     'Detail uses shared skin primitives' => strpos($detail, 'chisimba-page-header chisimba-card') !== false && strpos($detail, "getObject('iconservice','ui')") !== false && strpos($detail, 'linkwrapper') === false && strpos($detail, 'modulehome') === false,
+    'Publishing form provides contextual Help' => strpos($form, "show('announcements','publishing-an-announcement')") !== false && strpos($register, 'DEPENDS:help') !== false,
+    'Publishing Help follows the current permission boundary' => strpos($helpProvider, 'getContextWhereLecturer') !== false && strpos($helpProvider, 'isAdmin()') !== false,
+    'Publishing Help preserves role and context terminology' => strpos($register, '[-authors-]') !== false && strpos($register, '[-readonlys-]') !== false && strpos($register, '[-contexts-]') !== false,
+    'Publishing Help decodes stored language entities once' => strpos($helpProvider, 'html_entity_decode') !== false,
+    'Instructor publishing has one valid fixed type' => strpos($form, 'name="announcement_type" value="general"') !== false && strpos($form, 'if($isAdmin):?><select id="announcement-type"') !== false,
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
