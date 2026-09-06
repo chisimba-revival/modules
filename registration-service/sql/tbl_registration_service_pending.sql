@@ -18,6 +18,7 @@ $fields = array(
     'expires_at' => array('type' => 'timestamp', 'notnull' => TRUE),
     'verified_at' => array('type' => 'timestamp'),
     'provisioned_user_id' => array('type' => 'text', 'length' => 25),
+    'payment_product_code' => array('type' => 'text', 'length' => 96),
     'created_at' => array('type' => 'timestamp', 'notnull' => TRUE),
     'updated_at' => array('type' => 'timestamp', 'notnull' => TRUE)
 );

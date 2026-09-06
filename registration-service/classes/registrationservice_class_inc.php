@@ -112,6 +112,7 @@ class registrationservice extends dbTable
             'expires_at' => date('Y-m-d H:i:s', time() + self::PENDING_TTL),
             'verified_at' => null,
             'provisioned_user_id' => null,
+            'payment_product_code' => null,
             'created_at' => $now,
             'updated_at' => $now,
         )) === false || !$this->appendEvent(
@@ -359,7 +360,7 @@ class registrationservice extends dbTable
                 ||!$this->appendEvent('registration.account.provisioned',$pendingId,$pending['correlation_id'],'succeeded')) {
                 $this->rollbackTransaction();return $this->result(false,'provisioning_finalization_failed',$pendingId);
             }
-            $this->commitTransaction();return array('ok'=>true,'code'=>'account_provisioned','pendingId'=>$pendingId,'userId'=>$pending['provisioned_user_id']);
+            $this->commitTransaction();return array('ok'=>true,'code'=>'account_provisioned','pendingId'=>$pendingId,'userId'=>$pending['provisioned_user_id'],'paymentProductCode'=>(string)($pending['payment_product_code']??''));
         }
         if (!$this->objUsers->usernameAvailable($pending['username'])
             || !$this->objUsers->emailAvailable($pending['email_address'])) {
@@ -434,15 +435,21 @@ class registrationservice extends dbTable
             'code' => 'account_provisioned',
             'pendingId' => $pendingId,
             'userId' => $created['userId'],
+            'paymentProductCode' => (string) ($pending['payment_product_code'] ?? ''),
         );
     }
 
     /** Reserve an inactive identity so payment can safely precede verification. */
-    public function reserveForPayment($pendingId)
+    public function reserveForPayment($pendingId, $productCode)
     {
         $pending=$this->pending($pendingId,'awaiting_verification');
         if(!is_array($pending)) return $this->result(false,'pending_registration_not_ready');
-        if(!empty($pending['provisioned_user_id'])) return array('ok'=>true,'code'=>'identity_already_reserved','pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address']);
+        $productCode=is_scalar($productCode)?trim((string)$productCode):'';
+        if($productCode===''||strlen($productCode)>96) return $this->result(false,'invalid_payment_product',$pending['id']);
+        if(!empty($pending['provisioned_user_id'])) {
+            if((string)($pending['payment_product_code']??'')!==$productCode) return $this->result(false,'payment_product_conflict',$pending['id']);
+            return array('ok'=>true,'code'=>'identity_already_reserved','pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address'],'productCode'=>$productCode);
+        }
         if(!$this->objUsers->usernameAvailable($pending['username'])||!$this->objUsers->emailAvailable($pending['email_address'])) return $this->result(false,'canonical_identity_conflict',$pending['id']);
         $userId=$this->objUsers->generateUserId();if($userId===null)return $this->result(false,'userid_allocation_failed',$pending['id']);
         $created=$this->getObject('userprovisioningservice','security')->createLocalUserWithPasswordHash(array(
@@ -450,14 +457,16 @@ class registrationservice extends dbTable
             'title'=>'','country'=>'','cellnumber'=>(string)($pending['mobile_number']??''),'staffnumber'=>'','sex'=>'','isActive'=>false,'howCreated'=>'registration-service',
         ),$pending['password_hash']);
         if(empty($created['ok'])||empty($created['userId']))return $this->result(false,$created['code']??'canonical_provisioning_failed',$pending['id']);
-        if($this->update('id',$pending['id'],array('provisioned_user_id'=>$created['userId'],'password_hash'=>null,'updated_at'=>date('Y-m-d H:i:s')))===false){$this->objUsers->rollbackProvisionedUser($created['userId'],$created['storageId']??null);return $this->result(false,'identity_reservation_failed',$pending['id']);}
-        return array('ok'=>true,'code'=>'identity_reserved','pendingId'=>$pending['id'],'userId'=>$created['userId'],'emailAddress'=>$pending['email_address']);
+        if($this->update('id',$pending['id'],array('provisioned_user_id'=>$created['userId'],'payment_product_code'=>$productCode,'password_hash'=>null,'updated_at'=>date('Y-m-d H:i:s')))===false){$this->objUsers->rollbackProvisionedUser($created['userId'],$created['storageId']??null);return $this->result(false,'identity_reservation_failed',$pending['id']);}
+        return array('ok'=>true,'code'=>'identity_reserved','pendingId'=>$pending['id'],'userId'=>$created['userId'],'emailAddress'=>$pending['email_address'],'productCode'=>$productCode);
     }
 
     public function paymentSubject($pendingId)
     {
-        $pending=$this->pending($pendingId,'awaiting_verification');
-        return !is_array($pending)||empty($pending['provisioned_user_id'])?null:array('pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address']);
+        $pending=$this->pendingWithStatuses($pendingId,array('awaiting_verification','verified','provisioned'));
+        if(!is_array($pending)||empty($pending['provisioned_user_id'])||empty($pending['payment_product_code'])) return null;
+        $user=$this->objUsers->findByUserId($pending['provisioned_user_id']);
+        return array('pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address'],'productCode'=>$pending['payment_product_code'],'accountActive'=>is_array($user)&&!empty($user['isactive']));
     }
 
     /**
@@ -597,7 +606,7 @@ class registrationservice extends dbTable
     private function pendingWithStatuses($id, array $statuses)
     {
         $id = is_scalar($id) ? strtolower(trim((string) $id)) : '';
-        $allowed = array('awaiting_legal_acceptance', 'awaiting_verification', 'verified');
+        $allowed = array('awaiting_legal_acceptance', 'awaiting_verification', 'verified', 'provisioned');
         $statuses = array_values(array_intersect($allowed, $statuses));
         if (!preg_match('/^[a-f0-9]{32}$/', $id) || count($statuses) === 0) {
             return null;

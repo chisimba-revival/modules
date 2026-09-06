@@ -30,10 +30,11 @@ $expect(str_contains($controller,"\$purpose=\$this->param('purpose')")
     && str_contains($catalogueTemplate,'Choose your membership')
     && str_contains($catalogueTemplate,'Review <?=$e($tierLabel'),
     'Membership discovery must lead through tier choice and explicit purchase review.');
-$expect(str_contains($returnTemplate,'Open course')&&str_contains($returnTemplate,'Refresh payment status'),'The browser return must offer the next human action without treating the return as payment proof.');
-$expect(str_contains($returnTemplate,'Go to My Learning')
+$expect(str_contains($returnTemplate,'mod_payment_service_open_context')&&str_contains($returnTemplate,"refresh_status"),'The browser return must offer the next human action without treating the return as payment proof.');
+$expect(str_contains($returnTemplate,"explore_contexts")
+    && str_contains($returnTemplate,"view_membership")
     && str_contains($returnTemplate,"if(!\$good)"),
-    'Successful membership checkout must lead into learning rather than immediately offering another purchase.');
+    'Successful membership checkout must lead to course discovery and membership details.');
 $expect(str_contains($catalog,'productPage')&&str_contains($productDb,'countProducts')&&str_contains($productDb,'LIMIT '),'The administrator catalogue must use bounded server-side pagination.');
 $expect(str_contains($productDb,'name LIKE')&&str_contains($productDb,'purpose_type')&&str_contains($productDb,'active=1'),'Product search, purpose and status filters must be applied by the server.');
 $expect(str_contains($productsTemplate,'Saved products pages')&&str_contains($productsTemplate,'Apply filters')&&str_contains($productsTemplate,'No products match these filters.'),'The product catalogue must expose accessible search, pagination and empty states.');

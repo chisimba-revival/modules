@@ -193,7 +193,7 @@ class registration_service extends controller
         $purchase=$this->purchaseByCode($this->scalarParam('selected_product'));
         if(!is_array($purchase)) $purchase=$this->purchaseFromContinuation($returnTo);
         if(is_array($purchase)) {
-            $reserved=$this->service->reserveForPayment($queued['pendingId']);
+            $reserved=$this->service->reserveForPayment($queued['pendingId'],$purchase['code']);
             if(!empty($reserved['ok'])) {
                 header('Location: '.html_entity_decode($this->uri(array('action'=>'pendingbuy','pending_id'=>$queued['pendingId'],'product'=>$purchase['code']),'payment-service'),ENT_QUOTES,'UTF-8'),true,303);exit;
             }
@@ -362,6 +362,7 @@ class registration_service extends controller
         }
         $result = $this->service->provisionVerified($verified['pendingId']);
         $this->setVar('verificationResult', $result);
+        $this->setVar('registrationPendingId', $verified['pendingId']);
         $this->setVar('registrationReturnTo', $returnTo);
         return 'verification_result_tpl.php';
     }

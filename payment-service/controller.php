@@ -91,9 +91,10 @@ class payment_service extends controller
         return $this->fakeCheckoutPage($result['intentId']);
     }
     private function pendingBuy(){
-        $pendingId=$this->param('pending_id');$productCode=$this->param('product');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);if(!is_array($subject)||$productCode==='')return $this->tiers('','pending_registration_not_found');
+        $pendingId=$this->param('pending_id');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);if(!is_array($subject))return $this->tiers('','pending_registration_not_found');$productCode=(string)$subject['productCode'];
         $provider=$this->payments->preferredProvider();$key='registration-payment:'.$pendingId.':'.$productCode;
         $result=$this->payments->createIntentFromProduct($subject['userId'],$productCode,$provider,$key,'registration-payment:'.substr($pendingId,0,32));if(empty($result['ok']))return $this->tiers('',$result['code']);
+        $existingIntent=$this->payments->intent($result['intentId']);if(($existingIntent['state']??'')==='succeeded'){$this->setVar('paymentIntent',$existingIntent);$this->setVar('paymentPendingRegistration',empty($subject['accountActive']));$this->common('','');return 'return_tpl.php';}
         $root=rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/';$return=$root.'index.php?module=payment-service&action=pendingreturn&pending_id='.rawurlencode($pendingId).'&intent_id='.rawurlencode($result['intentId']);
         $started=$this->payments->startCheckout($result['intentId'],array('scenario'=>'success','email'=>$subject['emailAddress'],'successUrl'=>$return,'cancelUrl'=>$return,'failureUrl'=>$return));if(empty($started['ok']))return $this->tiers('',$started['code']);
         if($provider!=='fake'&&!empty($started['approvalUrl'])){header('Location: '.$started['approvalUrl'],true,303);exit;}$this->setVar('paymentPendingRegistration',true);$this->setVar('paymentPendingId',$pendingId);return $this->fakeCheckoutPage($result['intentId'],'','',true);

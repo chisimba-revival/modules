@@ -20,7 +20,7 @@ $expect(str_contains($form,"'one_off'=>'purchase_one_month'")
 $expect(str_contains($form,"'?return_to=' . rawurlencode")||str_contains($form,"'?return_to='.rawurlencode"),'Existing-account sign-in must preserve the selected membership.');
 $paymentController=file_get_contents(dirname(__DIR__).'/controller.php');
 $registrationService=file_get_contents(dirname(__DIR__,2).'/registration-service/classes/registrationservice_class_inc.php');
-$expect(str_contains($registration,'reserveForPayment($queued[\'pendingId\'])')
+$expect(str_contains($registration,'reserveForPayment($queued[\'pendingId\'],$purchase[\'code\'])')
     && str_contains($paymentController,"case 'pendingbuy'")
     && str_contains($paymentController,"'registration-payment:'")
     && str_contains($registration,"'pending_id'=>\$queued['pendingId']")
@@ -29,5 +29,9 @@ $expect(str_contains($registration,'reserveForPayment($queued[\'pendingId\'])')
 $expect(str_contains($registrationService,"'isActive'=>false")
     && str_contains($registrationService,'setActive($pending[\'provisioned_user_id\'],true)'),
     'Payment must use an inactive reserved identity that activates only after verification.');
+$expect(str_contains($registrationService,"'payment_product_code'=>\$productCode")
+    && str_contains($registrationService,"array('awaiting_verification','verified','provisioned')")
+    && str_contains($paymentController,"\$productCode=(string)\$subject['productCode']"),
+    'Pending payment recovery must use the durable server-owned product after interruption.');
 fwrite(STDOUT,"PASS: pre-registration membership choice contract\n");
 ?>
