@@ -1,6 +1,12 @@
 <?php
 $e = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
-$t = fn($k) => $this->objLanguage->languageText('mod_registration_service_' . $k, 'registration-service');
+$t = fn($k) => $this->objLanguage->languageText(
+    'mod_registration_service_' . $k,
+    'registration-service',
+    $k==='recovery_pending_account_help'
+        ? 'A newly registered account must be verified before its password can be reset. Check your verification email first.'
+        : null
+);
 $u = fn($p = array()) => $e(html_entity_decode($this->uri($p, 'registration-service'), ENT_QUOTES, 'UTF-8'));
 $abuse = $recoveryAbuse ?? array();
 ?>
@@ -8,10 +14,11 @@ $abuse = $recoveryAbuse ?? array();
 <div class="chisimba-form-card">
 <header class="chisimba-form-card__header">
     <h1 id="recovery-request-title"><?php echo $e($t('recovery_title')); ?></h1>
-    <p><?php echo $e($t('recovery_intro')); ?></p>
+    <?php if (empty($recoveryRequested)): ?><p><?php echo $e($t('recovery_intro')); ?></p><?php endif; ?>
 </header>
 <?php if (!empty($recoveryRequested)): ?>
     <div class="success chisimba-form-notice" role="status"><?php echo $e($t('recovery_requested')); ?></div>
+    <p class="chisimba-form-card__footer"><?php echo $e($t('recovery_pending_account_help')); ?></p>
 <?php else: ?>
     <?php if (!empty($recoveryError)): ?><div class="error chisimba-form-notice" role="alert"><?php echo $e($t('error_invalid_request')); ?></div><?php endif; ?>
     <form class="chisimba-form" method="post" action="<?php echo $u(array('action' => 'requestrecovery')); ?>">

@@ -469,6 +469,21 @@ class registrationservice extends dbTable
         return array('pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address'],'productCode'=>$pending['payment_product_code'],'accountActive'=>is_array($user)&&!empty($user['isactive']));
     }
 
+    /** Recover the verification destination from a durable, unguessable reference. */
+    public function verificationDestination($pendingId)
+    {
+        $pending=$this->pendingWithStatuses(
+            $pendingId,
+            array('awaiting_verification','verified','provisioned')
+        );
+        if(!is_array($pending)) return null;
+        return array(
+            'pendingId'=>(string)$pending['id'],
+            'username'=>(string)$pending['username'],
+            'emailAddress'=>(string)$pending['email_address'],
+        );
+    }
+
     /**
      * Request recovery without disclosing whether the address has an account.
      */

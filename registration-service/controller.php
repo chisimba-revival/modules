@@ -195,6 +195,7 @@ class registration_service extends controller
         if(is_array($purchase)) {
             $reserved=$this->service->reserveForPayment($queued['pendingId'],$purchase['code']);
             if(!empty($reserved['ok'])) {
+                $this->rememberVerification($queued,$values,$returnTo);
                 header('Location: '.html_entity_decode($this->uri(array('action'=>'pendingbuy','pending_id'=>$queued['pendingId'],'product'=>$purchase['code']),'payment-service'),ENT_QUOTES,'UTF-8'),true,303);exit;
             }
             return $this->registrationPage((string)($reserved['code']??'registration_failed'),$values);
@@ -272,12 +273,12 @@ class registration_service extends controller
 
     private function checkEmailPage(array $result, array $fallback)
     {
-        $this->setSession('registration_service_confirmation', array(
-            'emailAddress' => $result['emailAddress'] ?? $fallback['emailAddress'],
-            'username' => $result['username'] ?? $fallback['username'],
-        ));
+        $this->rememberVerification($result, $fallback, $this->captureContinuation());
         $location = html_entity_decode(
-            $this->uri(array('action' => 'checkemail'), 'registration-service'),
+            $this->uri(array(
+                'action' => 'checkemail',
+                'pending_id' => (string) ($result['pendingId'] ?? ''),
+            ), 'registration-service'),
             ENT_QUOTES,
             'UTF-8'
         );
@@ -285,14 +286,37 @@ class registration_service extends controller
         exit;
     }
 
+    private function rememberVerification(array $result, array $fallback, $returnTo = '')
+    {
+        $confirmation=array(
+            'pendingId' => (string) ($result['pendingId'] ?? ''),
+            'emailAddress' => $result['emailAddress'] ?? $fallback['emailAddress'],
+            'username' => $result['username'] ?? $fallback['username'],
+        );
+        $this->setSession('registration_service_confirmation',$confirmation);
+        $this->setSession('registration_service_delivery_retry',$confirmation+array(
+            'returnTo'=>$returnTo,
+        ));
+    }
+
     private function confirmationPage()
     {
         $confirmation = $this->getSession('registration_service_confirmation');
+        if ((!is_array($confirmation) || empty($confirmation['emailAddress']))
+            && $this->scalarParam('pending_id') !== '') {
+            $confirmation=$this->service->verificationDestination(
+                $this->scalarParam('pending_id')
+            );
+            if (is_array($confirmation)) {
+                $this->rememberVerification($confirmation,$confirmation,'');
+            }
+        }
         if (!is_array($confirmation) || empty($confirmation['emailAddress'])) {
             return $this->registrationPage();
         }
         $this->setVar('registrationEmail', $confirmation['emailAddress']);
         $this->setVar('registrationUsername', $confirmation['username'] ?? '');
+        $this->setVar('verificationRetryCsrf', $this->csrf->issue(self::VERIFICATION_RETRY_CSRF));
         return 'check_email_tpl.php';
     }
 

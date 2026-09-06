@@ -94,7 +94,7 @@ class payment_service extends controller
         $pendingId=$this->param('pending_id');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);if(!is_array($subject))return $this->tiers('','pending_registration_not_found');$productCode=(string)$subject['productCode'];
         $provider=$this->payments->preferredProvider();$key='registration-payment:'.$pendingId.':'.$productCode;
         $result=$this->payments->createIntentFromProduct($subject['userId'],$productCode,$provider,$key,'registration-payment:'.substr($pendingId,0,32));if(empty($result['ok']))return $this->tiers('',$result['code']);
-        $existingIntent=$this->payments->intent($result['intentId']);if(($existingIntent['state']??'')==='succeeded'){$this->setVar('paymentIntent',$existingIntent);$this->setVar('paymentPendingRegistration',empty($subject['accountActive']));$this->common('','');return 'return_tpl.php';}
+        $existingIntent=$this->payments->intent($result['intentId']);if(($existingIntent['state']??'')==='succeeded'){$this->setVar('paymentIntent',$existingIntent);$this->setVar('paymentPendingRegistration',empty($subject['accountActive']));$this->setVar('paymentPendingId',$pendingId);$this->common('','');return 'return_tpl.php';}
         $root=rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/';$return=$root.'index.php?module=payment-service&action=pendingreturn&pending_id='.rawurlencode($pendingId).'&intent_id='.rawurlencode($result['intentId']);
         $started=$this->payments->startCheckout($result['intentId'],array('scenario'=>'success','email'=>$subject['emailAddress'],'successUrl'=>$return,'cancelUrl'=>$return,'failureUrl'=>$return));if(empty($started['ok']))return $this->tiers('',$started['code']);
         if($provider!=='fake'&&!empty($started['approvalUrl'])){header('Location: '.$started['approvalUrl'],true,303);exit;}$this->setVar('paymentPendingRegistration',true);$this->setVar('paymentPendingId',$pendingId);return $this->fakeCheckoutPage($result['intentId'],'','',true);
@@ -105,7 +105,7 @@ class payment_service extends controller
     }
     private function pendingReturn(){
         $pendingId=$this->param('pending_id');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);$intent=$this->payments->intent($this->param('intent_id'));if(!is_array($subject)||!is_array($intent)||$subject['userId']!==$intent['user_id'])return $this->tiers('','intent_not_found');
-        $this->setVar('paymentIntent',$intent);$this->setVar('paymentPendingRegistration',true);$this->common('','');return 'return_tpl.php';
+        $this->setVar('paymentIntent',$intent);$this->setVar('paymentPendingRegistration',true);$this->setVar('paymentPendingId',$pendingId);$this->common('','');return 'return_tpl.php';
     }
     private function fakeCheckoutPage($intentId,$message='',$error='',$allowPending=false){
         $intent=$this->payments->intent($intentId); if(!$intent||(!$allowPending&&$intent['user_id']!==$this->user->userId())) return $this->catalogue('','intent_not_found');

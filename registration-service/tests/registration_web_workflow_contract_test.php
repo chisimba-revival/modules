@@ -31,7 +31,7 @@ $checks = array(
     'recovery orchestration' => str_contains($controller, 'requestPasswordRecovery(')
         && str_contains($controller, 'completePasswordRecovery('),
     'csrf contexts' => substr_count($controller, "->consume(") === 4
-        && substr_count($controller, "->issue(") === 4,
+        && substr_count($controller, "->issue(") === 5,
     'abuse protection' => str_contains($controller, "issueFormEvidence('registration.create')")
         && str_contains($controller, "issueFormEvidence('registration.recovery')")
         && str_contains($controller, "'website' =>"),
@@ -79,6 +79,9 @@ $checks = array(
         && str_contains($controller, 'retryVerification(')
         && str_contains($templates, 'delivery_pending_retry')
         && str_contains($templates, 'deliveryRetryUsername'),
+    'durable paid verification return' => str_contains($controller, 'rememberVerification(')
+        && str_contains($controller, 'verificationDestination(')
+        && str_contains($templates, 'check_email_resend'),
     'canonical sign-in entrance' => !str_contains($layout . $templates, "'showlogin'")
         && str_contains($layout . $templates, "getItem('KEWL_SITE_ROOT')"),
     'purchase continuation' => str_contains($controller, 'validatedContinuation(')
@@ -89,7 +92,7 @@ $checks = array(
     'paid registration guidance' => str_contains($controller, "'registrationGuidancePrefix','purchase_guidance'")
         && str_contains($register, 'Complete payment')
         && str_contains($register, 'activate your account and membership'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.016'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.017'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
