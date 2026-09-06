@@ -58,6 +58,8 @@ $expect(str_contains($register,'mod_payment_service_annual_price_note|Annual pri
 $expect(str_contains($tiersTemplate,"mod_payment_service_choose_'.\$period")
     && str_contains($register,'mod_payment_service_choose_one_off|One-month membership registration action|1 Month'),
     'Each paid tier must offer distinct one-month, monthly and annual registration actions.');
+$expect(str_contains($controller,"array('one_off'=>0,'monthly'=>1,'annual'=>2)"),
+    'Membership choices must appear in the promised one-month, monthly and annual order.');
 $expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
     || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
     'A tier upgrade must preserve its chosen tier while offering every published billing option.');
