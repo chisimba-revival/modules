@@ -8,6 +8,7 @@ class learningjourney extends ChisimbaObject
     private $objActivity;
     private $objBookmarks;
     private $objSections;
+    private $objCompletion;
 
     public function init()
     {
@@ -15,6 +16,7 @@ class learningjourney extends ChisimbaObject
         $this->objActivity = $this->getObject('db_contextcontent_activitystreamer', 'contextcontent');
         $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
         $this->objSections = $this->getObject('sectionprogressionservice', 'contextcontent');
+        $this->objCompletion = $this->getObject('coursecompletioneligibilityservice', 'contextcontent');
     }
 
     public function getState($contextCode, $userId = '')
@@ -27,6 +29,7 @@ class learningjourney extends ChisimbaObject
             'visited'=>0,
             'total'=>0,
             'lastactivity'=>'',
+            'completed'=>FALSE,
             'bookmarks'=>array()
         );
         if ($this->objSections->enabled($contextCode)) {
@@ -69,6 +72,8 @@ class learningjourney extends ChisimbaObject
         $state['lastactivity'] = isset($latest['datecreated'])
             ? (string) $latest['datecreated']
             : '';
+        $completion=$this->objCompletion->evaluate($contextCode,$userId);
+        $state['completed']=is_array($completion) && !empty($completion['eligible']);
         return $state;
     }
 }

@@ -247,7 +247,7 @@ if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
         $nextChapterUrl = $this->uri(array('action' => 'viewchapter', 'id' => $chapterStageGateNextChapterId));
         $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $nextChapterUrl . '">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_next_chapter', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</a></p>';
     } elseif ($stageGatePassed) {
-        $stageGateAction = '<p class="contextcontent-stage-gate-complete">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_course_complete', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</p>';
+        $stageGateAction = '<p class="contextcontent-stage-gate-complete">' . htmlspecialchars($this->objLanguage->code2Txt('mod_contextcontent_stage_gate_course_complete', 'contextcontent', NULL, '[-context-] content has been completed.'), ENT_QUOTES, 'UTF-8') . '</p>';
     } elseif (empty($chapterStageGate['entryavailable'])) {
         $stageGateAction = '<p class="contextcontent-stage-gate-unavailable">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_unavailable', 'contextcontent', 'This assessment is not currently open for entry.'), ENT_QUOTES, 'UTF-8') . '</p>';
     } else {
