@@ -8,6 +8,8 @@ $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('htmltable', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 
+echo $this->getObject('contextualhelp', 'help')->show('gradebook', 'assessment-plan-and-sheet');
+
 $objHeading = new htmlheading();
 $objHeading->type = 1;
 $objHeading->str = $this->objLanguage->languageText('mod_gradebook_assessmentplan', 'gradebook');

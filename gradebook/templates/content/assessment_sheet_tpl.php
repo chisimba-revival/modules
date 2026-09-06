@@ -3,6 +3,7 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 $this->setLayoutTemplate('gradebook_layout_tpl.php');
 $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('htmltable', 'htmlelements');
+echo $this->getObject('contextualhelp', 'help')->show('gradebook', 'assessment-plan-and-sheet');
 $rows = isset($assessmentPlanRows) && is_array($assessmentPlanRows) ? $assessmentPlanRows : array();
 $message = (string) $this->getParam('planmessage', '');
 $error = (string) $this->getParam('planerror', '');
