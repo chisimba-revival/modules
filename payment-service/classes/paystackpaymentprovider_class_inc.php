@@ -13,7 +13,7 @@ class paystackpaymentprovider extends ChisimbaObject
     public function code(){return 'paystack';}
     public function isAvailable(){
         $mode=strtolower(trim((string)$this->config->getValue('PAYMENT_PAYSTACK_MODE','payment-service')));
-        $secret=trim((string)$this->config->getValue('PAYMENT_PAYSTACK_SECRET_KEY','payment-service'));
+        $secret=$this->secret();
         return in_array($mode,array('test','live'),true)&&str_starts_with($secret,$mode==='live'?'sk_live_':'sk_test_');
     }
     public function createCheckout(array $intent,$options=array()){
@@ -168,7 +168,12 @@ class paystackpaymentprovider extends ChisimbaObject
         if($status<200||$status>=300||!is_array($decoded)||empty($decoded['status']))return $this->failure('paystack_api_rejected_'.$status,$status>=500||$status===429,is_array($decoded)?($decoded['message']??null):null);
         return array('ok'=>true,'data'=>$decoded);
     }
-    private function secret(){return trim((string)$this->config->getValue('PAYMENT_PAYSTACK_SECRET_KEY','payment-service'));}
+    private function secret(){
+        $mode=strtolower(trim((string)$this->config->getValue('PAYMENT_PAYSTACK_MODE','payment-service')));
+        $keyName=$mode==='live'?'PAYMENT_PAYSTACK_LIVE_SECRET_KEY':'PAYMENT_PAYSTACK_TEST_SECRET_KEY';
+        $secret=trim((string)$this->config->getValue($keyName,'payment-service'));
+        return $secret!==''?$secret:trim((string)$this->config->getValue('PAYMENT_PAYSTACK_SECRET_KEY','payment-service'));
+    }
     private function reservedEmailDomain($email){
         $domain=strtolower((string)substr(strrchr((string)$email,'@')?:'',1));
         return $domain===''||preg_match('/(?:^|\.)(?:test|invalid|example|localhost)$/',$domain)===1;

@@ -11,7 +11,7 @@ $source=str_replace('class paystackpaymentprovider extends ChisimbaObject','clas
 eval($source);
 $expect=function($condition,$message){if(!$condition)throw new RuntimeException($message);};
 $provider=new paystackpaymentprovider();$provider->config=new PaystackConfigStub();$provider->intents=new PaystackIntentStub();$provider->plans=new PaystackPlanStub();$provider->subscriptions=new PaystackSubscriptionStub();
-$provider->config->values=array('PAYMENT_PAYSTACK_MODE'=>'test','PAYMENT_PAYSTACK_SECRET_KEY'=>'sk_test_contract_secret');
+$provider->config->values=array('PAYMENT_PAYSTACK_MODE'=>'test','PAYMENT_PAYSTACK_TEST_SECRET_KEY'=>'sk_test_contract_secret','PAYMENT_PAYSTACK_LIVE_SECRET_KEY'=>'sk_live_contract_secret','PAYMENT_PAYSTACK_SECRET_KEY'=>'sk_test_legacy_secret');
 $intent=array('id'=>str_repeat('a',32),'amount_minor'=>12500,'currency'=>'ZAR','product_code'=>'tier-1-monthly');
 $reserved=$provider->createCheckout($intent,array('email'=>'student@demo.test','successUrl'=>'https://example.org/return'));
 $expect(($reserved['code']??'')==='checkout_requires_deliverable_email','Reserved test email domains must be rejected before provider checkout.');
@@ -21,6 +21,12 @@ $raw=json_encode($charge,JSON_UNESCAPED_SLASHES);$signature=hash_hmac('sha512',$
 $result=$provider->verifyAndNormalize(array('rawBody'=>$raw,'headers'=>array('x-paystack-signature'=>$signature)));
 $expect(!empty($result['ok'])&&($result['event']['type']??'')==='payment.succeeded','A signed reconciled Paystack charge must normalize to canonical success.');
 $expect(($result['event']['subscription']['providerPlanId']??'')==='PLN_test','A recurring charge must retain its Paystack plan mapping.');
+$provider->config->values['PAYMENT_PAYSTACK_MODE']='live';
+$expect($provider->isAvailable(),'Live mode must select the separately stored live key.');
+$liveSignature=hash_hmac('sha512',$raw,'sk_live_contract_secret');
+$liveResult=$provider->verifyAndNormalize(array('rawBody'=>$raw,'headers'=>array('x-paystack-signature'=>$liveSignature)));
+$expect(($liveResult['code']??'')==='paystack_mode_mismatch','The live key must verify the signature before rejecting test-domain data.');
+$provider->config->values['PAYMENT_PAYSTACK_MODE']='test';
 $tampered=str_replace('12500','12501',$raw);$invalid=$provider->verifyAndNormalize(array('rawBody'=>$tampered,'headers'=>array('x-paystack-signature'=>$signature)));
 $expect(empty($invalid['ok']),'A modified Paystack webhook body must fail signature verification.');
 $wrongAmount=$charge;$wrongAmount['data']['amount']=12499;$wrongRaw=json_encode($wrongAmount,JSON_UNESCAPED_SLASHES);$wrongSig=hash_hmac('sha512',$wrongRaw,'sk_test_contract_secret');
