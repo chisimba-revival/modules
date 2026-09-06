@@ -7,12 +7,14 @@ class learningjourney extends ChisimbaObject
     private $objOrder;
     private $objActivity;
     private $objBookmarks;
+    private $objSections;
 
     public function init()
     {
         $this->objOrder = $this->getObject('db_contextcontent_order', 'contextcontent');
         $this->objActivity = $this->getObject('db_contextcontent_activitystreamer', 'contextcontent');
         $this->objBookmarks = $this->getObject('db_contextcontent_bookmarks', 'contextcontent');
+        $this->objSections = $this->getObject('sectionprogressionservice', 'contextcontent');
     }
 
     public function getState($contextCode, $userId = '')
@@ -27,6 +29,13 @@ class learningjourney extends ChisimbaObject
             'lastactivity'=>'',
             'bookmarks'=>array()
         );
+        if ($this->objSections->enabled($contextCode)) {
+            $firstSection=$this->objSections->firstSection($contextCode);
+            if ($firstSection!==FALSE) {
+                $state['sectionid']=$firstSection['id'];
+                $state['sectiontitle']=$firstSection['title'];
+            }
+        }
         $firstPage = $this->objOrder->getFirstPage($contextCode);
         if ($firstPage === FALSE || empty($firstPage['id'])) return $state;
 

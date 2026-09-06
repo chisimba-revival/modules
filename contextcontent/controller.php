@@ -175,7 +175,7 @@ class contextcontent extends controller {
         $this->setLayoutTemplate('layout_chapter_tpl.php');
         if ($this->isMutation($action)) {
             try {
-                if (in_array($action, array('changebookmark', 'addcomment', 'acknowledgesection'), true)) {
+                if (in_array($action, array('changebookmark', 'addcomment'), true)) {
                     $this->requireAuthenticatedMutation($action);
                 } else {
                     $this->requireAuthorisedMutation($action);
@@ -270,23 +270,14 @@ class contextcontent extends controller {
                 return $this->saveChapter();
             case 'managesections':
                 return $this->manageSections();
+            case 'viewsection':
+                return $this->viewSection();
             case 'savesection':
                 return $this->saveSection();
             case 'deletesection':
                 return $this->deleteSection();
             case 'assignsection':
                 return $this->assignSection();
-            case 'movesectionup':
-                return $this->moveSection('up');
-            case 'movesectiondown':
-                return $this->moveSection('down');
-            case 'movesectionchapterup':
-                return $this->moveSectionChapter('up');
-            case 'movesectionchapterdown':
-                return $this->moveSectionChapter('down');
-            case 'acknowledgesection':
-                return $this->acknowledgeSection();
-
             case 'savescormpage':
                 return $this->saveScormPage();
             case 'savescormchapter':
@@ -426,9 +417,7 @@ class contextcontent extends controller {
             'deletechapterconfirm', 'movechapterup', 'movechapterdown',
             'movetochapter', 'changebookmark', 'addcomment', 'uploadfile',
             'createpagefromfile', 'previewdocumentimport', 'confirmdocumentimport',
-            'savepageorder', 'savesection', 'deletesection', 'assignsection',
-            'movesectionup', 'movesectiondown', 'movesectionchapterup',
-            'movesectionchapterdown', 'acknowledgesection'
+            'savepageorder', 'savesection', 'deletesection', 'assignsection'
         ), true);
     }
 
@@ -1388,8 +1377,6 @@ class contextcontent extends controller {
             if (($chapter['visibility'] ?? 'Y') === 'I') { return $this->showChapterIntroductionOnly($chapter); }
             if (($chapter['visibility'] ?? 'Y') === 'N') { return $this->showChapterUnavailable(); }
         }
-        $sectionDecision = $this->objSectionProgression->chapterDecision($this->contextCode, $page['chapterid']);
-        if (!$sectionDecision['allowed']) { return $this->showSectionLocked($sectionDecision['section']); }
         $entryDecision = $this->objChapterStageGates->entryDecision($this->contextCode, $page['chapterid']);
         if (!$entryDecision['allowed']) {
             return $this->showStageGateLocked($entryDecision['gate']);
@@ -1429,9 +1416,23 @@ class contextcontent extends controller {
         $prevPage = $this->objContentOrder->getPreviousPage($this->contextCode, $page['chapterid'], $page['lft']);
         $isLastPageInChapter = $this->objContentOrder->getNextPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL;
         $isFirstPageInChapter = $this->objContentOrder->getPrevPageId($this->contextCode, $page['chapterid'], $page['lft']) === NULL;
+        $sectionNextStop = $this->objSectionProgression->enabled($this->contextCode)
+            ? $this->objSectionProgression->nextStop($this->contextCode, $page['chapterid'])
+            : FALSE;
         if ($isLastPageInChapter) {
-            $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']);
-            if (!empty($nextChapterId)) {
+            $nextChapterId = $sectionNextStop!==FALSE
+                ? ($sectionNextStop['type']==='chapter' ? $sectionNextStop['id'] : NULL)
+                : $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']);
+            if ($sectionNextStop!==FALSE && $sectionNextStop['type']==='section') {
+                $nextSection=$this->objSectionProgression->section($this->contextCode,$sectionNextStop['id']);
+                if ($nextSection!==FALSE) {
+                    $sectionLink=new link($this->uri(array('action'=>'viewsection','id'=>$nextSection['id'])));
+                    $sectionLink->link=$this->objLanguage->code2Txt(
+                        'mod_contextcontent_nextsection','contextcontent',NULL,'Next [-section-]'
+                    ).': '.htmlentities($nextSection['title']).' &#187;';
+                    $nextPage=$sectionLink->show();
+                }
+            } elseif (!empty($nextChapterId)) {
                 $nextChapter = $this->objContextChapters->getChapter($nextChapterId);
                 if ($nextChapter !== FALSE) {
                     $chapterLink = new link($this->uri(array('action' => 'viewchapter', 'id' => $nextChapterId)));
@@ -1445,17 +1446,28 @@ class contextcontent extends controller {
             $chapterOverviewLink->link = '&#171; ' . $this->objLanguage->languageText('mod_contextcontent_chapteroverview', 'contextcontent', 'Chapter overview');
             $prevPage = $chapterOverviewLink->show();
         }
-        $this->setVar('nextPage', $nextPage);
-        $this->setVar('prevPage', $prevPage);
         $this->setVar('isFirstPageOnLevel', $this->objContentOrder->isFirstPageOnLevel($page['id']));
         $this->setVar('isLastPageOnLevel', $this->objContentOrder->isLastPageOnLevel($page['id']));
         $chapterStageGate = $this->objChapterStageGates->chapterGate($this->contextCode, $page['chapterid']);
+        $chapterStageGateBest = $chapterStageGate === FALSE ? NULL
+            : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']);
+        if ($isLastPageInChapter && $chapterStageGate!==FALSE
+            && ($chapterStageGateBest===NULL || $chapterStageGateBest<$chapterStageGate['passmark'])) {
+            $nextPage='';
+        }
+        $this->setVar('nextPage', $nextPage);
+        $this->setVar('prevPage', $prevPage);
         $this->setVar('chapterStageGate', $chapterStageGate);
-        $this->setVar('chapterStageGateBestPercentage', $chapterStageGate === FALSE ? NULL : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']));
+        $this->setVar('chapterStageGateBestPercentage', $chapterStageGateBest);
         $this->setVar('isLastPageInChapter', $isLastPageInChapter);
         $this->setVar('chapterStageGateNextChapterId', $chapterStageGate === FALSE
             ? NULL
-            : $this->objChapterStageGates->nextChapterId($this->contextCode, $page['chapterid']));
+            : ($sectionNextStop!==FALSE && $sectionNextStop['type']==='chapter'
+                ? $sectionNextStop['id']
+                : NULL));
+        $this->setVar('chapterStageGateNextSectionId', $chapterStageGate === FALSE
+            || $sectionNextStop===FALSE || $sectionNextStop['type']!=='section'
+            ? NULL : $sectionNextStop['id']);
 
 
         $breadcrumbs = $this->objContentOrder->getBreadcrumbs($this->contextCode, $page['chapterid'], $page['lft'], $page['rght']);
@@ -1706,9 +1718,13 @@ class contextcontent extends controller {
             'stage_gate_passmark' => $gate['passmark'],
             'stage_gate_origin_chapter' => $chapterId
         );
-        $nextChapterId = $this->objChapterStageGates->nextChapterId($this->contextCode, $chapterId);
-        if (!empty($nextChapterId)) {
-            $params['stage_gate_return_chapter'] = $nextChapterId;
+        $nextStop=$this->objSectionProgression->enabled($this->contextCode)
+            ? $this->objSectionProgression->nextStop($this->contextCode,$chapterId)
+            : array('type'=>'chapter','id'=>$this->objChapterStageGates->nextChapterId($this->contextCode,$chapterId));
+        if ($nextStop['type']==='section') {
+            $params['stage_gate_return_section']=$nextStop['id'];
+        } elseif ($nextStop['type']==='chapter' && !empty($nextStop['id'])) {
+            $params['stage_gate_return_chapter']=$nextStop['id'];
         } else {
             $params['stage_gate_course_completion'] = '1';
         }
@@ -1724,9 +1740,6 @@ class contextcontent extends controller {
     }
 
     protected function viewChapter($id) {
-
-        $sectionDecision = $this->objSectionProgression->chapterDecision($this->contextCode, $id);
-        if (!$sectionDecision['allowed']) { return $this->showSectionLocked($sectionDecision['section']); }
 
         $visibleChapter = $this->objContextChapters->getChapter($id, $this->contextCode);
         if (!$this->objSectionProgression->isManager($this->contextCode) && is_array($visibleChapter)) {
@@ -1787,12 +1800,6 @@ class contextcontent extends controller {
         return 'stagegatelocked_tpl.php';
     }
 
-    protected function showSectionLocked($section) {
-        $this->setLayoutTemplate('layout_firstpage_tpl.php');
-        $this->setVar('lockedSection', $section);
-        return 'sectionlocked_tpl.php';
-    }
-
     protected function showChapterIntroductionOnly($chapter) {
         $this->setVar('introOnlyChapter', $chapter);
         $this->setLayoutTemplate('layout_firstpage_tpl.php');
@@ -1838,19 +1845,27 @@ class contextcontent extends controller {
         return $this->nextAction('managesections');
     }
 
-    private function moveSection($direction) {
-        $this->objSections->move((string)$this->getParam('sectionid', ''), $this->contextCode, $direction);
-        return $this->nextAction('managesections');
-    }
-
-    private function moveSectionChapter($direction) {
-        $this->objContextChapters->moveWithinSection((string)$this->getParam('id', ''), $this->contextCode, $direction);
-        return $this->nextAction('managesections');
-    }
-
-    private function acknowledgeSection() {
-        if (!$this->objSectionProgression->acknowledge($this->contextCode,(string)$this->getParam('sectionid',''))) { throw new RuntimeException('This section is not available'); }
-        return $this->nextAction('showcontextchapters');
+    private function viewSection() {
+        if (!$this->objSectionProgression->enabled($this->contextCode)) {
+            return $this->nextAction('showcontextchapters');
+        }
+        $section=$this->objSectionProgression->section(
+            $this->contextCode,
+            (string)$this->getParam('id','')
+        );
+        if ($section===FALSE) { return $this->nextAction('showcontextchapters'); }
+        $firstChapter=empty($section['chapters'])?FALSE:$section['chapters'][0];
+        if ($firstChapter!==FALSE && !$this->objSectionProgression->isManager($this->contextCode)) {
+            $entryDecision=$this->objChapterStageGates->entryDecision(
+                $this->contextCode,
+                $firstChapter['chapterid']
+            );
+            if (!$entryDecision['allowed']) { return $this->showStageGateLocked($entryDecision['gate']); }
+        }
+        $this->setVar('section',$section);
+        $this->setVar('firstSectionChapter',$firstChapter);
+        $this->setLayoutTemplate('layout_firstpage_tpl.php');
+        return 'sectionpage_tpl.php';
     }
 
     /**

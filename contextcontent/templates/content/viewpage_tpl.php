@@ -240,7 +240,10 @@ if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
             : $this->objLanguage->languageText('mod_contextcontent_stage_gate_not_yet_passed', 'contextcontent'));
     $stageGateBest = $chapterStageGateBestPercentage === NULL ? '' : ' ' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_best_score', 'contextcontent') . ': ' . number_format($chapterStageGateBestPercentage, 1) . '%', ENT_QUOTES, 'UTF-8');
     $stageGateAction = '';
-    if ($stageGatePassed && !empty($chapterStageGateNextChapterId)) {
+    if ($stageGatePassed && !empty($chapterStageGateNextSectionId)) {
+        $nextSectionUrl = $this->uri(array('action' => 'viewsection', 'id' => $chapterStageGateNextSectionId));
+        $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $nextSectionUrl . '">' . htmlspecialchars($this->objLanguage->code2Txt('mod_contextcontent_continuenextsection', 'contextcontent', NULL, 'Continue to next [-section-]'), ENT_QUOTES, 'UTF-8') . '</a></p>';
+    } elseif ($stageGatePassed && !empty($chapterStageGateNextChapterId)) {
         $nextChapterUrl = $this->uri(array('action' => 'viewchapter', 'id' => $chapterStageGateNextChapterId));
         $stageGateAction = '<p><a class="contextcontent-stage-gate-action" href="' . $nextChapterUrl . '">' . htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_stage_gate_next_chapter', 'contextcontent'), ENT_QUOTES, 'UTF-8') . '</a></p>';
     } elseif ($stageGatePassed) {

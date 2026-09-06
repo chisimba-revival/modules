@@ -1455,6 +1455,7 @@ class mcqtests extends controller {
                     $this->unsetSession('qData');
                     $this->unsetSession('taketest');
                     $this->unsetSession('stage_gate_return_chapter');
+                    $this->unsetSession('stage_gate_return_section');
                     $this->unsetSession('stage_gate_origin_chapter');
                     $this->unsetSession('stage_gate_passmark');
                     $this->unsetSession('stage_gate_course_completion');
@@ -1466,6 +1467,7 @@ class mcqtests extends controller {
                     return 'testunavailable_tpl.php';
                 }
                 $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
+                $stageGateReturnSection = trim((string) $this->getParam('stage_gate_return_section', ''));
                 $stageGateOriginChapter = trim((string) $this->getParam('stage_gate_origin_chapter', ''));
                 $stageGatePassMark = (int) $this->getParam('stage_gate_passmark', 0);
                 $stageGateCourseCompletion = $this->getParam('stage_gate_course_completion', '0') === '1';
@@ -1473,6 +1475,11 @@ class mcqtests extends controller {
                     $this->unsetSession('stage_gate_return_chapter');
                 } else {
                     $this->setSession('stage_gate_return_chapter', $stageGateReturnChapter);
+                }
+                if ($stageGateReturnSection === '') {
+                    $this->unsetSession('stage_gate_return_section');
+                } else {
+                    $this->setSession('stage_gate_return_section', $stageGateReturnSection);
                 }
                 if ($stageGateOriginChapter === '') {
                     $this->unsetSession('stage_gate_origin_chapter');
@@ -1593,10 +1600,12 @@ class mcqtests extends controller {
                 $this->unsetSession('taketest');
 
                 $stageGateReturnChapter = $this->getSession('stage_gate_return_chapter', NULL);
+                $stageGateReturnSection = $this->getSession('stage_gate_return_section', NULL);
                 $stageGateOriginChapter = $this->getSession('stage_gate_origin_chapter', NULL);
                 $stageGatePassMark = (int) $this->getSession('stage_gate_passmark', 0);
                 $stageGateCourseCompletion = $this->getSession('stage_gate_course_completion', NULL) === '1';
                 $this->unsetSession('stage_gate_return_chapter');
+                $this->unsetSession('stage_gate_return_section');
                 $this->unsetSession('stage_gate_origin_chapter');
                 $this->unsetSession('stage_gate_passmark');
                 $this->unsetSession('stage_gate_course_completion');
@@ -1609,10 +1618,14 @@ class mcqtests extends controller {
                     'resultId' => $resultId
                 );
                 if ($stageGatePassMark >= 1 && $stageGatePassMark <= 100
-                    && (!empty($stageGateReturnChapter) || $stageGateCourseCompletion)) {
+                    && (!empty($stageGateReturnChapter) || !empty($stageGateReturnSection)
+                        || $stageGateCourseCompletion)) {
                     $resultParams['stage_gate_passmark'] = $stageGatePassMark;
                     if (!empty($stageGateReturnChapter)) {
                         $resultParams['stage_gate_return_chapter'] = $stageGateReturnChapter;
+                    }
+                    if (!empty($stageGateReturnSection)) {
+                        $resultParams['stage_gate_return_section'] = $stageGateReturnSection;
                     }
                     if (!empty($stageGateOriginChapter)) {
                         $resultParams['stage_gate_origin_chapter'] = $stageGateOriginChapter;
@@ -2925,12 +2938,14 @@ class mcqtests extends controller {
         }
 
         $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
+        $stageGateReturnSection = trim((string) $this->getParam('stage_gate_return_section', ''));
         $stageGateOriginChapter = trim((string) $this->getParam('stage_gate_origin_chapter', ''));
         $stageGatePassMark = (int) $this->getParam('stage_gate_passmark', 0);
         $stageGateCourseCompletion = $this->getParam('stage_gate_course_completion', '0') === '1';
-        if (($stageGateReturnChapter !== '' || $stageGateCourseCompletion)
+        if (($stageGateReturnChapter !== '' || $stageGateReturnSection !== '' || $stageGateCourseCompletion)
             && $stageGatePassMark >= 1 && $stageGatePassMark <= 100) {
             $this->setVar('stageGateReturnChapter', $stageGateReturnChapter);
+            $this->setVar('stageGateReturnSection', $stageGateReturnSection);
             $this->setVar('stageGateOriginChapter', $stageGateOriginChapter);
             $this->setVar('stageGatePassMark', $stageGatePassMark);
             $this->setVar('stageGateCourseCompletion', $stageGateCourseCompletion);

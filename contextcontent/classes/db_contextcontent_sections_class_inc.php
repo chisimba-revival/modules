@@ -24,16 +24,5 @@ class db_contextcontent_sections extends dbtable {
         if ($this->inContext($id,$contextCode)===FALSE) { return FALSE; }
         return $this->delete('id',$id);
     }
-    public function move($id,$contextCode,$direction) {
-        $current=$this->inContext($id,$contextCode);
-        if ($current===FALSE || !in_array($direction,array('up','down'),TRUE)) { return FALSE; }
-        $operator=$direction==='up'?'<':'>';
-        $order=$direction==='up'?'DESC':'ASC';
-        $rows=$this->getAll("WHERE contextcode='".addslashes((string)$contextCode)."' AND sectionorder ".$operator.' '.(int)$current['sectionorder'].' ORDER BY sectionorder '.$order.' LIMIT 1');
-        if (empty($rows)) { return FALSE; }
-        $other=$rows[0];
-        $this->update('id',$current['id'],array('sectionorder'=>$other['sectionorder']));
-        return $this->update('id',$other['id'],array('sectionorder'=>$current['sectionorder']));
-    }
 }
 ?>

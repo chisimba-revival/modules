@@ -1,4 +1,5 @@
 <?php
+$stageGateReturnSection=$stageGateReturnSection??'';
 /**
  * Template for displaying a completed test to a student.
  * The test is displayed with the question, the students answer and the correct answer.
@@ -92,7 +93,8 @@ $objTable->endRow();
 
 $str = '<div style="width:450px; border: 1px solid black;">' . $objTable->show() . '</div>';
 
-$isStageGateResult = ((!empty($stageGateReturnChapter) || !empty($stageGateCourseCompletion))
+$isStageGateResult = ((!empty($stageGateReturnChapter) || !empty($stageGateReturnSection)
+    || !empty($stageGateCourseCompletion))
     && !empty($stageGatePassMark));
 $stageGatePassed = $isStageGateResult
     && $percent >= (float) $stageGatePassMark;
@@ -101,6 +103,14 @@ if ($isStageGateResult) {
     if ($stageGatePassed && !empty($stageGateCourseCompletion)) {
         $stageGateUrl = $this->uri(array('action' => 'coursecompletion'), 'contextcontent');
         $stageGateLabel = $this->objLanguage->languageText('mod_mcqtests_stage_gate_course_completion', 'mcqtests');
+    } elseif ($stageGatePassed && !empty($stageGateReturnSection)) {
+        $stageGateUrl = $this->uri(array('action' => 'viewsection', 'id' => $stageGateReturnSection), 'contextcontent');
+        $stageGateLabel = $this->objLanguage->code2Txt(
+            'mod_mcqtests_stage_gate_continue_next_section',
+            'mcqtests',
+            NULL,
+            'Continue to next [-section-]'
+        );
     } elseif ($stageGatePassed) {
         $stageGateUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
         $stageGateLabel = $this->objLanguage->languageText(
@@ -281,11 +291,14 @@ $links = '';
 else
 {
     $exitUrl = $this->uri(array('action' => 'newhome'), 'mcqtests');
-    if ((!empty($stageGateReturnChapter) || !empty($stageGateCourseCompletion))
+    if ((!empty($stageGateReturnChapter) || !empty($stageGateReturnSection)
+        || !empty($stageGateCourseCompletion))
         && !empty($stageGatePassMark)) {
         $stageGatePassed = $percent >= (float) $stageGatePassMark;
         if ($stageGatePassed && !empty($stageGateCourseCompletion)) {
             $exitUrl = $this->uri(array('action' => 'coursecompletion'), 'contextcontent');
+        } elseif ($stageGatePassed && !empty($stageGateReturnSection)) {
+            $exitUrl = $this->uri(array('action' => 'viewsection', 'id' => $stageGateReturnSection), 'contextcontent');
         } elseif ($stageGatePassed && !empty($stageGateReturnChapter)) {
             $exitUrl = $this->uri(array('action' => 'viewchapter', 'id' => $stageGateReturnChapter), 'contextcontent');
         } else {
@@ -302,6 +315,13 @@ else
                 'mod_mcqtests_stage_gate_complete_course',
                 'mcqtests',
                 'Complete course'
+            );
+        } elseif ($stageGatePassed && !empty($stageGateReturnSection)) {
+            $objLink->link = $this->objLanguage->code2Txt(
+                'mod_mcqtests_stage_gate_continue_next_section',
+                'mcqtests',
+                NULL,
+                'Continue to next [-section-]'
             );
         } elseif ($stageGatePassed) {
             $objLink->link = $this->objLanguage->languageText(
