@@ -353,6 +353,14 @@ class registrationservice extends dbTable
             return $this->result(false, 'pending_registration_not_verified');
         }
         $pending = $rows[0];
+        if(!empty($pending['provisioned_user_id'])) {
+            $activated=$this->objUsers->setActive($pending['provisioned_user_id'],true);$now=date('Y-m-d H:i:s');
+            if(empty($activated['ok'])||$this->update('id',$pendingId,array('status'=>'provisioned','password_hash'=>null,'updated_at'=>$now))===false
+                ||!$this->appendEvent('registration.account.provisioned',$pendingId,$pending['correlation_id'],'succeeded')) {
+                $this->rollbackTransaction();return $this->result(false,'provisioning_finalization_failed',$pendingId);
+            }
+            $this->commitTransaction();return array('ok'=>true,'code'=>'account_provisioned','pendingId'=>$pendingId,'userId'=>$pending['provisioned_user_id']);
+        }
         if (!$this->objUsers->usernameAvailable($pending['username'])
             || !$this->objUsers->emailAvailable($pending['email_address'])) {
             $this->rollbackTransaction();
@@ -427,6 +435,29 @@ class registrationservice extends dbTable
             'pendingId' => $pendingId,
             'userId' => $created['userId'],
         );
+    }
+
+    /** Reserve an inactive identity so payment can safely precede verification. */
+    public function reserveForPayment($pendingId)
+    {
+        $pending=$this->pending($pendingId,'awaiting_verification');
+        if(!is_array($pending)) return $this->result(false,'pending_registration_not_ready');
+        if(!empty($pending['provisioned_user_id'])) return array('ok'=>true,'code'=>'identity_already_reserved','pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address']);
+        if(!$this->objUsers->usernameAvailable($pending['username'])||!$this->objUsers->emailAvailable($pending['email_address'])) return $this->result(false,'canonical_identity_conflict',$pending['id']);
+        $userId=$this->objUsers->generateUserId();if($userId===null)return $this->result(false,'userid_allocation_failed',$pending['id']);
+        $created=$this->getObject('userprovisioningservice','security')->createLocalUserWithPasswordHash(array(
+            'userId'=>$userId,'username'=>$pending['username'],'firstName'=>$pending['first_name'],'surname'=>$pending['surname'],'emailAddress'=>$pending['email_address'],
+            'title'=>'','country'=>'','cellnumber'=>(string)($pending['mobile_number']??''),'staffnumber'=>'','sex'=>'','isActive'=>false,'howCreated'=>'registration-service',
+        ),$pending['password_hash']);
+        if(empty($created['ok'])||empty($created['userId']))return $this->result(false,$created['code']??'canonical_provisioning_failed',$pending['id']);
+        if($this->update('id',$pending['id'],array('provisioned_user_id'=>$created['userId'],'password_hash'=>null,'updated_at'=>date('Y-m-d H:i:s')))===false){$this->objUsers->rollbackProvisionedUser($created['userId'],$created['storageId']??null);return $this->result(false,'identity_reservation_failed',$pending['id']);}
+        return array('ok'=>true,'code'=>'identity_reserved','pendingId'=>$pending['id'],'userId'=>$created['userId'],'emailAddress'=>$pending['email_address']);
+    }
+
+    public function paymentSubject($pendingId)
+    {
+        $pending=$this->pending($pendingId,'awaiting_verification');
+        return !is_array($pending)||empty($pending['provisioned_user_id'])?null:array('pendingId'=>$pending['id'],'userId'=>$pending['provisioned_user_id'],'emailAddress'=>$pending['email_address']);
     }
 
     /**

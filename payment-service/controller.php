@@ -10,10 +10,11 @@ class payment_service extends controller
         $this->user=$this->getObject('user','security');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
-    public function requiresLogin($action){return !in_array((string)$action,array('tiers','yocowebhook','paystackwebhook'),true);}
+    public function requiresLogin($action){return !in_array((string)$action,array('tiers','yocowebhook','paystackwebhook','pendingbuy','pendingfakecheckout','pendingreturn'),true);}
     public function dispatch($action){
         switch((string)$action){
             case 'buy': return $this->buy(); case 'fakecheckout': return $this->fakeCheckout();
+            case 'pendingbuy': return $this->pendingBuy(); case 'pendingfakecheckout': return $this->pendingFakeCheckout(); case 'pendingreturn': return $this->pendingReturn();
             case 'deliverfake': return $this->deliverFake();
             case 'yocowebhook': return $this->yocoWebhook();
             case 'paystackwebhook': return $this->paystackWebhook();
@@ -89,8 +90,24 @@ class payment_service extends controller
         if($provider!=='fake'&&!empty($started['approvalUrl'])) { header('Location: '.$started['approvalUrl'],true,303); exit; }
         return $this->fakeCheckoutPage($result['intentId']);
     }
-    private function fakeCheckoutPage($intentId,$message='',$error=''){
-        $intent=$this->payments->intent($intentId); if(!$intent||$intent['user_id']!==$this->user->userId()) return $this->catalogue('','intent_not_found');
+    private function pendingBuy(){
+        $pendingId=$this->param('pending_id');$productCode=$this->param('product');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);if(!is_array($subject)||$productCode==='')return $this->tiers('','pending_registration_not_found');
+        $provider=$this->payments->preferredProvider();$key='registration-payment:'.$pendingId.':'.$productCode;
+        $result=$this->payments->createIntentFromProduct($subject['userId'],$productCode,$provider,$key,'registration-payment:'.substr($pendingId,0,32));if(empty($result['ok']))return $this->tiers('',$result['code']);
+        $root=rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/';$return=$root.'index.php?module=payment-service&action=pendingreturn&pending_id='.rawurlencode($pendingId).'&intent_id='.rawurlencode($result['intentId']);
+        $started=$this->payments->startCheckout($result['intentId'],array('scenario'=>'success','email'=>$subject['emailAddress'],'successUrl'=>$return,'cancelUrl'=>$return,'failureUrl'=>$return));if(empty($started['ok']))return $this->tiers('',$started['code']);
+        if($provider!=='fake'&&!empty($started['approvalUrl'])){header('Location: '.$started['approvalUrl'],true,303);exit;}$this->setVar('paymentPendingRegistration',true);$this->setVar('paymentPendingId',$pendingId);return $this->fakeCheckoutPage($result['intentId'],'','',true);
+    }
+    private function pendingFakeCheckout(){
+        if(!$this->validPost())return $this->pendingReturn();$pendingId=$this->param('pending_id');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);$intent=$this->payments->intent($this->param('intent_id'));
+        if(!is_array($subject)||!is_array($intent)||$subject['userId']!==$intent['user_id'])return $this->tiers('','intent_not_found');$this->payments->runFakeScenario($intent['id'],$this->param('scenario'));return $this->pendingReturn();
+    }
+    private function pendingReturn(){
+        $pendingId=$this->param('pending_id');$subject=$this->getObject('registrationservice','registration-service')->paymentSubject($pendingId);$intent=$this->payments->intent($this->param('intent_id'));if(!is_array($subject)||!is_array($intent)||$subject['userId']!==$intent['user_id'])return $this->tiers('','intent_not_found');
+        $this->setVar('paymentIntent',$intent);$this->setVar('paymentPendingRegistration',true);$this->common('','');return 'return_tpl.php';
+    }
+    private function fakeCheckoutPage($intentId,$message='',$error='',$allowPending=false){
+        $intent=$this->payments->intent($intentId); if(!$intent||(!$allowPending&&$intent['user_id']!==$this->user->userId())) return $this->catalogue('','intent_not_found');
         $this->setVar('paymentIntent',$intent); $this->common($message,$error); return 'fake_checkout_tpl.php';
     }
     private function fakeCheckout(){

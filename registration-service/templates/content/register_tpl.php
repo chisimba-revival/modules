@@ -30,6 +30,7 @@ $purchasePrice=$purchaseCurrency==='ZAR'?'R'.$purchaseAmount:$purchaseCurrency.'
 <form class="chisimba-form" method="post" action="<?php echo $u(array('action' => 'register')); ?>">
 <input type="hidden" name="csrf_token" value="<?php echo $e($registrationCsrf ?? ''); ?>">
 <input type="hidden" name="return_to" value="<?php echo $e($registrationReturnTo ?? ''); ?>">
+<?php if(!empty($registrationPurchase['code'])): ?><input type="hidden" name="selected_product" value="<?php echo $e($registrationPurchase['code']); ?>"><?php endif; ?>
 <input type="hidden" name="abuse_issued_at" value="<?php echo $e($abuse['issued_at'] ?? ''); ?>">
 <input type="hidden" name="abuse_nonce" value="<?php echo $e($abuse['nonce'] ?? ''); ?>">
 <input type="hidden" name="abuse_signature" value="<?php echo $e($abuse['signature'] ?? ''); ?>">

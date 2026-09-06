@@ -94,8 +94,10 @@ class registration_service extends controller
         $this->setVar('registrationError', $errorCode);
         $this->setVar('registrationValues', $values);
         $this->setVar('registrationCallingCodes', $this->phones->callingCodes());
+        $purchase=$this->purchaseFromContinuation($returnTo);
         $this->setVar('registrationReturnTo', $returnTo);
-        $this->setVar('registrationPurchase', $this->purchaseFromContinuation($returnTo));
+        $this->setVar('registrationPurchase', $purchase);
+        if(is_array($purchase)) $this->setVar('registrationGuidancePrefix','purchase_guidance');
         return 'register_tpl.php';
     }
 
@@ -122,6 +124,7 @@ class registration_service extends controller
             return null;
         }
         return array(
+            'code' => (string) ($product['code'] ?? ''),
             'name' => (string) ($product['name'] ?? ''),
             'billingPeriod' => (string) ($product['billing_period'] ?? ''),
             'amountMinor' => (int) ($product['price']['amount_minor'] ?? 0),
@@ -187,7 +190,30 @@ class registration_service extends controller
             return $this->registrationPage((string) ($queued['code'] ?? 'verification_email_failed'), $values);
         }
         $this->recordAbuse('registration.create', $values['emailAddress'], true);
+        $purchase=$this->purchaseByCode($this->scalarParam('selected_product'));
+        if(!is_array($purchase)) $purchase=$this->purchaseFromContinuation($returnTo);
+        if(is_array($purchase)) {
+            $reserved=$this->service->reserveForPayment($queued['pendingId']);
+            if(!empty($reserved['ok'])) {
+                header('Location: '.html_entity_decode($this->uri(array('action'=>'pendingbuy','pending_id'=>$queued['pendingId'],'product'=>$purchase['code']),'payment-service'),ENT_QUOTES,'UTF-8'),true,303);exit;
+            }
+            return $this->registrationPage((string)($reserved['code']??'registration_failed'),$values);
+        }
         return $this->checkEmailPage($queued, $values);
+    }
+
+    private function purchaseByCode($code)
+    {
+        if($code==='') return null;
+        $product=$this->getObject('paymentcatalogservice','payment-service')->purchasable($code);
+        if(!is_array($product)||($product['purpose_type']??'')!=='membership') return null;
+        return array(
+            'code'=>(string)($product['code']??''),
+            'name'=>(string)($product['name']??''),
+            'billingPeriod'=>(string)($product['billing_period']??''),
+            'amountMinor'=>(int)($product['price']['amount_minor']??0),
+            'currency'=>(string)($product['price']['currency']??''),
+        );
     }
 
     private function registrationPolicy()

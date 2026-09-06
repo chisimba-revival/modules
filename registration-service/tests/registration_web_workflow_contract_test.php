@@ -86,7 +86,10 @@ $checks = array(
         && str_contains($controller, "unsetSession('registration_service_return_to')")
         && str_contains($templates, 'name="return_to"')
         && str_contains($templates, "'?return_to='.rawurlencode(\$returnTo)"),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.012'),
+    'paid registration guidance' => str_contains($controller, "'registrationGuidancePrefix','purchase_guidance'")
+        && str_contains($register, 'Complete payment')
+        && str_contains($register, 'activate your account and membership'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.015'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
