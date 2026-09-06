@@ -10,6 +10,7 @@ $this->setVar('heading','Write Essay');
 ?>
 <section class="chisimba-workspace chisimba-writing-workspace" data-essay-writer>
 <header class="chisimba-writing-header"><div><p class="chisimba-eyebrow">Your Essay</p><h2><?php echo $e($writtenEssayTitle); ?></h2></div><div class="chisimba-save-state" role="status" aria-live="polite" data-save-state>Saved</div></header>
+<?php echo $this->getObject('contextualhelp','help')->show('essay','submitting-an-essay'); ?>
 <div class="chisimba-editor-toolbar" role="toolbar" aria-label="Essay formatting">
 <button type="button" class="chisimba-icon-button" data-command="bold" title="Bold" aria-label="Bold"><?php echo $icons->render('bold',array('decorative'=>true)); ?></button>
 <button type="button" class="chisimba-icon-button" data-command="italic" title="Italic" aria-label="Italic"><?php echo $icons->render('italic',array('decorative'=>true)); ?></button>

@@ -9,6 +9,7 @@ $essayTitle=$essay[0]['topic']??'';
 $this->setVar('heading',$this->objLanguage->languageText('mod_essay_uploadessay','essay'));
 ?>
 <section class="chisimba-workspace"><p class="chisimba-eyebrow">Alternative submission method</p><h2><?php echo $e($essayTitle); ?></h2>
+<?php echo $this->getObject('contextualhelp','help')->show('essay','submitting-an-essay'); ?>
 <p>Upload a finished Essay document instead of writing it in Chisimba. Accepted formats are PDF, Word, OpenDocument, RTF and plain text. A new submission replaces the current one until marking begins.</p>
 <form class="chisimba-form" method="post" enctype="multipart/form-data" action="<?php echo $e($this->uri(array('action'=>'uploadsubmit','bookid'=>$bookId))); ?>">
 <div class="chisimba-form-field"><label for="essay-file">Essay document</label><input id="essay-file" name="essayfile" type="file" required accept=".pdf,.doc,.docx,.odt,.rtf,.txt"></div>
