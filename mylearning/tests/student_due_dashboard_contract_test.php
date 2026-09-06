@@ -30,6 +30,8 @@ $checks = array(
         && strpos($service, 'context-due-work') !== false
         && substr_count($service, 'dashboard-date-strip') >= 2
         && strpos($service, "'context_due_clear', 'Nothing due soon'") !== false,
+    'translated labels decode stored entities before safe HTML escaping' =>
+        strpos($service, 'html_entity_decode($this->language->code2Txt(') !== false,
     'provider failures are isolated' => strpos($service, 'catch (Throwable $failure)') !== false,
     'actions have tooltip and accessible name' => strpos($service, 'aria-label=') !== false
         && strpos($service, 'title=') !== false

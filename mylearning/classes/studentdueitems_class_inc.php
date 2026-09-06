@@ -180,12 +180,12 @@ class studentdueitems extends ChisimbaObject
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
         };
         $text = function ($key, $fallback) {
-            return $this->language->code2Txt(
+            return html_entity_decode($this->language->code2Txt(
                 'mod_mylearning_' . $key,
                 'mylearning',
                 null,
                 $fallback
-            );
+            ), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         };
         $html = '<section class="dashboard-panel context-due-work" '
             . 'aria-labelledby="context-due-work-title"><header '
