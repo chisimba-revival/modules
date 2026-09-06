@@ -95,7 +95,38 @@ class registration_service extends controller
         $this->setVar('registrationValues', $values);
         $this->setVar('registrationCallingCodes', $this->phones->callingCodes());
         $this->setVar('registrationReturnTo', $returnTo);
+        $this->setVar('registrationPurchase', $this->purchaseFromContinuation($returnTo));
         return 'register_tpl.php';
+    }
+
+    /** Resolve a server-owned product selected before registration. */
+    private function purchaseFromContinuation($returnTo)
+    {
+        if ($returnTo === '' || !is_string($returnTo)) { return null; }
+        $parts = parse_url($returnTo);
+        if ($parts === false) { return null; }
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        if (($query['module'] ?? '') !== 'payment-service'
+            || ($query['action'] ?? '') !== 'catalogue'
+            || !is_scalar($query['product'] ?? null)) {
+            return null;
+        }
+        $modules = $this->getObject('modules', 'modulecatalogue');
+        if (!method_exists($modules, 'checkIfRegistered')
+            || !$modules->checkIfRegistered('payment-service')) {
+            return null;
+        }
+        $product = $this->getObject('paymentcatalogservice', 'payment-service')
+            ->purchasable((string) $query['product']);
+        if (!is_array($product) || ($product['purpose_type'] ?? '') !== 'membership') {
+            return null;
+        }
+        return array(
+            'name' => (string) ($product['name'] ?? ''),
+            'billingPeriod' => (string) ($product['billing_period'] ?? ''),
+            'amountMinor' => (int) ($product['price']['amount_minor'] ?? 0),
+            'currency' => (string) ($product['price']['currency'] ?? ''),
+        );
     }
 
     private function submitRegistration()

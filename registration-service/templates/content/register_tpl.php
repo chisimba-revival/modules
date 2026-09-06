@@ -14,6 +14,18 @@ $usernameAvailabilityUrl = html_entity_decode($this->uri(array('action' => 'user
     <h1 id="registration-title"><?php echo $e($t('register_title')); ?></h1>
     <p><?php echo $e($t('register_intro')); ?></p>
 </header>
+<?php if (!empty($registrationPurchase) && is_array($registrationPurchase)):
+$purchasePeriod=(string)($registrationPurchase['billingPeriod']??'');
+$purchasePeriodLabel=$t($purchasePeriod==='annual'?'purchase_annual':'purchase_monthly');
+$purchaseAmount=number_format(((int)($registrationPurchase['amountMinor']??0))/100,2);
+$purchaseCurrency=strtoupper((string)($registrationPurchase['currency']??''));
+$purchasePrice=$purchaseCurrency==='ZAR'?'R'.$purchaseAmount:$purchaseCurrency.' '.$purchaseAmount;
+?>
+<aside class="registration-purchase-summary" aria-labelledby="registration-purchase-title">
+    <div><strong id="registration-purchase-title"><?php echo $e($t('purchase_selected')); ?></strong><span><?php echo $e($registrationPurchase['name']??''); ?> · <?php echo $e($purchasePeriodLabel); ?> · <?php echo $e($purchasePrice); ?></span></div>
+    <a href="<?php echo $e(html_entity_decode($this->uri(array('action'=>'tiers'),'payment-service'),ENT_QUOTES,'UTF-8')); ?>"><?php echo $e($t('purchase_change')); ?></a>
+</aside>
+<?php endif; ?>
 <?php if ($error !== ''): ?><div class="error chisimba-form-notice" role="alert"><?php echo $e($t('error_' . $error)); ?></div><?php endif; ?>
 <form class="chisimba-form" method="post" action="<?php echo $u(array('action' => 'register')); ?>">
 <input type="hidden" name="csrf_token" value="<?php echo $e($registrationCsrf ?? ''); ?>">
@@ -34,7 +46,8 @@ $usernameAvailabilityUrl = html_entity_decode($this->uri(array('action' => 'user
 </section>
 <div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $e($t('create_account')); ?></button><a class="button chisimba-button-secondary" href="<?php echo $u(array('action' => 'forgotpassword')); ?>"><?php echo $e($t('forgot_password')); ?></a></div>
 </form>
-<p class="chisimba-form-card__footer"><a href="<?php echo $e(rtrim((string) $this->getObject('altconfig', 'config')->getItem('KEWL_SITE_ROOT'), '/') . '/'); ?>"><?php echo $e($t('already_registered')); ?></a></p>
+<?php $signIn=rtrim((string)$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT'),'/').'/';if(!empty($registrationReturnTo))$signIn.='?return_to='.rawurlencode((string)$registrationReturnTo); ?>
+<p class="chisimba-form-card__footer"><a href="<?php echo $e($signIn); ?>"><?php echo $e($t('already_registered')); ?></a></p>
 </div>
 </main>
 <script type="text/javascript">

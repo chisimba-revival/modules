@@ -1,5 +1,6 @@
 <?php
 $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+$language=$this->getObject('language','language');
 $labels=array('free'=>'Free','tier_1'=>'Tier 1','tier_2'=>'Tier 2');$ranks=array('free'=>0,'tier_1'=>1,'tier_2'=>2);$currentRank=$ranks[$tierEffective]??0;
 $money=static function($price){if(!$price)return ''; $amount=number_format(((int)$price['amount_minor'])/100,2);return strtoupper((string)$price['currency'])==='ZAR'?'R'.$amount:(string)$price['currency'].' '.$amount;};
 ?>
@@ -14,7 +15,12 @@ $money=static function($price){if(!$price)return ''; $amount=number_format(((int
    <div class="membership-plan__price"><?php if($code==='free'):?>No membership fee<?php elseif(!$products):?>Contact us for pricing<?php else:?><?php foreach($products as $product):$price=$product['current_price'];$annual=($product['billing_period']??'monthly')==='annual';?><span><?=$e($money($price))?> <small>per <?=$annual?'year':'month'?></small><?php if($annual):?><small class="membership-plan__price-note"><?=$e($money(array('amount_minor'=>(int)round(((int)$price['amount_minor'])/12),'currency'=>$price['currency'])))?> per month, billed annually</small><?php endif;?></span><?php endforeach;?><?php endif;?></div><p><?=$e($content['summary'])?></p></div>
    <ul class="membership-plan__features"><?php foreach(preg_split('/\R/u',$content['features']) as $feature):?><li><?=$e($feature)?></li><?php endforeach;?></ul>
    <div class="membership-plan__actions"><a class="button chisimba-button-secondary" href="<?=$this->uri(array('action'=>'catalogue','access'=>$code),'context')?>">View <?=$e($code==='free'?'free courses':$label.' courses')?></a>
-   <?php if(!$tierIsLoggedIn):?><?php if($code==='free'||$products):?><?php $afterRegistration=html_entity_decode($code==='free'?$this->uri(array('action'=>'catalogue','access'=>'free'),'context'):$this->uri(array('action'=>'catalogue','purpose'=>'membership','tier'=>$code),'payment-service'),ENT_QUOTES,'UTF-8');$afterParts=parse_url($afterRegistration);$afterRegistration=(string)($afterParts['path']??'/index.php').(isset($afterParts['query'])?'?'.$afterParts['query']:'');?><a class="button" href="<?=$this->uri(array('return_to'=>$afterRegistration),'registration-service')?>"><?=$code==='free'?'Register now for free courses':'Register to join '.$e($label)?></a><?php endif;?>
+   <?php if(!$tierIsLoggedIn):?>
+    <?php if($code==='free'):?>
+     <?php $afterRegistration=html_entity_decode($this->uri(array('action'=>'catalogue','access'=>'free'),'context'),ENT_QUOTES,'UTF-8');$afterParts=parse_url($afterRegistration);$afterRegistration=(string)($afterParts['path']??'/index.php').(isset($afterParts['query'])?'?'.$afterParts['query']:'');?><a class="button" href="<?=$this->uri(array('return_to'=>$afterRegistration),'registration-service')?>"><?=$e($language->languageText('mod_payment_service_register_free','payment-service'))?></a>
+    <?php else:?>
+     <?php foreach($products as $product):$period=(string)($product['billing_period']??'monthly');$afterRegistration=html_entity_decode($this->uri(array('action'=>'catalogue','product'=>(string)$product['code']),'payment-service'),ENT_QUOTES,'UTF-8');$afterParts=parse_url($afterRegistration);$afterRegistration=(string)($afterParts['path']??'/index.php').(isset($afterParts['query'])?'?'.$afterParts['query']:'');$periodLabel=$language->languageText('mod_payment_service_choose_'.$period,'payment-service');?><a class="button" href="<?=$this->uri(array('return_to'=>$afterRegistration),'registration-service')?>"><?=$e($periodLabel)?></a><?php endforeach;?>
+    <?php endif;?>
    <?php elseif(!$isCurrent&&!$isIncluded&&$code!=='free'&&$products):?><a class="button" href="<?=$this->uri(array('action'=>'catalogue','purpose'=>'membership','tier'=>$code),'payment-service')?>">Upgrade to <?=$e($label)?></a><?php endif;?></div>
   </article>
  <?php endforeach;?></div>
