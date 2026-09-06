@@ -46,9 +46,9 @@ class paymentcatalogservice extends ChisimbaObject
     public function createProduct(array $input) {
         $purpose=$this->enum($input['purposeType']??null,self::PURPOSES); $period=$this->enum($input['billingPeriod']??null,self::PERIODS);
         $duration=filter_var($input['durationMonths']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>120)));
-        if($period==='one_off') $duration=null;
+        if($period==='one_off'&&$purpose==='private_course') $duration=null;
         $values=array('code'=>$this->identifier($input['code']??null,96),'name'=>$this->text($input['name']??null,191),'purpose_type'=>$purpose,'purpose_id'=>$this->text($input['purposeId']??null,191),'billing_period'=>$period,'duration_months'=>$duration===false?null:$duration,'active'=>1);
-        if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||!in_array($values['purpose_id'],array('tier_1','tier_2'),true)))) return array('ok'=>false,'code'=>'invalid_product');
+        if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||($period==='one_off'&&$duration!==1)||!in_array($values['purpose_id'],array('tier_1','tier_2'),true)))) return array('ok'=>false,'code'=>'invalid_product');
         if($purpose==='private_course') {
             $course=$this->contexts->getContext($values['purpose_id']);
             if(!is_array($course)||strtolower((string)($course['access_policy']??''))!=='private') return array('ok'=>false,'code'=>'private_course_required');

@@ -7,6 +7,9 @@ $expect(str_contains($tiers,"'product'=>(string)\$product['code']"),'Paid member
 $expect(str_contains($registration,'->purchasable((string) $query[\'product\'])'),'Registration must resolve the selected product from the authoritative catalogue.');
 $expect(str_contains($registration,'($product[\'purpose_type\'] ?? \'\') !== \'membership\''),'Registration must reject non-membership purchase summaries.');
 $expect(str_contains($form,'registration-purchase-summary'),'The normal registration form must show the preserved membership choice.');
+$expect(str_contains($form,"'one_off'=>'purchase_one_month'")
+    && str_contains(file_get_contents(dirname(__DIR__,2).'/registration-service/register.conf'),'1 Month, no renewal'),
+    'Registration must identify a one-month payment as non-renewing.');
 $expect(str_contains($form,"'?return_to=' . rawurlencode")||str_contains($form,"'?return_to='.rawurlencode"),'Existing-account sign-in must preserve the selected membership.');
 fwrite(STDOUT,"PASS: pre-registration membership choice contract\n");
 ?>

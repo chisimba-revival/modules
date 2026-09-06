@@ -18,7 +18,7 @@ $expect(str_contains($payments,'isAdmitted')&&str_contains($payments,"'already_h
 $expect(str_contains($payments,"'payment-intent:'.\$intent['id']"),'Membership fulfilment must be idempotent per intent.');
 $expect(str_contains($products,"'private_course'")===false,'Product schema must remain generic rather than adding course-specific columns.');
 $expect(str_contains($catalog,"array('tier_1','tier_2')")&&str_contains($catalog,"'private_course_required'"),'Products must reference a supported paid tier or a real private course.');
-$expect(str_contains($catalog,"\$period==='one_off'")&&str_contains($catalog,"\$duration=null"),'One-off private-course products must not require a membership duration.');
+$expect(str_contains($catalog,"\$period==='one_off'&&\$purpose==='private_course'")&&str_contains($catalog,"\$period==='one_off'&&\$duration!==1"),'A one-off membership must grant exactly one month while a private-course purchase remains lifetime access.');
 $expect(str_contains($controller,"class_alias('payment_service','payment-service')"),'The hyphenated module id must resolve to its PHP controller class.');
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
 $expect(str_contains($controller,"\$requested=\$this->param('product')")&&str_contains($controller,"['code']===\$requested"),'A course purchase link must narrow the catalogue to its selected product.');
@@ -52,9 +52,12 @@ $expect(str_contains($layoutTemplate,"showBlock('login','security')")
     && str_contains($layoutTemplate,"showBlock('register','security')")
     && str_contains($layoutTemplate,'payment-acquisition-sidebar'),
     'Anonymous membership discovery must reuse the canonical sign-in and registration blocks in its sidebar.');
-$expect(str_contains($tiersTemplate,'per month, billed annually')
+$expect(str_contains($register,'mod_payment_service_annual_price_note|Annual price explanatory suffix|per month, billed annually')
     && str_contains($tiersTemplate,"['amount_minor'])/12"),
     'Annual membership prices must disclose their effective monthly cost without obscuring the annual charge.');
+$expect(str_contains($tiersTemplate,"mod_payment_service_choose_'.\$period")
+    && str_contains($register,'mod_payment_service_choose_one_off|One-month membership registration action|1 Month'),
+    'Each paid tier must offer distinct one-month, monthly and annual registration actions.');
 $expect(str_contains($controller,"'purpose'=>'membership','tier'=>\$code")
     || str_contains($tiersTemplate,"'purpose'=>'membership','tier'=>\$code"),
     'A tier upgrade must preserve its chosen tier while offering every published billing option.');

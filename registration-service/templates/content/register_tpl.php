@@ -16,7 +16,7 @@ $usernameAvailabilityUrl = html_entity_decode($this->uri(array('action' => 'user
 </header>
 <?php if (!empty($registrationPurchase) && is_array($registrationPurchase)):
 $purchasePeriod=(string)($registrationPurchase['billingPeriod']??'');
-$purchasePeriodLabel=$t($purchasePeriod==='annual'?'purchase_annual':'purchase_monthly');
+$purchasePeriodLabel=$t(match($purchasePeriod){'annual'=>'purchase_annual','one_off'=>'purchase_one_month',default=>'purchase_monthly'});
 $purchaseAmount=number_format(((int)($registrationPurchase['amountMinor']??0))/100,2);
 $purchaseCurrency=strtoupper((string)($registrationPurchase['currency']??''));
 $purchasePrice=$purchaseCurrency==='ZAR'?'R'.$purchaseAmount:$purchaseCurrency.' '.$purchaseAmount;
