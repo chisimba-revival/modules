@@ -1,18 +1,30 @@
 <?php
-if(empty($GLOBALS['kewl_entry_point_run']))die('You cannot view this page directly');
+if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class administrationoverview extends ChisimbaObject
 {
+ private function text($language,$key,$fallback,$tokens=null){return $tokens===null?$language->languageText('mod_myadmin_'.$key,'myadmin',$fallback):$language->code2Txt('mod_myadmin_'.$key,'myadmin',$tokens,$fallback);}
+ /** Assign every active person to exactly one highest system role. */
+ private function presenceSummary($people){
+  $user=$this->getObject('user','security');$contexts=$this->getObject('usercontext','context');
+  $summary=array('administrators'=>0,'authors'=>0,'readonlys'=>0,'other'=>0,'in_contexts'=>0,'lobby'=>0);
+  foreach((array)$people as $person){$userId=(string)$person['userid'];$scope=strtolower((string)$person['coursecode']);
+   if($scope===''||$scope==='root'||$scope==='lobby')$summary['lobby']++;else $summary['in_contexts']++;
+   if($user->inAdminGroup($userId))$summary['administrators']++;
+   elseif(count((array)$contexts->getContextWhereLecturer($userId))>0)$summary['authors']++;
+   elseif(count((array)$contexts->getContextWhereStudent($userId))>0)$summary['readonlys']++;
+   else $summary['other']++;
+  }
+  return $summary;
+ }
  public function show(){
-  $metrics=$this->getObject('sitemetrics');
-  $users=$metrics->countUsers();
-  $courses=$metrics->countCourses();
-  $online=(int)$this->getObject('loggedinusers','security')->getActiveUserCount();
-  $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
-  $language=$this->getObject('language','language');
-  $stats=array(array('Users',$users,'Registered accounts'),array($language->code2Txt('mod_myadmin_courses','myadmin',null,'[-contexts-]'),$courses,$language->code2Txt('mod_myadmin_courseshelp','myadmin',null,'[-contexts-] on this site')),array('Online now',$online,'Currently active sessions'));
-  $html='<section class="student-learning-overview site-health-overview" aria-labelledby="site-health-title"><header class="student-learning-overview__header"><div><p class="student-learning-overview__eyebrow">Site overview</p><h1 id="site-health-title">My Administration</h1><p>See the health and current activity of this site.</p></div><span class="student-learning-overview__count">Live</span></header><div class="site-health-grid">';
+  $metrics=$this->getObject('sitemetrics');$language=$this->getObject('language','language');$people=$this->getObject('loggedinusers','security')->getActiveUsers();$roles=$this->presenceSummary($people);$e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+  $stats=array(array($this->text($language,'users','Users'),$metrics->countUsers(),$this->text($language,'users_help','Registered accounts')),array($language->code2Txt('mod_myadmin_courses','myadmin',null,'[-contexts-]'),$metrics->countCourses(),$language->code2Txt('mod_myadmin_courseshelp','myadmin',null,'[-contexts-] on this site')),array($this->text($language,'online','Online now'),count($people),$this->text($language,'online_help','Recently active people')));
+  $roleCards=array(array('administrators',$this->text($language,'administrators','Administrators')),array('authors',$this->text($language,'authors','[-authors-]',array())),array('readonlys',$this->text($language,'readonlys','[-readonlys-]',array())),array('other',$this->text($language,'other_users','Other users')));
+  $html='<section class="student-learning-overview site-health-overview" aria-labelledby="site-health-title"><header class="student-learning-overview__header"><div><p class="student-learning-overview__eyebrow">'.$e($this->text($language,'eyebrow','Site overview')).'</p><h1 id="site-health-title">'.$e($this->text($language,'name','My Administration')).'</h1><p>'.$e($this->text($language,'intro','See the health and current activity of this site.')).'</p></div><span class="student-learning-overview__count">'.$e($this->text($language,'live','Live')).'</span></header><div class="site-health-grid">';
   foreach($stats as $stat)$html.='<article class="site-health-card"><span>'.$e($stat[0]).'</span><strong>'.$e(number_format($stat[1])).'</strong><p>'.$e($stat[2]).'</p></article>';
-  return $html.'</div><section class="site-health-attention"><div><p class="student-learning-overview__eyebrow">Needs attention</p><h2>Nothing requiring action</h2><p>Administrative requests and service warnings will appear here as those services provide them.</p></div></section></section>';
+  $html.='</div><section class="presence-overview" aria-labelledby="presence-title"><header><div><p class="student-learning-overview__eyebrow">'.$e($this->text($language,'presence_eyebrow','Live activity')).'</p><h2 id="presence-title">'.$e($this->text($language,'presence_title','Who is online')).'</h2></div><div class="presence-scope-summary"><span>'.$e($roles['in_contexts'].' '.$this->text($language,'in_contexts','in [-contexts-]',array())).'</span><span>'.$e($roles['lobby'].' '.$this->text($language,'in_lobby','in the site lobby')).'</span></div></header><div class="presence-role-grid">';
+  foreach($roleCards as $card)$html.='<article class="presence-role-card presence-role-card--'.$e($card[0]).'"><span class="presence-role-card__icon" aria-hidden="true">●</span><div><strong>'.$e(number_format($roles[$card[0]])).'</strong><span>'.$e($card[1]).'</span></div></article>';
+  return $html.'</div><p class="presence-overview__help">'.$e($this->text($language,'presence_help','Each person is counted once using their highest role.')).'</p></section><section class="site-health-attention"><div><p class="student-learning-overview__eyebrow">'.$e($this->text($language,'attention','Needs attention')).'</p><h2>'.$e($this->text($language,'nothing_requiring_action','Nothing requiring action')).'</h2><p>'.$e($this->text($language,'attention_help','Administrative requests and service warnings will appear here as those services provide them.')).'</p></div></section></section>';
  }
 }
 ?>
