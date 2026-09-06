@@ -1,4 +1,6 @@
 <?php
+$contextualHelp = $this->getObject('contextualhelp', 'help');
+echo $contextualHelp->show('membership-service', 'membership-operations');
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };

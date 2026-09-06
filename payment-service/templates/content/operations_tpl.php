@@ -1,4 +1,4 @@
-<?php $o=$this->getVar('paymentOperations',array());$csrf=htmlspecialchars($this->getVar('paymentCsrf',''),ENT_QUOTES,'UTF-8');$isAdmin=$this->getVar('paymentIsAdmin',false);?>
+<?php $o=$this->getVar('paymentOperations',array());$csrf=htmlspecialchars($this->getVar('paymentCsrf',''),ENT_QUOTES,'UTF-8');$isAdmin=$this->getVar('paymentIsAdmin',false);echo $this->getObject('contextualhelp','help')->show('payment-service','payment-operations');?>
 <section class="payment-workbench">
 <header><p class="eyebrow">PAYMENT OPERATIONS</p><h1>Payments and reconciliation</h1><p>Provider-confirmed state, failed attempts and events are retained without storing card details.</p><?php if($isAdmin):?><p><a class="button" href="<?=$this->uri(array('action'=>'products'))?>">Manage products and prices</a></p><?php endif;?></header>
 <article class="payment-card"><h2>Recent checkouts</h2><table><thead><tr><th>Created</th><th>Product</th><th>Amount</th><th>Status</th><th>Reconciliation</th></tr></thead><tbody>
