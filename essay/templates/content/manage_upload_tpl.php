@@ -21,6 +21,7 @@ if (!empty($suggestion) && $displayComment==='') { $displayComment=(string)($sug
 $initialFinal=!empty($suggestion)?max(0,min(100,$suggestedMark+$adjustment)):max(0,min(100,(int)$displayMark));
 ?>
 <section class="chisimba-workspace">
+<?php echo $this->getObject('contextualhelp','help')->show('essay','ai-assisted-marking'); ?>
 <div class="chisimba-summary-card"><h2><?php echo $e($essay[0]['topic']??'Essay'); ?></h2><p><strong>Student:</strong> <?php echo $e($studentname); ?></p><p><strong><?php echo $isLate?'Submitted late':'Submitted'; ?>:</strong> <?php echo $e($this->objTimeAndDate->formatDateTime($data[0]['submitdate'])); ?></p><?php if(!$written): ?><p><a class="button chisimba-button-secondary" href="<?php echo $e($download); ?>"><?php echo $icons->render('download',array('decorative'=>true)); ?> Download submission</a></p><?php endif; ?></div>
 <?php if($written): ?><article class="chisimba-longform-reading"><h3>Submitted essay</h3><div class="chisimba-prose"><?php echo $data[0]['submission_html']; ?></div></article><?php endif; ?>
 <?php if($aiMarkingAvailable && empty($suggestion)): ?>
