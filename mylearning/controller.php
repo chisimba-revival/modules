@@ -108,19 +108,24 @@ class mylearning extends controller
         }
         $registry = $this->getObject('dbmoduleblocks', 'modulecatalogue');
         $size = $wide ? 'wide' : 'normal';
-        foreach ((array) $registry->getBlocks($size, 'site|user|postlogin') as $block) {
+        foreach ((array) $registry->getBlocks($size, 'site|user|postlogin', 'readonly') as $block) {
             if ($block['moduleid'] === 'contentblocks') { continue; }
             $title = $block['blockname'];
             try {
                 $instance = $this->newObject(
                     'block_' . $block['blockname'], $block['moduleid']
                 );
+                if (method_exists($instance, 'isAvailableForBlockChooser')
+                    && !$instance->isAvailableForBlockChooser()) {
+                    continue;
+                }
                 if (trim((string) $instance->title) !== '') {
                     $title = trim((string) $instance->title);
                 }
             } catch (Throwable $exception) {
                 // A broken optional block must not break page administration.
             }
+            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $options[] = array(
                 'value' => 'block|' . $block['blockname'] . '|'
                     . $block['moduleid'],
