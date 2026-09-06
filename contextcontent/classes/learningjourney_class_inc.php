@@ -45,7 +45,7 @@ class learningjourney extends ChisimbaObject
         $state['available'] = TRUE;
         $state['pageid'] = $firstPage['id'];
         $state['pagetitle'] = isset($firstPage['menutitle']) ? $firstPage['menutitle'] : '';
-        $state['total'] = (int) $this->objOrder->getNumContextPages($contextCode);
+        $state['total'] = (int) $this->objOrder->getNumLearnerContextPages($contextCode);
         if ($userId === '' || $userId === NULL) return $state;
 
         foreach ($this->objBookmarks->idsForUser($contextCode, $userId) as $bookmarkId) {

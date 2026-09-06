@@ -15,7 +15,7 @@ class coursecompletioneligibilityservice extends ChisimbaObject
     }
     public function evaluate($contextCode,$userId=null)
     {
-        $userId=$userId?:$this->user->userId();$total=(int)$this->order->getNumContextPages($contextCode);
+        $userId=$userId?:$this->user->userId();$total=(int)$this->order->getNumLearnerContextPages($contextCode);
         $visited=(int)$this->activity->countVisitedPages($userId,$contextCode);$reasons=array();
         if($total<1||$visited<$total){$reasons[]='content_incomplete';}
         $gateSummary=$this->gates->courseCompletionSummary($contextCode);

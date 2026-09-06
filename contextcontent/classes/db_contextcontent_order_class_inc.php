@@ -97,6 +97,19 @@ class db_contextcontent_order extends dbtable {
         return $this->getRecordCount('WHERE contextcode=\'' . $contextCode . '\'');
     }
 
+    /** Count pages belonging to chapters that expose their content to students. */
+    public function getNumLearnerContextPages($contextCode) {
+        $context=$this->_db->quote((string)$contextCode);
+        $rows=$this->getArray(
+            'SELECT COUNT(o.id) AS pagecount FROM tbl_contextcontent_order o '
+            .'INNER JOIN tbl_contextcontent_chaptercontext c ON '
+            .'c.contextcode=o.contextcode AND c.chapterid=o.chapterid '
+            .'WHERE o.contextcode='.$context." AND c.visibility='Y'"
+        );
+        return is_array($rows)&&isset($rows[0]['pagecount'])
+            ? (int)$rows[0]['pagecount'] : 0;
+    }
+
     /**
      * Method to get the first content page in a context.
      * @param string $contextCode Context Code
@@ -106,10 +119,17 @@ class db_contextcontent_order extends dbtable {
         $contextCode = $this->_db->quote((string) $contextCode);
         $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_titles.contenttype, lft, rght
         FROM tbl_contextcontent_order 
+        INNER JOIN tbl_contextcontent_chaptercontext ON (
+            tbl_contextcontent_chaptercontext.contextcode = tbl_contextcontent_order.contextcode
+            AND tbl_contextcontent_chaptercontext.chapterid = tbl_contextcontent_order.chapterid
+        )
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE contextcode=' . $contextCode . ' AND parentid = \'root\'
-        ORDER BY lft, pageorder LIMIT 1';
+        WHERE tbl_contextcontent_order.contextcode=' . $contextCode . '
+            AND tbl_contextcontent_order.parentid = \'root\'
+            AND tbl_contextcontent_chaptercontext.visibility = \'Y\'
+        ORDER BY tbl_contextcontent_chaptercontext.chapterorder,
+            tbl_contextcontent_order.lft, tbl_contextcontent_order.pageorder LIMIT 1';
 
         $results = $this->getArray($sql);
 
