@@ -228,6 +228,13 @@ $objFix->fixTwo();
                 "block" : "discussionadmin"
                 }
         </div>
+        <div id="Canvas_Content_Body_Region1">
+                {
+                "display" : "block",
+                "module" : "discussion",
+                "block" : "discussionnavigation"
+                }
+        </div>
 </div>
 <?php
 // Get the contents for the layout template
