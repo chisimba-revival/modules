@@ -110,6 +110,39 @@ class studentdueitems extends ChisimbaObject
                 // One optional provider must not hide the remaining due work.
             }
         }
+        if (isset($enabled['liveclass'])) {
+            try {
+                $liveSessions = $this->getObject('dbliveclasssessions', 'liveclass');
+                $liveLabel = $this->language->languageText('mod_liveclass_title', 'liveclass');
+                foreach ((array) $liveSessions->forContext($contextCode) as $session) {
+                    if (($session['status'] ?? '') !== 'scheduled') {
+                        continue;
+                    }
+                    $start = $this->time->inTimezone($session['starts_at']);
+                    if (!$start instanceof DateTimeImmutable) {
+                        continue;
+                    }
+                    $target = array(
+                        'module'=>'liveclass',
+                        'params'=>array('action'=>'view', 'id'=>$session['id']),
+                    );
+                    $items[] = array(
+                        'id'=>(string) $session['id'],
+                        'title'=>(string) $session['name'],
+                        'course'=>(string) $context['title'],
+                        'provider'=>'liveclass',
+                        'providerLabel'=>(string) $liveLabel,
+                        'due'=>$start,
+                        'status'=>'not_attempted',
+                        'markPercent'=>null,
+                        'url'=>$this->uri($target['params'], $target['module']),
+                        'target'=>$target,
+                    );
+                }
+            } catch (Throwable $failure) {
+                // An unavailable optional live-session provider must not hide due work.
+            }
+        }
         usort($items, static function ($left, $right) {
             return $left['due'] <=> $right['due'];
         });

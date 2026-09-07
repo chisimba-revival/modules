@@ -8,6 +8,7 @@ $fields = array(
     'name' => array('type' => 'text', 'length' => 255, 'notnull' => TRUE),
     'description' => array('type' => 'text'),
     'image_url' => array('type' => 'text', 'length' => 2048),
+    'calendar_event_id' => array('type' => 'text', 'length' => 32),
     'starts_at' => array('type' => 'timestamp', 'notnull' => TRUE),
     'duration_minutes' => array('type' => 'integer', 'notnull' => TRUE),
     'record_session' => array('type' => 'integer', 'length' => 1, 'default' => 0),
