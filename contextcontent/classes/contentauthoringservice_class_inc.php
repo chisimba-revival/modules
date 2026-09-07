@@ -91,7 +91,7 @@ class contentauthoringservice extends ChisimbaObject
         }
         if ($editing && $data['placementid'] === '') { throw new InvalidArgumentException('Content ID is required'); }
         $this->registry->get($data['contenttype']);
-        if ($data['contenttype'] === 'assessment_activity'
+        if (in_array($data['contenttype'], array('assessment_activity', 'live_session'), true)
             && (!preg_match('/^[a-z][a-z0-9_-]{1,63}$/', $data['providermodule'])
                 || !preg_match('/^[A-Za-z0-9_-]{1,128}$/', $data['provideritemid']))) {
             throw new InvalidArgumentException('A valid assessment provider and activity are required');

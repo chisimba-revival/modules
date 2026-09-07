@@ -81,6 +81,20 @@ class contenttyperegistry extends ChisimbaObject
             'palette' => 'assessment',
             'preferred_for' => 'all'
         ));
+        try {
+            $modules = $this->getObject('modules', 'modulecatalogue');
+            if ($modules->checkIfRegistered('liveclass')) {
+                $this->register(array(
+                    'key' => 'live_session',
+                    'icon' => 'calendar-clock',
+                    'label' => $this->language->languageText('mod_contextcontent_type_live_session', 'contextcontent'),
+                    'description' => $this->language->languageText('mod_contextcontent_type_live_session_desc', 'contextcontent'),
+                    'native' => false,
+                    'preferred_for' => 'all'
+                ));
+            }
+        } catch (Throwable $error) {
+        }
     }
 
     public function register(array $definition)

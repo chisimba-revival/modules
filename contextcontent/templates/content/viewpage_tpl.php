@@ -135,13 +135,20 @@ $contentTypeClasses = array(
     'zip_bundle' => ' contextcontent-resource',
     'external_reading' => ' contextcontent-resource',
     'assessment_activity' => ' contextcontent-assessment',
+    'live_session' => ' contextcontent-live-session',
 );
 $typeClass = isset($contentTypeClasses[$page['contenttype']])
     ? $contentTypeClasses[$page['contenttype']]
     : ' contextcontent-rich-text';
 $shortTextOpen = $page['contenttype'] === 'short_text' ? '<div class="contextcontent-phone-reading"><div class="contextcontent-phone-reading-speaker" aria-hidden="true"></div><div class="contextcontent-phone-reading-screen">' : '';
 $shortTextClose = $page['contenttype'] === 'short_text' ? '</div><div class="contextcontent-phone-reading-gesture" aria-hidden="true"></div></div>' : '';
-if ($page['contenttype'] === 'assessment_activity') {
+if ($page['contenttype'] === 'live_session') {
+    $renderedPageContent = $this->getObject('liveclasscontentrenderer', 'liveclass')->render(
+        $page,
+        $this->contextCode,
+        $this->isValid('editpage')
+    );
+} elseif ($page['contenttype'] === 'assessment_activity') {
     $renderedPageContent = $this->getObject('assessmentpaletteservice', 'contextcontent')->render(
         $page,
         $this->contextCode,

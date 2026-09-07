@@ -1002,6 +1002,12 @@ class contextcontent extends controller {
             return 'contenttypepicker_tpl.php';
         }
         $this->objContentTypes->get($contentType);
+        if ($contentType === 'live_session') {
+            return $this->nextAction('add', array(
+                'flow_chapter' => $chapter,
+                'flow_parent' => $parent
+            ), 'liveclass');
+        }
         $this->setVar('contentType', $contentType);
         $this->setVar('mode', 'add');
         $this->setVar('formaction', 'savepage');
