@@ -5,7 +5,10 @@ class ChisimbaObject {
  public function getObject($name,$module){if($name==='courseawarelaunchservice'&&$module==='context')return new courseawarelaunchservice();throw new RuntimeException('Unexpected dependency');}
  public function uri($params,$module){return '/index.php?'.http_build_query(array_merge(array('module'=>$module),$params),'','&amp;');}
 }
-require dirname(__DIR__,3).'/framework/app/core_modules/context/classes/courseawarelaunchservice_class_inc.php';
+$applicationRoot=dirname(__DIR__,3);
+$launchService=$applicationRoot.'/core_modules/context/classes/courseawarelaunchservice_class_inc.php';
+if(!is_file($launchService)){$launchService=$applicationRoot.'/framework/app/core_modules/context/classes/courseawarelaunchservice_class_inc.php';}
+require $launchService;
 require dirname(__DIR__).'/classes/discussionnotificationpublisher_class_inc.php';
 $publisher=new discussionnotificationpublisher();
 parse_str(parse_url($publisher->notificationTarget('testing106','topic-1','post-2','/broken'),PHP_URL_QUERY),$query);
