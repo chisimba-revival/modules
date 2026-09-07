@@ -1,0 +1,13 @@
+<?php $l=$this->getVar('liveclassLabels');$e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');$icons=$this->getObject('iconservice','ui'); ?>
+<section class="liveclass-page"><header><p class="chisimba-eyebrow"><?php echo $e($l['title']); ?></p><h1><?php echo $e($l['add']); ?></h1></header>
+<?php if($this->getVar('liveclassError','')!==''): ?><p class="chisimba-notice chisimba-notice-error"><?php echo $e($this->getVar('liveclassError')); ?></p><?php endif; ?>
+<form class="chisimba-form liveclass-form" method="post" action="<?php echo $e($this->uri(array('action'=>'save'))); ?>">
+<input type="hidden" name="csrf_token" value="<?php echo $e($this->getVar('liveclassCsrf')); ?>">
+<div class="liveclass-field"><label><?php echo $e($l['session_type']); ?></label><strong><?php echo $e($l[$this->getVar('liveclassType')==='webinar'?'webinar_type':'context_type']); ?></strong></div>
+<label><?php echo $e($l['name']); ?><input name="name" maxlength="255" required></label>
+<label><?php echo $e($l['description_field']); ?><textarea name="description" rows="5"></textarea></label>
+<div class="liveclass-form-row"><label><?php echo $e($l['starts']); ?><input type="datetime-local" name="starts_at" required></label><label><?php echo $e($l['duration']); ?><input type="number" name="duration_minutes" min="5" max="1440" value="60" required></label></div>
+<fieldset class="liveclass-provider"><legend><?php echo $e($l['provider']); ?></legend><?php foreach(array('google_meet','zoom','external','bigbluebutton') as $provider): ?><label><input type="radio" name="provider_code" value="<?php echo $e($provider); ?>"<?php echo $this->getVar('liveclassDefaultProvider')===$provider?' checked':''; ?>> <?php echo $e($l[$provider]); ?></label><?php endforeach; ?></fieldset>
+<label data-meeting-url><?php echo $e($l['meeting_url']); ?><input type="url" name="meeting_url" inputmode="url" placeholder="https://"><small class="chisimba-field-help"><?php echo $e($l['meeting_url_help']); ?></small></label>
+<fieldset data-recording><legend><?php echo $e($l['record']); ?></legend><label><input type="radio" name="record_session" value="1"> <?php echo $e($l['yes']); ?></label><label><input type="radio" name="record_session" value="0" checked> <?php echo $e($l['no']); ?></label></fieldset>
+<div class="chisimba-form-actions"><button class="button chisimba-button-primary" type="submit"><?php echo $icons->render('save',array('decorative'=>true)); ?><span><?php echo $e($l['save']); ?></span></button><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array())); ?>"><?php echo $icons->render('x',array('decorative'=>true)); ?><span><?php echo $e($l['cancel_action']); ?></span></a></div></form></section>
