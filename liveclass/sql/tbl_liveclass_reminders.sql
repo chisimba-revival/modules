@@ -1,0 +1,20 @@
+<?php
+$tablename='tbl_liveclass_reminders';
+$options=array('comment'=>'Scheduled live-session reminder fan-out jobs','collate'=>'utf8_general_ci','character_set'=>'utf8');
+$fields=array(
+ 'id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),
+ 'session_id'=>array('type'=>'text','length'=>32,'notnull'=>TRUE),
+ 'lead_minutes'=>array('type'=>'integer','notnull'=>TRUE),
+ 'due_at'=>array('type'=>'timestamp','notnull'=>TRUE),
+ 'status'=>array('type'=>'text','length'=>16,'notnull'=>TRUE),
+ 'recipient_count'=>array('type'=>'integer','notnull'=>TRUE,'default'=>0),
+ 'queued_at'=>array('type'=>'timestamp'),
+ 'created_at'=>array('type'=>'timestamp','notnull'=>TRUE),
+ 'updated_at'=>array('type'=>'timestamp','notnull'=>TRUE)
+);
+$tableIndexes=array(
+ 'liveclass_reminder_primary'=>array('primary'=>TRUE,'fields'=>array('id'=>array())),
+ 'liveclass_reminder_unique'=>array('unique'=>TRUE,'fields'=>array('session_id'=>array(),'lead_minutes'=>array())),
+ 'liveclass_reminder_due'=>array('fields'=>array('status'=>array(),'due_at'=>array()))
+);
+?>
