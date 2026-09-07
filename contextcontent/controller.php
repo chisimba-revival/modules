@@ -1005,7 +1005,7 @@ class contextcontent extends controller {
         if ($contentType === 'live_session') {
             return $this->nextAction('add', array(
                 'flow_chapter' => $chapter,
-                'flow_parent' => $parent
+                'flow_parent' => ''
             ), 'liveclass');
         }
         $this->setVar('contentType', $contentType);

@@ -4,6 +4,7 @@ $controller=file_get_contents($root.'/controller.php');$renderer=file_get_conten
 $checks=array(
  'live session is registered as a context content type'=>strpos($registry,"'key' => 'live_session'")!==false,
  'picker hands the exact chapter to the live session scheduler'=>strpos($context,'\'flow_chapter\' => $chapter')!==false,
+ 'live sessions are always top-level chapter pages'=>strpos($context,"'flow_parent' => ''")!==false&&strpos($controller,"'parentid'=>''")!==false,
  'saving creates a provider-backed flow placement'=>strpos($controller,"'contenttype'=>'live_session'")!==false&&strpos($controller,"'provideritemid'=>\$id")!==false,
  'joining is guarded on the server'=>strpos($controller,"['can_join']")!==false,
  'join window is configurable and bounded'=>strpos($life,'LIVECLASS_JOIN_WINDOW_MINUTES')!==false&&strpos($life,'min(180')!==false,
