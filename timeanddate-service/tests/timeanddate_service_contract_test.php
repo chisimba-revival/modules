@@ -19,6 +19,9 @@ $checks = array(
     'canonical storage' => str_contains($service, "STORAGE_FORMAT = 'Y-m-d H:i:s'")
         && str_contains($service, 'public function toStorage(')
         && str_contains($service, 'public function parseStorage('),
+    'configured form input' => str_contains($service, 'parseConfiguredLocalDateTime')
+        && str_contains($service, 'public function dateFormat()')
+        && str_contains($service, 'public function timeFormat()'),
     'strict local input' => str_contains($service, 'public function parseLocal(')
         && str_contains($service, 'isExactParse'),
     'timezone validation' => str_contains($service, 'public function isValidTimezone('),

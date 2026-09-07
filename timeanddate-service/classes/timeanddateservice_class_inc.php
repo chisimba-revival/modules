@@ -121,6 +121,25 @@ class timeanddateservice extends ChisimbaObject
         return $this->format($value, $timezone, 'TIMEANDDATE_DATETIME_FORMAT', self::DEFAULT_DATETIME_FORMAT);
     }
 
+    public function dateFormat()
+    {
+        return $this->configuredFormat('TIMEANDDATE_DATE_FORMAT', self::DEFAULT_DATE_FORMAT);
+    }
+
+    public function timeFormat()
+    {
+        return $this->configuredFormat('TIMEANDDATE_TIME_FORMAT', self::DEFAULT_TIME_FORMAT);
+    }
+
+    public function parseConfiguredLocalDateTime($date, $time)
+    {
+        return $this->parseLocal(
+            trim((string) $date) . ' ' . trim((string) $time),
+            null,
+            $this->dateFormat() . ' ' . $this->timeFormat()
+        );
+    }
+
     public function siteTimezone()
     {
         $configured = trim((string) $this->objConfig->getValue(
@@ -156,6 +175,14 @@ class timeanddateservice extends ChisimbaObject
             $configName, self::CONFIG_MODULE, $default
         ));
         return $local->format($format === '' ? $default : $format);
+    }
+
+    private function configuredFormat($configName, $default)
+    {
+        $format = trim((string) $this->objConfig->getValue(
+            $configName, self::CONFIG_MODULE, $default
+        ));
+        return $format === '' ? $default : $format;
     }
 
     private function isExactParse($parsed, $format, $value)

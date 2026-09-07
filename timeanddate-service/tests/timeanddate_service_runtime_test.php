@@ -30,6 +30,9 @@ $service->objConfig = new timeanddateconfigstub();
 
 $checks = array(
     'site timezone' => $service->siteTimezone() === 'Africa/Johannesburg',
+    'configured local form input' => $service->toStorage(
+        $service->parseConfiguredLocalDateTime('24 August 2026', '18:30')
+    ) === '2026-08-24 16:30:00',
     'local to UTC' => $service->toStorage(
         $service->parseLocal('2026-08-24 18:30:00')
     ) === '2026-08-24 16:30:00',
