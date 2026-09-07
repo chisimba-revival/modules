@@ -421,14 +421,7 @@ class block_discussionview extends ChisimbaObject {
         if (!is_array($topics)) {
             $topics = array();
         }
-        $canStart = $this->objUser->isCourseAdmin($this->contextCode)
-            || $this->discussionDetails['studentstarttopic'] === 'Y';
         $isLocked = $this->discussionDetails['discussionlocked'] === 'Y';
-        $newTopicUrl = $this->uri(array(
-            'action' => 'newtopic',
-            'id' => $this->discussionid,
-            'type' => $this->discussionDetails['discussion_type'],
-        ));
         $html = '<main class="discussion-workspace"><header class="discussion-workspace__hero">'
             . '<div><p class="discussion-workspace__eyebrow">Discussion</p><h1>'
             . $escape($this->discussionDetails['discussion_name']) . '</h1>';
@@ -436,13 +429,6 @@ class block_discussionview extends ChisimbaObject {
             $html .= '<p>' . $escape($this->discussionDetails['description']) . '</p>';
         }
         $html .= '</div><div class="discussion-workspace__actions">';
-        if ($canStart && !$isLocked) {
-            $html .= '<a class="button" href="' . $escape($newTopicUrl) . '">'
-                . $icons->render('message-square-plus', array('decorative' => true))
-                . ' ' . $escape($this->objLanguage->languageText(
-                    'mod_discussion_startnewtopic', 'discussion'
-                )) . '</a>';
-        }
         $html .= '</div></header>';
         if ($isLocked) {
             $html .= '<div class="chisimba-notice chisimba-notice--warning" role="status">'

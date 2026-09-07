@@ -157,6 +157,13 @@ $objFix->fixTwo();
 ?>
 
 <div id="twocolumn">
+        <div id="Canvas_Content_Body_Region1">
+                {
+                "display" : "block",
+                "module" : "discussion",
+                "block" : "discussionnavigation"
+                }
+        </div>
         <div id="Canvas_Content_Body_Region2">
                 {
                 "display" : "block",

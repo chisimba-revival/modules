@@ -319,8 +319,13 @@ $objFix = $this->getObject('cssfixlength', 'htmlelements');
 $objFix->fixTwo();
 ?>
 
-<div id="threecolumn">
-        <div id="Canvas_Content_Body_Region3">
+<div id="twocolumn">
+        <div id="Canvas_Content_Body_Region1">
+                {
+                "display" : "block",
+                "module" : "discussion",
+                "block" : "discussionnavigation"
+                }
         </div>
         <div id="Canvas_Content_Body_Region2">
                 {

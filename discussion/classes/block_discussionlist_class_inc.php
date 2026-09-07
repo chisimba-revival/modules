@@ -42,7 +42,7 @@ class block_discussionlist extends ChisimbaObject {
                 $this->objUser = $this->getObject('user', 'security');
                 $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
                 $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
-                $this->objIcon = $this->getObject('geticon', 'htmlelements');
+                $this->objIcon = $this->getObject('iconservice', 'ui');
                 // Get Context Code Settings
                 $this->contextObject = & $this->getObject('dbcontext', 'context');
                 $this->contextCode = $this->contextObject->getContextCode();
@@ -78,19 +78,6 @@ class block_discussionlist extends ChisimbaObject {
 //        $discussions = $objDB->getAll();
                 $discussions = $this->objDiscussion->showAllDiscussions($this->contextCode);
 
-                //admin table
-                $admintable = new htmlTable();
-                $admintable->startHeaderRow();
-                if ($this->objUser->isCourseAdmin($this->contextCode)) {
-                        $administrationLink = new link($this->uri(array('module' => 'discussion', 'action' => 'administration')));
-//                        $administrationLink->link = $this->objLanguage->languageText('mod_discussion_discussionadministration', 'discussion');
-                        $administrationLink->cssClass = 'button chisimba-button-secondary';
-                        $administrationLink->link = $this->objLanguage->languageText('mod_discussion_discussionadministration', 'discussion');
-                        $admintable->addHeaderCell($administrationLink->show(), NULL, NULL, 'center', NULL);
-//                        $homeForm->addToForm('<br/>' . $administrationLink->show());
-                }
-                $admintable->endHeaderRow();
-                $homeForm->addToForm($admintable->show());
                 foreach ($discussions as $discussion) {
                         if ($this->objUserContext->isContextMember($this->objUser->userId(), $discussion['discussion_context']) || $discussion['discussion_context'] == 'root') {
 //                                
@@ -113,15 +100,10 @@ class block_discussionlist extends ChisimbaObject {
                                         if ($discussion['defaultdiscussion'] == 'Y') {
                                                 $discussionName .= '<em> - ' . $this->objLanguage->languageText('mod_discussion_defaultDiscussion', 'discussion', 'Default Discussion') . '</em>';
                                         }
-                                        if ($discussion['discussionlocked'] == 'Y') {
-                                                $this->objIcon->setIcon('lock', NULL, 'icons/discussion/');
-                                                $this->objIcon->title = $this->objLanguage->languageText('mod_discussion_discussionislocked', 'discussion');
-                                        } else {
-                                                $this->objIcon->setIcon('unlock', NULL, 'icons/discussion/');
-                                                $this->objIcon->title = $this->objLanguage->languageText('mod_discussion_discussionisopen', 'discussion');
-                                        }
+                                        $statusIcon = $discussion['discussionlocked'] == 'Y' ? 'lock' : 'lock-open';
+                                        $statusText = $this->objLanguage->languageText($discussion['discussionlocked'] == 'Y' ? 'mod_discussion_discussionislocked' : 'mod_discussion_discussionisopen', 'discussion');
                                         $tblclass->startRow($oddOrEven);
-                                        $tblclass->addCell($this->objIcon->show(), '50', NULL, 'center');
+                                        $tblclass->addCell($this->objIcon->render($statusIcon, array('label' => $statusText)), '50', NULL, 'center');
                                         $tblclass->addCell($discussionName . '<br />' . $this->objLanguage->abstractText($discussion['discussion_description']), '200', NULL, 'left');
                                         //Check the number in order to display the correct value
                                         $tpcs = "";
