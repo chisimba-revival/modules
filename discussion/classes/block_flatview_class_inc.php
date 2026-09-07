@@ -362,7 +362,9 @@ class block_flatview extends ChisimbaObject {
                 $discussionType = trim((string) $this->getParam('type', 'context')) ?: 'context';
                 $discussionLocked = $this->objDiscussion->checkIfDiscussionLocked($post['discussion_id']);
                 $topicLocked = ($post['status'] ?? '') === 'CLOSE';
-                if ($discussionLocked || $topicLocked) {
+                $noticeReplyRestricted = ($post['type_id'] ?? '') === 'init_10'
+                        && !hash_equals((string) $this->objUser->userId(), (string) ($post['userid'] ?? ''));
+                if ($discussionLocked || $topicLocked || $noticeReplyRestricted) {
                         $this->objPost->repliesAllowed = FALSE;
                         $this->objPost->editingPostsAllowed = FALSE;
                         $this->objPost->discussionLocked = (bool) $discussionLocked;
@@ -394,7 +396,8 @@ class block_flatview extends ChisimbaObject {
                         'postupdated' => 'Your post was updated.',
                         'replysaved' => 'Your reply was posted.',
                         'deletesuccess' => 'The post was removed.',
-                        'subscriptionupdated' => 'Notification preferences updated.'
+                        'subscriptionupdated' => 'Notification preferences updated.',
+                        'noticereplyrestricted' => $this->objLanguage->languageText('mod_discussion_notice_reply_restricted', 'discussion', 'Only the person who posted this notice can add replies.')
                 );
                 $messageKey = (string) $this->getParam('message');
                 $notice = isset($messageMap[$messageKey])

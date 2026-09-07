@@ -13,6 +13,8 @@ $checks=array(
     'scope validation also derives from the parent post'=>str_contains($controller,"\$resource = \$this->objPost->getPostDiscussionDetails(\$parent)"),
     'blank replies return to the composer'=>str_contains($controller,"return \$this->nextAction('postreply'"),
     'successful replies return to the topic'=>str_contains($controller,"return \$this->nextAction('viewtopic', array('message' => 'replysaved'"),
+    'notice replies are limited to the topic creator'=>substr_count($controller,'mayReplyToNoticeTopic')>=3&&str_contains($controller,"type_id'] ?? '') !== 'init_10'")&&str_contains($controller,"rootPost['userid']"),
+    'notice restriction is explained through the language system'=>str_contains($posts,'repliesAllowed')&&str_contains(file_get_contents(__DIR__.'/../classes/block_flatview_class_inc.php'),'mod_discussion_notice_reply_restricted'),
     'assessment evidence accepts both user identifier formats'=>str_contains($posts,'p.userid=u.id OR p.userid=u.userid'),
     'new evidence returns a previously marked learner to review'=>str_contains($controller,"\$students[\$index]['needs_review']")&&str_contains($marking,"!empty(\$student['needs_review'])"),
 );

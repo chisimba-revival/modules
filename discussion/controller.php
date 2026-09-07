@@ -1046,6 +1046,9 @@ class discussion extends controller {
                 $this->objPost->editingPostsAllowed = FALSE;
                 // Get the Post
                 $post = $this->objPost->getPostWithText($post);
+                if (!$this->mayReplyToNoticeTopic($post)) {
+                        return $this->nextAction('viewtopic', array('message' => 'noticereplyrestricted', 'id' => $post['topic_id'], 'type' => $this->discussiontype));
+                }
                 // Get details of the Discussion
                 $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
                 // Check if user has access to workgroup discussion else redirect
@@ -1095,6 +1098,9 @@ class discussion extends controller {
                 $parentPostDetails = $this->objPost->getPostWithText($postParent);
                 if (!is_array($parentPostDetails)) {
                         return $this->moderationDenied();
+                }
+                if (!$this->mayReplyToNoticeTopic($parentPostDetails)) {
+                        return $this->nextAction('viewtopic', array('message' => 'noticereplyrestricted', 'id' => $parentPostDetails['topic_id'], 'type' => $this->discussiontype));
                 }
                 $tempPostId = $this->objUser->userId() . '_' . time()/* $_POST['temporaryId'] */;
                 //set the temporary ID so it can be used by other functions
@@ -2431,6 +2437,16 @@ class discussion extends controller {
                                 (string) $this->contextCode,
                                 (string) $resource['discussion_context']
                         );
+        }
+
+        /** A Notice is one-way for everyone except the person who started it. */
+        private function mayReplyToNoticeTopic($post) {
+                if (!is_array($post) || ($post['type_id'] ?? '') !== 'init_10') {
+                        return true;
+                }
+                $rootPost = $this->objPost->getRootPost($post['topic_id'] ?? '');
+                return is_array($rootPost)
+                        && hash_equals((string) $this->userId, (string) ($rootPost['userid'] ?? ''));
         }
 
         /**

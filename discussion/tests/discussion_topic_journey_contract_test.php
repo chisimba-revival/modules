@@ -25,6 +25,9 @@ $checks = array(
         && str_contains($block, '$author=trim('),
     'reply relationships are explicit' => str_contains($block, 'Replying to <a href="#post-')
         && str_contains($block, 'post_parent'),
+    'notice topics hide replies from everyone except their creator' => str_contains($block, '$noticeReplyRestricted')
+        && str_contains($block, "type_id'] ?? '') === 'init_10'")
+        && str_contains($block, 'objPost->repliesAllowed = FALSE'),
     'notifications use an accessible details panel' => str_contains($block, '<details class="chisimba-card discussion-topic-notifications">')
         && str_contains($block, '<legend>Notify me about this conversation</legend>'),
     'notification save returns to topic' => str_contains($controller, "nextAction('flatview'")
