@@ -18,7 +18,7 @@ class kanban extends controller
         $rows=array_values(array_filter($rows,function($b){return $this->auth->allows($b,'view');}));
         $rows=array_values(array_reduce($rows,function($carry,$board){$carry[$board['id']]=$board;return $carry;},array()));
         if(!$this->auth->canCreate($scope['type'],$scope['id'])&&!$rows)return 'noaccess_tpl.php';
-        $this->setVar('kanbanBoards',$this->service->hydrate($rows));$this->setVar('kanbanCanCreate',$this->auth->canCreate($scope['type'],$scope['id']));$this->setVar('kanbanScope',$scope);$this->setVar('kanbanCsrf',$this->csrf->issue(self::CSRF));$this->setVar('kanbanMessage',$message);$this->setVar('kanbanError',$error);return 'index_tpl.php';
+        $this->setVar('kanbanBoards',$this->service->hydrate($rows));$this->setVar('kanbanCanCreate',$this->auth->canCreate($scope['type'],$scope['id']));$this->setVar('kanbanScope',$scope);$this->setVar('kanbanCsrf',$this->csrf->issueForSession(self::CSRF));$this->setVar('kanbanMessage',$message);$this->setVar('kanbanError',$error);return 'index_tpl.php';
     }
     private function requestedScope(){
         $type=$this->param('scope');$context=(string)$this->context->getContextCode();
@@ -40,7 +40,7 @@ class kanban extends controller
     private function boardMutation($callback,$message){if(!$this->validPost())return $this->index('','Your session expired.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();$callback($board);return $this->index($message);}
     private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function forbidden(){http_response_code(403);return $this->index('','You do not have permission for that board.');}
-    private function json($ok,$message,$status=200){if(!headers_sent()){header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');http_response_code($status);}echo json_encode(array('ok'=>$ok,'message'=>$message,'csrfToken'=>$this->csrf->issue(self::CSRF)),JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
+    private function json($ok,$message,$status=200){if(!headers_sent()){header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');http_response_code($status);}echo json_encode(array('ok'=>$ok,'message'=>$message,'csrfToken'=>$this->csrf->issueForSession(self::CSRF)),JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
     private function param($name){$v=$this->getParam($name,'');return is_scalar($v)?trim((string)$v):'';}
     private function text($name){return mb_substr($this->param($name),0,10000);}
     private function id($name){$v=$this->param($name);return preg_match('/^[a-f0-9]{32}$/',$v)?$v:'';}

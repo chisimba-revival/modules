@@ -7,6 +7,7 @@ $checks=array(
  'services use the active framework base'=>str_contains($auth,'extends controller')&&str_contains($read('classes/kanbanservice_class_inc.php'),'extends controller'),
  'three board scopes'=>str_contains($controller,"'site'")&&str_contains($controller,"'context'")&&str_contains($controller,"'personal'"),
  'all mutations require native CSRF'=>str_contains($controller,'csrf->consume(self::CSRF'),
+ 'long-lived boards use session-bound single-use CSRF'=>substr_count($controller,'issueForSession(self::CSRF)')===2&&!str_contains($controller,'csrf->issue(self::CSRF)'),
  'permission levels are ordered'=>str_contains($auth,"'view'=>1")&&str_contains($auth,"'edit'=>2")&&str_contains($auth,"'manage'=>3"),
  'future group resolver seam'=>str_contains($auth,'allowsFuturePrincipal')&&str_contains($auth,'context_role and group'),
  'direct grants remain lecturer or admin only'=>str_contains($auth,'eligibleDirectUser')&&str_contains($auth,'isContextLecturer')&&str_contains($auth,'inAdminGroup'),
