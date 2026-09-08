@@ -147,7 +147,7 @@ class contentblocks extends controller
             }
         }
         $labels = array();
-        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','herodesc','videohero','videoherodesc','information','informationdesc','width','wide','normal','blocktitle','videoname','videonamehelp','showtitle','body','imageurl','imagehelp','chooseimage','removeimage','videourl','videohelp','choosevideo','removevideo','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
+        foreach (array('title','intro','siteblocks','contextblocks','new','edit','delete','save','cancel','type','hero','herodesc','videohero','videoherodesc','information','informationdesc','coursetext','coursetextdesc','welcomevideo','welcomevideodesc','videocaption','videotranscript','videoorientation','portrait','landscape','width','wide','normal','blocktitle','videoname','videonamehelp','showtitle','body','imageurl','imagehelp','chooseimage','removeimage','videourl','videohelp','choosevideo','removevideo','actionlabel','actionurl','key','empty','forbidden','confirmdelete') as $key) {
             $labels[$key] = $this->text($key);
         }
         $this->setVar('contentblocksLabels', $labels);
@@ -180,7 +180,7 @@ class contentblocks extends controller
         $type = (string)$this->getParam('blocktype', 'information');
         $width = (string)$this->getParam('blockwidth', 'wide');
         $title = trim((string)$this->getParam('title', ''));
-        $image = $this->safeUrl($this->getParam($type === 'videohero' ? 'video_url' : 'image_url', ''));
+        $image = $this->safeUrl($this->getParam(in_array($type, array('videohero', 'welcomevideo'), true) ? 'video_url' : 'image_url', ''));
         $action = $this->safeUrl($this->getParam('action_url', ''));
         $actionLabel = trim((string)$this->getParam('action_label', ''));
         if ($type === 'hero') {
@@ -189,12 +189,34 @@ class contentblocks extends controller
             $width = 'wide';
             $actionLabel = '';
             $action = '';
+        } elseif ($type === 'welcomevideo') {
+            $width = 'wide';
+            $actionLabel = '';
+            $action = '';
         } else {
             $image = '';
             $actionLabel = '';
             $action = '';
         }
-        if ($title === '' || !in_array($type, array('hero','videohero','information'), true) || !in_array($width, array('wide','normal'), true) || $image === false || $action === false || ($type === 'videohero' && $image === '')) {
+        $allowedTypes = array('hero','videohero','information');
+        if ($scope === 'context') {
+            $allowedTypes[] = 'coursetext';
+            $allowedTypes[] = 'welcomevideo';
+        }
+        if ($type === 'welcomevideo') {
+            $orientation = (string)$this->getParam('video_orientation', 'landscape');
+            if (!in_array($orientation, array('portrait', 'landscape'), true)) {
+                $orientation = 'landscape';
+            }
+            $bodyHtml = json_encode(array(
+                'caption' => trim((string)$this->getParam('video_caption', '')),
+                'transcript' => trim((string)$this->getParam('video_transcript', '')),
+                'orientation' => $orientation,
+            ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } else {
+            $bodyHtml = $type === 'videohero' ? '' : (string)$this->getParam('body_html', '');
+        }
+        if ($title === '' || !in_array($type, $allowedTypes, true) || !in_array($width, array('wide','normal'), true) || $image === false || $action === false || (in_array($type, array('videohero','welcomevideo'), true) && $image === '')) {
             $this->flash($this->text('invalid'));
             return $this->redirectManage($scope);
         }
@@ -204,11 +226,11 @@ class contentblocks extends controller
             'blocktype' => $old ? $old['blocktype'] : $type,
             'blockwidth' => $old ? $old['blockwidth'] : $width,
             'title' => $title,
-            'body_html' => $type === 'videohero' ? '' : (string)$this->getParam('body_html', ''),
+            'body_html' => $bodyHtml,
             'image_url' => $image,
             'action_label' => $actionLabel,
             'action_url' => $action,
-            'show_title' => $type === 'videohero' ? '0' : ($this->getParam('show_title', '') === '1' ? '1' : '0'),
+            'show_title' => $type === 'videohero' ? '0' : ($type === 'welcomevideo' ? '1' : ($this->getParam('show_title', '') === '1' ? '1' : '0')),
         ), $this->user->userId(), $id);
         if (!$row) {
             $this->flash($this->text('savefailed'));

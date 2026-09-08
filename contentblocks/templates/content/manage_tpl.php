@@ -27,6 +27,13 @@ $scopeUrl = function ($scope) use ($moduleUrl) {
 $saveUrl = $moduleUrl(array('action' => 'save', 'scope' => $contentblocksScope));
 $edit = is_array($contentblocksEdit) ? $contentblocksEdit : array();
 $imageValue = (string)($edit['image_url'] ?? '');
+$videoDetails = array('caption' => '', 'transcript' => '', 'orientation' => 'landscape');
+if (($edit['blocktype'] ?? '') === 'welcomevideo') {
+    $savedVideoDetails = json_decode((string)($edit['body_html'] ?? ''), true);
+    if (is_array($savedVideoDetails)) {
+        $videoDetails = array_merge($videoDetails, $savedVideoDetails);
+    }
+}
 $imagePickerUrl = $moduleUrl(array(
     'action' => 'filepicker',
     'policy' => 'image',
@@ -46,7 +53,7 @@ $pickerScript = '<script type="text/javascript">(function(){"use strict";'
     . 'if(remove&&field){remove.addEventListener("click",function(){field.value="";previewImage("");field.dispatchEvent(new Event("change",{bubbles:true}));});}'
     . 'if(chooseVideo){chooseVideo.addEventListener("click",function(){window.open(' . json_encode($videoPickerUrl) . ',"chisimbaContentblocksVideoPicker","width=920,height=720,resizable=yes,scrollbars=yes");});}'
     . 'if(removeVideo&&videoField){removeVideo.addEventListener("click",function(){videoField.value="";previewVideo("");videoField.dispatchEvent(new Event("change",{bubbles:true}));});}'
-    . 'function updateType(){if(!type){return;}var hero=type.value==="hero",video=type.value==="videohero";Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-hero-only"),function(element){element.hidden=!hero;});Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-video-hero-only"),function(element){element.hidden=!video;});Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-text-only"),function(element){element.hidden=video;});if(videoField){videoField.required=video;}if(width){var side=width.querySelector("option[value=normal]");if(side){side.disabled=hero||video;}if(hero||video){width.value="wide";}}if(help){help.textContent=video?help.getAttribute("data-videohero"):(hero?help.getAttribute("data-hero"):help.getAttribute("data-information"));}if(titleLabel){titleLabel.textContent=video?titleLabel.getAttribute("data-video"):titleLabel.getAttribute("data-standard");}if(titleHelp){titleHelp.hidden=!video;}}'
+    . 'function updateType(){if(!type){return;}var hero=type.value==="hero",videoHero=type.value==="videohero",welcomeVideo=type.value==="welcomevideo",video=videoHero||welcomeVideo,text=!video;Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-hero-only"),function(element){element.hidden=!hero;});Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-video-only"),function(element){element.hidden=!video;});Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-welcome-video-only"),function(element){element.hidden=!welcomeVideo;});Array.prototype.forEach.call(document.querySelectorAll(".contentblocks-text-only"),function(element){element.hidden=!text;});if(videoField){videoField.required=video;}if(width){var side=width.querySelector("option[value=normal]");if(side){side.disabled=hero||video;}if(hero||video){width.value="wide";}}if(help){help.textContent=welcomeVideo?help.getAttribute("data-welcomevideo"):(videoHero?help.getAttribute("data-videohero"):(type.value==="coursetext"?help.getAttribute("data-coursetext"):(hero?help.getAttribute("data-hero"):help.getAttribute("data-information"))));}if(titleLabel){titleLabel.textContent=videoHero?titleLabel.getAttribute("data-video"):titleLabel.getAttribute("data-standard");}if(titleHelp){titleHelp.hidden=!videoHero;}}'
     . 'if(type){type.addEventListener("change",updateType);updateType();}});'
     . '}());</script>';
 $this->appendArrayVar('headerParams', $pickerScript);
@@ -88,10 +95,10 @@ $this->appendArrayVar('headerParams', $pickerScript);
         <input type="hidden" name="csrf_token" value="<?= $e($contentblocksCsrf) ?>">
         <input type="hidden" name="id" value="<?= $e($edit['id'] ?? '') ?>">
         <div class="contentblocks-grid">
-          <label><?= $e($l['type']) ?><select id="contentblocks-blocktype" name="blocktype" <?= $edit ? 'disabled' : '' ?>><option value="hero" <?= ($edit['blocktype'] ?? '') === 'hero' ? 'selected' : '' ?>><?= $e($l['hero']) ?></option><option value="videohero" <?= ($edit['blocktype'] ?? '') === 'videohero' ? 'selected' : '' ?>><?= $e($l['videohero']) ?></option><option value="information" <?= ($edit['blocktype'] ?? 'information') === 'information' ? 'selected' : '' ?>><?= $e($l['information']) ?></option></select></label>
+          <label><?= $e($l['type']) ?><select id="contentblocks-blocktype" name="blocktype" <?= $edit ? 'disabled' : '' ?>><option value="hero" <?= ($edit['blocktype'] ?? '') === 'hero' ? 'selected' : '' ?>><?= $e($l['hero']) ?></option><option value="videohero" <?= ($edit['blocktype'] ?? '') === 'videohero' ? 'selected' : '' ?>><?= $e($l['videohero']) ?></option><option value="information" <?= ($edit['blocktype'] ?? 'information') === 'information' ? 'selected' : '' ?>><?= $e($l['information']) ?></option><?php if ($contentblocksScope === 'context'): ?><option value="coursetext" <?= ($edit['blocktype'] ?? '') === 'coursetext' ? 'selected' : '' ?>><?= $e($l['coursetext']) ?></option><option value="welcomevideo" <?= ($edit['blocktype'] ?? '') === 'welcomevideo' ? 'selected' : '' ?>><?= $e($l['welcomevideo']) ?></option><?php endif; ?></select></label>
           <label><?= $e($l['width']) ?><select id="contentblocks-blockwidth" name="blockwidth" <?= $edit ? 'disabled' : '' ?>><option value="wide" <?= ($edit['blockwidth'] ?? 'wide') === 'wide' ? 'selected' : '' ?>><?= $e($l['wide']) ?></option><option value="normal" <?= ($edit['blockwidth'] ?? '') === 'normal' ? 'selected' : '' ?>><?= $e($l['normal']) ?></option></select></label>
         </div>
-        <p id="contentblocks-type-help" class="contentblocks-type-help" data-hero="<?= $e($l['herodesc']) ?>" data-videohero="<?= $e($l['videoherodesc']) ?>" data-information="<?= $e($l['informationdesc']) ?>"></p>
+        <p id="contentblocks-type-help" class="contentblocks-type-help" data-hero="<?= $e($l['herodesc']) ?>" data-videohero="<?= $e($l['videoherodesc']) ?>" data-information="<?= $e($l['informationdesc']) ?>" data-coursetext="<?= $e($l['coursetextdesc']) ?>" data-welcomevideo="<?= $e($l['welcomevideodesc']) ?>"></p>
         <?php if ($edit): ?><input type="hidden" name="blocktype" value="<?= $e($edit['blocktype']) ?>"><input type="hidden" name="blockwidth" value="<?= $e($edit['blockwidth']) ?>"><?php endif; ?>
         <label><span id="contentblocks-title-label" data-standard="<?= $e($l['blocktitle']) ?>" data-video="<?= $e($l['videoname']) ?>"><?= $e(($edit['blocktype'] ?? '') === 'videohero' ? $l['videoname'] : $l['blocktitle']) ?></span><input required maxlength="250" name="title" value="<?= $e($edit['title'] ?? '') ?>"></label>
         <p id="contentblocks-title-help" class="contentblocks-field-help" <?= ($edit['blocktype'] ?? '') !== 'videohero' ? 'hidden' : '' ?>><?= $e($l['videonamehelp']) ?></p>
@@ -105,12 +112,18 @@ $this->appendArrayVar('headerParams', $pickerScript);
           <div class="contentblocks-actions"><button type="button" id="contentblocks-choose-image"><?= $e($l['chooseimage']) ?></button><button type="button" id="contentblocks-remove-image"><?= $e($l['removeimage']) ?></button></div>
           <img id="contentblocks-image-preview" class="contentblocks-image-preview" src="<?= $e($imageValue) ?>" alt="" <?= $imageValue === '' ? 'hidden' : '' ?>>
         </fieldset>
-        <fieldset class="contentblocks-image-field contentblocks-video-hero-only">
+        <fieldset class="contentblocks-image-field contentblocks-video-only">
           <legend><?= $e($l['videourl']) ?></legend>
           <p><?= $e($l['videohelp']) ?></p>
           <input type="url" id="contentblocks-video-url" name="video_url" value="<?= $e($imageValue) ?>" <?= ($edit['blocktype'] ?? '') === 'videohero' ? 'required' : '' ?>>
           <div class="contentblocks-actions"><button type="button" id="contentblocks-choose-video"><?= $e($l['choosevideo']) ?></button><button type="button" id="contentblocks-remove-video"><?= $e($l['removevideo']) ?></button></div>
           <video id="contentblocks-video-preview" class="contentblocks-video-preview" src="<?= $e($imageValue) ?>" controls playsinline preload="metadata" <?= $imageValue === '' ? 'hidden' : '' ?>></video>
+        </fieldset>
+        <fieldset class="contentblocks-image-field contentblocks-welcome-video-only" <?= ($edit['blocktype'] ?? '') !== 'welcomevideo' ? 'hidden' : '' ?>>
+          <legend><?= $e($l['welcomevideo']) ?></legend>
+          <label><?= $e($l['videocaption']) ?><textarea name="video_caption" rows="3"><?= $e($videoDetails['caption']) ?></textarea></label>
+          <fieldset><legend><?= $e($l['videoorientation']) ?></legend><label><input type="radio" name="video_orientation" value="landscape" <?= $videoDetails['orientation'] !== 'portrait' ? 'checked' : '' ?>> <?= $e($l['landscape']) ?></label> <label><input type="radio" name="video_orientation" value="portrait" <?= $videoDetails['orientation'] === 'portrait' ? 'checked' : '' ?>> <?= $e($l['portrait']) ?></label></fieldset>
+          <label><?= $e($l['videotranscript']) ?><textarea name="video_transcript" rows="7"><?= $e($videoDetails['transcript']) ?></textarea></label>
         </fieldset>
         <div class="contentblocks-grid contentblocks-hero-only"><label><?= $e($l['actionlabel']) ?><input name="action_label" value="<?= $e($edit['action_label'] ?? '') ?>"></label><label><?= $e($l['actionurl']) ?><input name="action_url" value="<?= $e($edit['action_url'] ?? '') ?>"></label></div>
         <div class="contentblocks-actions"><button type="submit"><?= $e($l['save']) ?></button><?php if ($edit): ?><a href="<?= $e($scopeUrl($contentblocksScope)) ?>"><?= $e($l['cancel']) ?></a><?php endif; ?></div>

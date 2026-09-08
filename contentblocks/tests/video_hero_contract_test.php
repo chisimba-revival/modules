@@ -18,7 +18,7 @@ $checks = array(
         && str_contains($register, 'Video Hero type label|Video Hero'),
     'Video Hero is always wide' => str_contains($controller, "elseif (\$type === 'videohero')")
         && str_contains($controller, "\$width = 'wide';"),
-    'Video Hero requires video' => str_contains($controller, "\$type === 'videohero' && \$image === ''"),
+    'Video types require video' => str_contains($controller, "in_array(\$type, array('videohero','welcomevideo'), true) && \$image === ''"),
     'hidden video field cannot block other block types' => str_contains(
         $template,
         'videoField.required=video'

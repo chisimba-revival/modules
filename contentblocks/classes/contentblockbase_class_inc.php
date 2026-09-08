@@ -127,6 +127,28 @@ class contentblockbase extends ChisimbaObject
                 'show_title' => 0,
             );
         }
+        if (($row['blocktype'] ?? '') === 'welcomevideo') {
+            $language = $this->getObject('language', 'language');
+            $details = json_decode((string)($row['body_html'] ?? ''), true);
+            if (!is_array($details)) { $details = array(); }
+            $caption = htmlspecialchars(trim((string)($details['caption'] ?? '')), ENT_QUOTES, 'UTF-8');
+            $transcript = htmlspecialchars(trim((string)($details['transcript'] ?? '')), ENT_QUOTES, 'UTF-8');
+            $orientation = ($details['orientation'] ?? 'landscape') === 'portrait' ? 'portrait' : 'landscape';
+            $embedUrl = $this->recognisedVideoEmbedUrl($image);
+            $html = '<article class="content-block content-block--welcome-video content-block--video-' . $orientation . '"><div class="content-block__inner">';
+            if (($row['show_title'] ?? '1') === '1') { $html .= '<h2 class="content-block__title">' . $title . '</h2>'; }
+            $html .= '<figure>';
+            if ($embedUrl !== null) {
+                $html .= '<div class="content-block__video-embed"><iframe src="' . htmlspecialchars($embedUrl, ENT_QUOTES, 'UTF-8') . '" title="' . ($caption !== '' ? $caption : $title) . '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+            } else {
+                $html .= '<video controls playsinline preload="metadata" src="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '"></video>';
+            }
+            if ($caption !== '') { $html .= '<figcaption>' . $caption . '</figcaption>'; }
+            $html .= '</figure>';
+            if ($transcript !== '') { $html .= '<details class="content-block__transcript"><summary>' . htmlspecialchars($language->languageText('mod_contentblocks_transcript', 'contentblocks'), ENT_QUOTES, 'UTF-8') . '</summary><p>' . nl2br($transcript) . '</p></details>'; }
+            $html .= '</div></article>';
+            return array('title' => false, 'blockContents' => $html, 'blockType' => 'none', 'cssClass' => '', 'cssId' => '', 'show_title' => 0);
+        }
         $kind = ($row['blocktype'] ?? '') === 'hero' ? 'hero' : 'information';
         $tag = $kind === 'hero' ? 'section' : 'article';
         $heading = $kind === 'hero' ? 'h1' : 'h2';

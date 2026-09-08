@@ -31,7 +31,10 @@ $db = file_get_contents($root . '/classes/dbcontentblocks_class_inc.php');
 $checks = array(
     'context aware' => str_contains($register, 'CONTEXT_AWARE: 1'),
     'no context dependency' => str_contains($register, 'DEPENDS_CONTEXT: 0') && !preg_match('/^DEPENDS: *context$/m', $register),
-    'three block types' => str_contains($controller, "array('hero','videohero','information')"),
+    'base block types remain available' => str_contains($controller, "array('hero','videohero','information')"),
+    'course landing types are context only' => str_contains($controller, "\$allowedTypes[] = 'coursetext'")
+        && str_contains($controller, "\$allowedTypes[] = 'welcomevideo'")
+        && str_contains($template, '$contentblocksScope === \'context\''),
     'render context guard' => str_contains($base, "=== 'context'") && str_contains($base, 'currentContext()'),
     'safe semantic rendering' => str_contains($base, "'blockType' => 'none'") && str_contains($base, 'washout'),
     'csrf guard' => str_contains($controller, 'hash_equals'),
