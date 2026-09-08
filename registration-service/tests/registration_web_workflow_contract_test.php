@@ -30,8 +30,8 @@ $checks = array(
         && str_contains($controller, 'provisionVerified('),
     'recovery orchestration' => str_contains($controller, 'requestPasswordRecovery(')
         && str_contains($controller, 'completePasswordRecovery('),
-    'csrf contexts' => substr_count($controller, "->consume(") === 4
-        && substr_count($controller, "->issue(") === 5,
+    'csrf contexts' => substr_count($controller, "->consume(") === 5
+        && substr_count($controller, "->issue(") === 6,
     'abuse protection' => str_contains($controller, "issueFormEvidence('registration.create')")
         && str_contains($controller, "issueFormEvidence('registration.recovery')")
         && str_contains($controller, "'website' =>"),
@@ -59,6 +59,10 @@ $checks = array(
         && str_contains($templates, 'name="mobile_number"')
         && str_contains($controller, "'DEFAULT_CALLING_CODE'")
         && str_contains($register, 'CONFIG: DEFAULT_CALLING_CODE|27'),
+    'international certificate identity' => str_contains($templates, 'name="identity_document_type"')
+        && str_contains($templates, 'name="identity_document_number"')
+        && str_contains($controller, "'identityDocumentType'")
+        && str_contains($controller, "array('identity', 'saveidentity')"),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
     'full legal documents' => str_contains($templates, "array('terms', 'privacy')")
         && str_contains($register, 'operate an eLearning service and serve users\' educational needs'),
@@ -92,7 +96,7 @@ $checks = array(
     'paid registration guidance' => str_contains($controller, "'registrationGuidancePrefix','purchase_guidance'")
         && str_contains($register, 'Complete payment')
         && str_contains($register, 'activate your account and membership'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.017'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.020'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

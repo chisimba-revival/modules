@@ -12,6 +12,8 @@ $fields = array(
     'first_name' => array('type' => 'text', 'length' => 50, 'notnull' => TRUE),
     'surname' => array('type' => 'text', 'length' => 50, 'notnull' => TRUE),
     'mobile_number' => array('type' => 'text', 'length' => 16, 'notnull' => TRUE),
+    'identity_document_type' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
+    'identity_document_number' => array('type' => 'text', 'length' => 128, 'notnull' => TRUE),
     'password_hash' => array('type' => 'text', 'length' => 255),
     'status' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
     'correlation_id' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),

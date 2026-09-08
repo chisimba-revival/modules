@@ -52,6 +52,7 @@ class registrationservice extends dbTable
         );
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objPhone = $this->getObject('internationalphonenumber', 'registration-service');
+        $this->objIdentity = $this->getObject('registrationidentityservice', 'registration-service');
     }
 
     /** Create pending state only; no canonical account is created or activated. */
@@ -65,6 +66,13 @@ class registrationservice extends dbTable
             $request['countryCallingCode'] ?? null,
             $request['mobileNumber'] ?? null
         );
+        $identityType = is_scalar($request['identityDocumentType'] ?? null)
+            ? strtolower(trim((string) $request['identityDocumentType'])) : '';
+        $identityNumber = $this->text($request['identityDocumentNumber'] ?? null, 128);
+        if (!in_array($identityType, $this->objIdentity->allowedTypes(), true)
+            || $identityNumber === null) {
+            return $this->result(false, 'invalid_identity_document');
+        }
         $correlationId = $this->identifier($request['correlationId'] ?? null, 64);
         $password = $request['password'] ?? null;
         if ($mobileNumber === null) {
@@ -106,6 +114,8 @@ class registrationservice extends dbTable
             'first_name' => $firstName,
             'surname' => $surname,
             'mobile_number' => $mobileNumber,
+            'identity_document_type' => $identityType,
+            'identity_document_number' => $identityNumber,
             'password_hash' => $passwordHash,
             'status' => 'awaiting_legal_acceptance',
             'correlation_id' => $correlationId,
@@ -405,7 +415,7 @@ class registrationservice extends dbTable
             'provisioned_user_id' => $created['userId'],
             'password_hash' => null,
             'updated_at' => $now,
-        )) === false || !$this->appendEvent(
+        )) === false || !$this->savePendingIdentityIfPresent($pending, $created['userId']) || !$this->appendEvent(
             'registration.account.provisioned',
             $pendingId,
             $pending['correlation_id'],
@@ -457,6 +467,7 @@ class registrationservice extends dbTable
             'title'=>'','country'=>'','cellnumber'=>(string)($pending['mobile_number']??''),'staffnumber'=>'','sex'=>'','isActive'=>false,'howCreated'=>'registration-service',
         ),$pending['password_hash']);
         if(empty($created['ok'])||empty($created['userId']))return $this->result(false,$created['code']??'canonical_provisioning_failed',$pending['id']);
+        if(!$this->savePendingIdentityIfPresent($pending,$created['userId'])){$this->objUsers->rollbackProvisionedUser($created['userId'],$created['storageId']??null);return $this->result(false,'identity_document_save_failed',$pending['id']);}
         if($this->update('id',$pending['id'],array('provisioned_user_id'=>$created['userId'],'payment_product_code'=>$productCode,'password_hash'=>null,'updated_at'=>date('Y-m-d H:i:s')))===false){$this->objUsers->rollbackProvisionedUser($created['userId'],$created['storageId']??null);return $this->result(false,'identity_reservation_failed',$pending['id']);}
         return array('ok'=>true,'code'=>'identity_reserved','pendingId'=>$pending['id'],'userId'=>$created['userId'],'emailAddress'=>$pending['email_address'],'productCode'=>$productCode);
     }
@@ -483,6 +494,34 @@ class registrationservice extends dbTable
             'emailAddress'=>(string)$pending['email_address'],
         );
     }
+
+    /** Save identity text for an existing account and record who changed it. */
+    public function saveIdentityForUser($userId, $documentType, $documentNumber, $actorId)
+    {
+        $this->beginTransaction();
+        $result = $this->objIdentity->saveForUser($userId, $documentType, $documentNumber, $actorId);
+        if (empty($result['ok'])) { $this->rollbackTransaction(); return $result; }
+        $event = $this->objEvents->append(array(
+            'eventType' => 'account.identity.updated',
+            'subjectType' => 'user',
+            'subjectId' => (string) $userId,
+            'actorType' => 'user',
+            'actorId' => (string) $actorId,
+            'outcome' => 'succeeded',
+            'correlationId' => 'identity.update.' . bin2hex(random_bytes(12)),
+            'sourceService' => 'registration-service',
+            'metadata' => array('document_type' => (string) $documentType),
+        ));
+        if (empty($event['ok'])) {
+            $this->rollbackTransaction();
+            return array('ok' => false, 'code' => 'identity_audit_failed');
+        }
+        $this->commitTransaction();
+        return $result;
+    }
+
+    public function identityForUser($userId) { return $this->objIdentity->forUser($userId); }
+    public function identityDocumentTypes() { return $this->objIdentity->allowedTypes(); }
 
     /**
      * Request recovery without disclosing whether the address has an account.
@@ -616,6 +655,16 @@ class registrationservice extends dbTable
             . ' LIMIT 2'
         );
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
+    }
+
+    /** Older pending registrations may complete and add identity details later. */
+    private function savePendingIdentityIfPresent(array $pending, $userId)
+    {
+        $type = trim((string) ($pending['identity_document_type'] ?? ''));
+        $number = trim((string) ($pending['identity_document_number'] ?? ''));
+        if ($type === '' && $number === '') { return true; }
+        $saved = $this->objIdentity->saveForUser($userId, $type, $number, $userId);
+        return !empty($saved['ok']);
     }
 
     private function pendingWithStatuses($id, array $statuses)

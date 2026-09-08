@@ -15,6 +15,8 @@ class certificateservice extends dbTable
         $this->_db = $this->objEngine->getDbObj();
         $this->events = $this->getObject('accounteventservice', 'account-event-service');
         $this->config = $this->getObject('altconfig', 'config');
+        $this->identities = $this->getObject('registrationidentityservice', 'registration-service');
+        $this->language = $this->getObject('language', 'language');
     }
 
     public function createBase(array $input, $actorId)
@@ -120,9 +122,11 @@ class certificateservice extends dbTable
         $completion = $this->text($claim['completionReference'] ?? '', 191);
         $recipient = $this->text($claim['recipientName'] ?? '', 255);
         $resourceTitle = $this->text($claim['resourceTitle'] ?? '', 255);
+        $identity = $this->identities->forUser($userId);
         if (!$assignment || $userId === null || $completion === null || $recipient === null || $resourceTitle === null || empty($claim['eligible'])) {
             return array('ok' => false, 'code' => 'not_eligible');
         }
+        if (!$identity) { return array('ok' => false, 'code' => 'identity_required'); }
         $existing = $this->issuanceFor($assignment['id'], $userId, $completion);
         if ($existing) { return array('ok' => true, 'code' => 'already_issued', 'issuance' => $existing); }
         $base = $this->find(self::BASES, $assignment['base_id']);
@@ -133,6 +137,12 @@ class certificateservice extends dbTable
         $snapshot = array(
             'recipient_name' => $recipient, 'resource_title' => $resourceTitle,
             'completed_at' => (string) ($claim['completedAt'] ?? $issuedAt),
+            'identity_document_type' => $identity['document_type'],
+            'identity_document_type_label' => $this->language->languageText(
+                'mod_registration_service_identity_type_' . $identity['document_type'],
+                'registration-service'
+            ),
+            'identity_document_number' => $identity['document_number'],
             'base' => $base, 'signer' => $signer
         );
         $row = array(
@@ -140,6 +150,7 @@ class certificateservice extends dbTable
             'assignment_id' => $assignment['id'], 'subject_user_id' => $userId,
             'resource_type' => $assignment['resource_type'], 'resource_id' => $assignment['resource_id'],
             'completion_reference' => $completion,
+            'identity_document_fingerprint' => hash('sha256', $this->normaliseIdentityNumber($identity['document_number'])),
             'snapshot_json' => json_encode($snapshot, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             'issued_at' => $issuedAt, 'issued_by_type' => 'service', 'issued_by_id' => 'certificate-service'
         );
@@ -166,7 +177,7 @@ class certificateservice extends dbTable
         if(!isset($map[$kind])||!$this->find($map[$kind][0],$recordId)||($upload['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK||empty($upload['tmp_name'])||!is_uploaded_file($upload['tmp_name'])||($upload['size']??0)>2097152){return false;}
         $info=@getimagesize($upload['tmp_name']);$extensions=array('image/png'=>'png','image/jpeg'=>'jpg');if(!is_array($info)||!isset($extensions[$info['mime']])){return false;}
         $directory=rtrim($this->config->getcontentBasePath(),'/').'/certificate-service';if(!is_dir($directory)&&!mkdir($directory,0750,true)&&!is_dir($directory)){return false;}
-        $path=$directory.'/'.$kind.'-'.$recordId.'.'.$extensions[$info['mime']];if(!move_uploaded_file($upload['tmp_name'],$path)){return false;}@chmod($path,0640);
+        $path=$directory.'/'.$kind.'-'.$recordId.'-'.bin2hex(random_bytes(8)).'.'.$extensions[$info['mime']];if(!move_uploaded_file($upload['tmp_name'],$path)){return false;}@chmod($path,0640);
         return $this->updateIn($map[$kind][0],$recordId,array($map[$kind][1]=>$path,'date_updated'=>date('Y-m-d H:i:s')));
     }
     public function assignmentFor($type, $id)
@@ -175,7 +186,41 @@ class certificateservice extends dbTable
         if ($type === null || $id === null) { return false; }
         return $this->one(self::ASSIGNMENTS, "resource_type=".$this->quote($type)." AND resource_id=".$this->quote($id)." AND status='active'");
     }
-    public function issuanceById($id) { return $this->find(self::ISSUANCES, $id); }
+    public function issuanceById($id)
+    {
+        $row=$this->find(self::ISSUANCES,$id);
+        if(!$row){return false;}
+        $row['snapshot']=json_decode($row['snapshot_json'],true);
+        unset($row['snapshot_json']);
+        return is_array($row['snapshot'])?$row:false;
+    }
+
+    /** Search immutable certificate evidence by certificate or identity number. */
+    public function auditSearch($certificateNumber, $identityNumber)
+    {
+        $certificateNumber = is_scalar($certificateNumber) ? strtoupper(trim((string)$certificateNumber)) : '';
+        $identityNumber = is_scalar($identityNumber) ? trim((string)$identityNumber) : '';
+        $where = array();
+        if ($certificateNumber !== '') { $where[] = 'certificate_number=' . $this->quote($certificateNumber); }
+        if ($identityNumber !== '') { $where[] = 'identity_document_fingerprint=' . $this->quote(hash('sha256',$this->normaliseIdentityNumber($identityNumber))); }
+        if (!$where) { return array(); }
+        $old=$this->_tableName;$this->_tableName=self::ISSUANCES;
+        $rows=$this->getAll('WHERE '.implode(' OR ',$where).' ORDER BY issued_at DESC LIMIT 50');
+        $this->_tableName=$old;
+        if (!is_array($rows)) { return array(); }
+        foreach ($rows as &$row) { $row['snapshot']=json_decode($row['snapshot_json'],true); unset($row['snapshot_json']); }
+        return $rows;
+    }
+
+    public function recordAuditSearch($actorId, $resultCount)
+    {
+        return $this->events->append(array(
+            'eventType'=>'certificate.audit.searched','subjectType'=>'user','subjectId'=>(string)$actorId,
+            'actorType'=>'user','actorId'=>(string)$actorId,'outcome'=>'succeeded',
+            'correlationId'=>'certificate.audit.'.bin2hex(random_bytes(12)),'sourceService'=>'certificate-service',
+            'metadata'=>array('result_count'=>(int)$resultCount)
+        ));
+    }
 
     private function issuanceFor($assignment, $user, $completion)
     { return $this->one(self::ISSUANCES, 'assignment_id='.$this->quote($assignment).' AND subject_user_id='.$this->quote($user).' AND completion_reference='.$this->quote($completion)); }
@@ -190,6 +235,7 @@ class certificateservice extends dbTable
     private function updateIn($table, $id, array $values)
     { $old=$this->_tableName; $this->_tableName=$table; $ok=$this->update('id',$id,$values); $this->_tableName=$old; return $ok!==false; }
     private function quote($value) { return $this->_db->quote((string)$value); }
+    private function normaliseIdentityNumber($number) { return strtoupper(preg_replace('/[^\pL\pN]/u','',(string)$number)); }
     private function identifier($value,$max) { $value=is_scalar($value)?trim((string)$value):''; return $value!==''&&strlen($value)<=$max&&preg_match('/^[a-z][a-z0-9_.:-]*$/i',$value)?$value:null; }
     private function text($value,$max) { $value=is_scalar($value)?trim((string)$value):''; return $value!==''&&strlen($value)<=$max&&!preg_match('/[\x00-\x1F\x7F]/',$value)?$value:null; }
     private function optionalText($value,$max) { $value=is_scalar($value)?trim((string)$value):''; return $value===''?null:$this->text($value,$max); }

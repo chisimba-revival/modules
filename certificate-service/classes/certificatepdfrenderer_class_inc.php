@@ -15,6 +15,8 @@ class certificatepdfrenderer extends ChisimbaObject
         $sans=$this->font('DejaVuSans.ttf');$sansBold=$this->font('DejaVuSans-Bold.ttf');$serif=$this->font('DejaVuSerif.ttf');$serifBold=$this->font('DejaVuSerif-Bold.ttf');$serifItalic=$serifBold;
         $this->centred($im,'CERTIFICATE',260,20,$sansBold,$white);$this->centred($im,'CERTIFICATE OF',455,49,$serifBold,$primary);$this->centred($im,'COMPLETION',550,59,$serifBold,$primary);$this->centred($im,'AWARDED TO',755,22,$sansBold,$accent);
         $this->centredFit($im,$snapshot['recipient_name'],910,64,1320,$serifItalic,$primary,34);$this->centred($im,'for the completion of the course',1078,25,$serif,$primary);$this->centredFit($im,$snapshot['resource_title'],1200,50,1320,$serifBold,$primary,28);
+        $identityLabel=trim((string)($snapshot['identity_document_type_label']??''));$identityNumber=trim((string)($snapshot['identity_document_number']??''));
+        if($identityLabel!==''&&$identityNumber!==''){$this->centredFit($im,$identityLabel.': '.$identityNumber,1305,20,1320,$sans,$primary,14);}
         $this->centred($im,'Completed on '.date('F j, Y',strtotime($snapshot['completed_at'])),1395,24,$serif,$primary);
         imagesetthickness($im,2);imageline($im,210,1745,690,1745,$primary);
         $this->placeAsset($im,$signer['signature_path']??'',280,1570,340,150);$this->placeAsset($im,$base['logo_path']??'',1004,1540,400,220);

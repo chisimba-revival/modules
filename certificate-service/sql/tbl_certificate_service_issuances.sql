@@ -9,6 +9,7 @@ $fields = array(
     'resource_type' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
     'resource_id' => array('type' => 'text', 'length' => 191, 'notnull' => TRUE),
     'completion_reference' => array('type' => 'text', 'length' => 191, 'notnull' => TRUE),
+    'identity_document_fingerprint' => array('type' => 'text', 'length' => 64),
     'snapshot_json' => array('type' => 'clob', 'notnull' => TRUE),
     'issued_at' => array('type' => 'timestamp', 'notnull' => TRUE),
     'issued_by_type' => array('type' => 'text', 'length' => 16, 'notnull' => TRUE, 'default' => 'service'),
@@ -17,6 +18,7 @@ $fields = array(
 $tableIndexes = array(
     'certificate_service_issuances_primary' => array('primary' => TRUE, 'fields' => array('id' => array())),
     'certificate_service_issuances_number' => array('unique' => TRUE, 'fields' => array('certificate_number' => array())),
+    'certificate_service_issuances_identity' => array('fields' => array('identity_document_fingerprint' => array())),
     'certificate_service_issuances_once' => array('unique' => TRUE, 'fields' => array('assignment_id' => array(), 'subject_user_id' => array(), 'completion_reference' => array()))
 );
 ?>

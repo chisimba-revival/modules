@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+    <update>
+        <table>tbl_certificate_service_issuances</table>
+        <version>1.115</version>
+        <description>Index the identity document captured by each immutable certificate issuance.</description>
+        <data>
+            <add><name>identity_document_fingerprint</name><type>text</type><length>64</length></add>
+        </data>
+    </update>
+</updates>

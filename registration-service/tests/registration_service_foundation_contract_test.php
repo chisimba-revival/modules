@@ -8,6 +8,8 @@ $service = $read('classes/registrationtokenservice_class_inc.php');
 $workflow = $read('classes/registrationservice_class_inc.php');
 $phone = $read('classes/internationalphonenumber_class_inc.php');
 $updates = $read('sql/sql_updates.xml');
+$identity = $read('sql/tbl_registration_service_identities.sql');
+$identityService = $read('classes/registrationidentityservice_class_inc.php');
 $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: registration-service'),
     'service dependencies' => str_contains($registration, 'DEPENDS: security')
@@ -17,6 +19,11 @@ $checks = array(
         && !str_contains($pending, "\$tablename = 'tbl_users'"),
     'mobile pending migration' => str_contains($pending, "'mobile_number'")
         && str_contains($updates, '<name>mobile_number</name>'),
+    'certificate identity retained' => str_contains($pending, "'identity_document_type'")
+        && str_contains($pending, "'identity_document_number'")
+        && str_contains($identity, "'document_fingerprint'")
+        && str_contains($identityService, 'function saveForUser')
+        && str_contains($identityService, "hash('sha256'"),
     'international mobile normalization' => str_contains($phone, "if(str_starts_with(\$compact,'0'))")
         && str_contains($phone, "'/^\\+[1-9][0-9]{7,14}$/'"),
     'hash width' => str_contains($pending, "'length' => 255"),
@@ -60,6 +67,10 @@ $checks = array(
         'createLocalUserWithPasswordHash('
     ) && str_contains($workflow, "'howCreated' => 'registration-service'")
       && str_contains($workflow, "'cellnumber' => (string) (\$pending['mobile_number'] ?? '')"),
+    'identity follows canonical provisioning' => str_contains($workflow, 'saveForUser(')
+        && str_contains($workflow, 'identity_document_save_failed')
+        && str_contains($workflow, 'savePendingIdentityIfPresent')
+        && str_contains($workflow, "if (\$type === '' && \$number === '') { return true; }"),
     'provisioning rechecks identity' => str_contains(
         $workflow,
         'canonical_identity_conflict'

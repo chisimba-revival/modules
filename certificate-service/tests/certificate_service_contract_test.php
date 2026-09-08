@@ -13,6 +13,11 @@ foreach (array('function createBase','function updateBase','function archiveBase
 if (strpos($service,'function storeImageAsset')===false || strpos($renderer,'function placeAsset')===false) { $failures[]='managed logo/signature assets missing'; }
 if (strpos($service,"'snapshot_json'")===false || strpos($service,"'completion_reference'")===false) { $failures[]='issuance is not immutable/idempotent'; }
 if (strpos($service,"'certificate.issued'")===false) { $failures[]='issuance is not audited'; }
+if (strpos($service,"'identity_document_number'")===false
+    || strpos($service,'function auditSearch')===false
+    || strpos($service,"'certificate.audit.searched'")===false) {
+    $failures[]='identity evidence or audited search missing';
+}
 if (strpos($register,'PAGE: admin_shared||award|mod_certificate_service_title|site')===false
     || strpos($register,'SIDEMENU: postlogin-3|Site Admin||award|mod_certificate_service_title|site')===false) {
     $failures[]='site administration navigation declarations missing';
@@ -34,11 +39,18 @@ foreach(array('DejaVuSans.ttf','DejaVuSans-Bold.ttf','DejaVuSerif.ttf','DejaVuSe
 if(strpos($renderer,"dirname(__DIR__).'/resources/fonts/'")===false){$failures[]='renderer does not own its font dependency';}
 if (strpos($renderer,'arbitrary HTML')===false) { $failures[]='safe fixed-layout contract missing'; }
 $controller=file_get_contents($root.'/controller.php');$template=file_get_contents($root.'/templates/content/manage_tpl.php');
+$auditTemplate=file_get_contents($root.'/templates/content/audit_tpl.php');
 foreach(array("case 'savebase'","case 'savesigner'","'ajax'","'csrfToken'","certificate-base-list","certificate-signer-list","certificate-preview__page","Text and line colour","Border and seal colour") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='management workspace missing '.$needle;}}
 foreach(array("case 'deletebase'","case 'deletesigner'","case 'previewbase'","SAMPLE-CERTIFICATE","chisimba-button-danger","trash-2","file-down","View/download sample") as $needle){if(strpos($controller.$template,$needle)===false){$failures[]='saved item action missing '.$needle;}}
 if(strpos($service,"code'=>'in_use'")===false||strpos($service,"'status'=>'inactive'")===false){$failures[]='guarded soft deletion missing';}
 if(strpos($template,'html_entity_decode($this->uri($params)')===false||strpos($template,'certificate-reset-colours')===false){$failures[]='safe AJAX URL or no-refresh colour reset missing';}
 if(preg_match('~action="<\?php echo \$esc\(\$this->uri~',$template)){ $failures[]='form action is vulnerable to double encoding'; }
+if(strpos($controller,"case 'audit'")===false||strpos($controller,'mayAudit()')===false
+    ||strpos($auditTemplate,'certificateAuditResults')===false
+    ||strpos($register,'CERTIFICATE_AUDIT_ASSISTANT_GROUP')===false
+    ||strpos($controller,'groupIdForName')===false){$failures[]='permission-aware audit workspace missing';}
+if(strpos($controller,"case 'downloadaudit'")===false||strpos($auditTemplate,'audit_view_certificate')===false
+    ||strpos($service,"bin2hex(random_bytes(8))")===false){$failures[]='durable audit PDF access or versioned assets missing';}
 if ($failures) { fwrite(STDERR, implode("\n",$failures)."\n"); exit(1); }
 echo "PASS: certificate service ownership, issuance and A4 renderer contracts verified.\n";
 ?>

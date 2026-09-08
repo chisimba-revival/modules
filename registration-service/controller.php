@@ -8,6 +8,7 @@ class registration_service extends controller
     private const RECOVERY_REQUEST_CSRF = 'registration_service_recovery_request';
     private const RECOVERY_RESET_CSRF = 'registration_service_recovery_reset';
     private const VERIFICATION_RETRY_CSRF = 'registration_service_verification_retry';
+    private const IDENTITY_CSRF = 'registration_service_identity';
     private const POLICY_KEY = 'account_terms';
     private const POLICY_VERSION = '1.1.0';
 
@@ -26,7 +27,10 @@ class registration_service extends controller
         $this->phones = $this->getObject('internationalphonenumber', 'registration-service');
     }
 
-    public function requiresLogin($action) { return false; }
+    public function requiresLogin($action)
+    {
+        return in_array((string) $action, array('identity', 'saveidentity'), true);
+    }
 
     public function isValid($action, $default = true)
     {
@@ -34,12 +38,14 @@ class registration_service extends controller
             '', 'default', 'register', 'verify', 'terms',
             'forgotpassword', 'requestrecovery', 'recover', 'resetpassword',
             'usernameavailability', 'checkemail'
-            , 'deliverypending', 'retryverification'
+            , 'deliverypending', 'retryverification', 'identity', 'saveidentity'
         ), true);
     }
 
     public function dispatch($action)
     {
+        if ((string) $action === 'identity') { return $this->identityPage(); }
+        if ((string) $action === 'saveidentity') { return $this->saveIdentity(); }
         header('Cache-Control: no-store, private');
         header('Referrer-Policy: no-referrer');
         $this->setLayoutTemplate('registration_layout_tpl.php');
@@ -66,6 +72,34 @@ class registration_service extends controller
             case 'default':
             default: return $this->registrationPage();
         }
+    }
+
+    private function identityPage($message = '', $error = '')
+    {
+        $user = $this->getObject('user', 'security');
+        $this->setVar('identityRecord', $this->service->identityForUser($user->userId()));
+        $this->setVar('identityTypes', $this->service->identityDocumentTypes());
+        $this->setVar('identityCsrf', $this->csrf->issue(self::IDENTITY_CSRF));
+        $this->setVar('identityMessage', $message);
+        $this->setVar('identityError', $error);
+        return 'identity_tpl.php';
+    }
+
+    private function saveIdentity()
+    {
+        $user = $this->getObject('user', 'security');
+        if (!$this->isPost() || !$this->csrf->consume(self::IDENTITY_CSRF, $this->scalarParam('csrf_token'))) {
+            return $this->identityPage('', 'invalid_request');
+        }
+        $result = $this->service->saveIdentityForUser(
+            $user->userId(),
+            $this->scalarParam('identity_document_type'),
+            $this->scalarParam('identity_document_number'),
+            $user->userId()
+        );
+        return empty($result['ok'])
+            ? $this->identityPage('', (string) ($result['code'] ?? 'identity_save_failed'))
+            : $this->identityPage('identity_saved', '');
     }
 
     private function usernameAvailability()
@@ -488,6 +522,8 @@ class registration_service extends controller
             'surname' => trim($this->scalarParam('surname')),
             'countryCallingCode' => trim($this->scalarParam('country_calling_code')),
             'mobileNumber' => trim($this->scalarParam('mobile_number')),
+            'identityDocumentType' => trim($this->scalarParam('identity_document_type')),
+            'identityDocumentNumber' => trim($this->scalarParam('identity_document_number')),
         );
     }
 

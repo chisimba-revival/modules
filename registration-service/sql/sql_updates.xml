@@ -12,4 +12,13 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_registration_service_pending</table>
+        <version>1.020</version>
+        <description>Retain the identity document type and number during verified registration.</description>
+        <data>
+            <add><name>identity_document_type</name><type>text</type><length>32</length></add>
+            <add><name>identity_document_number</name><type>text</type><length>128</length></add>
+        </data>
+    </update>
 </updates>
