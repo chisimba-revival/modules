@@ -96,7 +96,7 @@ $checks = array(
     'paid registration guidance' => str_contains($controller, "'registrationGuidancePrefix','purchase_guidance'")
         && str_contains($register, 'Complete payment')
         && str_contains($register, 'activate your account and membership'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.020'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.021'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

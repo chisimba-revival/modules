@@ -10,6 +10,8 @@ $phone = $read('classes/internationalphonenumber_class_inc.php');
 $updates = $read('sql/sql_updates.xml');
 $identity = $read('sql/tbl_registration_service_identities.sql');
 $identityService = $read('classes/registrationidentityservice_class_inc.php');
+$prepareOffset = strpos($workflow, 'private function prepareAndQueueVerification');
+$prepareWorkflow = $prepareOffset === false ? '' : substr($workflow, $prepareOffset, 7000);
 $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: registration-service'),
     'service dependencies' => str_contains($registration, 'DEPENDS: security')
@@ -19,6 +21,14 @@ $checks = array(
         && !str_contains($pending, "\$tablename = 'tbl_users'"),
     'mobile pending migration' => str_contains($pending, "'mobile_number'")
         && str_contains($updates, '<name>mobile_number</name>'),
+    'administrator pending summary is bounded' => str_contains($workflow, 'public function administrationSummary()')
+        && str_contains($workflow, 'ORDER BY created_at ASC LIMIT 20'),
+    'stale reminder is throttled and audited' => str_contains($workflow, 'public function sendAdministratorReminder')
+        && str_contains($workflow, "strtotime('-24 hours')")
+        && str_contains($workflow, "'registration.verification.reminded'")
+        && str_contains($workflow, 'last_reminder_at'),
+    'reminder timestamp is module owned' => str_contains($pending, "'last_reminder_at'")
+        && str_contains($updates, '<version>1.021</version>'),
     'certificate identity retained' => str_contains($pending, "'identity_document_type'")
         && str_contains($pending, "'identity_document_number'")
         && str_contains($identity, "'document_fingerprint'")
@@ -58,8 +68,8 @@ $checks = array(
         && str_contains($workflow, "'status' => 'verified'"),
     'resumable verification delivery' => str_contains($workflow, 'resumeVerification(')
         && str_contains($workflow, 'prepareAndQueueVerification(')
-        && strpos($workflow, "'status' => 'awaiting_verification'")
-            < strpos($workflow, 'queueEmail('),
+        && strpos($prepareWorkflow, "'status' => 'awaiting_verification'")
+            < strpos($prepareWorkflow, 'queueEmail('),
     'no legacy workflow reuse' => !str_contains($workflow, 'userregistration')
         && !str_contains($workflow, 'useradmin_model'),
     'verified canonical provisioning' => str_contains(

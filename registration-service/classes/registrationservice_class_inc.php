@@ -238,6 +238,60 @@ class registrationservice extends dbTable
         return $this->prepareAndQueueVerification($pending, $returnTo);
     }
 
+    /** Bounded operational information for the administrator dashboard. */
+    public function administrationSummary()
+    {
+        $cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
+        $pending=$this->getArray(
+            'SELECT id,first_name,surname,email_address,created_at,last_reminder_at FROM '.self::TABLE_NAME
+            .' WHERE status='.$this->quote('awaiting_verification')
+            .' AND created_at<='.$this->quote($cutoff)
+            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))
+            .' ORDER BY created_at ASC LIMIT 20'
+        );
+        return array('unconfirmed'=>is_array($pending)?$pending:array());
+    }
+
+    /** Send a fresh verification link and supportive message to one stale registration. */
+    public function sendAdministratorReminder($pendingId, $actorId)
+    {
+        $id=is_scalar($pendingId)?strtolower(trim((string)$pendingId)):'';
+        $actor=$this->text($actorId,25);$cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
+        if(!preg_match('/^[a-f0-9]{32}$/',$id)||$actor===null){return $this->result(false,'invalid_reminder');}
+        $rows=$this->getArray(
+            'SELECT * FROM '.self::TABLE_NAME.' WHERE id='.$this->quote($id)
+            .' AND status='.$this->quote('awaiting_verification').' AND created_at<='.$this->quote($cutoff)
+            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s')).' LIMIT 2'
+        );
+        if(!is_array($rows)||count($rows)!==1){return $this->result(false,'reminder_not_available',$id);}
+        $pending=$rows[0];
+        if(!empty($pending['last_reminder_at'])&&strtotime($pending['last_reminder_at'])>strtotime('-24 hours')){
+            return $this->result(false,'reminder_already_sent',$id);
+        }
+        $token=$this->objTokens->issue('email_verification','pending_registration',$id,$pending['correlation_id'],self::VERIFICATION_TTL);
+        if(empty($token['ok'])||empty($token['rawToken'])){return $this->result(false,'verification_token_failed',$id);}
+        $url=rtrim($this->objConfig->getSiteRoot(),'/').'/index.php?module=registration-service&action=verify&token='.rawurlencode($token['rawToken']);
+        $siteName=$this->siteName();
+        $email=$this->actionEmail(
+            $pending['first_name'],'Do you need help completing your registration?',
+            'Your '.$siteName.' registration is saved, but your email address has not yet been confirmed.',
+            'Confirm email address',$url,'This new verification link expires in 24 hours.',
+            'If you need help completing your registration, reply to this message and tell us where you got stuck.'
+        );
+        $queued=$this->objCommunications->queueEmail(array(
+            'to'=>$pending['email_address'],'toName'=>$pending['first_name'].' '.$pending['surname'],
+            'subject'=>'Do you need help completing your registration? | '.$siteName,
+            'text'=>$email['text'],'html'=>$email['html'],
+            'idempotencyKey'=>'registration-admin-reminder:'.$token['tokenId'],
+            'metadata'=>array('purpose'=>'registration_verification_reminder','pendingRegistrationId'=>$id,'actorId'=>$actor)
+        ));
+        if(empty($queued['ok'])){return $this->result(false,'verification_email_failed',$id);}
+        $now=date('Y-m-d H:i:s');
+        if($this->update('id',$id,array('last_reminder_at'=>$now,'updated_at'=>$now))===false){return $this->result(false,'reminder_state_failed',$id);}
+        $this->appendEvent('registration.verification.reminded',$id,$pending['correlation_id'],'requested');
+        return $this->result(true,'reminder_queued',$id);
+    }
+
     private function prepareAndQueueVerification(array $pending, $returnTo = '')
     {
         if ($pending['status'] !== 'awaiting_verification') {

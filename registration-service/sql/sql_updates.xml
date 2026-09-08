@@ -2,6 +2,14 @@
 <updates>
     <update>
         <table>tbl_registration_service_pending</table>
+        <version>1.021</version>
+        <description>Record when an administrator last sent a registration reminder.</description>
+        <data>
+            <add><name>last_reminder_at</name><type>timestamp</type></add>
+        </data>
+    </update>
+    <update>
+        <table>tbl_registration_service_pending</table>
         <version>1.004</version>
         <description>Store the normalized international mobile number while registration awaits verification.</description>
         <data>
