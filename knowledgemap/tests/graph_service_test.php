@@ -34,3 +34,15 @@ $checks=array(
     'containment cycle rejected'=>!$service->normalise($cycle)['valid']
 );
 foreach($checks as $name=>$ok){if(!$ok){fwrite(STDERR,"FAIL: $name\n");exit(1);}echo "PASS: $name\n";}
+
+$media=$document;
+$media['nodes'][1]['presentation']=array('mediaIntent'=>'create-video','icon'=>'lucide:clapperboard','offsetX'=>123.5,'offsetY'=>-42,'fontFamily'=>'Georgia','side'=>'left');
+$media['relationships'][0]['order']=2;
+$saved=$service->normalise($media)['document'];
+$again=$service->normalise($saved)['document'];
+foreach(array('create-video','use-video','create-text','use-text') as $intent){$media['nodes'][1]['presentation']['mediaIntent']=$intent;$result=$service->normalise($media);if($result['document']['nodes'][1]['presentation']['mediaIntent']!==$intent)throw new Exception('Media purpose lost');}
+if($again['nodes'][1]['presentation']!==$saved['nodes'][1]['presentation']||$again['relationships'][0]['order']!==2)throw new Exception('Editor save round trip changed presentation or order');
+$media['nodes'][1]['presentation']['mediaIntent']='execute-code';$media['nodes'][1]['presentation']['offsetX']='not-a-number';
+$invalid=$service->normalise($media)['document']['nodes'][1]['presentation'];
+if(isset($invalid['mediaIntent'])||isset($invalid['offsetX']))throw new Exception('Invalid semantic or position accepted');
+echo "PASS: all media purposes, position and order round trips, invalid metadata rejection\n";
