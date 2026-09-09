@@ -17,7 +17,7 @@ class controller extends ChisimbaObject
     public function getParam($name,$default=''){return $this->parameters[$name]??$default;}
     public function setVar($name,$value){$this->variables[$name]=$value;}
     public function uri($parameters,$module){return '/index.php?module='.$module.'&'.http_build_query($parameters);}
-    public function getObject($name,$module=null){if($name==='iconservice')return new class{function render($name,$options){return '<span aria-hidden="true"></span>';}};return parent::getObject($name,$module);}
+    public function getObject($name,$module=null){if($name==='contextualhelp')return new class{function show($module,$topic){return '';}};if($name==='iconservice')return new class{function render($name,$options){return '<span aria-hidden="true"></span>';}};return parent::getObject($name,$module);}
     public function render(){extract($this->variables);ob_start();include dirname(__DIR__).'/templates/content/dashboard_tpl.php';return ob_get_clean();}
 }
 $GLOBALS['maintenanceTestLanguage']=new class {

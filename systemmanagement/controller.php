@@ -40,7 +40,7 @@ class systemmanagement extends controller
                 return $this->index('',$this->emailText('email_not_queued',array('{reason}'=>$result['reason'])),$draft);
             return $this->index('',$this->emailText('email_incomplete',$values),$draft);
         } catch(Throwable $error) {
-            log_debug('System Management email queueing failed: '.$error->getMessage());
+            log_debug('System Maintenance email queueing failed: '.$error->getMessage());
             return $this->index('',$this->emailText('email_unknown'),$draft);
         }
     }

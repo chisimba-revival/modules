@@ -1,1 +1,1 @@
-<main class="chisimba-card"><h1>Access denied</h1><p>System management is available only to site administrators.</p></main>
+<main class="chisimba-card"><h1>Access denied</h1><p><?php echo htmlspecialchars($this->getObject('language','language')->code2Txt('mod_systemmanagement_noaccess','systemmanagement'),ENT_QUOTES,'UTF-8'); ?></p></main>
