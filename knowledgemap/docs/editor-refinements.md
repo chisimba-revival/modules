@@ -46,4 +46,24 @@ The local module catalogue successfully applied only knowledgemap 0.1 → 0.2, l
 
 An unrelated existing PHP 8.5 failure in the sitepages HTML cleaner prevented saving a new draft embed page: HTMLSax3.php attempts to modify handler_default on null. The generated renderer fixture avoids changing that unrelated subsystem; end-to-end embedding through sitepages remains blocked by it. No existing page was edited.
 
-Staging verification is pending. The current deployment notes do not identify an active staging server; an isolated local staging copy is being prepared. No production host, production database or grasses map has been touched. Production deployment is not authorised.
+The user clarified that the existing local development environment is sufficient; a separate staging copy is not required. The abandoned isolated setup was stopped and removed, including its container, network and temporary database snapshot. No production host, production database or grasses map has been touched. Production deployment is not authorised.
+
+Additional local checks passed: explicit left-side placement saved/reloaded; descendant offsets saved/reloaded and Reset selected position restored automatic spacing; clearing mediaIntent retained the decorative icon and survived reload; restoring the intent restored its standard icon. The final disposable map has all four media intentions. Tablet-width (768 px) verification used the actual application in a same-origin test frame because the browser viewport override did not resize the claimed tab: toolbar wrapping, fit and details-panel hiding worked. Temporary HTML fixtures were removed. The existing browser refused a fullscreen request with “not granted”; fullscreen behaviour is not part of the verified results.
+
+Implementation commit: c3936e231. Local tests used framework commit 0670ea7941393865830cf29ba8f1a4c9b5d48565. No framework, skin or other module source was changed.
+
+## Future production release — preparation only
+
+Do not run the historical full deployment or bootstrap scripts for this bounded update. Adapt the established module-only immutable-release procedure, replacing only packages/knowledgemap in a copy of the current production release. The existing Kanban-only deployment script illustrates the release/rollback mechanism, but is not itself a Knowledge Map deployer.
+
+Before authorisation:
+
+1. Review the exact committed knowledgemap archive and its SHA-256 checksum; confirm clean source and version 0.2. Resolve any required native Escape or sitepages integration acceptance checks recorded above, or obtain explicit acceptance of those limitations.
+2. Prepare a module-only deployment script that checks the current live release, PHP 8.5 runtime, shared skin primitives and icon availability without changing production. Do not assume the local framework revision matches production.
+3. Record the production map counts/identities, especially the grasses map, and plan read-only before/after comparisons. No import, re-seeding, course update, map rewriting or schema migration is required for these changes.
+4. The authorised rollout must first take and verify the normal database and persistent-file backups, retain the previous immutable release, and create a new release from the current production release with only packages/knowledgemap replaced.
+5. Verify the candidate archive and PHP syntax/tests before switching. Switch the release atomically, recreate only the web service, and apply only the Knowledge Map 0.2 module-catalogue update so the language entries are registered. Do not use Apply all updates.
+6. Check the editor, all four media icons and save/reload using a newly created disposable personal map. Inspect existing course maps read-only. Record the exact release, module tree and archive checksums.
+7. On a failed check, restore the previous release pointer and recreate the web service. Code rollback does not restore database contents: restore data only if required under a separately reviewed recovery plan, preserving any intervening legitimate edits.
+
+No production script was executed and no production release was transferred or switched in this task.
