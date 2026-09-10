@@ -116,3 +116,9 @@ assert.equal(new Set(m.graph.nodes.map(n=>n.id)).size,10);
 m.pasteBranch(); assert.equal(new Set(m.graph.nodes.map(n=>n.id)).size,15);
 assert.equal(m.nodes.get('a').description,'Source edited after copying');
 console.log('PASS: immutable branch copies, unique repeated pastes, notes/icons/links and source preservation');
+
+m=fixture(); m.selectedId='a'; m.addChild('a'); let descendant=m.selectedId;
+m.moveBranchSide('left'); assert.equal(m.nodes.get('a').presentation.side,'left'); assert.equal(m.parentOf(descendant),'a');
+m.moveBranchSide('right'); assert.equal(m.nodes.get('a').presentation.side,'right');
+assert.equal(m.selectedId,descendant);
+console.log('PASS: moving a selected descendant changes its whole chapter side without reparenting');

@@ -51,3 +51,9 @@ Local Chrome toolbar copy/paste, native keyboard copy/paste and persistence veri
 The library's title, scope control and create/import disclosures now share a dashboard-panel surface. Both disclosures start closed. Each available map and the empty state use the same existing skin panel primitive with module-specific inner spacing. This replaces the unstyled generic chisimba-card class on the library, without changing skin styles globally. CSS18 and module0.5.
 
 Local Chrome verified initial collapsed disclosures, opening each form, white surfaces with borders, and the visual separation between controls and the available-map library. PHP template lint and whitespace checks pass. No map data changes; this layout follow-up is not deployed.
+
+## Visible ordering and chapter-side controls
+
+Move earlier/later are now in the main toolbar, available when the details panel is hidden. They reorder the selected node among its siblings; main chapters reorder among chapters on the same side. Boundary actions are disabled. Move chapter left/right moves the complete top-level chapter containing the selection, preserving parent relationships and descendant order. Root movement and already-current sides are disabled. The details-side selector now applies immediately. Save persists each operation.
+
+Local Chrome fixture ee500d74958214460d0d6ceb1589d0fb reproduced Quiz followed by Love grasses under Chapter5. With the inspector hidden, Move earlier reversed their order and Move chapter left moved the complete branch. Save/reload preserved both. Move chapter right, save/reload again confirmed right placement and Love grasses before Quiz. Editor regressions and module contracts pass; source is local only. JS23; included in pending module0.5 with library layout. No automatic repacking or bottom branches introduced.
