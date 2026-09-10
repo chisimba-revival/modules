@@ -46,3 +46,9 @@ $media['nodes'][1]['presentation']['mediaIntent']='execute-code';$media['nodes']
 $invalid=$service->normalise($media)['document']['nodes'][1]['presentation'];
 if(isset($invalid['mediaIntent'])||isset($invalid['offsetX']))throw new Exception('Invalid semantic or position accepted');
 echo "PASS: all media purposes, position and order round trips, invalid metadata rejection\n";
+
+$document['nodes'][2]['description']="Attached note\nSecond line <script>plain text</script>";
+$document['nodes'][2]['type']='reference';
+$roundtrip=$service->normalise($service->normalise($document)['document'])['document'];
+if($roundtrip['nodes'][2]['description']!==$document['nodes'][2]['description']||$roundtrip['nodes'][2]['type']!=='reference')throw new Exception('Attached note or link node type lost');
+echo "PASS: attached multiline notes and reference nodes survive normalisation\n";

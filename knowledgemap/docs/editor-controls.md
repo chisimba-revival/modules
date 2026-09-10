@@ -25,3 +25,13 @@ Graph, module contract, editor behaviour/save-state and personal-icon ownership/
 Source baseline: modules a30034766; both modules and framework were clean main and equal to freshly fetched origin/main before editing. Existing work from the prior day was already committed. Module version is 0.3, JavaScript asset version 20 and CSS version 16. Load the new labels using Module Catalogue when assembling/staging the update. Labels were registered locally through Module Catalogue's Text Elements screen.
 
 No production deployment or production data modification was performed. The grasses course was not used as a fixture. The local disposable map and its test icon are retained for review.
+
+## Links, attached notes and page banner — follow-up
+
+The top roll-up now hides the surrounding site banner and navigation, retaining all map tools, search, save and the restore arrow. Toolbar groups wrap when space is tight. The right-panel toggle remains independent. The fullscreen exit control is hidden until fullscreen is active.
+
+Add link node creates a child reference beneath the selected node, selects it, restores the details panel when necessary and focuses Link. Enter a title and URL, apply the details and save. A link indicator opens the destination in a new tab and supports Enter from keyboard focus.
+
+Add or edit note focuses the selected node's Note field, reopening the details panel when necessary. This uses the existing description storage, preserving older content and avoiding a database migration. Notes update as typed and are included by Save without a separate Apply step. Non-empty notes show a clickable note indicator. Notes are plain text with line breaks, visible under the map's existing viewing permissions; they are also available in the read-only embed's selection details.
+
+Local Chrome verification on the retained disposable fixture confirmed banner/navigation hidden while toolbar actions remain visible, link creation with URL focus, restoring the hidden details panel for notes, multiline note and URL persistence after reload, visible indicators, and keyboard link opening. HTML-looking note content rendered as plain text. Graph round-trip and editor regressions pass. Module version0.4, JS21, CSS17. New labels registered through local Module Catalogue. These follow-up changes have not been deployed to KengaLearn.

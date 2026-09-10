@@ -31,7 +31,7 @@ console.log('PASS: same-side reorder, stable sides, sibling insertion, bounded r
 context.document.addEventListener = ()=>{};
 m=fixture(); m.selectedId='a';
 let submit;
-const form={elements:{title:{value:'Edited chapter'},description:{value:'Notes'},color:{value:'#f3f8ef',addEventListener(){}},side:{value:'right',disabled:false},mediaIntent:{value:'create-video'}},addEventListener(name,handler){if(name==='submit')submit=handler}};
+const form={elements:{title:{value:'Edited chapter'},description:{value:'Notes',addEventListener(){}},color:{value:'#f3f8ef',addEventListener(){}},side:{value:'right',disabled:false},mediaIntent:{value:'create-video'}},addEventListener(name,handler){if(name==='submit')submit=handler}};
 m.root={querySelectorAll(){return []},querySelector(selector){return selector==='[data-knowmap-node-form]'?form:null}};
 m.editable=true;m.nodes.get('a').presentation.mediaIntent='create-video';m.nodes.get('a').presentation.icon='lucide:star';m.bind();submit({preventDefault(){}});
 assert.equal(m.nodes.get('a').presentation.icon,'lucide:star');
@@ -94,3 +94,9 @@ let disclosure={setAttribute(key,value){expanded=value},querySelectorAll(){retur
 coloured.setVisibilityControl(disclosure,true);assert.equal(expanded,'false');assert.equal(icons[0].hidden,false);assert.equal(icons[1].hidden,true);
 coloured.setVisibilityControl(disclosure,false);assert.equal(expanded,'true');assert.equal(icons[0].hidden,true);assert.equal(icons[1].hidden,false);
 console.log('PASS: repeated immediate colour changes and both disclosure icon states');
+
+// Link creation keeps the selected parent and opens its URL field without adding a note node.
+m=fixture(); m.selectedId='a'; m.labels={link_node:'New link'}; let openedField=''; m.openNodeField=field=>{openedField=field}; m.addLinkNode();
+assert.equal(m.parentOf(m.selectedId),'a'); assert.equal(m.nodes.get(m.selectedId).type,'reference'); assert.equal(openedField,'link');
+assert.equal(m.nodes.get(m.selectedId).presentation.icon,'lucide:link-2');
+console.log('PASS: link node is a child reference with URL editing');
