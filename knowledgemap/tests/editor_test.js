@@ -122,3 +122,14 @@ m.moveBranchSide('left'); assert.equal(m.nodes.get('a').presentation.side,'left'
 m.moveBranchSide('right'); assert.equal(m.nodes.get('a').presentation.side,'right');
 assert.equal(m.selectedId,descendant);
 console.log('PASS: moving a selected descendant changes its whole chapter side without reparenting');
+
+// Tall labels and saved manual vertical offsets reserve complete subtree envelopes.
+m=fixture();m.dimensions=new Map([['a',{width:220,height:580}],['b',{width:220,height:260}],['c',{width:220,height:400}]]);
+m.nodes.get('a').presentation.offsetY=150;m.layout();
+let first=m.positions.get('a'),second=m.positions.get('c');
+assert(second.y-first.y >= (580+400)/2+32);
+const beforeOrder=JSON.stringify(m.graph.relationships);m.selectedId='a';let beforeDistance=Math.abs(first.x-m.positions.get('root').x);
+m.spaceBranch(80);assert.equal(Math.abs(m.positions.get('a').x-m.positions.get('root').x),beforeDistance+80);
+assert.equal(JSON.stringify(m.graph.relationships),beforeOrder);m.tidyBranch();assert.equal(m.nodes.get('a').presentation.offsetY,undefined);assert.equal(m.nodes.get('a').presentation.branchGap,80);
+for(const [id,p] of m.positions){let size=m.nodeSize(id);assert(p.x-size.width/2>=0&&p.y-size.height/2>=0);assert(p.x+size.width/2<=m.worldWidth&&p.y+size.height/2<=m.worldHeight);}
+console.log('PASS: tall-node collision spacing, manual offsets, expanding bounds, stretch and tidy preserve order');
