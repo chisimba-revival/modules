@@ -67,3 +67,10 @@ Stretch selected branch outward adds80px between the selection and its parent, m
 Local Chrome fixture ee500d74958214460d0d6ceb1589d0fb used a580px tall28px-font multiline label and a184px sibling. No box overlaps after render or direct title editing. Two stretches persisted160px after save/reload with sibling IDs in the same order; reduction and tidy also worked. The44-node fixture8349b4eca76d4ea2bd112932cd2c078e had zero pairwise box intersections and all boxes fitted inside the viewport. PHP graph tests cover spacing round-trip and bounds; editor tests cover tall siblings, legacy offsets, canvas bounds and stretching/tidying without changing relationships. Existing graph/editor/icon/contracts passed.
 
 Module0.6, JS24, CSS18. New labels registered locally. Production grasses data untouched; deployment pending.
+
+
+### Fit and viewport correction (0.7)
+
+Fit map now centres the complete visible node bounds within the available canvas, including after panel changes. The button has a visible language-system label. The editor height follows the available browser height and overrides the shared spatial workspace minimum height that previously clipped the bottom when the banner was shown. Fit changes display coordinates only; saved content, order and branch sides are unchanged.
+
+Verified locally on 10 September 2026: 44-node map opens with every node visible, horizontal centring error below 0.01 px and vertical error below 0.3 px; canvas bottom is 16 px above the browser bottom. Checked banner shown/hidden, details panel hidden, repeated Fit and reopening. Editor regression tests cover varied viewport sizes, repeated fits, measured tall nodes, unchanged graph data and available height. Graph, module contract and personal icon tests passed. Production deployment is pending.

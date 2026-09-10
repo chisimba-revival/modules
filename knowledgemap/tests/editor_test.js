@@ -133,3 +133,21 @@ m.spaceBranch(80);assert.equal(Math.abs(m.positions.get('a').x-m.positions.get('
 assert.equal(JSON.stringify(m.graph.relationships),beforeOrder);m.tidyBranch();assert.equal(m.nodes.get('a').presentation.offsetY,undefined);assert.equal(m.nodes.get('a').presentation.branchGap,80);
 for(const [id,p] of m.positions){let size=m.nodeSize(id);assert(p.x-size.width/2>=0&&p.y-size.height/2>=0);assert(p.x+size.width/2<=m.worldWidth&&p.y+size.height/2<=m.worldHeight);}
 console.log('PASS: tall-node collision spacing, manual offsets, expanding bounds, stretch and tidy preserve order');
+
+// Fit centres measured bounds, remains stable, and never alters saved map content.
+m=fixture();m.root={matches:()=>true,getBoundingClientRect:()=>({top:150}),style:{}};
+context.window.innerHeight=800;m.refreshGeometry=()=>{};m.drawLine=()=>{};
+m.dimensions=new Map([['a',{width:220,height:580}]]);m.layout();
+const savedGraph=JSON.stringify(m.graph);
+for(const viewport of [[900,600],[1300,400],[600,800]]) {
+ m.viewport.clientWidth=viewport[0];m.viewport.clientHeight=viewport[1];
+ for(let repeat=0;repeat<3;repeat++) {
+  m.fit();const boxes=Array.from(m.positions,([id,p])=>{let s=m.nodeSize(id);return {l:(p.x-s.width/2)*m.zoom,r:(p.x+s.width/2)*m.zoom,t:(p.y-s.height/2)*m.zoom,b:(p.y+s.height/2)*m.zoom};});
+  const l=Math.min(...boxes.map(b=>b.l)),r=Math.max(...boxes.map(b=>b.r)),t=Math.min(...boxes.map(b=>b.t)),b=Math.max(...boxes.map(b=>b.b));
+  assert(Math.abs((l+r)/2-viewport[0]/2)<0.001);assert(Math.abs((t+b)/2-viewport[1]/2)<0.001);
+  assert(l>=0&&t>=0&&r<=viewport[0]&&b<=viewport[1]);
+ }
+}
+assert.equal(JSON.stringify(m.graph),savedGraph);assert.equal(m.root.style.height,'634px');
+context.document.fullscreenElement=m.root;m.sizeViewport();assert.equal(m.root.style.height,'650px');
+console.log('PASS: complete bounds centred across viewport sizes, repeated fits stable, graph unchanged, available height respected');
