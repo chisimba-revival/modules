@@ -62,11 +62,11 @@
 .knowmap-node__collapse { position: absolute; inset-inline-end: .22rem; inset-block-start: 50%; width: 1.5rem; height: 1.8rem; min-width: 1.5rem; padding: 0; transform: translateY(-50%); border: 0; border-radius: 0; color: currentColor; background: transparent; box-shadow: none; font-size: 1.45rem; font-weight: 800; line-height: 1; }
 .knowmap-node__collapse:hover, .knowmap-node__collapse:focus-visible { color: var(--chisimba-primary); background: transparent; }
 .knowmap-node:has(.knowmap-node__collapse) { padding-inline-end: 1.8rem; }
-.knowmap-node__quick-actions { position: absolute; inset-inline-end: -.72rem; inset-block-start: 50%; opacity: 0; pointer-events: none; transition: opacity .12s ease; }
+.knowmap-node__quick-actions { position: absolute; inset-inline-end: -.65rem; inset-block-start: .2rem; display: flex; flex-direction: column; gap: .25rem; width: 1.3rem; opacity: 0; pointer-events: none; transition: opacity .12s ease; }
 .knowmap-node:hover .knowmap-node__quick-actions, .knowmap-node:focus-within .knowmap-node__quick-actions, .knowmap-node[aria-selected="true"] .knowmap-node__quick-actions { opacity: 1; pointer-events: auto; }
-.knowmap-node__quick-actions .chisimba-icon-button { position: absolute; width: 1.28rem; height: 1.28rem; min-width: 1.28rem; padding: 0; border: 1px solid var(--chisimba-border-strong); border-radius: 50%; background: var(--chisimba-surface); box-shadow: var(--chisimba-shadow-sm); font-size: .8rem; font-weight: 800; line-height: 1; }
-.knowmap-node__quick-add { inset-inline-start: 0; inset-block-start: -1.7rem; color: var(--chisimba-primary); }
-.knowmap-node__quick-delete { inset-inline-start: -1.7rem; inset-block-start: .08rem; color: var(--chisimba-danger); }
+.knowmap-node__quick-actions .chisimba-icon-button { position: relative; width: 1.28rem; height: 1.28rem; min-width: 1.28rem; padding: 0; border: 1px solid var(--chisimba-border-strong); border-radius: 50%; background: var(--chisimba-surface); box-shadow: var(--chisimba-shadow-sm); font-size: .8rem; font-weight: 800; line-height: 1; }
+.knowmap-node__quick-add { inset-inline-start: auto; inset-block-start: auto; color: var(--chisimba-primary); }
+.knowmap-node__quick-delete { inset-inline-start: auto; inset-block-start: auto; color: var(--chisimba-danger); }
 .knowmap-node--root { width: 17rem; font-size: 1.1rem; font-weight: 750; }
 .knowmap-node__icon { flex: 0 0 auto; font-size: 1.2rem; }
 .knowmap-node__title { min-width: 0; border-radius: var(--chisimba-radius-sm); }
@@ -83,3 +83,8 @@
 .knowmap-embed figcaption span { color: var(--chisimba-text-muted); font-size: .82rem; }
 .knowmap-embed__viewport { height: 36rem; border: 0; border-radius: 0; }
 @media (max-width: 58rem) { .knowmap-onboarding { grid-template-columns: 1fr; } .knowmap-view__body { grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem); } .knowmap-view__identity { min-width: 0; } }
+
+.knowmap-node:hover, .knowmap-node:focus-within { z-index: 2; }
+[data-knowmap-visibility-icon][hidden] { display: none; }
+
+.knowmap-personal-icon { width: 1.75rem; height: 1.75rem; object-fit: contain; }

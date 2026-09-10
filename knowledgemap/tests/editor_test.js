@@ -31,7 +31,7 @@ console.log('PASS: same-side reorder, stable sides, sibling insertion, bounded r
 context.document.addEventListener = ()=>{};
 m=fixture(); m.selectedId='a';
 let submit;
-const form={elements:{title:{value:'Edited chapter'},description:{value:'Notes'},color:{value:'#f3f8ef'},side:{value:'right',disabled:false},mediaIntent:{value:'create-video'}},addEventListener(name,handler){if(name==='submit')submit=handler}};
+const form={elements:{title:{value:'Edited chapter'},description:{value:'Notes'},color:{value:'#f3f8ef',addEventListener(){}},side:{value:'right',disabled:false},mediaIntent:{value:'create-video'}},addEventListener(name,handler){if(name==='submit')submit=handler}};
 m.root={querySelectorAll(){return []},querySelector(selector){return selector==='[data-knowmap-node-form]'?form:null}};
 m.editable=true;m.nodes.get('a').presentation.mediaIntent='create-video';m.nodes.get('a').presentation.icon='lucide:star';m.bind();submit({preventDefault(){}});
 assert.equal(m.nodes.get('a').presentation.icon,'lucide:star');
@@ -83,3 +83,14 @@ console.log('PASS: applying details retains decoration, changing purpose selects
  map.panning={};events.lostpointercapture({pointerId:1});assert.equal(map.panning,null);
  console.log('PASS: Escape cancels later drops, window blur clears movement, lost capture ends panning');
 }
+
+// Immediate colour and visibility updates are repeatable and state-driven.
+let coloured=fixture();coloured.selectedId='a';let dirtyCount=0;coloured.dirty=()=>dirtyCount++;
+coloured.setNodeColour('#123456');coloured.setNodeColour('#abcdef');
+assert.equal(coloured.nodes.get('a').presentation.color,'#abcdef');assert.equal(dirtyCount,2);
+coloured.setNodeColour('invalid');assert.equal(dirtyCount,2);
+let icons=[{dataset:{knowmapVisibilityIcon:'show'}},{dataset:{knowmapVisibilityIcon:'hide'}}],expanded;
+let disclosure={setAttribute(key,value){expanded=value},querySelectorAll(){return icons}};
+coloured.setVisibilityControl(disclosure,true);assert.equal(expanded,'false');assert.equal(icons[0].hidden,false);assert.equal(icons[1].hidden,true);
+coloured.setVisibilityControl(disclosure,false);assert.equal(expanded,'true');assert.equal(icons[0].hidden,true);assert.equal(icons[1].hidden,false);
+console.log('PASS: repeated immediate colour changes and both disclosure icon states');
