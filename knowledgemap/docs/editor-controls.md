@@ -74,3 +74,10 @@ Module0.6, JS24, CSS18. New labels registered locally. Production grasses data u
 Fit map now centres the complete visible node bounds within the available canvas, including after panel changes. The button has a visible language-system label. The editor height follows the available browser height and overrides the shared spatial workspace minimum height that previously clipped the bottom when the banner was shown. Fit changes display coordinates only; saved content, order and branch sides are unchanged.
 
 Verified locally on 10 September 2026: 44-node map opens with every node visible, horizontal centring error below 0.01 px and vertical error below 0.3 px; canvas bottom is 16 px above the browser bottom. Checked banner shown/hidden, details panel hidden, repeated Fit and reopening. Editor regression tests cover varied viewport sizes, repeated fits, measured tall nodes, unchanged graph data and available height. Graph, module contract and personal icon tests passed. Production deployment is pending.
+
+
+### Compact full-width editor toolbar (0.7)
+
+The editor opts into unrestricted width through the skin content-width custom property on its containing canvas. Existing skin gutters and control primitives remain in use. All maps, the smaller identity block and editing tools align at the top. Fullscreen, banner, inspector and save controls follow the editing tools with a separator; search and zoom remain together beneath them. Tool groups wrap when space is limited. Icon and typography menus open towards the interior of the toolbar.
+
+Local browser checks: All maps and tools share the same top coordinate, toolbar height is about 102 px, the 44-node test map fits in a 1738 px-wide canvas with the inspector hidden, and the canvas ends 16 px above the browser bottom. Checked icon menu containment, banner and inspector toggles, and no page horizontal overflow. PHP lint, module contract and editor regressions passed. These toolbar changes and the centring correction await production deployment.
