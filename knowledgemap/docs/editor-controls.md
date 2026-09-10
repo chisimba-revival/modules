@@ -81,3 +81,10 @@ Verified locally on 10 September 2026: 44-node map opens with every node visible
 The editor opts into unrestricted width through the skin content-width custom property on its containing canvas. Existing skin gutters and control primitives remain in use. All maps, the smaller identity block and editing tools align at the top. Fullscreen, banner, inspector and save controls follow the editing tools with a separator; search and zoom remain together beneath them. Tool groups wrap when space is limited. Icon and typography menus open towards the interior of the toolbar.
 
 Local browser checks: All maps and tools share the same top coordinate, toolbar height is about 102 px, the 44-node test map fits in a 1738 px-wide canvas with the inspector hidden, and the canvas ends 16 px above the browser bottom. Checked icon menu containment, banner and inspector toggles, and no page horizontal overflow. PHP lint, module contract and editor regressions passed. These toolbar changes and the centring correction await production deployment.
+
+
+### Single-row toolbar and inspector form refinement
+
+Search and zoom follow the map identity, with editing and view controls aligned to the right. Groups wrap at smaller widths. The inspector composes the shared form card with full-width inputs, a consistent field rhythm, subdued help text, and a larger colour swatch.
+
+Local browser verification: toolbar height approximately 58 px at desktop width, no page horizontal overflow, test note saved and survived reload, then restored to its original empty value. PHP lint and module contract checks passed. Deployment pending.
