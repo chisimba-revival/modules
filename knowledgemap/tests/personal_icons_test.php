@@ -16,11 +16,14 @@ $service->objects['dbfile']=new class {
 };
 $service->objects['folderaccess']=new class {function isFileAccessPrivate($f){return $f['access']==='private_all';}function isFileVisibilityPrivate($f){return $f['visibility']==='hidden';}};
 function check($condition,$message){if(!$condition)throw new Exception($message);echo 'PASS: '.$message."\n";}
-check(count($service->choices())===1,'only raster files from current personal folder are listed');
-check(!$service->isRaster(array('id'=>'bad"id','mimetype'=>'image/png')),'malformed file IDs rejected');
+check(count($service->choices())===2,'SVG and raster files from current personal folder are listed');
+check(!$service->isIconImage(array('id'=>'bad"id','mimetype'=>'image/png')),'malformed file IDs rejected');
 $html=$service->markup(array('id'=>'own','mimetype'=>'image/png','url'=>'/file?name=" onerror="x'));
 check(!str_contains($html,' onerror="')&&str_contains($html,'&quot;'),'image attributes are escaped');
 $document=array('nodes'=>array_map(fn($id)=>array('presentation'=>array('icon'=>'file:'.$id)),array('own','own','public','private','outside','svg')));
 $html=$service->library($document);
-check(substr_count($html,'<img ')===2,'library includes own/public icons once and excludes private foreign, other folders and SVG');
+check(substr_count($html,'<img ')===3,'library includes own/public icons once and excludes private foreign, other folders');
 check(str_contains($service->manageUrl(),'action=viewfolder'),'management uses File Manager');
+
+$svg=$service->markup(array('id'=>'svg','mimetype'=>'image/svg+xml','url'=>'/file.svg'));
+check(str_contains($svg,'<img ')&&!str_contains($svg,'<svg')&&!str_contains($svg,'<object'),'SVG files use isolated image rendering, never inline markup or objects');

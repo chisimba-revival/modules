@@ -100,3 +100,19 @@ m=fixture(); m.selectedId='a'; m.labels={link_node:'New link'}; let openedField=
 assert.equal(m.parentOf(m.selectedId),'a'); assert.equal(m.nodes.get(m.selectedId).type,'reference'); assert.equal(openedField,'link');
 assert.equal(m.nodes.get(m.selectedId).presentation.icon,'lucide:link-2');
 console.log('PASS: link node is a child reference with URL editing');
+
+// Copy/paste clones the complete branch, remaps internal relations and leaves its source intact.
+let sequence=0; context.crypto.randomUUID=()=>String(++sequence);
+m=fixture(); m.root={querySelector(){return null}}; m.labels={}; m.selectedId='root';
+m.nodes.get('a').description='Attached note'; m.nodes.get('a').presentation.icon='file:personal-image';
+m.graph.relationships.push({id:'url',type:'links_to',from:'a',to:'',externalTarget:'https://example.org',properties:{target:'_blank'},order:4});
+m.copyBranch(); m.nodes.get('a').description='Source edited after copying'; m.selectedId='b'; m.pasteBranch();
+let pasted=m.selectedId, copiedChildren=m.children.get(pasted);
+assert.equal(copiedChildren.length,4); assert.equal(m.parentOf(pasted),'b');
+assert.equal(m.nodes.get(copiedChildren[0]).description,'Attached note');
+assert.equal(m.nodes.get(copiedChildren[0]).presentation.icon,'file:personal-image');
+assert(m.graph.relationships.some(r=>r.from===copiedChildren[0]&&r.externalTarget==='https://example.org'));
+assert.equal(new Set(m.graph.nodes.map(n=>n.id)).size,10);
+m.pasteBranch(); assert.equal(new Set(m.graph.nodes.map(n=>n.id)).size,15);
+assert.equal(m.nodes.get('a').description,'Source edited after copying');
+console.log('PASS: immutable branch copies, unique repeated pastes, notes/icons/links and source preservation');
