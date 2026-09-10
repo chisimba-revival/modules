@@ -45,3 +45,9 @@ Local File Manager upload of km-svg-qa.svg, selection and save/reload passed; th
 Copy node and descendants / Paste beneath selected node toolbar controls and Ctrl/Command+C/V duplicate the selected subtree within the currently open map. The clipboard is an immutable in-memory snapshot and clears when the page reloads; it is not a cross-map transfer feature. Text input copying/pasting remains native. Repeated pastes remap every node and relationship ID, preserve internal relationships, outgoing external links, notes, styles, icons and media intentions, expand the destination and preserve sibling order. Layout offsets are cleared for automatic positioning. Copying a root into itself remains acyclic because all copied IDs are fresh.
 
 Local Chrome toolbar copy/paste, native keyboard copy/paste and persistence verified on the disposable fixture. Editor tests additionally check immutable snapshots, source independence, unique repeated IDs and preservation of links/notes/icons. JS asset22, CSS17, module0.4. Labels registered locally. These changes remain undeployed alongside the link/note/banner follow-up.
+
+## Map library cards — follow-up
+
+The library's title, scope control and create/import disclosures now share a dashboard-panel surface. Both disclosures start closed. Each available map and the empty state use the same existing skin panel primitive with module-specific inner spacing. This replaces the unstyled generic chisimba-card class on the library, without changing skin styles globally. CSS18 and module0.5.
+
+Local Chrome verified initial collapsed disclosures, opening each form, white surfaces with borders, and the visual separation between controls and the available-map library. PHP template lint and whitespace checks pass. No map data changes; this layout follow-up is not deployed.

@@ -4,7 +4,10 @@
 .knowmap-onboarding summary { cursor: pointer; }
 .knowmap-onboarding form { margin-top: var(--chisimba-space-4); }
 .knowmap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: var(--chisimba-space-4); }
-.knowmap-card { display: grid; align-content: start; }
+.knowmap-library-surface { padding: var(--chisimba-space-5, 1.5rem); }
+.knowmap-grid > .dashboard-panel { margin: 0; }
+.knowmap-card { display: flex; flex-direction: column; align-items: flex-start; }
+.knowmap-card .button { margin-top: auto; }
 .knowmap-card h3 { margin: var(--chisimba-space-1) 0; }
 .knowmap-card .button { justify-self: start; margin-top: auto; }
 .knowmap-card__meta { color: var(--chisimba-text-muted); font-size: .82rem; }
