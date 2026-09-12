@@ -1,3 +1,9 @@
+/* Featured-media feedback also works when tag suggestions are unavailable. */
+(function(){'use strict';var field=document.getElementById('comp_featured_image'),preview=document.querySelector('[data-featured-preview]'),alt=document.getElementById('featured-alt');
+if(!field||!preview)return;
+function update(){var value=field.value.trim();preview.hidden=true;if(!value){preview.removeAttribute('src');return;}try{var url=new URL(value,location.href);if(!['http:','https:'].includes(url.protocol))return;preview.src=url.href;preview.alt=alt?alt.value:'';}catch(error){preview.removeAttribute('src');}}
+preview.addEventListener('load',function(){preview.hidden=false;});preview.addEventListener('error',function(){preview.hidden=true;});field.addEventListener('input',update);field.addEventListener('change',update);if(alt)alt.addEventListener('input',function(){preview.alt=alt.value;});update();
+}());
 /* Accessible native suggestions; stale responses cannot replace the latest query. */
 (function(){'use strict';var input=document.getElementById('blog-tags'),list=document.getElementById('blog-tag-suggestions'),timer,request;
 if(!input||!list)return;

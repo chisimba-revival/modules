@@ -33,15 +33,19 @@ class compositioneditor extends ChisimbaObject
         foreach($s->types() as $type=>$icon)$html.=$this->button('add:'.$type,$type,$icon);
         return $html.'</div></section>';
     }
-    public function show(array $blocks,$showPalette=true,$active='')
+    public function show(array $blocks,$showPalette=true,$active='',$resume=false)
     {
+        // Prepare native editor assets even when the canvas is empty or only contains video.
+        // A text block may be inserted later without a page load.
+        $this->newObject('htmlarea','htmlelements')->show();
         $s=$this->getObject('compositionservice','contentblocks');$html='<div class="chisimba-composition-editor" data-composition-canvas>';
         if(!in_array($active,array_column($blocks,'id'),true))$active=$blocks[0]['id']??'';
         $html.='<input type="hidden" name="composition_active" value="'.$s::escape($active).'">';
+        if($resume && $active!=='')$html.='<input type="hidden" data-composition-resume value="'.$s::escape($active).'">';
         if(!$blocks)$html.='<div class="chisimba-guidance-card"><p>'.$s::escape($s->text('empty')).'</p></div>';
         foreach($blocks as $i=>$block){
             $prefix='content_blocks['.$i.']';$id=$block['id'];$type=$block['type'];
-            $html.='<section class="chisimba-card chisimba-composition-instance'.($id===$active?' chisimba-composition-instance--editing':'').'" data-instance="'.$s::escape($id).'"><header><h2>'.($i+1).'. '.$s::escape($s->text($type)).'</h2><div class="chisimba-form-actions"><button type="button" class="button chisimba-button-secondary" draggable="true" data-composition-drag="'.$s::escape($id).'" aria-label="'.$s::escape($s->text('drag')).'">'.$this->getObject('iconservice','ui')->render('grip-vertical',['decorative'=>true]).'<span>'.$s::escape($s->text('drag_label')).'</span></button>';
+            $html.='<section class="chisimba-card chisimba-composition-instance'.($id===$active?' chisimba-composition-instance--editing':'').'" tabindex="-1" data-instance="'.$s::escape($id).'"><header><h2>'.($i+1).'. '.$s::escape($s->text($type)).'</h2><div class="chisimba-form-actions"><button type="button" class="button chisimba-button-secondary" draggable="true" data-composition-drag="'.$s::escape($id).'" aria-label="'.$s::escape($s->text('drag')).'">'.$this->getObject('iconservice','ui')->render('grip-vertical',['decorative'=>true]).'<span>'.$s::escape($s->text('drag_label')).'</span></button>';
             if($i>0)$html.=$this->button('up:'.$id,'up','arrow-up');
             if($i<count($blocks)-1)$html.=$this->button('down:'.$id,'down','arrow-down');
             $html.=$this->button('duplicate:'.$id,'duplicate','copy');

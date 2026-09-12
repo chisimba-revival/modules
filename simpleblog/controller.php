@@ -62,6 +62,12 @@ class simpleblog extends controller
                     elseif(in_array($command[0],['add','addbefore','duplicate'],true)) {
                         foreach($input['blocks'] as $block)if(!in_array($block['id'],array_column($before,'id'),true))$input['active']=$block['id'];
                     }
+                    if(in_array($command[0],['up','down','before','end','slide','remove_slide'],true))$input['active']=$command[1];
+                    if($command[0]==='remove' && !in_array($input['active'],array_column($input['blocks'],'id'),true)) {
+                        $removed=array_search($command[1],array_column($before,'id'),true);
+                        $input['active']=$input['blocks'][min((int)$removed,max(0,count($input['blocks'])-1))]['id']??'';
+                    }
+                    $input['resume']=$command[0]!=='category_add';
                     $this->setVar('blogInput',$input);
                     return $this->editor($post,$type,$scope);
                 }

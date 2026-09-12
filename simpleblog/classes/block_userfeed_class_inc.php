@@ -4,6 +4,6 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class block_userfeed extends ChisimbaObject
 {
  public $title;
- public function init() { $this->title=$this->getObject('publishingrenderer','simpleblog')->text('posts'); }
+ public function init() { $this->title=$this->getObject('publishingrenderer','simpleblog')->text('personal_feed'); }
  public function show() { $r=$this->getObject('publishingrenderer','simpleblog'); $type='personal'; $scope=(string)($this->getObject('user','security')->userId());return $r->button('posts','rss',array('action'=>'getfeed','scope'=>$type,'blogid'=>$scope)); }
 }

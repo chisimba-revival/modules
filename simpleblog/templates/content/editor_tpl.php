@@ -7,17 +7,18 @@ $input=$this->getVar('blogInput') ?: array('featured_image'=>$post['featured_ima
 <aside class="chisimba-guidance-card"><p><?php echo $e($r->identity($type,$scope)); ?></p><p><?php echo $e($r->text('author')).': '.$e($this->getObject('user','security')->fullname($post['userid']??$this->getObject('user','security')->userId())); ?></p></aside>
 <?php echo $this->getObject('contextualhelp','help')->show('simpleblog','publishing'); ?>
 <?php if($this->getVar('blogInput'))echo '<p role="status">'.$e($r->text('unsaved_composition')).'</p>'; ?>
-<?php if($this->getVar('blogError')): ?><p role="alert"><?php echo $e($r->text($this->getVar('blogError'))); ?></p><?php endif; ?>
-<form method="post" class="chisimba-form chisimba-composition-form" action="<?php echo $e($this->uri(array('action'=>'save'),'simpleblog')); ?>">
+<?php if($this->getVar('blogError')): ?><p role="alert" data-composition-error><?php echo $e($r->text($this->getVar('blogError'))); ?></p><?php endif; ?>
+<form method="post" class="chisimba-form chisimba-composition-form" data-composition-ajax data-composition-failure="<?php echo $e($r->text('block_update_failed')); ?>" data-composition-pending="<?php echo $e($r->text('block_updating')); ?>" data-composition-updated="<?php echo $e($r->text('unsaved_composition')); ?>" action="<?php echo $e($this->uri(array('action'=>'save'),'simpleblog')); ?>">
 <input type="hidden" name="version" value="<?php echo $e($this->getVar('blogInput')['version']??($post?publishingservice::version($post):'')); ?>"><input type="hidden" name="csrf_token" value="<?php echo $e($this->getVar('blogToken')); ?>"><input type="hidden" name="id" value="<?php echo $e($post['id']??''); ?>"><input type="hidden" name="scope" value="<?php echo $e($type); ?>"><input type="hidden" name="blogid" value="<?php echo $e($scope); ?>">
 <div class="chisimba-form-field"><label for="blog-title"><?php echo $e($r->text('title')); ?></label><input id="blog-title" type="text" name="title" required maxlength="250" value="<?php echo $e($input['title']); ?>"></div>
-<input type="hidden" name="content" value=""><input type="hidden" name="composition_undo" value="<?php echo $e($input['undo']??''); ?>">
-<?php if(!empty($input['undo']))echo '<button class="button" type="submit" name="compose_command" value="undo_blocks" formnovalidate>'.$this->getObject('iconservice','ui')->render('undo-2',['decorative'=>true]).'<span>'.$e($r->text('undo_blocks')).'</span></button>'; ?><div class="chisimba-publishing-layout"><main>
-<?php echo $this->getObject('compositioneditor','contentblocks')->show(is_array($input['blocks']??null)?$input['blocks']:[],false,$input['active']??''); ?>
+<p role="status" data-composition-status></p><div data-composition-history><input type="hidden" name="content" value=""><input type="hidden" name="composition_undo" value="<?php echo $e($input['undo']??''); ?>">
+<?php if(!empty($input['undo']))echo '<button class="button" type="submit" name="compose_command" value="undo_blocks" formnovalidate>'.$this->getObject('iconservice','ui')->render('undo-2',['decorative'=>true]).'<span>'.$e($r->text('undo_blocks')).'</span></button>'; ?></div><div class="chisimba-publishing-layout chisimba-composition-workspace"><main>
+<?php echo $this->getObject('compositioneditor','contentblocks')->show(is_array($input['blocks']??null)?$input['blocks']:[],false,$input['active']??'',empty($this->getVar('blogError'))&&!empty($input['resume'])); ?>
 </main><aside class="chisimba-publishing-sidebar">
 <?php
 echo $this->getObject('compositioneditor','contentblocks')->palette();
 echo '<fieldset class="chisimba-card"><legend>'.$e($r->text('featured_image')).'</legend>';
+echo '<img class="chisimba-featured-image-preview" data-featured-preview hidden alt="'.$e($input['featured_alt']??'').'">';
 echo '<p>'.$e($r->text('featured_help')).'</p><div class="chisimba-form-field"><label for="comp_featured_image">'.$e($r->text('featured_url')).'</label><input id="comp_featured_image" name="featured_image" type="text" value="'.$e($input['featured_image']??'').'"></div>';
 echo '<button type="button" class="button chisimba-button-secondary" data-composition-media="comp_featured_image">'.$this->getObject('iconservice','ui')->render('image',['decorative'=>true]).'<span>'.$e($r->text('choose_featured')).'</span></button>';
 echo '<div class="chisimba-form-field"><label for="featured-alt">'.$e($r->text('featured_alt')).'</label><input id="featured-alt" name="featured_alt" type="text" value="'.$e($input['featured_alt']??'').'"></div></fieldset>';

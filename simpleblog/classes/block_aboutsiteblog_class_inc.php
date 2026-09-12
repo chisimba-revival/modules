@@ -4,6 +4,6 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class block_aboutsiteblog extends ChisimbaObject
 {
  public $title;
- public function init() { $this->title=$this->getObject('publishingrenderer','simpleblog')->text('posts'); }
+ public function init() { $this->title=$this->getObject('publishingrenderer','simpleblog')->text('sidebar_home'); }
  public function show() { $r=$this->getObject('publishingrenderer','simpleblog'); $type='site'; $scope=(string)('site');return $r->button('posts','newspaper',array('scope'=>$type,'blogid'=>$scope)); }
 }
