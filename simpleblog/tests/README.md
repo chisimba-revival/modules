@@ -12,7 +12,7 @@ Save uses an InnoDB row lock and content-version check; stale editors retain the
 
 ## Upgrade
 
-Deploy the modules changes together with framework utilities/classes/richtextsanitizer_class_inc.php and the existing author-biography feature. Required core modules are declared in register.conf. Install/upgrade SimpleBlog normally through modulecatalogue to 0.065; the SQL update converts existing post storage to InnoDB. Back up existing content first and confirm storage engine after upgrade. New installations also use InnoDB. Refresh module registration/language terms.
+Deploy the modules changes together with framework utilities/classes/richtextsanitizer_class_inc.php and the existing author-biography feature. Required core modules are declared in register.conf. Install/upgrade SimpleBlog normally through modulecatalogue to 0.067; the SQL update converts existing post storage to InnoDB. Back up existing content first and confirm storage engine after upgrade. New installations also use InnoDB. Refresh module registration/language terms.
 
 After install/upgrade, run scripts/configure-permissions.php with the Chisimba application path. This idempotently defines personal_publish, site_publish and site_manage in the canonical chisimba/simpleblog permission area; it grants nothing automatically. Use canonical permission administration to grant rights to the intended administrative assistant/publisher groups. Do not map translated role labels or grant the student group. Admins and site authors' personal eligibility use the existing identity services.
 
@@ -30,3 +30,15 @@ Old settings for social comments/canvas/default inference are no longer register
 - Installation verified in local tbl_modules at 0.065; table InnoDB; canonical publishing rights defined. First installation surfaced an invalid legacy release-date format, corrected to ISO before successful registration.
 
 No production changes. Before production, exercise the actual configured assistant/author groups through signed-in browser accounts, review representative imported rich text/media against the supported formatting policy, and verify existing course/site block placements. WordPress importer, redirects, comments, scheduled publication and a full revision-history UI are separate work; no claim those features were implemented here.
+
+## Shared builder and cards (12 September 2026)
+
+Version 0.067 uses the shared contentblocks composition service, editor and media picker. Text, image/text, hero, reverse hero, video and manual slider blocks keep stable identities. Palette drops insert at the indicated position; drag handles and move buttons reorder. One block is edited at a time; previews and hidden fields retain the other submitted blocks. Changing blocks does not save. Save draft or publish persists the complete composition. Removal has one-step Undo until the next block change. Original legacy HTML is retained when first converted.
+
+Featured image and alternative text belong to the post, not its composition. Cards reuse course-card skin styles and reserve the same media area without an image. Dates use publication chronology, local calendar-day labels and accessible full timestamps. Hero buttons support text placement and four image corners. All labels use language terms; post/posts and blog/blogs have independent systext mappings.
+
+Classification supplies scoped categories and suggested tags. The same registered blocks power the page sidebar and Turn editing on placements: latestblogs, bloghome, createblog, blogcategories, blogtags, blogarchive, blogfeed and blogshare. Outside the publication page, blocks default to site scope; configure(type, scope, exclude) supports trusted callers. No arbitrary request can override an unreadable scope.
+
+Install classification before SimpleBlog, run core_modules/classification/scripts/configure-service.php, then simpleblog/scripts/configure-permissions.php. For legacy data run simpleblog/scripts/upgrade-composition.php after the normal catalogue upgrade. It is idempotent, retains original content and migrates legacy tags. New tables and columns use normal registered definitions; unique classification identities are completed explicitly by configure-service.php.
+
+Public media roots remain future work; existing file permissions still apply. Clean Slate is not yet converted. Help documents the current authoring workflow. Production release checks and source identities are recorded in the deployment directory.

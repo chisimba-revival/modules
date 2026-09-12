@@ -9,6 +9,7 @@
 $root = dirname(__DIR__);
 $controller = file_get_contents($root . '/controller.php');
 $renderer = file_get_contents($root . '/classes/contentblockbase_class_inc.php');
+$media = file_get_contents($root . '/classes/contentmediaservice_class_inc.php');
 $template = file_get_contents($root . '/templates/content/manage_tpl.php');
 $css = file_get_contents($root . '/resources/contentblocks.css');
 $register = file_get_contents($root . '/register.conf');
@@ -32,8 +33,8 @@ $checks = array(
     'external URL is primary and picker is optional' => str_contains($template, 'type="url" id="contentblocks-video-url"')
         && str_contains($template, "'policy' => 'video'")
         && str_contains($template, 'name="video_url"'),
-    'recognised providers use safe responsive embeds' => str_contains($renderer, 'youtube-nocookie.com/embed/')
-        && str_contains($renderer, 'player.vimeo.com/video/')
+    'recognised providers use safe responsive embeds' => str_contains($renderer, "getObject('contentmediaservice','contentblocks')") && str_contains($media, 'youtube-nocookie.com/embed/')
+        && str_contains($media, 'player.vimeo.com/video/')
         && str_contains($renderer, 'allowfullscreen')
         && str_contains($css, 'aspect-ratio: 16 / 9'),
     'narrow Information spacing is compact' => str_contains($renderer, 'content-block--\' . $placement')

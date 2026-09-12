@@ -42,17 +42,48 @@ class simpleblog extends controller
                 return 'message_tpl.php';
             }
             try {
+                if($action==='save' && $this->param('composition_complete')!=='1')throw new DomainException('incomplete_composition');
                 if ($action==='delete') { $this->service->delete($id); return $this->nextAction('manage',array('scope'=>$type,'blogid'=>$scope)); }
+                if ($this->param('compose_command')!=='') {
+                    if ($post ? !$this->policy->canEdit($post) : !$this->policy->canCreate($type,$scope)) return $this->unavailable();
+                    $input=$this->input();
+                    $builder=$this->getObject('compositionservice','contentblocks');
+                    $before=$builder->validate($input['blocks']);
+                    if($this->param('compose_command')==='undo_blocks') {
+                        $undo=json_decode($input['undo'],true);
+                        if(!is_array($undo))throw new DomainException('invalid');
+                        $input['blocks']=$builder->validate($undo);
+                    } elseif($this->param('compose_command')==='category_add') {
+                        $this->service->classification()->saveTerm($type,$scope,'category',$this->param('category_name'),'',$this->param('category_parent'));
+                    } else $input['blocks']=$builder->command($builder->validate($input['blocks']),$this->param('compose_command'));
+                    $command=explode(':',$this->param('compose_command'));
+                    if(!in_array($command[0],['focus','category_add'],true))$input['undo']=json_encode($before);
+                    if($command[0]==='focus')$input['active']=$command[1];
+                    elseif(in_array($command[0],['add','addbefore','duplicate'],true)) {
+                        foreach($input['blocks'] as $block)if(!in_array($block['id'],array_column($before,'id'),true))$input['active']=$block['id'];
+                    }
+                    $this->setVar('blogInput',$input);
+                    return $this->editor($post,$type,$scope);
+                }
                 // Submitted scope must also match persisted scope on edits.
                 $id=$this->service->save($id,$this->param('scope'),$this->param('blogid'),$this->input());
                 return $this->nextAction('preview',array('id'=>$id,'saved'=>'1'));
             } catch (DomainException $e) {
-                http_response_code(400); $this->setVar('blogError',$e->getMessage());
+                http_response_code(400); $this->setVar('blogError',str_starts_with($e->getMessage(),'classification_')?'classification_error':$e->getMessage());
                 $this->setVar('blogInput',$this->input()); return $this->editor($post,$type,$scope);
             } catch (RuntimeException $e) {
                 http_response_code(500); $this->setVar('blogError','save_failed');
                 $this->setVar('blogInput',$this->input());return $this->editor($post,$type,$scope);
             }
+        }
+        if ($action==='tag_suggestions') {
+            if (!$this->policy->canCreate($type,$scope)) return $this->unavailable();
+            $terms=$this->service->classification()->creationChoices('simpleblog',$type,$scope,'tag');
+            $query=mb_strtolower($this->param('query'));
+            $suggestions=[];
+            foreach($terms as $term) if($query!=='' && str_starts_with(mb_strtolower($term['name']),$query)) $suggestions[]=$term['name'];
+            header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');
+            echo json_encode(array_slice($suggestions,0,15));exit;
         }
         if ($action==='edit') return $this->editor($post,$type,$scope);
         if ($action==='preview' || $id!=='') {
@@ -75,7 +106,7 @@ class simpleblog extends controller
         return 'posts_tpl.php';
     }
     private function input()
-    { return array('title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version')); }
+    { return array('title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version'),'blocks'=>$this->getParam('content_blocks',[]),'categories'=>$this->getParam('categories',[]),'undo'=>$this->param('composition_undo'),'active'=>$this->param('composition_active'),'featured_image'=>$this->param('featured_image'),'featured_alt'=>$this->param('featured_alt')); }
     private function editor($post,$type,$scope)
     {
         if ($post ? !$this->policy->canEdit($post) : !$this->policy->canCreate($type,$scope)) return $this->unavailable();

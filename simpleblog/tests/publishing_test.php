@@ -24,6 +24,15 @@ $input['version']=publishingservice::version($post);
 $service->save('one','personal','author1',$input);check(!isset($store->saved['userid'])&&!isset($store->saved['datecreated']),'Preserve original author/date');
 foreach ([['one','personal','other',$input],['one','site','site',$input],['one','personal','author1',array_merge($input,['status'=>'other'])]] as $args){try{$service->save(...$args);throw new RuntimeException('Invalid save accepted');}catch(DomainException $e){}}
 try{$service->save('one','personal','author1',array_merge($input,['version'=>'stale']));throw new RuntimeException('Stale update accepted');}catch(DomainException $e){check($e->getMessage()==='conflict','Conflict reported');}
+require dirname(__DIR__,2).'/contentblocks/classes/compositionservice_class_inc.php';
+$GLOBALS['objects']['compositionservice']=new compositionservice();
+$featured=$input+['featured_image'=>'/images/bird.jpg','featured_alt'=>'A bird'];
+$service->save('one','personal','author1',$featured);
+check($store->saved['featured_image']==='/images/bird.jpg'&&$store->saved['featured_alt']==='A bird','Featured image and alternative text persisted');
+$featured['featured_image']='javascript:alert(1)';
+try{$service->save('one','personal','author1',$featured);throw new RuntimeException('Unsafe featured image accepted');}catch(DomainException $e){}
+$featured['featured_image']='';$service->save('one','personal','author1',$featured);check($store->saved['featured_image']==='','Featured image removable');
+check(publishingservice::version($post)!==publishingservice::version($post+['featured_image'=>'/images/bird.jpg']),'Featured image included in conflict protection');
 $user->id='someoneelse';try{$service->save('one','personal','author1',$input);throw new RuntimeException('Cross-user save accepted');}catch(DomainException $e){}
 try{$service->delete('one');throw new RuntimeException('Cross-user delete accepted');}catch(DomainException $e){}
 echo "PASS: publishing roles, scope, draft visibility, immutable author/date and mutations\n";

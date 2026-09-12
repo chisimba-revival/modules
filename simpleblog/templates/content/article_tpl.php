@@ -8,8 +8,10 @@ if($this->getVar('blogPreview')) {
 }
 echo '<nav class="chisimba-form-actions">'.$r->button('view','arrow-left',array('scope'=>$post['post_type'],'blogid'=>$post['blogid']));
 if($this->getObject('publishingpolicy','simpleblog')->canEdit($post)) echo $r->button('edit','pencil',array('action'=>'edit','id'=>$post['id']));
-echo '</nav>'.$r->article($post);
+echo '</nav><div class="chisimba-publishing-layout"><main>'.$r->article($post);
 if($this->getObject('publishingpolicy','simpleblog')->canEdit($post)) {
  $token=$this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('simpleblog_publish');
  echo '<details class="chisimba-form-section"><summary>'.$e($r->text('delete')).'</summary><p>'.$e($r->text('delete_help')).'</p><form method="post" action="'.$e($this->uri(array('action'=>'delete'),'simpleblog')).'"><input type="hidden" name="id" value="'.$e($post['id']).'"><input type="hidden" name="csrf_token" value="'.$e($token).'"><button class="button" type="submit">'.$this->getObject('iconservice','ui')->render('trash-2',array('decorative'=>true)).'<span>'.$e($r->text('confirm_delete')).'</span></button></form></details>';
 }
+
+echo '</main>'.$this->getObject('publishingsidebar','simpleblog')->page($post['post_type'],$post['blogid'],$post['id']).'</div>';

@@ -5,6 +5,9 @@ class classificationprovider extends ChisimbaObject
 {
     public function init() {}
 
+    public function classificationCanCreate($type,$scope)
+    { return (bool)$this->getObject('publishingpolicy','simpleblog')->canCreate($type,$scope); }
+
     /** No content or labels are returned until the owning module has checked the record. */
     public function classificationAccess($id)
     {

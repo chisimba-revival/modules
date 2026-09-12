@@ -16,11 +16,9 @@ $root = dirname(__DIR__);
 $css = file_get_contents($root . '/resources/contentblocks.css');
 $register = file_get_contents($root . '/register.conf');
 
+preg_match('/^MODULE_VERSION:\s*([0-9.]+)/m', $register, $version);
 $checks = array(
-    'module version records presentation fix' => str_contains(
-        $register,
-        'MODULE_VERSION: 1.019'
-    ),
+    'module version records presentation fix' => version_compare($version[1] ?? '0', '1.019', '>='),
     'Hero uses a compound semantic selector' => str_contains(
         $css,
         '.content-block.content-block--hero {'

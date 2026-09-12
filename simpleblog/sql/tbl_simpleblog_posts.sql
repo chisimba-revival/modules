@@ -14,6 +14,11 @@ $options = array(
 
 // Fields
 $fields = array(
+    'featured_image'=>array('type'=>'clob'),
+    'featured_alt'=>array('type'=>'clob'),
+    'composition_json'=>array('type'=>'clob'),
+    'legacy_content_html'=>array('type'=>'clob'),
+    'published_at'=>array('type'=>'timestamp'),
     'id' => array(
         'type' => 'text',
         'length' => 32
