@@ -6,7 +6,7 @@ $tablename = 'tbl_simpleblog_posts';
 
 //Options line for comments, encoding and character set
 $options = array(
-   'type' => 'myisam',
+   'type' => 'innodb',
    'comment' => 'This table holds content data for the simpleblog module', 
    'collate' => 'utf8_general_ci', 
    'character_set' => 'utf8'

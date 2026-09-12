@@ -25,4 +25,4 @@
           ALTER TABLE tbl_simpleblog_posts ADD FULLTEXT(post_content);
          </SQL>
     </update>
-</updates>
+<update><table>tbl_simpleblog_posts</table><version>0.065</version><description>Transactional publishing and concurrent edit protection</description><SQL>ALTER TABLE tbl_simpleblog_posts ENGINE=InnoDB;</SQL></update></updates>
