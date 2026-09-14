@@ -3,6 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class systemmanagement extends controller
 {
+    private $pendingEmailDraft=null;
     private const CSRF='systemmanagement_mutation';
     private $user; private $config; private $notices; private $service; private $mailer; private $clock; private $csrf;
     /** Initialise the operational services. */
@@ -10,9 +11,9 @@ class systemmanagement extends controller
     /** Require authentication for the console but permit the public offline page. */
     public function requiresLogin($action){return (string)$action!=='offline';}
     /** Route administration mutations and the offline display. */
-    public function dispatch($action){$action=(string)$action;if($action==='offline')return $this->offline();if(!$this->user->isAdmin())return 'noaccess_tpl.php';if($action==='save')return $this->save();if($action==='setmaintenance')return $this->setMaintenance();if($action==='sendmaintenanceemail')return $this->sendMaintenanceEmail();if($action==='deletenotice')return $this->deleteNotice();return $this->index();}
+    public function dispatch($action){$action=(string)$action;if($action==='offline')return $this->offline();if(!$this->user->isAdmin())return 'noaccess_tpl.php';if($action==='saveemaildraft')return $this->saveEmailDraft();if($action==='save')return $this->save();if($action==='setmaintenance')return $this->setMaintenance();if($action==='sendmaintenanceemail')return $this->sendMaintenanceEmail();if($action==='deletenotice')return $this->deleteNotice();return $this->index();}
     /** Render the administrator's operational console. */
-    private function index($message='',$error='',?array $emailDraft=null){if($message===''){$changed=$this->param('maintenancechanged');if($changed==='offline')$message='The site is now offline for non-administrators. Administrator access remains available.';elseif($changed==='online')$message='The site is now online.';}$this->setVar('systemMaintenance',$this->service->maintenance());$this->setVar('systemEmailDraft',$emailDraft??array('audience'=>'everyone','subject'=>$this->emailText('email_subject'),'message'=>$this->service->maintenance()['message']));$this->setVar('systemAudienceCounts',$this->mailer->audienceCounts());$this->setVar('systemEmailReadiness',$this->mailer->readiness());$this->setVar('systemEmailDeliveries',$this->mailer->recentDeliveries());$this->setVar('systemCsrf',$this->csrf->issue(self::CSRF));$this->setVar('systemMessage',$message);$this->setVar('systemError',$error);$this->setVar('systemService',$this->service);$this->setVar('systemClock',$this->clock);return 'dashboard_tpl.php';}
+    private function index($message='',$error='',?array $emailDraft=null){if($message===''){$changed=$this->param('maintenancechanged');if($changed==='offline')$message='The site is now offline for non-administrators. Administrator access remains available.';elseif($changed==='online')$message='The site is now online.';}$this->setVar('systemMaintenance',$this->service->maintenance());$this->setVar('systemEmailDraft',$emailDraft??$this->pendingEmailDraft??$this->emailDraft()['content']??array('audience'=>'everyone','subject'=>$this->emailText('email_subject'),'message'=>$this->service->maintenance()['message']));$this->setVar('systemEmailDraftState',$this->pendingEmailDraft!==null&&$this->pendingEmailDraft!==($this->emailDraft()['content']??null)?'draft':($this->emailDraft()['state']??'draft'));$this->setVar('systemAudienceCounts',$this->mailer->audienceCounts());$this->setVar('systemEmailReadiness',$this->mailer->readiness());$this->setVar('systemEmailDeliveries',$this->mailer->recentDeliveries());$this->setVar('systemCsrf',$this->csrf->issue(self::CSRF));$this->setVar('systemMessage',$message);$this->setVar('systemError',$error);$this->setVar('systemService',$this->service);$this->setVar('systemClock',$this->clock);return 'dashboard_tpl.php';}
     /** Save either the maintenance plan or a new notice. */
     private function save(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$kind=$this->param('kind');if($kind==='maintenance'){$start=$this->service->localToStorage($this->param('start'));$end=$this->service->localToStorage($this->param('end'));if(($this->param('start')!==''&&$start===null)||($this->param('end')!==''&&$end===null))return $this->index('','Enter valid maintenance dates.');if($start&&$end&&$end<=$start)return $this->index('','Maintenance must end after it starts.');foreach(array('MAINTENANCE_MESSAGE'=>mb_substr($this->param('message'),0,2000),'MAINTENANCE_START_AT'=>$start?:'','MAINTENANCE_END_AT'=>$end?:'') as $name=>$value)$this->config->changeParam($name,'systemmanagement',$value);return $this->index('Maintenance plan saved. The site availability was not changed.');}if($kind==='notice'){$title=mb_substr($this->param('title'),0,255);$body=mb_substr($this->param('notice_message'),0,10000);$audience=$this->param('audience');$start=$this->service->localToStorage($this->param('notice_start'));$end=$this->service->localToStorage($this->param('notice_end'));if($title===''||$body===''||!in_array($audience,array('everyone','admins','lecturers','students'),true))return $this->index('','A title, message and valid audience are required.');if($start&&$end&&$end<=$start)return $this->index('','A notice must end after it starts.');$now=$this->clock->nowStorage();$this->notices->createNotice(array('id'=>bin2hex(random_bytes(16)),'title'=>$title,'message'=>$body,'audience'=>$audience,'starts_at'=>$start,'ends_at'=>$end,'created_by'=>$this->user->userId(),'datecreated'=>$now,'datemodified'=>$now));return $this->index('Notice scheduled.');}return $this->index('','Unknown operation.');}
     /** Manually take the public site offline or return it to service. */
@@ -35,11 +36,13 @@ class systemmanagement extends controller
         try {
             $result=$this->mailer->send($audience,$subject,$message,$this->service->maintenance());
             $values=array('{count}'=>(string)(int)$result['count'],'{total}'=>(string)(int)$result['total']);
-            if(!empty($result['ok']))return $this->index($this->emailText('email_queued',$values),'',$draft);
+            if(!empty($result['ok'])){$this->storeEmailDraft($draft,'queued');return $this->index($this->emailText('email_queued',$values),'',$draft);}
             if((int)$result['count']===0&&empty($result['uncertain']))
                 return $this->index('',$this->emailText('email_not_queued',array('{reason}'=>$result['reason'])),$draft);
+            $this->storeEmailDraft($draft,'uncertain');
             return $this->index('',$this->emailText('email_incomplete',$values),$draft);
         } catch(Throwable $error) {
+            $this->storeEmailDraft($draft,'uncertain');
             log_debug('System Maintenance email queueing failed: '.$error->getMessage());
             return $this->index('',$this->emailText('email_unknown'),$draft);
         }
@@ -53,8 +56,41 @@ class systemmanagement extends controller
     private function deleteNotice(){if(!$this->validPost())return $this->index('','Your session expired.');$id=$this->param('id');if(preg_match('/^[a-f0-9]{32}$/',$id))$this->notices->removeNotice($id);return $this->index('Notice removed.');}
     /** Render the deliberately minimal public maintenance page. */
     private function offline(){$maintenance=$this->service->maintenance();if(!$maintenance['active']||$this->user->isAdmin()){header('Location: '.$this->uri(array(),'_default'));exit;}$this->setLayoutTemplate(null);$this->setVar('systemMaintenance',$maintenance);return 'offline_tpl.php';}
-    /** Validate one state-changing request. */
-    private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
+    /** Keep each administrator's draft in their signed-in session, never in a shared browser store. */
+    private function emailDraft(){return $this->getSession('email_draft_'.$this->user->userId(),null);}
+    private function storeEmailDraft(array $content,$state='draft')
+    {
+        $this->setSession('email_draft_'.$this->user->userId(),array('content'=>$content,'state'=>$state));
+    }
+    /** Save a draft explicitly without calling Communications or changing the plan. */
+    private function saveEmailDraft()
+    {
+        if(!$this->validPost())return $this->index('',$this->emailText('email_session_expired'));
+        return $this->index($this->emailText('draft_saved'));
+    }
+    /** Validate the mutation before accepting a carried draft from any console form. */
+    private function validPost()
+    {
+        if(strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST')return false;
+        $content=$this->getParam('email_draft',null);
+        if($content===null&&$this->getParam('email_message',null)!==null){
+            $content=array('audience'=>$this->getParam('audience',''),'subject'=>$this->getParam('subject',''),'message'=>$this->getParam('email_message',''));
+        }
+        if(is_array($content)){
+            $draft=array();
+            foreach(array('audience'=>32,'subject'=>1000,'message'=>20000) as $field=>$limit){
+                if(!isset($content[$field])||!is_scalar($content[$field])||mb_strlen((string)$content[$field])>$limit)return false;
+                $draft[$field]=(string)$content[$field];
+            }
+            $this->pendingEmailDraft=$draft;
+        }
+        if(!$this->csrf->consume(self::CSRF,$this->param('csrf_token')))return false;
+        if($this->pendingEmailDraft!==null){
+            $previous=$this->emailDraft();
+            $this->storeEmailDraft($draft,isset($previous['content'])&&$previous['content']===$draft?$previous['state']:'draft');
+        }
+        return true;
+    }
     /** Read one trimmed scalar request value. */
     private function param($name){$value=$this->getParam($name,'');return is_scalar($value)?trim((string)$value):'';}
 }
