@@ -52,16 +52,16 @@ class webinarrenderer extends ChisimbaObject
   }
   return $html.'</div>'.$dialogs;
  }
- public function detail($r){$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
+ public function detail($r,$booking=''){$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
   $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);
-  if(webinarschedule::canRegister($r))$html.='<div class="chisimba-form-actions">'.$this->button('register','calendar-check',['action'=>'register','id'=>$r['id']]).'</div>';
+  $html.=$booking;
   $store=$this->getObject('webinarstore');
   if($r['kind']==='webinar'){
    $url=$d['recording']??'';
    if($url&&$this->getObject('contentmediaservice','contentblocks')->videoEmbed($url))$html.='<p><a class="button chisimba-button-primary" target="_blank" rel="noopener noreferrer" title="'.self::escape($this->text('newtab')).'" href="'.self::escape($url).'">'.$this->getObject('iconservice','ui')->render('play',['decorative'=>true]).'<span>'.self::escape($this->text('watch')).'</span></a></p>';
    elseif(($start=webinarschedule::start($r))&&$start->getTimestamp()<=time())$html.='<p>'.self::escape($this->text('missing')).'</p>';
    $speakers=[];foreach($d['speakers'] as $id){$s=$store->one($id);if($s&&$s['kind']==='speaker')$speakers[]=$s;}
-   $html.='<h2>'.self::escape($this->text('speakers')).'</h2>'.$this->cards($speakers);
+   $html.='<section class="chisimba-form-section"><h2>'.self::escape($this->text('speakers')).'</h2>'.$this->cards($speakers).'</section>';
   }else{
    $rows=array_filter($store->published('webinar'),fn($w)=>in_array($r['id'],$this->data($w)['speakers'],true));
    $html.='<h2>'.self::escape($this->text('title')).'</h2>'.$this->cards($rows);

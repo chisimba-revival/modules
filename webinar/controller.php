@@ -10,6 +10,12 @@ class webinar extends controller
     private function csrf(){return $this->getObject('nativeauthwebcomposition','security')->build()['csrf'];}
     private function redirectNotice($message)
     {header('Location: '.html_entity_decode($this->uri(['action'=>'notice','message'=>$message],'webinar'),ENT_QUOTES,'UTF-8'),true,303);exit;}
+    /** Return to the booking section with a one-use, session-owned result. */
+    private function redirectBooking($message,$id)
+    {
+        $_SESSION['webinar_booking_notice'][$id]=$message;
+        header('Location: '.html_entity_decode($this->uri(['action'=>'view','id'=>$id],'webinar'),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;
+    }
     public function dispatch($action=null)
     {
         $action=$this->param('action')?:'archive';
@@ -20,6 +26,10 @@ class webinar extends controller
         }
         $record=$action==='view'?$this->getObject('webinarstore')->one($this->param('id')):null;
         if(!in_array($action,['archive','recordings','view','speakers'],true)||($action==='view'&&!$record)){http_response_code(404);$this->setVar('webinarMissing',true);}
+        if($record&&$record['kind']==='webinar'){
+            $this->loadClass('webinarschedule','webinar');$start=webinarschedule::start($record);
+            if(($start&&$start->getTimestamp()>time())||isset($_SESSION['webinar_booking_notice'][$record['id']]))return $this->formAction('register');
+        }
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
     }
@@ -43,8 +53,8 @@ class webinar extends controller
                 if($action==='register'){
                     if($this->param('website')!=='')throw new DomainException('invalid');
                     $service->register($record,$this->param('name'),$this->param('email'),$this->param('consent')==='1',$_SERVER['REMOTE_ADDR']??'unknown');
-                    $this->redirectNotice('pending');
-                }elseif($action==='confirm'){$service->confirm($token);$this->redirectNotice('confirmed');}
+                    $this->redirectBooking('pending',$record['id']);
+                }elseif($action==='confirm'){$confirmed=$service->confirm($token);$this->redirectBooking('confirmed',$confirmed['id']);}
                 else {
                     if(!$this->getObject('audienceservice','audience')->unsubscribe($token))throw new DomainException('expired');
                     $this->redirectNotice('unsubscribed');
@@ -56,6 +66,12 @@ class webinar extends controller
         $this->setVar('webinarToken',$token);$this->setVar('webinarError',$error);
         $this->setVar('webinarCsrf',$this->csrf()->issue('webinar-'.$action));
         $this->setVar('webinarInput',['name'=>$this->param('name'),'email'=>$this->param('email'),'consent'=>$this->param('consent')]);
+        if($action==='register'&&$record){
+            if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$this->param('action')==='register'){header('Location: '.html_entity_decode($this->uri(['action'=>'view','id'=>$record['id']],'webinar'),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;}
+            $notice=$_SESSION['webinar_booking_notice'][$record['id']]??'';unset($_SESSION['webinar_booking_notice'][$record['id']]);
+            $this->setVar('webinarBookingNotice',in_array($notice,['pending','confirmed'],true)?$notice:'');
+            $this->setVar('webinarInlineBooking',true);$this->setVar('webinarAction','view');return 'archive_tpl.php';
+        }
         return 'registration_tpl.php';
     }
 }

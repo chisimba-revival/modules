@@ -6,7 +6,7 @@ echo '<nav class="chisimba-form-actions">'.$r->button('title','calendar',['actio
 echo '<details class="chisimba-form-section"><summary>'.$e($r->text('help')).'</summary><p>'.$e($r->text('helpbody')).'</p></details>';
 if($this->getVar('webinarMissing')){echo '<p>'.$e($r->text('notfound')).'</p>';return;}
 $record=$this->getVar('webinarRecord');
-if($record){echo $r->detail($record);return;}
+if($record){$booking='';if($this->getVar('webinarInlineBooking')){ob_start();include __DIR__.'/booking_tpl.php';$booking=ob_get_clean();}echo $r->detail($record,$booking);return;}
 $kind=$this->getVar('webinarAction')==='speakers'?'speaker':'webinar';
 echo '<h1>'.$e($r->text($kind==='speaker'?'speakers':($this->getVar('webinarAction')==='recordings'?'recordings':'title'))).'</h1>';
 $rows=$this->getObject('webinarstore','webinar')->published($kind);
