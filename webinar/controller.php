@@ -5,7 +5,7 @@ class webinar extends controller
 {
     public function init(){}
     public function requiresLogin($action=null)
-    {return !in_array($this->getParam('action','archive'),['archive','view','speakers','register','confirm','unsubscribe','notice'],true);}
+    {return !in_array($this->getParam('action','archive'),['archive','recordings','view','speakers','register','confirm','unsubscribe','notice'],true);}
     private function param($key){$v=$this->getParam($key,'');return is_string($v)?trim($v):'';}
     private function csrf(){return $this->getObject('nativeauthwebcomposition','security')->build()['csrf'];}
     private function redirectNotice($message)
@@ -19,7 +19,7 @@ class webinar extends controller
             $this->setVar('webinarNotice',$message);return 'registration_tpl.php';
         }
         $record=$action==='view'?$this->getObject('webinarstore')->one($this->param('id')):null;
-        if(!in_array($action,['archive','view','speakers'],true)||($action==='view'&&!$record)){http_response_code(404);$this->setVar('webinarMissing',true);}
+        if(!in_array($action,['archive','recordings','view','speakers'],true)||($action==='view'&&!$record)){http_response_code(404);$this->setVar('webinarMissing',true);}
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
     }
