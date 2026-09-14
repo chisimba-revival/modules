@@ -9,7 +9,20 @@ class webinarrenderer extends ChisimbaObject
  public function button($label,$icon,$params){return '<a class="button" href="'.self::escape($this->uri($params,'webinar')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($label)).'</span></a>';}
  public function data($r){return json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);}
  public function image($url,$alt){return $url?'<img src="'.self::escape($url).'" alt="'.self::escape($alt).'" style="display:block;width:100%;height:auto;object-fit:contain" loading="lazy">':'';}
- public function date($r){$d=$this->data($r);if(empty($r['presented_at']))return '';try{$date=new DateTimeImmutable($r['presented_at'],new DateTimeZone($d['timezone']));}catch(Throwable $e){return ''; }return '<p><small>'.self::escape($this->text(webinarschedule::canRegister($r)?'scheduled':'presented').' '.$date->format(webinarschedule::canRegister($r)?'j F Y, H:i T':'j F Y')).'</small></p>';}
+ /** Distinguish event scheduling from whether registration is enabled. */
+ public function date($r)
+ {
+  $date=webinarschedule::start($r);if(!$date)return '';
+  $upcoming=$date->getTimestamp()>time();$data=$this->data($r);
+  $label=$this->text($upcoming?'scheduled':'presented').' '.$date->format($upcoming?'j F Y, H:i':'j F Y');
+  if($upcoming){
+   if(!empty($data['ends_at'])){
+    try{$end=new DateTimeImmutable($data['ends_at'],$date->getTimezone());$label.='–'.$end->format($end->format('Y-m-d')===$date->format('Y-m-d')?'H:i':'j F Y, H:i');}catch(Throwable $e){}
+   }
+   $label.=' '.$date->format('T');
+  }
+  return '<p><small>'.self::escape($label).'</small></p>';
+ }
  /** Render linked covers and speaker biographies through the shared native window. */
  public function cards($rows)
  {
@@ -46,7 +59,7 @@ class webinarrenderer extends ChisimbaObject
   if($r['kind']==='webinar'){
    $url=$d['recording']??'';
    if($url&&$this->getObject('contentmediaservice','contentblocks')->videoEmbed($url))$html.='<p><a class="button chisimba-button-primary" target="_blank" rel="noopener noreferrer" title="'.self::escape($this->text('newtab')).'" href="'.self::escape($url).'">'.$this->getObject('iconservice','ui')->render('play',['decorative'=>true]).'<span>'.self::escape($this->text('watch')).'</span></a></p>';
-   elseif(!webinarschedule::canRegister($r))$html.='<p>'.self::escape($this->text('missing')).'</p>';
+   elseif(($start=webinarschedule::start($r))&&$start->getTimestamp()<=time())$html.='<p>'.self::escape($this->text('missing')).'</p>';
    $speakers=[];foreach($d['speakers'] as $id){$s=$store->one($id);if($s&&$s['kind']==='speaker')$speakers[]=$s;}
    $html.='<h2>'.self::escape($this->text('speakers')).'</h2>'.$this->cards($speakers);
   }else{

@@ -11,4 +11,7 @@ $kind=$this->getVar('webinarAction')==='speakers'?'speaker':'webinar';
 echo '<h1>'.$e($r->text($kind==='speaker'?'speakers':($this->getVar('webinarAction')==='recordings'?'recordings':'title'))).'</h1>';
 $rows=$this->getObject('webinarstore','webinar')->published($kind);
 if($this->getVar('webinarAction')==='recordings')$rows=array_filter($rows,fn($row)=>!empty($r->data($row)['recording']));
+if($kind==='webinar'&&$this->getVar('webinarAction')!=='recordings'){
+ usort($rows,function($a,$b){$now=time();$x=webinarschedule::start($a);$y=webinarschedule::start($b);$x=$x?$x->getTimestamp():0;$y=$y?$y->getTimestamp():0;if(($x>$now)!==($y>$now))return $x>$now?-1:1;return $x>$now?$x<=>$y:$y<=>$x;});
+}
 echo $rows?$r->cards($rows):'<p>'.$e($r->text('empty')).'</p>';

@@ -37,6 +37,12 @@ foreach($input['events'] as $w){
  if($w['post_status']!=='publish')throw new RuntimeException('Nonpublic webinar');
  $zone=new DateTimeZone($w['timezone']);$date=new DateTimeImmutable($w['actual_date'],$zone);
  $imageId=$w['banner_attachment_id']?:$w['featured_attachment_id'];
- saveRecord('webinar',$w['ID'],$w['post_title'],$date->format('Y-m-d H:i:s'),['description'=>$clean->cleanHtml($w['post_content']),'image'=>$urls[$imageId]??'','image_file_id'=>$fileIds[$imageId]??null,'legacy_thumbnail_file_id'=>$fileIds[$w['featured_attachment_id']]??null,'recording'=>$w['recording_url'],'timezone'=>$zone->getName(),'speakers'=>array_map(fn($id)=>identity('speaker',$id),$w['speaker_ids']),'source_slug'=>$w['post_name']]);
+ $extra=[];
+ if(($w['trial_case']??'')==='upcoming'){
+  $end=new DateTimeImmutable($w['end_date'],$zone);
+  if($end<=$date||$date->format('H:i')!==$w['start_time']||$end->format('H:i')!==$w['end_time'])throw new RuntimeException('Inconsistent event times');
+  $extra=['ends_at'=>$end->format('Y-m-d H:i:s'),'registration_open'=>false];
+ }
+ saveRecord('webinar',$w['ID'],$w['post_title'],$date->format('Y-m-d H:i:s'),['description'=>$clean->cleanHtml($w['post_content']),'image'=>$urls[$imageId]??'','image_file_id'=>$fileIds[$imageId]??null,'legacy_thumbnail_file_id'=>$fileIds[$w['featured_attachment_id']]??null,'recording'=>$w['recording_url'],'timezone'=>$zone->getName(),'speakers'=>array_map(fn($id)=>identity('speaker',$id),$w['speaker_ids']),'source_slug'=>$w['post_name']]+$extra);
 }
 echo json_encode(array_count_values($results))."\n";
