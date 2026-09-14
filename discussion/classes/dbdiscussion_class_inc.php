@@ -15,6 +15,12 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class dbdiscussion extends dbTable {
 
+    // Explicit state used by this component.
+    public $contextObject;
+    public $objUser;
+    public $objLanguage;
+
+
         /**
          *  $var  Context Code for the current Context
          */
@@ -32,7 +38,7 @@ class dbdiscussion extends dbTable {
                 parent::init('tbl_discussion');
 
                 // Context Code
-                $this->contextObject = & $this->getObject('dbcontext', 'context');
+                $this->contextObject = $this->getObject('dbcontext', 'context');
                 $this->contextCode = $this->contextObject->getContextCode();
 
                 $this->contextTitle = $this->contextObject->getTitle();
@@ -41,8 +47,8 @@ class dbdiscussion extends dbTable {
                         $this->contextTitle = 'Lobby';
                 }
 
-                $this->objUser = & $this->getObject('user', 'security');
-                $this->objLanguage = & $this->getObject('language', 'language');
+                $this->objUser = $this->getObject('user', 'security');
+                $this->objLanguage = $this->getObject('language', 'language');
         }
 
         /**
@@ -232,8 +238,8 @@ class dbdiscussion extends dbTable {
                 }
 
                 $userId = $this->objUser->userId();
-                $objDiscussionDefaultRatings = & $this->getObject('dbdiscussion_default_ratings', 'discussion');
-                $objDiscussionRatings = & $this->getObject('dbdiscussion_ratings', 'discussion');
+                $objDiscussionDefaultRatings = $this->getObject('dbdiscussion_default_ratings', 'discussion');
+                $objDiscussionRatings = $this->getObject('dbdiscussion_ratings', 'discussion');
 
                 $defaultRatings = $objDiscussionDefaultRatings->getDefaultList();
 

@@ -17,6 +17,21 @@ if (!$GLOBALS['kewl_entry_point_run'])
 
 class block_discussion extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $configData;
+
+
+    // Services and state populated during initialisation.
+    public $objLanguage;
+    public $title;
+    public $objPost;
+    public $objDiscussion;
+    public $trimstrObj;
+    public $contextObject;
+    public $contextCode;
+    public $objIcon;
+
     /**
     * Constructor
     */
@@ -24,11 +39,11 @@ class block_discussion extends ChisimbaObject
     {
         $this->objLanguage = $this->getObject('language', 'language');
         $this->title = $this->objLanguage->languageText('mod_discussion_lastpostindefault', 'discussion');
-        $this->objPost =& $this->getObject('dbpost');
-        $this->objDiscussion =& $this->getObject('dbdiscussion');
-        $this->trimstrObj =& $this->getObject('trimstr', 'strings');
+        $this->objPost = $this->getObject('dbpost');
+        $this->objDiscussion = $this->getObject('dbdiscussion');
+        $this->trimstrObj = $this->getObject('trimstr', 'strings');
 
-        $this->contextObject =& $this->getObject('dbcontext', 'context');
+        $this->contextObject = $this->getObject('dbcontext', 'context');
         $this->contextCode = $this->contextObject->getContextCode();
 
         // If not in context, set code to be 'root'
@@ -36,7 +51,7 @@ class block_discussion extends ChisimbaObject
             $this->contextCode = 'root';
         }
 
-        $this->objIcon =& $this->newObject('geticon', 'htmlelements');
+        $this->objIcon = $this->newObject('geticon', 'htmlelements');
         $this->loadClass('link', 'htmlelements');
     }
 

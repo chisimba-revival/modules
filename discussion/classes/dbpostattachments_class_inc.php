@@ -18,12 +18,16 @@ if (!$GLOBALS['kewl_entry_point_run'])
 class dbpostattachments extends dbTable
 {
 
+    // Explicit state used by this component.
+    public $objFileRegister;
+
+
     /**
     * Constructor method to define the table
     */
     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_discussion_post_attachment');
-        $this->objFileRegister =& $this->getObject('registerfileusage', 'filemanager');
+        $this->objFileRegister = $this->getObject('registerfileusage', 'filemanager');
     }
 
     /**

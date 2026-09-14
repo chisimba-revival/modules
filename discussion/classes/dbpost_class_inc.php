@@ -21,6 +21,31 @@ $this->loadClass('link', 'htmlelements');
  */
 class dbPost extends dbTable {
 
+    // Services and state populated during initialisation.
+    public $objUserPic;
+    public $objSkin;
+    public $trimstrObj;
+    public $dbPostratings;
+    public $objDiscussion;
+    public $objPostText;
+    public $objUser;
+    public $userId;
+    public $objDateFunctions;
+    public $objLanguageCode;
+    public $objLanguage;
+    public $objDiscussionSubscriptions;
+    public $objTopicSubscriptions;
+    public $objTranslatedDate;
+    public $objDateTime;
+    public $contextObject;
+    public $contextCode;
+    public $objWashoutFilters;
+    public $objIcon;
+    public $objScriptClear;
+    public $objSysConfig;
+    public $showFullName;
+
+
         /**
          *  $var Boolean Variable to flag whether to show the reply-to-post link
          */

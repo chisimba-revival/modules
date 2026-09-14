@@ -598,6 +598,11 @@ class assignment extends controller {
             return $this->nextAction(NULL, array('error' => 'unknownsubmission'));
         }
 
+        if (!is_string($fileId) || $fileId === ''
+            || !in_array($fileId, array($submission['studentfileid'] ?? null, $submission['lecturerfileid'] ?? null), true)) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
+        }
+
         $assignment = $this->objAssignment->getAssignment($submission['assignmentid']);
 
         if ($assignment == FALSE) {
@@ -621,6 +626,10 @@ class assignment extends controller {
 //        }
 
         $filePath = $this->objAssignmentSubmit->getAssignmentFilename($submission['id'], $fileId);
+
+        if ($filePath === false) {
+            return $this->nextAction(NULL, array('error' => 'nopermission'));
+        }
 
         $objDateTime = $this->getObject('dateandtime', 'utilities');
 

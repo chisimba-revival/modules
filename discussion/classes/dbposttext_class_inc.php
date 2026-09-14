@@ -19,6 +19,11 @@ if (!$GLOBALS['kewl_entry_point_run'])
 class dbPostText extends dbTable
  {
 
+    // Explicit state used by this component.
+    public $objTextStats;
+    public $objReadingEase;
+
+
 
 	/**
 	* Constructor method to define the table(default)
@@ -26,8 +31,8 @@ class dbPostText extends dbTable
 	function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
 	{
 		parent::init('tbl_discussion_post_text');
-        $this->objTextStats =& $this->getObject('textstats', 'utilities');
-        $this->objReadingEase =& $this->getObject('readingease', 'utilities');
+        $this->objTextStats = $this->getObject('textstats', 'utilities');
+        $this->objReadingEase = $this->getObject('readingease', 'utilities');
     }
 
 

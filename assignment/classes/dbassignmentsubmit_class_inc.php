@@ -40,6 +40,8 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class dbassignmentsubmit extends dbtable {
 
+    public $objUser;
+
     /**
      * Method to construct the class
      */
@@ -353,12 +355,17 @@ class dbassignmentsubmit extends dbtable {
      * @return <type>
      */
     public function getAssignmentFilename($submissionId, $fileId) {
+        $submission = $this->getSubmission($submissionId);
+        if (!is_array($submission) || !is_string($fileId) || $fileId === ''
+            || !in_array($fileId, array($submission['studentfileid'] ?? null, $submission['lecturerfileid'] ?? null), true)) {
+            return false;
+        }
         $objFile = $this->getObject('dbfile', 'filemanager');
         $file = $objFile->getFile($fileId);
 
         // Do own search if file not found
         if ($file == FALSE) {
-
+            return false;
         }
 
         //var_dump($file);
