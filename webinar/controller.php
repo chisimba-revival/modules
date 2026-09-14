@@ -5,7 +5,7 @@ class webinar extends controller
 {
     public function init(){}
     public function requiresLogin($action=null)
-    {return !in_array($this->getParam('action','archive'),['archive','recordings','view','speakers','register','confirm','unsubscribe','notice'],true);}
+    {return !in_array($this->getParam('action','upcoming'),['upcoming','archive','recordings','view','speakers','register','confirm','unsubscribe','notice'],true);}
     private function param($key){$v=$this->getParam($key,'');return is_string($v)?trim($v):'';}
     private function csrf(){return $this->getObject('nativeauthwebcomposition','security')->build()['csrf'];}
     private function redirectNotice($message)
@@ -18,14 +18,15 @@ class webinar extends controller
     }
     public function dispatch($action=null)
     {
-        $action=$this->param('action')?:'archive';
+        if($this->param('action')===''&&($_SERVER['REQUEST_METHOD']??'GET')==='GET')return $this->nextAction('upcoming');
+        $action=$this->param('action')?:'upcoming';
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
         if($action==='notice'){
             $message=$this->param('message');if(!in_array($message,['pending','confirmed','unsubscribed'],true))$message='invalid';
             $this->setVar('webinarNotice',$message);return 'registration_tpl.php';
         }
         $record=$action==='view'?$this->getObject('webinarstore')->one($this->param('id')):null;
-        if(!in_array($action,['archive','recordings','view','speakers'],true)||($action==='view'&&!$record)){http_response_code(404);$this->setVar('webinarMissing',true);}
+        if(!in_array($action,['upcoming','archive','recordings','view','speakers'],true)||($action==='view'&&!$record)){http_response_code(404);$this->setVar('webinarMissing',true);}
         if($record&&$record['kind']==='webinar'){
             $this->loadClass('webinarschedule','webinar');$start=webinarschedule::start($record);
             if(($start&&$start->getTimestamp()>time())||isset($_SESSION['webinar_booking_notice'][$record['id']]))return $this->formAction('register');

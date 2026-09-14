@@ -13,7 +13,7 @@ class webinarrenderer extends ChisimbaObject
  public function date($r)
  {
   $date=webinarschedule::start($r);if(!$date)return '';
-  $upcoming=$date->getTimestamp()>time();$data=$this->data($r);
+  $upcoming=webinarschedule::isCurrent($r);$data=$this->data($r);
   $label=$this->text($upcoming?'scheduled':'presented').' '.$date->format($upcoming?'j F Y, H:i':'j F Y');
   if($upcoming){
    if(!empty($data['ends_at'])){
