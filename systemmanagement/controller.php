@@ -11,13 +11,48 @@ class systemmanagement extends controller
     /** Require authentication for the console but permit the public offline page. */
     public function requiresLogin($action){return (string)$action!=='offline';}
     /** Route administration mutations and the offline display. */
-    public function dispatch($action){$action=(string)$action;if($action==='offline')return $this->offline();if(!$this->user->isAdmin())return 'noaccess_tpl.php';if($action==='saveemaildraft')return $this->saveEmailDraft();if($action==='save')return $this->save();if($action==='setmaintenance')return $this->setMaintenance();if($action==='sendmaintenanceemail')return $this->sendMaintenanceEmail();if($action==='deletenotice')return $this->deleteNotice();return $this->index();}
+    public function dispatch($action){$action=(string)$action;if($action==='offline')return $this->offline();if(!$this->user->isAdmin())return $this->wantsJson()?$this->jsonResponse(array('ok'=>false,'error'=>$this->emailText('ajax_access')),403):'noaccess_tpl.php';if($action==='saveemaildraft')return $this->saveEmailDraft();if($action==='save')return $this->save();if($action==='setmaintenance')return $this->setMaintenance();if($action==='sendmaintenanceemail')return $this->sendMaintenanceEmail();if($action==='deletenotice')return $this->deleteNotice();return $this->index();}
     /** Render the administrator's operational console. */
-    private function index($message='',$error='',?array $emailDraft=null){if($message===''){$changed=$this->param('maintenancechanged');if($changed==='offline')$message='The site is now offline for non-administrators. Administrator access remains available.';elseif($changed==='online')$message='The site is now online.';}$this->setVar('systemMaintenance',$this->service->maintenance());$this->setVar('systemEmailDraft',$emailDraft??$this->pendingEmailDraft??$this->emailDraft()['content']??array('audience'=>'everyone','subject'=>$this->emailText('email_subject'),'message'=>$this->service->maintenance()['message']));$this->setVar('systemEmailDraftState',$this->pendingEmailDraft!==null&&$this->pendingEmailDraft!==($this->emailDraft()['content']??null)?'draft':($this->emailDraft()['state']??'draft'));$this->setVar('systemAudienceCounts',$this->mailer->audienceCounts());$this->setVar('systemEmailReadiness',$this->mailer->readiness());$this->setVar('systemEmailDeliveries',$this->mailer->recentDeliveries());$this->setVar('systemCsrf',$this->csrf->issue(self::CSRF));$this->setVar('systemMessage',$message);$this->setVar('systemError',$error);$this->setVar('systemService',$this->service);$this->setVar('systemClock',$this->clock);return 'dashboard_tpl.php';}
+    private function index($message='',$error='',?array $emailDraft=null)
+    {
+        if($message===''){
+            $changed=$this->param('maintenancechanged');
+            if($changed==='offline')$message=$this->emailText('ajax_offline');
+            elseif($changed==='online')$message=$this->emailText('ajax_online');
+        }
+        // The framework may already have read maintenance state earlier in this request.
+        $this->config->setProperties('systemmanagement');
+        $maintenance=$this->service->maintenance();
+        $saved=$this->emailDraft();
+        $draft=$emailDraft??$this->pendingEmailDraft??$saved['content']??array('audience'=>'everyone','subject'=>$this->emailText('email_subject'),'message'=>$maintenance['message']);
+        $state=$this->pendingEmailDraft!==null&&$this->pendingEmailDraft!==($saved['content']??null)?'draft':($saved['state']??'draft');
+        $token=$this->csrf->issue(self::CSRF);
+        if($this->wantsJson()){
+            $active=(bool)$maintenance['active'];
+            return $this->jsonResponse(array('ok'=>$error==='','message'=>$message,'error'=>$error,'csrf'=>$token,
+                'draftState'=>$state,'draftLabel'=>$this->emailText('draft_state_'.$state),
+                'maintenance'=>array('active'=>$active,'status'=>$this->emailText($active?'ajax_status_offline':'ajax_status_online'),
+                    'nextState'=>$active?'online':'offline','buttonLabel'=>$this->emailText($active?'ajax_bring_online':'ajax_take_offline'),
+                    'icon'=>$this->getObject('iconservice','ui')->render($active?'power-off':'power',array('decorative'=>true))),
+                'deliveries'=>$this->mailer->recentDeliveries()));
+        }
+        $this->setVar('systemMaintenance',$maintenance);$this->setVar('systemEmailDraft',$draft);
+        $this->setVar('systemEmailDraftState',$state);$this->setVar('systemAudienceCounts',$this->mailer->audienceCounts());
+        $this->setVar('systemEmailReadiness',$this->mailer->readiness());$this->setVar('systemEmailDeliveries',$this->mailer->recentDeliveries());
+        $this->setVar('systemCsrf',$token);$this->setVar('systemMessage',$message);$this->setVar('systemError',$error);
+        $this->setVar('systemService',$this->service);$this->setVar('systemClock',$this->clock);return 'dashboard_tpl.php';
+    }
+    private function wantsJson(){return $this->param('response')==='json';}
+    /** Structured responses never include draft text and are not cacheable. */
+    protected function jsonResponse(array $payload,$status=200)
+    {
+        http_response_code($status);header('Content-Type: application/json; charset=utf-8');header('Cache-Control: no-store');
+        echo json_encode($payload,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE);exit;
+    }
     /** Save either the maintenance plan or a new notice. */
-    private function save(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$kind=$this->param('kind');if($kind==='maintenance'){$start=$this->service->localToStorage($this->param('start'));$end=$this->service->localToStorage($this->param('end'));if(($this->param('start')!==''&&$start===null)||($this->param('end')!==''&&$end===null))return $this->index('','Enter valid maintenance dates.');if($start&&$end&&$end<=$start)return $this->index('','Maintenance must end after it starts.');foreach(array('MAINTENANCE_MESSAGE'=>mb_substr($this->param('message'),0,2000),'MAINTENANCE_START_AT'=>$start?:'','MAINTENANCE_END_AT'=>$end?:'') as $name=>$value)$this->config->changeParam($name,'systemmanagement',$value);return $this->index('Maintenance plan saved. The site availability was not changed.');}if($kind==='notice'){$title=mb_substr($this->param('title'),0,255);$body=mb_substr($this->param('notice_message'),0,10000);$audience=$this->param('audience');$start=$this->service->localToStorage($this->param('notice_start'));$end=$this->service->localToStorage($this->param('notice_end'));if($title===''||$body===''||!in_array($audience,array('everyone','admins','lecturers','students'),true))return $this->index('','A title, message and valid audience are required.');if($start&&$end&&$end<=$start)return $this->index('','A notice must end after it starts.');$now=$this->clock->nowStorage();$this->notices->createNotice(array('id'=>bin2hex(random_bytes(16)),'title'=>$title,'message'=>$body,'audience'=>$audience,'starts_at'=>$start,'ends_at'=>$end,'created_by'=>$this->user->userId(),'datecreated'=>$now,'datemodified'=>$now));return $this->index('Notice scheduled.');}return $this->index('','Unknown operation.');}
+    private function save(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$kind=$this->param('kind');if($kind==='maintenance'){$start=$this->service->localToStorage($this->param('start'));$end=$this->service->localToStorage($this->param('end'));if(($this->param('start')!==''&&$start===null)||($this->param('end')!==''&&$end===null))return $this->index('','Enter valid maintenance dates.');if($start&&$end&&$end<=$start)return $this->index('','Maintenance must end after it starts.');foreach(array('MAINTENANCE_MESSAGE'=>mb_substr($this->param('message'),0,2000),'MAINTENANCE_START_AT'=>$start?:'','MAINTENANCE_END_AT'=>$end?:'') as $name=>$value)$this->config->changeParam($name,'systemmanagement',$value);return $this->index($this->emailText('ajax_plan_saved'));}if($kind==='notice'){$title=mb_substr($this->param('title'),0,255);$body=mb_substr($this->param('notice_message'),0,10000);$audience=$this->param('audience');$start=$this->service->localToStorage($this->param('notice_start'));$end=$this->service->localToStorage($this->param('notice_end'));if($title===''||$body===''||!in_array($audience,array('everyone','admins','lecturers','students'),true))return $this->index('','A title, message and valid audience are required.');if($start&&$end&&$end<=$start)return $this->index('','A notice must end after it starts.');$now=$this->clock->nowStorage();$this->notices->createNotice(array('id'=>bin2hex(random_bytes(16)),'title'=>$title,'message'=>$body,'audience'=>$audience,'starts_at'=>$start,'ends_at'=>$end,'created_by'=>$this->user->userId(),'datecreated'=>$now,'datemodified'=>$now));return $this->index('Notice scheduled.');}return $this->index('','Unknown operation.');}
     /** Manually take the public site offline or return it to service. */
-    private function setMaintenance(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$offline=$this->param('state')==='offline';$this->config->changeParam('MAINTENANCE_ENABLED','systemmanagement',$offline?'1':'0');$location=html_entity_decode($this->uri(array('maintenancechanged'=>$offline?'offline':'online'),'systemmanagement'),ENT_QUOTES,'UTF-8');header('Location: '.$location,true,303);exit;}
+    private function setMaintenance(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$offline=$this->param('state')==='offline';$this->config->changeParam('MAINTENANCE_ENABLED','systemmanagement',$offline?'1':'0');if($this->wantsJson())return $this->index($this->emailText($offline?'ajax_offline':'ajax_online'));$location=html_entity_decode($this->uri(array('maintenancechanged'=>$offline?'offline':'online'),'systemmanagement'),ENT_QUOTES,'UTF-8');header('Location: '.$location,true,303);exit;}
     /** Queue planned or unplanned maintenance mail without losing the submitted draft. */
     private function sendMaintenanceEmail()
     {
