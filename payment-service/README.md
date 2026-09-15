@@ -54,3 +54,42 @@ its recorded period ends.
 Yoco and the deterministic fake provider remain available adapters. If the
 configured default is unavailable, the service falls back only to another
 configured provider or the explicit development test checkout.
+
+## Guest contributions (1.032)
+
+The public `action=contributions` journey supports once-off Yoco payments without
+creating a user, membership or audience subscription. Contribution products have
+purpose `contribution`, billing period `one_off`, and an immutable gross price
+with explicit VAT in cents. The order snapshots that breakdown. `user_id` is
+nullable only for validated guest contribution intents; account-based purchase
+validation remains unchanged. Orders are accessible only through a random,
+hashed capability retained in the originating browser session. Query parameters
+never prove payment or expose the donor's email address.
+
+For an **existing** payment installation, take a backup and update through Module
+Catalogue. Version 1.034 registers repeatable SQL updates for nullable guest
+identity and the VAT snapshot field; it does not invent VAT amounts for historical
+prices. New installations receive these fields from the schema definitions.
+`scripts/upgrade-contribution-schema.php --check` remains an explicit verification
+tool; its `--apply` option is for reviewed recovery, not a normal extra update step.
+Both guest and signed-in contributions are supported without granting access.
+
+`scripts/setup-ltb-contributions.php` creates the approved staging products and
+prices idempotently: R115 (R15 VAT), R230 (R30 VAT) and R575 (R75 VAT). It does not
+activate checkout. Existing differing price versions cause a review error.
+
+Keep `PAYMENT_CONTRIBUTIONS_ENABLED=FALSE` until test checkout and callbacks pass.
+Use a Yoco **test** Checkout key with `PAYMENT_YOCO_MODE=sandbox` and its matching
+webhook signing secret. Staging's outer access protection must allow only the
+exact signed Yoco webhook endpoint; keep the rest protected. Guest checkout never
+falls back to the fake payment provider. Live activation is a separate step.
+
+Verified success queues one receipt through Communications, with an idempotency
+key per order. The browser return does not send or confirm a receipt. Confirm
+Communications worker/delivery configuration before launch. Receipt sending is
+transactional and does not subscribe the donor to a newsletter. Payment failures,
+refunds and late callbacks retain the shared payment ledger behaviour.
+
+The contribution page includes public contextual Help. No new Support navigation
+item is published automatically; add it using the site's existing toolbar editor
+when the journey is ready for public use.

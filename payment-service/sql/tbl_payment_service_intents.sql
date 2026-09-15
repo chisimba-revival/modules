@@ -3,7 +3,7 @@ $tablename = 'tbl_payment_service_intents';
 $options = array('comment' => 'Provider-neutral immutable checkout intents', 'collate' => 'utf8_general_ci', 'character_set' => 'utf8');
 $fields = array(
     'id' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
-    'user_id' => array('type' => 'text', 'length' => 25, 'notnull' => TRUE),
+    'user_id' => array('type' => 'text', 'length' => 25, 'notnull' => FALSE),
     'purpose_type' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
     'purpose_id' => array('type' => 'text', 'length' => 191, 'notnull' => TRUE),
     'product_code' => array('type' => 'text', 'length' => 96, 'notnull' => TRUE),

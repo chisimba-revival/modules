@@ -29,12 +29,14 @@ foreach($rows as $row) {
     }
     $existing=$catalog->productVersion($row['code'],$version);
     if($existing && ($existing['purpose_type']!=='contribution'||$existing['billing_period']!=='one_off'
-        ||(int)$existing['price']['amount_minor']!==$row['totalMinor']||$existing['price']['currency']!==$row['currency']))
+        ||(int)$existing['price']['amount_minor']!==$row['totalMinor']
+        ||(int)($existing['price']['vat_minor']??0)!==$row['totalMinor']-$row['baseMinor']
+        ||$existing['price']['currency']!==$row['currency']))
         throw new RuntimeException('Existing product differs: '.$row['code']);
     $product=$catalog->createProduct(['code'=>$row['code'],'name'=>$row['name'],'purposeType'=>'contribution',
         'purposeId'=>$row['code'],'billingPeriod'=>'one_off']);
     if(empty($product['ok'])) throw new RuntimeException($product['code']);
-    $price=$catalog->addPrice($product['productId'],['versionCode'=>$version,'amountMinor'=>$row['totalMinor'],'currency'=>$row['currency']]);
+    $price=$catalog->addPrice($product['productId'],['versionCode'=>$version,'amountMinor'=>$row['totalMinor'],'vatMinor'=>$row['totalMinor']-$row['baseMinor'],'currency'=>$row['currency']]);
     if(empty($price['ok'])) throw new RuntimeException($price['code']);
     echo $row['code'].' '.$price['code']."\n";
 }

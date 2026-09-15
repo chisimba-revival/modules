@@ -22,8 +22,16 @@ conflicting existing products/prices and is repeatable. It does not run during
 ordinary module installation and does not change provider configuration.
 
 Local contribution list: `index.php?module=payment-service&action=catalogue&purpose=contribution`.
-The existing checkout requires a signed-in account. Guest contribution checkout
-is not implemented; this needs a decision before public rollout.
+This catalogue checkout requires a signed-in account. The reconciled 1.034 release
+also retains the existing guest Yoco journey at `action=contributions`. Guest
+checkout requires its explicit enable setting and correctly configured provider
+credentials; consolidation does not enable it or change credentials. Both flows
+use the shared payment ledger and neither grants access. Guest orders retain
+their immutable VAT snapshot and verified, idempotent receipt flow.
+
+Version 1.034 registers the nullable guest identity and VAT schema upgrades through
+Module Catalogue. The older explicit schema script remains a repeatable diagnostic
+and recovery tool, not a required substitute for normal catalogue updates.
 
 Paystack already supports the site's recurring membership plans through its
 existing adapter. For hosted sandbox verification configure, locally only:

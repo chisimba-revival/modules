@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+    <update>
+        <table>tbl_payment_service_intents</table>
+        <version>1.034</version>
+        <description>Permit validated guest contributions without manufacturing an account</description>
+        <SQL>ALTER TABLE tbl_payment_service_intents MODIFY user_id VARCHAR(25) NULL;</SQL>
+    </update>
+    <update>
+        <table>tbl_payment_service_prices</table>
+        <version>1.034</version>
+        <description>Preserve immutable contribution VAT snapshots; do not recalculate historic prices</description>
+        <SQL>ALTER TABLE tbl_payment_service_prices ADD COLUMN IF NOT EXISTS vat_minor INT NOT NULL DEFAULT 0;</SQL>
+    </update>
+</updates>
