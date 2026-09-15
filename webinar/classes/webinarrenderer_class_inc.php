@@ -28,6 +28,7 @@ class webinarrenderer extends ChisimbaObject
  {
   $html='<div class="chisimba-publication-card-grid">';$dialogs='';$seen=[];
   foreach($rows as $r){
+   $r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');
    $d=$this->data($r);$url=self::escape($this->uri(['action'=>'view','id'=>$r['id']],'webinar'));
    $html.='<article class="chisimba-publication-card"><a class="chisimba-publication-card__media chisimba-publication-card__media--natural" href="'.$url.'">'.$this->image($d['image']??'',$r['title']);
    $date=webinarschedule::start($r);
@@ -39,6 +40,7 @@ class webinarrenderer extends ChisimbaObject
    foreach(($d['speakers']??[]) as $speakerId){
     $speaker=$this->getObject('webinarstore')->one($speakerId);
     if(!$speaker||$speaker['kind']!=='speaker')continue;
+    $speaker['title']=html_entity_decode($speaker['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');
     $id='webinar-speaker-'.$speaker['id'];
     $names[]='<a href="'.self::escape($this->uri(['action'=>'view','id'=>$speaker['id']],'webinar')).'" data-ui-open="'.$id.'" aria-haspopup="dialog">'.self::escape($speaker['title']).'</a>';
     if(isset($seen[$id]))continue;
@@ -52,7 +54,7 @@ class webinarrenderer extends ChisimbaObject
   }
   return $html.'</div>'.$dialogs;
  }
- public function detail($r,$booking=''){$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
+ public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
   $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);
   $html.=$booking;
   $store=$this->getObject('webinarstore');
