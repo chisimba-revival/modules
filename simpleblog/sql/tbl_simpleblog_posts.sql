@@ -14,6 +14,11 @@ $options = array(
 
 // Fields
 $fields = array(
+    'author_credit'=>array('type'=>'text','length'=>250),
+    'source_key'=>array('type'=>'text','length'=>191),
+    'source_url'=>array('type'=>'clob'),
+    'source_hash'=>array('type'=>'text','length'=>64),
+    'import_hash'=>array('type'=>'text','length'=>64),
     'featured_image'=>array('type'=>'clob'),
     'featured_alt'=>array('type'=>'clob'),
     'composition_json'=>array('type'=>'clob'),
@@ -76,4 +81,5 @@ $indexes = array(
         'post_tags' => array(),
      )
 );
+$tableIndexes=['simpleblog_source_unique'=>['unique'=>true,'fields'=>['source_key'=>[]]]];
 ?>

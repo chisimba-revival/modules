@@ -61,10 +61,12 @@ class publishingrenderer extends ChisimbaObject
         return $html.'</ul>';
     }
     /** Shared author/date line for cards and full posts. Stored publishing times are UTC. */
+    public static function authorCredit(array $post,$accountName)
+    { return trim((string)($post['author_credit']??''))?:$accountName; }
     public function metadata(array $post)
     {
         $icons=$this->getObject('iconservice','ui');
-        $author=self::escape($this->getObject('user','security')->fullname($post['userid']));
+        $author=self::escape(self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid'])));
         $raw=$post['published_at']??$post['datecreated']??'';
         $date=DateTimeImmutable::createFromFormat('!Y-m-d H:i:s',(string)$raw,new DateTimeZone('UTC'));
         $html='<p class="chisimba-publication-meta"><span>'.$icons->render('user',['decorative'=>true]).$author.'</span>';
@@ -87,7 +89,7 @@ class publishingrenderer extends ChisimbaObject
         $html.='<div class="reading-surface">'.$body.'</div>';
         if (trim($post['post_tags']??'')!=='') $html.='<p>'.$e($this->text('tags')).': '.$e($post['post_tags']).'</p>';
         $bio=$this->getObject('authorbiographyservice','userdetails')->forUser($post['userid']);
-        if (trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
+        if (self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid']))===$this->getObject('user','security')->fullname($post['userid']) && trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
         return $html.'</article>';
     }
     private function absolute($url)

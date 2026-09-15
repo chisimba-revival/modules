@@ -20,6 +20,7 @@ class contentmediaservice extends ChisimbaObject
                 return 'https://www.youtube-nocookie.com/embed/' . $id;
             }
         }
+        if ($host === 'xeno-canto.org' && preg_match('~^([0-9]{1,12})(?:/embed)?$~D', $path, $match)) return 'https://xeno-canto.org/'.$match[1].'/embed';
         if (in_array($host, array('vimeo.com', 'player.vimeo.com'), true)
             && preg_match('#(?:video/)?([0-9]{6,12})#', $path, $match)) {
             return 'https://player.vimeo.com/video/' . $match[1];

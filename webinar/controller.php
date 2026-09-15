@@ -21,6 +21,7 @@ class webinar extends controller
         if($this->param('action')===''&&($_SERVER['REQUEST_METHOD']??'GET')==='GET')return $this->nextAction('upcoming');
         $action=$this->param('action')?:'upcoming';
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
+        if($action==='recordings')return $this->recordings();
         if($action==='notice'){
             $message=$this->param('message');if(!in_array($message,['pending','confirmed','unsubscribed'],true))$message='invalid';
             $this->setVar('webinarNotice',$message);return 'registration_tpl.php';
@@ -33,6 +34,19 @@ class webinar extends controller
         }
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
+    }
+    /** JSON is a public read-only enhancement of the same paginated page. */
+    private function recordings()
+    {
+        $store=$this->getObject('webinarvideos','webinar');$rows=$store->catalogue();
+        try{$page=webinarvideos::page($this->getParam('page',1),count($rows));}
+        catch(InvalidArgumentException $error){http_response_code(400);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+        $slice=array_slice($rows,($page-1)*6,6);$r=$this->getObject('webinarrenderer','webinar');
+        $data=['html'=>$this->getObject('videocardrenderer','contentblocks')->cards($slice,'webinar-video-player',$r->text('watch')),
+            'count'=>count($slice),'total'=>count($rows),'channel'=>$store->channel(),
+            'next'=>$page*6<count($rows)?html_entity_decode($this->uri(['action'=>'recordings','page'=>$page+1],'webinar'),ENT_QUOTES,'UTF-8'):null];
+        if($this->param('fragment')==='1'){header('Content-Type: application/json; charset=UTF-8');header('X-Content-Type-Options: nosniff');echo json_encode($data,JSON_THROW_ON_ERROR);exit;}
+        $this->setVar('videoGallery',$data);return 'recordings_tpl.php';
     }
     private function formAction($action)
     {

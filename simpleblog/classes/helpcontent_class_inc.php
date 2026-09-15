@@ -10,6 +10,6 @@ class helpcontent extends ChisimbaObject
   $r=$this->getObject('publishingrenderer');
   return array('title'=>$r->text('help_title'),'summary'=>$r->text('help_summary'),
    'steps'=>array($r->text('help_scope'),$r->text('help_write'),$r->text('help_preview'),$r->text('help_publish')),
-   'sections'=>array(array('heading'=>$r->text('author'),'body'=>$r->text('help_author')),array('heading'=>$r->text('permissions'),'body'=>$r->text('help_permissions'))));
+   'sections'=>array(array('heading'=>$r->text('author'),'body'=>$r->text('help_author')),array('heading'=>$r->text('permissions'),'body'=>$r->text('help_permissions')),array('heading'=>$r->text('author'),'body'=>$r->text('help_import'))));
  }
 }
