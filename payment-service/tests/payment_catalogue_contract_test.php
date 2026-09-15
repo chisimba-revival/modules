@@ -45,7 +45,7 @@ $expect(str_contains($controller,"case 'tiers'")
     && str_contains($tiersTemplate,'Upgrade to <?=$e($label)?>'),
     'Membership comparison must show the current tier and connect course discovery to upgrade actions.');
 $expect(str_contains($controller,"array('tiers','yocowebhook','paystackwebhook'")
-    && str_contains($register,'mod_payment_service_register_free|Free registration action|Register now for free courses')
+    && str_contains($register,'mod_payment_service_register_free|Free registration action|Register now for free [-contexts-]')
     && str_contains($tiersTemplate,'mod_payment_service_register_free')
     && str_contains($tiersTemplate,"'free courses'"),
     'The membership comparison must be public and offer a sentence-case free-registration journey.');

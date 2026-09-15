@@ -3,7 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class paymentcatalogservice extends ChisimbaObject
 {
-    private const PURPOSES=array('membership','private_course');
+    private const PURPOSES=array('membership','private_course','contribution');
     private const PERIODS=array('monthly','annual','one_off');
     public function init() { $this->products=$this->getObject('dbpaymentproducts'); $this->prices=$this->getObject('dbpaymentprices'); $this->contexts=$this->getObject('dbcontext','context'); }
     public function listProducts($activeOnly=false) {
@@ -45,8 +45,10 @@ class paymentcatalogservice extends ChisimbaObject
     }
     public function createProduct(array $input) {
         $purpose=$this->enum($input['purposeType']??null,self::PURPOSES); $period=$this->enum($input['billingPeriod']??null,self::PERIODS);
+        if($purpose==='contribution'&&$period!=='one_off') return array('ok'=>false,'code'=>'invalid_product');
         $duration=filter_var($input['durationMonths']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>120)));
         if($period==='one_off'&&$purpose==='private_course') $duration=null;
+        if($purpose==='contribution') $duration=null;
         $values=array('code'=>$this->identifier($input['code']??null,96),'name'=>$this->text($input['name']??null,191),'purpose_type'=>$purpose,'purpose_id'=>$this->text($input['purposeId']??null,191),'billing_period'=>$period,'duration_months'=>$duration===false?null:$duration,'active'=>1);
         if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||($period==='one_off'&&$duration!==1)||!in_array($values['purpose_id'],array('tier_1','tier_2'),true)))) return array('ok'=>false,'code'=>'invalid_product');
         if($purpose==='private_course') {
@@ -63,8 +65,10 @@ class paymentcatalogservice extends ChisimbaObject
         $product=$this->products->byId($this->hexId($productId)); $amount=filter_var($input['amountMinor']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1)));
         $version=$this->identifier($input['versionCode']??null,64); $currency=strtoupper(trim((string)($input['currency']??''))); $from=$this->timestamp($input['effectiveFrom']??date('Y-m-d H:i:s')); $until=trim((string)($input['effectiveUntil']??'')); $until=$until===''?null:$this->timestamp($until);
         if(!$product||$amount===false||$version===null||!preg_match('/^[A-Z]{3}$/',$currency)||$from===null||($until!==null&&$until<=$from)) return array('ok'=>false,'code'=>'invalid_price');
+        $vat=filter_var($input['vatMinor']??0,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>0)));
+        if($vat===false||$vat>$amount) return array('ok'=>false,'code'=>'invalid_price');
         $existing=$this->prices->byVersion($product['id'],$version); if($existing) return array('ok'=>true,'code'=>'already_created','priceId'=>$existing['id']);
-        $values=array('id'=>bin2hex(random_bytes(16)),'product_id'=>$product['id'],'version_code'=>$version,'amount_minor'=>$amount,'currency'=>$currency,'effective_from'=>$from,'effective_until'=>$until,'created_at'=>date('Y-m-d H:i:s'));
+        $values=array('id'=>bin2hex(random_bytes(16)),'product_id'=>$product['id'],'version_code'=>$version,'amount_minor'=>$amount,'vat_minor'=>$vat,'currency'=>$currency,'effective_from'=>$from,'effective_until'=>$until,'created_at'=>date('Y-m-d H:i:s'));
         return $this->prices->insert($values)===false?array('ok'=>false,'code'=>'price_failed'):array('ok'=>true,'code'=>'price_created','priceId'=>$values['id']);
     }
     private function enum($v,array $a){$v=is_scalar($v)?strtolower(trim((string)$v)):'';return in_array($v,$a,true)?$v:null;}

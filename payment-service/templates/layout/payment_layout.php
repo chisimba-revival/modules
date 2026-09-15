@@ -21,5 +21,6 @@ if($loggedIn){
     $sidebar='<aside class="chisimba-structural-sidebar payment-sidebar payment-acquisition-sidebar" aria-label="Sign in or register">'
         .$blocks->showBlock('login','security').$blocks->showBlock('register','security').'</aside>';
 }
+if($this->getVar('contributionPage',false)){$layout->setNumColumns(1);$sidebar='';}
 $layout->setLeftColumnContent($sidebar);$layout->setMiddleColumnContent('<main class="chisimba-structural-main payment-main">'.$this->getContent().'</main>');echo $layout->show();
 ?>

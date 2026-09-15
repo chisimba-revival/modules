@@ -6,6 +6,7 @@ $fields = array(
     'product_id' => array('type' => 'text', 'length' => 32, 'notnull' => TRUE),
     'version_code' => array('type' => 'text', 'length' => 64, 'notnull' => TRUE),
     'amount_minor' => array('type' => 'integer', 'notnull' => TRUE),
+    'vat_minor' => array('type' => 'integer', 'notnull' => TRUE, 'default' => 0),
     'currency' => array('type' => 'text', 'length' => 3, 'notnull' => TRUE),
     'effective_from' => array('type' => 'timestamp', 'notnull' => TRUE),
     'effective_until' => array('type' => 'timestamp'),

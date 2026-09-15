@@ -10,9 +10,12 @@ class payment_service extends controller
         $this->user=$this->getObject('user','security');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
-    public function requiresLogin($action){return !in_array((string)$action,array('tiers','yocowebhook','paystackwebhook','pendingbuy','pendingfakecheckout','pendingreturn'),true);}
+    public function requiresLogin($action){return !in_array((string)$action,array('tiers','yocowebhook','paystackwebhook','contributions','contributebuy','contributionreturn','pendingbuy','pendingfakecheckout','pendingreturn'),true);}
     public function dispatch($action){
         switch((string)$action){
+            case 'contributions': return $this->contributions();
+            case 'contributebuy': return $this->contributions(true);
+            case 'contributionreturn': return $this->contributions(false,true);
             case 'buy': return $this->buy(); case 'fakecheckout': return $this->fakeCheckout();
             case 'pendingbuy': return $this->pendingBuy(); case 'pendingfakecheckout': return $this->pendingFakeCheckout(); case 'pendingreturn': return $this->pendingReturn();
             case 'deliverfake': return $this->deliverFake();
@@ -33,7 +36,7 @@ class payment_service extends controller
     }
     private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array('free','tier_1','tier_2') as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
     private function catalogue($message='',$error=''){
-        $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
+        $products=array_values(array_filter($this->catalog->listProducts(true),static fn($p)=>$p['purpose_type']!=='contribution')); $userId=$this->user->userId();
         $requested=$this->param('product');
         $purpose=$this->param('purpose');
         $requestedTier=$this->param('tier');
@@ -136,7 +139,7 @@ class payment_service extends controller
         $this->common($message,$error); return 'products_tpl.php';
     }
     private function createProduct(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->createProduct(array('code'=>$this->param('code'),'name'=>$this->param('name'),'purposeType'=>$this->param('purpose_type'),'purposeId'=>$this->param('purpose_id'),'billingPeriod'=>$this->param('billing_period'),'durationMonths'=>$this->param('duration_months'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
-    private function addPrice(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->addPrice($this->param('product_id'),array('versionCode'=>$this->param('version_code'),'amountMinor'=>$this->param('amount_minor'),'currency'=>$this->param('currency'),'effectiveFrom'=>$this->param('effective_from'),'effectiveUntil'=>$this->param('effective_until'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
+    private function addPrice(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->products('','invalid_request'); $result=$this->catalog->addPrice($this->param('product_id'),array('versionCode'=>$this->param('version_code'),'amountMinor'=>$this->param('amount_minor'),'vatMinor'=>$this->param('vat_minor')?:0,'currency'=>$this->param('currency'),'effectiveFrom'=>$this->param('effective_from'),'effectiveUntil'=>$this->param('effective_until'))); return $this->products($result['ok']?$result['code']:'',$result['ok']?'':$result['code']); }
     private function operations(){ if(!$this->authorization->can('payment.view')) return $this->catalogue('','no_access'); $this->setVar('paymentOperations',$this->payments->operations()); $this->common('',''); return 'operations_tpl.php'; }
     private function deliverFake(){ if(!$this->validPost()||!$this->user->isAdmin()) return $this->operations(); $this->payments->deliverDelayedFakeEvent($this->param('intent_id')); return $this->operations(); }
     private function yocoWebhook(){
@@ -153,6 +156,52 @@ class payment_service extends controller
         $accepted=!empty($result['ok'])||in_array($result['code']??'',array('invalid_provider_event','intent_not_found'),true);
         http_response_code($accepted?200:(!empty($result['retryable'])?503:403));header('Content-Type: application/json');
         echo json_encode(array('accepted'=>$accepted,'code'=>$result['code']??'webhook_failed'),JSON_UNESCAPED_SLASHES);exit;
+    }
+    /** Public contribution workflow. Session-held capabilities never appear in URLs. */
+    private function contributions($submit=false,$returned=false)
+    {
+        header('Cache-Control: no-store');header('Referrer-Policy: no-referrer');
+        $service=$this->getObject('contributionservice');$orders=$this->getObject('dbcontributions');
+        $error='';$order=null;$intent=null;
+        if(!isset($_SESSION['payment_contributions']))$_SESSION['payment_contributions']=array();
+        if($returned){
+            $id=$this->param('order');$token=$_SESSION['payment_contributions'][$id]??'';
+            $order=$orders->byToken($token);
+            if(!$order||$order['id']!==$id){http_response_code(404);$error='private';$order=null;}
+            else{$intent=$service->intentFor($order);if($intent)$this->payments->recordBrowserReturn($intent['id']);}
+        }elseif($submit){
+            if(!$this->validPost())$error='expired';
+            elseif(!$service->checkoutReady())$error='unavailable';
+            elseif(time()-(int)($_SESSION['contribution_last_attempt']??0)<20)$error='wait';
+            else{
+                $_SESSION['contribution_last_attempt']=time();
+                $token=$_SESSION['contribution_form_token']??'';
+                $result=$service->prepare($this->param('product'),$this->param('name'),$this->param('email'),$token);
+                if(empty($result['ok']))$error=$result['code'];
+                else{
+                    $order=$result['order'];$_SESSION['payment_contributions'][$order['id']]=$token;
+                    $_SESSION['payment_contributions']=array_slice($_SESSION['payment_contributions'],-10,null,true);
+                    $created=$service->createIntent($order);
+                    if(empty($created['ok']))$error='unavailable';
+                    else{
+                        $base=html_entity_decode($this->uri(array('action'=>'contributionreturn','order'=>$order['id']),'payment-service'),ENT_QUOTES,'UTF-8');
+                        if(!str_starts_with($base,'https://'))$base=rtrim($this->getObject('altconfig','config')->getSiteRoot(),'/').'/'.ltrim($base,'/');
+                        $checkout=$this->payments->startCheckout($created['intentId'],array('successUrl'=>$base,'cancelUrl'=>$base.'&outcome=cancelled','failureUrl'=>$base.'&outcome=failed'));
+                        if(!empty($checkout['approvalUrl'])){unset($_SESSION['contribution_form_token']);header('Location: '.$checkout['approvalUrl'],true,303);exit;}
+                        if(!empty($checkout['ok'])){header('Location: '.$base,true,303);exit;}
+                        $error='unavailable';
+                    }
+                }
+            }
+        }
+        if(empty($_SESSION['contribution_form_token']))$_SESSION['contribution_form_token']=bin2hex(random_bytes(32));
+        $this->setVar('contributionPage',true);$this->setVar('contributionProducts',$service->products());
+        $this->setVar('contributionReady',$service->checkoutReady());
+        $this->setVar('contributionError',$error);$this->setVar('contributionOrder',$order);$this->setVar('contributionIntent',$intent);
+        $this->setVar('contributionReturned',$returned);$this->setVar('contributionOutcome',in_array($this->param('outcome'),array('cancelled','failed'),true)?$this->param('outcome'):'');
+        $this->setVar('contributionSelected',$submit?$this->param('product'):'');
+        $this->setVar('contributionName',$submit?$this->param('name'):'');$this->setVar('contributionEmail',$submit?$this->param('email'):'');
+        $this->common('','');return 'contributions_tpl.php';
     }
     private function common($message,$error){ $provider=$this->payments->preferredProvider();$errors=array('checkout_requires_deliverable_email'=>'This account needs a real email address before it can continue to secure payment. Update the email address in My Profile, then try again.');$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$errors[$error]??$error); $this->setVar('paymentIsLoggedIn',$this->user->isLoggedIn()); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}

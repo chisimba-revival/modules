@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 
 class paymentservice extends ChisimbaObject
 {
-    private const PURPOSES = array('membership', 'private_course');
+    private const PURPOSES = array('membership', 'private_course', 'contribution');
     private const PROVIDERS = array('fake', 'yoco', 'paystack');
     private const EVENT_STATES = array(
         'payment.succeeded' => 'succeeded',
@@ -86,7 +86,8 @@ class paymentservice extends ChisimbaObject
     {
         $values = $this->normaliseIntent($input);
         if ($values === NULL) { return $this->result(FALSE, 'invalid_intent'); }
-        if ($this->users->findByUserId($values['user_id']) === NULL) { return $this->result(FALSE, 'user_not_found'); }
+        if ($values['purpose_type'] !== 'contribution' && $this->users->findByUserId($values['user_id']) === NULL) { return $this->result(FALSE, 'user_not_found'); }
+        if ($values['purpose_type'] === 'contribution' && !$this->getObject('contributionservice')->matchesIntent($values)) { return $this->result(FALSE, 'invalid_contribution'); }
         $existing = $this->intents->byIdempotency($values['idempotency_key']);
         if ($existing !== NULL) { return $this->result(TRUE, 'already_created', $existing['id']); }
         $values['id'] = bin2hex(random_bytes(16));
@@ -301,6 +302,7 @@ class paymentservice extends ChisimbaObject
 
     private function applyFulfilment(array $intent,$paymentReference)
     {
+        if($intent['purpose_type']==='contribution') return $this->getObject('contributionservice')->confirm($intent);
         if($intent['purpose_type']==='private_course') return $this->applyAutomaticAdmission($intent,$paymentReference);
         if($intent['purpose_type']!=='membership') return array('ok'=>false,'code'=>'unsupported_fulfilment');
         $product=$this->catalog->productVersion($intent['product_code'],$intent['price_version']);
@@ -325,6 +327,7 @@ class paymentservice extends ChisimbaObject
 
     private function reverseFulfilment(array $intent,$paymentReference)
     {
+        if($intent['purpose_type']==='contribution') return array('ok'=>true,'code'=>'contribution_reversal_recorded');
         try {
             if($intent['purpose_type']==='membership') return $this->getObject('membershipservice','membership-service')->endPeriodByIdempotency('payment-intent:'.$intent['id'],$intent['correlation_id']);
             if($intent['purpose_type']==='private_course') return $this->getObject('privateadmissionservice','membership-service')->revokeConfirmedPayment($intent['purpose_id'],$intent['user_id'],$paymentReference,$intent['correlation_id']);
@@ -355,7 +358,9 @@ class paymentservice extends ChisimbaObject
             'idempotency_key'=>$this->text($input['idempotencyKey'] ?? NULL,191),
             'correlation_id'=>$this->identifier($input['correlationId'] ?? NULL,64),
         );
-        return in_array(NULL,$values,TRUE) || $amount===FALSE || !preg_match('/^[A-Z]{3}$/',$values['currency']) ? NULL : $values;
+        $required=$values;
+        if($values['purpose_type']==='contribution' && empty($input['userId'])) { $values['user_id']=null; unset($required['user_id']); }
+        return in_array(NULL,$required,TRUE) || $amount===FALSE || !preg_match('/^[A-Z]{3}$/',$values['currency']) ? NULL : $values;
     }
 
     private function validEvent(array $event)
@@ -371,7 +376,7 @@ class paymentservice extends ChisimbaObject
     private function audit($type,array $intent,$outcome,array $metadata=array())
     {
         $this->accountEvents->append(array(
-            'eventType'=>$type,'subjectType'=>'user','subjectId'=>$intent['user_id'],
+            'eventType'=>$type,'subjectType'=>$intent['user_id']===null?'anonymous':'user','subjectId'=>$intent['user_id']??$intent['id'],
             'actorType'=>'service','actorId'=>'payment-service','outcome'=>$outcome,
             'correlationId'=>$intent['correlation_id'],'sourceService'=>'payment-service',
             'metadata'=>array_merge(array('intent_id'=>$intent['id'],'purpose_type'=>$intent['purpose_type'],'purpose_id'=>$intent['purpose_id'],'state'=>$intent['state']),$metadata),

@@ -10,12 +10,13 @@ class helpcontent extends ChisimbaObject
 
     public function mayViewTopic($topicId)
     {
-        return $topicId === 'payment-operations'
+        return $topicId === 'contributions' || $topicId === 'payment-operations'
             && $this->authorization->can('payment.view');
     }
 
     public function getTopic($topicId)
     {
+        if($topicId==='contributions')return array('title'=>$this->language->code2Txt('mod_payment_service_contribution_help_title','payment-service'),'summary'=>$this->language->code2Txt('mod_payment_service_contribution_help_body','payment-service'),'steps'=>array(),'sections'=>array());
         if ($topicId !== 'payment-operations') { return null; }
         $text = function ($code) {
             return $this->language->code2Txt($code, 'payment-service');
