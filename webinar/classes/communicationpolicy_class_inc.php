@@ -15,7 +15,8 @@ class communicationpolicy extends ChisimbaObject
         if(($metadata['kind']??'')==='verify')return $r['state']==='pending'&&(int)$r['expires_at']>=time()
             &&hash_equals($r['confirm_hash'],(string)($metadata['confirm_hash']??''))&&webinarschedule::canRegister($record);
         if($c['state']!=='subscribed'||$r['state']!=='confirmed')return false;
-        if(($metadata['kind']??'')==='confirmed')return true;
+        if(($metadata['kind']??'')==='confirmed')return webinarschedule::canRegister($record)
+            &&webinarschedule::start($record)->getTimestamp()===(int)($metadata['starts_at']??0);
         $start=webinarschedule::start($record);
         return in_array($metadata['kind']??'',['morning','ninety'],true)&&webinarschedule::canRegister($record)
             &&$start->getTimestamp()===(int)($metadata['starts_at']??0);

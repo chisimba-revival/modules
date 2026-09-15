@@ -70,10 +70,12 @@ class webinarregistrationservice extends ChisimbaObject
         $key='webinar:'.$registration['id'].':'.$kind.':'.($kind==='verify'?$registration['confirm_hash']:$registration['contact_revision'].':'.$start->getTimestamp());
         $existing=$this->mail->messageForKey($key);if($existing)return $existing;
         $unsubscribe=$this->url('unsubscribe',['token'=>$this->audience->unsubscribeToken($contact['id'])]);
+        $details=json_decode($record['payload'],true);
+        $joining=$kind!=='verify'&&!empty($details['joining_url'])?"\n\n".$this->text('joining_email').': '.$details['joining_url']:'';
         $values=['{title}'=>$record['title'],'{date}'=>$start->format('j F Y, H:i').' '.$start->getTimezone()->getName(),'{url}'=>$link,'{unsubscribe}'=>$unsubscribe];
         $result=$this->mail->queueEmail(['to'=>$contact['email'],'toName'=>$contact['name'],
             'subject'=>strtr($this->text('email_'.$kind.'_subject'),$values),
-            'text'=>strtr($this->text('email_'.$kind.'_body')."\n\n".$this->text('email_unsubscribe'),$values),
+            'text'=>strtr($this->text('email_'.$kind.'_body').$joining."\n\n".$this->text('email_unsubscribe'),$values),
             'idempotencyKey'=>$key,'metadata'=>['policy_module'=>'webinar','registration_id'=>$registration['id'],
                 'kind'=>$kind,'revision'=>(int)$registration['contact_revision'],'confirm_hash'=>$registration['confirm_hash'],
                 'starts_at'=>$start->getTimestamp()]]);

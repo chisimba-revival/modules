@@ -7,7 +7,7 @@ class webinarschedule extends ChisimbaObject
     public static function start(array $record)
     {
         $data=json_decode($record['payload'],true);
-        if(!is_array($data)||empty($data['timezone']))return null;
+        if(!is_array($data)||empty($data['timezone'])||empty($record['presented_at']))return null;
         try{return new DateTimeImmutable($record['presented_at'],new DateTimeZone($data['timezone']));}
         catch(Throwable $e){return null;}
     }

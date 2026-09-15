@@ -20,6 +20,7 @@ class webinar extends controller
     {
         if($this->param('action')===''&&($_SERVER['REQUEST_METHOD']??'GET')==='GET')return $this->nextAction('upcoming');
         $action=$this->param('action')?:'upcoming';
+        if(in_array($action,['manage','edit','save','preview','tag_suggestions','editor_aux'],true))return $this->editorAction($action);
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
         if($action==='recordings')return $this->recordings();
         if($action==='notice'){
@@ -34,6 +35,61 @@ class webinar extends controller
         }
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
+    }
+    /** Authenticated editor, with identical permission/CSRF checks for native and Ajax forms. */
+    private function editorAction($action)
+    {
+        header('Cache-Control: private, no-store');
+        $service=$this->getObject('webinareditservice','webinar');
+        if(!$service->allowed()){http_response_code(404);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+        $id=$this->param('id');$record=$id!==''?$service->read($id):null;
+        if($id!==''&&!$record){http_response_code(404);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+        $kind=$record['kind']??($this->param('kind')==='speaker'?'speaker':'webinar');
+        $this->setVar('webinarEditKind',$kind);$this->setVar('webinarEditRecord',$record);
+        if($action==='manage')return 'manage_tpl.php';
+        if($action==='preview'){
+            if(!$record){http_response_code(404);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+            return 'preview_tpl.php';
+        }
+        if($action==='tag_suggestions'){
+            $terms=$service->classification()->creationChoices('webinar','site','site','tag');$q=mb_strtolower($this->param('q'));
+            $names=array_column(array_slice(array_values(array_filter($terms,fn($t)=>$q===''||str_contains(mb_strtolower($t['name']),$q))),0,20),'name');
+            header('Content-Type: application/json; charset=UTF-8');echo json_encode(['tags'=>$names],JSON_THROW_ON_ERROR);exit;
+        }
+        $error='';$aux=null;$saved=null;
+        if(in_array($action,['save','editor_aux'],true)){
+            $input=[];foreach(['title','description','image','image_alt','status','starts_at','ends_at','timezone','recording','joining_url','tags','version','create_id','registration_open','cancelled'] as $key)$input[$key]=$this->param($key);
+            $input['status']=$this->param('publish_action')?:$input['status'];
+            $input['categories']=$this->getParam('categories',[]);$input['speakers']=$this->getParam('speakers',[]);
+            $this->setVar('webinarEditInput',$input);
+            if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST')$error='editor_invalid';
+            elseif($this->param('editor_complete')!=='1')$error='editor_invalid';
+            elseif(!$this->csrf()->consume('webinar-editor',$this->param('csrf_token')))$error='session_expired';
+            else try{
+                if($action==='save'){$saved=$service->save($id,$kind,$input);$record=$saved;$this->setVar('webinarEditRecord',$record);$this->setVar('webinarEditInput',null);}
+                elseif($this->param('operation')==='category_add'){
+                    $term=$service->classification()->saveTerm('site','site','category',$this->param('category_name'),'',$this->param('category_parent'));
+                    $aux=['kind'=>'category','id'=>$term['id'],'name'=>$term['name']];$input['categories']=is_array($input['categories'])?$input['categories']:[];$input['categories'][]=$term['id'];
+                }elseif($this->param('operation')==='speaker_add'){
+                    $speaker=$service->save('','speaker',['title'=>$this->param('speaker_name'),'description'=>$this->param('speaker_bio'),'image'=>'','image_alt'=>'','status'=>'published','create_id'=>$this->param('aux_create_id')]);
+                    $aux=['kind'=>'speaker','id'=>$speaker['id'],'name'=>$speaker['title']];$input['speakers']=is_array($input['speakers'])?$input['speakers']:[];$input['speakers'][]=$speaker['id'];
+                }else throw new DomainException('editor_invalid');
+                if($aux){$aux['next_id']=bin2hex(random_bytes(16));$this->setVar('webinarEditInput',$input);}
+            }catch(DomainException $e){$error=$e->getMessage();}
+            catch(Throwable $e){$error='editor_save_failed';}
+        }
+        $allowed=['editor_invalid','editor_forbidden','editor_conflict','editor_date','editor_end','editor_url','editor_recording','editor_speaker','editor_description','editor_save_failed','session_expired'];
+        if($error!==''&&!in_array($error,$allowed,true))$error=str_starts_with($error,'classification_')?'editor_classification':'editor_invalid';
+        $csrf=$this->csrf()->issue('webinar-editor');$this->setVar('webinarEditCsrf',$csrf);$this->setVar('webinarEditError',$error);
+        if($this->param('ajax')==='1'&&in_array($action,['save','editor_aux'],true)){
+            $r=$this->getObject('webinarrenderer','webinar');header('Content-Type: application/json; charset=UTF-8');
+            if($error!=='')http_response_code($error==='editor_conflict'?409:422);
+            $result=['ok'=>$error==='','csrf'=>$csrf,'message'=>$r->text($error?:($aux?'editor_added':'editor_saved')),'aux'=>$aux];
+            if($saved)$result+=['id'=>$saved['id'],'version'=>webinareditservice::version($saved),'edit'=>html_entity_decode($this->uri(['action'=>'edit','id'=>$saved['id']],'webinar'),ENT_QUOTES,'UTF-8'),'preview'=>html_entity_decode($this->uri(['action'=>'preview','id'=>$saved['id']],'webinar'),ENT_QUOTES,'UTF-8')];
+            echo json_encode($result,JSON_THROW_ON_ERROR);exit;
+        }
+        if($saved)return $this->nextAction('edit',['id'=>$saved['id'],'saved'=>'1']);
+        return 'editor_tpl.php';
     }
     /** JSON is a public read-only enhancement of the same paginated page. */
     private function recordings()

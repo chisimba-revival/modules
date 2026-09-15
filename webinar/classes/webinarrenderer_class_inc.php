@@ -5,7 +5,7 @@ class webinarrenderer extends ChisimbaObject
 {
  public function init(){$this->loadClass('webinarschedule','webinar');}
  public static function escape($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
- public function text($key){return $this->getObject('language','language')->code2Txt('mod_webinar_'.$key,'webinar');}
+ public function text($key){return ucfirst($this->getObject('language','language')->code2Txt('mod_webinar_'.$key,'webinar'));}
  public function button($label,$icon,$params){return '<a class="button" href="'.self::escape($this->uri($params,'webinar')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($label)).'</span></a>';}
  public function data($r){return json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);}
  public function image($url,$alt){return $url?'<img src="'.self::escape($url).'" alt="'.self::escape($alt).'" style="display:block;width:100%;height:auto;object-fit:contain" loading="lazy">':'';}
@@ -54,8 +54,10 @@ class webinarrenderer extends ChisimbaObject
   }
   return $html.'</div>'.$dialogs;
  }
- public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
+ public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
   $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);
+  $html.=$this->getObject('webinarclassificationui','webinar')->detail($r);
+  if($this->getObject('webinareditpolicy','webinar')->canManage())$html.=$this->button('edit','pencil',['action'=>'edit','id'=>$r['id']]);
   $html.=$booking;
   $store=$this->getObject('webinarstore');
   if($r['kind']==='webinar'){

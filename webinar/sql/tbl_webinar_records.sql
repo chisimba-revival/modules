@@ -1,7 +1,7 @@
 <?php
 /** Webinar-owned archive and speaker records, with immutable source identity. @author Derek Keats */
 $tablename='tbl_webinar_records';
-$options=['comment'=>'Webinar archive records','collate'=>'utf8_general_ci','character_set'=>'utf8'];
+$options=['comment'=>'Webinar archive records','type'=>'InnoDB','collate'=>'utf8mb4_unicode_ci','charset'=>'utf8mb4'];
 $fields=[
  'id'=>['type'=>'text','length'=>32,'notnull'=>true],
  'kind'=>['type'=>'text','length'=>16,'notnull'=>true],
@@ -12,4 +12,4 @@ $fields=[
  'presented_at'=>['type'=>'text','length'=>32],
  'payload'=>['type'=>'clob','notnull'=>true]
 ];
-$tableIndexes=['webinar_primary'=>['primary'=>true,'fields'=>['id'=>[]]],'webinar_source'=>['unique'=>true,'fields'=>['source_key'=>[]]]];
+$tableIndexes=['webinar_id_unique'=>['unique'=>true,'fields'=>['id'=>[]]],'webinar_primary'=>['primary'=>true,'fields'=>['id'=>[]]],'webinar_source'=>['unique'=>true,'fields'=>['source_key'=>[]]]];
