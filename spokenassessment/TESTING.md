@@ -5,6 +5,10 @@ Target: **Chisimba / KengaLearn**, not Learn-the-Birds. Work is on isolated
 
 ## Passed
 
+- Expanded contextual Help: learner and teaching sections, registered language items,
+  unknown-topic and non-member denial verified with `tests/help_test.php`. The shared
+  drawer is unchanged; opening and Escape were covered by the earlier browser run.
+
 - Both schemas exercised through the corrected table-creation helper with temporary
   tables: fields and unique identity constraints verified, temporary tables removed.
   Regression verifies explicit unique declarations use the constraint API, ordinary

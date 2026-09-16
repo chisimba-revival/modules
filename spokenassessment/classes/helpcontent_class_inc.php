@@ -12,8 +12,19 @@ class helpcontent extends ChisimbaObject
     {
         if (!$this->mayViewTopic($topic)) return null;
         $r=$this->getObject('spokenrenderer');
+        $sections=[];
+        foreach (['recording','corrections','recovery','privacy','availability'] as $key) {
+            $sections[]=['heading'=>$r->text('help_heading_'.$key),'body'=>$r->text('help_'.$key)];
+        }
+        $userId=(string)$this->getObject('user','security')->userId();
+        $context=(string)$this->getObject('dbcontext','context')->getContextCode();
+        if ($this->getObject('spokenpolicy')->teacher($userId,$context)) {
+            foreach (['create','review','snapshots'] as $key) {
+                $sections[]=['heading'=>$r->text('help_heading_'.$key),'body'=>$r->text('help_'.$key)];
+            }
+        }
         return ['title'=>$r->text('help_title'),'summary'=>$r->text('formative'),
-            'steps'=>[$r->text('help_create'),$r->text('help_speak'),$r->text('help_transcript'),$r->text('help_feedback'),$r->text('help_retry')],
-            'sections'=>[['heading'=>$r->text('privacy'),'body'=>$r->text('help_privacy')],['heading'=>$r->text('availability'),'body'=>$r->text('help_availability')]]];
+            'steps'=>[$r->text('help_speak'),$r->text('help_transcript'),$r->text('help_feedback'),$r->text('help_retry')],
+            'sections'=>$sections];
     }
 }

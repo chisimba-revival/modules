@@ -12,7 +12,11 @@ Install Spoken assessment through Module Catalogue, then enter a course and open
 Spoken assessment from the assessment tools. Direct local route:
 `index.php?module=spokenassessment` (an active course and membership are required).
 The page identifies the active course. Its Help button explains both teaching and
-learner journeys, including privacy and unavailable automatic processing.
+learner journeys, including privacy and unavailable automatic processing. The compact
+Help drawer includes recording limits, faithful transcript correction, upload recovery
+and the difference between retrying processing and making a new attempt. Teaching
+guidance appears only for the course teaching team and administrators. Escape closes
+the drawer and returns focus to its button.
 
 An instructor creates a prompt and learning outcomes, optionally chooses a rubric
 belonging to the course, and publishes the activity. A learner can record in the
