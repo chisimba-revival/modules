@@ -53,7 +53,7 @@ class rubricservice extends ChisimbaObject
 
             $rubrics[] = array(
                 'id' => $record['id'],
-                'contextCode' => isset($record['contextCode']) ? $record['contextCode'] : $contextCode,
+                'contextCode' => $record['contextCode'] ?? $record['contextcode'] ?? $contextCode,
                 'title' => isset($record['title']) ? $record['title'] : '',
                 'description' => isset($record['description']) ? $record['description'] : '',
                 'rows' => isset($record['rows']) ? (int) $record['rows'] : 0,
@@ -85,7 +85,7 @@ class rubricservice extends ChisimbaObject
 
         return array(
             'id' => $record['id'],
-            'contextCode' => isset($record['contextCode']) ? $record['contextCode'] : '',
+            'contextCode' => $record['contextCode'] ?? $record['contextcode'] ?? '',
             'title' => isset($record['title']) ? $record['title'] : '',
             'description' => isset($record['description']) ? $record['description'] : '',
             'rows' => isset($record['rows']) ? (int) $record['rows'] : 0,
