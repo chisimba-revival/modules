@@ -29,7 +29,44 @@ class kanban extends controller
     private function saveproject(){if(!$this->validPost())return $this->index('','Your session expired. Please try again.');$id=$this->id('boardid');$title=mb_substr($this->param('title'),0,255);if($title==='')return $this->index('','A board title is required.');if($id!==''){$board=$this->service->board($id,'manage');if(!$board)return $this->forbidden();$this->boards->saveBoard($id,array('title'=>$title,'description'=>$this->text('description')));}else{$scope=$this->requestedScope();if(!$this->auth->canCreate($scope['type'],$scope['id']))return $this->forbidden();$this->boards->createBoard(array('scopetype'=>$scope['type'],'scopeid'=>$scope['id'],'ownerid'=>$this->user->userId(),'title'=>$title,'description'=>$this->text('description'),'sortorder'=>time()));}return $this->index('Board saved.');}
     private function archiveproject(){return $this->boardMutation(function($b){return $this->boards->saveBoard($b['id'],array('isarchived'=>empty($b['isarchived'])?1:0));},'Board archive state updated.');}
     private function deleteproject(){return $this->boardMutation(function($b){foreach($this->tasks->forBoard($b['id']) as $task)$this->subtasks->removeForTask($task['id']);$this->tasks->removeForBoard($b['id']);$this->access->removeForBoard($b['id']);return $this->boards->removeBoard($b['id']);},'Board deleted.');}
-    private function savetask(){if(!$this->validPost())return $this->index('','Your session expired.');$id=$this->id('taskid');$board=$this->service->board($this->id('boardid'),'edit');$title=mb_substr($this->param('title'),0,255);if(!$board||$title==='')return $this->forbidden();$data=array('title'=>$title,'description'=>$this->text('description'),'notes'=>$this->text('notes'));if($id!==''){$task=$this->tasks->one($id);if(!$task||$task['boardid']!==$board['id'])return $this->forbidden();$this->tasks->saveTask($id,$data);}else{$data+=array('boardid'=>$board['id'],'status'=>'not_started','sortorder'=>time());$this->tasks->createTask($data);}return $this->index('Task saved.');}
+    private function savetask(){
+        $json=$this->param('response')==='json';
+        if(!$this->validPost())return $json?$this->json(false,'Your session expired. Sign in again before retrying.',403):$this->index('','Your session expired.');
+        $id=$this->id('taskid');
+        $board=$this->service->board($this->id('boardid'),'edit');
+        if(!$board)return $json?$this->json(false,'You do not have permission for that board.',403):$this->forbidden();
+        $title=mb_substr($this->param('title'),0,255);
+        if($title==='')return $json?$this->json(false,'A task title is required.',422):$this->index('','A task title is required.');
+        $data=array('title'=>$title,'description'=>$this->text('description'),'notes'=>$this->text('notes'));
+        if($id!==''){
+            $task=$this->tasks->one($id);
+            if(!$task||$task['boardid']!==$board['id'])return $json?$this->json(false,'You do not have permission for that task.',403):$this->forbidden();
+            $saved=$this->tasks->saveTask($id,$data);
+        }else{
+            $data+=array('boardid'=>$board['id'],'status'=>'not_started','sortorder'=>time());
+            $id=$this->tasks->createTask($data);
+            $saved=$id!==false;
+        }
+        if(!$saved)return $json?$this->json(false,'The task could not be saved. Your text has been kept.',500):$this->index('','The task could not be saved.');
+        if($json){
+            $task=$this->tasks->one($id);
+            $task['subtasks']=$this->subtasks->forTask($id);
+            return $this->json(true,'Task added.',200,array('taskHtml'=>$this->taskCard($task,$board)));
+        }
+        return $this->index('Task saved.');
+    }
+    private function taskCard($task,$board){
+        $e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+        $url=fn($params=array())=>html_entity_decode($this->uri($params,'kanban'),ENT_QUOTES,'UTF-8');
+        // The JSON response supplies the fresh token; the client fills every form.
+        $scope=$this->requestedScope()['type'];
+        $hidden=fn($boardId='')=>'<input type="hidden" name="csrf_token" value=""/><input type="hidden" name="scope" value="'.$e($scope).'"/><input type="hidden" name="boardid" value="'.$e($boardId).'"/>';
+        $edit=true;$status=$task['status'];
+        $labels=array('not_started'=>'Not started','in_progress'=>'In progress','completed'=>'Completed');
+        ob_start();
+        try { include __DIR__.'/templates/content/task_card_tpl.php'; return ob_get_contents(); }
+        finally { ob_end_clean(); }
+    }
     private function deletetask(){if(!$this->validPost())return $this->index('','Your session expired.');$task=$this->tasks->one($this->id('taskid'));if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeForTask($task['id']);$this->tasks->removeTask($task['id']);return $this->index('Task deleted.');}
     private function movetask(){if(!$this->validPost())return $this->json(false,'Your session expired.',403);$task=$this->tasks->one($this->id('taskid'));$status=$this->param('status');if(!$task||!in_array($status,array('not_started','in_progress','completed'),true)||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);$this->tasks->saveTask($task['id'],array('status'=>$status,'sortorder'=>(int)$this->param('sortorder')));return $this->param('response')==='json'?$this->json(true,'Task moved.'):$this->index('Task moved.');}
     private function savesubtask(){if(!$this->validPost())return $this->index('','Your session expired.');$task=$this->tasks->one($this->id('taskid'));$title=$this->text('title');if(!$task||$title===''||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->createSubtask($task['id'],$title,time());return $this->index('Subtask added.');}
@@ -40,7 +77,7 @@ class kanban extends controller
     private function boardMutation($callback,$message){if(!$this->validPost())return $this->index('','Your session expired.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();$callback($board);return $this->index($message);}
     private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function forbidden(){http_response_code(403);return $this->index('','You do not have permission for that board.');}
-    private function json($ok,$message,$status=200){if(!headers_sent()){header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');http_response_code($status);}echo json_encode(array('ok'=>$ok,'message'=>$message,'csrfToken'=>$this->csrf->issueForSession(self::CSRF)),JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
+    private function json($ok,$message,$status=200,$extra=array()){if(!headers_sent()){header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');http_response_code($status);}echo json_encode(array_merge($extra,array('ok'=>$ok,'message'=>$message,'csrfToken'=>$this->csrf->issueForSession(self::CSRF))),JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
     private function param($name){$v=$this->getParam($name,'');return is_scalar($v)?trim((string)$v):'';}
     private function text($name){return mb_substr($this->param($name),0,10000);}
     private function id($name){$v=$this->param($name);return preg_match('/^[a-f0-9]{32}$/',$v)?$v:'';}

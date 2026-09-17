@@ -3,6 +3,31 @@
     var root = document.querySelector('[data-kanban]');
     if (!root) return;
     var dragged = null;
+    var pendingPost = Promise.resolve();
+    root.querySelectorAll('.kanban-board').forEach(function (board) {
+        try { setCollapsed(board, sessionStorage.getItem('kanban:collapsed:' + board.dataset.boardId) === '1'); }
+        catch (error) { /* Storage may be disabled; in-page state still works. */ }
+    });
+
+    function setCollapsed(board, collapsed) {
+        board.classList.toggle('is-collapsed', collapsed);
+        var toggle = board.querySelector('[data-board-toggle]');
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggle.querySelector('[data-board-toggle-label]').textContent = collapsed ? 'Expand' : 'Collapse';
+    }
+    root.querySelectorAll('.kanban-task').forEach(function (task) {
+        try { setTaskCollapsed(task, sessionStorage.getItem('kanban:task-collapsed:' + task.dataset.taskId) === '1'); }
+        catch (error) { /* In-page collapse still works without storage. */ }
+    });
+
+    function setTaskCollapsed(task, collapsed) {
+        task.classList.toggle('is-collapsed', collapsed);
+        var toggle = task.querySelector('[data-task-toggle]');
+        var label = collapsed ? 'Expand' : 'Collapse';
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggle.setAttribute('aria-label', label + ' task: ' + task.querySelector('h4').textContent);
+        toggle.textContent = label;
+    }
     var fullscreenButton = root.querySelector('[data-kanban-fullscreen]');
 
     if (fullscreenButton && root.requestFullscreen) {
@@ -24,6 +49,10 @@
     document.addEventListener('submit', function (event) {
         var message = event.target.getAttribute('data-confirm');
         if (message && !window.confirm(message)) event.preventDefault();
+        if (!event.defaultPrevented && event.target.matches('[data-task-create]')) {
+            event.preventDefault();
+            createTask(event.target);
+        }
         if (!event.defaultPrevented && event.target.matches('[data-task-move]')) {
             event.preventDefault();
             var form = event.target;
@@ -45,12 +74,22 @@
         }
     });
     root.addEventListener('click', function (event) {
+        var taskToggle = event.target.closest('[data-task-toggle]');
+        if (taskToggle) {
+            var task = taskToggle.closest('.kanban-task');
+            var taskCollapsed = !task.classList.contains('is-collapsed');
+            setTaskCollapsed(task, taskCollapsed);
+            try { sessionStorage.setItem('kanban:task-collapsed:' + task.dataset.taskId, taskCollapsed ? '1' : '0'); }
+            catch (error) { /* Keep the control usable without storage. */ }
+            return;
+        }
         var toggle = event.target.closest('[data-board-toggle]');
         if (!toggle) return;
         var board = toggle.closest('.kanban-board');
-        var collapsed = board.classList.toggle('is-collapsed');
-        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        toggle.querySelector('[data-board-toggle-label]').textContent = collapsed ? 'Expand' : 'Collapse';
+        var collapsed = !board.classList.contains('is-collapsed');
+        setCollapsed(board, collapsed);
+        try { sessionStorage.setItem('kanban:collapsed:' + board.dataset.boardId, collapsed ? '1' : '0'); }
+        catch (error) { /* Keep the control usable without storage. */ }
     });
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
@@ -89,25 +128,65 @@
         post(url.toString(), {subtaskid: event.target.dataset.subtaskId, completed: event.target.checked ? '1' : '0'});
     });
 
-    function moveTask(task, column) {
-        var oldColumn = task.closest('.kanban-column');
-        if (!oldColumn || oldColumn === column) return;
-        column.querySelector('.kanban-task-list').appendChild(task);
-        var board = column.closest('.kanban-board');
-        [oldColumn, column].forEach(function (item) {
-            item.querySelector('[data-column-count]').textContent = item.querySelectorAll('.kanban-task').length;
+    function createTask(form) {
+        if (form.dataset.saving === 'true') return;
+        var board = form.closest('.kanban-board');
+        var feedback = form.querySelector('[data-task-feedback]');
+        var fields = Array.from(form.querySelectorAll('input, textarea, button'));
+        var data = new URLSearchParams(new FormData(form));
+        var title = form.elements.title.value;
+        form.dataset.saving = 'true';
+        form.setAttribute('aria-busy', 'true');
+        fields.forEach(function (field) { field.disabled = true; });
+        feedback.textContent = 'Adding task…';
+        post(form.action, data, function (result) {
+            var fragment = document.createElement('template');
+            fragment.innerHTML = result.taskHtml;
+            var task = fragment.content.querySelector('.kanban-task');
+            if (!task) throw new Error('Missing saved task');
+            board.querySelector('.kanban-column[data-status="not_started"] .kanban-task-list').appendChild(task);
+            refreshBoardCounts(board);
+            form.reset();
+            refreshTokens();
+            feedback.textContent = 'Added “' + title + '”. Ready for the next task.';
+        }, function (message) {
+            feedback.textContent = message;
+        }).finally(function () {
+            fields.forEach(function (field) { field.disabled = false; });
+            delete form.dataset.saving;
+            form.removeAttribute('aria-busy');
+            // Do not pull focus away from another project the user has opened.
+            if (document.activeElement === document.body || form.contains(document.activeElement)) {
+                form.elements.title.focus({preventScroll: true});
+            }
         });
+    }
+
+    function refreshBoardCounts(board) {
+        var total = board.querySelectorAll('.kanban-task').length;
+        board.dataset.taskTotal = total;
+        board.classList.toggle('kanban-board--empty', total === 0);
+        board.querySelector('[data-board-total]').textContent = total + (total === 1 ? ' task' : ' tasks');
         ['not_started', 'in_progress', 'completed'].forEach(function (status) {
-            var count = board.querySelector('.kanban-column[data-status="' + status + '"]').querySelectorAll('.kanban-task').length;
+            var column = board.querySelector('.kanban-column[data-status="' + status + '"]');
+            var count = column.querySelectorAll('.kanban-task').length;
+            column.querySelector('[data-column-count]').textContent = count;
             var label = status === 'not_started' ? ' not started' : (status === 'in_progress' ? ' in progress' : ' completed');
             board.querySelector('[data-board-status="' + status + '"]').textContent = count + label;
         });
-        var total = Number(board.dataset.taskTotal) || 0;
         var completed = board.querySelector('.kanban-column[data-status="completed"]').querySelectorAll('.kanban-task').length;
         var percentage = total ? Math.round(completed / total * 100) : 0;
         board.querySelector('[data-board-progress]').textContent = percentage + '% complete';
         board.querySelector('[data-board-progress-label]').textContent = percentage + '%';
         board.querySelector('progress').value = percentage;
+    }
+
+    function moveTask(task, column) {
+        var oldColumn = task.closest('.kanban-column');
+        if (!oldColumn || oldColumn === column) return;
+        column.querySelector('.kanban-task-list').appendChild(task);
+        refreshBoardCounts(oldColumn.closest('.kanban-board'));
+        refreshBoardCounts(column.closest('.kanban-board'));
         refreshMoveControls(task, column.dataset.status);
     }
 
@@ -166,17 +245,31 @@
         });
     }
 
-    function post(url, data, onSuccess) {
-        var body = new URLSearchParams(data);
-        body.set('csrf_token', root.dataset.csrf);
-        body.set('scope', root.dataset.scope);
-        body.set('response', 'json');
-        fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body: body.toString()})
-            .then(function (response) { return response.json(); })
-            .then(function (result) {
-                if (result.csrfToken) root.dataset.csrf = result.csrfToken;
-                if (!result.ok) window.alert(result.message || 'The board could not be updated.');
-                else if (onSuccess) onSuccess(result);
-            }).catch(function () { window.alert('The board could not be updated. Reload and try again.'); });
+    function refreshTokens() {
+        root.querySelectorAll('input[name="csrf_token"]').forEach(function (input) {
+            input.value = root.dataset.csrf;
+        });
+    }
+
+    function post(url, data, onSuccess, onError) {
+        // Serialize mutations so rapid entry in different projects cannot reuse a token.
+        pendingPost = pendingPost.then(function () {
+            var body = new URLSearchParams(data);
+            body.set('csrf_token', root.dataset.csrf);
+            body.set('scope', root.dataset.scope);
+            body.set('response', 'json');
+            return fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body: body.toString()})
+                .then(function (response) { return response.json(); })
+                .then(function (result) {
+                    if (result.csrfToken) root.dataset.csrf = result.csrfToken;
+                    refreshTokens();
+                    if (!result.ok) {
+                        (onError || window.alert)(result.message || 'The board could not be updated.');
+                    } else if (onSuccess) onSuccess(result);
+                }).catch(function () {
+                    (onError || window.alert)('Could not confirm the save. Your text is kept; check the board before retrying to avoid a duplicate.');
+                });
+        });
+        return pendingPost;
     }
 }());
