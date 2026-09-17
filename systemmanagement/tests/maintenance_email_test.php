@@ -13,7 +13,9 @@ class ChisimbaObject
 }
 class controller extends ChisimbaObject
 {
-    public $parameters=array();public $variables=array();
+    public $parameters=array();public $variables=array();public $session=array();
+    public function getSession($key,$default=null){return $this->session[$key]??$default;}
+    public function setSession($key,$value){$this->session[$key]=$value;}
     public function getParam($name,$default=''){return $this->parameters[$name]??$default;}
     public function setVar($name,$value){$this->variables[$name]=$value;}
     public function uri($parameters,$module){return '/index.php?module='.$module.'&'.http_build_query($parameters);}
@@ -28,7 +30,7 @@ $GLOBALS['maintenanceTestLanguage']=new class {
 require dirname(__DIR__).'/classes/systemmanagementmailer_class_inc.php';
 require dirname(__DIR__).'/controller.php';
 function check($ok,$label){if(!$ok)throw new RuntimeException('FAIL: '.$label);echo 'PASS: '.$label.PHP_EOL;}
-function inject($object,$property,$value){(new ReflectionProperty($object,$property))->setValue($object,$value);}
+function inject($object,$property,$value){(new ReflectionProperty($object instanceof systemmanagement?systemmanagement::class:$object,$property))->setValue($object,$value);}
 function fixture($emails=array('first@example.test','second@example.test'))
 {
     $clock=new class {public $formatted=array();function formatDateTime($value){$this->formatted[]=$value;return 'formatted '.$value;}function storageToLocal($value){return $value;}};
@@ -41,13 +43,14 @@ function fixture($emails=array('first@example.test','second@example.test'))
     inject($mailer,'config',new class{function getValue($name,$module){return array('COMMUNICATION_TRANSPORT'=>'sendgrid','COMMUNICATION_FROM_EMAIL'=>'sender@example.test','COMMUNICATION_SENDGRID_API_KEY'=>'test-only-never-used')[$name]??'';}});
     return array($mailer,$queue,$clock);
 }
-function consoleFixture($mailer,array $maintenance=array(),$validCsrf=true)
+function consoleFixture($mailer,array $maintenance=array(),$validCsrf=true,$class='systemmanagement')
 {
-    $console=new systemmanagement();
+    $console=new $class();
     inject($console,'mailer',$mailer);
-    inject($console,'service',new class($maintenance){private $plan;function __construct($plan){$this->plan=array_merge(array('start'=>'','end'=>'','active'=>false,'message'=>'Existing offline notice'),$plan);}function maintenance(){return $this->plan;}function storageToLocal($value){return $value;}});
-    inject($console,'user',new class{function isAdmin(){return true;}});
+    inject($console,'service',new class($maintenance){private $plan;function __construct($plan){$this->plan=array_merge(array('start'=>'','end'=>'','active'=>false,'message'=>'Existing offline notice'),$plan);}function maintenance(){return $this->plan;}function storageToLocal($value){return $value;}function localToStorage($value){return $value;}});
+    inject($console,'user',new class{function isAdmin(){return true;}function userId(){return "test-admin";}});
     inject($console,'csrf',new class($validCsrf){private $valid;function __construct($valid){$this->valid=$valid;}function consume($context,$token){return $this->valid;}function issue($context){return 'fresh-token';}});
+    inject($console,'config',new class{function changeParam($name,$module,$value){}function setProperties($module){}});
     inject($console,'clock',new stdClass());
     $console->parameters=array('audience'=>'lecturers','subject'=>'Emergency upgrade','email_message'=>"Keep this draft.\nSecond line.");
     $_SERVER['REQUEST_METHOD']='POST';return $console;
@@ -79,3 +82,39 @@ foreach(array('csrf','required','length','empty_audience','queue_failure','parti
     if(in_array($case,array('partial_failure','uncertain'),true))check(count($queue->items)===1&&str_contains($error,'Confirmed queued: 1 of 2')&&str_contains($error,'before retrying'),'partial or uncertain result reports confirmed count and avoids claiming nothing queued');
     else check(count($queue->items)===0&&(str_contains(strtolower($error),'did not queue')||str_contains($error,'No maintenance email was queued')),'rejected submission explicitly reports no mail queued');
 }
+
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer);
+$draft=array('audience'=>'admins','subject'=>'  Planned work  ','message'=>"Keep my exact words.\nSecond line.");
+$console->parameters=array('kind'=>'maintenance','start'=>'2026-09-14T16:00','end'=>'2026-09-14T17:00','message'=>'Offline notice','email_draft'=>$draft);
+$console->dispatch('save');
+check($console->variables['systemEmailDraft']===$draft&&count($queue->items)===0,'saving maintenance dates retains exact email draft without queueing');
+$console->parameters=array();$_SERVER['REQUEST_METHOD']='GET';$console->dispatch('');
+check($console->variables['systemEmailDraft']===$draft,'subsequent GET restores signed-in draft');
+$console->parameters=array('subject'=>'Unfinished','email_message'=>'','audience'=>'admins');$_SERVER['REQUEST_METHOD']='POST';$console->dispatch('saveemaildraft');
+check($console->variables['systemEmailDraft']['message']===''&&count($queue->items)===0,'explicit save accepts unfinished drafts and never sends');
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer);$console->dispatch('sendmaintenanceemail');
+check($console->variables['systemEmailDraftState']==='queued','queue success remains visibly distinguished from draft');
+$saved=$console->variables['systemEmailDraft'];$console->parameters=array('kind'=>'maintenance','email_draft'=>$saved);$console->dispatch('save');
+check($console->variables['systemEmailDraftState']==='queued'&&count($queue->items)===2,'saving unchanged draft with plan retains queue status and does not resend');
+$console->parameters['email_draft']['message']='Changed text';$console->dispatch('save');
+check($console->variables['systemEmailDraftState']==='draft','editing queued text creates a draft state');
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer,array(),false);$console->parameters=array('kind'=>'maintenance','email_draft'=>$draft);$console->dispatch('save');
+check($console->session===array()&&count($queue->items)===0,'invalid CSRF cannot overwrite saved draft or send email');
+
+check($console->variables['systemEmailDraft']===$draft,'expired CSRF redisplays carried draft without persisting it');
+
+class AjaxMaintenanceConsole extends systemmanagement
+{
+    protected function jsonResponse(array $payload,$status=200){return array('status'=>$status,'body'=>$payload);}
+}
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer,array(),true,'AjaxMaintenanceConsole');
+$console->parameters=array('response'=>'json','kind'=>'maintenance','start'=>'2026-09-14T16:00','end'=>'2026-09-14T17:00','email_draft'=>$draft);
+$result=$console->dispatch('save')['body'];
+check($result['ok']&&$result['csrf']==='fresh-token'&&isset($result['maintenance']['nextState'])&&$queue->items===array(),'Ajax plan response renews token and supplies state without sending');
+check(!isset($result['draft'])&&!str_contains(json_encode($result),$draft['message']),'Ajax response does not repeat private draft contents');
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer,array(),false,'AjaxMaintenanceConsole');$console->parameters['response']='json';$result=$console->dispatch('saveemaildraft')['body'];
+check(!$result['ok']&&$result['csrf']==='fresh-token'&&$queue->items===array(),'Ajax invalid token gives inline error and fresh token without mail');
+[$mailer,$queue]=fixture();$console=consoleFixture($mailer,array(),true,'AjaxMaintenanceConsole');$console->parameters['response']='json';$result=$console->dispatch('sendmaintenanceemail')['body'];
+check($result['ok']&&$result['draftState']==='queued'&&count($queue->items)===2,'Ajax email reports queued through the same tested mail service');
+$console=consoleFixture($mailer,array(),true,'AjaxMaintenanceConsole');inject($console,'user',new class{function isAdmin(){return false;}});$console->parameters['response']='json';$result=$console->dispatch('save');
+check($result['status']===403&&!isset($result['body']['deliveries']),'Ajax non-administrator receives no operational data');
