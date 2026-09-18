@@ -8,6 +8,16 @@ class workshopstore extends dbTable
     public function one($id) { $rows=$this->rows('SELECT * FROM tbl_questionworkshop_sets WHERE id='.$this->q($id)); return $rows[0]??null; }
     public function owned($owner,$page=1)
     { return $this->rows('SELECT * FROM tbl_questionworkshop_sets WHERE ownerid='.$this->q($owner).' ORDER BY datemodified DESC,id DESC LIMIT '.((max(1,min(10000,(int)$page))-1)*20).',21') ?: []; }
+    /** Lightweight chapter picker in natural title order; do not load chapter source text. */
+    public function examChapters($owner,$page=1)
+    {
+        $rows=$this->rows("SELECT id,title,reviewed FROM tbl_questionworkshop_sets WHERE ownerid=".$this->q($owner)." AND state='generated' AND questions_json<>'[]'");
+        usort($rows,static function($a,$b){
+            $normal=static fn($title)=>preg_replace('/[-_\s]+/u',' ',$title);
+            return strnatcasecmp($normal($a['title']),$normal($b['title']))?:strcmp($a['id'],$b['id']);
+        });
+        return array_slice($rows,(max(1,min(10000,(int)$page))-1)*20,21);
+    }
     public function createSet($owner,$title,$source,array $questions,$count=5)
     {
         $now=$this->getObject('timeanddateservice','timeanddate-service')->nowStorage();

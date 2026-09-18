@@ -25,6 +25,7 @@ class mcqgenerator extends controller
             header('Content-Type: application/json; charset=UTF-8');
             echo json_encode(['token'=>$this->csrf->issueForSession('mcqgenerator_write')]);exit;
         }
+        if(str_starts_with($action,'exam'))return $this->exams($action,$id,$owner);
         try {
             if(in_array($action,['create','generate','generatepart','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
@@ -95,5 +96,56 @@ class mcqgenerator extends controller
         $this->setVar('workshopPage',$page);$this->setVar('workshopSets',$row?[]:$store->owned($owner,$page));
         $this->setVar('workshopDraft', $error!==''&&$action==='save'?$this->getParam('questions',[]):null);
         return 'workspace_tpl.php';
+    }
+
+    /** Exam assembly has its own private store but shares authorisation, CSRF and exports. */
+    private function exams($action,$id,$owner)
+    {
+        $service=$this->getObject('examservice');$store=$this->getObject('examstore');
+        $row=null;$chapter=null;$error='';$draft=null;
+        try {
+            if(in_array($action,['examcreate','examsave','examadd','examdelete'],true)){
+                if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
+                if($action==='examcreate'){
+                    $id=$store->createExam($owner,$this->getObject('workshopservice')->title($this->param('title')),$service->emptyContent());
+                    return $this->nextAction('examview',['id'=>$id]);
+                }
+                $row=$service->read($id);$service->revision($row,$this->param('version'));
+                if($action==='examdelete'){
+                    if($this->param('confirm_delete')!=='1')throw new DomainException('delete_confirm_required');
+                    $store->removeOwned($row);return $this->nextAction('exams');
+                }
+                if($action==='examadd'){
+                    $chapter=$this->getObject('workshopservice')->read($this->param('setid'));
+                    if((string)$chapter['version']!==$this->param('setversion'))throw new DomainException('exam_source_changed');
+                    $content=$service->add($row,$chapter,$this->getParam('selected',[]));$title=$row['title'];
+                }else{
+                    $content=$service->edit($row,$this->getParam('exam',[]));$title=$this->getObject('workshopservice')->title($this->param('title'));
+                }
+                $store->saveExam($row,$title,$content);
+                return $this->nextAction('examview',['id'=>$id,'saved'=>'1']);
+            }
+            if(in_array($action,['examview','examdownload'],true)){
+                $row=$service->read($id);
+                if($action==='examdownload'){
+                    $answers=$this->param('answers')==='1';$export=$this->getObject('workshopexport');
+                    $body=$service->odt($row,$answers);
+                    header('X-Content-Type-Options: nosniff');header('Content-Type: application/vnd.oasis.opendocument.text');
+                    header('Content-Disposition: '.$export->disposition($row,'odt',$answers,$answers?'-marking-sheet':'-questions'));echo $body;exit;
+                }
+                if($this->param('setid')!=='')$chapter=$this->getObject('workshopservice')->read($this->param('setid'));
+            }
+        }catch(DomainException $e){
+            $error=$e->getMessage();http_response_code($error==='not_found'?404:422);
+            if($id!==''&&!$row){try{$row=$service->read($id);}catch(DomainException $ignored){}}
+            if($action==='examsave')$draft=$this->getParam('exam',[]);
+        }catch(Throwable $e){$error='storage_failed';http_response_code(500);}
+        $page=max(1,(int)$this->param('page','1'));
+        $this->setVar('examRow',$row);$this->setVar('examChapter',$chapter);$this->setVar('examError',$error);
+        $this->setVar('examDraft',$draft);$this->setVar('examTitle',$this->param('title'));
+        $this->setVar('examToken',$this->csrf->issueForSession('mcqgenerator_write'));
+        $this->setVar('examPage',$page);$this->setVar('examRows',$row?[]:$store->owned($owner,$page));
+        $this->setVar('examSets',$row?$this->getObject('workshopstore')->examChapters($owner,$page):[]);
+        return 'exams_tpl.php';
     }
 }

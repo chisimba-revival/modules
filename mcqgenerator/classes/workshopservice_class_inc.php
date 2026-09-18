@@ -28,13 +28,13 @@ class workshopservice extends ChisimbaObject
                     $store->finish($row,$candidates,$result['issues']??[]);
                     return;
                 }
-                throw new DomainException($code==='grounding_validation_failed'?'generation_grounding':($code==='ai_unavailable'?'generation_unavailable':'generation_provider'));
+                throw new DomainException($code==='grounding_validation_failed'?'generation_grounding':($code==='ai_unavailable'?'generation_unavailable':($code==='openai_timeout'?'generation_timeout':'generation_provider')));
             }
             $questions=$this->validate($result['questions'],(int)$row['question_count']);
             $store->finish($row,$questions);
         }catch(Throwable $e){
             $store->failed($row,isset($result['issues'])&&is_array($result['issues'])?$result['issues']:[]);
-            $known=['generation_grounding','generation_unavailable','generation_provider','questions_invalid','storage_failed'];
+            $known=['generation_grounding','generation_unavailable','generation_provider','generation_timeout','questions_invalid','storage_failed'];
             throw new DomainException(in_array($e->getMessage(),$known,true)?$e->getMessage():'generation_failed');
         }
     }
@@ -59,7 +59,7 @@ class workshopservice extends ChisimbaObject
             $i=$job['next'];
             $result=$this->getObject('mcqaigenerator','mcqtests')->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens']);
             $questions=$result['questions']??$result['candidates']??[];
-            if(!$questions)throw new DomainException('generation_provider');
+            if(!$questions)throw new DomainException(($result['error']??'')==='openai_timeout'?'generation_timeout':'generation_provider');
             $issues=$result['issues']??[];$offset=count($job['questions']);
             $job['questions']=array_merge($job['questions'],$this->candidates($questions,$issues));
             foreach($issues as $issue){if(isset($issue['question']))$issue['question']+=$offset;$job['issues'][]=$issue;}
@@ -80,7 +80,7 @@ class workshopservice extends ChisimbaObject
             if($job['questions']){
                 $job['issues'][]=['code'=>'partial'];
                 $store->finish($row,$job['questions'],$job['issues']);
-            }else{$store->saveJob($row,$job,'failed');throw new DomainException(in_array($error->getMessage(),['capacity_unknown','capacity_changed'],true)?$error->getMessage():'generation_provider');}
+            }else{$message=in_array($error->getMessage(),['capacity_unknown','capacity_changed','generation_timeout'],true)?$error->getMessage():'generation_provider';$job['lastError']=$message;$store->saveJob($row,$job,'failed');throw new DomainException($message);}
         }
     }
     /** Import a reviewed snapshot as an inactive MCQ pool in the active course. */

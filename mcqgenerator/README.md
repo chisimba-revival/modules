@@ -26,7 +26,7 @@ Help drawer and Escape behaviour. UI uses existing skin, icon and language servi
 
 ## Boundaries
 
-- Source: 100–40,000 UTF-8 characters; uploads at most 5 MiB. ODT parsing reuses
+- Source: at least 100 UTF-8 characters, up to 5 MiB of text; uploads at most 5 MiB. ODT parsing reuses
   ingestservice with bounded expanded bytes/entries. Images are ignored. Review
   extracted lists/tables before generation. Original uploaded binaries are not kept.
 - AI: existing mcqaigenerator/aiservice; no new provider integration or credentials.
@@ -98,3 +98,32 @@ The former questionworkshop route redirects read-only links here. Saved sets ret
 AI responses that fail grounding checks retain bounded review candidates. Flagged questions start excluded; authors may correct or explicitly include them. All choices persist, excluded questions remain editable, and TXT/ODT exports and course imports use only the saved included questions, consecutively numbered. Included questions still require four distinct options and a valid answer. Original warnings remain visible after human review. Historical report-only failures cannot be reconstructed.
 
 Whole chapters now accept UTF-8 source up to 5 MiB (at least 100 characters). Shared AI capacity metadata supplies the model context and output limits. Planning uses UTF-8 byte length as a conservative BPE token bound, reserves instruction/schema headroom and output tokens, and splits losslessly at paragraph boundaries where possible. Unknown models require explicit AI capacity configuration. Each section is a separately claimed browser POST, with persisted progress and no replay of uncertain in-flight requests. Up to 30 sections are supported; partial failures retain completed candidates with a coverage warning. No paid provider was used to test this path. Chapter 7 (88,722 characters) fits one request on the configured gpt-5.6 model.
+
+
+## Exam question generator (0.4.0)
+
+`action=exams` opens private saved exams; `action=examnew` creates an empty paper.
+The normal generator header links to this workspace. No AI calls are made.
+Select included questions from each saved chapter, then arrange their order, set
+whole-number marks (1–100), instructions and optional chapter headings. Up to 200
+questions fit a paper. Save a review confirmation before using the final exports.
+ODT downloads use title-questions.odt and title-marking-sheet.odt, share consecutive
+numbering and total marks, and keep question/options together where page space
+allows. Drafts are visibly labelled. The marking sheet retains source references
+and evidence; the candidate paper excludes both answers and evidence.
+
+`tbl_mcqgenerator_exams` stores private, versioned JSON snapshots independently of
+source sets. Each entry retains set id, source revision, question index and chapter
+title for future chapter-aware bank integration. Deleting or editing a source set
+does not change an exam. Same-set/question duplicates are blocked. Writes require
+POST, shared renewed CSRF, ownership and matching version; truncated edit payloads
+are rejected by an end-of-form marker. The chapter picker reads only metadata and
+sorts chapter titles naturally. Unsaved navigation is guarded in the browser.
+
+Course bank work is deliberately deferred. No exam route publishes or imports a
+course assessment. Installation creates the new table through modulecatalogue and
+leaves all existing sets untouched. Contextual Help covers the complete workflow.
+
+Tests: `tests/exam_test.php` (pure service/export contracts) and
+`QUESTIONWORKSHOP_LOCAL_TEST=1 php tests/exam_integration.php` (local disposable
+DB records). Run existing workshop and section-processing tests for regressions.

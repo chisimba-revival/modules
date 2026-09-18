@@ -52,6 +52,7 @@
                 var data = await response.json();
                 if (!/^[a-f0-9]{64}$/.test(data.token || '')) throw new Error('token_invalid');
                 form.elements.csrf_token.value = data.token;
+                form.dispatchEvent(new CustomEvent('workshop:submitting', {bubbles:true}));
                 HTMLFormElement.prototype.submit.call(form);
             } catch (error) {
                 reset(); status.hidden = false; status.textContent = form.dataset.sessionError;

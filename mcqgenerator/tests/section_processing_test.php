@@ -16,7 +16,7 @@ $store=new class {
  public function claimPart($row){if($this->row['state']!=='generating')return false;$this->row['state']='processing';return true;}
  public function finish($row,$questions,$issues=[]){$this->row['questions_json']=json_encode($questions);$this->row['validation_json']=json_encode($issues);$this->row['state']='generated';}
 };$GLOBALS['services']['workshopstore']=$store;
-$provider=new class {public $calls=0,$failAt=0;public function generate($text,$count,$output){$this->calls++;if($this->calls===$this->failAt)return ['ok'=>false];$q=['stem'=>'Which plant?','options'=>['Grass','Rock','Cloud','Sand'],'correctIndex'=>0,'sourceBasis'=>'Grasses flower.'];return ['ok'=>true,'questions'=>array_fill(0,$count,$q)];}};
+$provider=new class {public $calls=0,$failAt=0,$error='';public function generate($text,$count,$output){$this->calls++;if($this->calls===$this->failAt)return ['ok'=>false,'error'=>$this->error];$q=['stem'=>'Which plant?','options'=>['Grass','Rock','Cloud','Sand'],'correctIndex'=>0,'sourceBasis'=>'Grasses flower.'];return ['ok'=>true,'questions'=>array_fill(0,$count,$q)];}};
 $GLOBALS['services']['mcqaigenerator']=$provider;
 $service=new class extends workshopservice {public function read($id){return $GLOBALS['services']['workshopstore']->row;}};
 $reset=function()use($store,$source,$provider){$store->row=['id'=>'fixture','source_text'=>$source,'question_count'=>10,'state'=>'ready'];$provider->calls=0;};
@@ -29,3 +29,10 @@ $reset();$provider->failAt=2;$service->begin('fixture');$service->part('fixture'
 verify($store->row['state']==='generated'&&count(json_decode($store->row['questions_json'],true))>0,'Partial results saved');
 verify(in_array('partial',array_column(json_decode($store->row['validation_json'],true),'code')),'Partial coverage disclosed');
 echo "PASS lossless Unicode sections, allocation, no-call planning, checkpoints, duplicate prevention and partial failure.\n";
+
+$reset();$provider->failAt=1;$provider->error='openai_timeout';$service->begin('fixture');
+try{$service->part('fixture');throw new RuntimeException('Timeout swallowed');}catch(DomainException $e){verify($e->getMessage()==='generation_timeout','Timeout is actionable');}
+verify($store->row['state']==='failed','Timeout failed safely');
+verify(json_decode($store->row['generation_json'],true)['lastError']==='generation_timeout','Timeout diagnosis survives reopening');
+verify($provider->calls===1,'No automatic timeout retry');
+echo "PASS provider timeout is distinguished, persisted and never replayed.\n";

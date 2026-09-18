@@ -1,7 +1,7 @@
 <?php
 $this->setLayoutTemplate('workspace_layout_tpl.php');
 $r=$this->getObject('workshoprenderer');$e=[$r,'escape'];$t=fn($key)=>$e($r->text($key));
-echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="chisimba-form-card chisimba-form-card--wide"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('new_question_set','plus',['action'=>'new']).$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
+echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="chisimba-form-card chisimba-form-card--wide"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('new_question_set','plus',['action'=>'new']).$r->link('my_sets','list',[]).$r->link('exam_title','clipboard-list',['action'=>'exams']).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
 if($workshopError!=='')echo '<p role="alert" class="error">'.$t($workshopError).'</p>';
 if(!$workshopRow){
  $createOpen=$this->getParam('action')==='new'||$workshopError!=='';
@@ -31,6 +31,8 @@ if(!$workshopRow){
   echo '</ul><p>'.$t('validation_next').'</p></section>';
  }
  if(!$questions){
+  $failedJob=json_decode($set['generation_json']??'[]',true);
+  if($set['state']==='failed'&&($failedJob['lastError']??'')==='generation_timeout'&&$workshopError!=='generation_timeout')echo '<p class="error" role="alert">'.$t('generation_timeout').'</p>';
   echo '<section class="chisimba-form-card chisimba-form-card--wide">';
   if(in_array($set['state'],['generating','processing'],true)){
    $job=json_decode($set['generation_json']??'',true);
