@@ -14,5 +14,5 @@ class workshoprenderer extends ChisimbaObject
             .'<input type="hidden" name="csrf_token" value="'.$e($token).'"><input type="hidden" name="version" value="'.$e($set['version']).'"><input type="hidden" name="confirm_delete" value="0">'
             .'<button disabled type="submit" class="button chisimba-button-danger">'.$this->getObject('iconservice','ui')->render('trash-2',['decorative'=>true]).'<span>'.$e($this->text('delete_set')).'</span></button></form>';
     }
-    public function form($action,$token,$id=''){return '<form method="post" enctype="multipart/form-data" action="'.self::escape($this->uri(['action'=>$action,'id'=>$id],'questionworkshop')).'"><input type="hidden" name="csrf_token" value="'.self::escape($token).'">';}
+    public function form($action,$token,$id=''){return '<form method="post" enctype="multipart/form-data"'.($action==='generate'?' data-workshop-generate data-pending="'.self::escape($this->text('generating')).'"':'').' action="'.self::escape($this->uri(['action'=>$action,'id'=>$id],'questionworkshop')).'"><input type="hidden" name="csrf_token" value="'.self::escape($token).'">';}
 }

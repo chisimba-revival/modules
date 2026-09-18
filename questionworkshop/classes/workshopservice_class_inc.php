@@ -21,10 +21,17 @@ class workshopservice extends ChisimbaObject
         if(!$store->claim($row))throw new DomainException('generation_busy');
         try {
             $result=$this->getObject('mcqaigenerator','mcqtests')->generate($row['source_text'],(int)$row['question_count']);
-            if(empty($result['ok']))throw new DomainException('generation_failed');
+            if(empty($result['ok'])){
+                $code=$result['error']??'';
+                throw new DomainException($code==='grounding_validation_failed'?'generation_grounding':($code==='ai_unavailable'?'generation_unavailable':'generation_provider'));
+            }
             $questions=$this->validate($result['questions'],(int)$row['question_count']);
             $store->finish($row,$questions);
-        }catch(Throwable $e){$store->failed($row);throw new DomainException('generation_failed');}
+        }catch(Throwable $e){
+            $store->failed($row);
+            $known=['generation_grounding','generation_unavailable','generation_provider','questions_invalid','storage_failed'];
+            throw new DomainException(in_array($e->getMessage(),$known,true)?$e->getMessage():'generation_failed');
+        }
     }
     /** Import a reviewed snapshot as an inactive MCQ pool in the active course. */
     public function importCourse($id,$context)

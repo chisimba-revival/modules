@@ -16,7 +16,7 @@ if(!$workshopRow){
  echo '<h2>'.$e($set['title']).'</h2><details><summary>'.$t('saved_source').'</summary><p class="chisimba-preserve-whitespace">'.nl2br($e($set['source_text'])).'</p></details>';
  if(!$questions){
   if($set['state']==='generating')echo '<p role="status">'.$t('generation_busy').'</p>';
-  else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
+  else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','loader-circle').'</div></form>';
  }else{
   echo '<p>'.$t('review_notice').'</p><div class="chisimba-form-actions">';
   foreach(['txt','odt'] as $format)foreach([0,1] as $answers)echo $r->link(($answers?'key_':'paper_').$format,'download',['action'=>'download','id'=>$set['id'],'format'=>$format,'answers'=>(string)$answers]);
@@ -41,4 +41,4 @@ if(!$workshopRow){
 }
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 echo '</section>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=013"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=014"></script>';

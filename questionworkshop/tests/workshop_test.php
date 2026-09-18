@@ -37,3 +37,14 @@ check(count($generator->generate($sourceText)['questions'])===5,'existing defaul
 check(!$generator->generate($sourceText,0)['ok']&&!$generator->generate($sourceText,31)['ok'],'count bounds');
 $mock->wrong=true;check(!$generator->generate($sourceText,3)['ok'],'wrong provider count rejected');
 echo "PASS configurable shared generator counts, limits and unchanged default.\n";
+class GenerationFailureFixture extends workshopservice {
+ public function read($id){return ['source_text'=>'Synthetic fixture source','question_count'=>3];}
+}
+$GLOBALS['services']['workshopstore']=new class {public $failed=false;public function claim($row){return true;}public function failed($row){$this->failed=true;}};
+$GLOBALS['services']['mcqaigenerator']=new class {public $code;public function generate($source,$count){return ['ok'=>false,'error'=>$this->code];}};
+foreach(['grounding_validation_failed'=>'generation_grounding','ai_unavailable'=>'generation_unavailable','openai_transport_error'=>'generation_provider'] as $code=>$expected){
+ $GLOBALS['services']['mcqaigenerator']->code=$code;
+ try{(new GenerationFailureFixture())->generate('fixture');throw new RuntimeException('Failure swallowed');}
+ catch(DomainException $e){check($e->getMessage()===$expected,'actionable generation error');}
+}
+echo "PASS specific generation failures preserved for user feedback.\n";
