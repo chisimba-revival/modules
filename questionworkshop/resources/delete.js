@@ -1,22 +1,7 @@
-/* Native confirmation, matching the existing Kanban deletion interaction. */
+/* Renew single-use CSRF just before submission; never retry a submitted mutation. */
 (function () {
     'use strict';
-    document.querySelectorAll('[data-workshop-delete]').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            form.elements.confirm_delete.value = '0';
-            if (!window.confirm(form.dataset.confirm)) {
-                event.preventDefault();
-                return;
-            }
-            form.elements.confirm_delete.value = '1';
-        });
-        form.querySelector('button[type=submit]').disabled = false;
-    });
-}());
-
-(function () {
-    'use strict';
-    document.querySelectorAll('[data-workshop-generate]').forEach(function (form) {
+    document.querySelectorAll('[data-workshop-form]').forEach(function (form) {
         var busy = false;
         var button = form.querySelector('button[type=submit]');
         var label = button.querySelector('span');
@@ -24,24 +9,47 @@
         var animation;
         var status = document.createElement('p');
         status.setAttribute('role', 'status');
+        status.hidden = true;
         form.appendChild(status);
-        form.addEventListener('submit', function (event) {
-            if (busy) { event.preventDefault(); return; }
-            busy = true;
-            button.disabled = true;
-            button.setAttribute('aria-busy', 'true');
-            label.textContent = form.dataset.pending;
-            status.textContent = form.dataset.pending;
-            var icon = button.querySelector('svg');
-            if (icon && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                animation = icon.animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}], {duration:1000,iterations:Infinity});
+        function reset() {
+            busy = false; button.disabled = false; button.removeAttribute('aria-busy');
+            label.textContent = original;
+            if (animation) animation.cancel();
+        }
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            if (busy) return;
+            if (form.matches('[data-workshop-delete]')) {
+                form.elements.confirm_delete.value = '0';
+                if (!window.confirm(form.dataset.confirm)) return;
+                form.elements.confirm_delete.value = '1';
+            }
+            busy = true; button.disabled = true; button.setAttribute('aria-busy', 'true');
+            if (form.dataset.pending) {
+                label.textContent = form.dataset.pending;
+                status.hidden = false; status.textContent = form.dataset.pending;
+                var icon = button.querySelector('svg');
+                if (icon && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    animation = icon.animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}], {duration:1000,iterations:Infinity});
+                }
+            }
+            try {
+                var response = await fetch(form.dataset.tokenUrl, {
+                    method:'POST', credentials:'same-origin', mode:'same-origin', cache:'no-store',
+                    headers:{'X-Chisimba-Form':'questionworkshop','Accept':'application/json'}
+                });
+                if (!response.ok || response.redirected || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('token_unavailable');
+                var data = await response.json();
+                if (!/^[a-f0-9]{64}$/.test(data.token || '')) throw new Error('token_invalid');
+                form.elements.csrf_token.value = data.token;
+                HTMLFormElement.prototype.submit.call(form);
+            } catch (error) {
+                reset(); status.hidden = false; status.textContent = form.dataset.sessionError;
             }
         });
+        button.disabled = false;
         window.addEventListener('pageshow', function (event) {
-            if (!event.persisted) return;
-            busy = false; button.disabled = false; button.removeAttribute('aria-busy');
-            label.textContent = original; status.textContent = '';
-            if (animation) animation.cancel();
+            if (event.persisted) { reset(); status.hidden = true; status.textContent = ''; }
         });
     });
 }());

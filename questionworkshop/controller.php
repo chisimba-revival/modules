@@ -15,6 +15,16 @@ class questionworkshop extends controller
         $action=$this->param('action','list');$id=$this->param('id');
         $owner=(string)$this->getObject('user','security')->userId();
         if(!$policy->allowed()){http_response_code(403);$this->setVar('workshopError','forbidden');return 'denied_tpl.php';}
+        if($action==='formtoken'){
+            // A custom-header same-origin request can renew CSRF without replaying a mutation.
+            if(($_SERVER['REQUEST_METHOD']??'')!=='POST'
+                || ($_SERVER['HTTP_X_CHISIMBA_FORM']??'')!=='questionworkshop'
+                || ($_SERVER['HTTP_SEC_FETCH_SITE']??'')!=='same-origin'){
+                http_response_code(403);exit;
+            }
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['token'=>$this->csrf->issueForSession('questionworkshop_write')]);exit;
+        }
         try {
             if(in_array($action,['create','generate','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('questionworkshop_write',$this->param('csrf_token')))throw new DomainException('expired');
@@ -65,7 +75,12 @@ class questionworkshop extends controller
                     header('Content-Disposition: attachment; filename="'.($answers?'answer-key':'questions').'.'.$format.'"');echo $body;exit;
                 }
             }
-        }catch(DomainException $e){$error=$e->getMessage();http_response_code($error==='not_found'?404:422);}
+        }catch(DomainException $e){
+            $error=$e->getMessage();http_response_code($error==='not_found'?404:422);
+            if($error==='expired' && $id!==''){
+                try{$row=$service->read($id);}catch(DomainException $ignored){}
+            }
+        }
         catch(Throwable $e){$error='storage_failed';http_response_code(500);}
         $this->setVar('workshopError',$error);$this->setVar('workshopRow',$row);
         $this->setVar('workshopCount',$this->param('count','5'));$this->setVar('workshopTitle',$title);$this->setVar('workshopSource',$source);

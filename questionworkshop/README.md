@@ -77,3 +77,16 @@ Deletion requires POST, CSRF, explicit confirmation, ownership and the current
 revision. Existing downloads and imported course copies are independent and remain.
 The internal module identifier remains `questionworkshop` so existing sets and links
 continue working.
+
+## Long-lived forms
+
+Before each JavaScript-enhanced submission, the authenticated page obtains a fresh
+single-use CSRF token from a POST endpoint requiring both a custom module header
+and `Sec-Fetch-Site: same-origin`. It does not submit a mutation until renewal
+succeeds, and never retries a submitted mutation automatically. Login redirects,
+network failures and denied renewal leave all form controls and entered text in
+place. The no-JavaScript fallback still checks the original token and preserves
+submitted edits on token failure. Invalid form tokens are not described as expired
+logins. Browser regression forces token eviction with 15 additional page loads,
+then confirms the original form saves successfully. Separate browser checks cover
+login-redirect failure, draft retention, duplicate submission and reduced motion.

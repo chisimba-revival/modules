@@ -41,4 +41,4 @@ if(!$workshopRow){
 }
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 echo '</section>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=014"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=015"></script>';
