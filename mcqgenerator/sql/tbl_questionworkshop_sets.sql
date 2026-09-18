@@ -17,4 +17,4 @@ $fields=[
 'datecreated'=>['type'=>'timestamp','notnull'=>true],
 'datemodified'=>['type'=>'timestamp','notnull'=>true]
 ];
-$tableIndexes=['questionworkshop_owner'=>['fields'=>['ownerid'=>[]]]];
+$tableIndexes=['mcqgenerator_owner'=>['fields'=>['ownerid'=>[]]]];

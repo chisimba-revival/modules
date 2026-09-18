@@ -1,7 +1,7 @@
 # Multiple Choice Generator
 
 Standalone, private MCQ authoring for offline teaching. Local route:
-`index.php?module=questionworkshop`. Registered under teaching/admin tools and
+`index.php?module=mcqgenerator`. Registered under teaching/admin tools and
 My workspace. Administrators and site authors may use it; each saved set belongs
 only to its owner.
 
@@ -75,7 +75,7 @@ and private fixture/session files afterwards. Do not commit credentials or fixtu
 Owners can delete a saved set using the Delete set icon button beside Open set, then confirming the popup, including source-only sets.
 Deletion requires POST, CSRF, explicit confirmation, ownership and the current
 revision. Existing downloads and imported course copies are independent and remain.
-The internal module identifier remains `questionworkshop` so existing sets and links
+The internal module identifier remains `mcqgenerator` so existing sets and links
 continue working.
 
 ## Long-lived forms
@@ -92,3 +92,5 @@ then confirms the original form saves successfully. Separate browser checks cove
 login-redirect failure, draft retention, duplicate submission and reduced motion.
 
 Rejected AI responses now retain a private validation report with the saved set: question counts, malformed questions, duplicate options and unmatched source quotations. Reports survive reload and are cleared when another generation begins. No automatic provider retry occurs. Failures recorded before this update cannot be reconstructed because their responses were not retained.
+
+The former questionworkshop route redirects read-only links here. Saved sets retain their original table and ownership. Old write forms are not replayed; reopen them at the new route.

@@ -40,7 +40,7 @@
             try {
                 var response = await fetch(form.dataset.tokenUrl, {
                     method:'POST', credentials:'same-origin', mode:'same-origin', cache:'no-store',
-                    headers:{'X-Chisimba-Form':'questionworkshop','Accept':'application/json'}
+                    headers:{'X-Chisimba-Form':'mcqgenerator','Accept':'application/json'}
                 });
                 if (!response.ok || response.redirected || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('token_unavailable');
                 var data = await response.json();

@@ -1,7 +1,7 @@
 <?php
 /** Add private validation reports without altering saved sets. @author Derek Keats */
 if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
-class questionworkshop_installscripts extends ChisimbaObject
+class mcqgenerator_installscripts extends ChisimbaObject
 {
  public function preinstall($version=null){
   $admin=$this->getObject('modulesadmin','modulecatalogue');$table='tbl_questionworkshop_sets';

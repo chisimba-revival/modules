@@ -1,6 +1,6 @@
 <?php
 $r=$this->getObject('workshoprenderer');$e=[$r,'escape'];$t=fn($key)=>$e($r->text($key));
-echo '<section class="chisimba-form-card"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions">'.$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('questionworkshop','guide',true).'</nav>';
+echo '<section class="chisimba-form-card"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions">'.$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
 if($workshopError!=='')echo '<p role="alert" class="error">'.$t($workshopError).'</p>';
 if(!$workshopRow){
  echo '<h2>'.$t('new_set').'</h2>'.$r->form('create',$workshopToken);
@@ -55,4 +55,4 @@ if(!$workshopRow){
 }
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 echo '</section>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=015"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=015"></script>';
