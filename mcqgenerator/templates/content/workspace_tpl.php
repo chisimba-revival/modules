@@ -1,6 +1,6 @@
 <?php
 $r=$this->getObject('workshoprenderer');$e=[$r,'escape'];$t=fn($key)=>$e($r->text($key));
-echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="chisimba-form-card"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions">'.$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
+echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="chisimba-form-card"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('new_question_set','plus',['action'=>'new']).$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
 if($workshopError!=='')echo '<p role="alert" class="error">'.$t($workshopError).'</p>';
 if(!$workshopRow){
  echo '<h2>'.$t('new_set').'</h2>'.$r->form('create',$workshopToken);
