@@ -20,6 +20,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1.2
  */
 class dbquestions extends dbtable {
+    /** Existing service state, explicitly declared for PHP 8.5. */
+    public $table;
+    public $objWashout;
+
 
     /**
      *
@@ -75,7 +79,7 @@ class dbquestions extends dbtable {
         // get the DB objects
         $this->objUser = $this->getObject('user', 'security');
         $this->dbBlocks = $this->newObject('dbblocks');
-        $this->dbAnswers = &$this->newObject('dbanswers');
+        $this->dbAnswers = $this->newObject('dbanswers');
         $this->objDSDefinitions = $this->newObject("dbdataset_definitions");
         $this->objDSItems = $this->newObject("dbdataset_items");
         $this->objDBDataset = $this->newObject("dbdatasets");

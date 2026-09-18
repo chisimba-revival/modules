@@ -19,6 +19,9 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1.3
  */
 class dbtag extends dbtable {
+    /** Existing service state, explicitly declared for PHP 8.5. */
+    public $dbTagInstance;
+
 
     /**
      * Method to construct the class and initialise the table.
@@ -33,7 +36,7 @@ class dbtag extends dbtable {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_tag');
         $this->table = 'tbl_test_tag';
-        $this->objUser = &$this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->dbTagInstance = $this->newObject('dbtag_instance');
         $this->userId = $this->objUser->userId();
     }

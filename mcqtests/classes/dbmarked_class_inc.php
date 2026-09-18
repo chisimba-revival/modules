@@ -20,6 +20,13 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class dbmarked extends dbtable
 {
+    /** Existing service state, explicitly declared for PHP 8.5. */
+    public $table;
+    public $answerTable;
+    public $questionTable;
+    public $resultsTable;
+    public $usersTable;
+
     /**
      * Method to construct the class and initialise the table
      *

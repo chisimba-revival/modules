@@ -18,6 +18,13 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1.2
  */
 class dbtestadmin extends dbtable {
+    /** Existing service state, explicitly declared for PHP 8.5. */
+    public $table;
+    public $dbQuestions;
+    public $dbAnswers;
+    public $dbResults;
+    public $dbMarked;
+
 
     /**
      * Method to construct the class and initialise the database table.
@@ -28,10 +35,10 @@ class dbtestadmin extends dbtable {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_tests');
         $this->table = 'tbl_tests';
-        $this->dbQuestions = &$this->newObject('dbquestions');
-        $this->dbAnswers = &$this->newObject('dbanswers');
-        $this->dbResults = &$this->newObject('dbresults');
-        $this->dbMarked = &$this->newObject('dbmarked');
+        $this->dbQuestions = $this->newObject('dbquestions');
+        $this->dbAnswers = $this->newObject('dbanswers');
+        $this->dbResults = $this->newObject('dbresults');
+        $this->dbMarked = $this->newObject('dbmarked');
 
     }
 

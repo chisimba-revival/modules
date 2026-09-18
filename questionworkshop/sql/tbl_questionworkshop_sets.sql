@@ -1,0 +1,19 @@
+<?php
+$tablename='tbl_questionworkshop_sets';
+$options=['comment'=>'Private reusable offline MCQ sets','charset'=>'utf8mb4','character_set'=>'utf8mb4','collate'=>'utf8mb4_unicode_ci'];
+$fields=[
+'id'=>['type'=>'text','length'=>32,'notnull'=>true],
+'ownerid'=>['type'=>'text','length'=>64,'notnull'=>true],
+'title'=>['type'=>'text','length'=>200,'notnull'=>true],
+'source_text'=>['type'=>'clob','notnull'=>true],
+'questions_json'=>['type'=>'clob','notnull'=>true],
+'question_count'=>['type'=>'integer','default'=>5,'notnull'=>true],
+'imported_testid'=>['type'=>'text','length'=>64,'default'=>'','notnull'=>true],
+'imported_context'=>['type'=>'text','length'=>64,'default'=>'','notnull'=>true],
+'state'=>['type'=>'text','length'=>16,'default'=>'ready','notnull'=>true],
+'version'=>['type'=>'integer','default'=>1,'notnull'=>true],
+'reviewed'=>['type'=>'integer','default'=>0,'notnull'=>true],
+'datecreated'=>['type'=>'timestamp','notnull'=>true],
+'datemodified'=>['type'=>'timestamp','notnull'=>true]
+];
+$tableIndexes=['questionworkshop_owner'=>['fields'=>['ownerid'=>[]]]];

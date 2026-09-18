@@ -19,6 +19,9 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1.2
  */
 class dbresults extends dbtable {
+    /** Existing service state, explicitly declared for PHP 8.5. */
+    public $table;
+
     /**
      * Method to construct the class and initialise the table
      *

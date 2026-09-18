@@ -40,7 +40,7 @@ class dbdataset_definitions extends dbtable {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_dataset_definitions');
         $this->table = 'tbl_test_dataset_definitions';
-        $this->objUser = &$this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
         $this->objDSItems = $this->newObject("dbdataset_items");
     }
