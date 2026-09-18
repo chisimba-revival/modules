@@ -28,7 +28,7 @@ class workshopservice extends ChisimbaObject
             $questions=$this->validate($result['questions'],(int)$row['question_count']);
             $store->finish($row,$questions);
         }catch(Throwable $e){
-            $store->failed($row);
+            $store->failed($row,isset($result['issues'])&&is_array($result['issues'])?$result['issues']:[]);
             $known=['generation_grounding','generation_unavailable','generation_provider','questions_invalid','storage_failed'];
             throw new DomainException(in_array($e->getMessage(),$known,true)?$e->getMessage():'generation_failed');
         }

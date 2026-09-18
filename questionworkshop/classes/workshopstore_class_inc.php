@@ -11,7 +11,7 @@ class workshopstore extends dbTable
     public function createSet($owner,$title,$source,array $questions,$count=5)
     {
         $now=$this->getObject('timeanddateservice','timeanddate-service')->nowStorage();
-        $id=$this->insertSet(['id'=>bin2hex(random_bytes(16)),'ownerid'=>$owner,'title'=>$title,'source_text'=>$source,'questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'imported_testid'=>'','imported_context'=>'','question_count'=>$count,'state'=>'ready','version'=>1,'reviewed'=>0,'datecreated'=>$now,'datemodified'=>$now]);
+        $id=$this->insertSet(['id'=>bin2hex(random_bytes(16)),'ownerid'=>$owner,'title'=>$title,'source_text'=>$source,'validation_json'=>'[]','questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'imported_testid'=>'','imported_context'=>'','question_count'=>$count,'state'=>'ready','version'=>1,'reviewed'=>0,'datecreated'=>$now,'datemodified'=>$now]);
         if (!$id) throw new RuntimeException('storage_failed');
         return $id;
     }
@@ -29,7 +29,7 @@ class workshopstore extends dbTable
     public function claim(array $row)
     {
         $db=$this->objEngine->getDbObj();
-        $result=$db->exec("UPDATE tbl_questionworkshop_sets SET state='generating' WHERE id=".$this->q($row['id'])." AND state IN ('ready','failed') AND questions_json='[]'");
+        $result=$db->exec("UPDATE tbl_questionworkshop_sets SET state='generating',validation_json='[]' WHERE id=".$this->q($row['id'])." AND state IN ('ready','failed') AND questions_json='[]'");
         if(is_object($result)||$result===false)throw new RuntimeException('storage_failed');
         return $result===1;
     }
@@ -37,7 +37,7 @@ class workshopstore extends dbTable
     {
         if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
     }
-    public function failed(array $row) { $this->updateSet($row['id'],['state'=>'failed']); }
+    public function failed(array $row,array $issues=[]) { $this->updateSet($row['id'],['state'=>'failed','validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR)]); }
     /** Serialise imports with a row lock; never duplicate a saved set on retry. */
     public function importOnce($id,$context,callable $create)
     {

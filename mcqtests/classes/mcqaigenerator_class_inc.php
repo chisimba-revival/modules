@@ -102,7 +102,7 @@ class mcqaigenerator extends ChisimbaObject
             'schema' => $schema
         ));
 
-        if (empty($result['ok']) || empty($result['data']['questions'])) {
+        if (empty($result['ok']) || !isset($result['data']['questions']) || !is_array($result['data']['questions'])) {
             return array(
                 'ok' => false,
                 'error' => isset($result['error']) ? (string) $result['error'] : 'provider_failed'
@@ -111,7 +111,7 @@ class mcqaigenerator extends ChisimbaObject
 
         $questions = $this->validateQuestions($sourceText, $result['data']['questions'], $count);
         if ($questions === false) {
-            return array('ok' => false, 'error' => 'grounding_validation_failed');
+            return array('ok' => false, 'error' => 'grounding_validation_failed', 'issues'=>$this->validationIssues($sourceText,$result['data']['questions'],$count));
         }
 
         return array('ok' => true, 'questions' => $questions);
@@ -132,7 +132,7 @@ class mcqaigenerator extends ChisimbaObject
         $order = (int) $this->dbQuestions->getMaxOrder($testId);
         $inserted = 0;
         foreach ($questions as $question) {
-            if (!$this->validCandidate($question)) {
+            if (!is_array($question) || !$this->validCandidate($question)) {
                 return array('ok' => false, 'error' => 'invalid_candidates');
             }
 
@@ -193,6 +193,23 @@ class mcqaigenerator extends ChisimbaObject
         }
     }
 
+    /** Structured diagnostics for the author; no source or response is logged. */
+    public function validationIssues($sourceText, array $questions, $count)
+    {
+        $issues=[];
+        if(count($questions)!==$count)$issues[]=['code'=>'count','expected'=>$count,'actual'=>count($questions)];
+        $normalSource=$this->normaliseWhitespace($sourceText);
+        foreach(array_values(array_slice($questions,0,30)) as $index=>$question){
+            if(!is_array($question)||!$this->validCandidate($question)){
+                $issues[]=['code'=>'format','question'=>$index+1];continue;
+            }
+            if(count(array_unique(array_map('trim',$question['options'])))!==4)$issues[]=['code'=>'duplicates','question'=>$index+1];
+            $basis=$this->normaliseWhitespace($question['sourceBasis']);
+            if($basis===''||mb_stripos($normalSource,$basis,0,'UTF-8')===false)$issues[]=['code'=>'quote','question'=>$index+1,'excerpt'=>mb_substr($question['sourceBasis'],0,1000)];
+        }
+        return $issues;
+    }
+
     private function validateQuestions($sourceText, array $questions, $count = 5)
     {
         if (count($questions) !== $count) {
@@ -202,7 +219,7 @@ class mcqaigenerator extends ChisimbaObject
         $normalSource = $this->normaliseWhitespace($sourceText);
         $validated = array();
         foreach ($questions as $question) {
-            if (!$this->validCandidate($question)) {
+            if (!is_array($question) || !$this->validCandidate($question)) {
                 return false;
             }
 
@@ -233,6 +250,7 @@ class mcqaigenerator extends ChisimbaObject
         if (!isset($question['stem'], $question['options'], $question['correctIndex'], $question['sourceBasis'])) {
             return false;
         }
+        if (!is_string($question['stem']) || !is_string($question['sourceBasis']) || !is_int($question['correctIndex'])) return false;
         if (trim((string) $question['stem']) === ''
             || trim((string) $question['sourceBasis']) === ''
             || !is_array($question['options'])
@@ -244,7 +262,7 @@ class mcqaigenerator extends ChisimbaObject
             return false;
         }
         foreach ($question['options'] as $option) {
-            if (trim((string) $option) === '') {
+            if (!is_string($option) || trim($option) === '') {
                 return false;
             }
         }

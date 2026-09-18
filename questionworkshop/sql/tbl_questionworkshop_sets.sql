@@ -6,6 +6,7 @@ $fields=[
 'ownerid'=>['type'=>'text','length'=>64,'notnull'=>true],
 'title'=>['type'=>'text','length'=>200,'notnull'=>true],
 'source_text'=>['type'=>'clob','notnull'=>true],
+'validation_json'=>['type'=>'clob'],
 'questions_json'=>['type'=>'clob','notnull'=>true],
 'question_count'=>['type'=>'integer','default'=>5,'notnull'=>true],
 'imported_testid'=>['type'=>'text','length'=>64,'default'=>'','notnull'=>true],

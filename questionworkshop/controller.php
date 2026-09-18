@@ -76,7 +76,9 @@ class questionworkshop extends controller
                 }
             }
         }catch(DomainException $e){
-            $error=$e->getMessage();http_response_code($error==='not_found'?404:422);
+            $error=$e->getMessage();
+            if($action==='generate' && $row)$row=$service->read($id);
+            http_response_code($error==='not_found'?404:422);
             if($error==='expired' && $id!==''){
                 try{$row=$service->read($id);}catch(DomainException $ignored){}
             }

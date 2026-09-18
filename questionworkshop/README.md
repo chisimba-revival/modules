@@ -90,3 +90,5 @@ submitted edits on token failure. Invalid form tokens are not described as expir
 logins. Browser regression forces token eviction with 15 additional page loads,
 then confirms the original form saves successfully. Separate browser checks cover
 login-redirect failure, draft retention, duplicate submission and reduced motion.
+
+Rejected AI responses now retain a private validation report with the saved set: question counts, malformed questions, duplicate options and unmatched source quotations. Reports survive reload and are cleared when another generation begins. No automatic provider retry occurs. Failures recorded before this update cannot be reconstructed because their responses were not retained.

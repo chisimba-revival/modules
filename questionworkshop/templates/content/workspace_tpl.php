@@ -14,6 +14,20 @@ if(!$workshopRow){
 }else{
  $set=$workshopRow;$questions=json_decode($set['questions_json'],true)?:[];
  echo '<h2>'.$e($set['title']).'</h2><details><summary>'.$t('saved_source').'</summary><p class="chisimba-preserve-whitespace">'.nl2br($e($set['source_text'])).'</p></details>';
+ $issues=json_decode($set['validation_json']??'[]',true)?:[];
+ if($issues){
+  echo '<section class="chisimba-form-card"><h3>'.$t('validation_title').'</h3><p>'.$t('validation_intro').'</p><ul>';
+  foreach($issues as $issue){
+   $code=$issue['code']??'';
+   if(!in_array($code,['count','format','duplicates','quote'],true))continue;
+   $message=$r->text('validation_'.$code);
+   foreach(['question','expected','actual'] as $key)$message=str_replace('{'.$key.'}',(string)(int)($issue[$key]??0),$message);
+   echo '<li>'.$e($message);
+   if($code==='quote')echo '<blockquote>'.$e($issue['excerpt']??'').'</blockquote>';
+   echo '</li>';
+  }
+  echo '</ul><p>'.$t('validation_next').'</p></section>';
+ }
  if(!$questions){
   if($set['state']==='generating')echo '<p role="status">'.$t('generation_busy').'</p>';
   else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','loader-circle').'</div></form>';

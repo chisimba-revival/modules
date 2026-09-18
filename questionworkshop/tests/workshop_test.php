@@ -48,3 +48,9 @@ foreach(['grounding_validation_failed'=>'generation_grounding','ai_unavailable'=
  catch(DomainException $e){check($e->getMessage()===$expected,'actionable generation error');}
 }
 echo "PASS specific generation failures preserved for user feedback.\n";
+$diagnosticQuestion=['stem'=>'Which plant?','options'=>['Tree','Tree','Cloud','Sand'],'correctIndex'=>0,'sourceBasis'=>'Invented quotation not in the source.'];
+$issues=$generator->validationIssues($sourceText,[$diagnosticQuestion],3);
+check(array_column($issues,'code')===['count','duplicates','quote'],'precise independent validation reasons');
+check($issues[2]['question']===1 && $issues[2]['excerpt']===$diagnosticQuestion['sourceBasis'],'question and quote identified');
+check($generator->validationIssues($sourceText,[['stem'=>[]]],1)[0]['code']==='format','malformed fields reported safely');
+echo "PASS question-level count, format, duplicate and unmatched-quote reports.\n";
