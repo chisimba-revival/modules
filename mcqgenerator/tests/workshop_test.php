@@ -15,7 +15,7 @@ $questions=array_fill(0,5,$q);
 check(count($service->validate($questions))===5,'valid set');
 $bad=$questions;$bad[0]['correctIndex']=8;rejects(fn()=>$service->validate($bad),'bad correct index');
 $bad=$questions;$bad[0]['options'][1]=$bad[0]['options'][0];rejects(fn()=>$service->validate($bad),'duplicate options');
-rejects(fn()=>$source->validate('short'),'short source');rejects(fn()=>$source->validate(str_repeat('x',40001)),'oversize source');rejects(fn()=>$source->validate(str_repeat('x',100)."\0"),'binary source');
+rejects(fn()=>$source->validate('short'),'short source');rejects(fn()=>$source->validate(str_repeat('x',5242881)),'oversize source');rejects(fn()=>$source->validate(str_repeat('x',100)."\0"),'binary source');
 check($policy->owner(['ownerid'=>'owner']),'owner access');check(!$policy->owner(['ownerid'=>'someone']),'other owner denied');$GLOBALS['services']['user']->teacher=false;check(!$policy->allowed(),'student denied');$GLOBALS['services']['user']->admin=true;check(!$policy->owner(['ownerid'=>'someone']),'admin cannot take private owner set');
 $set=['title'=>'Field questions 🌿','questions_json'=>json_encode($questions),'reviewed'=>0];
 $paper=$export->text($set);$key=$export->text($set,true);

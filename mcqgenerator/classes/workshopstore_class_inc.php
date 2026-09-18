@@ -35,9 +35,15 @@ class workshopstore extends dbTable
     }
     public function finish(array $row,array $questions,array $issues=[])
     {
-        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR),'state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
+        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR),'generation_json'=>'[]','state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
     }
     public function failed(array $row,array $issues=[]) { $this->updateSet($row['id'],['state'=>'failed','validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR)]); }
+    public function saveJob(array $row,array $job,$state='generating'){
+        $this->updateSet($row['id'],['generation_json'=>json_encode($job,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE),'state'=>$state]);
+    }
+    public function claimPart(array $row){
+        return $this->run("UPDATE tbl_questionworkshop_sets SET state='processing' WHERE id=".$this->q($row['id'])." AND state='generating'")===1;
+    }
     /** Serialise imports with a row lock; never duplicate a saved set on retry. */
     public function importOnce($id,$context,callable $create)
     {

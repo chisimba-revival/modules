@@ -26,7 +26,7 @@ class mcqgenerator extends controller
             echo json_encode(['token'=>$this->csrf->issueForSession('mcqgenerator_write')]);exit;
         }
         try {
-            if(in_array($action,['create','generate','save','import','delete'],true)){
+            if(in_array($action,['create','generate','generatepart','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='create'){
                     $title=$service->title($title);$extract=$this->getObject('workshopsource');
@@ -53,9 +53,10 @@ class mcqgenerator extends controller
                     $service->importCourse($id,$context);
                     return $this->nextAction('view',['id'=>$id]);
                 }
+                if($action==='generatepart'){$service->part($id);return $this->nextAction('view',['id'=>$id]);}
                 if($action==='generate'){
                     if($this->param('consent')!=='1')throw new DomainException('consent_required');
-                    $service->generate($id);
+                    $service->begin($id);
                 }else{
                     if(empty(json_decode($row['questions_json'],true)))throw new DomainException('questions_invalid');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
@@ -78,7 +79,7 @@ class mcqgenerator extends controller
             }
         }catch(DomainException $e){
             $error=$e->getMessage();
-            if($action==='generate' && $row)$row=$service->read($id);
+            if(in_array($action,['generate','generatepart'],true) && $row)$row=$service->read($id);
             http_response_code($error==='not_found'?404:422);
             if($error==='expired' && $id!==''){
                 try{$row=$service->read($id);}catch(DomainException $ignored){}

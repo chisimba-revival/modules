@@ -38,6 +38,49 @@ class workshopservice extends ChisimbaObject
             throw new DomainException(in_array($e->getMessage(),$known,true)?$e->getMessage():'generation_failed');
         }
     }
+    public function begin($id){
+        $row=$this->read($id);
+        $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
+        $job=$this->getObject('workshopplan')->build($row['source_text'],(int)$row['question_count'],$capacity);
+        $store=$this->getObject('workshopstore');
+        if(!$store->claim($row))throw new DomainException('generation_busy');
+        $store->saveJob($row,$job);
+    }
+    /** Exactly one paid request per claimed section; never replay an uncertain request. */
+    public function part($id){
+        $row=$this->read($id);$store=$this->getObject('workshopstore');
+        $job=json_decode($row['generation_json']??'',true);
+        if(!$job||!$store->claimPart($row))throw new DomainException('generation_busy');
+        try{
+            $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
+            if($capacity!==$job['capacity'])throw new DomainException('capacity_changed');
+            $i=$job['next'];
+            $result=$this->getObject('mcqaigenerator','mcqtests')->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens']);
+            $questions=$result['questions']??$result['candidates']??[];
+            if(!$questions)throw new DomainException('generation_provider');
+            $issues=$result['issues']??[];$offset=count($job['questions']);
+            $job['questions']=array_merge($job['questions'],$this->candidates($questions,$issues));
+            foreach($issues as $issue){if(isset($issue['question']))$issue['question']+=$offset;$job['issues'][]=$issue;}
+            $job['next']++;
+            // Persist this result before allowing the next section to start.
+            $store->saveJob($row,$job,$job['next']===count($job['parts'])?'processing':'generating');
+            if($job['next']===count($job['parts'])){
+                // If many sections needed one candidate each, keep the requested
+                // number spread through the chapter; retain others for review.
+                if(count($job['questions'])>$job['requested']){
+                    $n=count($job['questions']);$keep=[];
+                    for($j=0;$j<$job['requested'];$j++)$keep[(int)floor(($j+.5)*$n/$job['requested'])]=true;
+                    foreach($job['questions'] as $j=>&$q)$q['included']=$q['included']&&isset($keep[$j]);unset($q);
+                }
+                $store->finish($row,$job['questions'],$job['issues']);
+            }
+        }catch(Throwable $error){
+            if($job['questions']){
+                $job['issues'][]=['code'=>'partial'];
+                $store->finish($row,$job['questions'],$job['issues']);
+            }else{$store->saveJob($row,$job,'failed');throw new DomainException(in_array($error->getMessage(),['capacity_unknown','capacity_changed'],true)?$error->getMessage():'generation_provider');}
+        }
+    }
     /** Import a reviewed snapshot as an inactive MCQ pool in the active course. */
     public function importCourse($id,$context)
     {
@@ -74,7 +117,7 @@ class workshopservice extends ChisimbaObject
         foreach(array_values(array_slice($questions,0,30)) as $i=>$q){
             $q=is_array($q)?$q:[];$options=is_array($q['options']??null)?array_values($q['options']):[];
             $rows[]=['stem'=>$text($q['stem']??''),'options'=>array_map($text,array_slice(array_pad($options,4,''),0,4)),
-                'correctIndex'=>is_int($q['correctIndex']??null)&&$q['correctIndex']>=0&&$q['correctIndex']<=3?$q['correctIndex']:0,
+                'correctIndex'=>is_scalar($q['correctIndex']??null)&&preg_match('/^[0-3]$/D',(string)$q['correctIndex'])?(int)$q['correctIndex']:0,
                 'sourceBasis'=>$text($q['sourceBasis']??''),'included'=>!isset($flagged[$i+1])];
         }
         return $rows;

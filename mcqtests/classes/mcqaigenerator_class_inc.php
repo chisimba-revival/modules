@@ -38,7 +38,7 @@ class mcqaigenerator extends ChisimbaObject
         return $this->ensureAiAvailable();
     }
 
-    public function generate($sourceText, $count = 5)
+    public function generate($sourceText, $count = 5, $maxOutputTokens = null)
     {
         if (!is_int($count) || $count < 1 || $count > 30) return array('ok'=>false, 'error'=>'invalid_count');
         $sourceText = trim((string) $sourceText);
@@ -94,6 +94,7 @@ class mcqaigenerator extends ChisimbaObject
             . "Do not paraphrase sourceBasis. If the source cannot support the requested number of unambiguous questions under these rules, do not invent material.";
 
         $result = $this->aiService->execute(array(
+            'maxOutputTokens' => $maxOutputTokens,
             'consumer' => 'mcqtests',
             'task' => 'generate_grounded_mcq_questions',
             'instructions' => $instructions,

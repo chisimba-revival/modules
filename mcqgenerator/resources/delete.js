@@ -58,6 +58,7 @@
             }
         });
         button.disabled = false;
+        if (form.hasAttribute('data-auto-section')) form.requestSubmit();
         window.addEventListener('pageshow', function (event) {
             if (event.persisted) { reset(); status.hidden = true; status.textContent = ''; }
         });

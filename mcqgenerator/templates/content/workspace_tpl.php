@@ -5,7 +5,7 @@ if($workshopError!=='')echo '<p role="alert" class="error">'.$t($workshopError).
 if(!$workshopRow){
  echo '<h2>'.$t('new_set').'</h2>'.$r->form('create',$workshopToken);
  echo '<div class="chisimba-form-field"><label for="set-title">'.$t('set_title').'</label><input id="set-title" name="title" maxlength="200" required value="'.$e($workshopTitle).'"></div>';
- echo '<div class="chisimba-form-field"><label for="source">'.$t('source').'</label><textarea id="source" name="source" rows="10" maxlength="40000">'.$e($workshopSource).'</textarea></div>';
+ echo '<div class="chisimba-form-field"><label for="source">'.$t('source').'</label><textarea id="source" name="source" rows="10">'.$e($workshopSource).'</textarea></div>';
  echo '<div class="chisimba-form-field"><label for="sourcefile">'.$t('source_file').'</label><input id="sourcefile" type="file" name="sourcefile" accept=".txt,.odt"><p>'.$t('limits').'</p></div>';
  echo '<div class="chisimba-form-field"><label for="count">'.$t('count').'</label><input id="count" type="number" name="count" min="1" max="30" value="'.$e($workshopCount).'" required></div>';
  echo '<div class="chisimba-form-actions">'.$r->button('save_source','save').'</div></form></section><section class="chisimba-form-card"><h2>'.$t('my_sets').'</h2>';
@@ -19,7 +19,7 @@ if(!$workshopRow){
   echo '<section class="chisimba-form-card"><h3>'.$t('validation_title').'</h3><p>'.$t('validation_intro').'</p><ul>';
   foreach($issues as $issue){
    $code=$issue['code']??'';
-   if(!in_array($code,['count','format','duplicates','quote'],true))continue;
+   if(!in_array($code,['count','format','duplicates','quote','partial'],true))continue;
    $message=$r->text('validation_'.$code);
    foreach(['question','expected','actual'] as $key)$message=str_replace('{'.$key.'}',(string)(int)($issue[$key]??0),$message);
    echo '<li>'.$e($message);
@@ -30,7 +30,13 @@ if(!$workshopRow){
  }
  if(!$questions){
   echo '<section class="chisimba-form-card">';
-  if($set['state']==='generating')echo '<p role="status">'.$t('generation_busy').'</p>';
+  if(in_array($set['state'],['generating','processing'],true)){
+   $job=json_decode($set['generation_json']??'',true);
+   if($job&&$set['state']==='generating'){
+    echo '<p role="status">'.$e(str_replace(['{done}','{total}'],[(string)$job['next'],(string)count($job['parts'])],$r->text('section_progress'))).'</p>';
+    echo str_replace('<form ', '<form data-auto-section ', $r->form('generatepart',$workshopToken,$set['id'])).'<div class="chisimba-form-actions">'.$r->button('continue_sections','sparkles').'</div></form>';
+   }else echo '<p role="status">'.$t('generation_busy').'</p>';
+  }
   else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
   echo '</section>';
  }else{
@@ -61,4 +67,4 @@ if(!$workshopRow){
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 if(!$workshopRow)echo '</section>';
 echo '</div>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=021"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=030"></script>';

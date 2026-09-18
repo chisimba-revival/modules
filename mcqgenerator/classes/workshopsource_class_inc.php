@@ -6,10 +6,11 @@ class workshopsource extends ChisimbaObject
     public function validate($text)
     {
         $text=(string)$text;
-        if(preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/',$text))throw new DomainException('source_invalid');
+        if(!mb_check_encoding($text,'UTF-8'))throw new DomainException('source_encoding');
+        if(preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/',$text))throw new DomainException('source_controls');
         $text=trim($text);
-        if (!mb_check_encoding($text,'UTF-8') || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/',$text)
-            || mb_strlen($text,'UTF-8')<100 || mb_strlen($text,'UTF-8')>40000) throw new DomainException('source_invalid');
+        if(mb_strlen($text,'UTF-8')<100)throw new DomainException('source_short');
+        if(strlen($text)>5242880)throw new DomainException('source_large');
         return $text;
     }
     public function upload(array $upload)
@@ -19,7 +20,7 @@ class workshopsource extends ChisimbaObject
     }
     public function file($path,$name)
     {
-        if (!is_file($path) || filesize($path)>5242880) throw new DomainException('source_invalid');
+        if (!is_file($path) || filesize($path)>5242880) throw new DomainException('source_large');
         $ext=strtolower(pathinfo($name,PATHINFO_EXTENSION));
         if($ext==='txt')return $this->validate(file_get_contents($path));
         if($ext!=='odt')throw new DomainException('file_type');
