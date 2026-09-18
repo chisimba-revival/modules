@@ -26,10 +26,12 @@ class workshopstore extends dbTable
         } catch(Throwable $e){$this->rollbackTransaction();throw $e;}
     }
     /** An atomic state change prevents duplicate paid requests for the same set. */
-    public function claim(array $row)
+    public function claim(array $row,$count=null)
     {
         $db=$this->objEngine->getDbObj();
-        $result=$db->exec("UPDATE tbl_questionworkshop_sets SET state='generating',validation_json='[]' WHERE id=".$this->q($row['id'])." AND state IN ('ready','failed') AND questions_json='[]'");
+        $count=$count??(int)$row['question_count'];
+        if(!is_int($count)||$count<1||$count>30)throw new DomainException('count_invalid');
+        $result=$db->exec("UPDATE tbl_questionworkshop_sets SET question_count=".$count.",state='generating',validation_json='[]' WHERE id=".$this->q($row['id'])." AND state IN ('ready','failed') AND questions_json='[]'");
         if(is_object($result)||$result===false)throw new RuntimeException('storage_failed');
         return $result===1;
     }

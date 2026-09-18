@@ -39,7 +39,7 @@ if(!$workshopRow){
     echo str_replace('<form ', '<form data-auto-section ', $r->form('generatepart',$workshopToken,$set['id'])).'<div class="chisimba-form-actions">'.$r->button('continue_sections','sparkles').'</div></form>';
    }else echo '<p role="status">'.$t('generation_busy').'</p>';
   }
-  else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
+  else echo $r->form('generate',$workshopToken,$set['id']).'<div class="chisimba-form-field"><label for="generation-count">'.$t('count').'</label><input id="generation-count" type="number" name="count" min="1" max="30" required value="'.$e($set['question_count']).'"></div><p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
   echo '</section>';
  }else{
   $downloads='<section class="chisimba-form-card chisimba-form-card--wide"><h3>'.$t('downloads').'</h3><p>'.$t('saved_exports').'</p><div class="chisimba-form-actions">';

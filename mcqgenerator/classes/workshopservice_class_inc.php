@@ -38,12 +38,14 @@ class workshopservice extends ChisimbaObject
             throw new DomainException(in_array($e->getMessage(),$known,true)?$e->getMessage():'generation_failed');
         }
     }
-    public function begin($id){
+    public function begin($id,$count=null){
         $row=$this->read($id);
+        $count=$count??(int)$row['question_count'];
+        if(!is_int($count)||$count<1||$count>30)throw new DomainException('count_invalid');
         $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
-        $job=$this->getObject('workshopplan')->build($row['source_text'],(int)$row['question_count'],$capacity);
+        $job=$this->getObject('workshopplan')->build($row['source_text'],$count,$capacity);
         $store=$this->getObject('workshopstore');
-        if(!$store->claim($row))throw new DomainException('generation_busy');
+        if(!$store->claim($row,$count))throw new DomainException('generation_busy');
         $store->saveJob($row,$job);
     }
     /** Exactly one paid request per claimed section; never replay an uncertain request. */

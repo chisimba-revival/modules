@@ -56,7 +56,9 @@ class mcqgenerator extends controller
                 if($action==='generatepart'){$service->part($id);return $this->nextAction('view',['id'=>$id]);}
                 if($action==='generate'){
                     if($this->param('consent')!=='1')throw new DomainException('consent_required');
-                    $service->begin($id);
+                    $count=$this->param('count',(string)$row['question_count']);
+                    if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
+                    $service->begin($id,(int)$count);
                 }else{
                     if(empty(json_decode($row['questions_json'],true)))throw new DomainException('questions_invalid');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
