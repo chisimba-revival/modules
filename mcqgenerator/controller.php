@@ -37,7 +37,10 @@ class mcqgenerator extends controller
                     if(($upload['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_NO_FILE){
                         if($source!=='')throw new DomainException('choose_source');
                         $source=$extract->upload($upload);
-                    }else{$source=$extract->validate($source);}
+                    }else{
+                        try{$source=$extract->validate($source);}
+                        catch(DomainException $e){throw new DomainException($e->getMessage()==='source_short'?'source_short_no_file':$e->getMessage());}
+                    }
                     $count=$this->param('count',(string)$sessionCount);
                     if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
                     $this->setSession('question_count',(int)$count);
