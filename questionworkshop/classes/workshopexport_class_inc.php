@@ -5,12 +5,12 @@ class workshopexport extends ChisimbaObject
 {
     public function disposition(array $set,$format,$answers=false)
     {
-        $name=$set['title'].($answers?' - '.$this->getObject('workshoprenderer')->text('answer_key'):'');
+        $name=$set['title'];
         // Keep Unicode titles, removing only unsafe filename characters.
         $name=preg_replace('~[\\x00-\\x1f\\x7f/\\\\:*?"<>|]+~u','-', $name);
         $name=trim(mb_substr($name,0,160,'UTF-8')," .");
         if($name==='')$name='questions';
-        $name.='.'.$format;
+        $name.=($answers?'-answer-key':'-questions').'.'.$format;
         $fallback=preg_replace('/[^A-Za-z0-9 ._-]/','_', $name);
         return 'attachment; filename="'.$fallback.'"; filename*=UTF-8\'\''.rawurlencode($name);
     }
