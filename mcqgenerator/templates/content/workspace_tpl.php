@@ -32,9 +32,10 @@ if(!$workshopRow){
   if($set['state']==='generating')echo '<p role="status">'.$t('generation_busy').'</p>';
   else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
  }else{
-  echo '<p>'.$t('review_notice').'</p><div class="chisimba-form-actions">';
-  foreach(['txt','odt'] as $format)foreach([0,1] as $answers)echo $r->link(($answers?'key_':'paper_').$format,'download',['action'=>'download','id'=>$set['id'],'format'=>$format,'answers'=>(string)$answers]);
-  echo '</div>';
+  $downloads='<section><h3>'.$t('downloads').'</h3><p>'.$t('saved_exports').'</p><div class="chisimba-form-actions">';
+  foreach(['odt','txt'] as $format)foreach([0,1] as $answers)$downloads.=$r->link(($answers?'key_':'paper_').$format,'download',['action'=>'download','id'=>$set['id'],'format'=>$format,'answers'=>(string)$answers]);
+  $downloads.='</div></section>';
+  echo '<p>'.$t('review_notice').'</p>'.$downloads;
   $context=(string)$this->getObject('dbcontext','context')->getContextCode();
   $course=$this->getObject('dbcontext','context')->getContextDetails($context);
   if(!empty($set['imported_testid']))echo '<p>'.$t('imported').' '.$e($set['imported_context']).'</p>';
@@ -52,7 +53,7 @@ if(!$workshopRow){
    for($j=0;$j<4;$j++)echo '<option value="'.$j.'"'.((is_scalar($q['correctIndex']??null)?(string)$q['correctIndex']:'')===(string)$j?' selected':'').'>'.chr(65+$j).'</option>';
    echo '</select></div><div class="chisimba-form-field"><label for="basis'.$i.'">'.$t('source_basis').'</label><textarea id="basis'.$i.'" name="questions['.$i.'][sourceBasis]" maxlength="4000" required>'.$e(is_string($q['sourceBasis']??null)?$q['sourceBasis']:'').'</textarea></div></fieldset>';
   }
-  echo '<label><input type="checkbox" name="reviewed" value="1"'.(!empty($set['reviewed'])?' checked':'').'> '.$t('review_confirm').'</label><div class="chisimba-form-actions">'.$r->button('save_review','save').'</div></form>';
+  echo '<label><input type="checkbox" name="reviewed" value="1"'.(!empty($set['reviewed'])?' checked':'').'> '.$t('review_confirm').'</label><div class="chisimba-form-actions">'.$r->button('save_review','save').'</div></form>'.$downloads;
  }
 }
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
