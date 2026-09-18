@@ -30,7 +30,7 @@ if(!$workshopRow){
  }
  if(!$questions){
   if($set['state']==='generating')echo '<p role="status">'.$t('generation_busy').'</p>';
-  else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','loader-circle').'</div></form>';
+  else echo $r->form('generate',$workshopToken,$set['id']).'<p>'.$t('generation_notice').'</p><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('generate','sparkles').'</div></form>';
  }else{
   echo '<p>'.$t('review_notice').'</p><div class="chisimba-form-actions">';
   foreach(['txt','odt'] as $format)foreach([0,1] as $answers)echo $r->link(($answers?'key_':'paper_').$format,'download',['action'=>'download','id'=>$set['id'],'format'=>$format,'answers'=>(string)$answers]);

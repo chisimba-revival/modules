@@ -6,7 +6,7 @@ class workshoprenderer extends ChisimbaObject
     public function text($key){return ucfirst(html_entity_decode($this->getObject('language','language')->code2Txt('mod_questionworkshop_'.$key,'questionworkshop'),ENT_QUOTES|ENT_HTML5,'UTF-8'));}
     public static function escape($text){return htmlspecialchars((string)$text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
     public function link($key,$icon,array $params){return '<a class="button chisimba-button-secondary" href="'.self::escape($this->uri($params,'questionworkshop')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($key)).'</span></a>';}
-    public function button($key,$icon){return '<button class="button chisimba-button-primary" type="submit">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($key)).'</span></button>';}
+    public function button($key,$icon){return '<button class="button chisimba-button-primary" type="submit">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).($key==='generate'?'<span data-workshop-spinner style="display:none">'.$this->getObject('iconservice','ui')->render('loader-circle',['decorative'=>true]).'</span>':'').'<span>'.self::escape($this->text($key)).'</span></button>';}
     public function deleteForm(array $set,$token)
     {
         $e=[self::class,'escape'];

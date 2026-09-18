@@ -4,7 +4,9 @@
     document.querySelectorAll('[data-workshop-form]').forEach(function (form) {
         var busy = false;
         var button = form.querySelector('button[type=submit]');
-        var label = button.querySelector('span');
+        var label = button.querySelector('span:last-child');
+        var spinner = button.querySelector('[data-workshop-spinner]');
+        var idleIcon = button.querySelector('svg');
         var original = label.textContent;
         var animation;
         var status = document.createElement('p');
@@ -15,6 +17,7 @@
             busy = false; button.disabled = false; button.removeAttribute('aria-busy');
             label.textContent = original;
             if (animation) animation.cancel();
+            if (spinner) { spinner.style.display = 'none'; idleIcon.style.display = ''; }
         }
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -28,7 +31,8 @@
             if (form.dataset.pending) {
                 label.textContent = form.dataset.pending;
                 status.hidden = false; status.textContent = form.dataset.pending;
-                var icon = button.querySelector('svg');
+                if (spinner) { spinner.style.display = ''; idleIcon.style.display = 'none'; }
+                var icon = spinner ? spinner.querySelector('svg') : idleIcon;
                 if (icon && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                     animation = icon.animate([{transform:'rotate(0deg)'},{transform:'rotate(360deg)'}], {duration:1000,iterations:Infinity});
                 }
