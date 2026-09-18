@@ -9,7 +9,7 @@ if(!$workshopRow){
  echo '<div class="chisimba-form-field"><label for="set-title">'.$t('set_title').'</label><input id="set-title" name="title" maxlength="200" required value="'.$e($workshopTitle).'"></div>';
  echo '<div class="chisimba-form-field"><label for="source">'.$t('source').'</label><textarea id="source" name="source" rows="10">'.$e($workshopSource).'</textarea></div>';
  echo '<div class="chisimba-form-field"><label for="sourcefile">'.$t('source_file').'</label><input id="sourcefile" type="file" name="sourcefile" accept=".txt,.odt"><p>'.$t('limits').'</p></div>';
- echo '<div class="chisimba-form-field"><label for="count">'.$t('count').'</label><input id="count" type="number" name="count" min="1" max="30" value="'.$e($workshopCount).'" required></div>';
+ echo '<div class="chisimba-form-field"><label for="count">'.$t('count').'</label><input id="count" type="number" name="count" min="1" max="30" value="'.$e($workshopCount).'" required><p>'.$t('session_count').'</p></div>';
  echo '<div class="chisimba-form-actions">'.$r->button('save_source','save').'</div></form></details></section><section class="chisimba-form-card chisimba-form-card--wide"><h2>'.$t('my_sets').'</h2>';
  foreach(array_slice($workshopSets,0,20) as $set)echo '<article class="chisimba-form-card chisimba-form-card--wide"><h3>'.$e($set['title']).'</h3><p>'.$t(!empty($set['reviewed'])?'reviewed':'draft_notice').'</p>'.'<div class="chisimba-form-actions">'.$r->link('open','eye',['action'=>'view','id'=>$set['id']]).$r->deleteForm($set,$workshopToken).'</div></article>';
  echo '<nav class="chisimba-form-actions">';if($workshopPage>1)echo $r->link('previous','arrow-left',['page'=>$workshopPage-1]);if(count($workshopSets)>20)echo $r->link('next','arrow-right',['page'=>$workshopPage+1]);echo '</nav>';
@@ -21,7 +21,7 @@ if(!$workshopRow){
   echo '<section class="chisimba-form-card chisimba-form-card--wide"><h3>'.$t('validation_title').'</h3><p>'.$t('validation_intro').'</p><ul>';
   foreach($issues as $issue){
    $code=$issue['code']??'';
-   if(!in_array($code,['count','format','duplicates','quote','partial'],true))continue;
+   if(!in_array($code,['count','format','duplicates','quote','partial','additional_shortfall','additional_timeout'],true))continue;
    $message=$r->text('validation_'.$code);
    foreach(['question','expected','actual'] as $key)$message=str_replace('{'.$key.'}',(string)(int)($issue[$key]??0),$message);
    echo '<li>'.$e($message);
@@ -30,7 +30,7 @@ if(!$workshopRow){
   }
   echo '</ul><p>'.$t('validation_next').'</p></section>';
  }
- if(!$questions){
+ if(!$questions||in_array($set['state'],['generating','processing'],true)){
   $failedJob=json_decode($set['generation_json']??'[]',true);
   if($set['state']==='failed'&&($failedJob['lastError']??'')==='generation_timeout'&&$workshopError!=='generation_timeout')echo '<p class="error" role="alert">'.$t('generation_timeout').'</p>';
   echo '<section class="chisimba-form-card chisimba-form-card--wide">';
@@ -47,7 +47,9 @@ if(!$workshopRow){
   $downloads='<section class="chisimba-form-card chisimba-form-card--wide"><h3>'.$t('downloads').'</h3><p>'.$t('saved_exports').'</p><div class="chisimba-form-actions">';
   foreach(['odt','txt'] as $format)foreach([0,1] as $answers)$downloads.=$r->link(($answers?'key_':'paper_').$format,'download',['action'=>'download','id'=>$set['id'],'format'=>$format,'answers'=>(string)$answers]);
   $downloads.='</div></section>';
-  echo $downloads.'<section class="chisimba-form-card chisimba-form-card--wide">';
+  echo $downloads;
+  if(count($questions)<30)echo '<section class="chisimba-form-card chisimba-form-card--wide"><details><summary>'.$t('more_title').'</summary><p>'.$t('more_explain').'</p>'.$r->form('more',$workshopToken,$set['id']).'<input type="hidden" name="version" value="'.$e($set['version']).'"><div class="chisimba-form-field"><label for="additional">'.$t('additional_count').'</label><input type="number" id="additional" name="additional" min="1" max="'.(30-count($questions)).'" value="'.min(5,30-count($questions)).'" required></div><label><input type="checkbox" name="consent" value="1" required> '.$t('consent').'</label><div class="chisimba-form-actions">'.$r->button('more','sparkles').'</div></form></details></section>';
+  echo '<section class="chisimba-form-card chisimba-form-card--wide">';
   $context=(string)$this->getObject('dbcontext','context')->getContextCode();
   $course=$this->getObject('dbcontext','context')->getContextDetails($context);
   if(!empty($set['imported_testid']))echo '<p>'.$t('imported').' '.$e($set['imported_context']).'</p>';
@@ -71,4 +73,4 @@ if(!$workshopRow){
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 if(!$workshopRow)echo '</section>';
 echo '</div>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=030"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=041"></script>';

@@ -8,7 +8,7 @@ only to its owner.
 ## Journey
 
 1. Enter a title, paste source text or upload UTF-8 TXT/ODT, and choose 1–30 questions
-   (default five). Save, then check the extracted text.
+   (initial default ten, remembered for the login session). Save, then check the extracted text.
 2. Explicitly authorise sending that source to the configured shared AI service.
    Generate grounded single-answer questions with four distinct options each.
 3. Review and edit questions, options, correct answers and supporting excerpts.
@@ -127,3 +127,23 @@ leaves all existing sets untouched. Contextual Help covers the complete workflow
 Tests: `tests/exam_test.php` (pure service/export contracts) and
 `QUESTIONWORKSHOP_LOCAL_TEST=1 php tests/exam_integration.php` (local disposable
 DB records). Run existing workshop and section-processing tests for regressions.
+
+
+## Additional questions (0.4.1)
+
+Generated sets expose Add more questions. An append job atomically claims the
+current revision, preserves original candidates and reports, and requests additional
+questions with bounded existing-stem avoidance context. Source planning reserves
+space for that context. Exact normalised stem repeats are omitted; semantic
+similarity still requires human review. Existing question indices remain stable.
+The total candidate limit remains 30. New questions clear the review confirmation;
+a failed request with no additions preserves the prior review. Shortfalls and
+partial failures are reported without automatically retrying provider requests.
+Concurrent/stale saves cannot overwrite an in-flight job. Exam/course snapshots
+remain independent. No provider calls are used by `more_questions_test.php` or the
+local guarded `more_integration.php` persistence test.
+
+New standalone sets default to 10. A valid count submitted on create/generate is
+remembered in the existing Chisimba module session for subsequent sets. Additional
+counts do not change that preference. The shared course MCQ generator keeps its
+existing five-question default.

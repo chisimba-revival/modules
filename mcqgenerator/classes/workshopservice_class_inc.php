@@ -48,6 +48,40 @@ class workshopservice extends ChisimbaObject
         if(!$store->claim($row,$count))throw new DomainException('generation_busy');
         $store->saveJob($row,$job);
     }
+    public function more($id,$count,$version)
+    {
+        $row=$this->read($id);
+        if((string)$row['version']!==(string)$version)throw new DomainException('changed');
+        $base=json_decode($row['questions_json'],true,512,JSON_THROW_ON_ERROR);
+        if(!$base||!is_int($count)||$count<1||count($base)+$count>30)throw new DomainException('more_limit');
+        $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
+        $planning=$capacity;
+        // Reserve prompt space for all existing and newly generated stems, including JSON escapes.
+        $stemBytes=max(16,min(512,intdiv((int)$capacity['sourceBytes'],3600)));
+        $planning['sourceBytes']-=60*$stemBytes*6+1024;
+        if($planning['sourceBytes']<1000)throw new DomainException('more_capacity');
+        $job=$this->getObject('workshopplan')->build($row['source_text'],$count,$planning);
+        $job['capacity']=$capacity;$job['stemBytes']=$stemBytes;$job['baseQuestions']=$base;
+        $job['baseIssues']=json_decode($row['validation_json']??'[]',true)?:[];
+        if(!$this->getObject('workshopstore')->claimMore($row,$job))throw new DomainException('generation_busy');
+    }
+    /** Append only genuinely new stems; keep original indices and human edits untouched. */
+    private function finishJob(array $row,array $job)
+    {
+        if(!isset($job['baseQuestions'])){$this->getObject('workshopstore')->finish($row,$job['questions'],$job['issues']);return;}
+        $questions=$job['baseQuestions'];$issues=$job['baseIssues'];$seen=[];
+        $normal=static fn($text)=>mb_strtolower(preg_replace('/[\p{Z}\p{P}\s]+/u','',trim($text)),'UTF-8');
+        foreach($questions as $q)$seen[$normal($q['stem'])]=true;
+        $mapping=[];$added=0;
+        foreach($job['questions'] as $i=>$q){
+            $key=$normal($q['stem']);
+            if(isset($seen[$key])||$added>=$job['requested']||count($questions)>=30)continue;
+            $seen[$key]=true;$questions[]=$q;$mapping[$i+1]=count($questions);++$added;
+        }
+        foreach($job['issues'] as $issue){if(isset($issue['question'])){if(!isset($mapping[$issue['question']]))continue;$issue['question']=$mapping[$issue['question']];}$issues[]=$issue;}
+        if($added<$job['requested'])$issues[]=['code'=>'additional_shortfall','expected'=>$job['requested'],'actual'=>$added];
+        $this->getObject('workshopstore')->finish($row,$questions,$issues,count($job['baseQuestions'])+$job['requested'],$added===0&&!empty($row['reviewed']));
+    }
     /** Exactly one paid request per claimed section; never replay an uncertain request. */
     public function part($id){
         $row=$this->read($id);$store=$this->getObject('workshopstore');
@@ -57,7 +91,10 @@ class workshopservice extends ChisimbaObject
             $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
             if($capacity!==$job['capacity'])throw new DomainException('capacity_changed');
             $i=$job['next'];
-            $result=$this->getObject('mcqaigenerator','mcqtests')->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens']);
+            $generator=$this->getObject('mcqaigenerator','mcqtests');
+            $stems=isset($job['baseQuestions'])?array_column(array_merge($job['baseQuestions'],$job['questions']),'stem'):[];
+            $stems=array_map(static fn($stem)=>mb_strcut($stem,0,$job['stemBytes']??512,'UTF-8'),$stems);
+            $result=$stems?$generator->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens'],$stems):$generator->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens']);
             $questions=$result['questions']??$result['candidates']??[];
             if(!$questions)throw new DomainException(($result['error']??'')==='openai_timeout'?'generation_timeout':'generation_provider');
             $issues=$result['issues']??[];$offset=count($job['questions']);
@@ -74,12 +111,13 @@ class workshopservice extends ChisimbaObject
                     for($j=0;$j<$job['requested'];$j++)$keep[(int)floor(($j+.5)*$n/$job['requested'])]=true;
                     foreach($job['questions'] as $j=>&$q)$q['included']=$q['included']&&isset($keep[$j]);unset($q);
                 }
-                $store->finish($row,$job['questions'],$job['issues']);
+                $this->finishJob($row,$job);
             }
         }catch(Throwable $error){
-            if($job['questions']){
+            if($job['questions']||isset($job['baseQuestions'])){
                 $job['issues'][]=['code'=>'partial'];
-                $store->finish($row,$job['questions'],$job['issues']);
+                if(isset($job['baseQuestions'])&&$error->getMessage()==='generation_timeout')$job['issues'][]=['code'=>'additional_timeout'];
+                $this->finishJob($row,$job);
             }else{$message=in_array($error->getMessage(),['capacity_unknown','capacity_changed','generation_timeout'],true)?$error->getMessage():'generation_provider';$job['lastError']=$message;$store->saveJob($row,$job,'failed');throw new DomainException($message);}
         }
     }

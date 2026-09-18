@@ -29,8 +29,8 @@ class workshopstore extends dbTable
     {
         $this->beginTransaction();
         try {
-            $rows=$this->rows('SELECT version FROM tbl_questionworkshop_sets WHERE id='.$this->q($row['id']).' FOR UPDATE');
-            if (!$rows || (int)$rows[0]['version']!==(int)$row['version']) throw new DomainException('changed');
+            $rows=$this->rows('SELECT version,state FROM tbl_questionworkshop_sets WHERE id='.$this->q($row['id']).' FOR UPDATE');
+            if (!$rows || in_array($rows[0]['state'],['generating','processing'],true) || (int)$rows[0]['version']!==(int)$row['version']) throw new DomainException('changed');
             if ($this->updateSet($row['id'],['title'=>$title,'questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'reviewed'=>$reviewed?1:0,'version'=>(int)$row['version']+1,'datemodified'=>$this->getObject('timeanddateservice','timeanddate-service')->nowStorage()])===false) throw new RuntimeException('storage_failed');
             $this->commitTransaction();
         } catch(Throwable $e){$this->rollbackTransaction();throw $e;}
@@ -45,9 +45,14 @@ class workshopstore extends dbTable
         if(is_object($result)||$result===false)throw new RuntimeException('storage_failed');
         return $result===1;
     }
-    public function finish(array $row,array $questions,array $issues=[])
+    /** Claim an append job and save its original snapshot in the same atomic write. */
+    public function claimMore(array $row,array $job)
     {
-        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR),'generation_json'=>'[]','state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
+        return $this->run("UPDATE tbl_questionworkshop_sets SET state='generating',version=version+1,generation_json=".$this->q(json_encode($job,JSON_THROW_ON_ERROR))." WHERE id=".$this->q($row['id'])." AND ownerid=".$this->q($row['ownerid'])." AND version=".(int)$row['version']." AND state='generated'")===1;
+    }
+    public function finish(array $row,array $questions,array $issues=[],$requestedCount=null,$reviewed=false)
+    {
+        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR),'generation_json'=>'[]','state'=>'generated','question_count'=>$requestedCount??(int)$row['question_count'],'reviewed'=>$reviewed?1:0,'version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
     }
     public function failed(array $row,array $issues=[]) { $this->updateSet($row['id'],['state'=>'failed','validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR)]); }
     public function saveJob(array $row,array $job,$state='generating'){

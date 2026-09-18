@@ -13,6 +13,8 @@ class mcqgenerator extends controller
         $error='';$row=null;$source=$this->param('source');$title=$this->param('title');
         $policy=$this->getObject('workshoppolicy');$store=$this->getObject('workshopstore');$service=$this->getObject('workshopservice');
         $action=$this->param('action','list');$id=$this->param('id');
+        $sessionCount=(int)$this->getSession('question_count',10);
+        if($sessionCount<1||$sessionCount>30)$sessionCount=10;
         $owner=(string)$this->getObject('user','security')->userId();
         if(!$policy->allowed()){http_response_code(403);$this->setVar('workshopError','forbidden');return 'denied_tpl.php';}
         if($action==='formtoken'){
@@ -27,7 +29,7 @@ class mcqgenerator extends controller
         }
         if(str_starts_with($action,'exam'))return $this->exams($action,$id,$owner);
         try {
-            if(in_array($action,['create','generate','generatepart','save','import','delete'],true)){
+            if(in_array($action,['create','generate','generatepart','more','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='create'){
                     $title=$service->title($title);$extract=$this->getObject('workshopsource');
@@ -36,8 +38,9 @@ class mcqgenerator extends controller
                         if($source!=='')throw new DomainException('choose_source');
                         $source=$extract->upload($upload);
                     }else{$source=$extract->validate($source);}
-                    $count=$this->param('count','5');
+                    $count=$this->param('count',(string)$sessionCount);
                     if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
+                    $this->setSession('question_count',(int)$count);
                     $id=$store->createSet($owner,$title,$source,[],(int)$count);
                     return $this->nextAction('view',['id'=>$id]);
                 }
@@ -54,12 +57,20 @@ class mcqgenerator extends controller
                     $service->importCourse($id,$context);
                     return $this->nextAction('view',['id'=>$id]);
                 }
+                if($action==='more'){
+                    if($this->param('consent')!=='1')throw new DomainException('consent_required');
+                    $count=$this->param('additional');
+                    if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('more_limit');
+                    $service->more($id,(int)$count,$this->param('version'));
+                    return $this->nextAction('view',['id'=>$id]);
+                }
                 if($action==='generatepart'){$service->part($id);return $this->nextAction('view',['id'=>$id]);}
                 if($action==='generate'){
                     if($this->param('consent')!=='1')throw new DomainException('consent_required');
                     $count=$this->param('count',(string)$row['question_count']);
                     if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
                     $service->begin($id,(int)$count);
+                    $this->setSession('question_count',(int)$count);
                 }else{
                     if(empty(json_decode($row['questions_json'],true)))throw new DomainException('questions_invalid');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
@@ -90,7 +101,7 @@ class mcqgenerator extends controller
         }
         catch(Throwable $e){$error='storage_failed';http_response_code(500);}
         $this->setVar('workshopError',$error);$this->setVar('workshopRow',$row);
-        $this->setVar('workshopCount',$this->param('count','5'));$this->setVar('workshopTitle',$title);$this->setVar('workshopSource',$source);
+        $this->setVar('workshopCount',$this->param('count',(string)$sessionCount));$this->setVar('workshopTitle',$title);$this->setVar('workshopSource',$source);
         $this->setVar('workshopToken',$this->csrf->issueForSession('mcqgenerator_write'));
         $page=max(1,(int)$this->param('page','1'));
         $this->setVar('workshopPage',$page);$this->setVar('workshopSets',$row?[]:$store->owned($owner,$page));
