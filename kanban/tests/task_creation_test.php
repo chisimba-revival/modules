@@ -2,7 +2,7 @@
 /** Exercise task creation responses, permissions and escaped card rendering. */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 if ($argc === 1) {
-    foreach (array('success'=>200, 'csrf'=>403, 'permission'=>403, 'title'=>422, 'save'=>500, 'wrongboard'=>403) as $case=>$status) {
+    foreach (array('success'=>200, 'csrf'=>403, 'permission'=>403, 'title'=>422, 'save'=>500, 'wrongboard'=>403, 'oversize'=>422) as $case=>$status) {
         $output = shell_exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(__FILE__).' '.escapeshellarg($case));
         $response = json_decode($output, true);
         if (!is_array($response) || $response['status'] !== $status || $response['ok'] !== ($case === 'success') || $response['csrfToken'] !== 'fresh-token') {
@@ -22,7 +22,7 @@ $case = $argv[1];
 class controller {
     public function getParam($name, $default='') {
         global $case;
-        return array('response'=>'json', 'csrf_token'=>'old-token', 'scope'=>'personal', 'boardid'=>str_repeat('a',32), 'taskid'=>$case==='wrongboard'?str_repeat('c',32):'', 'title'=>$case==='title'?'':'<script>alert(1)</script>', 'description'=>'<img src=x onerror=alert(1)>', 'notes'=>'Meeting notes')[$name] ?? $default;
+        return array('response'=>'json', 'csrf_token'=>'old-token', 'scope'=>'personal', 'boardid'=>str_repeat('a',32), 'taskid'=>$case==='wrongboard'?str_repeat('c',32):'', 'title'=>$case==='title'?'':($case==='oversize'?str_repeat('x',256):'<script>alert(1)</script>'), 'description'=>'<img src=x onerror=alert(1)>', 'notes'=>'Meeting notes')[$name] ?? $default;
     }
     public function uri($params, $module) { return 'index.php?module=kanban&'.http_build_query($params); }
 }

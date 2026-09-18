@@ -8,18 +8,21 @@ const assert = require('assert/strict');
     try {
         const page = await browser.newPage();
         const errors = [];
+        page.on('dialog', dialog => dialog.accept());
         page.on('pageerror', error => errors.push(error.message));
         const fixture = fs.readFileSync(process.argv[2], 'utf8');
         const saved = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
         let posts = [], fail = false;
         await page.route('http://kanban.test/**', async route => {
             const request = route.request();
+            if (new URL(request.url()).searchParams.get('action') === 'formtoken') return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,csrfToken:'renewed-token'})});
             if (request.method() === 'POST') {
                 posts.push(new URLSearchParams(request.postData()));
                 await new Promise(resolve => setTimeout(resolve, 80));
                 return route.fulfill({contentType:'application/json', body: JSON.stringify(fail ? {ok:false,message:'Permission denied.',csrfToken:'retry-token'} : saved)});
             }
             const filename = new URL(request.url()).pathname;
+            if (filename === '/formdrafts.js') return route.fulfill({path:path.resolve(__dirname,'../../../framework/app/core_modules/htmlelements/resources/formdrafts.js'),contentType:'application/javascript'});
             if (filename === '/kanban.js' || filename === '/kanban.css') {
                 return route.fulfill({path: path.join(__dirname, '../resources', filename.slice(1)), contentType:filename.endsWith('js')?'application/javascript':'text/css'});
             }
@@ -39,7 +42,7 @@ const assert = require('assert/strict');
         await form.evaluate(element => element.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
         await page.waitForFunction(() => document.querySelectorAll('.kanban-task').length === 2);
         assert.equal(posts.length, 1);
-        assert.equal(posts[0].get('csrf_token'), 'initial-token');
+        assert.equal(posts[0].get('csrf_token'), 'renewed-token');
         assert.equal(await other.locator('.kanban-board__body').isVisible(), false);
         assert.equal(await existing.locator('.kanban-task__body').isVisible(), false);
         assert.equal(await form.locator('[name=title]').inputValue(), '');
@@ -52,7 +55,7 @@ const assert = require('assert/strict');
         await newTask.locator('[data-task-toggle]').click();
         await newTask.locator('[data-task-move] button').click();
         await page.waitForFunction(() => document.querySelector('.kanban-column[data-status=in_progress] .kanban-task'));
-        assert.equal(posts[1].get('csrf_token'), 'fresh-token');
+        assert.equal(posts[1].get('csrf_token'), 'renewed-token');
         assert.equal(await page.locator('input[name=csrf_token]').first().inputValue(), 'fresh-token');
         fail = true;
         await form.locator('[name=title]').fill('Keep this draft');
@@ -61,6 +64,7 @@ const assert = require('assert/strict');
         assert.equal(await form.locator('[name=title]').inputValue(), 'Keep this draft');
         assert.equal(await board.locator('.kanban-task').count(), 2);
         await page.reload();
+        assert.equal(await page.locator('[data-task-create] [name=title]').first().inputValue(), 'Keep this draft');
         assert.equal(await other.locator('.kanban-board__body').isVisible(), false);
         assert.equal(await existing.locator('.kanban-task__body').isVisible(), false);
         await existing.locator('[data-task-toggle]').focus();

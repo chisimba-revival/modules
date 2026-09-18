@@ -4,17 +4,27 @@ $url=fn($params=array())=>html_entity_decode($this->uri($params,'kanban'),ENT_QU
 $scopeType=$kanbanScope['type'];
 $hidden=function($boardId='')use($e,$kanbanCsrf,$scopeType){return '<input type="hidden" name="csrf_token" value="'.$e($kanbanCsrf).'"/><input type="hidden" name="scope" value="'.$e($scopeType).'"/>'.($boardId!==''?'<input type="hidden" name="boardid" value="'.$e($boardId).'"/>':'');};
 $labels=array('not_started'=>'Not started','in_progress'=>'In progress','completed'=>'Completed');
+$recoveryText=$this->getObject('language','language');
+$recoveryMessages=array();
+foreach(array('kept','unavailable','restored','conflict','restore','discard','signin','uncertain','saving') as $key)$recoveryMessages[$key]=$recoveryText->languageText('mod_kanban_draft_'.$key,'kanban');
 $icons=$this->getObject('iconservice','ui');
 ?>
-<main class="chisimba-workspace chisimba-flow chisimba-structural-main chisimba-structural-main--full kanban-workspace" data-kanban data-move-url="<?php echo $e($url(array('action'=>'movetask'))); ?>" data-csrf="<?php echo $e($kanbanCsrf); ?>" data-scope="<?php echo $e($scopeType); ?>" style="width:100%;max-width:none;overflow:auto;background:var(--chisimba-background)">
+<main class="chisimba-workspace chisimba-flow chisimba-structural-main chisimba-structural-main--full kanban-workspace" data-kanban data-actor="<?php echo $e($this->getObject('user','security')->userId()); ?>" data-scope-id="<?php echo $e($kanbanScope['id']); ?>" data-draft-scope="<?php echo $e($kanbanScope['type'].':'.$kanbanScope['id']); ?>" data-recovery-messages="<?php echo $e(json_encode($recoveryMessages)); ?>" data-token-url="<?php echo $e($url(array('action'=>'formtoken'))); ?>" data-move-url="<?php echo $e($url(array('action'=>'movetask'))); ?>" data-csrf="<?php echo $e($kanbanCsrf); ?>" data-scope="<?php echo $e($scopeType); ?>" style="width:100%;max-width:none;overflow:auto;background:var(--chisimba-background)">
     <header class="chisimba-page-header chisimba-card kanban-page-header">
         <div><p class="chisimba-eyebrow"><?php echo $e($kanbanScope['label']); ?></p><h1>Kanban boards</h1><p>Plan work in personal, course or site scope.</p></div>
-        <div class="kanban-scope-controls">
+        <div class="kanban-scope-controls"><?php echo $this->getObject('contextualhelp','help')->show('kanban','recovery',true); ?>
             <form class="chisimba-form-field chisimba-form-field--compact kanban-scope-form" method="get" action="index.php"><input type="hidden" name="module" value="kanban"/><label for="kanban-scope">Board scope</label><div class="chisimba-cluster kanban-compact-actions"><select id="kanban-scope" name="scope"><option value="personal" <?php echo $scopeType==='personal'?'selected':''; ?>>Personal — only your boards</option><?php if((string)$this->getObject('dbcontext','context')->getContextCode()!=='root'&&(string)$this->getObject('dbcontext','context')->getContextCode()!==''): ?><option value="context" <?php echo $scopeType==='context'?'selected':''; ?>>Course — boards for this course</option><?php endif; ?><?php if($this->getObject('user','security')->isAdmin()): ?><option value="site" <?php echo $scopeType==='site'?'selected':''; ?>>Site — organisation-wide boards</option><?php endif; ?></select><button class="button" type="submit"><?php echo $icons->render('eye',array('decorative'=>true)); ?><span>View boards</span></button><button class="button chisimba-button-secondary" type="button" data-kanban-fullscreen aria-pressed="false">Full screen</button></div></form>
         </div>
     </header>
     <?php if($kanbanMessage!==''): ?><div class="chisimba-notice chisimba-notice--success" role="status"><?php echo $e($kanbanMessage); ?></div><?php endif; ?>
     <?php if($kanbanError!==''): ?><div class="chisimba-notice chisimba-notice--error" role="alert"><?php echo $e($kanbanError); ?></div><?php endif; ?>
+    <?php if(!empty($kanbanRecovery)): ?>
+    <section class="chisimba-form-card" aria-label="<?php echo $e($recoveryText->languageText('mod_kanban_recovery_title','kanban')); ?>">
+        <h2><?php echo $e($recoveryText->languageText('mod_kanban_recovery_title','kanban')); ?></h2>
+        <p><?php echo $e($recoveryText->languageText('mod_kanban_recovery_copy','kanban')); ?></p>
+        <?php foreach($kanbanRecovery as $field=>$value): ?><label class="chisimba-form-field"><?php echo $e($field); ?><textarea readonly><?php echo $e($value); ?></textarea></label><?php endforeach; ?>
+    </section>
+    <?php endif; ?>
     <form class="chisimba-cluster" method="get" action="<?php echo $e($url()); ?>"><input type="hidden" name="module" value="kanban"/><input type="hidden" name="scope" value="<?php echo $e($scopeType); ?>"/><label><input type="checkbox" name="archived" value="1" <?php echo !empty($_GET['archived'])?'checked':''; ?> onchange="this.form.submit()"/> Include archived boards</label></form>
     <?php if($kanbanCanCreate): ?><details class="chisimba-form-card kanban-create">
         <summary>Create a board</summary>

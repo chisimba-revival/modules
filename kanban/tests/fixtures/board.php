@@ -1,7 +1,7 @@
 <?php
 // Browser fixture using the production templates; no application/database access.
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
-$kanbanScope = array('type'=>'personal','label'=>'Personal board');
+$kanbanScope = array('type'=>'personal','id'=>'user','label'=>'Personal board');
 $kanbanCsrf = 'initial-token';
 $kanbanMessage = $kanbanError = '';
 $kanbanCanCreate = false;
@@ -13,6 +13,15 @@ $renderer = new class {
     public function uri($params, $module) { return '/index.php?module=kanban&'.http_build_query($params); }
     public function getObject($name,$module) { return new class {
         public function getContextCode() { return ''; }
+        public function show(...$args) { return ''; }
+        public function userId() { return 'user'; }
+        public function languageText($key, $module) {
+            foreach (file(dirname(__DIR__,2).'/register.conf') as $line) {
+                $parts=explode('|',trim($line),3);
+                if(($parts[0]??'')==='TEXT: '.$key)return $parts[2];
+            }
+            return $key;
+        }
         public function isAdmin() { return false; }
         public function render($name,$options) { return ''; }
     }; }
@@ -23,4 +32,4 @@ $renderer = new class {
 };
 echo '<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/kanban.css"></head><body>';
 $renderer->render(get_defined_vars());
-echo '<script src="/kanban.js"></script></body></html>';
+echo '<script src="/formdrafts.js"></script><script src="/kanban.js"></script></body></html>';

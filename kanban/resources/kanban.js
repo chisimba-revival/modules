@@ -2,6 +2,28 @@
     'use strict';
     var root = document.querySelector('[data-kanban]');
     if (!root) return;
+    var messages = JSON.parse(root.dataset.recoveryMessages || '{}');
+    var drafts = new WeakMap();
+    function prepareDrafts() {
+        if (!window.ChisimbaFormDrafts) return;
+        root.querySelectorAll('form[method="post"]').forEach(function (form) {
+            if (drafts.has(form)) return;
+            var names = ['title', 'description', 'notes', 'grants'].filter(function (name) { return form.elements.namedItem(name); });
+            if (!names.length) return;
+            var action = new URL(form.action, location.href).searchParams.get('action');
+            var identity = ['boardid', 'taskid'].map(function (name) { return form.elements.namedItem(name)?.value || ''; });
+            drafts.set(form, window.ChisimbaFormDrafts.attach(form, {
+                key: JSON.stringify([location.pathname, root.dataset.actor, root.dataset.draftScope, action, identity]),
+                fields: names, messages: messages,
+                onRestore: function () {
+                    var board = form.closest('.kanban-board');
+                    if (board) setCollapsed(board, false);
+                    var task = form.closest('.kanban-task');
+                    if (task) setTaskCollapsed(task, false);
+                }
+            }));
+        });
+    }
     var dragged = null;
     var pendingPost = Promise.resolve();
     root.querySelectorAll('.kanban-board').forEach(function (board) {
@@ -28,6 +50,7 @@
         toggle.setAttribute('aria-label', label + ' task: ' + task.querySelector('h4').textContent);
         toggle.textContent = label;
     }
+    prepareDrafts();
     var fullscreenButton = root.querySelector('[data-kanban-fullscreen]');
 
     if (fullscreenButton && root.requestFullscreen) {
@@ -47,6 +70,7 @@
     } else if (fullscreenButton) fullscreenButton.hidden = true;
 
     document.addEventListener('submit', function (event) {
+        if (!root.contains(event.target)) return;
         var message = event.target.getAttribute('data-confirm');
         if (message && !window.confirm(message)) event.preventDefault();
         if (!event.defaultPrevented && event.target.matches('[data-task-create]')) {
@@ -71,6 +95,10 @@
             post(reorderForm.action, {boardid: reorderForm.elements.boardid.value, direction: direction}, function () {
                 moveBoard(board, direction);
             });
+        }
+        if (!event.defaultPrevented && event.target.method.toLowerCase() === 'post') {
+            event.preventDefault();
+            saveForm(event.target);
         }
     });
     root.addEventListener('click', function (event) {
@@ -117,15 +145,17 @@
         var column = event.target.closest('.kanban-column');
         if (!column || !dragged) return;
         event.preventDefault();
-        moveTask(dragged, column);
+        var task = dragged;
         column.classList.remove('is-dragover');
-        post(root.dataset.moveUrl, {taskid: dragged.dataset.taskId, status: column.dataset.status, sortorder: Date.now()});
+        post(root.dataset.moveUrl, {taskid: task.dataset.taskId, status: column.dataset.status, sortorder: Date.now()}, function () { moveTask(task, column); });
     });
     root.addEventListener('change', function (event) {
         if (!event.target.matches('[data-subtask-id]')) return;
         var url = new URL(root.dataset.moveUrl, window.location.href);
         url.searchParams.set('action', 'togglesubtask');
-        post(url.toString(), {subtaskid: event.target.dataset.subtaskId, completed: event.target.checked ? '1' : '0'});
+        var checkbox = event.target;
+        checkbox.disabled = true;
+        post(url.toString(), {subtaskid: checkbox.dataset.subtaskId, completed: checkbox.checked ? '1' : '0'}, null, function (message) { checkbox.checked = !checkbox.checked; window.alert(message); }).finally(function () { checkbox.disabled = false; });
     });
 
     function createTask(form) {
@@ -147,6 +177,8 @@
             board.querySelector('.kanban-column[data-status="not_started"] .kanban-task-list').appendChild(task);
             refreshBoardCounts(board);
             form.reset();
+            if (drafts.has(form)) drafts.get(form).reset();
+            prepareDrafts();
             refreshTokens();
             feedback.textContent = 'Added “' + title + '”. Ready for the next task.';
         }, function (message) {
@@ -159,6 +191,35 @@
             if (document.activeElement === document.body || form.contains(document.activeElement)) {
                 form.elements.title.focus({preventScroll: true});
             }
+        });
+    }
+
+    function saveForm(form) {
+        if (form.dataset.saving === 'true') return;
+        var draft = drafts.get(form);
+        if (draft) draft.persist();
+        var snapshot = draft ? draft.snapshot() : null;
+        var data = new URLSearchParams(new FormData(form));
+        var feedback = form.querySelector('[data-save-feedback]');
+        if (!feedback) {
+            feedback = document.createElement('p'); feedback.dataset.saveFeedback = '';
+            feedback.setAttribute('role', 'status'); form.appendChild(feedback);
+        }
+        var controls = Array.from(form.querySelectorAll('input, textarea, select, button'));
+        var disabled = controls.map(function (control) { return control.disabled; });
+        form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+        controls.forEach(function (control) { control.disabled = true; });
+        feedback.textContent = messages.saving;
+        post(form.action, data, function (result) {
+            feedback.textContent = result.message;
+            if (draft) draft.saved(snapshot);
+            // Only a confirmed save may navigate. Other forms retain their recovery copies.
+            var destination = new URL(window.location.href);
+            if (root.dataset.scope === 'context') { destination.searchParams.set('scope','context'); destination.searchParams.set('scopeid',root.dataset.scopeId); }
+            window.location.assign(destination.toString());
+        }, function (message) { feedback.textContent = message; }).finally(function () {
+            controls.forEach(function (control, index) { control.disabled = disabled[index]; });
+            delete form.dataset.saving; form.removeAttribute('aria-busy');
         });
     }
 
@@ -251,24 +312,47 @@
         });
     }
 
+    async function checkedJson(response) {
+        if (response.redirected || !(response.headers.get('Content-Type') || '').includes('application/json')) {
+            throw new Error('not-json');
+        }
+        var result = await response.json();
+        if (!result || typeof result.ok !== 'boolean' || (result.ok && !response.ok)) throw new Error('invalid-response');
+        return result;
+    }
+
     function post(url, data, onSuccess, onError) {
-        // Serialize mutations so rapid entry in different projects cannot reuse a token.
-        pendingPost = pendingPost.then(function () {
-            var body = new URLSearchParams(data);
-            body.set('csrf_token', root.dataset.csrf);
-            body.set('scope', root.dataset.scope);
-            body.set('response', 'json');
-            return fetch(url, {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body: body.toString()})
-                .then(function (response) { return response.json(); })
-                .then(function (result) {
-                    if (result.csrfToken) root.dataset.csrf = result.csrfToken;
-                    refreshTokens();
-                    if (!result.ok) {
-                        (onError || window.alert)(result.message || 'The board could not be updated.');
-                    } else if (onSuccess) onSuccess(result);
-                }).catch(function () {
-                    (onError || window.alert)('Could not confirm the save. Your text is kept; check the board before retrying to avoid a duplicate.');
-                });
+        // Fresh tokens prevent stale tabs from submitting evicted single-use tokens.
+        // Serialize mutations, and never replay a write whose outcome is uncertain.
+        pendingPost = pendingPost.then(async function () {
+            var attempted = false;
+            try {
+                var token = await checkedJson(await fetch(root.dataset.tokenUrl, {
+                    method: 'POST', credentials: 'same-origin', signal: AbortSignal.timeout(30000),
+                    headers: {'X-Chisimba-Form': 'kanban', 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+                    body: new URLSearchParams({actor: root.dataset.actor}).toString()
+                }));
+                if (!token.ok || !token.csrfToken) {
+                    (onError || window.alert)(token.message || messages.signin); return;
+                }
+                root.dataset.csrf = token.csrfToken;
+                refreshTokens();
+                var body = new URLSearchParams(data);
+                body.set('csrf_token', root.dataset.csrf);
+                body.set('scope', root.dataset.scope);
+                body.set('scopeid', root.dataset.scopeId);
+                body.set('actor', root.dataset.actor);
+                body.set('response', 'json');
+                attempted = true;
+                var result = await checkedJson(await fetch(url, {
+                    method: 'POST', credentials: 'same-origin', signal: AbortSignal.timeout(30000),
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, body: body.toString()
+                }));
+                if (result.csrfToken) root.dataset.csrf = result.csrfToken;
+                refreshTokens();
+                if (!result.ok) (onError || window.alert)(result.message || messages.uncertain);
+                else if (onSuccess) onSuccess(result);
+            } catch (_) { (onError || window.alert)(attempted ? messages.uncertain : messages.signin); }
         });
         return pendingPost;
     }
