@@ -1,6 +1,12 @@
 /* Renew single-use CSRF just before submission; never retry a submitted mutation. */
 (function () {
     'use strict';
+    document.querySelectorAll('[data-question-review]').forEach(function (card) {
+        var include = card.querySelector('[data-question-include]');
+        var fields = card.querySelectorAll('textarea, input:not([type=checkbox])');
+        function update() { fields.forEach(function (field) { field.required = include.checked; }); }
+        include.addEventListener('change', update); update();
+    });
     document.querySelectorAll('[data-workshop-form]').forEach(function (form) {
         var busy = false;
         var button = form.querySelector('button[type=submit]');

@@ -42,9 +42,11 @@ if(!$workshopRow){
   else echo '<p>'.$t('select_course').'</p>';
   echo '<p>'.$t('saved_exports').'</p>'.$r->form('save',$workshopToken,$set['id']).'<input type="hidden" name="version" value="'.$e($set['version']).'">';
   echo '<div class="chisimba-form-field"><label for="set-title">'.$t('set_title').'</label><input id="set-title" name="title" required maxlength="200" value="'.$e($workshopTitle?:$set['title']).'"></div>';
-  if(is_array($workshopDraft)&&count($workshopDraft)===(int)$set['question_count'])$questions=$workshopDraft;
+  if(is_array($workshopDraft)&&count($workshopDraft)===count($questions))$questions=$workshopDraft;
   foreach($questions as $i=>$q){
-   echo '<fieldset class="chisimba-form-card"><legend>'.$t('question').' '.($i+1).'</legend><div class="chisimba-form-field"><label for="q'.$i.'">'.$t('stem').'</label><textarea id="q'.$i.'" name="questions['.$i.'][stem]" required maxlength="4000">'.$e(is_string($q['stem']??null)?$q['stem']:'').'</textarea></div>';
+   echo '<fieldset data-question-review class="chisimba-form-card"><legend>'.$t('question').' '.($i+1).'</legend><label><input type="checkbox" data-question-include name="questions['.$i.'][included]" value="1"'.(($q['included']??true)?' checked':'').'> '.$t('include_question').'</label>';
+   foreach($issues as $issue){if((int)($issue['question']??0)!==$i+1)continue;$code=$issue['code']??'';if(in_array($code,['format','duplicates','quote'],true))echo '<p class="chisimba-notice chisimba-notice--warning">'.$e(str_replace('{question}',(string)($i+1),$r->text('validation_'.$code))).'</p>';}
+   echo '<div class="chisimba-form-field"><label for="q'.$i.'">'.$t('stem').'</label><textarea id="q'.$i.'" name="questions['.$i.'][stem]" required maxlength="4000">'.$e(is_string($q['stem']??null)?$q['stem']:'').'</textarea></div>';
    for($j=0;$j<4;$j++)echo '<div class="chisimba-form-field"><label for="q'.$i.'o'.$j.'">'.$t('option').' '.chr(65+$j).'</label><input id="q'.$i.'o'.$j.'" name="questions['.$i.'][options][]" required maxlength="4000" value="'.$e(is_string($q['options'][$j]??null)?$q['options'][$j]:'').'"></div>';
    echo '<div class="chisimba-form-field"><label for="correct'.$i.'">'.$t('correct').'</label><select id="correct'.$i.'" name="questions['.$i.'][correctIndex]">';
    for($j=0;$j<4;$j++)echo '<option value="'.$j.'"'.((is_scalar($q['correctIndex']??null)?(string)$q['correctIndex']:'')===(string)$j?' selected':'').'>'.chr(65+$j).'</option>';
@@ -55,4 +57,4 @@ if(!$workshopRow){
 }
 if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 echo '</section>';
-echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=015"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=021"></script>';

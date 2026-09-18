@@ -19,7 +19,8 @@ class workshopexport extends ChisimbaObject
         $r=$this->getObject('workshoprenderer');
         $lines=[$set['title'],$r->text($answers?'answer_key':'question_paper'),''];
         if(empty($set['reviewed']))$lines[]=$r->text('draft_notice');
-        $questions=json_decode($set['questions_json'],true,512,JSON_THROW_ON_ERROR);
+        $questions=array_values(array_filter(json_decode($set['questions_json'],true,512,JSON_THROW_ON_ERROR),static fn($q)=>$q['included']??true));
+        if(!$questions)throw new DomainException('none_included');
         foreach($questions as $i=>$q){
             $lines[]=($i+1).'. '.$q['stem'];
             if($answers){$lines[]=chr(65+$q['correctIndex']).'. '.$q['options'][$q['correctIndex']];$lines[]=$r->text('source_basis').': '.$q['sourceBasis'];}

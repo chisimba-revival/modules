@@ -23,6 +23,11 @@ class workshopservice extends ChisimbaObject
             $result=$this->getObject('mcqaigenerator','mcqtests')->generate($row['source_text'],(int)$row['question_count']);
             if(empty($result['ok'])){
                 $code=$result['error']??'';
+                if($code==='grounding_validation_failed' && !empty($result['candidates'])){
+                    $candidates=$this->candidates($result['candidates'],$result['issues']??[]);
+                    $store->finish($row,$candidates,$result['issues']??[]);
+                    return;
+                }
                 throw new DomainException($code==='grounding_validation_failed'?'generation_grounding':($code==='ai_unavailable'?'generation_unavailable':'generation_provider'));
             }
             $questions=$this->validate($result['questions'],(int)$row['question_count']);
@@ -41,7 +46,7 @@ class workshopservice extends ChisimbaObject
         if(!$course || $context==='' || $context==='root' || !($user->isAdmin() || $user->isCourseAdmin($context) || $user->isContextLecturer($user->userId(),$context)))throw new DomainException('course_forbidden');
         return $this->getObject('workshopstore')->importOnce($id,$context,function($current)use($context,$user){
             if(empty($current['reviewed']))throw new DomainException('review_required');
-            $questions=$this->validate(json_decode($current['questions_json'],true),(int)$current['question_count']);
+            $questions=$this->selected(json_decode($current['questions_json'],true));
             // MCQ stores rich HTML: plain-text authoring must remain inert there.
             foreach($questions as &$q){$encode=static fn($v)=>preg_replace_callback('/[\x{10000}-\x{10FFFF}]/u',static fn($m)=>'&#'.mb_ord($m[0],'UTF-8').';',htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'));$q['stem']=$encode($q['stem']);$q['options']=array_map($encode,$q['options']);}
             unset($q);
@@ -59,6 +64,38 @@ class workshopservice extends ChisimbaObject
             }
             return $test;
         });
+    }
+    /** Retain bounded editable candidates, with flagged questions excluded initially. */
+    public function candidates(array $questions,array $issues)
+    {
+        $flagged=[];foreach($issues as $issue)if(isset($issue['question']))$flagged[(int)$issue['question']]=true;
+        $text=static fn($v)=>is_string($v)?mb_substr(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u','',$v),0,4000,'UTF-8'):'';
+        $rows=[];
+        foreach(array_values(array_slice($questions,0,30)) as $i=>$q){
+            $q=is_array($q)?$q:[];$options=is_array($q['options']??null)?array_values($q['options']):[];
+            $rows[]=['stem'=>$text($q['stem']??''),'options'=>array_map($text,array_slice(array_pad($options,4,''),0,4)),
+                'correctIndex'=>is_int($q['correctIndex']??null)&&$q['correctIndex']>=0&&$q['correctIndex']<=3?$q['correctIndex']:0,
+                'sourceBasis'=>$text($q['sourceBasis']??''),'included'=>!isset($flagged[$i+1])];
+        }
+        return $rows;
+    }
+    public function review($questions,$expected)
+    {
+        if(!is_array($questions)||count($questions)!==$expected||$expected<1||$expected>30)throw new DomainException('questions_invalid');
+        $rows=$this->candidates($questions,[]);
+        foreach(array_values($questions) as $i=>$q){
+            $included=is_array($q)&&in_array($q['included']??null,[true,1,'1'],true);
+            if($included)$rows[$i]=$this->validate([$q],1)[0];
+            $rows[$i]['included']=$included;
+        }
+        return $rows;
+    }
+    public function selected($questions)
+    {
+        if(!is_array($questions))throw new DomainException('questions_invalid');
+        $selected=array_values(array_filter($questions,static fn($q)=>is_array($q)&&($q['included']??true)));
+        if(!$selected)throw new DomainException('none_included');
+        return $this->validate($selected,count($selected));
     }
     public function validate($questions,$count=5)
     {

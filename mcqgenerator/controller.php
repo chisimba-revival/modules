@@ -59,7 +59,7 @@ class mcqgenerator extends controller
                 }else{
                     if(empty(json_decode($row['questions_json'],true)))throw new DomainException('questions_invalid');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
-                    $questions=$service->validate($this->getParam('questions',[]),(int)$row['question_count']);
+                    $questions=$service->review($this->getParam('questions',[]),count(json_decode($row['questions_json'],true)));
                     $store->saveSet($row,$service->title($title),$questions,$this->param('reviewed')==='1');
                 }
                 return $this->nextAction('view',['id'=>$id]);
@@ -70,6 +70,7 @@ class mcqgenerator extends controller
                     if(!json_decode($row['questions_json'],true))throw new DomainException('questions_invalid');
                     $format=$this->param('format');if(!in_array($format,['txt','odt'],true))throw new DomainException('file_type');
                     $export=$this->getObject('workshopexport');$answers=$this->param('answers')==='1';
+                    $row['questions_json']=json_encode($service->selected(json_decode($row['questions_json'],true)),JSON_THROW_ON_ERROR);
                     $body=$format==='odt'?$export->odt($row,$answers):$export->text($row,$answers);
                     header('X-Content-Type-Options: nosniff');header('Content-Type: '.($format==='odt'?'application/vnd.oasis.opendocument.text':'text/plain; charset=UTF-8'));
                     header('Content-Disposition: '.$export->disposition($row,$format,$answers));echo $body;exit;

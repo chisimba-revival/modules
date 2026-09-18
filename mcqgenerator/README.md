@@ -94,3 +94,5 @@ login-redirect failure, draft retention, duplicate submission and reduced motion
 Rejected AI responses now retain a private validation report with the saved set: question counts, malformed questions, duplicate options and unmatched source quotations. Reports survive reload and are cleared when another generation begins. No automatic provider retry occurs. Failures recorded before this update cannot be reconstructed because their responses were not retained.
 
 The former questionworkshop route redirects read-only links here. Saved sets retain their original table and ownership. Old write forms are not replayed; reopen them at the new route.
+
+AI responses that fail grounding checks retain bounded review candidates. Flagged questions start excluded; authors may correct or explicitly include them. All choices persist, excluded questions remain editable, and TXT/ODT exports and course imports use only the saved included questions, consecutively numbered. Included questions still require four distinct options and a valid answer. Original warnings remain visible after human review. Historical report-only failures cannot be reconstructed.

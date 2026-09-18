@@ -111,7 +111,7 @@ class mcqaigenerator extends ChisimbaObject
 
         $questions = $this->validateQuestions($sourceText, $result['data']['questions'], $count);
         if ($questions === false) {
-            return array('ok' => false, 'error' => 'grounding_validation_failed', 'issues'=>$this->validationIssues($sourceText,$result['data']['questions'],$count));
+            return array('ok' => false, 'error' => 'grounding_validation_failed', 'issues'=>$this->validationIssues($sourceText,$result['data']['questions'],$count), 'candidates'=>array_values(array_slice($result['data']['questions'],0,30)));
         }
 
         return array('ok' => true, 'questions' => $questions);

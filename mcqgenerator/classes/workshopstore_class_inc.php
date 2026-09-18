@@ -33,9 +33,9 @@ class workshopstore extends dbTable
         if(is_object($result)||$result===false)throw new RuntimeException('storage_failed');
         return $result===1;
     }
-    public function finish(array $row,array $questions)
+    public function finish(array $row,array $questions,array $issues=[])
     {
-        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
+        if($this->updateSet($row['id'],['questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR),'state'=>'generated','version'=>(int)$row['version']+1])===false)throw new RuntimeException('storage_failed');
     }
     public function failed(array $row,array $issues=[]) { $this->updateSet($row['id'],['state'=>'failed','validation_json'=>json_encode($issues,JSON_THROW_ON_ERROR)]); }
     /** Serialise imports with a row lock; never duplicate a saved set on retry. */
