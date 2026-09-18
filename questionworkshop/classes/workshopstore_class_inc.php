@@ -56,6 +56,12 @@ class workshopstore extends dbTable
             $this->commitTransaction();return $test;
         }catch(Throwable $e){$this->rollbackTransaction();throw $e;}
     }
+    /** Remove only the owner's selected revision; imported course copies are independent. */
+    public function removeOwned($id,$owner,$version)
+    {
+        $affected=$this->run('DELETE FROM tbl_questionworkshop_sets WHERE id='.$this->q($id).' AND ownerid='.$this->q($owner).' AND version='.(int)$version);
+        if($affected!==1)throw new DomainException('changed');
+    }
     private function checked($result)
     {
         if($result===false || is_object($result)&&is_a($result,'PEAR_Error'))throw new RuntimeException('storage_failed');

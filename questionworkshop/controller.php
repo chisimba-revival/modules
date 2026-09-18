@@ -16,7 +16,7 @@ class questionworkshop extends controller
         $owner=(string)$this->getObject('user','security')->userId();
         if(!$policy->allowed()){http_response_code(403);$this->setVar('workshopError','forbidden');return 'denied_tpl.php';}
         try {
-            if(in_array($action,['create','generate','save','import'],true)){
+            if(in_array($action,['create','generate','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('questionworkshop_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='create'){
                     $title=$service->title($title);$extract=$this->getObject('workshopsource');
@@ -31,6 +31,12 @@ class questionworkshop extends controller
                     return $this->nextAction('view',['id'=>$id]);
                 }
                 $row=$service->read($id);
+                if($action==='delete'){
+                    if($this->param('confirm_delete')!=='1')throw new DomainException('delete_confirm_required');
+                    if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
+                    $store->removeOwned($row['id'],$owner,(int)$row['version']);
+                    return $this->nextAction('list');
+                }
                 if($action==='import'){
                     $context=(string)$this->getObject('dbcontext','context')->getContextCode();
                     if($context!==$this->param('contextcode'))throw new DomainException('course_forbidden');

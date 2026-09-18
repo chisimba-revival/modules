@@ -39,4 +39,7 @@ if(!$workshopRow){
   echo '<label><input type="checkbox" name="reviewed" value="1"'.(!empty($set['reviewed'])?' checked':'').'> '.$t('review_confirm').'</label><div class="chisimba-form-actions">'.$r->button('save_review','save').'</div></form>';
  }
 }
+if($workshopRow){
+ echo '<details><summary>'.$t('delete_set').'</summary><p>'.$t('delete_notice').'</p>'.$r->form('delete',$workshopToken,$workshopRow['id']).'<input type="hidden" name="version" value="'.$e($workshopRow['version']).'"><label><input type="checkbox" name="confirm_delete" value="1" required> '.$t('delete_confirm').'</label><div class="chisimba-form-actions">'.$r->button('delete_set','trash-2').'</div></form></details>';
+}
 echo '</section>';

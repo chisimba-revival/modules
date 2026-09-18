@@ -1,4 +1,4 @@
-# Question workshop
+# Multiple Choice Generator
 
 Standalone, private MCQ authoring for offline teaching. Local route:
 `index.php?module=questionworkshop`. Registered under teaching/admin tools and
@@ -71,3 +71,9 @@ chisimba.test:8445 and private /tmp/workshop-fixture.json. Sequence: provision,
 copy fixture JSON to host, source browser, copy updated JSON into container, seed,
 review browser, import_integration.php. Disable QA accounts and remove their rows
 and private fixture/session files afterwards. Do not commit credentials or fixtures.
+
+Owners can delete a saved set from its Delete set panel, including source-only sets.
+Deletion requires POST, CSRF, explicit confirmation, ownership and the current
+revision. Existing downloads and imported course copies are independent and remain.
+The internal module identifier remains `questionworkshop` so existing sets and links
+continue working.
