@@ -72,7 +72,7 @@ copy fixture JSON to host, source browser, copy updated JSON into container, see
 review browser, import_integration.php. Disable QA accounts and remove their rows
 and private fixture/session files afterwards. Do not commit credentials or fixtures.
 
-Owners can delete a saved set from its Delete set panel, including source-only sets.
+Owners can delete a saved set using the Delete set icon button beside Open set, then confirming the popup, including source-only sets.
 Deletion requires POST, CSRF, explicit confirmation, ownership and the current
 revision. Existing downloads and imported course copies are independent and remain.
 The internal module identifier remains `questionworkshop` so existing sets and links

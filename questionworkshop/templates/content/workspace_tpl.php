@@ -9,7 +9,7 @@ if(!$workshopRow){
  echo '<div class="chisimba-form-field"><label for="sourcefile">'.$t('source_file').'</label><input id="sourcefile" type="file" name="sourcefile" accept=".txt,.odt"><p>'.$t('limits').'</p></div>';
  echo '<div class="chisimba-form-field"><label for="count">'.$t('count').'</label><input id="count" type="number" name="count" min="1" max="30" value="'.$e($workshopCount).'" required></div>';
  echo '<div class="chisimba-form-actions">'.$r->button('save_source','save').'</div></form></section><section class="chisimba-form-card"><h2>'.$t('my_sets').'</h2>';
- foreach(array_slice($workshopSets,0,20) as $set)echo '<article class="chisimba-form-card"><h3>'.$e($set['title']).'</h3><p>'.$t(!empty($set['reviewed'])?'reviewed':'draft_notice').'</p>'.$r->link('open','eye',['action'=>'view','id'=>$set['id']]).'</article>';
+ foreach(array_slice($workshopSets,0,20) as $set)echo '<article class="chisimba-form-card"><h3>'.$e($set['title']).'</h3><p>'.$t(!empty($set['reviewed'])?'reviewed':'draft_notice').'</p>'.'<div class="chisimba-form-actions">'.$r->link('open','eye',['action'=>'view','id'=>$set['id']]).$r->deleteForm($set,$workshopToken).'</div></article>';
  echo '<nav class="chisimba-form-actions">';if($workshopPage>1)echo $r->link('previous','arrow-left',['page'=>$workshopPage-1]);if(count($workshopSets)>20)echo $r->link('next','arrow-right',['page'=>$workshopPage+1]);echo '</nav>';
 }else{
  $set=$workshopRow;$questions=json_decode($set['questions_json'],true)?:[];
@@ -39,7 +39,6 @@ if(!$workshopRow){
   echo '<label><input type="checkbox" name="reviewed" value="1"'.(!empty($set['reviewed'])?' checked':'').'> '.$t('review_confirm').'</label><div class="chisimba-form-actions">'.$r->button('save_review','save').'</div></form>';
  }
 }
-if($workshopRow){
- echo '<details><summary>'.$t('delete_set').'</summary><p>'.$t('delete_notice').'</p>'.$r->form('delete',$workshopToken,$workshopRow['id']).'<input type="hidden" name="version" value="'.$e($workshopRow['version']).'"><label><input type="checkbox" name="confirm_delete" value="1" required> '.$t('delete_confirm').'</label><div class="chisimba-form-actions">'.$r->button('delete_set','trash-2').'</div></form></details>';
-}
+if($workshopRow)echo '<div class="chisimba-form-actions">'.$r->deleteForm($workshopRow,$workshopToken).'</div>';
 echo '</section>';
+echo '<script defer src="'.$e($this->getResourceUri('delete.js','questionworkshop')).'?v=013"></script>';

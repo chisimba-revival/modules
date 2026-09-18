@@ -7,5 +7,12 @@ class workshoprenderer extends ChisimbaObject
     public static function escape($text){return htmlspecialchars((string)$text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
     public function link($key,$icon,array $params){return '<a class="button chisimba-button-secondary" href="'.self::escape($this->uri($params,'questionworkshop')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($key)).'</span></a>';}
     public function button($key,$icon){return '<button class="button chisimba-button-primary" type="submit">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($key)).'</span></button>';}
+    public function deleteForm(array $set,$token)
+    {
+        $e=[self::class,'escape'];
+        return '<form method="post" data-workshop-delete data-confirm="'.$e($set['title']."\n\n".$this->text('delete_notice')).'" action="'.$e($this->uri(['action'=>'delete','id'=>$set['id']],'questionworkshop')).'">'
+            .'<input type="hidden" name="csrf_token" value="'.$e($token).'"><input type="hidden" name="version" value="'.$e($set['version']).'"><input type="hidden" name="confirm_delete" value="0">'
+            .'<button disabled type="submit" class="button chisimba-button-danger">'.$this->getObject('iconservice','ui')->render('trash-2',['decorative'=>true]).'<span>'.$e($this->text('delete_set')).'</span></button></form>';
+    }
     public function form($action,$token,$id=''){return '<form method="post" enctype="multipart/form-data" action="'.self::escape($this->uri(['action'=>$action,'id'=>$id],'questionworkshop')).'"><input type="hidden" name="csrf_token" value="'.self::escape($token).'">';}
 }
