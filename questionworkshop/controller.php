@@ -72,7 +72,7 @@ class questionworkshop extends controller
                     $export=$this->getObject('workshopexport');$answers=$this->param('answers')==='1';
                     $body=$format==='odt'?$export->odt($row,$answers):$export->text($row,$answers);
                     header('X-Content-Type-Options: nosniff');header('Content-Type: '.($format==='odt'?'application/vnd.oasis.opendocument.text':'text/plain; charset=UTF-8'));
-                    header('Content-Disposition: attachment; filename="'.($answers?'answer-key':'questions').'.'.$format.'"');echo $body;exit;
+                    header('Content-Disposition: '.$export->disposition($row,$format,$answers));echo $body;exit;
                 }
             }
         }catch(DomainException $e){
