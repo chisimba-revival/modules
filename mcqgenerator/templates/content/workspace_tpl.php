@@ -4,12 +4,13 @@ $r=$this->getObject('workshoprenderer');$e=[$r,'escape'];$t=fn($key)=>$e($r->tex
 echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="chisimba-form-card chisimba-form-card--wide"><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('new_question_set','plus',['action'=>'new']).$r->link('my_sets','list',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','guide',true).'</nav>';
 if($workshopError!=='')echo '<p role="alert" class="error">'.$t($workshopError).'</p>';
 if(!$workshopRow){
- echo '<h2>'.$t('new_set').'</h2>'.$r->form('create',$workshopToken);
+ $createOpen=$this->getParam('action')==='new'||$workshopError!=='';
+ echo '<details id="new-question-set"'.($createOpen?' open':'').'><summary>'.$t('new_set').'</summary>'.$r->form('create',$workshopToken);
  echo '<div class="chisimba-form-field"><label for="set-title">'.$t('set_title').'</label><input id="set-title" name="title" maxlength="200" required value="'.$e($workshopTitle).'"></div>';
  echo '<div class="chisimba-form-field"><label for="source">'.$t('source').'</label><textarea id="source" name="source" rows="10">'.$e($workshopSource).'</textarea></div>';
  echo '<div class="chisimba-form-field"><label for="sourcefile">'.$t('source_file').'</label><input id="sourcefile" type="file" name="sourcefile" accept=".txt,.odt"><p>'.$t('limits').'</p></div>';
  echo '<div class="chisimba-form-field"><label for="count">'.$t('count').'</label><input id="count" type="number" name="count" min="1" max="30" value="'.$e($workshopCount).'" required></div>';
- echo '<div class="chisimba-form-actions">'.$r->button('save_source','save').'</div></form></section><section class="chisimba-form-card chisimba-form-card--wide"><h2>'.$t('my_sets').'</h2>';
+ echo '<div class="chisimba-form-actions">'.$r->button('save_source','save').'</div></form></details></section><section class="chisimba-form-card chisimba-form-card--wide"><h2>'.$t('my_sets').'</h2>';
  foreach(array_slice($workshopSets,0,20) as $set)echo '<article class="chisimba-form-card chisimba-form-card--wide"><h3>'.$e($set['title']).'</h3><p>'.$t(!empty($set['reviewed'])?'reviewed':'draft_notice').'</p>'.'<div class="chisimba-form-actions">'.$r->link('open','eye',['action'=>'view','id'=>$set['id']]).$r->deleteForm($set,$workshopToken).'</div></article>';
  echo '<nav class="chisimba-form-actions">';if($workshopPage>1)echo $r->link('previous','arrow-left',['page'=>$workshopPage-1]);if(count($workshopSets)>20)echo $r->link('next','arrow-right',['page'=>$workshopPage+1]);echo '</nav>';
 }else{
