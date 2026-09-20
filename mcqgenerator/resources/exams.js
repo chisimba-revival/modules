@@ -26,6 +26,8 @@
                 if (keep.checked) kept++;
                 var button = entry.querySelector('[data-exam-remove]');
                 button.hidden = false;
+                var fallback = entry.querySelector('[data-exam-keep-label]');
+                if (fallback) fallback.hidden = true;
                 button.classList.toggle('chisimba-button-danger', keep.checked);
                 button.classList.toggle('chisimba-button-secondary', !keep.checked);
                 if (!button.examLabels) {

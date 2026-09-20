@@ -205,3 +205,13 @@ removal, in-page navigation preserving selection, and no JavaScript errors.
 `tests/exam_selection_browser.cjs` uses a disposable fixture described by
 `/tmp/mcq-counts-fixture.json` (teacher credentials, one exam and one generated
 chapter with fifteen synthetic questions); it never calls AI.
+
+### Question-card layout (0.5.2)
+
+Order and Marks now share an aligned control row with the Remove/Undo action.
+Compact card padding reduces whitespace. The checkbox is retained as a no-JavaScript
+fallback and hidden once removal buttons are active. Pending-removal badges start
+empty and appear only when a removal is pending. Reusable compact-card/control-row
+primitives live in the framework skin. Real Chrome desktop/390px screenshots and
+selection, remove/undo and save/reload checks passed, along with PHP 8.5 and existing
+exam rendering/domain checks.

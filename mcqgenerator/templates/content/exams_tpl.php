@@ -45,10 +45,12 @@ if(!$examRow){
  echo '<p><label><input type="checkbox" name="exam[headings]" value="1"'.($headings?' checked':'').'> '.$t('exam_headings').'</label></p>';
  foreach($content['questions'] as $i=>$entry){
   $key=$entry['id'];$input=$draft['entries'][$key]??null;$q=$entry['question'];
-  echo '<fieldset data-exam-entry class="'.$card.'"><legend>'.($i+1).'. '.$e($entry['chapter']).'</legend><p><strong>'.$e($q['stem']).'</strong></p><details><summary>'.$t('exam_preview').'</summary><ol type="A">';foreach($q['options'] as $option)echo '<li>'.$e($option).'</li>';echo '</ol><p>'.$t('correct').': '.$e(chr(65+$q['correctIndex']).'. '.$q['options'][$q['correctIndex']]).'</p></details><div class="chisimba-form-actions" style="align-items:end;flex-wrap:wrap">';
-  echo '<label><input type="checkbox" data-exam-keep name="exam[entries]['.$key.'][keep]" value="1"'.($input===null||($input['keep']??'')==='1'?' checked':'').'> '.$t('exam_keep').'</label>';
-  echo '<button hidden data-exam-remove type="button" class="button chisimba-button-danger"><span data-remove-label>'.$this->getObject('iconservice','ui')->render('trash-2',['decorative'=>true]).$t('exam_remove_question').'</span><span data-undo-label hidden>'.$this->getObject('iconservice','ui')->render('rotate-ccw',['decorative'=>true]).$t('exam_undo_remove').'</span></button><span data-removal-pending hidden class="chisimba-pill">'.$t('exam_removal_pending').'</span>';
-  foreach(['order'=>[$i+1,9999],'marks'=>[$entry['marks'],100]] as $field=>$value)echo '<div class="chisimba-form-field"><label for="'.$field.$key.'">'.$t('exam_'.$field).'</label><input style="width:7rem" type="number" id="'.$field.$key.'" name="exam[entries]['.$key.']['.$field.']" min="1" max="'.$value[1].'" required value="'.$e($input[$field]??$value[0]).'"></div>';
+  echo '<fieldset data-exam-entry class="'.$card.' chisimba-form-card--compact"><legend>'.($i+1).'. '.$e($entry['chapter']).'</legend><p><strong>'.$e($q['stem']).'</strong></p><details><summary>'.$t('exam_preview').'</summary><ol type="A">';foreach($q['options'] as $option)echo '<li>'.$e($option).'</li>';echo '</ol><p>'.$t('correct').': '.$e(chr(65+$q['correctIndex']).'. '.$q['options'][$q['correctIndex']]).'</p></details><div class="chisimba-control-row">';
+  foreach(['order'=>[$i+1,9999],'marks'=>[$entry['marks'],100]] as $field=>$value)echo '<div class="chisimba-form-field"><label for="'.$field.$key.'">'.$t('exam_'.$field).'</label><input type="number" id="'.$field.$key.'" name="exam[entries]['.$key.']['.$field.']" min="1" max="'.$value[1].'" required value="'.$e($input[$field]??$value[0]).'"></div>';
+  echo '<div class="chisimba-control-row__actions">';
+  echo '<label data-exam-keep-label><input type="checkbox" data-exam-keep name="exam[entries]['.$key.'][keep]" value="1"'.($input===null||($input['keep']??'')==='1'?' checked':'').'> '.$t('exam_keep').'</label>';
+  echo '<button hidden data-exam-remove type="button" class="button chisimba-button-danger"><span data-remove-label>'.$this->getObject('iconservice','ui')->render('trash-2',['decorative'=>true]).$t('exam_remove_question').'</span><span data-undo-label hidden>'.$this->getObject('iconservice','ui')->render('rotate-ccw',['decorative'=>true]).$t('exam_undo_remove').'</span></button><span data-removal-pending hidden data-message="'.$t('exam_removal_pending').'" class="chisimba-pill"></span>';
+  echo '</div>';
   echo '</div></fieldset>';
  }
  echo '<p><label><input type="checkbox" name="exam[mixAnswers]" value="1"'.(($draft['mixAnswers']??'')==='1'?' checked':'').'> '.$t('exam_mix_answers').'</label></p><p>'.$t('exam_mix_explain').'</p>';
@@ -57,4 +59,4 @@ if(!$examRow){
 }
 echo '</div><script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=040"></script>';
 
-echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=053"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=054"></script>';
