@@ -40,3 +40,20 @@ $selection=$s->emptyContent();$selection['questions']=[$entry];$row['content_jso
 $set['id']='chapter1';$set['questions_json']=json_encode([$q,$q+['included'=>false],$q]);
 rejects(fn()=>$s->add($row,$set,['1']),'exam_selection');
 echo "PASS exam size bound and excluded source question rejection.\n";
+
+$mix=$s->emptyContent();
+for($i=0;$i<17;$i++)$mix['questions'][]=['id'=>'mix'.$i,'sourceSetId'=>'chapter1','sourceIndex'=>$i,'chapter'=>'Chapter','marks'=>1,'question'=>$q];
+$original=$mix;$mixed=$s->mixAnswers($mix);$counts=[0,0,0,0];
+foreach($mixed['questions'] as $i=>$entry){
+ $answer=$entry['question'];++$counts[$answer['correctIndex']];
+ check($answer['options'][$answer['correctIndex']]===$q['options'][$q['correctIndex']],'correct answer text preserved');
+ $options=$answer['options'];$expected=$q['options'];sort($options);sort($expected);check($options===$expected,'every option preserved');
+ check($entry['sourceIndex']===$i,'source reference preserved');
+}
+check(max($counts)-min($counts)<=1,'answer positions balanced');check($mix===$original,'input snapshots unchanged');
+$partial=$s->mixAnswers($mixed,16);check(array_slice($partial['questions'],0,16)===array_slice($mixed['questions'],0,16),'adding leaves previous option order unchanged');
+$row['content_json']=json_encode($mixed);
+check($s->lines($row)===$s->lines($row),'repeated paper exports stable');
+$key=$s->lines($row,true);
+foreach($mixed['questions'] as $entry){$a=$entry['question'];check(in_array(chr(65+$a['correctIndex']).'. '.$a['options'][$a['correctIndex']],$key,true),'marking key follows saved order');}
+echo "PASS mixed answer positions, stable exports and matching marking key.\n";

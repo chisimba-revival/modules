@@ -31,6 +31,7 @@ class examservice extends ChisimbaObject
         }
         if(!$added)throw new DomainException('exam_selection');
         if(count($content['questions'])>self::MAX_QUESTIONS)throw new DomainException('exam_limit');
+        $content=$this->mixAnswers($content,count($content['questions'])-$added);
         $content['reviewed']=false;return $content;
     }
     public function edit(array $row,$input)
@@ -51,7 +52,25 @@ class examservice extends ChisimbaObject
         usort($ordered,static fn($a,$b)=>[$a['order'],$a['index']]<=>[$b['order'],$b['index']]);
         $content['questions']=array_column($ordered,'entry');$content['instructions']=trim($instructions);
         $content['headings']=($input['headings']??'')==='1';$content['reviewed']=($input['reviewed']??'')==='1';
+        if(($input['mixAnswers']??'')==='1'){$content=$this->mixAnswers($content);$content['reviewed']=false;}
         return $content;
+    }
+    /** Persist option order with its answer index; never shuffle during export. */
+    public function mixAnswers(array $content,$start=0)
+    {
+        $counts=[0,0,0,0];
+        foreach($content['questions'] as $i=>&$entry){
+            $q=&$entry['question'];
+            if($i<$start){++$counts[$q['correctIndex']];continue;}
+            $positions=array_keys($counts,min($counts),true);
+            $target=$positions[random_int(0,count($positions)-1)];
+            $correct=$q['options'][$q['correctIndex']];
+            $others=$q['options'];array_splice($others,$q['correctIndex'],1);
+            shuffle($others);array_splice($others,$target,0,[$correct]);
+            $q['options']=$others;$q['correctIndex']=$target;++$counts[$target];
+            unset($q);
+        }
+        unset($entry);return $content;
     }
     public function lines(array $row,$answers=false,?array &$styles=null)
     {

@@ -12,16 +12,17 @@ if(!$examRow){
  echo '<nav class="chisimba-form-actions">';if($examPage>1)echo $r->link('previous','arrow-left',['action'=>'exams','page'=>$examPage-1]);if(count($examRows)>20)echo $r->link('next','arrow-right',['action'=>'exams','page'=>$examPage+1]);echo '</nav>';
 }else{
  $content=$service->content($examRow);$draft=is_array($examDraft)?$examDraft:null;
+ $chapterCounts=array_count_values(array_column($content['questions'],'sourceSetId'));
  echo '<section class="'.$card.'"><h2>'.$e($examRow['title']).'</h2><p>'.count($content['questions']).' '.$t('exam_questions').' · '.$t('exam_total').': '.array_sum(array_column($content['questions'],'marks')).'</p><p>'.$t('exam_snapshot').'</p>';
  if($content['questions'])echo '<div class="chisimba-form-actions">'.$r->link('paper_odt','download',['action'=>'examdownload','id'=>$examRow['id']]).$r->link('exam_download_key','download',['action'=>'examdownload','id'=>$examRow['id'],'answers'=>'1']).'</div><p>'.$t('saved_exports').'</p>';
  echo '</section>';
  // Keep the chapter picker separate from the saved exam editor so additions are small requests.
- echo '<section class="'.$card.'" id="chapters"><h2>'.$t('exam_add_chapter').'</h2><p>'.$t('exam_add_explain').'</p>';
+ echo '<section class="'.$card.'" id="chapters"><h2>'.$t('exam_add_chapter').'</h2><p role="status"><strong>'.$t('exam_saved_count').': <span class="chisimba-pill chisimba-pill--success">'.count($content['questions']).'</span></strong></p><p>'.$t('exam_add_explain').'</p>';
  if($examChapter){
   $source=json_decode($examChapter['questions_json'],true)?:[];$existing=[];
   foreach($content['questions'] as $entry)if($entry['sourceSetId']===$examChapter['id'])$existing[$entry['sourceIndex']]=true;
   echo '<h3>'.$e($examChapter['title']).'</h3><p>'.$t(!empty($examChapter['reviewed'])?'reviewed':'draft_notice').'</p>';
-  echo str_replace('<form ', '<form data-exam-dirty data-unsaved="'.$t('exam_unsaved').'" ', $r->form('examadd',$examToken,$examRow['id'])).'<input type="hidden" name="version" value="'.$e($examRow['version']).'"><input type="hidden" name="setid" value="'.$e($examChapter['id']).'"><input type="hidden" name="setversion" value="'.$e($examChapter['version']).'">';
+  echo str_replace('<form ', '<form data-exam-dirty data-unsaved="'.$t('exam_unsaved').'" ', $r->form('examadd',$examToken,$examRow['id'])).'<input type="hidden" name="page" value="'.$examPage.'"><input type="hidden" name="version" value="'.$e($examRow['version']).'"><input type="hidden" name="setid" value="'.$e($examChapter['id']).'"><input type="hidden" name="setversion" value="'.$e($examChapter['version']).'">';
   foreach($source as $i=>$q){
    if(!($q['included']??true))continue;
    echo '<article style="padding:1rem 0;border-bottom:1px solid var(--chisimba-border-color,#ddd)"><label><input type="checkbox" name="selected[]" value="'.$i.'"'.(isset($existing[$i])?' disabled':'').'> <strong>'.($i+1).'. '.$e($q['stem']).'</strong></label>';
@@ -31,10 +32,10 @@ if(!$examRow){
   if(!$source)echo '<p>'.$t('exam_no_questions').'</p>';
   echo '<div class="chisimba-form-actions">'.$r->button('exam_add_selected','plus').'</div></form>';
  }
- echo '<details'.(!$examChapter?' open':'').'><summary>'.$t('exam_choose_chapter').'</summary><div class="chisimba-form-actions" style="flex-wrap:wrap">';
- foreach(array_slice($examSets,0,20) as $set){echo '<a class="button chisimba-button-secondary" href="'.$e($this->uri(['action'=>'examview','id'=>$examRow['id'],'setid'=>$set['id'],'page'=>$examPage],'mcqgenerator')).'#chapters">'.$this->getObject('iconservice','ui')->render('book-open',['decorative'=>true]).'<span>'.$e($set['title']).'</span></a>';}
- echo '</div><nav class="chisimba-form-actions">';if($examPage>1)echo $r->link('previous','arrow-left',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage-1]);if(count($examSets)>20)echo $r->link('next','arrow-right',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage+1]);echo '</nav></details></section>';
- echo '<section class="'.$card.'" id="exam-editor"><h2>'.$t('exam_arrange').'</h2><p>'.$t('exam_edit_explain').'</p>'.str_replace('<form ', '<form data-exam-dirty data-unsaved="'.$t('exam_unsaved').'" ', $r->form('examsave',$examToken,$examRow['id'])).'<input type="hidden" name="version" value="'.$e($examRow['version']).'">';
+ echo '<details data-exam-picker data-load-error="'.$t('exam_page_failed').'"'.(!$examChapter?' open':'').'><summary>'.$t('exam_choose_chapter').'</summary><div class="chisimba-form-actions" style="flex-wrap:wrap">';
+ foreach(array_slice($examSets,0,20) as $set){echo '<a class="button chisimba-button-secondary" href="'.$e($this->uri(['action'=>'examview','id'=>$examRow['id'],'setid'=>$set['id'],'page'=>$examPage],'mcqgenerator')).'#chapters">'.$this->getObject('iconservice','ui')->render('book-open',['decorative'=>true]).'<span>'.$e($set['title']).'</span>'.(isset($chapterCounts[$set['id']])?'<span class="chisimba-pill chisimba-pill--success" aria-label="'.$e($chapterCounts[$set['id']].' '.$r->text('exam_in_exam')).'">'.$chapterCounts[$set['id']].'</span>':'').'</a>';}
+ echo '</div><p data-page-status role="status" hidden></p><nav data-exam-pagination class="chisimba-form-actions">';if($examPage>1)echo $r->link('previous','arrow-left',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage-1]);if(count($examSets)>20)echo $r->link('next','arrow-right',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage+1]);echo '</nav></details></section>';
+ echo '<section class="'.$card.'" id="exam-editor"><h2>'.$t('exam_arrange').'</h2><p>'.$t('exam_edit_explain').'</p>'.str_replace('<form ', '<form data-exam-dirty data-unsaved="'.$t('exam_unsaved').'" ', $r->form('examsave',$examToken,$examRow['id'])).'<input type="hidden" name="page" value="'.$examPage.'"><input type="hidden" name="version" value="'.$e($examRow['version']).'">';
  echo '<div class="chisimba-form-field"><label for="exam-name">'.$t('exam_name').'</label><input type="text" id="exam-name" name="title" maxlength="200" required value="'.$e($draft!==null?$examTitle:$examRow['title']).'"></div>';
  echo '<div class="chisimba-form-field"><label for="instructions">'.$t('exam_instructions').'</label><textarea id="instructions" name="exam[instructions]" rows="3" maxlength="4000">'.$e($draft['instructions']??$content['instructions']).'</textarea></div>';
  $headings=$draft!==null?($draft['headings']??'')==='1':$content['headings'];
@@ -46,9 +47,10 @@ if(!$examRow){
   foreach(['order'=>[$i+1,9999],'marks'=>[$entry['marks'],100]] as $field=>$value)echo '<div class="chisimba-form-field"><label for="'.$field.$key.'">'.$t('exam_'.$field).'</label><input style="width:7rem" type="number" id="'.$field.$key.'" name="exam[entries]['.$key.']['.$field.']" min="1" max="'.$value[1].'" required value="'.$e($input[$field]??$value[0]).'"></div>';
   echo '</div></fieldset>';
  }
+ echo '<p><label><input type="checkbox" name="exam[mixAnswers]" value="1"'.(($draft['mixAnswers']??'')==='1'?' checked':'').'> '.$t('exam_mix_answers').'</label></p><p>'.$t('exam_mix_explain').'</p>';
  $reviewed=$draft!==null?($draft['reviewed']??'')==='1':$content['reviewed'];
  echo '<p><label><input type="checkbox" name="exam[reviewed]" value="1"'.($reviewed?' checked':'').'> '.$t('exam_review').'</label></p><div class="chisimba-form-actions">'.$r->button('exam_save','save').'</div><input type="hidden" name="exam[complete]" value="1"></form></section><div class="chisimba-form-actions">'.$r->deleteForm($examRow,$examToken,true).'</div>';
 }
 echo '</div><script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=040"></script>';
 
-echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=040"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=045"></script>';

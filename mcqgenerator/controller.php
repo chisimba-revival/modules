@@ -137,7 +137,7 @@ class mcqgenerator extends controller
                     $content=$service->edit($row,$this->getParam('exam',[]));$title=$this->getObject('workshopservice')->title($this->param('title'));
                 }
                 $store->saveExam($row,$title,$content);
-                return $this->nextAction('examview',['id'=>$id,'saved'=>'1']);
+                return $this->nextAction('examview',['id'=>$id,'saved'=>'1','page'=>max(1,(int)$this->param('page','1'))]);
             }
             if(in_array($action,['examview','examdownload'],true)){
                 $row=$service->read($id);
