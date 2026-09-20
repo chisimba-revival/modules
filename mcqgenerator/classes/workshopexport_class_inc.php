@@ -23,6 +23,11 @@ class workshopexport extends ChisimbaObject
         if(!$questions)throw new DomainException('none_included');
         foreach($questions as $i=>$q){
             $lines[]=($i+1).'. '.$q['stem'];
+            if(($q['type']??'mcq')==='short_answer'){
+                if($answers){$lines[]=$r->text('model_answer').': '.$q['modelAnswer'];$lines[]=$r->text('marking_points').': '.$q['markingPoints'];$lines[]=$r->text('source_basis').': '.$q['sourceBasis'];}
+                else {$lines[]='';$lines[]='';}
+                $lines[]='';continue;
+            }
             if($answers){$lines[]=chr(65+$q['correctIndex']).'. '.$q['options'][$q['correctIndex']];$lines[]=$r->text('source_basis').': '.$q['sourceBasis'];}
             else foreach($q['options'] as $j=>$option)$lines[]=chr(65+$j).'. '.$option;
             $lines[]='';
@@ -47,7 +52,9 @@ class workshopexport extends ChisimbaObject
             foreach($lines as $index=>$line){
                 $style=$paragraphStyles[$index]??($index===0?'Title':'');
                 if(!in_array($style,['','Title','Keep','Heading'],true))throw new RuntimeException('export_failed');
-                $xml.='<text:p'.($style!==''?' text:style-name="'.$style.'"':'').'>'.htmlspecialchars($line,ENT_XML1|ENT_QUOTES,'UTF-8').'</text:p>';
+                $escaped=htmlspecialchars($line,ENT_XML1|ENT_QUOTES,'UTF-8');
+                $escaped=preg_replace('/\r\n|\r|\n/','<text:line-break/>',$escaped);
+                $xml.='<text:p'.($style!==''?' text:style-name="'.$style.'"':'').'>'.$escaped.'</text:p>';
             }
             $xml.='</office:text></office:body></office:document-content>';
             $zip->addFromString('content.xml',$xml);

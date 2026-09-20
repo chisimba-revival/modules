@@ -11,22 +11,23 @@ class workshopstore extends dbTable
     /** Lightweight chapter picker in natural title order; do not load chapter source text. */
     public function examChapters($owner,$page=1,$examid='')
     {
-        $rows=$this->rows("SELECT id,title,reviewed FROM tbl_questionworkshop_sets WHERE ownerid=".$this->q($owner)." AND examid=".$this->q($examid)." AND state='generated' AND questions_json<>'[]'");
+        $rows=$this->rows("SELECT id,title,reviewed,question_type FROM tbl_questionworkshop_sets WHERE ownerid=".$this->q($owner)." AND examid=".$this->q($examid)." AND state='generated' AND questions_json<>'[]'");
         usort($rows,static function($a,$b){
             $normal=static fn($title)=>preg_replace('/[-_\s]+/u',' ',$title);
             return strnatcasecmp($normal($a['title']),$normal($b['title']))?:strcmp($a['id'],$b['id']);
         });
         return array_slice($rows,(max(1,min(10000,(int)$page))-1)*20,21);
     }
-    public function createSet($owner,$title,$source,array $questions,$count=5,$examid='')
+    public function createSet($owner,$title,$source,array $questions,$count=5,$examid='',$type='mcq')
     {
+        if(!in_array($type,['mcq','short_answer'],true))throw new DomainException('questions_invalid');
         $this->beginTransaction();
         try {
             // Lock the parent against deletion while adding a chapter.
             $parent=$this->rows('SELECT id FROM tbl_mcqgenerator_exams WHERE id='.$this->q($examid).' AND ownerid='.$this->q($owner).' FOR UPDATE');
             if(!$parent)throw new DomainException('not_found');
             $now=$this->getObject('timeanddateservice','timeanddate-service')->nowStorage();
-            $id=$this->insertSet(['id'=>bin2hex(random_bytes(16)),'ownerid'=>$owner,'examid'=>$examid,'title'=>$title,'source_text'=>$source,'validation_json'=>'[]','questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'imported_testid'=>'','imported_context'=>'','question_count'=>$count,'state'=>'ready','version'=>1,'reviewed'=>0,'datecreated'=>$now,'datemodified'=>$now]);
+            $id=$this->insertSet(['id'=>bin2hex(random_bytes(16)),'ownerid'=>$owner,'examid'=>$examid,'question_type'=>$type,'title'=>$title,'source_text'=>$source,'validation_json'=>'[]','questions_json'=>json_encode($questions,JSON_THROW_ON_ERROR),'imported_testid'=>'','imported_context'=>'','question_count'=>$count,'state'=>'ready','version'=>1,'reviewed'=>0,'datecreated'=>$now,'datemodified'=>$now]);
             if (!$id) throw new RuntimeException('storage_failed');
             $this->commitTransaction();return $id;
         }catch(Throwable $e){$this->rollbackTransaction();throw $e;}

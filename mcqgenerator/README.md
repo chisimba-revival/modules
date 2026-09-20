@@ -1,6 +1,6 @@
-# Multiple Choice Generator
+# Question Generator
 
-Standalone, private MCQ authoring for offline teaching. Local route:
+Standalone, private multiple-choice and short-answer authoring for offline teaching. Local route:
 `index.php?module=mcqgenerator`. Registered under teaching/admin tools and
 My workspace. Administrators and site authors may use it; each saved set belongs
 only to its owner.
@@ -215,3 +215,55 @@ empty and appear only when a removal is pending. Reusable compact-card/control-r
 primitives live in the framework skin. Real Chrome desktop/390px screenshots and
 selection, remove/undo and save/reload checks passed, along with PHP 8.5 and existing
 exam rendering/domain checks.
+
+## Short-answer questions (0.6.0)
+
+The user-facing name is **Question Generator**; the internal `mcqgenerator` module
+ID, routes and existing records remain compatible. New sources offer Multiple
+choice / Short answer. On a saved MCQ chapter, **Create short-answer set from this
+source** copies the persisted source into a separate typed set in the same exam,
+after ownership, revision and CSRF checks. It does not invoke AI or alter the old
+set. Confirm AI use on the new set's generation screen.
+
+Short-answer generation uses the shared `ai` service and the existing checkpointed
+source-section/append workflow. Prompts request source-grounded, varied explanation,
+comparison, definition, examples, benefits/drawbacks and process questions. Answers
+should be a few words or two to three sentences. Models are limited to 120 words;
+each question includes editable model answer, marking points, suggested 1–10 marks
+and a verbatim supporting excerpt. Invalid/ungrounded candidates are flagged and
+excluded until reviewed. Equivalent answer wording is explicitly allowed. The
+service does not automatically assess whether every answer is semantically correct;
+human review remains necessary.
+
+Mixed exams preserve each question's type; short answers use their suggested marks
+initially. MCQ answer-position mixing skips short answers. Papers exclude model
+answers, criteria and source excerpts; marking guides include them. TXT/ODT set
+exports and mixed ODT exam exports are supported, with explicit line breaks for
+multiline marking criteria. Import of short answers into MCQ-only course pools is
+blocked in the interface and service.
+
+Upgrade through Module Catalogue: additive `question_type` defaults old sets to
+`mcq`; the guarded hook is repeatable. No existing question JSON or exam snapshots
+are rewritten. The local UTF-8 backup was taken before installation. All 32 existing
+sets and 3 exam records were verified unchanged apart from the added type column.
+
+Validation on PHP 8.5.4:
+- Existing workshop, source-section, append, exam, answer-mixing and count tests.
+- `tests/short_answer_test.php`: validation, review, candidate exclusion, mixed
+  marking, answer-safe text/ODT, multiline criteria and shared AI request/grounding.
+- `QUESTIONWORKSHOP_LOCAL_TEST=1 php tests/short_answer_integration.php`: actual
+  database generation with synthetic AI responses, model edits, save/reload, append,
+  timeout preservation, original-set preservation and import refusal.
+- Existing workspace/append/exam database tests and repeat schema updates.
+- Real Chrome: reuse saved source; new-source type selection; consent gate; model,
+  criteria and marks edits; invalid draft recovery; reload; mixed assembly; marks;
+  answer mixing; private text/ODT exports; contextual Help/Escape; desktop/390px;
+  cross-user/student denial and CSRF rejection. Exported ODT XML checked separately.
+- Disposable records removed; test accounts disabled and temporary grants revoked.
+
+`tests/short_answer_create_browser.cjs` and `tests/short_answer_review_browser.cjs`
+use disposable local fixture metadata in `/tmp/short-answer-fixture.json` and
+`/tmp/short-browser-ids.json`. The second phase requires synthetic questions to be
+seeded into the created short-answer set; it must not invoke a live AI provider.
+No paid AI calls were made; live provider quality was not assessed. No production
+site was changed.

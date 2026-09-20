@@ -11,6 +11,7 @@ class mcqgenerator_installscripts extends ChisimbaObject
   $columns=$admin->listTblFields($table);if(!is_array($columns))throw new RuntimeException('Schema inspection failed');
   $add=[];foreach(['validation_json','generation_json'] as $column)if(!in_array($column,$columns,true))$add[$column]=['type'=>'clob'];
   if(!in_array('examid',$columns,true))$add['examid']=['type'=>'text','length'=>32,'default'=>'','notnull'=>true];
+  if(!in_array('question_type',$columns,true))$add['question_type']=['type'=>'text','length'=>16,'default'=>'mcq','notnull'=>true];
   if(!$add)return;
   $changes=['add'=>$add];
   foreach([true,false] as $check){$result=$admin->alterTable($table,$changes,$check);if($result!==true&&$result!==MDB2_OK)throw new RuntimeException('Schema update failed');}

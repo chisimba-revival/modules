@@ -1,5 +1,5 @@
 <?php
-/** Private question-set lifecycle using the shared MCQ AI consumer. @author Derek Keats */
+/** Private typed question-set lifecycle using shared AI consumers. @author Derek Keats */
 if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
 class workshopservice extends ChisimbaObject
 {
@@ -15,16 +15,18 @@ class workshopservice extends ChisimbaObject
         if($title==='' || mb_strlen($title)>200 || !mb_check_encoding($title,'UTF-8') || preg_match('/[\x00-\x1F]/',$title))throw new DomainException('title_invalid');
         return $title;
     }
+    private function generator(array $row)
+    {return ($row['question_type']??'mcq')==='short_answer'?$this->getObject('shortanswergenerator'):$this->getObject('mcqaigenerator','mcqtests');}
     public function generate($id)
     {
         $row=$this->read($id);$store=$this->getObject('workshopstore');
         if(!$store->claim($row))throw new DomainException('generation_busy');
         try {
-            $result=$this->getObject('mcqaigenerator','mcqtests')->generate($row['source_text'],(int)$row['question_count']);
+            $result=$this->generator($row)->generate($row['source_text'],(int)$row['question_count']);
             if(empty($result['ok'])){
                 $code=$result['error']??'';
                 if($code==='grounding_validation_failed' && !empty($result['candidates'])){
-                    $candidates=$this->candidates($result['candidates'],$result['issues']??[]);
+                    $candidates=$this->candidates($result['candidates'],$result['issues']??[],$row['question_type']??'mcq');
                     $store->finish($row,$candidates,$result['issues']??[]);
                     return;
                 }
@@ -91,14 +93,14 @@ class workshopservice extends ChisimbaObject
             $capacity=$this->getObject('aicapacity','ai')->forTextGeneration();
             if($capacity!==$job['capacity'])throw new DomainException('capacity_changed');
             $i=$job['next'];
-            $generator=$this->getObject('mcqaigenerator','mcqtests');
+            $generator=$this->generator($row);
             $stems=isset($job['baseQuestions'])?array_column(array_merge($job['baseQuestions'],$job['questions']),'stem'):[];
             $stems=array_map(static fn($stem)=>mb_strcut($stem,0,$job['stemBytes']??512,'UTF-8'),$stems);
             $result=$stems?$generator->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens'],$stems):$generator->generate($job['parts'][$i],$job['counts'][$i],$capacity['outputTokens']);
             $questions=$result['questions']??$result['candidates']??[];
             if(!$questions)throw new DomainException(($result['error']??'')==='openai_timeout'?'generation_timeout':'generation_provider');
             $issues=$result['issues']??[];$offset=count($job['questions']);
-            $job['questions']=array_merge($job['questions'],$this->candidates($questions,$issues));
+            $job['questions']=array_merge($job['questions'],$this->candidates($questions,$issues,$row['question_type']??'mcq'));
             foreach($issues as $issue){if(isset($issue['question']))$issue['question']+=$offset;$job['issues'][]=$issue;}
             $job['next']++;
             // Persist this result before allowing the next section to start.
@@ -124,7 +126,7 @@ class workshopservice extends ChisimbaObject
     /** Import a reviewed snapshot as an inactive MCQ pool in the active course. */
     public function importCourse($id,$context)
     {
-        $row=$this->read($id);$user=$this->getObject('user','security');
+        $row=$this->read($id);if(($row['question_type']??'mcq')!=='mcq')throw new DomainException('short_import_unavailable');$user=$this->getObject('user','security');
         $course=$this->getObject('dbcontext','context')->getContextDetails($context);
         if(!$course || $context==='' || $context==='root' || !($user->isAdmin() || $user->isCourseAdmin($context) || $user->isContextLecturer($user->userId(),$context)))throw new DomainException('course_forbidden');
         return $this->getObject('workshopstore')->importOnce($id,$context,function($current)use($context,$user){
@@ -149,23 +151,28 @@ class workshopservice extends ChisimbaObject
         });
     }
     /** Retain bounded editable candidates, with flagged questions excluded initially. */
-    public function candidates(array $questions,array $issues)
+    public function candidates(array $questions,array $issues,$type='mcq')
     {
         $flagged=[];foreach($issues as $issue)if(isset($issue['question']))$flagged[(int)$issue['question']]=true;
         $text=static fn($v)=>is_string($v)?mb_substr(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u','',$v),0,4000,'UTF-8'):'';
         $rows=[];
         foreach(array_values(array_slice($questions,0,30)) as $i=>$q){
             $q=is_array($q)?$q:[];$options=is_array($q['options']??null)?array_values($q['options']):[];
+            if($type==='short_answer'){
+                $rows[]=['type'=>'short_answer','stem'=>$text($q['stem']??''),'modelAnswer'=>$text($q['modelAnswer']??''),'markingPoints'=>$text($q['markingPoints']??''),'marks'=>is_scalar($q['marks']??null)?(int)$q['marks']:1,'sourceBasis'=>$text($q['sourceBasis']??''),'included'=>!isset($flagged[$i+1])];continue;
+            }
             $rows[]=['stem'=>$text($q['stem']??''),'options'=>array_map($text,array_slice(array_pad($options,4,''),0,4)),
                 'correctIndex'=>is_scalar($q['correctIndex']??null)&&preg_match('/^[0-3]$/D',(string)$q['correctIndex'])?(int)$q['correctIndex']:0,
                 'sourceBasis'=>$text($q['sourceBasis']??''),'included'=>!isset($flagged[$i+1])];
         }
         return $rows;
     }
-    public function review($questions,$expected)
+    public function review($questions,$expected,$type='mcq')
     {
         if(!is_array($questions)||count($questions)!==$expected||$expected<1||$expected>30)throw new DomainException('questions_invalid');
-        $rows=$this->candidates($questions,[]);
+        if(!in_array($type,['mcq','short_answer'],true))throw new DomainException('questions_invalid');
+        foreach($questions as &$candidate){if(is_array($candidate))$candidate['type']=$type;}unset($candidate);
+        $rows=$this->candidates($questions,[],$type);
         foreach(array_values($questions) as $i=>$q){
             $included=is_array($q)&&in_array($q['included']??null,[true,1,'1'],true);
             if($included)$rows[$i]=$this->validate([$q],1)[0];
@@ -185,6 +192,15 @@ class workshopservice extends ChisimbaObject
         if(!is_array($questions)||count($questions)!==$count || $count<1 || $count>30)throw new DomainException('questions_invalid');
         $clean=[];
         foreach($questions as $q){
+            if(is_array($q)&&($q['type']??'mcq')==='short_answer'){
+                foreach(['stem','modelAnswer','markingPoints','sourceBasis'] as $field){
+                    $value=$q[$field]??null;
+                    if(!is_string($value)||trim($value)===''||mb_strlen($value)>4000||!mb_check_encoding($value,'UTF-8')||preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/',$value))throw new DomainException('questions_invalid');
+                }
+                if(count(preg_split('/\s+/u',trim($q['modelAnswer'])))>120||!is_scalar($q['marks']??null)||!preg_match('/^(?:[1-9]|10)$/D',(string)$q['marks']))throw new DomainException('questions_invalid');
+                $clean[]=['type'=>'short_answer','stem'=>trim($q['stem']),'modelAnswer'=>trim($q['modelAnswer']),'markingPoints'=>trim($q['markingPoints']),'marks'=>(int)$q['marks'],'sourceBasis'=>trim($q['sourceBasis'])];continue;
+            }
+            if(is_array($q)&&($q['type']??'mcq')!=='mcq')throw new DomainException('questions_invalid');
             if(!is_array($q)||!isset($q['stem'],$q['options'],$q['correctIndex'],$q['sourceBasis'])||!is_array($q['options'])||count($q['options'])!==4||!is_scalar($q['correctIndex'])||!preg_match('/^[0-3]$/D',(string)$q['correctIndex']))throw new DomainException('questions_invalid');
             foreach(array_merge([$q['stem'],$q['sourceBasis']],$q['options']) as $text){
                 if(!is_string($text)||trim($text)===''||mb_strlen($text)>4000||!mb_check_encoding($text,'UTF-8')||preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/',$text))throw new DomainException('questions_invalid');

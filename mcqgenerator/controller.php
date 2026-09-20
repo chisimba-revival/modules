@@ -33,7 +33,7 @@ class mcqgenerator extends controller
             if($id!==''){$existing=$service->read($id);$examid=$existing['examid'];}
             if($examid!=='')$workspace=$this->getObject('examservice')->read($examid);
             elseif($id===''&&$action!=='create')return $this->nextAction('exams');
-            if(in_array($action,['create','generate','generatepart','more','save','import','delete'],true)){
+            if(in_array($action,['create','derive','generate','generatepart','more','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='create'){
                     if(!$workspace)throw new DomainException('not_found');
@@ -49,10 +49,17 @@ class mcqgenerator extends controller
                     $count=$this->param('count',(string)$sessionCount);
                     if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
                     $this->setSession('question_count',(int)$count);
-                    $id=$store->createSet($owner,$title,$source,[],(int)$count,$workspace['id']);
+                    $id=$store->createSet($owner,$title,$source,[],(int)$count,$workspace['id'],$this->param('question_type','mcq'));
                     return $this->nextAction('view',['id'=>$id]);
                 }
                 $row=$service->read($id);
+                if($action==='derive'){
+                    if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
+                    $count=$this->param('count',(string)$sessionCount);
+                    if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
+                    $new=$store->createSet($owner,$service->title($title),$row['source_text'],[],(int)$count,$row['examid'],'short_answer');
+                    return $this->nextAction('view',['id'=>$new]);
+                }
                 if($action==='delete'){
                     if($this->param('confirm_delete')!=='1')throw new DomainException('delete_confirm_required');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
@@ -82,7 +89,7 @@ class mcqgenerator extends controller
                 }else{
                     if(empty(json_decode($row['questions_json'],true)))throw new DomainException('questions_invalid');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
-                    $questions=$service->review($this->getParam('questions',[]),count(json_decode($row['questions_json'],true)));
+                    $questions=$service->review($this->getParam('questions',[]),count(json_decode($row['questions_json'],true)),$row['question_type']??'mcq');
                     $store->saveSet($row,$service->title($title),$questions,$this->param('reviewed')==='1');
                 }
                 return $this->nextAction('view',['id'=>$id]);

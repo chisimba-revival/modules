@@ -27,7 +27,7 @@ class examservice extends ChisimbaObject
             if(isset($existing[$key]))continue;
             $q=$source[$index];if(!($q['included']??true))throw new DomainException('exam_selection');
             $q=$this->getObject('workshopservice')->validate([$q],1)[0];
-            $content['questions'][]=['id'=>bin2hex(random_bytes(12)),'sourceSetId'=>$set['id'],'sourceVersion'=>(int)$set['version'],'sourceIndex'=>$index,'chapter'=>$set['title'],'marks'=>1,'question'=>$q];
+            $content['questions'][]=['id'=>bin2hex(random_bytes(12)),'sourceSetId'=>$set['id'],'sourceVersion'=>(int)$set['version'],'sourceIndex'=>$index,'chapter'=>$set['title'],'marks'=>$q['marks']??1,'question'=>$q];
             $existing[$key]=true;++$added;
         }
         if(!$added)throw new DomainException('exam_selection');
@@ -62,6 +62,7 @@ class examservice extends ChisimbaObject
         $counts=[0,0,0,0];
         foreach($content['questions'] as $i=>&$entry){
             $q=&$entry['question'];
+            if(($q['type']??'mcq')==='short_answer'){unset($q);continue;}
             if($i<$start){++$counts[$q['correctIndex']];continue;}
             $positions=array_keys($counts,min($counts),true);
             $target=$positions[random_int(0,count($positions)-1)];
@@ -85,6 +86,11 @@ class examservice extends ChisimbaObject
             $q=$entry['question'];
             if(($content['headings']||$answers)&&$chapter!==$entry['chapter']){$chapter=$entry['chapter'];$lines[]='';$styles[count($lines)]='Heading';$lines[]=$chapter;$styles[count($lines)]='Keep';}
             $lines[]='';$styles[count($lines)]='Keep';$lines[]=($i+1).'. '.$q['stem'].' ['.$entry['marks'].' '.lcfirst($r->text($entry['marks']===1?'exam_mark':'exam_marks')).']';
+            if(($q['type']??'mcq')==='short_answer'){
+                if($answers){$lines[]=$r->text('model_answer').': '.$q['modelAnswer'];$lines[]=$r->text('marking_points').': '.$q['markingPoints'];$lines[]=$r->text('exam_source').': '.$entry['chapter'].' / '.($entry['sourceIndex']+1);$lines[]=$r->text('source_basis').': '.$q['sourceBasis'];}
+                else {$lines[]='';$lines[]='';$lines[]='';}
+                continue;
+            }
             if($answers){$styles[count($lines)]='Keep';$lines[]=chr(65+$q['correctIndex']).'. '.$q['options'][$q['correctIndex']];$styles[count($lines)]='Keep';$lines[]=$r->text('exam_source').': '.$entry['chapter'].' / '.($entry['sourceIndex']+1);$lines[]=$r->text('source_basis').': '.$q['sourceBasis'];}
             else foreach($q['options'] as $j=>$option){if($j<3)$styles[count($lines)]='Keep';$lines[]=chr(65+$j).'. '.$option;}
         }

@@ -27,7 +27,7 @@ $page=new CountPage();$questions=[entry('1','a'),entry('2','a'),entry('3','b'),e
 $html=$page->render($questions);
 verify(str_contains($html,'exam_saved_count: <span class="chisimba-pill chisimba-pill--success">4</span>'),'Total includes off-page sources');
 verify(str_contains($html,'aria-label="2 exam_in_exam">2</span>'),'Chapter A has two saved questions');
-verify(str_contains($html,'<span>Unused</span></a>'),'Unused chapter has no badge');
+verify(str_contains($html,'<span>Unused · type_mcq</span></a>'),'Unused chapter has no badge');
 array_shift($questions);$html=$page->render($questions);
 verify(!str_contains($html,'aria-label="2 exam_in_exam"'),'Removal reduces chapter count');
 verify(str_contains($html,'exam_saved_count: <span class="chisimba-pill chisimba-pill--success">3</span>'),'Removal reduces total');

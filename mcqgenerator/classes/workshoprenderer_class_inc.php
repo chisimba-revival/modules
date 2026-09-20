@@ -6,6 +6,13 @@ class workshoprenderer extends ChisimbaObject
     public function text($key){return ucfirst(html_entity_decode($this->getObject('language','language')->code2Txt('mod_mcqgenerator_'.$key,'mcqgenerator'),ENT_QUOTES|ENT_HTML5,'UTF-8'));}
     public static function escape($text){return htmlspecialchars((string)$text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
     public function link($key,$icon,array $params){return '<a class="button chisimba-button-secondary" href="'.self::escape($this->uri($params,'mcqgenerator')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($key)).'</span></a>';}
+    public function answerPreview(array $q)
+    {
+        $e=[self::class,'escape'];
+        if(($q['type']??'mcq')==='short_answer')return '<p><strong>'.$e($this->text('model_answer')).'</strong></p><p class="chisimba-preserve-whitespace">'.$e($q['modelAnswer']).'</p><p><strong>'.$e($this->text('marking_points')).'</strong></p><p class="chisimba-preserve-whitespace">'.$e($q['markingPoints']).'</p>';
+        $html='<ol type="A">';foreach($q['options'] as $option)$html.='<li>'.$e($option).'</li>';
+        return $html.'</ol><p>'.$e($this->text('correct')).': '.$e(chr(65+(int)$q['correctIndex']).'. '.($q['options'][$q['correctIndex']]??'')).'</p>';
+    }
     public function button($key,$icon){return '<button class="button chisimba-button-primary" type="submit">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).(in_array($key,['generate','more','continue_sections'],true)?'<span data-workshop-spinner style="display:none">'.$this->getObject('iconservice','ui')->render('loader-circle',['decorative'=>true]).'</span>':'').'<span>'.self::escape($this->text($key)).'</span></button>';}
     public function deleteForm(array $set,$token,$exam=false)
     {

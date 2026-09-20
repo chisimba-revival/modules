@@ -6,6 +6,7 @@ $fields=[
 'examid'=>['type'=>'text','length'=>32,'default'=>'','notnull'=>true],
 'ownerid'=>['type'=>'text','length'=>64,'notnull'=>true],
 'title'=>['type'=>'text','length'=>200,'notnull'=>true],
+'question_type'=>['type'=>'text','length'=>16,'default'=>'mcq','notnull'=>true],
 'source_text'=>['type'=>'clob','notnull'=>true],
 'generation_json'=>['type'=>'clob'],
 'validation_json'=>['type'=>'clob'],
