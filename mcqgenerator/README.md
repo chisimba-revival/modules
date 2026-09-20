@@ -186,3 +186,22 @@ Verification on the local PHP 8.5.4 installation:
 - Original 30 local chapter sets and one saved exam preserved; disposable records
   removed and test accounts disabled with teaching memberships revoked.
 - Synthetic questions were used; no paid AI calls or production deployment.
+
+## Live question totals and removal (0.5.1)
+
+Chapter selection now keeps saved, newly selected and projected total counts in a
+sticky summary beside Add selected questions. Review or remove questions jumps
+to the editor without losing pending selections. The editor shows questions after
+saving and pending removals, with a Save exam action kept visible while scrolling.
+Each question has Remove from exam / Undo removal; the Include in exam checkbox
+is also available. Saving applies removals to the paper only. Source questions
+remain available to add again. Addition and edit totals describe their separate
+save operations. The framework skin supplies `chisimba-sticky-summary`.
+
+PHP 8.5 syntax, existing exam and count tests, and real Chrome checks passed:
+selection/deselection counts, sticky summaries on desktop and at 390px,
+remove/undo, removal save/reload, unchanged source and re-addition, checkbox
+removal, in-page navigation preserving selection, and no JavaScript errors.
+`tests/exam_selection_browser.cjs` uses a disposable fixture described by
+`/tmp/mcq-counts-fixture.json` (teacher credentials, one exam and one generated
+chapter with fifteen synthetic questions); it never calls AI.

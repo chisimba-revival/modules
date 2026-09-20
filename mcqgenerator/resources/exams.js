@@ -9,6 +9,48 @@
     });
     // The shared token helper emits this only once submission is securely prepared.
     document.addEventListener('workshop:submitting', function (event) { dirty.delete(event.target); });
+    // Counts describe the two independent saves: additions and paper edits.
+    function updateCounts() {
+        var add = document.querySelector('[data-exam-add-count]');
+        if (add) {
+            var selected = add.closest('form').querySelectorAll('input[name="selected[]"]:checked:not(:disabled)').length;
+            add.querySelector('[data-selected-count]').textContent = selected;
+            add.querySelector('[data-add-total]').textContent = Number(add.dataset.saved) + selected;
+        }
+        var edit = document.querySelector('[data-exam-edit-count]');
+        if (edit) {
+            var entries = Array.from(edit.closest('form').querySelectorAll('[data-exam-entry]'));
+            var kept = 0;
+            entries.forEach(function (entry) {
+                var keep = entry.querySelector('[data-exam-keep]');
+                if (keep.checked) kept++;
+                var button = entry.querySelector('[data-exam-remove]');
+                button.hidden = false;
+                button.classList.toggle('chisimba-button-danger', keep.checked);
+                button.classList.toggle('chisimba-button-secondary', !keep.checked);
+                if (!button.examLabels) {
+                    button.examLabels = [button.querySelector('[data-remove-label]').cloneNode(true), button.querySelector('[data-undo-label]').cloneNode(true)];
+                    button.examLabels.forEach(function (label) { label.hidden = false; });
+                }
+                button.replaceChildren(button.examLabels[keep.checked ? 0 : 1].cloneNode(true));
+                entry.querySelector('[data-removal-pending]').hidden = keep.checked;
+                // Removed entries retain their values for Undo, but cannot block saving.
+                entry.querySelectorAll('input[type="number"]').forEach(function (field) { field.required = keep.checked; });
+            });
+            edit.querySelector('[data-keep-count]').textContent = kept;
+            edit.querySelector('[data-remove-count]').textContent = entries.length - kept;
+        }
+    }
+    document.addEventListener('change', updateCounts);
+    document.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-exam-remove]');
+        if (!button) return;
+        var keep = button.closest('[data-exam-entry]').querySelector('[data-exam-keep]');
+        keep.checked = !keep.checked;
+        keep.dispatchEvent(new Event('change', {bubbles:true}));
+    });
+    window.addEventListener('pageshow', updateCounts);
+    updateCounts();
     var paging = false;
     document.addEventListener('click', async function (event) {
         var link = event.target.closest('a[href]');
@@ -47,6 +89,9 @@
             }
             return;
         }
+        // A jump within this document keeps both forms and their unsaved work.
+        var destination = new URL(link.href);
+        if (destination.origin === location.origin && destination.pathname === location.pathname && destination.search === location.search && destination.hash) return;
         if (!dirty.size) return;
         if (!window.confirm(forms[0].dataset.unsaved)) { event.preventDefault(); return; }
         dirty.clear();
