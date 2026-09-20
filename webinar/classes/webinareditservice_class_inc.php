@@ -51,6 +51,12 @@ class webinareditservice extends ChisimbaObject
         $payload['description']=$description;$payload['image']=$image['url'];$payload['image_alt']=$image['alt'];
         $date='';
         if($kind==='webinar'){
+            // Duration is the editor contract; retain end-time input for older clients.
+            if(array_key_exists('duration_minutes',$input)){
+                $minutes=filter_var($input['duration_minutes'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>10080]]);
+                if($minutes===false)throw new DomainException('editor_duration');
+                $input['ends_at']=$input['starts_at']===''?'':self::localDate($input['starts_at'],$input['timezone'])->add(new DateInterval('PT'.$minutes.'M'))->format('Y-m-d\TH:i');
+            }
             foreach(['starts_at','ends_at','timezone','recording','joining_url','tags'] as $key)if(!is_string($input[$key]??null))throw new DomainException('editor_invalid');
             if(mb_strlen($input['tags'])>2000||!is_array($input['speakers']??null)||count($input['speakers'])>30)throw new DomainException('editor_invalid');
             if($input['status']==='draft'&&$input['starts_at']===''&&$input['ends_at']===''){
@@ -73,9 +79,26 @@ class webinareditservice extends ChisimbaObject
         $id=$old['id']??($input['create_id']??bin2hex(random_bytes(16)));
         if(!is_string($id)||!preg_match('/^[a-f0-9]{32}$/D',$id))throw new DomainException('editor_invalid');
         if($old&&!isset($payload['original_source_hash']))$payload['original_source_hash']=$old['source_hash'];
+        // Never infer ownership from the last editor of an imported/legacy record.
+        if(!$old)$payload['created_by']=(string)$this->getObject('user','security')->userId();
         $payload['editorial_revision']=bin2hex(random_bytes(16));$payload['edited_by']=(string)$this->getObject('user','security')->userId();$payload['edited_at']=gmdate('Y-m-d H:i:s');
         $encoded=json_encode($payload,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
         return ['id'=>$id,'kind'=>$kind,'source_key'=>$old['source_key']??'native|'.$kind.'|'.$id,'source_hash'=>hash('sha256',$title.'|'.$date.'|'.$encoded),'title'=>$title,'status'=>$input['status'],'presented_at'=>$date,'payload'=>$encoded];
+    }
+    /** Reversible removal: preserve bookings and source identity, restore privately. */
+    public function setTrashed($id,$version,$restore=false)
+    {
+        $this->requireEditor();$this->store->begin();
+        try{
+            $row=$this->store->record($id,true);
+            if(!$row||$row['kind']!=='webinar')throw new DomainException('editor_forbidden');
+            if(!is_string($version)||!hash_equals(self::version($row),$version))throw new DomainException('editor_conflict');
+            if($restore ? $row['status']!=='trashed' : !in_array($row['status'],['draft','published'],true))throw new DomainException('editor_invalid');
+            $row['status']=$restore?'draft':'trashed';
+            $this->store->persist($row,true);$saved=$this->store->record($id);
+            if(!$saved||$saved['status']!==$row['status'])throw new RuntimeException('webinar_storage_failed');
+            $this->store->commit();return $saved;
+        }catch(Throwable $error){$this->store->rollback();throw $error;}
     }
     public function save($id,$kind,array $input)
     {
@@ -84,6 +107,7 @@ class webinareditservice extends ChisimbaObject
             $old=$id!==''?$this->store->record($id,true):null;
             if($id===''&&isset($input['create_id'])&&$this->store->record($input['create_id'],true))throw new DomainException('editor_conflict');
             if($id!==''&&(!$old||$old['kind']!==$kind))throw new DomainException('editor_forbidden');
+            if($old&&$old['status']==='trashed')throw new DomainException('editor_forbidden');
             if($old&&(!is_string($input['version']??null)||!hash_equals(self::version($old),$input['version'])))throw new DomainException('editor_conflict');
             $row=$this->values($kind,$input,$old);$this->store->persist($row,(bool)$old);
             if($kind==='webinar'){

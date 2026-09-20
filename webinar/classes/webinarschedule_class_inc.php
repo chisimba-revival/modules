@@ -51,6 +51,11 @@ class webinarschedule extends ChisimbaObject
     public static function reminderDue(array $record,$kind)
     {
         $start=self::start($record);if(!$start)return null;
+        if($kind==='monday'){
+            $monday=$start->modify('monday this week')->setTime(8,0);
+            // A Monday webinar gets the morning reminder once, not two emails at 08:00.
+            return $monday->format('Y-m-d')===$start->format('Y-m-d')?null:$monday->getTimestamp();
+        }
         if($kind==='morning')return $start->setTime(8,0)->getTimestamp();
         if($kind==='ninety')return $start->getTimestamp()-5400;
         return null;

@@ -64,6 +64,20 @@ class audienceservice extends dbTable
         return true;
     }
 
+    /** Explicit single-opt-in consent, inside the caller's locked transaction.
+     * This does not assert that the mailbox was verified.
+     */
+    public function subscribeWithoutVerification($id,$revision,$source,$wording)
+    {
+        $row=$this->lock($id);
+        if(!$row || (int)$row['revision']!==(int)$revision)return false;
+        if($row['state']==='subscribed')return true;
+        if(!in_array($row['state'],['pending','unsubscribed'],true))return false;
+        if($this->update('id',$id,['state'=>'subscribed'])===false)throw new RuntimeException('Consent persistence failed');
+        $this->recordConsent($id,'subscribe_unverified',$source,$wording);
+        return true;
+    }
+
     public function unsubscribeToken($contactId)
     {
         if(!$this->one($contactId))throw new RuntimeException('Unknown contact');

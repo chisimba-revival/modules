@@ -24,10 +24,10 @@ $t=$m;$t['confirm_hash']='bad';check(!$p->allows($t),'Stale verification denied'
 $contacts->row['revision']=1;check(!$p->allows($m),'Unsubscribe revision invalidates verification');
 $contacts->row=['state'=>'subscribed','revision'=>0];$regs->row['state']='confirmed';
 check(!$p->allows($m),'Verified link not remailed');
-foreach(['confirmed','morning','ninety'] as $kind){$m['kind']=$kind;check($p->allows($m),'Confirmed subscriber mail permitted');$contacts->row['state']='unsubscribed';check(!$p->allows($m),'Unsubscribe suppresses '.$kind);$contacts->row['state']='subscribed';}
-foreach(['confirmed','morning','ninety'] as $kind){$m['kind']=$kind;$m['starts_at']=$start->getTimestamp()+1;check(!$p->allows($m),'Rescheduled '.$kind.' suppressed');}
+foreach(['confirmed','monday','morning','ninety'] as $kind){$m['kind']=$kind;check($p->allows($m),'Confirmed subscriber mail permitted');$contacts->row['state']='unsubscribed';check(!$p->allows($m),'Unsubscribe suppresses '.$kind);$contacts->row['state']='subscribed';}
+foreach(['confirmed','monday','morning','ninety'] as $kind){$m['kind']=$kind;$m['starts_at']=$start->getTimestamp()+1;check(!$p->allows($m),'Rescheduled '.$kind.' suppressed');}
 $m['kind']='ninety';$m['starts_at']++;check(!$p->allows($m),'Rescheduled reminder suppressed');
 $m['starts_at']=$start->getTimestamp();$records->row['payload']=json_encode(['timezone'=>'Africa/Johannesburg','registration_open'=>true,'cancelled'=>true]);check(!$p->allows($m),'Cancelled webinar reminder suppressed');
-foreach(['confirmed','morning','ninety'] as $kind){$m['kind']=$kind;check(!$p->allows($m),'Cancelled '.$kind.' suppressed');}
+foreach(['confirmed','monday','morning','ninety'] as $kind){$m['kind']=$kind;check(!$p->allows($m),'Cancelled '.$kind.' suppressed');}
 $regs->row=null;check(!$p->allows($m),'Missing registration denied');
 echo "$n registration schedule and delivery-policy checks passed\n";

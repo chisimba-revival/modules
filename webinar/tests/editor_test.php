@@ -27,3 +27,17 @@ $bad=$input;$bad['ends_at']=$bad['starts_at'];rejects(fn()=>$service->values('we
 $draft=$input;$draft['status']='draft';$draft['description']='';$draft['starts_at']=$draft['ends_at']='';$draft['speakers']=[];check($service->values('webinar',$draft,$edited)['presented_at']==='','Incomplete draft allowed');
 check(webinareditservice::version(['presented_at'=>null])===webinareditservice::version(['presented_at'=>'']),'Database null/empty stable version');
 echo "PASS: manager/denied permissions, sanitisation, dates/DST, private URLs, required speakers, draft, immutable identity, duplicate/concurrent saves and rollback\n";
+
+$duration=$input;$duration['duration_minutes']='90';$values=$service->values('webinar',$duration,$edited);check(json_decode($values['payload'],true)['ends_at']==='2026-10-15 20:30:00','Duration calculates end');
+$duration['starts_at']='2026-10-15T23:30';$values=$service->values('webinar',$duration,$edited);check(json_decode($values['payload'],true)['ends_at']==='2026-10-16 01:00:00','Duration crosses midnight');
+foreach(['0','-1','abc','10081'] as $invalid){$duration['duration_minutes']=$invalid;rejects(fn()=>$service->values('webinar',$duration,$edited),'editor_duration');}
+echo "PASS duration and overnight end calculation; invalid durations rejected.\n";
+
+// Ownership comes from the session on creation and survives all later edits.
+check($payload['created_by']==='editor','Persist original creator');
+$forged=$input;$forged['created_by']='attacker';
+$owned=$edited;$ownedPayload=json_decode($owned['payload'],true);$ownedPayload['created_by']='original';$owned['payload']=json_encode($ownedPayload);
+check(json_decode($service->values('webinar',$forged,$owned)['payload'],true)['created_by']==='original','Ignore submitted ownership and preserve creator');
+$legacy=$owned;unset($ownedPayload['created_by']);$ownedPayload['edited_by']='editor';$legacy['payload']=json_encode($ownedPayload);
+check(!isset(json_decode($service->values('webinar',$forged,$legacy)['payload'],true)['created_by']),'Do not assign imported record to last editor');
+echo "PASS immutable server-assigned creator and legacy ownership safety.\n";

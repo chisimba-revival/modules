@@ -16,10 +16,26 @@ class webinarregistrationservice extends ChisimbaObject
     private function url($action,array $params=[])
     {return rtrim($this->getObject('altconfig','config')->getSiteRoot(),'/').'/index.php?'.http_build_query(['module'=>'webinar','action'=>$action]+$params);}
 
+    /** Missing configuration preserves the existing double-opt-in behaviour. */
+    public function requiresEmailVerification()
+    {
+        $value=$this->getObject('dbsysconfig','sysconfig')->getValue('WEBINAR_REQUIRE_EMAIL_VERIFICATION','webinar');
+        return !in_array(strtolower(trim((string)$value)),['false','0','off','no'],true);
+    }
+
+    public function alreadyRegistered(array $record,$email){
+        $email=audienceservice::email($email);
+        $contact=$this->audience->getRow('email',$email,'tbl_audience_contacts');
+        if(!$contact||$contact['state']!=='subscribed')return false;
+        $row=$this->registrations->forContact($record['id'],$contact['id']);
+        return $row&&$row['state']==='confirmed'&&(int)$row['contact_revision']===(int)$contact['revision'];
+    }
+
     public function register(array $record,$name,$email,$consent,$client)
     {
         if(!webinarschedule::canRegister($record))throw new DomainException('closed');
         if(!$consent || trim($name)==='' || mb_strlen($name)>200)throw new DomainException('invalid');
+        $verify=$this->requiresEmailVerification();
         $email=audienceservice::email($email);
         $this->audience->checkRate($email,$client);
         $this->registrations->beginTransaction();
@@ -28,17 +44,19 @@ class webinarregistrationservice extends ChisimbaObject
             $existing=$this->registrations->forContact($record['id'],$contact['id']);
             if($existing && (int)$existing['contact_revision']===(int)$contact['revision']
                 && (($existing['state']==='confirmed' && $contact['state']==='subscribed')
-                    || ($existing['state']==='pending' && (int)$existing['expires_at']>time()))) {
-                $this->registrations->commitTransaction();return;
+                    || ($verify && $existing['state']==='pending' && (int)$existing['expires_at']>time()))) {
+                $this->registrations->commitTransaction();return $existing['state']==='confirmed'?'already_registered':'pending';
             }
             $token=bin2hex(random_bytes(32));
             $row=['id'=>$existing['id']??bin2hex(random_bytes(16)),'webinar_id'=>$record['id'],
-                'contact_id'=>$contact['id'],'state'=>'pending','confirm_hash'=>hash('sha256',$token),
-                'expires_at'=>time()+86400,'contact_revision'=>(int)$contact['revision'],'created_at'=>gmdate('Y-m-d H:i:s'),'confirmed_at'=>null];
+                'contact_id'=>$contact['id'],'state'=>$verify?'pending':'confirmed','confirm_hash'=>hash('sha256',$token),
+                'expires_at'=>time()+86400,'contact_revision'=>(int)$contact['revision'],'created_at'=>gmdate('Y-m-d H:i:s'),'confirmed_at'=>$verify?null:gmdate('Y-m-d H:i:s')];
+            if(!$verify && !$this->audience->subscribeWithoutVerification($contact['id'],$contact['revision'],'webinar:'.$record['id'],$this->text('consent')))throw new DomainException('expired');
+            if(!$verify)$contact=$this->audience->one($contact['id']);
             $saved=$existing?$this->registrations->update('id',$row['id'],$row):$this->registrations->insert($row);
             if($saved===false)throw new RuntimeException('Registration persistence failed');
-            $this->queue($row,$record,$contact,'verify',$token);
-            $this->registrations->commitTransaction();
+            $this->queue($row,$record,$contact,$verify?'verify':'confirmed',$token);
+            $this->registrations->commitTransaction();return $verify?'pending':'confirmed';
         }catch(Throwable $error){$this->registrations->rollbackTransaction();throw $error;}
     }
 
@@ -72,10 +90,15 @@ class webinarregistrationservice extends ChisimbaObject
         $unsubscribe=$this->url('unsubscribe',['token'=>$this->audience->unsubscribeToken($contact['id'])]);
         $details=json_decode($record['payload'],true);
         $joining=$kind!=='verify'&&!empty($details['joining_url'])?"\n\n".$this->text('joining_email').': '.$details['joining_url']:'';
+        $support='';
+        if(in_array($kind,['monday','morning','ninety'],true)){
+            $message=trim((string)$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience',''));
+            if($message!=='')$support="\n\n".$message;
+        }
         $values=['{title}'=>$record['title'],'{date}'=>$start->format('j F Y, H:i').' '.$start->getTimezone()->getName(),'{url}'=>$link,'{unsubscribe}'=>$unsubscribe];
         $result=$this->mail->queueEmail(['to'=>$contact['email'],'toName'=>$contact['name'],
             'subject'=>strtr($this->text('email_'.$kind.'_subject'),$values),
-            'text'=>strtr($this->text('email_'.$kind.'_body').$joining."\n\n".$this->text('email_unsubscribe'),$values),
+            'text'=>strtr($this->text('email_'.$kind.'_body').$joining.$support."\n\n".$this->text('email_unsubscribe'),$values),
             'idempotencyKey'=>$key,'metadata'=>['policy_module'=>'webinar','registration_id'=>$registration['id'],
                 'kind'=>$kind,'revision'=>(int)$registration['contact_revision'],'confirm_hash'=>$registration['confirm_hash'],
                 'starts_at'=>$start->getTimestamp()]]);
@@ -89,7 +112,7 @@ class webinarregistrationservice extends ChisimbaObject
         $now=$now??time();$count=0;
         foreach($this->records->published('webinar') as $record){
             if(!webinarschedule::canRegister($record,$now))continue;
-            foreach(['morning','ninety'] as $kind){
+            foreach(['monday','morning','ninety'] as $kind){
                 $due=webinarschedule::reminderDue($record,$kind);
                 if($due===null||$due>$now||$now-$due>3600)continue;
                 foreach($this->registrations->confirmed($record['id']) as $r){

@@ -16,17 +16,16 @@ class webinarrenderer extends ChisimbaObject
   $upcoming=webinarschedule::isCurrent($r);$data=$this->data($r);
   $label=$this->text($upcoming?'scheduled':'presented').' '.$date->format($upcoming?'j F Y, H:i':'j F Y');
   if($upcoming){
-   if(!empty($data['ends_at'])){
-    try{$end=new DateTimeImmutable($data['ends_at'],$date->getTimezone());$label.='–'.$end->format($end->format('Y-m-d')===$date->format('Y-m-d')?'H:i':'j F Y, H:i');}catch(Throwable $e){}
-   }
-   $label.=' '.$date->format('T');
+   $label.=' '.$date->format('T');$end=webinarschedule::end($r);
+   if($end&&$end>$date)$label.=' · '.sprintf($this->text('duration_display'),(int)round(($end->getTimestamp()-$date->getTimestamp())/60));
   }
   return '<p><small>'.self::escape($label).'</small></p>';
  }
  /** Render linked covers and speaker biographies through the shared native window. */
- public function cards($rows)
+ public function cards($rows,$showRegistrationCounts=false)
  {
-  $html='<div class="chisimba-publication-card-grid">';$dialogs='';$seen=[];
+  $counts=$showRegistrationCounts?$this->getObject('webinarregistrations','webinar')->countsForUpcoming($rows):[];
+  $html='<div class="chisimba-publication-card-grid">';$dialogs='';$seen=[];$canEdit=$this->getObject('webinareditpolicy','webinar')->canManage();
   foreach($rows as $r){
    $r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');
    $d=$this->data($r);$url=self::escape($this->uri(['action'=>'view','id'=>$r['id']],'webinar'));
@@ -50,14 +49,22 @@ class webinarrenderer extends ChisimbaObject
     $dialogs.=$window->show();
    }
    if($names)$html.='<p class="chisimba-publication-card__byline">'.$this->getObject('iconservice','ui')->render('user',['decorative'=>true]).' '.implode(', ',$names).'</p>';
-   $html.=$this->date($r).'</div></article>';
+   $html.=$this->date($r);
+   $hasCount=array_key_exists($r['id'],$counts);
+   if($canEdit||$hasCount){
+    $html.='<div class="chisimba-publication-card__actions'.($hasCount?' chisimba-publication-card__actions--summary':'').'">';
+    if($hasCount)$html.='<span class="chisimba-pill" title="'.self::escape($this->text('registration_count_help')).'">'.self::escape(sprintf($this->text('registration_count'),$counts[$r['id']])).'</span>';
+    if($canEdit)$html.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
+    $html.='</div>';
+   }
+   $html.='</div></article>';
   }
   return $html.'</div>'.$dialogs;
  }
  public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
   $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);
   $html.=$this->getObject('webinarclassificationui','webinar')->detail($r);
-  if($this->getObject('webinareditpolicy','webinar')->canManage())$html.=$this->button('edit','pencil',['action'=>'edit','id'=>$r['id']]);
+  if($this->getObject('webinareditpolicy','webinar')->canManage())$html.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
   $html.=$booking;
   $store=$this->getObject('webinarstore');
   if($r['kind']==='webinar'){

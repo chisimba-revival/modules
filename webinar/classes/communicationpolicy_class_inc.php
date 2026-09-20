@@ -18,7 +18,7 @@ class communicationpolicy extends ChisimbaObject
         if(($metadata['kind']??'')==='confirmed')return webinarschedule::canRegister($record)
             &&webinarschedule::start($record)->getTimestamp()===(int)($metadata['starts_at']??0);
         $start=webinarschedule::start($record);
-        return in_array($metadata['kind']??'',['morning','ninety'],true)&&webinarschedule::canRegister($record)
+        return in_array($metadata['kind']??'',['monday','morning','ninety'],true)&&webinarschedule::canRegister($record)
             &&$start->getTimestamp()===(int)($metadata['starts_at']??0);
     }
 }

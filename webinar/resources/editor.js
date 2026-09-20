@@ -4,6 +4,11 @@
     const form=document.querySelector('[data-webinar-editor]');if(!form)return;
     let busy=false,dirty=false,revision=0,suggestTimer,suggestRequest;
     const error=document.querySelector('[data-webinar-error]'),status=document.querySelector('[data-webinar-status]');
+    const notices=[...form.querySelectorAll('[data-webinar-feedback]')];
+    function feedback(message,tone='info'){
+        notices.forEach(node=>{node.hidden=!message;node.className='chisimba-notification chisimba-notification--'+tone;node.textContent=message;});
+    }
+    form.addEventListener('invalid',()=>feedback(form.dataset.invalid,'warning'),true);
     const preview=document.querySelector('[data-webinar-preview]');
     const image=document.getElementById('comp_webinar_image'),picture=form.querySelector('[data-webinar-image]');
     function showImage(){
@@ -20,13 +25,13 @@
         const button=event.submitter;
         form.querySelectorAll('[data-chisimba-editor]').forEach(field=>window.ChisimbaEditor?.sync(field.id));
         const submittedRevision=revision;const body=new FormData(form);if(button?.name)body.set(button.name,button.value);body.set('ajax','1');
-        busy=true;form.setAttribute('aria-busy','true');status.textContent=form.dataset.saving;error.textContent='';
+        busy=true;form.setAttribute('aria-busy','true');status.textContent=form.dataset.saving;feedback(form.dataset.saving);error.textContent='';
         const controls=[...form.querySelectorAll('button[type="submit"]')];controls.forEach(b=>b.disabled=true);
         const request=new AbortController();const timer=setTimeout(()=>request.abort(),30000);
         try{
             const response=await fetch(button?.hasAttribute('formaction')?button.formAction:form.action,{method:'POST',body,signal:request.signal,credentials:'same-origin',headers:{Accept:'application/json'}});
             const data=await response.json();if(typeof data.csrf==='string')form.elements.csrf_token.value=data.csrf;
-            if(!response.ok||!data.ok){error.textContent=data.message||form.dataset.failed;status.textContent='';return;}
+            if(!response.ok||!data.ok){error.textContent=data.message||form.dataset.failed;status.textContent='';feedback(error.textContent,'warning');return;}
             if(data.aux){
                 form.elements.aux_create_id.value=data.aux.next_id;
                 const list=form.querySelector(data.aux.kind==='category'?'[data-webinar-categories]':'[data-webinar-speakers]');
@@ -39,8 +44,8 @@
                 if(button?.name==='publish_action')form.elements.status.value=button.value;
                 history.replaceState(null,'',data.edit);preview.href=data.preview;preview.hidden=false;dirty=revision!==submittedRevision;
             }
-            status.textContent=data.message+(dirty&&!data.aux?' '+form.dataset.unsaved:'');
-        }catch(e){error.textContent=form.dataset.failed;status.textContent='';}
+            status.textContent=data.message+(dirty&&!data.aux?' '+form.dataset.unsaved:'');feedback(status.textContent,'success');
+        }catch(e){error.textContent=form.dataset.failed;status.textContent='';feedback(error.textContent,'warning');}
         finally{clearTimeout(timer);busy=false;form.removeAttribute('aria-busy');controls.forEach(b=>b.disabled=false);}
     });
     const tags=form.elements.tags,choices=document.getElementById('webinar-tag-choices');
