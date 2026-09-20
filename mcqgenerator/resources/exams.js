@@ -33,7 +33,11 @@
                     button.examLabels.forEach(function (label) { label.hidden = false; });
                 }
                 button.replaceChildren(button.examLabels[keep.checked ? 0 : 1].cloneNode(true));
-                entry.querySelector('[data-removal-pending]').hidden = keep.checked;
+                var pending = entry.querySelector('[data-removal-pending]');
+                if (!pending.dataset.message) pending.dataset.message = pending.textContent;
+                pending.textContent = keep.checked ? '' : pending.dataset.message;
+                pending.classList.toggle('chisimba-pill', !keep.checked);
+                pending.hidden = keep.checked;
                 // Removed entries retain their values for Undo, but cannot block saving.
                 entry.querySelectorAll('input[type="number"]').forEach(function (field) { field.required = keep.checked; });
             });

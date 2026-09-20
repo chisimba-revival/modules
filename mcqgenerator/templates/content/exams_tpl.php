@@ -57,4 +57,4 @@ if(!$examRow){
 }
 echo '</div><script defer src="'.$e($this->getResourceUri('delete.js','mcqgenerator')).'?v=040"></script>';
 
-echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=052"></script>';
+echo '<script defer src="'.$e($this->getResourceUri('exams.js','mcqgenerator')).'?v=053"></script>';
