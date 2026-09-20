@@ -7,12 +7,13 @@ $checks=0;function check($ok,$label){global $checks;++$checks;if(!$ok)throw new 
 function rejects($fn,$code){try{$fn();}catch(DomainException $e){check($e->getMessage()===$code,$code);return;}throw new RuntimeException('Did not reject '.$code);}
 $GLOBALS['services']=['workshopservice'=>new workshopservice(),'workshoppolicy'=>new workshoppolicy(),'workshoprenderer'=>new class{function text($key){return $key;}},'user'=>new class{function userId(){return 'owner';}function isLoggedIn(){return true;}function isAdmin(){return true;}function isLecturer(){return true;}}];
 $s=new examservice();$q=['stem'=>'Which plant flowers?','options'=>['Tree','Rock','Cloud','Sand'],'correctIndex'=>0,'sourceBasis'=>'Evidence ONLY for the marking sheet.'];
-$set=['id'=>'chapter1','ownerid'=>'owner','title'=>'Chapter 1 🌿','version'=>3,'questions_json'=>json_encode([$q,$q+['included'=>false],$q])];
+$set=['id'=>'chapter1','examid'=>'exam1','ownerid'=>'owner','title'=>'Chapter 1 🌿','version'=>3,'questions_json'=>json_encode([$q,$q+['included'=>false],$q])];
 $row=['id'=>'exam1','ownerid'=>'owner','title'=>'Ecology exam','version'=>1,'content_json'=>json_encode($s->emptyContent())];
 $c=$s->add($row,$set,['0','0','2']);check(count($c['questions'])===2,'duplicate indices collapsed');check($c['questions'][0]['sourceVersion']===3,'revision preserved');
 $row['content_json']=json_encode($c);$set['title']='Changed';$set['questions_json']=json_encode([$q+['included'=>false]]);
 check($s->content($row)['questions'][0]['chapter']==='Chapter 1 🌿','independent snapshot');
 rejects(fn()=>$s->add($row,$set,['0']),'exam_selection');
+$wrong=$set;$wrong['examid']='other-exam';rejects(fn()=>$s->add($row,$wrong,['0']),'exam_wrong_chapter');
 $foreign=$set;$foreign['ownerid']='other';rejects(fn()=>$s->add($row,$foreign,['0']),'not_found');
 rejects(fn()=>$s->revision($row,2),'exam_changed');
 $entries=[];foreach($c['questions'] as $i=>$entry)$entries[$entry['id']]=['keep'=>'1','order'=>(string)(2-$i),'marks'=>(string)($i+1)];

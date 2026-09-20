@@ -2,20 +2,20 @@
 $this->setLayoutTemplate('workspace_layout_tpl.php');
 $r=$this->getObject('workshoprenderer');$e=[$r,'escape'];$t=fn($key)=>$e($r->text($key));
 $service=$this->getObject('examservice');$card='chisimba-form-card chisimba-form-card--wide';
-echo '<div style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)"><section class="'.$card.'"><h1>'.$t('exam_title').'</h1><p>'.$t('exam_intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('exam_new','plus',['action'=>'examnew']).$r->link('exam_my','list',['action'=>'exams']).$r->link('my_sets','layers',[]).$this->getObject('contextualhelp','help')->show('mcqgenerator','exams',true).'</nav>';
+echo '<div class="chisimba-stack"><section class="'.$card.'"><h1>'.$t('exam_title').'</h1><p>'.$t('exam_intro').'</p><nav class="chisimba-form-actions" style="align-items:stretch;flex-wrap:wrap">'.$r->link('exam_new','plus',['action'=>'examnew']).$r->link('exam_my','list',['action'=>'exams']).($examRow?$r->link('my_sets','layers',['examid'=>$examRow['id']]):'').$this->getObject('contextualhelp','help')->show('mcqgenerator','exams',true).'</nav>';
 if($examError!=='')echo '<p role="alert" class="error">'.$t($examError).'</p>';
 elseif($this->getParam('saved')==='1')echo '<p role="status">'.$t('exam_saved').'</p>';
 echo '</section>';
 if(!$examRow){
  echo '<section class="'.$card.'"><details'.($this->getParam('action')==='examnew'||$examError!==''?' open':'').'><summary>'.$t('exam_new').'</summary>'.$r->form('examcreate',$examToken).'<div class="chisimba-form-field"><label for="exam-title">'.$t('exam_name').'</label><input type="text" id="exam-title" name="title" maxlength="200" required value="'.$e($examTitle).'"></div><div class="chisimba-form-actions">'.$r->button('exam_create','plus').'</div></form></details></section>';
- foreach(array_slice($examRows,0,20) as $item){$c=$service->content($item);echo '<article class="'.$card.'"><h2>'.$e($item['title']).'</h2><p>'.count($c['questions']).' '.$t('exam_questions').' · '.$t($c['reviewed']?'reviewed':'draft_notice').'</p><div class="chisimba-form-actions">'.$r->link('exam_open','eye',['action'=>'examview','id'=>$item['id']]).$r->deleteForm($item,$examToken,true).'</div></article>';}
+ foreach(array_slice($examRows,0,20) as $item){$c=$service->content($item);echo '<article class="'.$card.'"><h2>'.$e($item['title']).'</h2><p>'.(int)$item['chapter_count'].' '.$t('exam_chapter_sets').' · '.count($c['questions']).' '.$t('exam_questions').' · '.$t($c['reviewed']?'reviewed':'draft_notice').'</p><div class="chisimba-form-actions">'.$r->link('exam_workspace_open','layers',['examid'=>$item['id']]).$r->link('exam_assemble','clipboard-list',['action'=>'examview','id'=>$item['id']]).$r->deleteForm($item,$examToken,true).'</div></article>';}
  echo '<nav class="chisimba-form-actions">';if($examPage>1)echo $r->link('previous','arrow-left',['action'=>'exams','page'=>$examPage-1]);if(count($examRows)>20)echo $r->link('next','arrow-right',['action'=>'exams','page'=>$examPage+1]);echo '</nav>';
 }else{
  $content=$service->content($examRow);$draft=is_array($examDraft)?$examDraft:null;
  $chapterCounts=array_count_values(array_column($content['questions'],'sourceSetId'));
  echo '<section class="'.$card.'"><h2>'.$e($examRow['title']).'</h2><p>'.count($content['questions']).' '.$t('exam_questions').' · '.$t('exam_total').': '.array_sum(array_column($content['questions'],'marks')).'</p><p>'.$t('exam_snapshot').'</p>';
  if($content['questions'])echo '<div class="chisimba-form-actions">'.$r->link('paper_odt','download',['action'=>'examdownload','id'=>$examRow['id']]).$r->link('exam_download_key','download',['action'=>'examdownload','id'=>$examRow['id'],'answers'=>'1']).'</div><p>'.$t('saved_exports').'</p>';
- echo '</section>';
+ echo '<div class="chisimba-form-actions">'.$r->link('new_question_set','plus',['action'=>'new','examid'=>$examRow['id']]).$r->link('my_sets','layers',['examid'=>$examRow['id']]).'</div></section>';
  // Keep the chapter picker separate from the saved exam editor so additions are small requests.
  echo '<section class="'.$card.'" id="chapters"><h2>'.$t('exam_add_chapter').'</h2><p role="status"><strong>'.$t('exam_saved_count').': <span class="chisimba-pill chisimba-pill--success">'.count($content['questions']).'</span></strong></p><p>'.$t('exam_add_explain').'</p>';
  if($examChapter){
@@ -33,6 +33,7 @@ if(!$examRow){
   echo '<div class="chisimba-form-actions">'.$r->button('exam_add_selected','plus').'</div></form>';
  }
  echo '<details data-exam-picker data-load-error="'.$t('exam_page_failed').'"'.(!$examChapter?' open':'').'><summary>'.$t('exam_choose_chapter').'</summary><div class="chisimba-form-actions" style="flex-wrap:wrap">';
+ if(!$examSets)echo '<p>'.$t('exam_no_generated').'</p>';
  foreach(array_slice($examSets,0,20) as $set){echo '<a class="button chisimba-button-secondary" href="'.$e($this->uri(['action'=>'examview','id'=>$examRow['id'],'setid'=>$set['id'],'page'=>$examPage],'mcqgenerator')).'#chapters">'.$this->getObject('iconservice','ui')->render('book-open',['decorative'=>true]).'<span>'.$e($set['title']).'</span>'.(isset($chapterCounts[$set['id']])?'<span class="chisimba-pill chisimba-pill--success" aria-label="'.$e($chapterCounts[$set['id']].' '.$r->text('exam_in_exam')).'">'.$chapterCounts[$set['id']].'</span>':'').'</a>';}
  echo '</div><p data-page-status role="status" hidden></p><nav data-exam-pagination class="chisimba-form-actions">';if($examPage>1)echo $r->link('previous','arrow-left',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage-1]);if(count($examSets)>20)echo $r->link('next','arrow-right',['action'=>'examview','id'=>$examRow['id'],'page'=>$examPage+1]);echo '</nav></details></section>';
  echo '<section class="'.$card.'" id="exam-editor"><h2>'.$t('exam_arrange').'</h2><p>'.$t('exam_edit_explain').'</p>'.str_replace('<form ', '<form data-exam-dirty data-unsaved="'.$t('exam_unsaved').'" ', $r->form('examsave',$examToken,$examRow['id'])).'<input type="hidden" name="page" value="'.$examPage.'"><input type="hidden" name="version" value="'.$e($examRow['version']).'">';

@@ -147,3 +147,42 @@ New standalone sets default to 10. A valid count submitted on create/generate is
 remembered in the existing Chisimba module session for subsequent sets. Additional
 counts do not change that preference. The shared course MCQ generator keeps its
 existing five-question default.
+
+## Separate exam workspaces (0.5.0, 20 September 2026)
+
+The module entry point now opens **My exams**. **New exam** saves a named,
+empty workspace and opens its first chapter-source form. **Open chapters**
+lists only that exam's question sets; **Assemble exam paper** selects only its
+generated chapters. Explicit parent IDs in links/forms keep separate browser
+tabs independent. Existing question-set URLs continue to work and resolve their
+saved parent. Exam cards show chapter and assembled-question counts.
+
+The registered `examid` column is added by the guarded pre-install hook. The
+post-install hook transactionally attaches unassigned legacy sets to the owner's
+oldest existing exam (or creates an `Existing exam` if none exists). It does not
+rewrite source, questions, revisions, imports or existing exam snapshots. Repeated
+updates leave assigned sets unchanged. Run both hooks through Module Catalogue;
+copying source alone is insufficient. Back up existing database records first.
+
+Chapter creation checks and locks the parent owner. Cross-exam picker requests
+and additions are refused. An exam with chapter sets cannot be deleted; chapter
+sets must be removed individually first. No bulk deletion or reassignment is
+introduced. Source snapshots already assembled into papers remain independent.
+The existing shared skin, icons, language system and contextual Help are reused.
+
+Verification on the local PHP 8.5.4 installation:
+
+- Syntax and whitespace checks; source/workshop, generation-section, append,
+  exam assembly/answer mixing and chapter-count regression tests passed.
+- `QUESTIONWORKSHOP_LOCAL_TEST=1 php tests/workspace_integration.php` passed
+  real-database list/picker isolation, owner and missing-parent denial, safe
+  deletion, Unicode and repeatable legacy migration with/without an existing exam.
+- Existing real-database exam and append integration tests passed.
+- Real Chrome: two disposable elective workspaces, empty starts, separate chapter
+  sources, switching, source and paper save/reload, isolated question selection,
+  both ODT downloads, rejected cross-exam GET/POST, invalid CSRF, retained invalid
+  source input, other-author/student denial, Help keyboard opening and Escape/focus
+  return, full guides, and four workspace screens at 390px all passed.
+- Original 30 local chapter sets and one saved exam preserved; disposable records
+  removed and test accounts disabled with teaching memberships revoked.
+- Synthetic questions were used; no paid AI calls or production deployment.

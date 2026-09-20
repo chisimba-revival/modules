@@ -16,6 +16,7 @@ class examservice extends ChisimbaObject
     public function add(array $row,array $set,$indices)
     {
         if(!$this->getObject('workshoppolicy')->owner($set))throw new DomainException('not_found');
+        if(($set['examid']??'')!==$row['id'])throw new DomainException('exam_wrong_chapter');
         if(!is_array($indices)||!$indices||count($indices)>30)throw new DomainException('exam_selection');
         $content=$this->content($row);$source=json_decode($set['questions_json'],true,512,JSON_THROW_ON_ERROR);$existing=[];
         foreach($content['questions'] as $q)$existing[$q['sourceSetId'].':'.$q['sourceIndex']]=true;

@@ -28,10 +28,15 @@ class mcqgenerator extends controller
             echo json_encode(['token'=>$this->csrf->issueForSession('mcqgenerator_write')]);exit;
         }
         if(str_starts_with($action,'exam'))return $this->exams($action,$id,$owner);
+        $workspace=null;$examid=$this->param('examid');
         try {
+            if($id!==''){$existing=$service->read($id);$examid=$existing['examid'];}
+            if($examid!=='')$workspace=$this->getObject('examservice')->read($examid);
+            elseif($id===''&&$action!=='create')return $this->nextAction('exams');
             if(in_array($action,['create','generate','generatepart','more','save','import','delete'],true)){
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='create'){
+                    if(!$workspace)throw new DomainException('not_found');
                     $title=$service->title($title);$extract=$this->getObject('workshopsource');
                     $upload=$_FILES['sourcefile']??[];
                     if(($upload['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_NO_FILE){
@@ -44,7 +49,7 @@ class mcqgenerator extends controller
                     $count=$this->param('count',(string)$sessionCount);
                     if(!preg_match('/^(?:[1-9]|[12][0-9]|30)$/D',$count))throw new DomainException('count_invalid');
                     $this->setSession('question_count',(int)$count);
-                    $id=$store->createSet($owner,$title,$source,[],(int)$count);
+                    $id=$store->createSet($owner,$title,$source,[],(int)$count,$workspace['id']);
                     return $this->nextAction('view',['id'=>$id]);
                 }
                 $row=$service->read($id);
@@ -52,7 +57,7 @@ class mcqgenerator extends controller
                     if($this->param('confirm_delete')!=='1')throw new DomainException('delete_confirm_required');
                     if((string)$row['version']!==$this->param('version'))throw new DomainException('changed');
                     $store->removeOwned($row['id'],$owner,(int)$row['version']);
-                    return $this->nextAction('list');
+                    return $this->nextAction('list',['examid'=>$examid]);
                 }
                 if($action==='import'){
                     $context=(string)$this->getObject('dbcontext','context')->getContextCode();
@@ -103,11 +108,12 @@ class mcqgenerator extends controller
             }
         }
         catch(Throwable $e){$error='storage_failed';http_response_code(500);}
+        $this->setVar('workshopExam',$workspace);
         $this->setVar('workshopError',$error);$this->setVar('workshopRow',$row);
         $this->setVar('workshopCount',$this->param('count',(string)$sessionCount));$this->setVar('workshopTitle',$title);$this->setVar('workshopSource',$source);
         $this->setVar('workshopToken',$this->csrf->issueForSession('mcqgenerator_write'));
         $page=max(1,(int)$this->param('page','1'));
-        $this->setVar('workshopPage',$page);$this->setVar('workshopSets',$row?[]:$store->owned($owner,$page));
+        $this->setVar('workshopPage',$page);$this->setVar('workshopSets',$row?[]:($workspace?$store->owned($owner,$page,$workspace['id']):[]));
         $this->setVar('workshopDraft', $error!==''&&$action==='save'?$this->getParam('questions',[]):null);
         return 'workspace_tpl.php';
     }
@@ -122,7 +128,7 @@ class mcqgenerator extends controller
                 if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!$this->csrf->consume('mcqgenerator_write',$this->param('csrf_token')))throw new DomainException('expired');
                 if($action==='examcreate'){
                     $id=$store->createExam($owner,$this->getObject('workshopservice')->title($this->param('title')),$service->emptyContent());
-                    return $this->nextAction('examview',['id'=>$id]);
+                    return $this->nextAction('new',['examid'=>$id]);
                 }
                 $row=$service->read($id);$service->revision($row,$this->param('version'));
                 if($action==='examdelete'){
@@ -131,6 +137,7 @@ class mcqgenerator extends controller
                 }
                 if($action==='examadd'){
                     $chapter=$this->getObject('workshopservice')->read($this->param('setid'));
+                    if(($chapter['examid']??'')!==$row['id']){$chapter=null;throw new DomainException('exam_wrong_chapter');}
                     if((string)$chapter['version']!==$this->param('setversion'))throw new DomainException('exam_source_changed');
                     $content=$service->add($row,$chapter,$this->getParam('selected',[]));$title=$row['title'];
                 }else{
@@ -147,7 +154,10 @@ class mcqgenerator extends controller
                     header('X-Content-Type-Options: nosniff');header('Content-Type: application/vnd.oasis.opendocument.text');
                     header('Content-Disposition: '.$export->disposition($row,'odt',$answers,$answers?'-marking-sheet':'-questions'));echo $body;exit;
                 }
-                if($this->param('setid')!=='')$chapter=$this->getObject('workshopservice')->read($this->param('setid'));
+                if($this->param('setid')!==''){
+                    $chapter=$this->getObject('workshopservice')->read($this->param('setid'));
+                    if(($chapter['examid']??'')!==$row['id']){$chapter=null;throw new DomainException('exam_wrong_chapter');}
+                }
             }
         }catch(DomainException $e){
             $error=$e->getMessage();http_response_code($error==='not_found'?404:422);
@@ -159,7 +169,7 @@ class mcqgenerator extends controller
         $this->setVar('examDraft',$draft);$this->setVar('examTitle',$this->param('title'));
         $this->setVar('examToken',$this->csrf->issueForSession('mcqgenerator_write'));
         $this->setVar('examPage',$page);$this->setVar('examRows',$row?[]:$store->owned($owner,$page));
-        $this->setVar('examSets',$row?$this->getObject('workshopstore')->examChapters($owner,$page):[]);
+        $this->setVar('examSets',$row?$this->getObject('workshopstore')->examChapters($owner,$page,$row['id']):[]);
         return 'exams_tpl.php';
     }
 }
