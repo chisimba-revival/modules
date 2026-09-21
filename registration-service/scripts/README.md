@@ -63,3 +63,16 @@ contracts. `tests/registration_cleanup_integration_test.php` requires
 records and removes those fixtures in `finally`. It expects the module update,
 a canonical administrator with ID 1, and automatic cleanup enabled in that
 isolated database. It does not send email or modify existing user records.
+
+## Installer and administrator documentation
+
+In the companion repository checkouts, start with `dev-environment/docs/workers.md`
+for the complete inventory and installation checklist. The detailed recipe is
+`dev-environment/docs/registration-cleanup-worker-production.md`, including cron
+and systemd alternatives, enabling the policy, expected output, logs and stopping.
+Registration cleanup is not installed by the Communications or AI worker installers.
+
+The administrator walkthrough is
+`chisimba-info/user-guides/Registration_Protection_Administrator_Guide.md`.
+In the application, open **My Administration → Registration protection → Help with
+this page** for contextual instructions on review, dismissal, retention and recovery.
