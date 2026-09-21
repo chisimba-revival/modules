@@ -20,3 +20,7 @@ the labels and contextual Help. There are no new workers or database tables.
 See [tests/README.md](tests/README.md) for existing regression checks. Check the
 collapsed overview, project focus, Escape/focus return and narrow screens without
 submitting changes to real boards.
+
+Saving an existing task updates its displayed title, description and notes in
+place. It leaves the editor, project, notes disclosure and focus view open.
+Failed or uncertain saves keep the text for retry and never refresh the page.

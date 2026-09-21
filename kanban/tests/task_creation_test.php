@@ -2,15 +2,16 @@
 /** Exercise task creation responses, permissions and escaped card rendering. */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 if ($argc === 1) {
-    foreach (array('success'=>200, 'csrf'=>403, 'permission'=>403, 'title'=>422, 'save'=>500, 'wrongboard'=>403, 'oversize'=>422) as $case=>$status) {
+    foreach (array('success'=>200, 'edit'=>200, 'csrf'=>403, 'permission'=>403, 'title'=>422, 'save'=>500, 'wrongboard'=>403, 'oversize'=>422) as $case=>$status) {
         $output = shell_exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(__FILE__).' '.escapeshellarg($case));
         $response = json_decode($output, true);
-        if (!is_array($response) || $response['status'] !== $status || $response['ok'] !== ($case === 'success') || $response['csrfToken'] !== 'fresh-token') {
+        if (!is_array($response) || $response['status'] !== $status || $response['ok'] !== in_array($case,array('success','edit'),true) || $response['csrfToken'] !== 'fresh-token') {
             throw new RuntimeException('Unexpected '.$case.' response: '.$output);
         }
         if ($case === 'success' && (!str_contains($response['taskHtml'], '&lt;script&gt;') || str_contains($response['taskHtml'], '<script>') || !str_contains($response['taskHtml'], 'data-task-move'))) {
             throw new RuntimeException('New card must escape input and include working task actions');
         }
+        if($case==='edit'&&($response['message']!=='Task saved.'||!str_contains($response['taskHtml'],'data-task-summary')||!str_contains($response['taskHtml'],'Meeting notes')))throw new RuntimeException('Edit must return the saved summary');
         echo 'PASS: '.$case.PHP_EOL;
     }
     exit;
@@ -22,7 +23,7 @@ $case = $argv[1];
 class controller {
     public function getParam($name, $default='') {
         global $case;
-        return array('response'=>'json', 'csrf_token'=>'old-token', 'scope'=>'personal', 'boardid'=>str_repeat('a',32), 'taskid'=>$case==='wrongboard'?str_repeat('c',32):'', 'title'=>$case==='title'?'':($case==='oversize'?str_repeat('x',256):'<script>alert(1)</script>'), 'description'=>'<img src=x onerror=alert(1)>', 'notes'=>'Meeting notes')[$name] ?? $default;
+        return array('response'=>'json', 'csrf_token'=>'old-token', 'scope'=>'personal', 'boardid'=>str_repeat('a',32), 'taskid'=>in_array($case,array('wrongboard','edit'),true)?str_repeat('c',32):'', 'title'=>$case==='title'?'':($case==='oversize'?str_repeat('x',256):'<script>alert(1)</script>'), 'description'=>'<img src=x onerror=alert(1)>', 'notes'=>'Meeting notes')[$name] ?? $default;
     }
     public function uri($params, $module) { return 'index.php?module=kanban&'.http_build_query($params); }
 }
@@ -44,8 +45,8 @@ $controller->tasks = new class {
         $this->task = array_merge($data,array('id'=>str_repeat('b',32)));
         return $GLOBALS['case']==='save'?false:$this->task['id'];
     }
-    public function one($id) { return $GLOBALS['case']==='wrongboard'?array('boardid'=>'other'):$this->task; }
-    public function saveTask($id,$data) { throw new RuntimeException('Unauthorized update'); }
+    public function one($id) { return $GLOBALS['case']==='wrongboard'?array('boardid'=>'other'):($this->task??array('id'=>$id,'boardid'=>str_repeat('a',32),'status'=>'completed')); }
+    public function saveTask($id,$data) { if($GLOBALS['case']!=='edit')throw new RuntimeException('Unauthorized update');$this->task=$data+array('id'=>$id,'boardid'=>str_repeat('a',32),'status'=>'completed');return true; }
 };
 $controller->subtasks = new class { public function forTask($id) { return array(); } };
 // Capture the real JSON response, including the HTTP status set before exit.

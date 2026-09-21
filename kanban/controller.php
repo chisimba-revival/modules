@@ -45,6 +45,7 @@ class kanban extends controller
         $json=$this->param('response')==='json';
         if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Your text is kept; please try again.',403):$this->index('','The form could not be verified. Please try again.');
         $id=$this->id('taskid');
+        $isNew=$id==='';
         $board=$this->service->board($this->id('boardid'),'edit');
         if(!$board)return $json?$this->json(false,'You do not have permission for that board.',403):$this->forbidden();
         $title=mb_substr($this->param('title'),0,255);
@@ -63,7 +64,7 @@ class kanban extends controller
         if($json){
             $task=$this->tasks->one($id);
             $task['subtasks']=$this->subtasks->forTask($id);
-            return $this->json(true,'Task added.',200,array('taskHtml'=>$this->taskCard($task,$board)));
+            return $this->json(true,$isNew?'Task added.':'Task saved.',200,array('taskHtml'=>$this->taskCard($task,$board)));
         }
         return $this->index('Task saved.');
     }

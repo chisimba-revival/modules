@@ -266,6 +266,21 @@
         post(form.action, data, function (result) {
             feedback.textContent = result.message;
             if (draft) draft.saved(snapshot);
+            // Refresh the saved text only: keep the editor, other drafts, scroll and project focus.
+            var task = form.closest('.kanban-task');
+            if (task && new URL(form.action, location.href).searchParams.get('action') === 'savetask') {
+                var fragment = document.createElement('template');
+                fragment.innerHTML = result.taskHtml;
+                var saved = fragment.content.querySelector('.kanban-task');
+                if (!saved || saved.dataset.taskId !== task.dataset.taskId) throw new Error('Missing saved task');
+                var summary = task.querySelector('[data-task-summary]');
+                var notesOpen = summary.querySelector('details')?.open || false;
+                summary.replaceChildren(...saved.querySelector('[data-task-summary]').childNodes);
+                if (summary.querySelector('details')) summary.querySelector('details').open = notesOpen;
+                task.querySelector('h4').textContent = saved.querySelector('h4').textContent;
+                setTaskCollapsed(task, task.classList.contains('is-collapsed'));
+                return;
+            }
             // Only a confirmed save may navigate. Other forms retain their recovery copies.
             var destination = new URL(window.location.href);
             if (root.dataset.scope === 'context') { destination.searchParams.set('scope','context'); destination.searchParams.set('scopeid',root.dataset.scopeId); }
