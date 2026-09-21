@@ -5,8 +5,9 @@ $scopeType=$kanbanScope['type'];
 $hidden=function($boardId='')use($e,$kanbanCsrf,$scopeType){return '<input type="hidden" name="csrf_token" value="'.$e($kanbanCsrf).'"/><input type="hidden" name="scope" value="'.$e($scopeType).'"/>'.($boardId!==''?'<input type="hidden" name="boardid" value="'.$e($boardId).'"/>':'');};
 $labels=array('not_started'=>'Not started','in_progress'=>'In progress','completed'=>'Completed');
 $recoveryText=$this->getObject('language','language');
+// Language strings may contain HTML entities; JSON/textContent needs plain text.
 $recoveryMessages=array();
-foreach(array('kept','unavailable','restored','conflict','restore','discard','signin','uncertain','saving') as $key)$recoveryMessages[$key]=$recoveryText->languageText('mod_kanban_draft_'.$key,'kanban');
+foreach(array('kept','unavailable','restored','conflict','restore','discard','signin','uncertain','saving') as $key)$recoveryMessages[$key]=html_entity_decode($recoveryText->languageText('mod_kanban_draft_'.$key,'kanban'),ENT_QUOTES|ENT_HTML5,'UTF-8');
 $icons=$this->getObject('iconservice','ui');
 $viewText=fn($key)=>$e($this->getObject('language','language')->languageText('mod_kanban_view_'.$key,'kanban'));
 ?>

@@ -18,7 +18,7 @@ $renderer = new class {
         public function languageText($key, $module) {
             foreach (file(dirname(__DIR__,2).'/register.conf') as $line) {
                 $parts=explode('|',trim($line),3);
-                if(($parts[0]??'')==='TEXT: '.$key)return $parts[2];
+                if(($parts[0]??'')==='TEXT: '.$key)return htmlentities($parts[2],ENT_QUOTES|ENT_HTML5,'UTF-8');
             }
             return $key;
         }
