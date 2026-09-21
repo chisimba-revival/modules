@@ -21,7 +21,10 @@ private to their owner. Existing course imports remain independent.
    use the same saved question order, continuous numbering and fixed marks.
 
 The chapter picker lists *available sets*. A set's presence does not mean its
-questions are included in the exam. Green badges show included counts. Generating
+questions are included in the exam. Every chapter button shows its saved included count, including zero; positive
+counts are green. Counts belong to the displayed question type and source set,
+so switching to short answers does not display the MCQ counts. Hover over a badge
+for its explanation. Generating
 or saving a set never adds its questions automatically. Included source questions
 can be selected once per exam; excluded questions must first be reviewed in their
 source set. Only sets belonging to the current exam are offered, filtered by type.
