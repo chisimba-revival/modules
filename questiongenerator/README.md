@@ -12,7 +12,7 @@ private to their owner. Existing course imports remain independent.
    and review their questions. A saved MCQ set also offers **Create short-answer
    set from this source**. This reuses its source without altering its MCQs.
 3. Open **Assemble exam paper**. Choose **Add multiple-choice questions** or
-   **Add short-answer questions**, open a chapter set and tick the desired
+   **Add short-answer questions** directly in Section 2, open a chapter set and tick the desired
    questions. Select **Add selected questions** to include them explicitly.
 4. The paper is organised into **Section 1: Multiple choice.** (1 mark each) and
    **Section 2: Short answers.** (2 marks each). Reorder questions within their
@@ -92,3 +92,7 @@ database. Check normal upgrade twice, unchanged saved-data checksums, old-link
 redirects, ownership and revision conflicts, MCQ-plus-short-answer selection,
 remove/undo/save/reload, section totals, both ODT exports, Help/Escape, consistent
 button heights and mobile overflow. Remove the disposable installation afterwards.
+
+Answer-position mixing is shown within Section 1 when MCQs are present and only
+shuffles multiple-choice options. Short answers have no option-mixing control.
+Save pending exam edits before following a section’s Add questions button.

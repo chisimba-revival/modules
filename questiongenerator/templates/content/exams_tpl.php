@@ -47,7 +47,11 @@ if(!$examRow){
  $number=0;
  foreach($service->sections($content) as $type=>$section){
   echo '<section data-exam-section data-marks-per-question="'.$section['marks'].'"><h3>'.$t($section['title']).'</h3><p>'.$t('exam_section_after_save').': <strong data-section-count>'.count($section['questions']).'</strong> '.$t('exam_questions').' · <strong data-section-marks>'.(count($section['questions'])*$section['marks']).'</strong> '.$t('exam_marks').' · '.$section['marks'].' '.$t('exam_marks_each').'</p>';
+  echo '<div class="chisimba-form-actions chisimba-form-actions--equal"><a class="button chisimba-button-secondary" href="'.$e($this->uri(['action'=>'examview','id'=>$examRow['id'],'question_type'=>$type],'questiongenerator')).'#chapters">'.$this->getObject('iconservice','ui')->render('plus',['decorative'=>true]).'<span>'.$t($type==='mcq'?'exam_add_mcq':'exam_add_short').'</span></a></div>';
   if(!$section['questions'])echo '<p>'.$t('exam_section_empty').'</p>';
+ if($type==='mcq'&&$section['questions']){
+ echo '<p><label><input type="checkbox" name="exam[mixAnswers]" value="1"'.(($draft['mixAnswers']??'')==='1'?' checked':'').'> '.$t('exam_mix_answers').'</label></p><p>'.$t('exam_mix_explain').'</p>';
+ }
   foreach($section['questions'] as $sectionIndex=>$entry){
   $i=$number++;
   $key=$entry['id'];$input=$draft['entries'][$key]??null;$q=$entry['question'];
@@ -61,7 +65,6 @@ if(!$examRow){
  }
  echo '</section>';
  }
- echo '<p><label><input type="checkbox" name="exam[mixAnswers]" value="1"'.(($draft['mixAnswers']??'')==='1'?' checked':'').'> '.$t('exam_mix_answers').'</label></p><p>'.$t('exam_mix_explain').'</p>';
  $reviewed=$draft!==null?($draft['reviewed']??'')==='1':$content['reviewed'];
  echo '<p><label><input type="checkbox" name="exam[reviewed]" value="1"'.($reviewed?' checked':'').'> '.$t('exam_review').'</label></p><div class="chisimba-form-actions chisimba-form-actions--equal">'.$r->button('exam_save','save').'</div><input type="hidden" name="exam[complete]" value="1"></form></section><div class="chisimba-form-actions chisimba-form-actions--equal">'.$r->deleteForm($examRow,$examToken,true).'</div>';
 }
