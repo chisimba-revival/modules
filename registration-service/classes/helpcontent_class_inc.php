@@ -9,6 +9,6 @@ class helpcontent extends ChisimbaObject
         $language=$this->getObject('language','language');
         $t=fn($key)=>$language->languageText('mod_registration_service_help_'.$key,'registration-service');
         return array('title'=>$t('title'),'summary'=>$t('summary'),
-            'steps'=>array($t('review'),$t('dismiss'),$t('expire'),$t('retention'),$t('settings'),$t('recovery')),'sections'=>array());
+            'steps'=>array($t('review'),$t('dismiss'),$t('expire'),$t('retention'),$t('settings'),$t('closed'),$t('recovery')),'sections'=>array());
     }
 }

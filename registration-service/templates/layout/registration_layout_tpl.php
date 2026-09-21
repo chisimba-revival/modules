@@ -32,15 +32,15 @@ $aside = '<aside class="chisimba-guidance-card" aria-labelledby="account-guidanc
     . $e($t('already_registered')) . '</a></p></aside>';
 
 $layout = $this->newObject('csslayout', 'htmlelements');
-$isPolicyPage = !empty($registrationPolicyPage);
-if ($isPolicyPage) {
+$singleColumn = !empty($registrationPolicyPage) || !empty($registrationNoticePage);
+if ($singleColumn) {
     $layout->setNumColumns(1);
 } else {
     $layout->setNumColumns(3);
     $layout->layoutType = 'canvas_stacked31';
 }
 $layout->setMiddleColumnContent($this->getContent());
-if (!$isPolicyPage) {
+if (!$singleColumn) {
     $layout->setRightColumnContent($aside);
 }
 echo $layout->show();

@@ -24,3 +24,11 @@ Installing this module does not create a host schedule. Preview first, install a
 daily cleanup schedule, then enable `REGISTRATION_AUTO_CLEANUP`. Communications
 must be scheduled separately to deliver verification and recovery emails. No AI
 worker or external bot service is needed for registration protection.
+
+## Closing public registration
+
+Set the installation's **Allow self registration** (`KEWL_ALLOW_SELFREGISTER`) to
+`FALSE` to close new account requests. Both the public page and the shared service
+enforce this setting. Login, password recovery and confirmation of existing pending
+requests remain available. Webinar bookings and newsletter subscriptions have
+separate controls. Restore `TRUE` to reopen new account registration.

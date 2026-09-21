@@ -59,6 +59,14 @@ class registration_service extends controller
             'forgotpassword', 'requestrecovery'
         ), true) ? 'recovery_guidance' : 'guidance');
         $this->setVar('registrationGuidancePrefix', $guidancePrefix);
+        // Existing confirmations and password recovery remain available when
+        // administrators close new public account registration.
+        if (in_array((string) $action, array('', 'default', 'register', 'usernameavailability'), true)
+            && !$this->service->publicRegistrationEnabled()) {
+            http_response_code(403);
+            $this->setVar('registrationNoticePage', true);
+            return 'registration_disabled_tpl.php';
+        }
         switch ((string) $action) {
             case 'usernameavailability': return $this->usernameAvailability();
             case 'checkemail': return $this->confirmationPage();

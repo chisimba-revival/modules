@@ -54,9 +54,18 @@ class registrationservice extends dbTable
         $this->objIdentity = $this->getObject('registrationidentityservice', 'registration-service');
     }
 
+    /** The installation's existing switch governs new public account requests. */
+    public function publicRegistrationEnabled()
+    {
+        return strtoupper(trim((string) $this->objConfig->getallowSelfRegister())) === 'TRUE';
+    }
+
     /** Create pending state only; no canonical account is created or activated. */
     public function createPending(array $request)
     {
+        if (!$this->publicRegistrationEnabled()) {
+            return $this->result(false, 'registration_disabled');
+        }
         $username = $this->username($request['username'] ?? null);
         $email = $this->email($request['emailAddress'] ?? null);
         $firstName = $this->text($request['firstName'] ?? null, 50);
