@@ -41,7 +41,7 @@ class examstore extends dbTable
                 $owner=$set['ownerid'];
                 if(!isset($parents[$owner])){
                     $existing=$this->run('SELECT id FROM tbl_mcqgenerator_exams WHERE ownerid='.$this->q($owner).' ORDER BY datecreated,id LIMIT 1',true);
-                    $parents[$owner]=$existing?$existing[0]['id']:$this->createExam($owner,$this->getObject('workshoprenderer','mcqgenerator')->text('exam_legacy'),$this->getObject('examservice','mcqgenerator')->emptyContent());
+                    $parents[$owner]=$existing?$existing[0]['id']:$this->createExam($owner,$this->getObject('workshoprenderer','questiongenerator')->text('exam_legacy'),$this->getObject('examservice','questiongenerator')->emptyContent());
                 }
                 $this->run('UPDATE tbl_questionworkshop_sets SET examid='.$this->q($parents[$owner]).' WHERE id='.$this->q($set['id']));
             }

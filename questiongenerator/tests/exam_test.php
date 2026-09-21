@@ -18,12 +18,12 @@ $foreign=$set;$foreign['ownerid']='other';rejects(fn()=>$s->add($row,$foreign,['
 rejects(fn()=>$s->revision($row,2),'exam_changed');
 $entries=[];foreach($c['questions'] as $i=>$entry)$entries[$entry['id']]=['keep'=>'1','order'=>(string)(2-$i),'marks'=>(string)($i+1)];
 $input=['complete'=>'1','instructions'=>"Answer all questions.\nChoose one option.",'headings'=>'1','reviewed'=>'1','entries'=>$entries];
-$edited=$s->edit($row,$input);check($edited['questions'][0]['sourceIndex']===2,'order changed');check(array_sum(array_column($edited['questions'],'marks'))===3,'marks total');
+$edited=$s->edit($row,$input);check($edited['questions'][0]['sourceIndex']===2,'order changed');check(array_sum(array_column($edited['questions'],'marks'))===2,'fixed MCQ marks total');
 $truncated=$input;unset($truncated['complete']);rejects(fn()=>$s->edit($row,$truncated),'exam_invalid');
-$bad=$input;$bad['entries'][array_key_first($entries)]['marks']='-1';rejects(fn()=>$s->edit($row,$bad),'exam_invalid');
+$bad=$input;$bad['entries'][array_key_first($entries)]['marks']='-1';check($s->edit($row,$bad)['questions'][0]['marks']===1,'submitted marks cannot override fixed allocation');
 $bad=$input;unset($bad['entries'][array_key_first($entries)]);rejects(fn()=>$s->edit($row,$bad),'exam_invalid');
 $row['content_json']=json_encode($edited);$paper=implode("\n",$s->lines($row));$key=implode("\n",$s->lines($row,true));
-check(!str_contains($paper,'Evidence ONLY'),'no evidence leaked into paper');check(str_contains($key,'Evidence ONLY'),'key evidence');check(str_contains($paper,'1. Which')&&str_contains($paper,'2. Which'),'consecutive numbering');check(str_contains($key,'exam_total: 3'),'key total');check(!str_contains($paper,'draft_notice'),'reviewed paper');
+check(!str_contains($paper,'Evidence ONLY'),'no evidence leaked into paper');check(str_contains($key,'Evidence ONLY'),'key evidence');check(str_contains($paper,'1. Which')&&str_contains($paper,'2. Which'),'consecutive numbering');check(str_contains($key,'exam_total: 2'),'key total');check(!str_contains($paper,'draft_notice'),'reviewed paper');
 $edited['headings']=false;$row['content_json']=json_encode($edited);check(!str_contains(implode("\n",$s->lines($row)),'Chapter 1'),'optional headings');check(str_contains(implode("\n",$s->lines($row,true)),'Chapter 1'),'key retains source chapter');
 $export=new workshopexport();$GLOBALS['services']['workshopexport']=$export;$path=tempnam(sys_get_temp_dir(),'exam-test-');
 try{file_put_contents($path,$s->odt($row));$zip=new ZipArchive();check($zip->open($path)===true,'ODT opens');$xml=$zip->getFromName('content.xml');$dom=new DOMDocument();check($dom->loadXML($xml,LIBXML_NONET),'valid XML');check(!str_contains($xml,'Evidence ONLY'),'ODT paper no answers');$zip->close();}finally{unlink($path);}

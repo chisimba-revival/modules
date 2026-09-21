@@ -43,6 +43,11 @@
                 // Removed entries retain their values for Undo, but cannot block saving.
                 entry.querySelectorAll('input[type="number"]').forEach(function (field) { field.required = keep.checked; });
             });
+            edit.closest('form').querySelectorAll('[data-exam-section]').forEach(function (section) {
+                var count = section.querySelectorAll('[data-exam-keep]:checked').length;
+                section.querySelector('[data-section-count]').textContent = count;
+                section.querySelector('[data-section-marks]').textContent = count * Number(section.dataset.marksPerQuestion);
+            });
             edit.querySelector('[data-keep-count]').textContent = kept;
             edit.querySelector('[data-remove-count]').textContent = entries.length - kept;
         }

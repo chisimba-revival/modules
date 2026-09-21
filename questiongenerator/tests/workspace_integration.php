@@ -2,7 +2,7 @@
 /** Local, disposable workspace persistence and boundary checks. No AI calls. */
 if(PHP_SAPI!=='cli'||getenv('QUESTIONWORKSHOP_LOCAL_TEST')!=='1')exit(64);
 chdir('/var/www/html/ch');$GLOBALS['kewl_entry_point_run']=true;$_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='localhost';$_SERVER['SCRIPT_NAME']='/index.php';$_SERVER['QUERY_STRING']='';require 'classes/core/engine_class_inc.php';$e=new engine();
-$exams=$e->getObject('examstore','mcqgenerator');$sets=$e->getObject('workshopstore','mcqgenerator');$service=$e->getObject('examservice','mcqgenerator');$db=$e->getDbObj();$owner='workspace-test-'.bin2hex(random_bytes(5));$ids=[];$parents=[];
+$exams=$e->getObject('examstore','questiongenerator');$sets=$e->getObject('workshopstore','questiongenerator');$service=$e->getObject('examservice','questiongenerator');$db=$e->getDbObj();$owner='workspace-test-'.bin2hex(random_bytes(5));$ids=[];$parents=[];
 function expect($ok,$label){if(!$ok)throw new RuntimeException($label);}
 function denied($fn,$code){try{$fn();}catch(DomainException $e){expect($e->getMessage()===$code,$code);return;}throw new RuntimeException('Expected '.$code);}
 try{

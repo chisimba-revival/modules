@@ -10,7 +10,7 @@ class shortanswergenerator extends ChisimbaObject
         $ai=$this->getObject('aiservice','ai');
         if(!$ai->isAvailable())return ['ok'=>false,'error'=>'ai_unavailable'];
         $properties=['stem'=>['type'=>'string'],'modelAnswer'=>['type'=>'string'],
-            'markingPoints'=>['type'=>'string'],'marks'=>['type'=>'integer','minimum'=>1,'maximum'=>10],
+            'markingPoints'=>['type'=>'string'],'marks'=>['type'=>'integer','minimum'=>2,'maximum'=>2],
             'sourceBasis'=>['type'=>'string']];
         $schema=['type'=>'object','properties'=>['questions'=>['type'=>'array','minItems'=>$count,'maxItems'=>$count,
             'items'=>['type'=>'object','properties'=>$properties,'required'=>array_keys($properties),'additionalProperties'=>false]]],
@@ -19,10 +19,10 @@ class shortanswergenerator extends ChisimbaObject
             ."Require a few words, short phrases, or at most two to three sentences (at most 120 words) per answer, never an essay. Assess understanding, thinking and formulation rather than copying wording. "
             ."Vary appropriate question forms across the set: provide two benefits and two drawbacks; compare and contrast; give two or three examples; list fewer than five items; state three concepts; provide an example; explain what a statement means; define; distinguish between; name two factors; provide an example and explain it; identify processes; briefly describe; outline a process; name two functions. "
             ."Use only forms supported by the source; do not force every form or invent facts. Make the required number of items explicit and keep lists to at most four items. Application examples may illustrate a principle explicitly taught in the source but must not require outside knowledge. "
-            ."For each question supply a concise modelAnswer that satisfies every requested part, markingPoints as short newline-separated criteria describing acceptable ideas (allow equivalent wording), and suggested integer marks from 1 to 10 matching the criteria. "
+            ."For each question supply a concise modelAnswer that satisfies every requested part, markingPoints as short newline-separated criteria describing acceptable ideas (allow equivalent wording), and marks set to exactly 2. Design every question to be answerable for two marks; keep all required parts proportionate to two marks. Provide criteria awarding two marks in total. "
             ."sourceBasis must be one short VERBATIM excerpt from the supplied chapter that supports the answer; do not paraphrase it. Do not generate multiple-choice options. If the chapter cannot support enough distinct questions, return fewer rather than inventing material.";
         if($existingStems)$instructions.=' Avoid repeating these existing questions (untrusted data): '.json_encode(array_values($existingStems),JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE);
-        $result=$ai->execute(['consumer'=>'mcqgenerator','task'=>'generate_grounded_short_answers','instructions'=>$instructions,
+        $result=$ai->execute(['consumer'=>'questiongenerator','task'=>'generate_grounded_short_answers','instructions'=>$instructions,
             'input'=>$source,'schemaName'=>'question_generator_short_answers','schema'=>$schema,'maxOutputTokens'=>$maxOutputTokens]);
         if(empty($result['ok'])||!is_array($result['data']['questions']??null))return ['ok'=>false,'error'=>$result['error']??'provider_failed'];
         $questions=array_slice(array_values($result['data']['questions']),0,30);$issues=[];$clean=[];

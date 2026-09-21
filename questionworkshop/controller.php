@@ -10,6 +10,6 @@ class questionworkshop extends controller
   $action=$this->getParam('action','list');
   if(!in_array($action,['list','view','download'],true))$action='view';
   // Never replay a write or a chargeable AI request through an old form.
-  return $this->nextAction($action,$params,'mcqgenerator');
+  return $this->nextAction($action,$params,'questiongenerator');
  }
 }

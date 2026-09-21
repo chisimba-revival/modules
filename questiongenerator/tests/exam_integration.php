@@ -2,7 +2,7 @@
 /** Disposable local database checks; no provider calls. */
 if(PHP_SAPI!=='cli'||getenv('QUESTIONWORKSHOP_LOCAL_TEST')!=='1')exit(64);
 chdir('/var/www/html/ch');$GLOBALS['kewl_entry_point_run']=true;$_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='localhost';$_SERVER['SCRIPT_NAME']='/index.php';$_SERVER['QUERY_STRING']='';require 'classes/core/engine_class_inc.php';$engine=new engine();
-$store=$engine->getObject('examstore','mcqgenerator');$sets=$engine->getObject('workshopstore','mcqgenerator');$id=null;$sourceId=null;
+$store=$engine->getObject('examstore','questiongenerator');$sets=$engine->getObject('workshopstore','questiongenerator');$id=null;$sourceId=null;
 try {
  $content=['instructions'=>'Example 🌿','headings'=>true,'reviewed'=>false,'questions'=>[]];
  $id=$store->createExam('local-exam-fixture','QA database exam',$content);$row=$store->one($id);

@@ -9,9 +9,10 @@ class workshopstore extends dbTable
     public function owned($owner,$page=1,$examid='')
     { return $this->rows('SELECT * FROM tbl_questionworkshop_sets WHERE ownerid='.$this->q($owner).' AND examid='.$this->q($examid).' ORDER BY datemodified DESC,id DESC LIMIT '.((max(1,min(10000,(int)$page))-1)*20).',21') ?: []; }
     /** Lightweight chapter picker in natural title order; do not load chapter source text. */
-    public function examChapters($owner,$page=1,$examid='')
+    public function examChapters($owner,$page=1,$examid='',$type='mcq')
     {
-        $rows=$this->rows("SELECT id,title,reviewed,question_type FROM tbl_questionworkshop_sets WHERE ownerid=".$this->q($owner)." AND examid=".$this->q($examid)." AND state='generated' AND questions_json<>'[]'");
+        if(!in_array($type,['mcq','short_answer'],true))throw new DomainException('questions_invalid');
+        $rows=$this->rows("SELECT id,title,reviewed,question_type FROM tbl_questionworkshop_sets WHERE ownerid=".$this->q($owner)." AND examid=".$this->q($examid)." AND state='generated' AND questions_json<>'[]' AND question_type=".$this->q($type));
         usort($rows,static function($a,$b){
             $normal=static fn($title)=>preg_replace('/[-_\s]+/u',' ',$title);
             return strnatcasecmp($normal($a['title']),$normal($b['title']))?:strcmp($a['id'],$b['id']);
