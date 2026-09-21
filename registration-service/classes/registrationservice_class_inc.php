@@ -12,7 +12,6 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 class registrationservice extends dbTable
 {
     private const TABLE_NAME = 'tbl_registration_service_pending';
-    private const PENDING_TTL = 86400;
     private const VERIFICATION_TTL = 86400;
 
     public function init(
@@ -119,7 +118,7 @@ class registrationservice extends dbTable
             'password_hash' => $passwordHash,
             'status' => 'awaiting_legal_acceptance',
             'correlation_id' => $correlationId,
-            'expires_at' => date('Y-m-d H:i:s', time() + self::PENDING_TTL),
+            'expires_at' => date('Y-m-d H:i:s', time() + 86400 * $this->getObject('registrationguard')->pendingDays()),
             'verified_at' => null,
             'provisioned_user_id' => null,
             'payment_product_code' => null,
@@ -255,6 +254,8 @@ class registrationservice extends dbTable
     /** Send a fresh verification link and supportive message to one stale registration. */
     public function sendAdministratorReminder($pendingId, $actorId)
     {
+        $user=$this->getObject('user','security');
+        if (!$user->isAdmin() || (string)$user->userId() !== (string)$actorId) { return $this->result(false,'permission_denied'); }
         $id=is_scalar($pendingId)?strtolower(trim((string)$pendingId)):'';
         $actor=$this->text($actorId,25);$cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
         if(!preg_match('/^[a-f0-9]{32}$/',$id)||$actor===null){return $this->result(false,'invalid_reminder');}
@@ -268,6 +269,7 @@ class registrationservice extends dbTable
         if(!empty($pending['last_reminder_at'])&&strtotime($pending['last_reminder_at'])>strtotime('-24 hours')){
             return $this->result(false,'reminder_already_sent',$id);
         }
+        if (!$this->getObject('registrationguard')->allowVerificationMail($pending['email_address'])) { return $this->result(false,'rate_limited',$id); }
         $token=$this->objTokens->issue('email_verification','pending_registration',$id,$pending['correlation_id'],self::VERIFICATION_TTL);
         if(empty($token['ok'])||empty($token['rawToken'])){return $this->result(false,'verification_token_failed',$id);}
         $url=rtrim($this->objConfig->getSiteRoot(),'/').'/index.php?module=registration-service&action=verify&token='.rawurlencode($token['rawToken']);
@@ -328,16 +330,22 @@ class registrationservice extends dbTable
 
     private function prepareAndQueueVerification(array $pending, $returnTo = '')
     {
+        if (!$this->getObject('registrationguard')->allowVerificationMail($pending['email_address'])) {
+            return $this->result(false, 'rate_limited', $pending['id']);
+        }
         if ($pending['status'] !== 'awaiting_verification') {
-            if ($this->update('id', $pending['id'], array(
-                'status' => 'awaiting_verification',
-                'updated_at' => date('Y-m-d H:i:s'),
-            )) === false) {
+            // Do not resurrect a request dismissed while this form was open.
+            if ($this->query('UPDATE '.self::TABLE_NAME
+                .' SET status='.$this->quote('awaiting_verification').',updated_at='.$this->quote(date('Y-m-d H:i:s'))
+                .' WHERE id='.$this->quote($pending['id']).' AND status='.$this->quote('awaiting_legal_acceptance')
+                .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))) === false) {
                 return $this->result(false, 'verification_state_failed', $pending['id']);
             }
             $pending['status'] = 'awaiting_verification';
         }
 
+        $pending = $this->pending($pending['id'], 'awaiting_verification');
+        if ($pending === null) { return $this->result(false, 'pending_registration_not_ready'); }
         $token = $this->objTokens->issue(
             'email_verification',
             'pending_registration',
@@ -405,7 +413,7 @@ class registrationservice extends dbTable
                 if ($subjectType !== 'pending_registration') {
                     return false;
                 }
-                $pending = $this->pending($subjectId, 'awaiting_verification');
+                $pending = $this->pending($subjectId, 'awaiting_verification', true);
                 if ($pending === null) {
                     return false;
                 }
@@ -729,7 +737,7 @@ class registrationservice extends dbTable
         return array('ok' => true, 'code' => 'password_recovered', 'userId' => $userId);
     }
 
-    private function pending($id, $status)
+    private function pending($id, $status, $lock = false)
     {
         $id = is_scalar($id) ? strtolower(trim((string) $id)) : '';
         if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
@@ -740,7 +748,7 @@ class registrationservice extends dbTable
             . ' WHERE id = ' . $this->quote($id)
             . ' AND status = ' . $this->quote($status)
             . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
-            . ' LIMIT 2'
+            . ' LIMIT 2' . ($lock ? ' FOR UPDATE' : '')
         );
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }

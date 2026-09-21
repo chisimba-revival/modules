@@ -15,6 +15,8 @@ class registration_service extends controller
     private $service;
     private $csrf;
     private $abuse;
+    private $abuseError = 'invalid_request';
+    private $phones;
     public $objLanguage;
 
     public function init()
@@ -29,7 +31,7 @@ class registration_service extends controller
 
     public function requiresLogin($action)
     {
-        return in_array((string) $action, array('identity', 'saveidentity'), true);
+        return in_array((string) $action, array('identity', 'saveidentity', 'manage', 'dismiss', 'confirmdismiss'), true);
     }
 
     public function isValid($action, $default = true)
@@ -38,12 +40,13 @@ class registration_service extends controller
             '', 'default', 'register', 'verify', 'terms',
             'forgotpassword', 'requestrecovery', 'recover', 'resetpassword',
             'usernameavailability', 'checkemail'
-            , 'deliverypending', 'retryverification', 'identity', 'saveidentity'
+            , 'deliverypending', 'retryverification', 'identity', 'saveidentity', 'manage', 'dismiss', 'confirmdismiss'
         ), true);
     }
 
     public function dispatch($action)
     {
+        if (in_array((string)$action, array('manage','dismiss','confirmdismiss'), true)) { return $this->administrationPage((string)$action); }
         if ((string) $action === 'identity') { return $this->identityPage(); }
         if ((string) $action === 'saveidentity') { return $this->saveIdentity(); }
         header('Cache-Control: no-store, private');
@@ -72,6 +75,34 @@ class registration_service extends controller
             case 'default':
             default: return $this->registrationPage();
         }
+    }
+
+    private function administrationPage($action)
+    {
+        header('Cache-Control: no-store, private');
+        if (!$this->getObject('user','security')->isAdmin()) { http_response_code(403); return null; }
+        $cleanup = $this->getObject('registrationcleanup');
+        $notice = '';
+        $id = $this->scalarParam('id');
+        if ($action === 'confirmdismiss') {
+            if (!$this->isPost() || !$this->csrf->consume('registration_dismiss_'.$id, $this->scalarParam('csrf_token'))) {
+                $notice = 'invalid_request';
+            } else {
+                try { $notice = $cleanup->dismiss($id) === 'changed' ? 'dismissed' : 'dismiss_unavailable'; }
+                catch (Throwable $exception) { $notice = 'dismiss_failed'; }
+            }
+            // Redirect after POST: a reload must not repeat an administrative action.
+            $_SESSION['registration_cleanup_notice'] = $notice;
+            return $this->nextAction('manage');
+        }
+        $notice = $_SESSION['registration_cleanup_notice'] ?? '';
+        unset($_SESSION['registration_cleanup_notice']);
+        $this->setVar('cleanupNotice', $notice);
+        $this->setVar('cleanupReview', $action === 'dismiss' ? $cleanup->review($id) : null);
+        $this->setVar('cleanupConfirm', $action === 'dismiss');
+        $this->setVar('cleanupCsrf', $this->csrf->issue('registration_dismiss_'.$id));
+        $this->setVar('cleanupPreview', $cleanup->preview(true));
+        return 'management_tpl.php';
     }
 
     private function identityPage($message = '', $error = '')
@@ -173,7 +204,7 @@ class registration_service extends controller
         $values = $this->registrationValues();
         if (!$this->csrf->consume(self::REGISTER_CSRF, $this->scalarParam('csrf_token'))
             || !$this->abuseAllowed('registration.create', $values['emailAddress'])) {
-            return $this->registrationPage('invalid_request', $values);
+            return $this->registrationPage($this->abuseError, $values);
         }
         if ($this->scalarParam('accept_terms') !== '1') {
             return $this->registrationPage('legal_required', $values);
@@ -535,7 +566,11 @@ class registration_service extends controller
             'signature' => $this->scalarParam('abuse_signature'),
             'website' => $this->scalarParam('website'),
         ), array('minimum_seconds' => 1, 'maximum_seconds' => 3600, 'failure_limit' => 5));
-        return is_object($decision) && method_exists($decision, 'isAllowed') && $decision->isAllowed();
+        if (!is_object($decision) || !$decision->isAllowed()) { return false; }
+        if (!$this->getObject('registrationguard')->admit($action, $account)) {
+            $this->abuseError = 'rate_limited'; return false;
+        }
+        return true;
     }
 
     private function recordAbuse($action, $account, $success)
@@ -545,11 +580,7 @@ class registration_service extends controller
 
     private function abuseContext($account)
     {
-        return array(
-            'ip' => (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
-            'account' => (string) $account,
-            'session' => session_id(),
-        );
+        return $this->getObject('registrationguard')->context($account);
     }
 
     private function scalarParam($name)

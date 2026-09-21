@@ -30,8 +30,8 @@ $checks = array(
         && str_contains($controller, 'provisionVerified('),
     'recovery orchestration' => str_contains($controller, 'requestPasswordRecovery(')
         && str_contains($controller, 'completePasswordRecovery('),
-    'csrf contexts' => substr_count($controller, "->consume(") === 5
-        && substr_count($controller, "->issue(") === 6,
+    'csrf contexts' => substr_count($controller, "->consume(") === 6
+        && substr_count($controller, "->issue(") === 7,
     'abuse protection' => str_contains($controller, "issueFormEvidence('registration.create')")
         && str_contains($controller, "issueFormEvidence('registration.recovery')")
         && str_contains($controller, "'website' =>"),
@@ -62,7 +62,7 @@ $checks = array(
     'international certificate identity' => str_contains($templates, 'name="identity_document_type"')
         && str_contains($templates, 'name="identity_document_number"')
         && str_contains($controller, "'identityDocumentType'")
-        && str_contains($controller, "array('identity', 'saveidentity')"),
+        && str_contains($controller, "array('identity', 'saveidentity', 'manage', 'dismiss', 'confirmdismiss')"),
     'privacy-preserving recovery copy' => str_contains($register, 'If an active account uses that address'),
     'full legal documents' => str_contains($templates, "array('terms', 'privacy')")
         && str_contains($register, 'operate an eLearning service and serve users\' educational needs'),
@@ -96,7 +96,7 @@ $checks = array(
     'paid registration guidance' => str_contains($controller, "'registrationGuidancePrefix','purchase_guidance'")
         && str_contains($register, 'Complete payment')
         && str_contains($register, 'activate your account and membership'),
-    'module update' => str_contains($register, 'MODULE_VERSION: 1.021'),
+    'module update' => str_contains($register, 'MODULE_VERSION: 1.022'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }
