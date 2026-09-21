@@ -27,8 +27,8 @@
     var dragged = null;
     var pendingPost = Promise.resolve();
     root.querySelectorAll('.kanban-board').forEach(function (board) {
-        try { setCollapsed(board, sessionStorage.getItem('kanban:collapsed:' + board.dataset.boardId) === '1'); }
-        catch (error) { /* Storage may be disabled; in-page state still works. */ }
+        // Start with a compact project overview; restored drafts reopen their board.
+        setCollapsed(board, true);
     });
 
     function setCollapsed(board, collapsed) {
@@ -68,6 +68,60 @@
             updateFullscreenButton(Boolean(document.fullscreenElement));
         });
     } else if (fullscreenButton) fullscreenButton.hidden = true;
+
+    var focusedBoard = null;
+    var focusWasCollapsed = false;
+    var focusScroll = 0;
+    var hiddenNeighbours = [];
+    function exitProjectFocus() {
+        if (!focusedBoard) return;
+        var board = focusedBoard;
+        focusedBoard = null;
+        board.classList.remove('chisimba-focus-surface--active');
+        document.body.classList.remove('chisimba-focus-open');
+        hiddenNeighbours.forEach(function (item) { item.element.inert = item.inert; });
+        hiddenNeighbours = [];
+        setCollapsed(board, focusWasCollapsed);
+        board.querySelector('[data-board-toggle]').disabled = false;
+        var button = board.querySelector('[data-board-focus]');
+        button.setAttribute('aria-pressed', 'false');
+        button.querySelector('[data-board-focus-label]').textContent = button.dataset.enterLabel;
+        window.scrollTo(0, focusScroll);
+        button.focus({preventScroll:true});
+    }
+    root.querySelectorAll('[data-board-focus]').forEach(function (button) {
+        button.hidden = false;
+        button.addEventListener('click', function () {
+            if (focusedBoard) { exitProjectFocus(); return; }
+            var board = button.closest('.kanban-board');
+            focusedBoard = board;
+            focusWasCollapsed = board.classList.contains('is-collapsed');
+            focusScroll = window.scrollY;
+            setCollapsed(board, false);
+            // Keep the same DOM and forms, and remove hidden surroundings from keyboard navigation.
+            for (var current = board; current.parentElement; current = current.parentElement) {
+                Array.from(current.parentElement.children).forEach(function (sibling) {
+                    if (sibling === current || sibling.tagName === 'SCRIPT' || sibling.tagName === 'STYLE') return;
+                    hiddenNeighbours.push({element:sibling, inert:sibling.inert});
+                    sibling.inert = true;
+                });
+                if (current.parentElement === document.body) break;
+            }
+            board.classList.add('chisimba-focus-surface--active');
+            document.body.classList.add('chisimba-focus-open');
+            board.querySelector('[data-board-toggle]').disabled = true;
+            button.setAttribute('aria-pressed', 'true');
+            button.querySelector('[data-board-focus-label]').textContent = button.dataset.exitLabel;
+            button.focus({preventScroll:true});
+        });
+    });
+    document.addEventListener('keydown', function (event) {
+        // Let a modal editor handle its own Escape before leaving the project.
+        if (event.key === 'Escape' && focusedBoard && !document.querySelector('dialog[open]')) {
+            event.preventDefault();
+            exitProjectFocus();
+        }
+    });
 
     document.addEventListener('submit', function (event) {
         if (!root.contains(event.target)) return;
@@ -116,8 +170,7 @@
         var board = toggle.closest('.kanban-board');
         var collapsed = !board.classList.contains('is-collapsed');
         setCollapsed(board, collapsed);
-        try { sessionStorage.setItem('kanban:collapsed:' + board.dataset.boardId, collapsed ? '1' : '0'); }
-        catch (error) { /* Keep the control usable without storage. */ }
+
     });
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
