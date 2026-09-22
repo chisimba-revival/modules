@@ -39,3 +39,13 @@ The server backup is `/srv/learnthebirds-migrate/backups/editor-20260915/`: data
 The module post-install hook prepares the transactional schema and defines the management capability without granting it. The staging-only `configure-editor.php` invokes the same schema preparation for a guarded repeat check. Install the updated Webinar language/register metadata (0.009) before testing.
 
 Remaining migration work includes the separately outstanding signed-in SimpleBlog imported-copy check, review of imported article media, a future YouTube refresh policy, and the final mail/audience/cutover rehearsal. This webinar update does not authorise production cutover or copying existing credentials.
+
+## Weekly email and newsletters
+
+Site administrators can use **Weekly email / Newsletters** in **Manage webinars**
+to open the shared Audience newsletter list. Check existing drafts and delivery
+states, open a draft or choose **New newsletter**, select upcoming webinars and the
+latest recording if wanted, then save and preview before queuing. This is also the
+manual route for a missed weekly email. Opening the shortcut does not queue a
+message or change the automatic Monday schedule. The shortcut is shown only when
+Audience is installed and the person has its existing administration permission.
