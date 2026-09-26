@@ -76,9 +76,9 @@
 .knowmap-node__quick-delete { inset-inline-start: auto; inset-block-start: auto; color: var(--chisimba-danger); }
 .knowmap-node--root { width: 17rem; font-size: 1.1rem; font-weight: 750; }
 .knowmap-node__icon { flex: 0 0 auto; font-size: 1.2rem; }
-.knowmap-node__title { min-width: 0; border-radius: var(--chisimba-radius-sm); }
-.knowmap-node__title[contenteditable="true"] { cursor: text; }
-.knowmap-node__title[contenteditable="true"]:focus { outline: 2px solid var(--chisimba-focus); outline-offset: 2px; background: var(--chisimba-surface); }
+.knowmap-node__title { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; border-radius: var(--chisimba-radius-sm); }
+.knowmap-node__title[contenteditable]:not([contenteditable="false"]) { cursor: text; }
+.knowmap-node__title[contenteditable]:not([contenteditable="false"]):focus { outline: 2px solid var(--chisimba-focus); outline-offset: 2px; background: var(--chisimba-surface); }
 .knowmap-inspector { align-self: stretch; width: 100%; height: 100%; min-height: 0; overflow: auto; }
 .knowmap-delete-control { color: var(--chisimba-danger); }
 .knowmap-inspector details { margin-top: var(--chisimba-space-4); padding-top: var(--chisimba-space-3); border-top: 1px solid var(--chisimba-border); }

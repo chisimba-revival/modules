@@ -88,3 +88,42 @@ Local browser checks: All maps and tools share the same top coordinate, toolbar 
 Search and zoom follow the map identity, with editing and view controls aligned to the right. Groups wrap at smaller widths. The inspector composes the shared form card with full-width inputs, a consistent field rhythm, subdued help text, and a larger colour swatch.
 
 Local browser verification: toolbar height approximately 58 px at desktop width, no page horizontal overflow, test note saved and survived reload, then restored to its original empty value. PHP lint and module contract checks passed. Deployment pending.
+
+### Plain-text title paste (0.8 — 26 September 2026)
+
+Normal paste into a node title now uses only the clipboard's plain-text flavour.
+LibreOffice/Word/web formatting is discarded; line breaks and literal text are
+retained. Native plaintext editing and an explicit paste boundary prevent rich
+markup from entering the node. Browser insertText preserves undo/redo, with a
+text-node Range fallback. Unsupported/HTML-only clipboard payloads leave the
+existing selection unchanged. Input updates the graph and geometry without
+rebuilding the focused editor. Existing branch copy/paste remains separate.
+
+The title's existing presentation rule preserves line breaks and wraps long
+words, using the existing skin typography and focus primitives. No new visual
+primitive, schema change or existing-map rewrite is required. Editor and embed
+asset versions are advanced together. Existing inline language-system keyboard
+help explains normal paste and saving.
+
+Verification: PHP 8.5.4 graph, contract and personal-icon suites; JavaScript editor
+regressions; native Chrome clipboard with both text/html and text/plain; multiline
+paste, selected-word replacement, literal angle brackets, undo/redo, HTML-only
+rejection, Range fallback, and real local server save/reload. Browser tests route
+the candidate JS/CSS into the existing local installation and use a disposable
+personal map, never a teaching map. Desktop and tablet layouts were inspected.
+An existing 390px layout can crowd the canvas out below the toolbar/inspector;
+this is outside the paste fix and is not claimed as corrected.
+
+To run the browser regression, install playwright-core, supply a local URL via
+KM_TEST_BASE_URL, a private {username,password} JSON file via KM_TEST_ACCOUNT,
+and a writable private output path via KM_TEST_RESULT. Run
+`node knowledgemap/tests/paste_browser_test.cjs` with the dependency path available.
+The result contains the disposable map ID for guarded cleanup. Optional
+KM_TEST_SCREENSHOT writes desktop and tablet screenshots. No credentials belong
+in Git. The harness intentionally rejects non-local hostnames.
+
+Production release remains subject to explicit approval. Compare the live
+Knowledge Map tree with the candidate before deployment, back up the current
+release/data, replace only this module, apply only its catalogue update to 0.8,
+and check a disposable map's paste/save/reload. Retain the prior release for
+rollback; do not import, re-seed or rewrite course maps.
