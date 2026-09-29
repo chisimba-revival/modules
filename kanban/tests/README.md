@@ -18,6 +18,8 @@ php kanban/tests/fixtures/board.php > /tmp/kanban-fixture.html
 php kanban/tests/task_creation_test.php success > /tmp/kanban-success.json
 node kanban/tests/task_creation_browser_test.cjs /tmp/kanban-fixture.html /tmp/kanban-success.json
 node kanban/tests/recovery_browser_test.cjs /tmp/kanban-fixture.html
+KANBAN_FIXTURE_MANAGE=1 php kanban/tests/fixtures/board.php > /tmp/kanban-manage-fixture.html
+node kanban/tests/public_link_browser_test.cjs /tmp/kanban-manage-fixture.html
 ```
 
 Framework companion tests: `tests/forms/draft_recovery_browser_test.cjs` and

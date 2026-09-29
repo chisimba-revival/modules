@@ -6,12 +6,12 @@ $kanbanCsrf = 'initial-token';
 $kanbanMessage = $kanbanError = '';
 $kanbanCanCreate = false;
 $task = array('id'=>str_repeat('c',32),'title'=>'Existing task','description'=>'Existing description','notes'=>'Keep these notes closed','status'=>'completed','subtasks'=>array());
-$board = array('id'=>str_repeat('a',32),'title'=>'Meeting project','description'=>'Capture actions as we talk','scopetype'=>'personal','scopeid'=>'user','permission'=>'edit','tasks'=>array($task));
+$board = array('id'=>str_repeat('a',32),'title'=>'Meeting project','description'=>'Capture actions as we talk','scopetype'=>'personal','scopeid'=>'user','permission'=>getenv('KANBAN_FIXTURE_MANAGE')?'manage':'edit','tasks'=>array($task));
 $other = array_merge($board,array('id'=>str_repeat('d',32),'title'=>'Other project','tasks'=>array()));
 $kanbanBoards = array($board,$other);
 $renderer = new class {
     public function uri($params, $module) { return '/index.php?module=kanban&'.http_build_query($params); }
-    public function getObject($name,$module) { return new class {
+    public function getObject($name,$module=null) { return new class {
         public function getContextCode() { return ''; }
         public function show(...$args) { return ''; }
         public function userId() { return 'user'; }
@@ -24,6 +24,8 @@ $renderer = new class {
         }
         public function isAdmin() { return false; }
         public function render($name,$options) { return ''; }
+        public function grants($boardId) { return array(); }
+        public function publicLinkToken($boardId) { return false; }
     }; }
     public function render($vars) {
         extract($vars);

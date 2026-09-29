@@ -91,6 +91,7 @@ class kanban extends controller
         $board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();
         $token=$this->boolParam('publiclink')?bin2hex(random_bytes(32)):null;
         $saved=$this->access->replacePublicLink($board['id'],$token,$this->user->userId());
+        if($saved&&$this->param('response')==='json')return $this->json(true,$token?'Public view link created. Anyone with this link can view this board but cannot edit it.':'Public view link disabled.',200,array('publicUrl'=>$token?html_entity_decode($this->uri(array('action'=>'publicview','token'=>$token),'kanban'),ENT_QUOTES,'UTF-8'):null));
         return $saved?$this->index($token?'Public view link created. Anyone with this link can view this board but cannot edit it.':'Public view link disabled.'):$this->index('','The public view link could not be updated.');
     }
     private function publicview(){

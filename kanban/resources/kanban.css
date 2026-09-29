@@ -37,6 +37,12 @@
 .kanban-subtask input:checked + span { text-decoration: line-through; color: var(--chisimba-text-muted); }
 .kanban-popover { margin-top: 1rem; padding: 1rem; border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface); }
 .kanban-sharing { margin-top: 1rem; }
+.kanban-public-link-form { display: grid; gap: var(--chisimba-space-3); margin-top: var(--chisimba-space-3); }
+.kanban-public-link-form__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chisimba-space-3); }
+.kanban-public-link-form__toggle { display: inline-flex; align-items: center; gap: var(--chisimba-space-2); font-weight: 600; }
+.kanban-public-link-form__url { margin: 0; max-width: 56rem; }
+.kanban-public-link-form [data-public-link-feedback]:empty { display: none; }
+.kanban-public-link-form [data-public-link-feedback] { margin: 0; }
 .kanban-add-task { margin-top: var(--chisimba-space-3); }
 .kanban-task__actions { justify-content: flex-end; margin-top: .7rem; }
 

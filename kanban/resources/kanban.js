@@ -150,6 +150,10 @@
                 moveBoard(board, direction);
             });
         }
+        if (!event.defaultPrevented && event.target.matches('[data-public-link-form]')) {
+            event.preventDefault();
+            savePublicLink(event.target);
+        }
         if (!event.defaultPrevented && event.target.method.toLowerCase() === 'post') {
             event.preventDefault();
             saveForm(event.target);
@@ -285,6 +289,35 @@
             var destination = new URL(window.location.href);
             if (root.dataset.scope === 'context') { destination.searchParams.set('scope','context'); destination.searchParams.set('scopeid',root.dataset.scopeId); }
             window.location.assign(destination.toString());
+        }, function (message) { feedback.textContent = message; }).finally(function () {
+            controls.forEach(function (control, index) { control.disabled = disabled[index]; });
+            delete form.dataset.saving; form.removeAttribute('aria-busy');
+        });
+    }
+
+    function savePublicLink(form) {
+        if (form.dataset.saving === 'true') return;
+        var controls = Array.from(form.querySelectorAll('input, button'));
+        var disabled = controls.map(function (control) { return control.disabled; });
+        var feedback = form.querySelector('[data-public-link-feedback]');
+        var enabled = form.elements.publiclink.checked;
+        form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+        controls.forEach(function (control) { control.disabled = true; });
+        feedback.textContent = enabled ? 'Creating public view link…' : 'Disabling public view link…';
+        post(form.action, new URLSearchParams(new FormData(form)), function (result) {
+            var urlContainer = form.querySelector('[data-public-link-url-container]');
+            var url = form.querySelector('[data-public-link-url]');
+            var submit = form.querySelector('[data-public-link-submit]');
+            if (result.publicUrl) {
+                url.value = result.publicUrl;
+                urlContainer.hidden = false;
+                submit.textContent = 'Replace public view link';
+            } else {
+                url.value = '';
+                urlContainer.hidden = true;
+                submit.textContent = 'Create public view link';
+            }
+            feedback.textContent = result.message;
         }, function (message) { feedback.textContent = message; }).finally(function () {
             controls.forEach(function (control, index) { control.disabled = disabled[index]; });
             delete form.dataset.saving; form.removeAttribute('aria-busy');
