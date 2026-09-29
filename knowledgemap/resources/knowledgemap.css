@@ -90,6 +90,8 @@
 .knowmap-node-form { margin-block: var(--chisimba-space-4); padding-block: var(--chisimba-space-4); border-block: 1px solid var(--chisimba-border); }
 .knowmap-node-form textarea { min-height: 6rem; }
 .knowmap-active-actions small, .knowmap-save-status { color: var(--chisimba-text-muted); font-size: .8rem; }
+.knowmap-active-actions { display: none; }
+main[data-knowmap-editable="0"] .knowmap-inspector details { display: none; }
 .knowmap-embed { margin-block: var(--chisimba-space-4); padding: 0; overflow: hidden; }
 .knowmap-embed figcaption { display: flex; justify-content: space-between; gap: var(--chisimba-space-3); padding: var(--chisimba-space-3); border-bottom: 1px solid var(--chisimba-border); }
 .knowmap-embed figcaption span { color: var(--chisimba-text-muted); font-size: .82rem; }
