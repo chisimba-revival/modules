@@ -3,15 +3,15 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 class kanban extends controller
 {
     const CSRF='kanban_mutation';
-    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess');
+    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink');
     public function init(){
         $this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');
         $this->boards=$this->getObject('dbkanbanboards');$this->tasks=$this->getObject('dbkanbantasks');$this->subtasks=$this->getObject('dbkanbansubtasks');$this->access=$this->getObject('dbkanbanaccess');
         $this->auth=$this->getObject('kanbanauthorizationservice');$this->service=$this->getObject('kanbanservice');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->setLayoutTemplate('kanban_layout_tpl.php');
     }
-    public function requiresLogin($action){return true;}
-    public function dispatch($action){$action=(string)$action;if($action==='formtoken')return $this->formtoken();if(in_array($action,$this->mutations,true)){
+    public function requiresLogin($action){return (string)$action!=='publicview';}
+    public function dispatch($action){$action=(string)$action;if($action==='publicview')return $this->publicview();if($action==='formtoken')return $this->formtoken();if(in_array($action,$this->mutations,true)){
         foreach(array('title'=>255,'description'=>10000,'notes'=>10000,'grants'=>10000) as $field=>$limit){
             if(mb_strlen($this->param($field),'UTF-8')>$limit)return $this->index('','The text exceeds the field limit. Shorten it before saving.');
         }
@@ -86,6 +86,22 @@ class kanban extends controller
     private function togglesubtask(){if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);if(!$this->subtasks->saveSubtask($sub['id'],array('iscompleted'=>$this->boolParam('completed')?1:0)))return $this->json(false,'The subtask could not be updated.',500);return $this->param('response')==='json'?$this->json(true,'Subtask updated.'):$this->index('Subtask updated.');}
     private function deletesubtask(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeSubtask($sub['id']);return $this->index('Subtask deleted.');}
     private function saveaccess(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();$grants=array();foreach(preg_split('/\r?\n/',$this->text('grants')) as $line){$parts=array_map('trim',explode(':',$line,2));if(count($parts)!==2||!preg_match('/^[A-Za-z0-9._@-]{1,191}$/',$parts[0]))continue;$userId=$this->user->getUserId($parts[0]);if($userId&&$this->auth->eligibleDirectUser($board,$userId))$grants[(string)$userId]=$parts[1];}$saved=$this->access->replaceUserGrants($board['id'],$grants,$this->user->userId());return $saved?$this->index('Sharing updated.'):$this->index('','Sharing could not be saved. Your text is kept.');}
+    private function savepubliclink(){
+        if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');
+        $board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();
+        $token=$this->boolParam('publiclink')?bin2hex(random_bytes(32)):null;
+        $saved=$this->access->replacePublicLink($board['id'],$token,$this->user->userId());
+        return $saved?$this->index($token?'Public view link created. Anyone with this link can view this board but cannot edit it.':'Public view link disabled.'):$this->index('','The public view link could not be updated.');
+    }
+    private function publicview(){
+        $token=$this->param('token');
+        $boardId=preg_match('/^[a-f0-9]{64}$/',$token)?$this->access->publicLinkBoardId($token):false;
+        $board=$boardId?$this->boards->one($boardId):false;
+        if(!$board||!empty($board['isarchived'])){http_response_code(404);return 'publicnotfound_tpl.php';}
+        $board['tasks']=$this->tasks->forBoard($board['id']);foreach($board['tasks'] as &$task)$task['subtasks']=$this->subtasks->forTask($task['id']);unset($task);
+        if(!headers_sent()){header('Cache-Control: private, no-store');header('X-Robots-Tag: noindex, nofollow');}
+        $this->setVar('kanbanPublicBoard',$board);return 'publicview_tpl.php';
+    }
     private function reorderprojects(){$json=$this->param('response')==='json';if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Please try again.',403):$this->index('','The form could not be verified. Please try again.');$board=$this->service->board($this->id('boardid'),'manage');$direction=$this->param('direction');if(!$board||!in_array($direction,array('up','down'),true))return $json?$this->json(false,'Permission denied.',403):$this->forbidden();$rows=array_values(array_filter($this->boards->inScope($board['scopetype'],$board['scopeid'],true),function($row){return $this->auth->allows($row,'manage');}));$position=null;foreach($rows as $index=>$row)if($row['id']===$board['id']){$position=$index;break;}$target=$position===null?null:$position+($direction==='up'?-1:1);if($target!==null&&isset($rows[$target])){$currentOrder=(int)$rows[$position]['sortorder'];$targetOrder=(int)$rows[$target]['sortorder'];if($currentOrder===$targetOrder){foreach($rows as $index=>$row)$this->boards->setSortOrder($row['id'],($index+1)*100);$currentOrder=($position+1)*100;$targetOrder=($target+1)*100;}$this->boards->setSortOrder($board['id'],$targetOrder);$this->boards->setSortOrder($rows[$target]['id'],$currentOrder);}return $json?$this->json(true,'Board order updated.'):$this->index('Board order updated.');}
     private function boardMutation($callback,$message){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$board=$this->service->board($this->id('boardid'),'manage');if(!$board)return $this->forbidden();if($callback($board)===false)return $this->index('','The board could not be updated.');return $this->index($message);}
     private function formtoken(){

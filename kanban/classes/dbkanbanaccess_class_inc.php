@@ -17,6 +17,17 @@ class dbkanbanaccess extends dbTable
             return true;
         } catch (Throwable $error) { $this->query('ROLLBACK'); return false; }
     }
+    public function publicLinkToken($boardId){$rows=$this->getAll("WHERE boardid=".$this->q($boardId)." AND principaltype='public_link' AND permission='view' LIMIT 1");return isset($rows[0]['principalid'])?$rows[0]['principalid']:false;}
+    public function publicLinkBoardId($token){$rows=$this->getAll("WHERE principaltype='public_link' AND principalid=".$this->q($token)." AND permission='view' LIMIT 1");return isset($rows[0]['boardid'])?$rows[0]['boardid']:false;}
+    public function replacePublicLink($boardId,$token,$actor){
+        try {
+            if ($this->query('BEGIN') === false) throw new RuntimeException('Transaction start failed');
+            if ($this->query("DELETE FROM tbl_kanban_access WHERE boardid=".$this->q($boardId)." AND principaltype='public_link'") === false) throw new RuntimeException('Public link deletion failed');
+            if ($token!==null && $this->insert(array('id'=>bin2hex(random_bytes(16)),'boardid'=>$boardId,'principaltype'=>'public_link','principalid'=>$token,'permission'=>'view','createdby'=>$actor,'datecreated'=>date('Y-m-d H:i:s'))) === false) throw new RuntimeException('Public link insertion failed');
+            if ($this->query('COMMIT') === false) throw new RuntimeException('Transaction commit failed');
+            return true;
+        } catch (Throwable $error) { $this->query('ROLLBACK'); return false; }
+    }
     public function removeForBoard($boardId){return $this->query('DELETE FROM tbl_kanban_access WHERE boardid='.$this->q($boardId))!==false;}
     private function q($v){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$v):"'".str_replace("'","''",(string)$v)."'";}
 }
