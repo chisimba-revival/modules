@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    function boot() { document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
+    function boot() { document.querySelectorAll('[data-knowmap-public-link-template]').forEach(function(template){var inspector=document.querySelector('.knowmap-inspector');if(inspector)inspector.appendChild(template.content.cloneNode(true));template.remove();}); document.querySelectorAll('[data-knowmap-public-link-form]').forEach(function(form){form.addEventListener('submit',savePublicLink);}); document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
             var source = root.dataset.knowmapDocument;
             if (!source) return;
             var documentModel;
@@ -10,6 +10,8 @@
             if (!viewport.querySelector('.knowmap-lines')) viewport.innerHTML = '<svg class="knowmap-lines" aria-hidden="true"></svg><div class="knowmap-nodes"></div>';
             new ReadOnlyKnowledgeMap(root, viewport, documentModel);
         }); }
+
+    function savePublicLink(event) { event.preventDefault(); var form=event.currentTarget;if(form.dataset.saving==='true')return;var controls=Array.from(form.querySelectorAll('input,button')), disabled=controls.map(function(control){return control.disabled;}), feedback=form.querySelector('[data-knowmap-public-link-feedback]'), enabled=form.elements.publiclink.checked;form.dataset.saving='true';form.setAttribute('aria-busy','true');controls.forEach(function(control){control.disabled=true;});feedback.textContent=enabled?'Creating public view link…':'Disabling public view link…';fetch(form.action,{method:'POST',body:new FormData(form),credentials:'same-origin'}).then(function(response){return response.json();}).then(function(result){if(!result.ok)throw new Error(result.message||'The public view link could not be updated.');var holder=form.querySelector('[data-knowmap-public-link-url-container]'),url=form.querySelector('[data-knowmap-public-link-url]'),submit=form.querySelector('[data-knowmap-public-link-submit]');url.value=result.publicUrl||'';holder.hidden=!result.publicUrl;submit.textContent=result.publicUrl?'Replace public view link':'Create public view link';feedback.textContent=result.message;}).catch(function(error){feedback.textContent=error.message;}).finally(function(){controls.forEach(function(control,index){control.disabled=disabled[index];});delete form.dataset.saving;form.removeAttribute('aria-busy');}); }
 
     function ReadOnlyKnowledgeMap(root, viewport, graph) {
         this.root = root; this.viewport = viewport; this.graph = graph; this.zoom = 1; this.editable = root.dataset.knowmapEditable === '1'; this.selectedId = graph.rootId; this.draggedId = null; this.panning = null;

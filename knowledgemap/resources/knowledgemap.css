@@ -82,6 +82,11 @@
 .knowmap-inspector { align-self: stretch; width: 100%; height: 100%; min-height: 0; overflow: auto; }
 .knowmap-delete-control { color: var(--chisimba-danger); }
 .knowmap-inspector details { margin-top: var(--chisimba-space-4); padding-top: var(--chisimba-space-3); border-top: 1px solid var(--chisimba-border); }
+.knowmap-public-link-form { display: grid; gap: var(--chisimba-space-3); margin-top: var(--chisimba-space-3); }
+.knowmap-public-link-form__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chisimba-space-3); }
+.knowmap-public-link-form__toggle { display: inline-flex; align-items: center; gap: var(--chisimba-space-2); font-weight: 600; }
+.knowmap-public-link-form__url { margin: 0; }
+.knowmap-public-link-form [data-knowmap-public-link-feedback]:empty { display: none; }
 .knowmap-node-form { margin-block: var(--chisimba-space-4); padding-block: var(--chisimba-space-4); border-block: 1px solid var(--chisimba-border); }
 .knowmap-node-form textarea { min-height: 6rem; }
 .knowmap-active-actions small, .knowmap-save-status { color: var(--chisimba-text-muted); font-size: .8rem; }
