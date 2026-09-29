@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    function boot() { document.querySelectorAll('[data-knowmap-public-link-template]').forEach(function(template){var inspector=document.querySelector('.knowmap-inspector');if(inspector)inspector.appendChild(template.content.cloneNode(true));template.remove();}); document.querySelectorAll('[data-knowmap-public-link-form]').forEach(function(form){form.addEventListener('submit',savePublicLink);}); document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
+    function boot() { document.querySelectorAll('[data-knowmap-public-link-template]').forEach(function(template){var inspector=document.querySelector('.knowmap-inspector');if(inspector)inspector.appendChild(template.content.cloneNode(true));template.remove();}); document.querySelectorAll('[data-knowmap-public-link-form]').forEach(function(form){form.addEventListener('submit',function(){var token=document.getElementById('knowmap-public-link-csrf'),field=form.querySelector('[name="csrf_token"]'),root=document.querySelector('[data-knowmap-document]');if(token&&field)field.value=token.value;if(token&&root)root.dataset.knowmapCsrf=token.value;});form.addEventListener('submit',savePublicLink);}); document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
             var source = root.dataset.knowmapDocument;
             if (!source) return;
             var documentModel;
