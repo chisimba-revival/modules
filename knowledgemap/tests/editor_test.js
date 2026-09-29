@@ -89,6 +89,9 @@ let coloured=fixture();coloured.selectedId='a';let dirtyCount=0;coloured.dirty=(
 coloured.setNodeColour('#123456');coloured.setNodeColour('#abcdef');
 assert.equal(coloured.nodes.get('a').presentation.color,'#abcdef');assert.equal(dirtyCount,2);
 coloured.setNodeColour('invalid');assert.equal(dirtyCount,2);
+let remembered=[];coloured.rememberColour=colour=>remembered.push(colour);
+coloured.setNodeColour('#112233',false);coloured.setNodeColour('#445566',false);coloured.setNodeColour('#445566',true);
+assert.deepEqual(remembered,['#445566']);
 let icons=[{dataset:{knowmapVisibilityIcon:'show'}},{dataset:{knowmapVisibilityIcon:'hide'}}],expanded;
 let disclosure={setAttribute(key,value){expanded=value},querySelectorAll(){return icons}};
 coloured.setVisibilityControl(disclosure,true);assert.equal(expanded,'false');assert.equal(icons[0].hidden,false);assert.equal(icons[1].hidden,true);
