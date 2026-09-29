@@ -57,7 +57,7 @@ $checks=array(
     'search composes compact accessible skin field'=>str_contains($template,'chisimba-search-field knowmap-search')&&str_contains($template,'chisimba-visually-hidden'),
     'module CSS composes rather than redefines primitives'=>!preg_match('/^\.button\s*\{/m',$css)&&!preg_match('/^\.chisimba-card\s*\{/m',$css)&&!preg_match('/^\.chisimba-toolbar\s*\{/m',$css),
     'all mutations use native CSRF'=>str_contains($controller,'csrf->consume(self::CSRF'),
-    'public links are anonymous and read-only'=>str_contains($controller,"action!=='publicview'")&&str_contains($controller,"bin2hex(random_bytes(32))")&&str_contains($read('classes/dbknowledgemapaccess_class_inc.php'),"'public_link'")&&str_contains($controller,"knowledgeMapCanEdit',false"),
+    'public links are anonymous and read-only'=>str_contains($controller,"action!=='publicview'")&&str_contains($controller,"bin2hex(random_bytes(32))")&&str_contains($read('classes/dbknowledgemapaccess_class_inc.php'),"'public_link'")&&str_contains($controller,"knowledgeMapCanEdit',false")&&str_contains($read('register.conf'),'savepubliclink|isContextLecturer'),
     'public-link controls stay in the open map'=>str_contains($template,'data-knowmap-public-link-form')&&str_contains($read('resources/knowledgemap.js'),'function savePublicLink')&&str_contains($css,'knowmap-public-link-form__controls')
 );
 foreach($checks as $name=>$ok){if(!$ok){fwrite(STDERR,"FAIL: $name\n");exit(1);}echo "PASS: $name\n";}
