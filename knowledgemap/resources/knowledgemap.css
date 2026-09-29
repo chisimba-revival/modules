@@ -56,7 +56,7 @@
 .knowmap-lines, .knowmap-nodes { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 0 0; }
 .knowmap-lines { pointer-events: none; overflow: visible; }
 .knowmap-line { fill: none; stroke: var(--chisimba-border-strong); stroke-width: 3.5; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.knowmap-node { position: absolute; display: flex; align-items: center; gap: var(--chisimba-space-2); width: 13.75rem; min-height: 3.5rem; padding: var(--chisimba-space-3); transform: translate(-50%, -50%); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); color: var(--chisimba-ink); background: var(--knowmap-node-colour, var(--chisimba-surface)); box-shadow: var(--chisimba-shadow-sm); cursor: pointer; text-align: left; }
+.knowmap-node { position: absolute; display: flex; align-items: center; gap: var(--chisimba-space-2); width: 19rem; min-height: 3.5rem; padding: var(--chisimba-space-3); transform: translate(-50%, -50%); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); color: var(--chisimba-ink); background: var(--knowmap-node-colour, var(--chisimba-surface)); box-shadow: var(--chisimba-shadow-sm); cursor: pointer; text-align: left; }
 .knowmap-node:hover, .knowmap-node:focus-visible, .knowmap-node[aria-selected="true"] { outline: 3px solid var(--chisimba-focus); outline-offset: 2px; }
 .knowmap-node.is-dragging { opacity: .45; }
 .knowmap-node.is-drop-target { outline: 4px solid var(--chisimba-primary); outline-offset: 3px; }
@@ -74,9 +74,9 @@
 .knowmap-node__quick-actions .chisimba-icon-button { position: relative; width: 1.28rem; height: 1.28rem; min-width: 1.28rem; padding: 0; border: 1px solid var(--chisimba-border-strong); border-radius: 50%; background: var(--chisimba-surface); box-shadow: var(--chisimba-shadow-sm); font-size: .8rem; font-weight: 800; line-height: 1; }
 .knowmap-node__quick-add { inset-inline-start: auto; inset-block-start: auto; color: var(--chisimba-primary); }
 .knowmap-node__quick-delete { inset-inline-start: auto; inset-block-start: auto; color: var(--chisimba-danger); }
-.knowmap-node--root { width: 17rem; font-size: 1.1rem; font-weight: 750; }
+.knowmap-node--root { width: 22rem; font-size: 1.1rem; font-weight: 750; }
 .knowmap-node__icon { flex: 0 0 auto; font-size: 1.2rem; }
-.knowmap-node__title { min-width: 0; border-radius: var(--chisimba-radius-sm); }
+.knowmap-node__title { flex: 1 1 auto; min-width: 0; border-radius: var(--chisimba-radius-sm); line-height: 1.35; overflow-wrap: normal; word-break: normal; }
 .knowmap-node__title[contenteditable="true"] { cursor: text; }
 .knowmap-node__title[contenteditable="true"]:focus { outline: 2px solid var(--chisimba-focus); outline-offset: 2px; background: var(--chisimba-surface); }
 .knowmap-inspector { align-self: stretch; width: 100%; height: 100%; min-height: 0; overflow: auto; }
