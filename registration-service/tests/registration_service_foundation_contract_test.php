@@ -31,6 +31,8 @@ $checks = array(
         && str_contains($workflow, 'last_reminder_at'),
     'stale dashboard registrations can be safely discarded' => str_contains($workflow, 'public function deleteStaleAwaitingVerification')
         && str_contains($workflow, "'status'=>'deleted'")
+        && str_contains($workflow, "\$tombstone='deleted-'.\$pending['id']")
+        && str_contains($workflow, "'email_address'=>\$tombstone.'@invalid.local'")
         && str_contains($workflow, 'revokePendingRegistrationTokens')
         && str_contains($workflow, 'registration.pending.deleted')
         && str_contains($service, 'public function revokePendingRegistrationTokens'),

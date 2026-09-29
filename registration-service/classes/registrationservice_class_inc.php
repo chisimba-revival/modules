@@ -312,8 +312,12 @@ class registrationservice extends dbTable
         if(!is_array($rows)){ $this->rollbackTransaction();return array('ok'=>false,'code'=>'pending_registration_read_failed','deleted'=>0); }
         $now=date('Y-m-d H:i:s');$deleted=0;
         foreach($rows as $pending){
+            // MDB2 normalises empty strings to SQL NULL. These columns are
+            // required, so use non-personal tombstones while still clearing
+            // every credential and registration identifier.
+            $tombstone='deleted-'.$pending['id'];
             if(!$this->objTokens->revokePendingRegistrationTokens($pending['id'])
-                ||$this->update('id',$pending['id'],array('username'=>'','email_address'=>'','first_name'=>'','surname'=>'','mobile_number'=>'','identity_document_type'=>'','identity_document_number'=>'','password_hash'=>null,'status'=>'deleted','expires_at'=>$now,'updated_at'=>$now))===false
+                ||$this->update('id',$pending['id'],array('username'=>$tombstone,'email_address'=>$tombstone.'@invalid.local','first_name'=>'Deleted','surname'=>'Registration','mobile_number'=>'deleted','identity_document_type'=>'deleted','identity_document_number'=>$tombstone,'password_hash'=>null,'status'=>'deleted','expires_at'=>$now,'updated_at'=>$now))===false
                 ||empty($this->objEvents->append(array('eventType'=>'registration.pending.deleted','subjectType'=>'pending_registration','subjectId'=>$pending['id'],'actorType'=>'user','actorId'=>$actor,'outcome'=>'succeeded','correlationId'=>$pending['correlation_id'],'sourceService'=>'registration-service','metadata'=>array()))['ok'])){
                 $this->rollbackTransaction();return array('ok'=>false,'code'=>'pending_registration_delete_failed','deleted'=>0);
             }
