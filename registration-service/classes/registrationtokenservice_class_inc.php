@@ -77,6 +77,19 @@ class registrationtokenservice extends dbTable
         return $this->consumeWith($purpose, $rawToken, null);
     }
 
+    /** Invalidate every outstanding verification link for a discarded request. */
+    public function revokePendingRegistrationTokens($pendingId)
+    {
+        $pendingId = is_scalar($pendingId) ? strtolower(trim((string) $pendingId)) : '';
+        if (!preg_match('/^[a-f0-9]{32}$/', $pendingId)) { return false; }
+        return $this->_execute(
+            'UPDATE ' . self::TABLE_NAME . ' SET superseded_at = ' . $this->quote(date('Y-m-d H:i:s'))
+            . " WHERE purpose = 'email_verification' AND subject_type = 'pending_registration'"
+            . ' AND subject_id = ' . $this->quote($pendingId)
+            . ' AND consumed_at IS NULL AND superseded_at IS NULL'
+        ) !== false;
+    }
+
     /**
      * Consume a token and run its state transition in the same transaction.
      * The callback receives subjectType and subjectId and must return true.

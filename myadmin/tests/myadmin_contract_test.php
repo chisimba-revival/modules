@@ -16,6 +16,7 @@ $checks=array(
  'mail health is dashboard presentation'=>str_contains($overview,'mail-health__grid')&&str_contains($overview,"formatDateTime"),
  'registration dashboard uses owning services'=>str_contains($overview,"getObject('registrationservice','registration-service')->administrationSummary()")&&str_contains($overview,'newRegistrations()')&&str_contains($metrics,'ORDER BY creationdate DESC,id DESC LIMIT 10')&&str_contains($overview,'registration-health__metrics')&&str_contains($overview,'registration-health__recent'),
  'stale registration reminders are admin and CSRF protected'=>str_contains($controller,"action==='sendregistrationreminder'")&&str_contains($controller,"consume('myadmin_registration_reminder'")&&str_contains($controller,'sendAdministratorReminder'),
+ 'bulk pending deletion is admin, CSRF protected and scoped'=>str_contains($controller,"action==='deleteunconfirmedregistrations'")&&str_contains($controller,"consume('myadmin_registration_delete'")&&str_contains($controller,'deleteStaleAwaitingVerification')&&str_contains($overview,'registration_delete_confirm'),
  'registered dashboard'=>str_contains($register,'MODULE_ID: myadmin')&&str_contains($register,'My Administration'),
 );
 foreach($checks as $label=>$passed){if(!$passed){fwrite(STDERR,"FAIL: $label\n");exit(1);}}

@@ -23,10 +23,17 @@ $checks = array(
         && str_contains($updates, '<name>mobile_number</name>'),
     'administrator pending summary is bounded' => str_contains($workflow, 'public function administrationSummary()')
         && str_contains($workflow, 'ORDER BY created_at ASC LIMIT 20'),
+    'unconfirmed registrations expire after one day' => str_contains($workflow, 'private const PENDING_TTL = 86400')
+        && str_contains($workflow, 'private const VERIFICATION_TTL = 86400'),
     'stale reminder is throttled and audited' => str_contains($workflow, 'public function sendAdministratorReminder')
         && str_contains($workflow, "strtotime('-24 hours')")
         && str_contains($workflow, "'registration.verification.reminded'")
         && str_contains($workflow, 'last_reminder_at'),
+    'stale dashboard registrations can be safely discarded' => str_contains($workflow, 'public function deleteStaleAwaitingVerification')
+        && str_contains($workflow, "'status'=>'deleted'")
+        && str_contains($workflow, 'revokePendingRegistrationTokens')
+        && str_contains($workflow, 'registration.pending.deleted')
+        && str_contains($service, 'public function revokePendingRegistrationTokens'),
     'reminder timestamp is module owned' => str_contains($pending, "'last_reminder_at'")
         && str_contains($updates, '<version>1.021</version>'),
     'certificate identity retained' => str_contains($pending, "'identity_document_type'")

@@ -12,7 +12,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 class registrationservice extends dbTable
 {
     private const TABLE_NAME = 'tbl_registration_service_pending';
-    private const PENDING_TTL = 172800;
+    private const PENDING_TTL = 86400;
     private const VERIFICATION_TTL = 86400;
 
     public function init(
@@ -290,6 +290,36 @@ class registrationservice extends dbTable
         if($this->update('id',$id,array('last_reminder_at'=>$now,'updated_at'=>$now))===false){return $this->result(false,'reminder_state_failed',$id);}
         $this->appendEvent('registration.verification.reminded',$id,$pending['correlation_id'],'requested');
         return $this->result(true,'reminder_queued',$id);
+    }
+
+    /**
+     * Discard precisely the stale requests visible to administrators. Their
+     * verification links are revoked and personal data is scrubbed; confirmed
+     * or otherwise in-progress accounts can never match this operation.
+     */
+    public function deleteStaleAwaitingVerification($actorId)
+    {
+        $actor=$this->text($actorId,25);$cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
+        if($actor===null)return array('ok'=>false,'code'=>'invalid_administrator','deleted'=>0);
+        $this->beginTransaction();
+        $rows=$this->getArray(
+            'SELECT id,correlation_id FROM '.self::TABLE_NAME
+            .' WHERE status='.$this->quote('awaiting_verification')
+            .' AND created_at<='.$this->quote($cutoff)
+            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))
+            .' ORDER BY created_at ASC LIMIT 20 FOR UPDATE'
+        );
+        if(!is_array($rows)){ $this->rollbackTransaction();return array('ok'=>false,'code'=>'pending_registration_read_failed','deleted'=>0); }
+        $now=date('Y-m-d H:i:s');$deleted=0;
+        foreach($rows as $pending){
+            if(!$this->objTokens->revokePendingRegistrationTokens($pending['id'])
+                ||$this->update('id',$pending['id'],array('username'=>'','email_address'=>'','first_name'=>'','surname'=>'','mobile_number'=>'','identity_document_type'=>'','identity_document_number'=>'','password_hash'=>null,'status'=>'deleted','expires_at'=>$now,'updated_at'=>$now))===false
+                ||empty($this->objEvents->append(array('eventType'=>'registration.pending.deleted','subjectType'=>'pending_registration','subjectId'=>$pending['id'],'actorType'=>'user','actorId'=>$actor,'outcome'=>'succeeded','correlationId'=>$pending['correlation_id'],'sourceService'=>'registration-service','metadata'=>array()))['ok'])){
+                $this->rollbackTransaction();return array('ok'=>false,'code'=>'pending_registration_delete_failed','deleted'=>0);
+            }
+            $deleted++;
+        }
+        $this->commitTransaction();return array('ok'=>true,'code'=>'pending_registrations_deleted','deleted'=>$deleted);
     }
 
     private function prepareAndQueueVerification(array $pending, $returnTo = '')
