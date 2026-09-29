@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    function boot() { document.querySelectorAll('[data-knowmap-public-link-template]').forEach(function(template){var inspector=document.querySelector('.knowmap-inspector');if(inspector)inspector.appendChild(template.content.cloneNode(true));template.remove();}); document.querySelectorAll('[data-knowmap-public-link-form]').forEach(function(form){form.addEventListener('submit',savePublicLink);}); document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
+    function boot() { document.querySelectorAll('[data-knowmap-public-link-template]').forEach(function(template){var inspector=document.querySelector('.knowmap-inspector');if(inspector)inspector.appendChild(template.content.cloneNode(true));template.remove();}); document.querySelectorAll('[data-knowmap-public-link-form]').forEach(function(form){form.action=form.action.replace('action=savepubliclink','action=save');var operation=document.createElement('input');operation.type='hidden';operation.name='operation';operation.value='publiclink';form.appendChild(operation);form.addEventListener('submit',savePublicLink);}); document.querySelectorAll('[data-knowmap-document], [data-knowmap-readonly]').forEach(function (root) {
             var source = root.dataset.knowmapDocument;
             if (!source) return;
             var documentModel;
