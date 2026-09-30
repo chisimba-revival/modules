@@ -9,7 +9,8 @@ class registrationguard extends ChisimbaObject
         $value = filter_var($value, FILTER_VALIDATE_INT);
         return $value === false || $value < $min || $value > $max ? $default : $value;
     }
-    public function pendingDays() { return $this->number('REGISTRATION_PENDING_DAYS', 7, 1, 90); }
+    /** Existing installations may still store seven days; confirmation is capped at 24 hours. */
+    public function pendingDays() { return $this->number('REGISTRATION_PENDING_DAYS', 1, 1, 1); }
     public function retentionDays() { return $this->number('REGISTRATION_RETENTION_DAYS', 30, 1, 365); }
     public function automatic() { return $this->number('REGISTRATION_AUTO_CLEANUP', 0, 0, 1) === 1; }
     public function context($account = '')

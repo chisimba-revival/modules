@@ -15,7 +15,7 @@ try {
     foreach(['Derek','Christopher','Nkosinathi','María-José','张伟','McDonald','ALEXANDER','Mpho'] as $name)check(!$guard->suspiciousName($name),'ordinary and international names not flagged');
     $live=pending();$old=pending();$paid=pending();$linked=pending();$verified=pending();$dismiss=pending();$matching=pending();
     $row=sql('SELECT * FROM tbl_registration_service_pending WHERE id=?',[$live])[0];
-    check(abs(strtotime($row['expires_at'])-time()-7*86400)<5,'seven day lifetime');
+    check(abs(strtotime($row['expires_at'])-time()-86400)<5,'24-hour lifetime');
     foreach([$old,$paid,$linked,$verified,$matching] as $id)sql('UPDATE tbl_registration_service_pending SET expires_at=? WHERE id=?',[date('Y-m-d H:i:s',time()-86400),$id],false);
     sql("UPDATE tbl_registration_service_pending SET payment_product_code='synthetic-protected' WHERE id=?",[$paid],false);
     sql("UPDATE tbl_registration_service_pending SET provisioned_user_id='1' WHERE id=?",[$linked],false);

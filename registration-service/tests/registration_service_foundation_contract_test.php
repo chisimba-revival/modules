@@ -23,7 +23,7 @@ $checks = array(
         && str_contains($updates, '<name>mobile_number</name>'),
     'administrator pending summary is bounded' => str_contains($workflow, 'public function administrationSummary()')
         && str_contains($workflow, 'ORDER BY created_at ASC LIMIT 20'),
-    'unconfirmed registrations expire after one day' => str_contains($workflow, 'private const PENDING_TTL = 86400')
+    'unconfirmed registrations expire after one day' => str_contains($workflow, "86400 * \$this->getObject('registrationguard')->pendingDays()")
         && str_contains($workflow, 'private const VERIFICATION_TTL = 86400'),
     'stale reminder is throttled and audited' => str_contains($workflow, 'public function sendAdministratorReminder')
         && str_contains($workflow, "strtotime('-24 hours')")
