@@ -1,7 +1,8 @@
 <?php
 $GLOBALS['kewl_entry_point_run']=true;
-class dbtable {
+class ChisimbaObject {
     public function getObject($name,$module) {
+        if($name==='modulesadmin' && $module==='modulecatalogue')return new class {public function listDbTables(){return [];}};
         if($name!=='permissionservice' || $module!=='security')throw new RuntimeException('Unexpected permission mutation');
         return $GLOBALS['permissions'];
     }
