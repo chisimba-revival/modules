@@ -19,7 +19,7 @@ class compositionservice extends ChisimbaObject
     public function types()
     {
         return ['text'=>'file-text','image_left'=>'panel-left','image_right'=>'panel-right',
-            'hero'=>'image','reverse_hero'=>'image-up','video'=>'video','video_gallery'=>'gallery-vertical','slider'=>'gallery-horizontal']+array_map(static fn($extension)=>$extension['icon'],$this->extensions);
+            'hero'=>'image','reverse_hero'=>'image-up','video'=>'video','audio'=>'volume-2','video_gallery'=>'gallery-vertical','slider'=>'gallery-horizontal']+array_map(static fn($extension)=>$extension['icon'],$this->extensions);
     }
 
     public function text($key)
@@ -174,6 +174,11 @@ class compositionservice extends ChisimbaObject
                 case 'text': $body=$copy;break;
                 case 'hero': case 'image_left': $body=$image.'<div>'.$copy.'</div>';break;
                 case 'reverse_hero': case 'image_right': $body='<div>'.$copy.'</div>'.$image;break;
+                case 'audio':
+                    if($block['url']==='')break;
+                    $body=$copy.'<audio controls preload="none" src="'.self::escape($block['url']).'" aria-label="'.self::escape($block['title']?:$this->text('audio')).'"></audio>'
+                        .'<p><a href="'.self::escape($block['url']).'">'.self::escape($this->text('open_audio')).'</a></p>';
+                    if($block['caption']!=='')$body.='<p>'.self::escape($block['caption']).'</p>';break;
                 case 'video':
                     if($block['url']==='')break;
                     $embed=$this->getObject('contentmediaservice','contentblocks')->videoEmbed($block['url']);
@@ -186,7 +191,7 @@ class compositionservice extends ChisimbaObject
                     $slides='';foreach($block['slides'] as $slide)$slides.=$this->figure($slide);
                     if($slides!=='')$body=$copy.'<div class="chisimba-slider-controls" hidden><button type="button" class="button" data-slide-direction="-1">'.self::escape($this->text('previous')).'</button><button type="button" class="button" data-slide-direction="1">'.self::escape($this->text('next')).'</button></div><div class="chisimba-content-slider" tabindex="0" role="region" aria-label="'.self::escape($block['title']?:$this->text('slider')).'">'.$slides.'</div>';break;
             }
-            if(trim(strip_tags($body))==='' && !preg_match('/<(img|video|iframe)\b/',$body))continue;
+            if(trim(strip_tags($body))==='' && !preg_match('/<(img|video|audio|iframe)\b/',$body))continue;
             $html.='<section class="chisimba-content-block chisimba-content-block--'.str_replace('_','-',$block['type']).($block['type']==='video'&&str_contains($embed??'','https://www.tiktok.com/player/v1/')?' chisimba-content-block--portrait-video':'').'">'.$body.'</section>';
         }
         if(str_contains($html,'chisimba-content-slider'))$this->appendArrayVar('headerParams','<script defer src="'.self::escape($this->getResourceUri('compositionview.js','contentblocks')).'"></script>');

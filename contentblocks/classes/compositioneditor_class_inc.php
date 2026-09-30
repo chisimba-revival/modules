@@ -66,13 +66,13 @@ class compositioneditor extends ChisimbaObject
             $html.='<input type="hidden" name="'.$prefix.'[id]" value="'.$s::escape($id).'"><input type="hidden" name="'.$prefix.'[type]" value="'.$s::escape($type).'">';
             if($provider=$s->provider($type)){ $html.=$provider->editBlock($prefix.'[data]',$block['data']??[]).$insertAfter.'</section>';continue; }
             $html.=$this->field($prefix,'title',$block['title'],'heading');
-            if($type!=='slider' && $type!=='video' && $type!=='video_gallery'){
+            if($type!=='slider' && $type!=='video' && $type!=='audio' && $type!=='video_gallery'){
                 $editor=$this->newObject('htmlarea','htmlelements');$editor->name=$prefix.'[text]';$editor->cssId='comp_text_'.$id;$editor->width='100%';$editor->setContent($block['text']);
                 $html.='<div class="chisimba-form-field"><label for="comp_text_'.$id.'">'.$s::escape($s->text('text')).'</label>'.$editor->show().'</div>';
             }
-            if(in_array($type,['hero','reverse_hero','image_left','image_right','video'],true)){
-                $html.=$this->field($prefix,'url',$block['url'],$type==='video'?'video_url':'image_url',true);
-                if($type!=='video')$html.=$this->field($prefix,'alt',$block['alt'],'alt');
+            if(in_array($type,['hero','reverse_hero','image_left','image_right','video','audio'],true)){
+                $html.=$this->field($prefix,'url',$block['url'],$type==='video'?'video_url':($type==='audio'?'audio_url':'image_url'),true);
+                if(!in_array($type,['video','audio'],true))$html.=$this->field($prefix,'alt',$block['alt'],'alt');
                 $html.=$this->field($prefix,'caption',$block['caption'],'caption');
             }
             if(in_array($type,['hero','reverse_hero'],true)){
@@ -83,6 +83,7 @@ class compositioneditor extends ChisimbaObject
                 foreach(['text','top-left','top-right','bottom-left','bottom-right'] as $option)$html.='<option value="'.$option.'"'.($position===$option?' selected':'').'>'.$s::escape($s->text('button_position_'.str_replace('-','_',$option))).'</option>';
                 $html.='</select></div><p>'.$s::escape($s->text('button_help')).'</p>';
             }
+            if($type==='audio')$html.='<p class="chisimba-help-text">'.$s::escape($s->text('audio_help')).'</p>';
             if($type==='video_gallery'){
                 $selectId='comp_gallery_order_'.$id;
                 $html.='<div class="chisimba-form-field"><label for="'.$selectId.'">'.$s::escape($s->text('gallery_order')).'</label><select id="'.$selectId.'" name="'.$prefix.'[gallery_order]">';
