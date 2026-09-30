@@ -1,5 +1,6 @@
 <?php
 $GLOBALS['kewl_entry_point_run']=true;
+if(is_file(dirname(__DIR__).'/sql/defaultdata.xml'))throw new RuntimeException('Obsolete example blogs must not be reseeded by catalogue updates');
 class ChisimbaObject {
     public function getObject($name,$module) {
         if($name==='modulesadmin' && $module==='modulecatalogue')return new class {public function listDbTables(){return [];}};
