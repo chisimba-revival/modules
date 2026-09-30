@@ -297,6 +297,8 @@
 
     function savePublicLink(form) {
         if (form.dataset.saving === 'true') return;
+        // Disabled controls are omitted by FormData, including the board and CSRF token.
+        var payload = new URLSearchParams(new FormData(form));
         var controls = Array.from(form.querySelectorAll('input, button'));
         var disabled = controls.map(function (control) { return control.disabled; });
         var feedback = form.querySelector('[data-public-link-feedback]');
@@ -304,7 +306,7 @@
         form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
         controls.forEach(function (control) { control.disabled = true; });
         feedback.textContent = enabled ? 'Creating public view link…' : 'Disabling public view link…';
-        post(form.action, new URLSearchParams(new FormData(form)), function (result) {
+        post(form.action, payload, function (result) {
             var urlContainer = form.querySelector('[data-public-link-url-container]');
             var url = form.querySelector('[data-public-link-url]');
             var submit = form.querySelector('[data-public-link-submit]');

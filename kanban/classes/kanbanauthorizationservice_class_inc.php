@@ -2,6 +2,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class kanbanauthorizationservice extends controller
 {
+    public $user,$groups,$access;
     private $rank=array('view'=>1,'edit'=>2,'manage'=>3);
     public function init(){ $this->user=$this->getObject('user','security');$this->groups=$this->getObject('managegroups','contextgroups');$this->access=$this->getObject('dbkanbanaccess'); }
     public function canCreate($scopeType,$scopeId){if(!$this->user->isLoggedIn())return false;if($this->user->isAdmin())return true;if($scopeType==='personal')return hash_equals((string)$this->user->userId(),(string)$scopeId);if($scopeType==='context')return $this->user->isCourseAdmin($scopeId);return false;}

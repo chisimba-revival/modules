@@ -2,6 +2,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class kanban extends controller
 {
+    public $user,$context,$boards,$tasks,$subtasks,$access,$auth,$service,$csrf;
     const CSRF='kanban_mutation';
     private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink');
     public function init(){

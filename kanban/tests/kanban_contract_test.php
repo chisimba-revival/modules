@@ -14,7 +14,7 @@ $checks=array(
  'generic principals stored'=>str_contains($access,"'principaltype'")&&str_contains($access,"'principalid'")&&str_contains($access,"'permission'"),
  'public links are anonymous and read-only'=>str_contains($controller,"action!=='publicview'")&&str_contains($read('classes/dbkanbanaccess_class_inc.php'),"'public_link'")&&str_contains($controller,"bin2hex(random_bytes(32))")&&str_contains($read('templates/content/publicview_tpl.php'),'Editing is disabled')&&!str_contains($read('templates/content/publicview_tpl.php'),'<form'),
  'public link creation stays in the open board'=>str_contains($template,'data-public-link-form')&&str_contains($read('resources/kanban.js'),'function savePublicLink')&&str_contains($controller,"'publicUrl'")&&str_contains($read('resources/kanban.css'),'kanban-public-link-form__controls'),
- 'public link assets use a fresh cache version'=>str_contains($read('templates/layout/kanban_layout_tpl.php'),'?v=0127'),
+ 'public link assets use a fresh cache version'=>substr_count($read('templates/layout/kanban_layout_tpl.php'),'?v=0128')===2,
  'shared skin primitives composed'=>str_contains($template,'chisimba-card')&&str_contains($template,'chisimba-form-field')&&str_contains($template,'chisimba-button-danger'),
  'task movement has keyboard controls'=>str_contains($template,"array('left'=>")&&str_contains($template,'>Move <?php echo $e($direction); ?></button>')&&str_contains($controller,"param('response')==='json'"),
  'task movement stays in place with JavaScript'=>str_contains($template,'data-task-move')&&str_contains($read('resources/kanban.js'),"matches('[data-task-move]')")&&str_contains($read('resources/kanban.js'),'function moveTask'),
