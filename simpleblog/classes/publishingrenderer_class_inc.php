@@ -7,6 +7,24 @@ class publishingrenderer extends ChisimbaObject
     public function text($key)
     { return ucfirst($this->getObject('language','language')->code2Txt('mod_simpleblog26_'.$key,'simpleblog')); }
     public static function escape($s) { return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8'); }
+    /** Listing summaries describe authored prose, not player or gallery controls. */
+    public static function excerpt(array $post)
+    {
+        $content=(string)($post['post_content']??'');
+        $composition=json_decode($post['composition_json']??'',true);
+        if(is_array($composition)&&($composition['version']??null)===1&&is_array($composition['blocks']??null)){
+            $parts=[];
+            foreach($composition['blocks'] as $block){
+                if(in_array($block['type']??'', ['text','hero','reverse_hero','image_left','image_right'],true)&&is_string($block['text']??null))$parts[]=$block['text'];
+            }
+            $content=implode(' ',$parts);
+        }
+        $plain=trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$content)),ENT_QUOTES|ENT_HTML5,'UTF-8')));
+        if(mb_strlen($plain)<=240)return $plain;
+        $short=mb_substr($plain,0,240);
+        $boundary=preg_replace('/\s+\S*$/u','',$short);
+        return rtrim($boundary!==''?$boundary:$short).'…';
+    }
     public function button($label,$icon,$params,$primary=false)
     {
         return '<a class="button '.($primary?'chisimba-button-primary':'chisimba-button-secondary').'" href="'.self::escape($this->uri($params,'simpleblog')).'">'
@@ -18,6 +36,17 @@ class publishingrenderer extends ChisimbaObject
         if ($type==='personal') return $this->text('personal').' — '.$this->getObject('user','security')->fullname($scope);
         $course=$this->getObject('dbcontext','context')->getContextDetails($scope);
         return $this->text('context').' — '.($course['title']??$scope).' ('.$scope.')';
+    }
+    /** Use only categories visible in the authorised publishing scope. */
+    public function listingTitle($type,$scope,$category='')
+    {
+        $policy=$this->getObject('publishingpolicy','simpleblog');
+        if ($category!=='' && $policy->canRead(['post_type'=>$type,'blogid'=>$scope,'post_status'=>'posted'])) {
+            foreach ($this->getObject('publishingstore','simpleblog')->visibleTerms($type,$scope,'category') as $term) {
+                if ($term['id']===$category) return $term['name'];
+            }
+        }
+        return $this->identity($type,$scope);
     }
     public function posts($type,$scope,$manage=false,$page=1,$status='all',$search='',$tag='',$year=0,$month=0,$single=false,$category='')
     {
@@ -34,7 +63,7 @@ class publishingrenderer extends ChisimbaObject
             else $html.='<div class="chisimba-publication-card__media" aria-hidden="true"></div>';
             $html.='<div class="chisimba-publication-card__body"><h2 class="chisimba-publication-card__title"><a href="'.self::escape($link).'">'.self::escape($post['post_title']).'</a></h2>';
             $html.=$this->metadata($post);
-            $html.='<p>'.self::escape(mb_substr(html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$post['post_content'])),ENT_QUOTES,'UTF-8'),0,240)).'</p>';
+            $html.='<p>'.self::escape(self::excerpt($post)).'</p>';
             if ($manage) $html.='<p>'.self::escape($this->text($post['post_status']==='posted'?'published':'draft')).'</p>'.$this->button('edit','pencil',array('action'=>'edit','id'=>$post['id']));
             if(!$manage)$html.='<div class="chisimba-publication-card__actions chisimba-form-actions">'.$this->button('read_post','arrow-right',array('action'=>'view','id'=>$post['id'])).'</div>';
             $html.='</div></article>';
@@ -62,10 +91,12 @@ class publishingrenderer extends ChisimbaObject
         return $html.'</ul>';
     }
     /** Shared author/date line for cards and full posts. Stored publishing times are UTC. */
+    public static function authorCredit(array $post,$accountName)
+    { return trim((string)($post['author_credit']??''))?:$accountName; }
     public function metadata(array $post)
     {
         $icons=$this->getObject('iconservice','ui');
-        $author=self::escape($this->getObject('user','security')->fullname($post['userid']));
+        $author=self::escape(self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid'])));
         $raw=$post['published_at']??$post['datecreated']??'';
         $date=DateTimeImmutable::createFromFormat('!Y-m-d H:i:s',(string)$raw,new DateTimeZone('UTC'));
         $html='<p class="chisimba-publication-meta"><span>'.$icons->render('user',['decorative'=>true]).$author.'</span>';
@@ -87,7 +118,7 @@ class publishingrenderer extends ChisimbaObject
         if (!$editorPreview) $html.=$this->getObject('accesspreview')->cta($post);
         if (trim($post['post_tags']??'')!=='') $html.='<p>'.$e($this->text('tags')).': '.$e($post['post_tags']).'</p>';
         $bio=$this->getObject('authorbiographyservice','userdetails')->forUser($post['userid']);
-        if (trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
+        if (self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid']))===$this->getObject('user','security')->fullname($post['userid']) && trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
         return $html.'</article>';
     }
     private function absolute($url)

@@ -19,7 +19,7 @@ class compositionservice extends ChisimbaObject
     public function types()
     {
         return ['text'=>'file-text','image_left'=>'panel-left','image_right'=>'panel-right',
-            'hero'=>'image','reverse_hero'=>'image-up','video'=>'video','slider'=>'gallery-horizontal']+array_map(static fn($extension)=>$extension['icon'],$this->extensions);
+            'hero'=>'image','reverse_hero'=>'image-up','video'=>'video','video_gallery'=>'gallery-vertical','slider'=>'gallery-horizontal']+array_map(static fn($extension)=>$extension['icon'],$this->extensions);
     }
 
     public function text($key)
@@ -87,6 +87,11 @@ class compositionservice extends ChisimbaObject
                 'button_url'=>$this->url($this->field($input,'button_url',2048)),'slides'=>[]];
             $block['button_position']=$this->field($input,'button_position',30)?:'text';
             if(!in_array($block['button_position'],['text','top-left','top-right','bottom-left','bottom-right'],true))throw new DomainException('invalid');
+            if($type==='video_gallery'){
+                $block['videos']=$this->getObject('videocollection','contentblocks')->validate($input['videos']??[]);
+                $block['gallery_order']=$this->field($input,'gallery_order',4)?:'asc';
+                if(!in_array($block['gallery_order'],['asc','desc'],true))throw new DomainException('invalid');
+            }
             if ($type==='slider') {
                 $slides=$input['slides']??[];
                 if (!is_array($slides) || count($slides)>20) throw new DomainException('invalid');
@@ -106,11 +111,11 @@ class compositionservice extends ChisimbaObject
     public function command(array $blocks,$command)
     {
         $parts=explode(':',(string)$command);
-        if (in_array($parts[0]??'', ['add','addbefore'],true)) {
+        if (in_array($parts[0]??'', ['add','addbefore','addafter'],true)) {
             if(count($blocks)>=50)throw new DomainException('invalid');
             $new=$this->emptyBlock($parts[1]??'');
             if($parts[0]==='add')$blocks[]=$new;
-            else { $target=array_search($parts[2]??'',array_column($blocks,'id'),true);if($target===false)throw new DomainException('invalid');array_splice($blocks,$target,0,[$new]); }
+            else { $target=array_search($parts[2]??'',array_column($blocks,'id'),true);if($target===false)throw new DomainException('invalid');array_splice($blocks,$target+($parts[0]==='addafter'?1:0),0,[$new]); }
             return $blocks;
         }
         $index=null;foreach($blocks as $i=>$block)if($block['id']===($parts[1]??''))$index=$i;
@@ -126,6 +131,13 @@ class compositionservice extends ChisimbaObject
             case 'duplicate': $copy=$blocks[$index];$copy['id']=bin2hex(random_bytes(12));array_splice($blocks,$index+1,0,[$copy]);break;
             case 'up': if($index>0)[$blocks[$index-1],$blocks[$index]]=[$blocks[$index],$blocks[$index-1]];break;
             case 'down': if($index<count($blocks)-1)[$blocks[$index+1],$blocks[$index]]=[$blocks[$index],$blocks[$index+1]];break;
+            case 'gallery_add':
+                if($blocks[$index]['type']!=='video_gallery'||count($blocks[$index]['videos']??[])>=100)throw new DomainException('invalid');
+                $blocks[$index]['videos'][]=['id'=>bin2hex(random_bytes(12)),'title'=>'','url'=>'','thumbnail'=>'','date'=>'','topic'=>''];break;
+            case 'gallery_remove':
+                $n=filter_var($parts[2]??'',FILTER_VALIDATE_INT);
+                if($blocks[$index]['type']!=='video_gallery'||$n===false||!isset($blocks[$index]['videos'][$n]))throw new DomainException('invalid');
+                array_splice($blocks[$index]['videos'],$n,1);break;
             case 'slide': $blocks[$index]['slides'][]=['url'=>'','alt'=>'','caption'=>''];break;
             case 'remove_slide': $n=filter_var($parts[2]??'',FILTER_VALIDATE_INT);if($n===false)throw new DomainException('invalid');array_splice($blocks[$index]['slides'],$n,1);break;
             default: throw new DomainException('invalid');
@@ -145,7 +157,9 @@ class compositionservice extends ChisimbaObject
     {
         $html='';
         foreach($this->validate($blocks) as $block) {
-            $copy=($block['title']!==''?'<h2>'.self::escape($block['title']).'</h2>':'').$block['text'];
+            $text=$block['text'];
+            if(str_contains($text,'class="chisimba-social-links"'))$text=$this->getObject('sociallinksrenderer','contentblocks')->render($text);
+            $copy=($block['title']!==''?'<h2>'.self::escape($block['title']).'</h2>':'').$text;
             $image=$this->figure($block);$body='';
             if(in_array($block['type'],['hero','reverse_hero'],true) && $block['button_label']!=='' && $block['button_url']!=='') {
                 $button='<a class="button chisimba-button-primary" href="'.self::escape($block['button_url']).'">'.self::escape($block['button_label']).'</a>';
@@ -165,13 +179,15 @@ class compositionservice extends ChisimbaObject
                     $embed=$this->getObject('contentmediaservice','contentblocks')->videoEmbed($block['url']);
                     $body=$copy.($embed ? '<iframe src="'.self::escape($embed).'" title="'.self::escape($block['title']?:$this->text('video')).'" loading="lazy" allowfullscreen></iframe>'
                         :'<video src="'.self::escape($block['url']).'" controls preload="metadata" playsinline></video>');
+                    if($embed)$body.='<p><a href="'.self::escape($block['url']).'" target="_blank" rel="noopener noreferrer">'.self::escape($this->text('open_video')).'</a></p>';
                     if($block['caption']!=='')$body.='<p>'.self::escape($block['caption']).'</p>';break;
+                case 'video_gallery': $body=$copy.$this->getObject('videocollection','contentblocks')->render($block);break;
                 case 'slider':
                     $slides='';foreach($block['slides'] as $slide)$slides.=$this->figure($slide);
                     if($slides!=='')$body=$copy.'<div class="chisimba-slider-controls" hidden><button type="button" class="button" data-slide-direction="-1">'.self::escape($this->text('previous')).'</button><button type="button" class="button" data-slide-direction="1">'.self::escape($this->text('next')).'</button></div><div class="chisimba-content-slider" tabindex="0" role="region" aria-label="'.self::escape($block['title']?:$this->text('slider')).'">'.$slides.'</div>';break;
             }
             if(trim(strip_tags($body))==='' && !preg_match('/<(img|video|iframe)\b/',$body))continue;
-            $html.='<section class="chisimba-content-block chisimba-content-block--'.str_replace('_','-',$block['type']).'">'.$body.'</section>';
+            $html.='<section class="chisimba-content-block chisimba-content-block--'.str_replace('_','-',$block['type']).($block['type']==='video'&&str_contains($embed??'','https://www.tiktok.com/player/v1/')?' chisimba-content-block--portrait-video':'').'">'.$body.'</section>';
         }
         if(str_contains($html,'chisimba-content-slider'))$this->appendArrayVar('headerParams','<script defer src="'.self::escape($this->getResourceUri('compositionview.js','contentblocks')).'"></script>');
         return $html;

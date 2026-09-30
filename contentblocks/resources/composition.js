@@ -54,17 +54,20 @@
         var form=event.target, button=event.submitter;
         if(!form.matches('[data-composition-ajax]'))return;
         if(form.dataset.compositionBusy){event.preventDefault();return;}
-        if(!button || button.name!=='compose_command' || button.value==='category_add' || !window.fetch || !window.ChisimbaEditorMount)return;
+        var saving=form.hasAttribute('data-composition-save') && (!button || button.name!=='compose_command');
+        if((!saving && (!button || button.name!=='compose_command' || button.value==='category_add')) || !window.fetch || !window.ChisimbaEditorMount)return;
         event.preventDefault();
         var canvas=form.querySelector('[data-composition-canvas]'), status=form.querySelector('[data-composition-status]');
         // TinyMCE has not necessarily received a native submit event yet.
         canvas.querySelectorAll('[data-chisimba-editor]').forEach(function(field){window.ChisimbaEditor.sync(field.id);});
-        var data=new FormData(form);data.set('compose_command',button.value);
+        var data=new FormData(form);
+        if(saving)data.set('composition_save_ajax','1');else data.set('compose_command',button.value);
         var x=window.scrollX,y=window.scrollY, scroller=canvas.parentElement, top=scroller.scrollTop,left=scroller.scrollLeft;
         var failureMessage=form.dataset.compositionFailure;
         var abort=new AbortController(),timer=setTimeout(function(){abort.abort();},30000);
         form.dataset.compositionBusy='1';form.inert=true;form.setAttribute('aria-busy','true');
-        status.textContent=form.dataset.compositionPending;
+        function feedback(message){status.textContent=message;form.querySelectorAll('[data-composition-save-status]').forEach(function(node){node.textContent=message;});}
+        feedback(saving?form.dataset.compositionSaving:form.dataset.compositionPending);
         try {
             var response=await fetch(form.action,{method:'POST',body:data,credentials:'same-origin',signal:abort.signal});
             var page=new DOMParser().parseFromString(await response.text(),'text/html');
@@ -73,6 +76,13 @@
             if(nextForm)form.elements.csrf_token.value=nextForm.elements.csrf_token.value;
             if(error)failureMessage=error.textContent;
             if(!response.ok || !nextForm || error)throw new Error(failureMessage);
+            if(saving){
+                if(!nextForm.querySelector('[data-composition-save-confirmed]'))throw new Error(failureMessage);
+                form.elements.id.value=nextForm.elements.id.value;
+                form.elements.version.value=nextForm.elements.version.value;
+                feedback(form.dataset.compositionSaved);
+                return;
+            }
             var next=nextForm.querySelector('[data-composition-canvas]'),history=nextForm.querySelector('[data-composition-history]');
             if(!next || !history)throw new Error(form.dataset.compositionFailure);
             // Never execute scripts from a fetched document. Native fields carry declarative config.
@@ -90,9 +100,9 @@
                 var bounds=active.getBoundingClientRect(), viewport=scroller.getBoundingClientRect();
                 if(bounds.top<Math.max(0,viewport.top) || bounds.top>Math.min(innerHeight,viewport.bottom)-60)active.scrollIntoView({block:'start',behavior:'smooth'});
             }
-            status.textContent=form.dataset.compositionUpdated;
+            feedback(form.dataset.compositionUpdated);
         } catch(error) {
-            status.textContent=failureMessage;
+            feedback(failureMessage);
         } finally {
             clearTimeout(timer);form.inert=false;form.removeAttribute('aria-busy');delete form.dataset.compositionBusy;
         }

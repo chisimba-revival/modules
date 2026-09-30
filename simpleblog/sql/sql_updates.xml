@@ -27,4 +27,13 @@
     </update>
 <update><table>tbl_simpleblog_posts</table><version>0.065</version><description>Transactional publishing and concurrent edit protection</description><SQL>ALTER TABLE tbl_simpleblog_posts ENGINE=InnoDB;</SQL></update><update><table>tbl_simpleblog_posts</table><version>0.066</version><description>Structured compositions and publication chronology</description><SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN composition_json LONGTEXT NULL, ADD COLUMN legacy_content_html LONGTEXT NULL, ADD COLUMN published_at DATETIME NULL;</SQL><SQL>UPDATE tbl_simpleblog_posts SET published_at=datecreated WHERE post_status='posted' AND published_at IS NULL;</SQL></update><update><table>tbl_simpleblog_posts</table><version>0.067</version><description>Explicit featured images for publication cards</description><SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN featured_image LONGTEXT NULL, ADD COLUMN featured_alt LONGTEXT NULL;</SQL></update>
     <update><table>tbl_simpleblog_posts</table><version>0.070</version><description>Optional membership access; existing posts remain public</description><SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN IF NOT EXISTS required_tier_code VARCHAR(32) NULL;</SQL></update>
+    <!-- Both historical 0.070 branches existed in installations: one added
+         import provenance, the other membership access. This forward-only
+         union runs after either branch and preserves all existing values. -->
+    <update>
+        <table>tbl_simpleblog_posts</table>
+        <version>0.075</version>
+        <description>Reconcile imported provenance and membership access without replacing content</description>
+        <SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN IF NOT EXISTS author_credit VARCHAR(250) NULL, ADD COLUMN IF NOT EXISTS source_key VARCHAR(191) NULL, ADD COLUMN IF NOT EXISTS source_url LONGTEXT NULL, ADD COLUMN IF NOT EXISTS source_hash VARCHAR(64) NULL, ADD COLUMN IF NOT EXISTS import_hash VARCHAR(64) NULL, ADD COLUMN IF NOT EXISTS required_tier_code VARCHAR(32) NULL, ADD UNIQUE KEY IF NOT EXISTS simpleblog_source_unique (source_key);</SQL>
+    </update>
 </updates>
