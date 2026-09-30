@@ -21,6 +21,7 @@ class simpleblog extends controller
     public function dispatch($action=null)
     {
         $action=$this->param('action','view');
+        header('Cache-Control: private, no-store');
         $id=$this->param('id',$this->param('postid'));
         $type=$this->param('scope','site'); $scope=$this->param('blogid','site');
         // Old personal/course links keep their explicit blog identity, never the session context.
@@ -112,7 +113,7 @@ class simpleblog extends controller
         return 'posts_tpl.php';
     }
     private function input()
-    { return array('title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version'),'blocks'=>$this->getParam('content_blocks',[]),'categories'=>$this->getParam('categories',[]),'undo'=>$this->param('composition_undo'),'active'=>$this->param('composition_active'),'featured_image'=>$this->param('featured_image'),'featured_alt'=>$this->param('featured_alt')); }
+    { return array('title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version'),'required_tier_code'=>$this->param('required_tier_code'),'blocks'=>$this->getParam('content_blocks',[]),'categories'=>$this->getParam('categories',[]),'undo'=>$this->param('composition_undo'),'active'=>$this->param('composition_active'),'featured_image'=>$this->param('featured_image'),'featured_alt'=>$this->param('featured_alt')); }
     private function editor($post,$type,$scope)
     {
         if ($post ? !$this->policy->canEdit($post) : !$this->policy->canCreate($type,$scope)) return $this->unavailable();

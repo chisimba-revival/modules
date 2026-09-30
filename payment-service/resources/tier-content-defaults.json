@@ -1,0 +1,5 @@
+{
+  "free": {"summary":"Start learning with courses available to every registered learner.","features":"Access to all Free courses\nNo membership payment\nUpgrade whenever you are ready"},
+  "tier_1": {"summary":"Go further with specialist learning for active members.","features":"Everything in Free\nAccess to Tier 1 courses\nMembership learning as it is published"},
+  "tier_2": {"summary":"Unlock the complete membership learning collection.","features":"Everything in Tier 1\nAccess to Tier 2 courses\nOur highest membership level"}
+}

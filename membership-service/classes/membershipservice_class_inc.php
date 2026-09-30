@@ -6,8 +6,8 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class membershipservice extends dbTable
 {
+    public $objUsers, $objEntitlements, $objEvents, $objConfig;
     private const PERIODS = 'tbl_membership_service_periods';
-    private const TIERS = array('free' => 0, 'tier_1' => 1, 'tier_2' => 2);
     private const STATES = array('scheduled', 'active', 'grace', 'expired');
     private const TRANSITIONS = array(
         'scheduled' => array('active', 'expired'),
@@ -22,14 +22,64 @@ class membershipservice extends dbTable
         $this->objUsers = $this->getObject('userservice', 'security');
         $this->objEntitlements = $this->getObject('entitlementservice', 'entitlement-service');
         $this->objEvents = $this->getObject('accounteventservice', 'account-event-service');
+        $this->objConfig = $this->getObject('dbsysconfig', 'sysconfig');
+    }
+
+    /**
+     * Canonical, site-configured membership tiers.  Codes remain stable
+     * identifiers; labels and availability are deployment data.
+     */
+    public function tiers($enabledOnly = false)
+    {
+        $raw = $this->objConfig->getValue('MEMBERSHIP_TIERS', 'membership-service');
+        $rows = is_string($raw) ? json_decode($raw, true) : null;
+        $tiers = array();
+        foreach (is_array($rows) ? $rows : array() as $row) {
+            if (!is_array($row)) return array();
+            $code = $this->identifier($row['code'] ?? null, 32);
+            $rank = filter_var($row['rank'] ?? null, FILTER_VALIDATE_INT,
+                array('options' => array('min_range' => 0, 'max_range' => 1000)));
+            $label = $this->text($row['label'] ?? null, 191);
+            if ($code === null || $rank === false || $label === null
+                || array_key_exists($code, $tiers)) {
+                return array();
+            }
+            $tiers[$code] = array(
+                'code' => $code,
+                'rank' => $rank,
+                'enabled' => ($row['enabled'] ?? false) === true,
+                'baseline' => ($row['baseline'] ?? false) === true,
+                'label' => $label,
+            );
+        }
+        uasort($tiers, static function ($left, $right) {
+            return $left['rank'] <=> $right['rank'] ?: strcmp($left['code'], $right['code']);
+        });
+        if ($enabledOnly) {
+            $tiers = array_filter($tiers, static fn($tier) => $tier['enabled']);
+        }
+        return $tiers;
     }
 
     public function tierIncludes($heldTier, $requiredTier)
     {
+        $tiers = $this->tiers();
         $held = $this->tier($heldTier);
         $required = $this->tier($requiredTier);
         return $held !== null && $required !== null
-            && self::TIERS[$held] >= self::TIERS[$required];
+            && $tiers[$held]['rank'] >= $tiers[$required]['rank'];
+    }
+
+    public function baselineTier()
+    {
+        foreach ($this->tiers() as $code => $tier) if ($tier['baseline']) return $code;
+        return null;
+    }
+    public function tierLabel($code)
+    {
+        $label = $this->tiers()[$code]['label'] ?? $code;
+        return str_starts_with((string)$label, 'mod_')
+            ? $this->getObject('language','language')->code2Txt($label,'membership-service') : $label;
     }
 
     public function effectiveTier($userId, $at = null)
@@ -40,14 +90,16 @@ class membershipservice extends dbTable
             return null;
         }
         $rows = $this->objEntitlements->activeForUser($userId, $at, 500);
-        $best = 'free';
+        $tiers = $this->tiers();
+        $best = $this->baselineTier();
         foreach ((array) $rows as $row) {
             if (($row['entitlement_type'] ?? null) !== 'membership_tier'
                 || ($row['resource_type'] ?? null) !== 'membership_tier') {
                 continue;
             }
             $tier = $this->tier($row['resource_id'] ?? null);
-            if ($tier !== null && self::TIERS[$tier] > self::TIERS[$best]) {
+            if ($tier !== null && ($best === null
+                || $tiers[$tier]['rank'] > $tiers[$best]['rank'])) {
                 $best = $tier;
             }
         }
@@ -341,7 +393,7 @@ class membershipservice extends dbTable
         );
         if (in_array(null, array_diff_key($values, array_flip(array(
             'grace_ends_at', 'source_reference'
-        ))), true) || $values['tier_code'] === 'free' || $endsAt <= $startsAt) {
+        ))), true) || $values['tier_code'] === $this->baselineTier() || $endsAt <= $startsAt) {
             return null;
         }
         $values['source_reference'] = $values['source_reference'] === ''
@@ -382,7 +434,7 @@ class membershipservice extends dbTable
     private function tier($value)
     {
         $value = is_scalar($value) ? strtolower(trim((string) $value)) : '';
-        return array_key_exists($value, self::TIERS) ? $value : null;
+        return array_key_exists($value, $this->tiers()) ? $value : null;
     }
 
     private function state($value)

@@ -1,0 +1,7 @@
+[
+  {"code":"contribute-zar-50","name":"Contribute R50 + 15% VAT","baseMinor":5000,"vatBasisPoints":1500,"totalMinor":5750,"currency":"ZAR"},
+  {"code":"contribute-zar-100","name":"Contribute R100 + 15% VAT","baseMinor":10000,"vatBasisPoints":1500,"totalMinor":11500,"currency":"ZAR"},
+  {"code":"contribute-zar-250","name":"Contribute R250 + 15% VAT","baseMinor":25000,"vatBasisPoints":1500,"totalMinor":28750,"currency":"ZAR"},
+  {"code":"contribute-zar-500","name":"Contribute R500 + 15% VAT","baseMinor":50000,"vatBasisPoints":1500,"totalMinor":57500,"currency":"ZAR"},
+  {"code":"contribute-zar-1000","name":"Contribute R1000 + 15% VAT","baseMinor":100000,"vatBasisPoints":1500,"totalMinor":115000,"currency":"ZAR"}
+]

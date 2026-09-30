@@ -1,4 +1,7 @@
 <?php
+
+ echo '<nav class="chisimba-form-actions chisimba-form-actions--equal"><a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(['action'=>'banks']),ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('library',['decorative'=>true]).'<span>'.$this->objLanguage->languageText('mod_mcqtests_bank_title','mcqtests').'</span></a></nav>';
+
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 $e = fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $u = fn($params, $module = 'mcqtests') => html_entity_decode(

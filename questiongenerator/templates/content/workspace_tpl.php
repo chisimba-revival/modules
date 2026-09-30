@@ -59,10 +59,9 @@ if(!$workshopRow){
   $context=(string)$this->getObject('dbcontext','context')->getContextCode();
   $course=$this->getObject('dbcontext','context')->getContextDetails($context);
   echo '<div class="chisimba-form-actions chisimba-form-actions--equal">'.$r->link($short?'exam_choose_short':'exam_choose_mcq','plus',['action'=>'examview','id'=>$set['examid'],'setid'=>$set['id'],'question_type'=>$short?'short_answer':'mcq']).'</div><p>'.$t('exam_set_not_paper').'</p>';
+  if(!$short)echo '<p><a class="button chisimba-button-secondary" href="'.$e($this->uri(['action'=>'banks','set'=>$set['id']],'mcqtests')).'">'.$this->getObject('iconservice','ui')->render('library',['decorative'=>true]).'<span>'.$t('add_bank').'</span></a></p>';
   if($short)echo '<p>'.$t('short_import_unavailable').'</p>';
   elseif(!empty($set['imported_testid']))echo '<p>'.$t('imported').' '.$e($set['imported_context']).'</p>';
-  elseif($course && $context!=='' && $context!=='root')echo '<details><summary>'.$t('import_course').'</summary><p>'.$e($course['title']??$context).' — '.$e($context).'</p><p>'.$t('import_explain').'</p>'.$r->form('import',$workshopToken,$set['id']).'<input type="hidden" name="contextcode" value="'.$e($context).'"><div class="chisimba-form-actions chisimba-form-actions--equal">'.$r->button('import_course','download').'</div></form></details>';
-  else echo '<p>'.$t('select_course').'</p>';
   echo '</section>'.str_replace('<form ', '<form style="display:grid;gap:var(--chisimba-layout-gap,1.5rem)" ', $r->form('save',$workshopToken,$set['id'])).'<input type="hidden" name="version" value="'.$e($set['version']).'">';
   echo '<section class="chisimba-form-card chisimba-form-card--wide"><h2>'.$t('review_heading').'</h2><p>'.$t('review_notice').'</p><div class="chisimba-form-field"><label for="set-title">'.$t('set_title').'</label><input id="set-title" name="title" required maxlength="200" value="'.$e($this->getParam('action')==='derive'?$set['title']:($workshopTitle?:$set['title'])).'"></div></section>';
   if(is_array($workshopDraft)&&count($workshopDraft)===count($questions))$questions=$workshopDraft;

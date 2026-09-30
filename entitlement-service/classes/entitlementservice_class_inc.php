@@ -6,6 +6,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class entitlementservice extends dbTable
 {
+    public $objUsers, $objEvents;
     private const GRANTS = 'tbl_entitlement_service_grants';
     private const REVOCATIONS = 'tbl_entitlement_service_revocations';
     private const ACTOR_TYPES = array('user', 'service', 'system');

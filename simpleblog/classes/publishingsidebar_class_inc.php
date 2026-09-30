@@ -25,7 +25,7 @@ class publishingsidebar extends ChisimbaObject
         if($kind==='latest'){
             $html='<ul>';$count=0;
             foreach($this->getObject('publishingstore','simpleblog')->listing($type,$scope) as $post){
-                if($post['id']===$exclude || !$policy->canRead($post))continue;
+                if($post['id']===$exclude || !$policy->canDiscover($post))continue;
                 $html.='<li><a href="'.$e($this->uri(['id'=>$post['id']],'simpleblog')).'">'.$e($post['post_title']).'</a></li>';
                 if(++$count===5)break;
             }

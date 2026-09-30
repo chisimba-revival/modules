@@ -26,19 +26,19 @@ class payment_service extends controller
         }
     }
     private function tiers($message='',$error='',$editOpen=false){
-        $isLoggedIn=$this->user->isLoggedIn();$memberships=$this->getObject('membershipservice','membership-service');$effective=$isLoggedIn?$memberships->effectiveTier($this->user->userId()):'free';
-        $products=array('tier_1'=>array(),'tier_2'=>array());foreach($this->catalog->listProducts(true) as $product){if(($product['purpose_type']??'')==='membership'&&isset($products[$product['purpose_id']])&&is_array($product['current_price']??null))$products[$product['purpose_id']][]=$product;}
+        $isLoggedIn=$this->user->isLoggedIn();$memberships=$this->getObject('membershipservice','membership-service');$effective=$isLoggedIn?$memberships->effectiveTier($this->user->userId()):$memberships->baselineTier();
+        $products=array_fill_keys(array_keys($memberships->tiers(true)),array());foreach($this->catalog->listProducts(true) as $product){if(($product['purpose_type']??'')==='membership'&&isset($products[$product['purpose_id']])&&is_array($product['current_price']??null))$products[$product['purpose_id']][]=$product;}
         $billingOrder=array('one_off'=>0,'monthly'=>1,'annual'=>2);foreach($products as &$tierOptions){usort($tierOptions,static fn($a,$b)=>($billingOrder[$a['billing_period']??'']??99)<=>($billingOrder[$b['billing_period']??'']??99));}unset($tierOptions);
         $this->setVar('tierEffective',$effective);$this->setVar('tierIsLoggedIn',$isLoggedIn);$this->setVar('tierProducts',$products);$this->setVar('tierContent',$this->getObject('tierpresentationservice')->all());$this->setVar('tierEditOpen',$editOpen);$this->common($message,$error);return 'tiers_tpl.php';
     }
-    private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array('free','tier_1','tier_2') as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
+    private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array_keys($this->getObject('membershipservice','membership-service')->tiers(true)) as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
     private function catalogue($message='',$error=''){
         $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
         $requested=$this->param('product');
         $purpose=$this->param('purpose');
         $requestedTier=$this->param('tier');
-        if(!in_array($requestedTier,array('tier_1','tier_2'),true))$requestedTier='';
-        if(!in_array($purpose,array('membership','private_course'),true))$purpose='';
+        if(!isset($this->getObject('membershipservice','membership-service')->tiers(true)[$requestedTier]))$requestedTier='';
+        if(!in_array($purpose,array('membership','private_course','contribution'),true))$purpose='';
         if($requested!=='') $products=array_values(array_filter($products,function($product)use($requested){return (string)$product['code']===$requested;}));
         elseif($purpose!=='') $products=array_values(array_filter($products,function($product)use($purpose){return (string)$product['purpose_type']===$purpose;}));
         if($requestedTier!=='')$products=array_values(array_filter($products,function($product)use($requestedTier){return (string)($product['purpose_id']??'')===$requestedTier;}));
@@ -62,6 +62,7 @@ class payment_service extends controller
             $product['course']=array('title'=>(string)($course['title']??$product['name']),'about'=>trim(strip_tags((string)($course['about']??''))),'image'=>$images->getContextImage((string)$product['purpose_id']),'lecturers'=>$lecturers);
         }
         unset($product);
+        if($purpose==='contribution') usort($products,static fn($a,$b)=>(int)($a['current_price']['amount_minor']??0)<=>(int)($b['current_price']['amount_minor']??0));
         $this->setVar('paymentProducts',$products);
         $this->setVar('paymentRequestedProduct',$requested);
         $this->setVar('paymentCataloguePurpose',$purpose);

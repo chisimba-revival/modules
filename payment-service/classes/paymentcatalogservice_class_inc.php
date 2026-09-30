@@ -3,11 +3,25 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class paymentcatalogservice extends ChisimbaObject
 {
-    private const PURPOSES=array('membership','private_course');
+    private const PURPOSES=array('membership','private_course','contribution');
     private const PERIODS=array('monthly','annual','one_off');
+    /** Resolve the site's active monthly offer for a required membership. */
+    public function monthlyMembershipProduct($requiredTier)
+    {
+        $membership=$this->getObject('membershipservice','membership-service');
+        foreach ($membership->tiers(true) as $code=>$tier) {
+            if (!$membership->tierIncludes($code,$requiredTier)) continue;
+            foreach ($this->listProducts(true) as $product) {
+                if ($product['purpose_type']==='membership' && $product['purpose_id']===$code
+                    && $product['billing_period']==='monthly' && $this->purchasable($product['code'])) return $product;
+            }
+        }
+        return null;
+    }
     public function init() { $this->products=$this->getObject('dbpaymentproducts'); $this->prices=$this->getObject('dbpaymentprices'); $this->contexts=$this->getObject('dbcontext','context'); }
     public function listProducts($activeOnly=false) {
         $rows=$activeOnly?$this->products->activeProducts():$this->products->allProducts();
+        if($activeOnly) $rows=array_values(array_filter($rows,fn($row)=>$row['purpose_type']!=='membership'||isset($this->getObject('membershipservice','membership-service')->tiers(true)[$row['purpose_id']])));
         foreach($rows as &$row){ $row['current_price']=$this->prices->currentForProduct($row['id']); $row['prices']=$this->prices->forProduct($row['id']); } unset($row);
         return $rows;
     }
@@ -23,6 +37,7 @@ class paymentcatalogservice extends ChisimbaObject
     public function purchasable($code,$version=null) {
         $code=$this->identifier($code,96); $product=$code===null?null:$this->products->byCode($code);
         if(!is_array($product)||empty($product['active'])) return null;
+        if($product['purpose_type']==='membership'&&!isset($this->getObject('membershipservice','membership-service')->tiers(true)[$product['purpose_id']])) return null;
         $price=$version===null?$this->prices->currentForProduct($product['id']):$this->prices->byVersion($product['id'],$this->identifier($version,64));
         if(!is_array($price)) return null;
         $now=date('Y-m-d H:i:s');
@@ -47,8 +62,12 @@ class paymentcatalogservice extends ChisimbaObject
         $purpose=$this->enum($input['purposeType']??null,self::PURPOSES); $period=$this->enum($input['billingPeriod']??null,self::PERIODS);
         $duration=filter_var($input['durationMonths']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>120)));
         if($period==='one_off'&&$purpose==='private_course') $duration=null;
+        if($purpose==='contribution') {
+            if($period!=='one_off') return array('ok'=>false,'code'=>'invalid_product');
+            $duration=null;
+        }
         $values=array('code'=>$this->identifier($input['code']??null,96),'name'=>$this->text($input['name']??null,191),'purpose_type'=>$purpose,'purpose_id'=>$this->text($input['purposeId']??null,191),'billing_period'=>$period,'duration_months'=>$duration===false?null:$duration,'active'=>1);
-        if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||($period==='one_off'&&$duration!==1)||!in_array($values['purpose_id'],array('tier_1','tier_2'),true)))) return array('ok'=>false,'code'=>'invalid_product');
+        if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||($period==='one_off'&&$duration!==1)||(!isset($this->getObject('membershipservice','membership-service')->tiers(true)[$values['purpose_id']]) || $values['purpose_id']===$this->getObject('membershipservice','membership-service')->baselineTier())))) return array('ok'=>false,'code'=>'invalid_product');
         if($purpose==='private_course') {
             $course=$this->contexts->getContext($values['purpose_id']);
             if(!is_array($course)||strtolower((string)($course['access_policy']??''))!=='private') return array('ok'=>false,'code'=>'private_course_required');

@@ -5,10 +5,12 @@ class publishingpolicy extends ChisimbaObject
 {
     private $user;
     private $permissions;
+    private $memberships;
     public function init()
     {
         $this->user=$this->getObject('user','security');
         $this->permissions=$this->getObject('permissionservice','security');
+        $this->memberships=$this->getObject('membershipservice','membership-service');
     }
     public function granted($right)
     {
@@ -52,9 +54,24 @@ class publishingpolicy extends ChisimbaObject
     {
         if (!$this->validScope($post['post_type'],$post['blogid'])) return false;
         if ($post['post_status']!=='posted') return false;
-        if ($post['post_type']!=='context') return true;
-        return $this->user->isLoggedIn() && ($this->user->isAdmin()
+        $scopeAllowed=$post['post_type']!=='context' || ($this->user->isLoggedIn() && ($this->user->isAdmin()
             || $this->user->isContextLecturer($this->user->userId(),$post['blogid'])
-            || $this->getObject('usercontext','context')->isContextMember($this->user->userId(),$post['blogid']));
+            || $this->getObject('usercontext','context')->isContextMember($this->user->userId(),$post['blogid'])));
+        if(!$scopeAllowed)return false;
+        $tier=trim((string)($post['required_tier_code']??''));
+        if($tier==='')return true;
+        return $this->user->isLoggedIn() && $this->memberships->tierIncludes($this->user->userId()?$this->memberships->effectiveTier($this->user->userId()):null,$tier);
+    }
+    public function canPreview(array $post)
+    {
+        if (!$this->validScope($post['post_type'],$post['blogid']) || $post['post_status']!=='posted') return false;
+        return $post['post_type']!=='context' || ($this->user->isLoggedIn() && ($this->user->isAdmin()
+            || $this->user->isContextLecturer($this->user->userId(),$post['blogid'])
+            || $this->getObject('usercontext','context')->isContextMember($this->user->userId(),$post['blogid'])));
+    }
+    /** Anonymous discovery is allowed only within the existing public scope. */
+    public function canDiscover(array $post)
+    {
+        return $this->canRead($post) || (!$this->user->isLoggedIn() && $this->canPreview($post));
     }
 }

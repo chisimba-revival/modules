@@ -6,11 +6,13 @@ class publishingservice extends ChisimbaObject
     private $store;
     private $policy;
     private $user;
+    private $memberships;
     public function init()
     {
         $this->store=$this->getObject('publishingstore');
         $this->policy=$this->getObject('publishingpolicy');
         $this->user=$this->getObject('user','security');
+        $this->memberships=$this->getObject('membershipservice','membership-service');
     }
     public function classification()
     {
@@ -21,7 +23,8 @@ class publishingservice extends ChisimbaObject
     public function read($id,$preview=false)
     {
         $post=$this->store->post($id);
-        return $post && ($preview ? $this->policy->canEdit($post) : $this->policy->canRead($post)) ? $post : null;
+        if (!$post || ($preview ? !$this->policy->canEdit($post) : !$this->policy->canDiscover($post))) return null;
+        return $post;
     }
     public function save($id,$type,$scope,array $input)
     {
@@ -50,7 +53,11 @@ class publishingservice extends ChisimbaObject
             $composition=json_encode(['version'=>1,'revision'=>bin2hex(random_bytes(12)),'blocks'=>$blocks],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
             if ($input['status']==='posted' && $content==='') throw new DomainException('empty_content');
         }
-        $values=array('post_title'=>$title,'post_content'=>$content,'post_tags'=>$tags,'post_status'=>$input['status'],
+        $tier=$input['required_tier_code']??($old['required_tier_code']??'');
+        if (!is_string($tier)) throw new DomainException('invalid_access');
+        $tier=trim($tier);
+        if($tier!=='' && $tier!==($old['required_tier_code']??'') && !isset($this->memberships->tiers(true)[$tier])) throw new DomainException('invalid_access');
+        $values=array('post_title'=>$title,'post_content'=>$content,'post_tags'=>$tags,'post_status'=>$input['status'],'required_tier_code'=>$tier===''?null:$tier,
             'modifierid'=>(string)$this->user->userId(),'datemodified'=>gmdate('Y-m-d H:i:s'));
         if(array_key_exists('featured_image',$input)) {
             if(!is_string($input['featured_image'])||!is_string($input['featured_alt']??''))throw new DomainException('invalid');
@@ -78,7 +85,7 @@ class publishingservice extends ChisimbaObject
         } catch (Throwable $e) { $this->store->rollback(); throw $e; }
     }
     public static function version(array $post)
-    { return hash('sha256',json_encode(array_intersect_key($post,array_flip(array('id','userid','blogid','post_type','post_title','post_content','post_tags','post_status','datemodified','composition_json','published_at','featured_image','featured_alt'))))); }
+    { return hash('sha256',json_encode(array_intersect_key($post,array_flip(array('id','userid','blogid','post_type','post_title','post_content','post_tags','post_status','required_tier_code','datemodified','composition_json','published_at','featured_image','featured_alt'))))); }
     public function delete($id)
     {
         $this->store->begin();

@@ -6,7 +6,7 @@ require dirname(__DIR__).'/classes/publishingpolicy_class_inc.php';
 require dirname(__DIR__).'/classes/publishingservice_class_inc.php';
 $user=new class {public $logged=false,$admin=false,$author=false,$id='author1';public function isLoggedIn(){return $this->logged;}public function isAdmin(){return $this->admin;}public function isLecturer(){return $this->author;}public function userId(){return $this->id;}public function isContextLecturer($id,$code){return $code==='allowed'&&$this->author;}public function isCourseAdmin($code){return false;}};
 $perms=new class {public $grants=[];public function areaIdForName($a,$b){return 1;}public function rightIdForArea($a,$r){return $r;}public function isGranted($u,$r){return in_array($r,$this->grants,true);}};
-$GLOBALS['objects']=array('user'=>$user,'permissionservice'=>$perms,'dbcontext'=>new class{public function getContextDetails($c){return in_array($c,['allowed','other'])?['title'=>$c]:false;}},'usercontext'=>new class{public function isContextMember($u,$c){return $c==='allowed';}});
+$GLOBALS['objects']=array('user'=>$user,'permissionservice'=>$perms,'membershipservice'=>new class{public function tiers($enabledOnly=false){return ['free'=>['code'=>'free','rank'=>0,'enabled'=>true,'label'=>'Free'],'tier_1'=>['code'=>'tier_1','rank'=>1,'enabled'=>true,'label'=>'Tier 1']];}public $held='free';public function effectiveTier($user){return $this->held;}public function tierIncludes($held,$required){return $held===$required;}},'dbcontext'=>new class{public function getContextDetails($c){return in_array($c,['allowed','other'])?['title'=>$c]:false;}},'usercontext'=>new class{public function isContextMember($u,$c){return $c==='allowed';}});
 $policy=new publishingpolicy();$policy->init();$GLOBALS['objects']['publishingpolicy']=$policy;
 $post=['id'=>'one','userid'=>'author1','post_type'=>'personal','blogid'=>'author1','post_status'=>'draft','datecreated'=>'2009-01-01'];
 check(!$policy->canCreate('personal','author1'),'Anonymous cannot publish');
@@ -35,4 +35,23 @@ $featured['featured_image']='';$service->save('one','personal','author1',$featur
 check(publishingservice::version($post)!==publishingservice::version($post+['featured_image'=>'/images/bird.jpg']),'Featured image included in conflict protection');
 $user->id='someoneelse';try{$service->save('one','personal','author1',$input);throw new RuntimeException('Cross-user save accepted');}catch(DomainException $e){}
 try{$service->delete('one');throw new RuntimeException('Cross-user delete accepted');}catch(DomainException $e){}
+
+$user->id='author1'; $user->logged=true;
+$protected=array_merge($post,['post_status'=>'posted','required_tier_code'=>'tier_1']);
+check(!$policy->canDiscover($protected),'Lower member cannot discover protected post');
+$GLOBALS['objects']['membershipservice']->held='tier_1';
+check($policy->canRead($protected),'Entitled member reads full post');
+$GLOBALS['objects']['membershipservice']->held='free';
+$user->logged=false;
+check(!$policy->canRead($protected)&&$policy->canDiscover($protected),'Anonymous can discover but not read full post');
+$protected['post_type']='context';$protected['blogid']='allowed';
+check(!$policy->canDiscover($protected),'Preview cannot bypass private course boundary');
+$user->logged=true;
+$store->post=$post+['required_tier_code'=>'tier_1'];
+$input['version']=publishingservice::version($store->post);
+$service->save('one','personal','author1',$input);
+check($store->saved['required_tier_code']==='tier_1','Omitted access preserves existing restriction');
+$service->save('one','personal','author1',$input+['required_tier_code'=>'']);
+check($store->saved['required_tier_code']===null,'Explicit public stores null');
+try{$service->save('one','personal','author1',$input+['required_tier_code'=>'disabled']);throw new RuntimeException('Disabled tier accepted');}catch(DomainException $e){check($e->getMessage()==='invalid_access','Invalid requirement rejected');}
 echo "PASS: publishing roles, scope, draft visibility, immutable author/date and mutations\n";

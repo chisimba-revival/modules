@@ -22,7 +22,7 @@ class dbpaymentproducts extends dbTable
         $clauses=array(); $query=trim((string)($filters['query']??''));
         if($query!=='') {$like=addslashes('%'.$query.'%');$clauses[]="(name LIKE '".$like."' OR code LIKE '".$like."' OR purpose_id LIKE '".$like."')";}
         $purpose=(string)($filters['purpose']??'');
-        if(in_array($purpose,array('membership','private_course'),true)) $clauses[]="purpose_type='".addslashes($purpose)."'";
+        if(in_array($purpose,array('membership','private_course','contribution'),true)) $clauses[]="purpose_type='".addslashes($purpose)."'";
         $purposeId=trim((string)($filters['purpose_id']??''));
         if($purposeId!=='') $clauses[]="purpose_id='".addslashes($purposeId)."'";
         $status=(string)($filters['status']??'');

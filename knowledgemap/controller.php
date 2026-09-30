@@ -24,13 +24,13 @@ class knowledgemap extends controller
     private $csrf;
 
     /** Initialise application services. */
-    public function init(){$this->user=$this->getObject('user','security');$this->maps=$this->getObject('dbknowledgemaps');$this->nodes=$this->getObject('dbknowledgemapnodes');$this->relationships=$this->getObject('dbknowledgemaprelationships');$this->access=$this->getObject('dbknowledgemapaccess');$this->scope=$this->getObject('knowledgemapscopeservice');$this->authorization=$this->getObject('knowledgemapauthorizationservice');$this->service=$this->getObject('knowledgemapservice');$this->importer=$this->getObject('knowledgemapimportservice');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" type="text/css" href="'.$this->getResourceUri('knowledgemap.css').'?v=22" />');$this->appendArrayVar('headerParams','<script defer type="text/javascript" src="'.$this->getResourceUri('knowledgemap.js').'?v=29"></script>');}
+    public function init(){$this->user=$this->getObject('user','security');$this->maps=$this->getObject('dbknowledgemaps');$this->nodes=$this->getObject('dbknowledgemapnodes');$this->relationships=$this->getObject('dbknowledgemaprelationships');$this->access=$this->getObject('dbknowledgemapaccess');$this->scope=$this->getObject('knowledgemapscopeservice');$this->authorization=$this->getObject('knowledgemapauthorizationservice');$this->service=$this->getObject('knowledgemapservice');$this->importer=$this->getObject('knowledgemapimportservice');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" type="text/css" href="'.$this->getResourceUri('knowledgemap.css').'?v=24" />');$this->appendArrayVar('headerParams','<script defer type="text/javascript" src="'.$this->getResourceUri('knowledgemap.js').'?v=33"></script>');}
 
     /** Public links are the sole anonymous map entry point. */
     public function requiresLogin($action){return (string)$action!=='publicview';}
 
     /** Dispatch the requested module action. */
-    public function dispatch($action){$action=(string)$action;if($action==='publicview')return $this->publicview();if(in_array($action,array('create','import','share','save','savepubliclink'),true))return $this->{$action}();if($action==='view')return $this->view();return $this->index();}
+    public function dispatch($action){$action=(string)$action;if($action==='publicview')return $this->publicview();if(in_array($action,array('create','import','share','save'),true))return $this->{$action}();if($action==='view')return $this->view();return $this->index();}
 
     /** Render maps visible in the requested scope and maps shared directly with the user. */
     private function index($message='',$error=''){$scope=$this->scope->resolve($this->param('scope'));$rows=$scope['type']==='personal'?array_merge($this->maps->ownedBy($this->user->userId()),$this->maps->sharedWith($this->user->userId())):$this->maps->inScope($scope['type'],$scope['id']);$rows=array_values(array_reduce(array_filter($rows,fn($map)=>$this->authorization->allows($map,'view')),function($carry,$map){$map['permission']=$this->authorization->allows($map,'manage')?'manage':($this->authorization->allows($map,'edit')?'edit':'view');$carry[$map['id']]=$map;return $carry;},array()));$this->setVar('knowledgeMaps',$rows);$this->setVar('knowledgeMapScope',$scope);$this->setVar('knowledgeMapCanCreate',$this->authorization->canCreate($scope['type'],$scope['id']));$this->setVar('knowledgeMapCsrf',$this->csrf->issue(self::CSRF));$this->setVar('knowledgeMapMessage',$message);$this->setVar('knowledgeMapError',$error);return 'index_tpl.php';}
@@ -45,23 +45,47 @@ class knowledgemap extends controller
     private function share(){if(!$this->validPost())return $this->index('','Your session expired.');$map=$this->service->map($this->id('mapid'),'manage');if(!$map)return $this->forbidden();$grants=array();foreach(preg_split('/\r?\n/',$this->param('grants')) as $line){$parts=array_map('trim',explode(':',$line,2));if(count($parts)!==2||!preg_match('/^[A-Za-z0-9._@-]{1,191}$/',$parts[0])||!in_array($parts[1],array('view','edit','manage'),true))continue;$userId=$this->authorization->invitedUserId($parts[0]);if($userId&&$userId!==(string)$map['ownerid'])$grants[$userId]=$parts[1];}$this->access->replaceUserGrants($map['id'],$grants,$this->user->userId());return $this->view('Sharing updated.');}
 
     /** Create, replace or revoke the anonymous read-only map URL. */
-    private function savepubliclink(){if(!$this->validPublicLinkPost())return $this->view('','Your session expired.');$map=$this->service->map($this->id('mapid'),'manage');if(!$map)return $this->forbidden();$token=$this->param('publiclink')==='1'?bin2hex(random_bytes(32)):null;$saved=$this->access->replacePublicLink($map['id'],$token,$this->user->userId());$message=$token?'Public view link created. Anyone with this link can view this map but cannot edit it.':'Public view link disabled.';$publicUrl=$token?html_entity_decode($this->uri(array('action'=>'publicview','token'=>$token),'knowledgemap'),ENT_QUOTES,'UTF-8'):null;return $saved?$this->view($message,'',$publicUrl):$this->view('','The public view link could not be updated.');}
+    private function savepubliclink()
+    {
+        if (!$this->validPublicLinkPost()) return $this->publicLinkResponse(false, 'This request expired. Please try again.', 403);
+        $map = $this->service->map($this->id('mapid'), 'manage');
+        if (!$map) return $this->publicLinkResponse(false, 'You do not have permission to manage this map.', 403);
+        $token = $this->param('publiclink') === '1' ? bin2hex(random_bytes(32)) : null;
+        $saved = $this->access->replacePublicLink($map['id'], $token, $this->user->userId());
+        $url = $saved && $token ? html_entity_decode($this->uri(array('action'=>'publicview','token'=>$token), 'knowledgemap'), ENT_QUOTES, 'UTF-8') : null;
+        $message = $saved ? ($token ? 'Public view link created. Anyone with this link can view this map but cannot edit it.' : 'Public view link disabled.') : 'The public view link could not be updated.';
+        return $this->publicLinkResponse($saved, $message, $saved ? 200 : 400, $url);
+    }
+
+    /** AJAX rotates only its own token; ordinary form submissions still render a page. */
+    private function publicLinkResponse($ok, $message, $status, $url = null)
+    {
+        if (strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) !== 'xmlhttprequest') {
+            return $this->view($ok ? $message : '', $ok ? '' : $message, $url);
+        }
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: private, no-store');
+        http_response_code($status);
+        echo json_encode(array('ok'=>$ok, 'message'=>$message, 'publicUrl'=>$url,
+            'publicLinkCsrf'=>$this->csrf->issue(self::CSRF_PUBLIC_LINK)), JSON_UNESCAPED_SLASHES);
+        exit;
+    }
 
     /** Persist an editor graph with optimistic revision protection. */
     private function save(){if($this->param('operation')==='publiclink')return $this->savepubliclink();if(!$this->validPost())return $this->json(false,'Your session expired.',403);$mapId=$this->id('mapid');$raw=$this->param('document');try{$document=json_decode($raw,true,512,JSON_THROW_ON_ERROR);$result=$this->service->saveDocument($mapId,(int)$this->param('revision'),$document);return $this->json(true,'Map saved.',200,$result);}catch(DomainException $error){return $this->json(false,$error->getMessage(),409);}catch(Throwable $error){return $this->json(false,$error->getMessage(),400);}}
 
     /** Render the common read-only projection and management surfaces. */
-    private function view($message='',$error='',$publicUrl=null){$mapId=$this->id('mapid');$document=$this->service->document($mapId,'view');if(!$document)return $this->forbidden();$map=$this->service->map($mapId,'view');$this->setVar('knowledgeMapDocument',$document);$this->setVar('knowledgeMapRecord',$map);$this->setVar('knowledgeMapCanEdit',$this->authorization->allows($map,'edit'));$this->setVar('knowledgeMapCanManage',$this->authorization->allows($map,'manage'));$this->setVar('knowledgeMapGrants',$this->access->grants($mapId));$this->setVar('knowledgeMapPublicLinkActive',(bool)$this->access->publicLinkToken($mapId));$this->setVar('knowledgeMapPublicUrl',$publicUrl);$this->setVar('knowledgeMapCsrf',$this->csrf->issue(self::CSRF));$this->setVar('knowledgeMapMessage',$message);$this->setVar('knowledgeMapError',$error);return 'view_tpl.php';}
+    private function view($message='',$error='',$publicUrl=null){$mapId=$this->id('mapid');$document=$this->service->document($mapId,'view');if(!$document)return $this->forbidden();$map=$this->service->map($mapId,'view');$canManage=$this->authorization->allows($map,'manage');$this->setVar('knowledgeMapDocument',$document);$this->setVar('knowledgeMapRecord',$map);$this->setVar('knowledgeMapCanEdit',$this->authorization->allows($map,'edit'));$this->setVar('knowledgeMapCanManage',$canManage);$this->setVar('knowledgeMapGrants',$this->access->grants($mapId));$this->setVar('knowledgeMapPublicLinkActive',(bool)$this->access->publicLinkToken($mapId));$this->setVar('knowledgeMapPublicUrl',$publicUrl);$this->setVar('knowledgeMapCsrf',$this->csrf->issue(self::CSRF));$this->setVar('knowledgeMapPublicLinkCsrf',$canManage?$this->csrf->issue(self::CSRF_PUBLIC_LINK):'');$this->setVar('knowledgeMapMessage',$message);$this->setVar('knowledgeMapError',$error);return 'view_tpl.php';}
 
     /** Render a public map without loading any authenticated edit or sharing capability. */
-    private function publicview(){$token=$this->param('token');$mapId=preg_match('/^[a-f0-9]{64}$/',$token)?$this->access->publicLinkMapId($token):false;$map=$mapId?$this->maps->one($mapId):false;$document=$map?$this->service->publicDocument($map):false;if(!$document){http_response_code(404);return 'noaccess_tpl.php';}if(!headers_sent()){header('Cache-Control: private, no-store');header('X-Robots-Tag: noindex, nofollow');}$this->setVar('knowledgeMapDocument',$document);$this->setVar('knowledgeMapRecord',$map);$this->setVar('knowledgeMapCanEdit',false);$this->setVar('knowledgeMapCanManage',false);$this->setVar('knowledgeMapGrants',array());$this->setVar('knowledgeMapPublicLinkActive',false);$this->setVar('knowledgeMapPublicUrl',null);$this->setVar('knowledgeMapCsrf','');$this->setVar('knowledgeMapMessage','Public read-only view');$this->setVar('knowledgeMapError','');return 'view_tpl.php';}
+    private function publicview(){$token=$this->param('token');$mapId=preg_match('/^[a-f0-9]{64}$/',$token)?$this->access->publicLinkMapId($token):false;$map=$mapId?$this->maps->one($mapId):false;$document=$map?$this->service->publicDocument($map):false;if(!$document){http_response_code(404);return 'noaccess_tpl.php';}if(!headers_sent()){header('Cache-Control: private, no-store');header('X-Robots-Tag: noindex, nofollow');}$this->setVar('knowledgeMapDocument',$document);$this->setVar('knowledgeMapRecord',$map);$this->setVar('knowledgeMapCanEdit',false);$this->setVar('knowledgeMapCanManage',false);$this->setVar('knowledgeMapGrants',array());$this->setVar('knowledgeMapPublicLinkActive',false);$this->setVar('knowledgeMapPublicUrl',null);$this->setVar('knowledgeMapCsrf','');$this->setVar('knowledgeMapPublicLinkCsrf','');$this->setVar('knowledgeMapMessage','Public read-only view');$this->setVar('knowledgeMapError','');return 'view_tpl.php';}
 
     /** Redirect to a newly created or imported map. */
     private function redirectToView($mapId){header('Location: '.html_entity_decode($this->uri(array('action'=>'view','mapid'=>$mapId),'knowledgemap'),ENT_QUOTES,'UTF-8'));exit;}
 
     /** Validate the native CSRF token on a POST request. */
     private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
-    private function validPublicLinkPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&$this->csrf->consume(self::CSRF_PUBLIC_LINK,$this->param('csrf_token'));}
+    private function validPublicLinkPost(){if(strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST')return false;$token=$this->param('csrf_token');return $this->csrf->consume(self::CSRF_PUBLIC_LINK,$token)||$this->csrf->consume(self::CSRF,$token);}
 
     /** Return a permission-denied page without leaking map existence. */
     private function forbidden(){http_response_code(403);return 'noaccess_tpl.php';}

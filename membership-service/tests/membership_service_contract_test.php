@@ -13,9 +13,10 @@ $backfill = file_get_contents(
 $registration = file_get_contents($root . '/register.conf');
 $checks = array(
     'service identity' => str_contains($registration, 'MODULE_ID: membership-service'),
-    'ordered tiers' => str_contains($service, "'free' => 0")
-        && str_contains($service, "'tier_1' => 1")
-        && str_contains($service, "'tier_2' => 2"),
+    'configured ordered tiers' => str_contains($registration, 'CONFIG: MEMBERSHIP_TIERS')
+        && str_contains($service, 'public function tiers(')
+        && str_contains($service, "getValue('MEMBERSHIP_TIERS', 'membership-service')")
+        && str_contains($service, '$tiers[$held][\'rank\'] >= $tiers[$required][\'rank\']'),
     'tier inheritance' => str_contains($service, 'tierIncludes('),
     'private is not a tier' => !str_contains($service, "'private' =>"),
     'period lifecycle' => str_contains($service, "'scheduled' => array('active', 'expired')")

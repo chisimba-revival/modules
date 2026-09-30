@@ -10,14 +10,19 @@ class publishingstore extends dbTable
     public function commit() { $this->query('COMMIT'); }
     public function rollback() { $this->query('ROLLBACK'); }
     public function lockPost($id) { $rows=$this->getArray('SELECT * FROM tbl_simpleblog_posts WHERE id='.$this->quoteValue($id).' FOR UPDATE');return $rows[0]??null; }
-    public function listing($type,$scope,$status='posted',$page=1,$search='',$tag='',$year=0,$month=0,$owner=null,$category='')
+    public function listing($type,$scope,$status='posted',$page=1,$search='',$tag='',$year=0,$month=0,$owner=null,$category='', $reader=true)
     {
         $sql='SELECT * FROM tbl_simpleblog_posts WHERE post_type='.$this->quoteValue($type)
             .' AND blogid='.$this->quoteValue($scope);
         if ($owner!==null) $sql.=' AND userid='.$this->quoteValue($owner);
+        if ($reader) $sql.=$this->readerFilter();
         if ($status!=='all') $sql.=' AND post_status='.$this->quoteValue($status);
-        if ($search!=='') $sql.=' AND (post_title LIKE '.$this->quoteValue('%'.$search.'%')
-            .' OR post_content LIKE '.$this->quoteValue('%'.$search.'%').')';
+        if ($search!=='') {
+            $bodyGuard=$reader && !$this->getObject('user','security')->isLoggedIn()
+                ? "(required_tier_code IS NULL OR required_tier_code='') AND " : '';
+            $sql.=' AND (post_title LIKE '.$this->quoteValue('%'.$search.'%')
+                .' OR ('.$bodyGuard.'post_content LIKE '.$this->quoteValue('%'.$search.'%').'))';
+        }
         if ($tag!=='') $sql.=$this->classificationFilter($type,$scope,'tag',$tag);
         if (is_string($category) && $category!=='') $sql.=$this->classificationFilter($type,$scope,'category',$category);
         if ($year>=1800 && $year<=9999 && $month>=1 && $month<=12) $sql.=' AND YEAR(COALESCE(published_at,datecreated))='.(int)$year.' AND MONTH(COALESCE(published_at,datecreated))='.(int)$month;
@@ -30,15 +35,29 @@ class publishingstore extends dbTable
         $v=$service::vocabulary($type,$scope,$kind);
         return ' AND EXISTS (SELECT 1 FROM tbl_classification_links cl JOIN tbl_classification_terms ct ON ct.id=cl.term_id WHERE cl.module_id=\'simpleblog\' AND cl.item_id=tbl_simpleblog_posts.id AND cl.vocabulary_id='.$this->quoteValue($v['id']).' AND (ct.id='.$this->quoteValue($term).' OR ct.name='.$this->quoteValue($term).'))';
     }
+    /** Apply membership visibility before pagination and aggregate counts. */
+    private function readerFilter($prefix='')
+    {
+        $user=$this->getObject('user','security');
+        if (!$user->isLoggedIn()) return '';
+        $memberships=$this->getObject('membershipservice','membership-service');
+        $held=$memberships->effectiveTier($user->userId());
+        $allowed=[];
+        foreach ($memberships->tiers() as $code=>$tier) {
+            if ($memberships->tierIncludes($held,$code)) $allowed[]=$this->quoteValue($code);
+        }
+        $column=$prefix.'required_tier_code';
+        return ' AND ('.$column.' IS NULL OR '.$column."=''".($allowed?' OR '.$column.' IN ('.implode(',',$allowed).')':'').')';
+    }
     public function visibleTerms($type,$scope,$kind)
     {
         $service=$this->getObject('classificationservice','classification');$v=$service::vocabulary($type,$scope,$kind);
-        return $this->getArray('SELECT DISTINCT ct.id,ct.name FROM tbl_classification_terms ct JOIN tbl_classification_links cl ON cl.term_id=ct.id JOIN tbl_simpleblog_posts p ON p.id=cl.item_id WHERE cl.module_id=\'simpleblog\' AND cl.vocabulary_id='.$this->quoteValue($v['id']).' AND p.post_status=\'posted\' AND p.post_type='.$this->quoteValue($type).' AND p.blogid='.$this->quoteValue($scope).' ORDER BY ct.name') ?: [];
+        return $this->getArray('SELECT DISTINCT ct.id,ct.name FROM tbl_classification_terms ct JOIN tbl_classification_links cl ON cl.term_id=ct.id JOIN tbl_simpleblog_posts p ON p.id=cl.item_id WHERE cl.module_id=\'simpleblog\' AND cl.vocabulary_id='.$this->quoteValue($v['id']).' AND p.post_status=\'posted\' AND p.post_type='.$this->quoteValue($type).' AND p.blogid='.$this->quoteValue($scope).$this->readerFilter('p.').' ORDER BY ct.name') ?: [];
     }
     public function tags($type,$scope)
-    { return $this->getArray('SELECT post_tags FROM tbl_simpleblog_posts WHERE post_status=\'posted\' AND post_type='.$this->quoteValue($type).' AND blogid='.$this->quoteValue($scope)) ?: array(); }
+    { return $this->getArray('SELECT post_tags FROM tbl_simpleblog_posts WHERE post_status=\'posted\' AND post_type='.$this->quoteValue($type).' AND blogid='.$this->quoteValue($scope).$this->readerFilter()) ?: array(); }
     public function archive($type,$scope)
-    { return $this->getArray('SELECT YEAR(COALESCE(published_at,datecreated)) AS year, MONTH(COALESCE(published_at,datecreated)) AS month, COUNT(*) AS total FROM tbl_simpleblog_posts WHERE post_status=\'posted\' AND post_type='.$this->quoteValue($type).' AND blogid='.$this->quoteValue($scope).' GROUP BY YEAR(COALESCE(published_at,datecreated)),MONTH(COALESCE(published_at,datecreated)) ORDER BY year DESC,month DESC') ?: array(); }
+    { return $this->getArray('SELECT YEAR(COALESCE(published_at,datecreated)) AS year, MONTH(COALESCE(published_at,datecreated)) AS month, COUNT(*) AS total FROM tbl_simpleblog_posts WHERE post_status=\'posted\' AND post_type='.$this->quoteValue($type).' AND blogid='.$this->quoteValue($scope).$this->readerFilter().' GROUP BY YEAR(COALESCE(published_at,datecreated)),MONTH(COALESCE(published_at,datecreated)) ORDER BY year DESC,month DESC') ?: array(); }
     public function persist($id,array $values)
     {
         if ($id) { if ($this->update('id',$id,$values)===false) throw new RuntimeException('save_failed'); return $id; }

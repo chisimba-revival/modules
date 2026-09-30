@@ -23,10 +23,11 @@ class publishingrenderer extends ChisimbaObject
     {
         $policy=$this->getObject('publishingpolicy');
         if (!$policy->validScope($type,$scope) || ($manage && !$policy->canCreate($type,$scope))) return '';
-        $rows=$this->getObject('publishingstore')->listing($type,$scope,$manage?$status:'posted',$page,$search,$tag,$year,$month,$manage&&!$policy->managesScope($type,$scope)?(string)$this->getObject('user','security')->userId():null,$category);
+        $rows=$this->getObject('publishingstore')->listing($type,$scope,$manage?$status:'posted',$page,$search,$tag,$year,$month,$manage&&!$policy->managesScope($type,$scope)?(string)$this->getObject('user','security')->userId():null,$category,!$manage);
         $more=!$single && count($rows)>10; $rows=array_slice($rows,0,$single?1:10); $html='';
         foreach ($rows as $post) {
-            if (!($manage?$policy->canEdit($post):$policy->canRead($post))) continue;
+            if (!($manage?$policy->canEdit($post):$policy->canDiscover($post))) continue;
+            if (!$manage) $post=$this->getObject('accesspreview')->project($post);
             $link=$this->uri(array('action'=>$manage?'preview':'view','id'=>$post['id']),'simpleblog');
             $html.='<article class="chisimba-publication-card" role="listitem">';
             if(!empty($post['featured_image']))$html.='<div class="chisimba-publication-card__media"><img class="chisimba-publication-card__image" src="'.self::escape($post['featured_image']).'" alt="'.self::escape($post['featured_alt']??'').'" loading="lazy"></div>';
@@ -77,14 +78,13 @@ class publishingrenderer extends ChisimbaObject
         }
         return $html.'</p>';
     }
-    public function article(array $post)
+    public function article(array $post, $editorPreview = false)
     {
         $e=array(__CLASS__,'escape');
         $html='<article class="chisimba-form-card chisimba-form-card--wide"><header><h1>'.$e($post['post_title']).'</h1>'.$this->metadata($post).'</header>';
-        $body=!empty($post['composition_json'])
-            ? $this->getObject('compositionservice','contentblocks')->render($this->getObject('compositionservice','contentblocks')->fromPost($post))
-            : $this->getObject('richtextsanitizer','utilities')->cleanHtml($post['post_content']);
+        $body=$this->getObject('accesspreview')->body($post, $editorPreview);
         $html.='<div class="reading-surface">'.$body.'</div>';
+        if (!$editorPreview) $html.=$this->getObject('accesspreview')->cta($post);
         if (trim($post['post_tags']??'')!=='') $html.='<p>'.$e($this->text('tags')).': '.$e($post['post_tags']).'</p>';
         $bio=$this->getObject('authorbiographyservice','userdetails')->forUser($post['userid']);
         if (trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
@@ -101,7 +101,8 @@ class publishingrenderer extends ChisimbaObject
         $e=static fn($v)=>htmlspecialchars((string)$v,ENT_XML1|ENT_QUOTES,'UTF-8');
         $xml='<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>'.$e($this->identity($type,$scope)).'</title><link>'.$e($this->absolute($this->uri(array('scope'=>$type,'blogid'=>$scope),'simpleblog'))).'</link><description>'.$e($this->text('posts')).'</description>';
         foreach ($this->getObject('publishingstore')->listing($type,$scope) as $post) {
-            if (!$this->getObject('publishingpolicy')->canRead($post)) continue;
+            if (!$this->getObject('publishingpolicy')->canDiscover($post)) continue;
+            $post=$this->getObject('accesspreview')->project($post);
             $url=$this->absolute($this->uri(array('id'=>$post['id']),'simpleblog'));
             $published=strtotime(($post['published_at']??$post['datecreated']).' UTC');
             $xml.='<item><pubDate>'.gmdate(DATE_RSS,$published).'</pubDate><title>'.$e($post['post_title']).'</title><link>'.$e($url).'</link><guid isPermaLink="false">'.$e($post['id']).'</guid><description>'.$e(strip_tags($post['post_content'])).'</description></item>';

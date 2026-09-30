@@ -24,6 +24,12 @@ echo '<button type="button" class="button chisimba-button-secondary" data-compos
 echo '<div class="chisimba-form-field"><label for="featured-alt">'.$e($r->text('featured_alt')).'</label><input id="featured-alt" name="featured_alt" type="text" value="'.$e($input['featured_alt']??'').'"></div></fieldset>';
 
 $classification=$this->getObject('publishingservice','simpleblog')->classification();
+$tiers=$this->getObject('membershipservice','membership-service')->tiers(true);
+$required=$input['required_tier_code']??($post['required_tier_code']??'');
+echo '<fieldset class="chisimba-card"><legend>'.$e($r->text('access')).'</legend><label><input type="radio" name="required_tier_code" value="" '.($required===''?'checked':'').'> '.$e($r->text('public')).'</label>';
+foreach($tiers as $tier) echo '<label><input type="radio" name="required_tier_code" value="'.$e($tier['code']).'" '.($required===$tier['code']?'checked':'').'> '.$e($this->getObject('membershipservice','membership-service')->tierLabel($tier['code'])).'</label>';
+if ($required!=='' && !isset($tiers[$required])) echo '<label><input type="radio" name="required_tier_code" value="'.$e($required).'" checked> '.$e($r->text('keep_access')).'</label>';
+echo '<p class="chisimba-field-help">'.$e($r->text('access_help')).'</p></fieldset>';
 $categories=$classification->creationChoices('simpleblog',$type,$scope,'category');
 $selected=$input['categories']??($post?array_column($classification->forItem('simpleblog',$post['id'],'category',true),'id'):[]);
 echo '<fieldset><legend>'.$e($r->text('categories')).'</legend>';

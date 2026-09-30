@@ -8,6 +8,9 @@
  */
 // set up layout template
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
+echo '<nav class="chisimba-form-actions chisimba-form-actions--equal">';
+foreach (['add_all'=>['source'=>$data['id']],'browse'=>['target'=>$data['id']]] as $key=>$params) echo '<a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(['action'=>'banks']+$params),ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('library',['decorative'=>true]).'<span>'.$this->objLanguage->languageText('mod_mcqtests_bank_'.$key,'mcqtests').'</span></a>';
+echo '</nav>';
 // Classes used in this module
 $objHeading = $this->loadClass('htmlheading', 'htmlelements');
 $objTable = $this->loadClass('htmltable', 'htmlelements');

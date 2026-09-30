@@ -198,6 +198,8 @@ class mcqtests extends controller {
      * @return
      */
     public function dispatch($action) {
+        // Banks have their own lifetime and permissions, including outside a course.
+        if ($action === 'banks') return $this->bankPage();
         if (!$this->courseLauncher->mayUseActiveCourse($this->userId, 'mcqtests')) {
             return $this->nextAction('courseactivitydenied', array(), 'context');
         }
@@ -517,26 +519,7 @@ class mcqtests extends controller {
                 break;
             // create an interface to choose a questiontype
             case 'choosequestiontype2':
-                $this->viewtest2();
-                $id = $this->getParam('id');
-                $count = $this->getParam('count');
-                $this->setVarByRef('testid', $id);
-                $this->setVarByRef('count', $count);
-                $contextCode = $this->contextCode;
-                $test = $this->dbTestadmin->getTests($contextCode, 'id,name,totalmark', $id);
-                $oldQuestions = $this->dbTestadmin->getContextQuestions($contextCode, $id);
-
-                // Get the total number of questions if this isn't the first
-                if ($count > 1) {
-                    $count = $this->dbQuestions->countQuestions($id);
-                }
-                $test[0]['count'] = $count;
-                $this->setVarByRef('test', $test[0]);
-                $this->setVar('mode', 'add');
-                $this->setVar('oldQuestions', $oldQuestions);
-
-                return 'choosequestiontype2_tpl.php';
-                break;
+                return $this->nextAction('banks', ['target'=>$this->getParam('id','')]);
 
             case 'aigenerate':
                 if (!$this->contextUsers->isContextLecturer()) {
@@ -1647,21 +1630,12 @@ class mcqtests extends controller {
             case 'showstudenttest':
                 return $this->showStudentTest();
             case 'submitdbquestions':
-                $status = $this->submitDBQuestions($this->getParam('ids'));
-                return $status; //$this->nextAction('view', array('id' => $id) , 'mcqtests');
             case 'formattedquestions':
-                $myParams = explode("&", $this->getParam('myParams'));
-                $type = explode("=", $myParams[0]);
-                $type = $type[1];
-                $courses = explode("=", $myParams[1]);
-                $courses = $courses[1];
-                $start = $this->getParam('start');
-                $limit = $this->getParam('limit');
-                return $this->getGridData($type, $courses, $start, $limit);
-
             case 'previewquestion':
-                $id = $this->getParam('id');
-                return $this->previewQuestion($id);
+                // Retired unauthorised legacy lookup: never expose bank answers through it.
+                http_response_code(410);
+                return 'bank_denied_tpl.php';
+
             case 'calcqform':
                 $id = $this->getParam('id');
                 return $this->calcqForm();
@@ -3703,6 +3677,58 @@ class mcqtests extends controller {
             $items[$key] = $this->objLanguage->languageText('mod_mcqtests_ai_' . $key, 'mcqtests');
         }
         return $items;
+    }
+
+    /** Native bank workflow; every mutation requires canonical CSRF and service permissions. */
+    private function bankPage() {
+        header('Cache-Control: private, no-store');
+        $service=$this->getObject('bankservice');
+        if (!$this->objUser->isLoggedIn()) { http_response_code(403); return 'bank_denied_tpl.php'; }
+        $param=function($name,$default='') { $value=$this->getParam($name,$default);return is_string($value)?trim($value):''; };
+        $bankid=$param('bank');$source=$param('source');$setid=$param('set');$target=$param('target');
+        $context=(string)$this->contextCode;$error='';$bank=null;$items=[];$sourceSet=null;$sourceQuestions=[];
+        $csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
+        $result=$this->getSession('bank_result',null);$this->unsetSession('bank_result');
+        try {
+            if (($_SERVER['REQUEST_METHOD']??'')==='POST') {
+                if (!$csrf->consume('mcqtests_banks',$param('csrf_token'))) throw new DomainException('bank_expired');
+                $op=$param('op');
+                if ($op==='create') $bankid=$service->create($context,$param('name'));
+                elseif ($op==='share') {
+                    $list=static fn($value)=>array_values(array_filter(array_map('trim',preg_split('/[,\r\n]+/',$value)),static fn($v)=>$v!==''));
+                    $courses=$this->getParam('courses',[]);
+                    if(!is_array($courses))throw new DomainException('bank_course');
+                    if($param('sitewide')==='1')$courses[]='*';
+                    $service->share($bankid,$context,$courses,$param('version'),$list($param('managers')));
+                } elseif ($op==='addtest') $result=$service->add($bankid,$context,$service->fromTest($source,$context));
+                elseif ($op==='addset') {
+                    $indices=$this->getParam('selected',[]);
+                    if (!is_array($indices)) throw new DomainException('bank_selection');
+                    $snapshot=$service->fromSet($setid,$context,$param('version'),$indices,$param('chapter'));
+                    $result=$service->add($bankid,$context,$snapshot['questions']);
+                } elseif ($op==='pull') {
+                    $ids=$this->getParam('selected',[]);
+                    if (!is_array($ids)) throw new DomainException('bank_selection');
+                    $result=$service->pull($bankid,$context,$target,$ids);
+                } else throw new DomainException('bank_invalid');
+                $this->setSession('bank_result',($result??['saved'=>true])+['operation'=>$op]);
+                return $this->nextAction('banks',['bank'=>$bankid,'target'=>$target]+($op==='create'?['source'=>$source,'set'=>$setid]:[]));
+            }
+        } catch (DomainException $e) { $error=$e->getMessage();http_response_code(422); }
+        catch (Throwable $e) { $error='bank_storage';http_response_code(500); }
+        try {
+            if ($bankid!=='') { $bank=$service->access($bankid,$context);$items=$service->items($bankid,$context,$param('filter')); }
+            if ($source!=='') $sourceQuestions=$service->fromTest($source,$context);
+            if ($setid!=='') { $snapshot=$service->fromSet($setid,$context);$sourceSet=$snapshot['set'];$sourceQuestions=$snapshot['questions']; }
+            if ($target!=='') $service->test($target,$context);
+        } catch (DomainException $e) { $error=$e->getMessage();$sourceQuestions=[];$sourceSet=null;http_response_code(403); }
+        $this->setVar('bankPage',[
+            'service'=>$service,'context'=>$context,'bank'=>$bank,'items'=>$items,'banks'=>$service->available($context),
+            'tests'=>$service->teaches($context)?$service->tests($context):[],
+            'error'=>$error,'result'=>$result,'token'=>$csrf->issueForSession('mcqtests_banks'),
+            'source'=>$source,'setid'=>$setid,'sourceSet'=>$sourceSet,'sourceQuestions'=>$sourceQuestions,'target'=>$target
+        ]);
+        return 'banks_tpl.php';
     }
 
     /** Resolve the owning test for any question-structure action. */

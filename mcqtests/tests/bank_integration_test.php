@@ -1,0 +1,63 @@
+<?php
+/** Run only in a disposable installation with the synthetic bank fixture. No AI requests. */
+if(PHP_SAPI!=='cli'||getenv('MCQBANK_LOCAL_TEST')!=='1')exit(64);
+$runtime=getenv('MCQBANK_TEST_RUNTIME');if(!$runtime||!is_file($runtime.'/.mcq-bank-disposable'))exit(64);
+chdir($runtime);$GLOBALS['kewl_entry_point_run']=true;$_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='localhost:8097';$_SERVER['SCRIPT_NAME']='/ch/index.php';$_SERVER['QUERY_STRING']='';require 'classes/core/engine_class_inc.php';$e=new engine();
+$f=json_decode(file_get_contents('/tmp/mcq-bank-fixture.json'),true);if(!preg_match('/^bankqa[a-f0-9]{6}$/D',$f['tag']??''))exit(64);
+function check($ok,$label){if(!$ok)throw new RuntimeException($label);echo "PASS $label\n";}
+function denied($fn,$code='bank_forbidden'){try{$fn();throw new RuntimeException('Expected '.$code);}catch(DomainException $error){check($error->getMessage()===$code,'reject '.$code);}}
+$user=$e->getObject('user','security');$session=new NativeSessionService($user,static fn()=>true);
+$login=function($role)use($user,$session,$f){$user->unsetSession('isadmin');$session->establish($f['ids'][$role],['username'=>$f['users'][$role]]);};
+$s=$e->getObject('bankservice','mcqtests');$store=$e->getObject('bankstore','mcqtests');$db=$e->getDbObj();
+$login('admin');$bank=$s->create('','QA independent bank');$f['bank']=$bank;
+$s->share($bank,'',[$f['courses']['a'],$f['courses']['b']],1);
+$source=$s->fromTest($f['tests']['source'],$f['courses']['a']);check(count($source)===1,'chapter test source loaded');
+check($source[0]['chapters']===['Chapter 1 — Grasses'],'chapter title automatically attached to source questions');
+check(($source[0]['metadata']['candidate']['rationale']??'')==='Roots take up water from soil.','chapter generator rationale retained');
+$source[0]['chapters']=['Chapter 1'];$r=$s->add($bank,'',$source);check($r['added']===1,'add all source questions');
+$duplicate=$source[0];$duplicate['answers']=array_reverse($duplicate['answers']);$duplicate['chapters']=['Chapter 2'];
+$r=$s->add($bank,'',[$duplicate]);check($r['duplicates']===1&&count($s->items($bank,''))===1,'duplicate import and reordered options');
+check(count($s->items($bank,'','Chapter 2'))===1,'duplicate question retains second chapter tag');
+$conflict=$source[0];$conflict['answers'][0]['correct']=0;$conflict['answers'][1]['correct']=1;
+$r=$s->add($bank,'',[$conflict]);check($r['conflicts']===1&&count($s->items($bank,''))===1,'conflicting correct answer does not overwrite bank');
+$set=$s->fromSet($f['set'],'');$r=$s->add($bank,'',$set['questions']);check($r['added']===1&&$r['duplicates']===1,'reviewed generator selection merges without duplicates');
+denied(fn()=>$s->fromSet($f['set'],'',-1),'bank_changed');
+$login('teacher');check(count($s->items($bank,$f['courses']['b']))===2,'shared course teacher can read bank');
+denied(fn()=>$s->add($bank,$f['courses']['b'],$source));
+denied(fn()=>$s->share($bank,$f['courses']['b'],[],2));
+denied(fn()=>$s->items($bank,$f['courses']['c']));
+$ids=array_column($s->items($bank,$f['courses']['b']),'id');
+$r=$s->pull($bank,$f['courses']['b'],$f['tests']['target'],$ids);check($r['added']===2,'shared bank copies into authorised test');
+$r=$s->pull($bank,$f['courses']['b'],$f['tests']['target'],$ids);check($r['duplicates']===2,'test insertion is idempotent');
+$copied=$s->fromTest($f['tests']['target'],$f['courses']['b']);check(count($copied)===2,'test copies survive reload');
+check($e->getObject('dbtestadmin','mcqtests')->getRow('id',$f['tests']['target'])['totalmark']==2,'total marks updated');
+check(!empty($copied[0]['metadata']['candidate']['rationale']),'private metadata follows test copies');
+check(in_array('Chapter 2',$copied[0]['chapters'],true)||in_array('Chapter 2',$copied[1]['chapters'],true),'chapter tags survive bank to test round trip');
+denied(fn()=>$s->pull($bank,$f['courses']['b'],$f['tests']['outside'],$ids));
+denied(fn()=>$s->pull($bank,$f['courses']['b'],$f['tests']['target'],['forged']));
+$e->getObject('dbtestadmin','mcqtests')->addTest(['status'=>'open'],$f['tests']['target']);
+denied(fn()=>$s->pull($bank,$f['courses']['b'],$f['tests']['target'],$ids),'bank_open');
+$e->getObject('dbtestadmin','mcqtests')->addTest(['status'=>'inactive'],$f['tests']['target']);
+$login('student');denied(fn()=>$s->items($bank,$f['courses']['b']));denied(fn()=>$s->create('','Forbidden'));check($s->available($f['courses']['b'])===[],'students cannot discover banks');
+$login('admin');denied(fn()=>$s->share($bank,'',[],1),'bank_changed');
+// Exercise actual course deletion, not a simulated missing record.
+$before=$store->items($bank);$e->getObject('dbcontext','context')->deleteContext($f['courses']['a']);
+check($store->items($bank)===$before,'bank questions unchanged after linked course deletion');
+$login('teacher');check(count($s->items($bank,$f['courses']['b']))===2,'other course retains access after source course deletion');
+$login('admin');$e->getObject('dbcontext','context')->createContext($f['courses']['a'],'Reused QA code','Published','Private','',false,0);
+check(!$s->sharedWith($store->bank($bank),$f['courses']['a']),'reused course code does not inherit deleted course grant');
+$site=$s->create('','QA sitewide bank');$s->share($site,'',['*'],1);
+$login('other');check($s->access($site,$f['courses']['c'])['id']===$site,'sitewide bank available to another course teacher');
+$own=$s->create('','QA private teacher bank');denied(fn()=>$s->share($own,'',['*'],1));
+$login('student');denied(fn()=>$s->access($site,$f['courses']['b']));
+$login('admin');$rollback=$s->create('','QA rollback bank');
+$invalid=$source[0];$invalid['answers']=[];
+denied(fn()=>$s->add($rollback,'',[$source[0],$invalid]),'bank_invalid');
+check($s->items($rollback,'')===[],'invalid batch rolls back earlier insert');
+$login('admin');$current=$store->bank($bank);$s->share($bank,'',[$f['courses']['b']],$current['version'],[$f['users']['teacher']]);
+$login('teacher');check($s->manages($s->access($bank,'',true)),'designated manager operates without a course');
+$login('admin');$current=$store->bank($bank);$s->share($bank,'',[],$current['version']);
+$login('teacher');denied(fn()=>$s->items($bank,$f['courses']['b']));check(count($s->fromTest($f['tests']['target'],$f['courses']['b']))===2,'revocation preserves existing test copies');
+$login('admin');$current=$store->bank($bank);$s->share($bank,'',[$f['courses']['b']],$current['version']);
+file_put_contents('/tmp/mcq-bank-fixture.json',json_encode($f));
+echo "PASS bank integration completed; disposable fixture retained for browser checks.\n";

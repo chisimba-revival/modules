@@ -24,7 +24,9 @@ $nextYear = date('Y-m-d', strtotime('+1 year'));
 $editing = is_array($membershipEditPeriod);
 $formStart = $editing ? substr($membershipEditPeriod['starts_at'], 0, 10) : $today;
 $formEnd = $editing ? substr($membershipEditPeriod['ends_at'], 0, 10) : $nextYear;
-$formTier = $editing ? $membershipEditPeriod['tier_code'] : 'tier_1';
+$tierService=$this->getObject('membershipservice','membership-service');
+$availableTiers=array_filter($tierService->tiers(true),static fn($tier)=>!$tier['baseline']);
+$formTier = $editing ? $membershipEditPeriod['tier_code'] : (array_key_first($availableTiers)??'');
 $formReason = $editing ? (string) $membershipEditPeriod['source_reference'] : '';
 ?>
 <main class="chisimba-workspace membership-workspace">
@@ -64,7 +66,7 @@ $formReason = $editing ? (string) $membershipEditPeriod['source_reference'] : ''
                 </select>
             </label>
             <label class="chisimba-form-field">Membership tier
-                <select name="tier" required><option value="tier_1" <?php echo $formTier === 'tier_1' ? 'selected' : ''; ?>>Tier 1</option><option value="tier_2" <?php echo $formTier === 'tier_2' ? 'selected' : ''; ?>>Tier 2</option></select>
+                <select name="tier" required><?php foreach($availableTiers as $code=>$tier): ?><option value="<?php echo $escape($code); ?>" <?php echo $formTier===$code?'selected':''; ?>><?php echo $escape($tierService->tierLabel($code)); ?></option><?php endforeach; ?></select>
             </label>
             <label class="chisimba-form-field">Starts on<input type="date" name="starts_at" value="<?php echo $escape($formStart); ?>" required></label>
             <label class="chisimba-form-field">Ends on<input type="date" name="ends_at" value="<?php echo $escape($formEnd); ?>" required></label>

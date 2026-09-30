@@ -17,7 +17,7 @@ $expect(str_contains($payments,'latestCoverageEnd')&&str_contains($payments,"mod
 $expect(str_contains($payments,'isAdmitted')&&str_contains($payments,"'already_has_access'"),'Lifetime private-course access must not be sold twice.');
 $expect(str_contains($payments,"'payment-intent:'.\$intent['id']"),'Membership fulfilment must be idempotent per intent.');
 $expect(str_contains($products,"'private_course'")===false,'Product schema must remain generic rather than adding course-specific columns.');
-$expect(str_contains($catalog,"array('tier_1','tier_2')")&&str_contains($catalog,"'private_course_required'"),'Products must reference a supported paid tier or a real private course.');
+$expect(str_contains($catalog,"->tiers(true)")&&str_contains($catalog,"'private_course_required'"),'Products must reference an enabled configured tier or a real private course.');
 $expect(str_contains($catalog,"\$period==='one_off'&&\$purpose==='private_course'")&&str_contains($catalog,"\$period==='one_off'&&\$duration!==1"),'A one-off membership must grant exactly one month while a private-course purchase remains lifetime access.');
 $expect(str_contains($controller,"class_alias('payment_service','payment-service')"),'The hyphenated module id must resolve to its PHP controller class.');
 $expect(str_contains($catalog,'privateCourseProduct')&&str_contains($catalog,"'current_price'"),'Course admission pages must be able to resolve their current server-owned product and price.');
@@ -45,7 +45,7 @@ $expect(str_contains($controller,"case 'tiers'")
     && str_contains($tiersTemplate,'Upgrade to <?=$e($label)?>'),
     'Membership comparison must show the current tier and connect course discovery to upgrade actions.');
 $expect(str_contains($controller,"array('tiers','yocowebhook','paystackwebhook'")
-    && str_contains($register,'mod_payment_service_register_free|Free registration action|Register now for free courses')
+    && str_contains($register,'mod_payment_service_register_free|Free registration action|Register now for free [-contexts-]')
     && str_contains($tiersTemplate,'mod_payment_service_register_free')
     && str_contains($tiersTemplate,"'free courses'"),
     'The membership comparison must be public and offer a sentence-case free-registration journey.');

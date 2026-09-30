@@ -1,5 +1,8 @@
 <?php
 
+ echo '<nav class="chisimba-form-actions chisimba-form-actions--equal"><a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(['action'=>'banks']),ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('library',['decorative'=>true]).'<span>'.$this->objLanguage->languageText('mod_mcqtests_bank_title','mcqtests').'</span></a></nav>';
+
+
 /**
  * Template for test home page. Lists the current tests.
  * @package mcqtests

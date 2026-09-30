@@ -171,6 +171,8 @@ class mcqaigenerator extends ChisimbaObject
                     return array('ok' => false, 'error' => 'answer_insert_failed');
                 }
             }
+            // Evidence and rationale belong to teaching metadata, never the candidate view.
+            $this->getObject('bankstore','mcqtests')->saveMetadata($questionId,['candidate'=>$question]);
             $inserted++;
         }
 

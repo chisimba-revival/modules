@@ -19,6 +19,7 @@ $fields = array(
     'composition_json'=>array('type'=>'clob'),
     'legacy_content_html'=>array('type'=>'clob'),
     'published_at'=>array('type'=>'timestamp'),
+    'required_tier_code'=>array('type'=>'text','length'=>32),
     'id' => array(
         'type' => 'text',
         'length' => 32

@@ -6,14 +6,19 @@ $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
 $provider=$e($this->getVar('paymentProviderName','payment provider'));
 $requested=(string)$this->getVar('paymentRequestedProduct','');
 $purpose=(string)$this->getVar('paymentCataloguePurpose','');
-$effectiveTier=(string)$this->getVar('paymentEffectiveTier','free');
-$tierLabel=static function($tier){return match((string)$tier){'tier_1'=>'Tier 1','tier_2'=>'Tier 2',default=>'Free',};};
+$effectiveTier=(string)$this->getVar('paymentEffectiveTier','');
+$tierLabel=fn($tier)=>$this->getObject('membershipservice','membership-service')->tierLabel($tier);
 $membershipBrowse=$purpose==='membership'&&$requested==='';
+$language=$this->getObject('language','language');
+$contributionText=fn($key)=>$language->code2Txt('mod_payment_service_contribution_'.$key,'payment-service');
+$contributionBrowse=$purpose==='contribution'||(count($products)===1&&$products[0]['purpose_type']==='contribution');
 $money=static function($price){$amount=number_format(((int)$price['amount_minor'])/100,2);return strtoupper((string)$price['currency'])==='ZAR'?'R'.$amount:(string)$price['currency'].' '.$amount;};
 $period=static function($value){return match((string)$value){'one_off'=>'Once-off payment','monthly'=>'Monthly membership','annual'=>'Annual membership',default=>ucwords(str_replace('_',' ',(string)$value)),};};
 ?>
 <section class="payment-workbench payment-checkout-review">
-  <?php if($membershipBrowse):?>
+  <?php if($contributionBrowse):?>
+    <header><h1><?=$e($contributionText('title'))?></h1><p><?=$e($contributionText('help'))?></p></header>
+  <?php elseif($membershipBrowse):?>
     <header><p class="eyebrow">YOUR MEMBERSHIP</p><h1>Choose your membership</h1><p>Your current membership is <strong><?=$e($tierLabel($effectiveTier))?></strong>. Choose an available upgrade and review it before payment.</p></header>
   <?php else:?>
     <header><p class="eyebrow">SECURE COURSE ACCESS</p><h1>Review your purchase</h1><p>Confirm the details below, then continue to <?=$provider?> to pay securely.</p></header>
@@ -21,12 +26,25 @@ $period=static function($value){return match((string)$value){'one_off'=>'Once-of
   <?php if($this->getVar('paymentError','')):?><div class="error"><?=$e($this->getVar('paymentError',''))?></div><?php endif;?>
   <div class="payment-review-grid">
   <?php foreach($products as $product): $price=$product['current_price']??null; if(!$price)continue; $course=$product['course']??null; ?>
+    <?php if($product['purpose_type']==='contribution'):?>
+      <article class="payment-card">
+        <h2><?=$e($product['name'])?></h2>
+        <p><?=$e($contributionText('help'))?></p>
+        <p><strong><?=$e($contributionText('total'))?>: <?=$e($money($price))?></strong></p>
+        <form method="post" action="<?=$this->uri(array('action'=>'buy'))?>">
+          <input type="hidden" name="csrf_token" value="<?=$csrf?>">
+          <input type="hidden" name="product_code" value="<?=$e($product['code'])?>">
+          <button class="button" type="submit"><?=$e($contributionText('continue'))?> — <?=$e($product['name'])?></button>
+        </form>
+      </article>
+      <?php continue;?>
+    <?php endif;?>
     <?php if($membershipBrowse):?>
       <article class="payment-card payment-membership-option">
         <span class="payment-membership-tier"><?=$e($tierLabel($product['purpose_id']))?></span>
         <h2><?=$e($product['name'])?></h2>
         <p class="payment-price"><?=$e($money($price))?> <small>per <?=($product['billing_period']==='annual'?'year':'month')?></small></p>
-        <p><?=($product['purpose_id']==='tier_2'?'Includes Tier 1 and Tier 2 learning.':'Includes Free and Tier 1 learning.')?></p>
+        <p><?=$e($tierLabel($product['purpose_id']))?></p>
         <a class="button payment-continue" href="<?=$this->uri(array('action'=>'catalogue','product'=>$product['code']))?>">Review <?=$e($tierLabel($product['purpose_id']))?></a>
       </article>
       <?php continue;?>
@@ -53,5 +71,5 @@ $period=static function($value){return match((string)$value){'one_off'=>'Once-of
     </div>
   <?php endforeach;?>
   </div>
-  <?php if(!$products):?><div class="payment-empty-state"><strong><?=($membershipBrowse?'Your '.$e($tierLabel($effectiveTier)).' membership is active.':'No purchase is needed.')?></strong><p><?=($membershipBrowse&&$effectiveTier==='tier_2'?'You already have the highest available membership tier.':'This item is no longer available or access has already been granted.')?></p><a class="button" href="<?=$this->uri(array(),'mylearning')?>">Go to My Learning</a></div><?php endif;?>
+  <?php if(!$products):?><div class="payment-empty-state"><strong><?=($membershipBrowse?'Your '.$e($tierLabel($effectiveTier)).' membership is active.':'No purchase is needed.')?></strong><p>This item is no longer available or access has already been granted.</p><a class="button" href="<?=$this->uri(array(),'mylearning')?>">Go to My Learning</a></div><?php endif;?>
 </section>

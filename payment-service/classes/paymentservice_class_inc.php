@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 
 class paymentservice extends ChisimbaObject
 {
-    private const PURPOSES = array('membership', 'private_course');
+    private const PURPOSES = array('membership', 'private_course', 'contribution');
     private const PROVIDERS = array('fake', 'yoco', 'paystack');
     private const EVENT_STATES = array(
         'payment.succeeded' => 'succeeded',
@@ -301,6 +301,8 @@ class paymentservice extends ChisimbaObject
 
     private function applyFulfilment(array $intent,$paymentReference)
     {
+        // Contributions are financial records only; they never confer access.
+        if($intent['purpose_type']==='contribution') return array('ok'=>true,'code'=>'contribution_recorded');
         if($intent['purpose_type']==='private_course') return $this->applyAutomaticAdmission($intent,$paymentReference);
         if($intent['purpose_type']!=='membership') return array('ok'=>false,'code'=>'unsupported_fulfilment');
         $product=$this->catalog->productVersion($intent['product_code'],$intent['price_version']);
@@ -325,6 +327,7 @@ class paymentservice extends ChisimbaObject
 
     private function reverseFulfilment(array $intent,$paymentReference)
     {
+        if($intent['purpose_type']==='contribution') return array('ok'=>true,'code'=>'contribution_reversed');
         try {
             if($intent['purpose_type']==='membership') return $this->getObject('membershipservice','membership-service')->endPeriodByIdempotency('payment-intent:'.$intent['id'],$intent['correlation_id']);
             if($intent['purpose_type']==='private_course') return $this->getObject('privateadmissionservice','membership-service')->revokeConfirmedPayment($intent['purpose_id'],$intent['user_id'],$paymentReference,$intent['correlation_id']);

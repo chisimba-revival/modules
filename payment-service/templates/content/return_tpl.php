@@ -15,7 +15,7 @@ $browseUrl=$this->uri(array('action'=>'catalogue','access'=>(string)($i['purpose
  <div class="payment-status payment-status-<?=$e($state)?>"><strong><?=$e(ucwords(str_replace('_',' ',$state)))?></strong>
  <?php if($state==='awaiting_approval'||$state==='processing'):?><p><?=$e($text('awaiting_provider'))?></p>
  <?php elseif($good&&$pendingRegistration):?><p><?=$e($text('pending_registration_paid'))?></p>
- <?php elseif($good):?><p><?=$e($text('access_ready'))?></p>
+ <?php elseif($good):?><p><?=$e($text(($i['purpose_type']??'')==='contribution'?'contribution_received':'access_ready'))?></p>
  <?php elseif(in_array($state,array('refunded','reversed','disputed'),true)):?><p><?=$e($text('payment_attention'))?></p>
  <?php else:?><p><?=$e($text('access_not_granted'))?></p><?php endif;?></div>
  <?php if($isMembership&&!$pendingRegistration):?><section class="payment-next-step" aria-labelledby="payment-next-step-title"><h2 id="payment-next-step-title"><?=$e($text('next_step'))?></h2><p><?=$e($text('explore_intro'))?></p><div class="chisimba-form-actions"><a class="button" href="<?=$e($browseUrl)?>"><?=$e($language->code2Txt('mod_payment_service_explore_contexts','payment-service'))?></a><a class="button chisimba-button-secondary" href="<?=$e($this->uri(array('action'=>'tiers'),'payment-service'))?>"><?=$e($text('view_membership'))?></a></div></section>
