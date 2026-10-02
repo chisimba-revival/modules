@@ -19,6 +19,8 @@ class dbnotelinks extends dbTable
  public function addLink($noteId,$type,$id,$label,$url,$actor){$existing=$this->getAll('WHERE noteid='.$this->q($noteId).' AND targettype='.$this->q($type).' AND targetid='.$this->q($id).' LIMIT 1');if(isset($existing[0]))return $existing[0]['id'];$linkId=bin2hex(random_bytes(16));return $this->insert(array('id'=>$linkId,'noteid'=>$noteId,'targettype'=>$type,'targetid'=>$id,'targetlabel'=>$label,'targeturl'=>$url,'createdby'=>$actor,'datecreated'=>date('Y-m-d H:i:s')))===false?false:$linkId;}
  /** Remove one attachment belonging to a note. */
  public function removeLink($id,$noteId){$row=$this->getRow('id',$id);return is_array($row)&&hash_equals((string)$noteId,(string)$row['noteid'])?$this->delete('id',$id)!==false:false;}
+ /** Remove backlinks when their source resource is permanently deleted. */
+ public function removeTarget($type,$id){return $this->query('DELETE FROM tbl_pagenotes_links WHERE targettype='.$this->q($type).' AND targetid='.$this->q($id))!==false;}
  /** Quote a scalar for the current database driver. */
  private function q($value){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'";}
 }

@@ -2,13 +2,13 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class kanban extends controller
 {
-    public $user,$context,$boards,$tasks,$subtasks,$access,$auth,$service,$csrf;
+    public $user,$context,$boards,$tasks,$subtasks,$access,$auth,$service,$noteService,$csrf;
     const CSRF='kanban_mutation';
-    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink');
+    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink','connectnote');
     public function init(){
         $this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');
         $this->boards=$this->getObject('dbkanbanboards');$this->tasks=$this->getObject('dbkanbantasks');$this->subtasks=$this->getObject('dbkanbansubtasks');$this->access=$this->getObject('dbkanbanaccess');
-        $this->auth=$this->getObject('kanbanauthorizationservice');$this->service=$this->getObject('kanbanservice');
+        $this->auth=$this->getObject('kanbanauthorizationservice');$this->service=$this->getObject('kanbanservice');$this->noteService=$this->getObject('kanbannoteservice');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->setLayoutTemplate('kanban_layout_tpl.php');
     }
     public function requiresLogin($action){return (string)$action!=='publicview';}
@@ -28,7 +28,7 @@ class kanban extends controller
         $rows=array_values(array_filter($rows,function($b){return $this->auth->allows($b,'view');}));
         $rows=array_values(array_reduce($rows,function($carry,$board){$carry[$board['id']]=$board;return $carry;},array()));
         if(!$this->auth->canCreate($scope['type'],$scope['id'])&&!$rows)return 'noaccess_tpl.php';
-        $this->setVar('kanbanBoards',$this->service->hydrate($rows));$this->setVar('kanbanCanCreate',$this->auth->canCreate($scope['type'],$scope['id']));$this->setVar('kanbanScope',$scope);$this->setVar('kanbanCsrf',$this->csrf->issueForSession(self::CSRF));$this->setVar('kanbanMessage',$message);$this->setVar('kanbanError',$error);return 'index_tpl.php';
+        $this->setVar('kanbanBoards',$this->noteService->enrich($this->service->hydrate($rows)));$this->setVar('kanbanCanCreate',$this->auth->canCreate($scope['type'],$scope['id']));$this->setVar('kanbanScope',$scope);$this->setVar('kanbanCsrf',$this->csrf->issueForSession(self::CSRF));$this->setVar('kanbanMessage',$message);$this->setVar('kanbanError',$error);return 'index_tpl.php';
     }
     private function requestedScope(){
         $type=$this->param('scope');$context=(string)$this->context->getContextCode();
@@ -41,7 +41,7 @@ class kanban extends controller
     }
     private function saveproject(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$id=$this->id('boardid');$title=mb_substr($this->param('title'),0,255);if($title==='')return $this->index('','A board title is required.');if($id!==''){$board=$this->service->board($id,'manage');if(!$board)return $this->forbidden();$saved=$this->boards->saveBoard($id,array('title'=>$title,'description'=>$this->text('description')));}else{$scope=$this->requestedScope();if($scope['type']==='context' && ($scope['id']==='' || $scope['id']==='root' || !$this->context->getContextDetails($scope['id'])))return $this->index('','The destination no longer exists. Your text is kept.');if(!$this->auth->canCreate($scope['type'],$scope['id']))return $this->forbidden();$saved=$this->boards->createBoard(array('scopetype'=>$scope['type'],'scopeid'=>$scope['id'],'ownerid'=>$this->user->userId(),'title'=>$title,'description'=>$this->text('description'),'sortorder'=>time()));}return $saved!==false?$this->index('Board saved.'):$this->index('','The board could not be saved. Your text is kept.');}
     private function archiveproject(){return $this->boardMutation(function($b){return $this->boards->saveBoard($b['id'],array('isarchived'=>empty($b['isarchived'])?1:0));},'Board archive state updated.');}
-    private function deleteproject(){return $this->boardMutation(function($b){foreach($this->tasks->forBoard($b['id']) as $task)$this->subtasks->removeForTask($task['id']);$this->tasks->removeForBoard($b['id']);$this->access->removeForBoard($b['id']);return $this->boards->removeBoard($b['id']);},'Board deleted.');}
+    private function deleteproject(){return $this->boardMutation(function($b){foreach($this->tasks->forBoard($b['id']) as $task){$this->noteService->removeTarget('kanban_task',$task['id']);$this->subtasks->removeForTask($task['id']);}$this->noteService->removeTarget('kanban_board',$b['id']);$this->tasks->removeForBoard($b['id']);$this->access->removeForBoard($b['id']);return $this->boards->removeBoard($b['id']);},'Board deleted.');}
     private function savetask(){
         $json=$this->param('response')==='json';
         if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Your text is kept; please try again.',403):$this->index('','The form could not be verified. Please try again.');
@@ -75,13 +75,14 @@ class kanban extends controller
         // The JSON response supplies the fresh token; the client fills every form.
         $scope=$this->requestedScope()['type'];
         $hidden=fn($boardId='')=>'<input type="hidden" name="csrf_token" value=""/><input type="hidden" name="scope" value="'.$e($scope).'"/><input type="hidden" name="boardid" value="'.$e($boardId).'"/>';
+        $enriched=$this->noteService->enrich(array(array_merge($board,array('tasks'=>array($task)))));$board['availablenotes']=$enriched[0]['availablenotes'];$task=$enriched[0]['tasks'][0];
         $edit=true;$status=$task['status'];
         $labels=array('not_started'=>'Not started','in_progress'=>'In progress','completed'=>'Completed');
         ob_start();
         try { include __DIR__.'/templates/content/task_card_tpl.php'; return ob_get_contents(); }
         finally { ob_end_clean(); }
     }
-    private function deletetask(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$task=$this->tasks->one($this->id('taskid'));if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeForTask($task['id']);$this->tasks->removeTask($task['id']);return $this->index('Task deleted.');}
+    private function deletetask(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$task=$this->tasks->one($this->id('taskid'));if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->noteService->removeTarget('kanban_task',$task['id']);$this->subtasks->removeForTask($task['id']);$this->tasks->removeTask($task['id']);return $this->index('Task deleted.');}
     private function movetask(){if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);$task=$this->tasks->one($this->id('taskid'));$status=$this->param('status');if(!$task||!in_array($status,array('not_started','in_progress','completed'),true)||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);if(!$this->tasks->saveTask($task['id'],array('status'=>$status,'sortorder'=>(int)$this->param('sortorder'))))return $this->json(false,'The task could not be moved.',500);return $this->param('response')==='json'?$this->json(true,'Task moved.'):$this->index('Task moved.');}
     private function savesubtask(){$json=$this->param('response')==='json';if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Your text is kept; please try again.',403):$this->index('','The form could not be verified. Please try again.');$task=$this->tasks->one($this->id('taskid'));$title=$this->text('title');if(!$task||!$this->service->board($task['boardid'],'edit'))return $json?$this->json(false,'You do not have permission for that task.',403):$this->forbidden();if($title==='')return $json?$this->json(false,'A subtask title is required.',422):$this->index('','A subtask title is required.');$id=$this->subtasks->createSubtask($task['id'],$title,time());if($id===false)return $json?$this->json(false,'The subtask could not be saved. Your text is kept.',500):$this->index('','The subtask could not be saved. Your text is kept.');return $json?$this->json(true,'Subtask added.',200,array('subtask'=>array('id'=>$id,'title'=>$title,'completed'=>false))):$this->index('Subtask added.');}
     private function togglesubtask(){if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);if(!$this->subtasks->saveSubtask($sub['id'],array('iscompleted'=>$this->boolParam('completed')?1:0)))return $this->json(false,'The subtask could not be updated.',500);return $this->param('response')==='json'?$this->json(true,'Subtask updated.'):$this->index('Subtask updated.');}
@@ -94,6 +95,25 @@ class kanban extends controller
         $saved=$this->access->replacePublicLink($board['id'],$token,$this->user->userId());
         if($saved&&$this->param('response')==='json')return $this->json(true,$token?'Public view link created. Anyone with this link can view this board but cannot edit it.':'Public view link disabled.',200,array('publicUrl'=>$token?html_entity_decode($this->uri(array('action'=>'publicview','token'=>$token),'kanban'),ENT_QUOTES,'UTF-8'):null));
         return $saved?$this->index($token?'Public view link created. Anyone with this link can view this board but cannot edit it.':'Public view link disabled.'):$this->index('','The public view link could not be updated.');
+    }
+    /** Create or select a canonical note and connect it to one authorized Kanban target. */
+    private function connectnote(){
+        $json=$this->param('response')==='json';
+        if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Please try again.',403):$this->index('','The form could not be verified. Please try again.');
+        $board=$this->service->board($this->id('boardid'),'edit');
+        if(!$board)return $json?$this->json(false,'You do not have permission to connect notes to this board.',403):$this->forbidden();
+        $type=$this->param('targettype');$targetId=$this->id('targetid');$target=false;
+        if($type==='kanban_board'&&hash_equals((string)$board['id'],$targetId))$target=$board;
+        if($type==='kanban_task'){$task=$this->tasks->one($targetId);if($task&&hash_equals((string)$board['id'],(string)$task['boardid']))$target=$task;}
+        if(!$target)return $json?$this->json(false,'That Kanban item could not be found.',404):$this->index('','That Kanban item could not be found.');
+        $title=mb_substr($this->param('title'),0,255);$noteId=$this->id('noteid');
+        if($noteId===''&&$title==='')return $json?$this->json(false,'Enter a title for the new note or choose an existing note.',422):$this->index('','Enter a title for the new note or choose an existing note.');
+        $scopeParams=array('scope'=>$board['scopetype']);if($board['scopetype']==='context')$scopeParams['scopeid']=$board['scopeid'];
+        $targetUrl=html_entity_decode($this->uri($scopeParams,'kanban'),ENT_QUOTES,'UTF-8').'#board-'.$board['id'];
+        $note=$this->noteService->connect($board,$type,$targetId,$target['title'],$noteId,$title,$targetUrl);
+        if(!$note)return $json?$this->json(false,'The note could not be connected.',422):$this->index('','The note could not be connected.');
+        $noteUrl=html_entity_decode($this->uri(array('action'=>'view','noteid'=>$note['id']),'pagenotes'),ENT_QUOTES,'UTF-8');
+        return $json?$this->json(true,'Note connected.',200,array('note'=>array('id'=>$note['id'],'title'=>$note['title'],'url'=>$noteUrl),'targetType'=>$type,'targetId'=>$targetId)):$this->index('Note connected.');
     }
     private function publicview(){
         $token=$this->param('token');

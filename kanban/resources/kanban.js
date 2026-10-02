@@ -158,6 +158,10 @@
             event.preventDefault();
             savePublicLink(event.target);
         }
+        if (!event.defaultPrevented && event.target.matches('[data-note-connect]')) {
+            event.preventDefault();
+            connectNote(event.target);
+        }
         if (!event.defaultPrevented && event.target.method.toLowerCase() === 'post') {
             event.preventDefault();
             saveForm(event.target);
@@ -363,6 +367,43 @@
             feedback.textContent = result.message;
         }, function (message) { feedback.textContent = message; }).finally(function () {
             controls.forEach(function (control, index) { control.disabled = disabled[index]; });
+            delete form.dataset.saving; form.removeAttribute('aria-busy');
+        });
+    }
+
+    function connectNote(form) {
+        if (form.dataset.saving === 'true') return;
+        var panel = form.closest('[data-note-connections]');
+        var feedback = panel.querySelector('[data-note-feedback]');
+        var controls = Array.from(form.querySelectorAll('input, select, button'));
+        var disabled = controls.map(function (control) { return control.disabled; });
+        var payload = new URLSearchParams(new FormData(form));
+        form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+        controls.forEach(function (control) { control.disabled = true; });
+        feedback.textContent = 'Connecting note…';
+        post(form.action, payload, function (result) {
+            var list = panel.querySelector('[data-note-links]');
+            if (!list.querySelector('a[href="' + CSS.escape(result.note.url) + '"]')) {
+                var item = document.createElement('li');
+                var link = document.createElement('a');
+                link.href = result.note.url; link.textContent = result.note.title;
+                item.appendChild(link); list.appendChild(item);
+            }
+            panel.querySelector('[data-note-empty]')?.remove();
+            var count = panel.querySelectorAll('[data-note-links] li').length;
+            var badge = panel.querySelector('[data-note-count]');
+            if (!badge) { badge=document.createElement('span');badge.className='chisimba-pill';badge.dataset.noteCount='';panel.querySelector('summary').appendChild(badge); }
+            badge.textContent = count;
+            root.querySelectorAll('[data-note-connect] select[name="noteid"]').forEach(function (select) {
+                if (Array.from(select.options).some(function (option) { return option.value === result.note.id; })) return;
+                var option=document.createElement('option');option.value=result.note.id;option.textContent=result.note.title;select.appendChild(option);
+                select.closest('form').querySelector('button[type="submit"]').disabled=false;
+            });
+            form.reset();
+            if (drafts.has(form)) drafts.get(form).reset();
+            feedback.textContent = result.message;
+        }, function (message) { feedback.textContent = message; }).finally(function () {
+            controls.forEach(function (control,index) { control.disabled=disabled[index]; });
             delete form.dataset.saving; form.removeAttribute('aria-busy');
         });
     }

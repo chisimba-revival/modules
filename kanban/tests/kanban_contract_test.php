@@ -1,6 +1,6 @@
 <?php
 $root=dirname(__DIR__);$read=fn($file)=>file_get_contents($root.'/'.$file);
-$required=array('controller.php','register.conf','classes/kanbanauthorizationservice_class_inc.php','classes/dbkanbanaccess_class_inc.php','sql/tbl_kanban_boards.sql','sql/tbl_kanban_access.sql','templates/content/index_tpl.php','templates/content/publicview_tpl.php','templates/content/publicnotfound_tpl.php','templates/layout/kanban_layout_tpl.php','resources/kanban.css','resources/kanban.js');
+$required=array('controller.php','register.conf','classes/kanbanauthorizationservice_class_inc.php','classes/kanbannoteservice_class_inc.php','classes/dbkanbanaccess_class_inc.php','sql/tbl_kanban_boards.sql','sql/tbl_kanban_access.sql','templates/content/index_tpl.php','templates/content/note_connections_tpl.php','templates/content/publicview_tpl.php','templates/content/publicnotfound_tpl.php','templates/layout/kanban_layout_tpl.php','resources/kanban.css','resources/kanban.js');
 foreach($required as $file)if(!is_file($root.'/'.$file)){fwrite(STDERR,"FAIL: missing $file\n");exit(1);}
 $controller=$read('controller.php');$auth=$read('classes/kanbanauthorizationservice_class_inc.php');$access=$read('sql/tbl_kanban_access.sql');$template=$read('templates/content/index_tpl.php').$read('templates/content/task_card_tpl.php');$css=$read('resources/kanban.css');
 $checks=array(
@@ -14,7 +14,8 @@ $checks=array(
  'generic principals stored'=>str_contains($access,"'principaltype'")&&str_contains($access,"'principalid'")&&str_contains($access,"'permission'"),
  'public links are anonymous and read-only'=>str_contains($controller,"action!=='publicview'")&&str_contains($read('classes/dbkanbanaccess_class_inc.php'),"'public_link'")&&str_contains($controller,"bin2hex(random_bytes(32))")&&str_contains($read('templates/content/publicview_tpl.php'),'Editing is disabled')&&!str_contains($read('templates/content/publicview_tpl.php'),'<form'),
  'public link creation stays in the open board'=>str_contains($template,'data-public-link-form')&&str_contains($read('resources/kanban.js'),'function savePublicLink')&&str_contains($controller,"'publicUrl'")&&str_contains($read('resources/kanban.css'),'kanban-public-link-form__controls'),
- 'public link assets use a fresh cache version'=>substr_count($read('templates/layout/kanban_layout_tpl.php'),'?v=0129')===2,
+ 'public link assets use a fresh cache version'=>substr_count($read('templates/layout/kanban_layout_tpl.php'),'?v=0131')===2,
+ 'canonical notes connect to boards and tasks only'=>str_contains($controller,"'connectnote'")&&str_contains($read('templates/content/index_tpl.php'),"\$targetType='kanban_board'")&&str_contains($read('templates/content/task_card_tpl.php'),"\$targetType='kanban_task'")&&!str_contains($read('templates/content/task_card_tpl.php'),"\$targetType='kanban_subtask'")&&str_contains($read('resources/kanban.js'),'function connectNote'),
  'shared skin primitives composed'=>str_contains($template,'chisimba-card')&&str_contains($template,'chisimba-form-field')&&str_contains($template,'chisimba-button-danger'),
  'task movement has keyboard controls'=>str_contains($template,"array('left'=>")&&str_contains($template,'>Move <?php echo $e($direction); ?></button>')&&str_contains($controller,"param('response')==='json'"),
  'task movement stays in place with JavaScript'=>str_contains($template,'data-task-move')&&str_contains($read('resources/kanban.js'),"matches('[data-task-move]')")&&str_contains($read('resources/kanban.js'),'function moveTask'),

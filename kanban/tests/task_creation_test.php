@@ -49,6 +49,7 @@ $controller->tasks = new class {
     public function saveTask($id,$data) { if($GLOBALS['case']!=='edit')throw new RuntimeException('Unauthorized update');$this->task=$data+array('id'=>$id,'boardid'=>str_repeat('a',32),'status'=>'completed');return true; }
 };
 $controller->subtasks = new class { public function forTask($id) { return array(); } };
+$controller->noteService = new class { public function enrich($boards) { foreach($boards as &$board){$board['availablenotes']=array();foreach($board['tasks'] as &$task)$task['linkednotes']=array();}return $boards; } };
 // Capture the real JSON response, including the HTTP status set before exit.
 ob_start(function($output) { $response=json_decode($output,true);$response['status']=http_response_code();return json_encode($response); });
 $controller->dispatch('savetask');
