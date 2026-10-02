@@ -6,7 +6,7 @@
     var drafts = new WeakMap();
     function prepareDrafts() {
         if (!window.ChisimbaFormDrafts) return;
-        root.querySelectorAll('form[method="post"]').forEach(function (form) {
+        root.querySelectorAll('form[method="post"]:not([data-note-connect])').forEach(function (form) {
             if (drafts.has(form)) return;
             var names = ['title', 'description', 'notes', 'grants'].filter(function (name) { return form.elements.namedItem(name); });
             if (!names.length) return;

@@ -48,12 +48,17 @@
 .kanban-note-connections { margin-top: var(--chisimba-space-3); }
 .kanban-note-connections > summary { list-style: none; width: fit-content; }
 .kanban-note-connections > summary::-webkit-details-marker { display: none; }
-.kanban-note-connections__panel { display: grid; gap: var(--chisimba-space-3); max-width: 34rem; margin-top: var(--chisimba-space-2); padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface-subtle); }
+.kanban-note-connections__panel { box-sizing: border-box; display: grid; gap: var(--chisimba-space-3); width: 100%; max-width: 34rem; margin-top: var(--chisimba-space-2); padding: var(--chisimba-space-3); border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md); background: var(--chisimba-surface-subtle); overflow: hidden; }
 .kanban-note-connections__panel form { display: flex; align-items: end; gap: var(--chisimba-space-2); margin: 0; }
 .kanban-note-connections__panel .chisimba-form-field { flex: 1; min-width: 0; margin: 0; }
+.kanban-note-connections__panel input,.kanban-note-connections__panel select { box-sizing: border-box; width: 100%; max-width: 100%; }
 .kanban-note-links { display: grid; gap: var(--chisimba-space-2); margin: 0; padding-left: 1.2rem; }
 .kanban-note-connections [data-note-feedback] { margin: 0; }
 .kanban-note-connections [data-note-feedback]:empty { display: none; }
+.kanban-task .kanban-note-connections > summary { min-height: 1.9rem; padding: .32rem .62rem; font-size: .8rem; line-height: 1.15; }
+.kanban-task .kanban-note-connections__panel { gap: var(--chisimba-space-2); padding: var(--chisimba-space-2); }
+.kanban-task .kanban-note-connections__panel form { align-items: stretch; flex-direction: column; }
+.kanban-task .kanban-note-connections__panel .button { align-self: flex-start; min-height: 1.9rem; padding: .32rem .62rem; font-size: .8rem; line-height: 1.15; }
 
 @media (max-width: 52rem) {
     .kanban-board__header { display: block; }
