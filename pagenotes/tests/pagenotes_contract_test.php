@@ -13,6 +13,9 @@ $checks=array(
  'typed links are unique per note target'=>str_contains(file_get_contents($root.'/sql/tbl_pagenotes_links.sql'),'pagenotes_links_unique'),
  'future group permissions have an extension seam'=>str_contains(file_get_contents($root.'/classes/noteauthorizationservice_class_inc.php'),'allowsFuturePrincipal'),
  'note saving is asynchronous'=>str_contains(file_get_contents($root.'/resources/notes.js'),'data-note-save'),
+ 'rich text is sanitized before persistence'=>str_contains(file_get_contents($root.'/controller.php'),"richtextsanitizer")&&str_contains(file_get_contents($root.'/controller.php'),'cleanBody()'),
+ 'shared formatting primitives are reused'=>str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'chisimba-editor-toolbar')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'chisimba-longform-editor'),
+ 'common note formatting is available'=>str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'insertUnorderedList')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'insertOrderedList')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'data-command="bold"'),
  'attachments do not copy notes'=>str_contains(file_get_contents($root.'/README.md'),'without copying')
 );
 $failed=false;foreach($checks as $label=>$ok){echo ($ok?'PASS':'FAIL').': '.$label.PHP_EOL;$failed=$failed||!$ok;}exit($failed?1:0);
