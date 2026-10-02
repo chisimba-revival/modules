@@ -1,0 +1,23 @@
+<?php
+/**
+ * Note editor, backlinks and access surface.
+ *
+ * @author Derek Keats
+ * @package pagenotes
+ */
+$e=fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+$url=fn($params=array())=>html_entity_decode($this->uri($params,'pagenotes'),ENT_QUOTES,'UTF-8');
+$hidden='<input type="hidden" name="csrf_token" value="'.$e($notesCsrf).'"/><input type="hidden" name="actor" value="'.$e($notesActor).'"/><input type="hidden" name="noteid" value="'.$e($noteRecord['id']).'"/>';
+$grantLines=[];foreach($noteGrants as $grant)if($grant['principaltype']==='user')$grantLines[]=$grant['principalid'].':'.$grant['permission'];
+?>
+<main class="chisimba-workspace chisimba-flow chisimba-structural-main chisimba-structural-main--full note-workspace">
+ <p><a class="button" href="<?php echo $e($url(array('scope'=>$noteRecord['scopetype'],'scopeid'=>$noteRecord['scopeid'])));?>">Back to notes</a></p>
+ <?php if($notesMessage!==''):?><p class="success" role="status"><?php echo $e($notesMessage);?></p><?php endif;?><?php if($notesError!==''):?><p class="error" role="alert"><?php echo $e($notesError);?></p><?php endif;?>
+ <section class="dashboard-panel note-editor">
+  <p class="chisimba-eyebrow"><?php echo $e(strtoupper($noteRecord['scopetype']));?> NOTE</p>
+  <?php if($noteCanEdit):?><form method="post" action="<?php echo $e($url(array('action'=>'save')));?>" data-note-save class="chisimba-flow"><?php echo $hidden;?><label>Title<input type="text" name="title" maxlength="255" required value="<?php echo $e($noteRecord['title']);?>"/></label><label>Note<textarea name="body" rows="18" maxlength="50000"><?php echo $e($noteRecord['body']);?></textarea></label><div class="notes-actions"><button type="submit" class="button">Save note</button><span data-note-feedback role="status" aria-live="polite"></span></div></form><?php else:?><h1><?php echo $e($noteRecord['title']);?></h1><div class="note-body"><?php echo nl2br($e($noteRecord['body']));?></div><?php endif;?>
+ </section>
+ <section class="dashboard-panel"><h2>Linked work</h2><p>These are references to this one note; the note is not copied.</p><ul class="note-links" data-note-links><?php foreach($noteLinks as $link):?><li data-link-id="<?php echo $e($link['id']);?>"><span class="chisimba-pill"><?php echo $e(str_replace('_',' ',$link['targettype']));?></span> <?php if($link['targeturl']!==''):?><a href="<?php echo $e($link['targeturl']);?>"><?php echo $e($link['targetlabel']);?></a><?php else:?><?php echo $e($link['targetlabel']);?><?php endif;?><?php if($noteCanEdit):?><form method="post" action="<?php echo $e($url(array('action'=>'detach')));?>" data-note-detach><?php echo $hidden;?><input type="hidden" name="linkid" value="<?php echo $e($link['id']);?>"/><button type="submit" class="button">Detach</button></form><?php endif;?></li><?php endforeach;?></ul>
+ <?php if($noteCanEdit):?><details><summary class="button">Attach work</summary><form method="post" action="<?php echo $e($url(array('action'=>'attach')));?>" data-note-attach class="chisimba-flow"><?php echo $hidden;?><label>Type<select name="targettype"><option value="kanban_board">Kanban board</option><option value="kanban_task">Kanban task</option><option value="kanban_subtask">Kanban subtask</option><option value="context">Course</option><option value="content_page">Content page</option><option value="page">Other Chisimba page</option></select></label><label>Stable item ID<input name="targetid" maxlength="255" required/></label><label>Label<input name="targetlabel" maxlength="255" required/></label><label>Link URL (optional)<input type="url" name="targeturl" maxlength="1000"/></label><button type="submit" class="button">Attach</button><span data-attach-feedback role="status" aria-live="polite"></span></form></details><?php endif;?></section>
+ <?php if($noteCanManage):?><section class="dashboard-panel"><details><summary class="button">Sharing and permissions</summary><form method="post" action="<?php echo $e($url(array('action'=>'share')));?>" class="chisimba-flow"><?php echo $hidden;?><label>One username and permission per line<textarea name="grants" rows="5" placeholder="username:view"><?php echo $e(implode("\n",$grantLines));?></textarea></label><p>Permissions are <code>view</code>, <code>edit</code> or <code>manage</code>. Group and course-role grants can be added later without changing the note model.</p><button type="submit" class="button">Save sharing</button></form></details><form method="post" action="<?php echo $e($url(array('action'=>'archive')));?>"><?php echo $hidden;?><button type="submit" class="button"><?php echo empty($noteRecord['isarchived'])?'Archive note':'Restore note';?></button></form></section><?php endif;?>
+</main>

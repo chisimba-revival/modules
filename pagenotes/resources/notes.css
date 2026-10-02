@@ -1,0 +1,8 @@
+/**
+ * Layout-only additions for the Notes workspace.
+ * Visual controls and surfaces remain shared skin primitives.
+ *
+ * @author Derek Keats
+ * @package pagenotes
+ */
+.notes-library,.note-workspace{width:100%;max-width:none}.notes-scope form,.notes-actions{display:flex;align-items:end;gap:.75rem;flex-wrap:wrap}.notes-scope label{font-weight:700}.notes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}.note-card{min-height:10rem}.note-card h2{margin-block:.25rem .6rem}.notes-new form,.note-editor form{margin-top:1rem}.note-editor textarea{width:100%;min-height:22rem;resize:vertical}.note-links{list-style:none;padding:0;display:grid;gap:.6rem}.note-links li{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.note-links form{display:inline;margin-left:auto}.note-workspace details{margin-block:1rem}.note-body{white-space:normal;line-height:1.6}.chisimba-muted{opacity:.72}
