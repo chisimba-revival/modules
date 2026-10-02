@@ -490,7 +490,7 @@
                 item.appendChild(link); list.appendChild(item);
             }
             panel.querySelector('[data-note-empty]')?.remove();
-            var count = panel.querySelectorAll('[data-note-links] li').length;
+            var count = panel.querySelectorAll('[data-note-links] li').length + Number(panel.dataset.localNote || 0);
             var badge = panel.querySelector('[data-note-count]');
             if (!badge) { badge=document.createElement('span');badge.className='chisimba-pill';badge.dataset.noteCount='';panel.querySelector('summary').appendChild(badge); }
             badge.textContent = count;
