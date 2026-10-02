@@ -160,6 +160,10 @@
                 moveTask(task, column);
             });
         }
+        if (!event.defaultPrevented && event.target.matches('[data-task-delete]')) {
+            event.preventDefault();
+            deleteTask(event.target);
+        }
         if (!event.defaultPrevented && event.target.matches('[data-board-reorder]')) {
             event.preventDefault();
             var reorderForm = event.target;
@@ -392,6 +396,33 @@
             delete form.dataset.saving;
             form.removeAttribute('aria-busy');
             form.elements.title.focus({preventScroll: true});
+        });
+    }
+
+    function deleteTask(form) {
+        if (form.dataset.saving === 'true') return;
+        var task = form.closest('.kanban-task');
+        var board = form.closest('.kanban-board');
+        var button = form.querySelector('button[type="submit"]');
+        var taskId = form.elements.taskid.value;
+        form.dataset.saving = 'true';
+        form.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+        post(form.action, {taskid: taskId, boardid: form.elements.boardid.value}, function (result) {
+            var column = task.closest('.kanban-column');
+            task.remove();
+            try { sessionStorage.removeItem('kanban:task-collapsed:' + taskId); }
+            catch (error) { /* Deletion remains complete without storage. */ }
+            refreshBoardCounts(board);
+            var feedback = board.querySelector('[data-task-feedback]');
+            if (feedback) feedback.textContent = result.message;
+            var next = column.querySelector('.kanban-task [data-task-toggle]') || board.querySelector('[data-task-create] input[name="title"]');
+            if (next) next.focus({preventScroll: true});
+        }, function (message) {
+            window.alert(message);
+            button.disabled = false;
+            delete form.dataset.saving;
+            form.removeAttribute('aria-busy');
         });
     }
 
