@@ -131,6 +131,10 @@
             event.preventDefault();
             createTask(event.target);
         }
+        if (!event.defaultPrevented && event.target.matches('[data-subtask-create]')) {
+            event.preventDefault();
+            createSubtask(event.target);
+        }
         if (!event.defaultPrevented && event.target.matches('[data-task-move]')) {
             event.preventDefault();
             var form = event.target;
@@ -248,6 +252,43 @@
             if (document.activeElement === document.body || form.contains(document.activeElement)) {
                 form.elements.title.focus({preventScroll: true});
             }
+        });
+    }
+
+    function createSubtask(form) {
+        if (form.dataset.saving === 'true') return;
+        var container = form.closest('.kanban-subtasks');
+        var feedback = form.querySelector('[data-subtask-feedback]');
+        var controls = Array.from(form.querySelectorAll('input, button'));
+        var disabled = controls.map(function (control) { return control.disabled; });
+        var data = new URLSearchParams(new FormData(form));
+        var title = form.elements.title.value;
+        form.dataset.saving = 'true';
+        form.setAttribute('aria-busy', 'true');
+        controls.forEach(function (control) { control.disabled = true; });
+        feedback.textContent = 'Adding subtask…';
+        post(form.action, data, function (result) {
+            if (!result.subtask || !result.subtask.id) throw new Error('Missing saved subtask');
+            var label = document.createElement('label');
+            label.className = 'kanban-subtask';
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.subtaskId = result.subtask.id;
+            checkbox.checked = Boolean(result.subtask.completed);
+            var text = document.createElement('span');
+            text.textContent = result.subtask.title;
+            label.append(checkbox, text);
+            container.insertBefore(label, form);
+            form.reset();
+            if (drafts.has(form)) drafts.get(form).reset();
+            feedback.textContent = 'Added “' + title + '”.';
+        }, function (message) {
+            feedback.textContent = message;
+        }).finally(function () {
+            controls.forEach(function (control, index) { control.disabled = disabled[index]; });
+            delete form.dataset.saving;
+            form.removeAttribute('aria-busy');
+            form.elements.title.focus({preventScroll: true});
         });
     }
 
