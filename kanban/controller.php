@@ -108,11 +108,13 @@ class kanban extends controller
         if(!$target)return $json?$this->json(false,'That Kanban item could not be found.',404):$this->index('','That Kanban item could not be found.');
         $title=mb_substr($this->param('title'),0,255);$noteId=$this->id('noteid');
         if($noteId===''&&$title==='')return $json?$this->json(false,'Enter a title for the new note or choose an existing note.',422):$this->index('','Enter a title for the new note or choose an existing note.');
-        $scopeParams=array('scope'=>$board['scopetype']);if($board['scopetype']==='context')$scopeParams['scopeid']=$board['scopeid'];
+        $scopeParams=array('scope'=>$board['scopetype'],'openboard'=>$board['id']);
+        if($board['scopetype']==='context')$scopeParams['scopeid']=$board['scopeid'];
+        if($type==='kanban_task')$scopeParams['opentask']=$targetId;
         $targetUrl=html_entity_decode($this->uri($scopeParams,'kanban'),ENT_QUOTES,'UTF-8').'#board-'.$board['id'];
         $note=$this->noteService->connect($board,$type,$targetId,$target['title'],$noteId,$title,$targetUrl);
         if(!$note)return $json?$this->json(false,'The note could not be connected.',422):$this->index('','The note could not be connected.');
-        $noteUrl=html_entity_decode($this->uri(array('action'=>'view','noteid'=>$note['id']),'pagenotes'),ENT_QUOTES,'UTF-8');
+        $noteUrl=html_entity_decode($this->uri(array('action'=>'view','noteid'=>$note['id'],'return'=>$targetUrl),'pagenotes'),ENT_QUOTES,'UTF-8');
         return $json?$this->json(true,'Note connected.',200,array('note'=>array('id'=>$note['id'],'title'=>$note['title'],'url'=>$noteUrl),'targetType'=>$type,'targetId'=>$targetId)):$this->index('Note connected.');
     }
     private function publicview(){

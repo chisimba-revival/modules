@@ -36,7 +36,7 @@ $controller->csrf = new class {
 $controller->context = new class { public function getContextCode() { return ''; } };
 $controller->user = new class { public function userId() { return 'user'; } };
 $controller->service = new class {
-    public function board($id,$permission) { return $GLOBALS['case']==='permission'?false:array('id'=>$id); }
+    public function board($id,$permission) { return $GLOBALS['case']==='permission'?false:array('id'=>$id,'scopetype'=>'personal','scopeid'=>'user','title'=>'Test board'); }
 };
 $controller->tasks = new class {
     public $task;

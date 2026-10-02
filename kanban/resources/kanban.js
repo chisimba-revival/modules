@@ -42,6 +42,21 @@
         catch (error) { /* In-page collapse still works without storage. */ }
     });
 
+    var returnParams = new URLSearchParams(window.location.search);
+    var returnBoard = returnParams.get('openboard');
+    if (returnBoard) {
+        var returnedBoard = root.querySelector('.kanban-board[data-board-id="' + CSS.escape(returnBoard) + '"]');
+        if (returnedBoard) {
+            setCollapsed(returnedBoard, false);
+            var returnTask = returnParams.get('opentask');
+            if (returnTask) {
+                var returnedTask = returnedBoard.querySelector('.kanban-task[data-task-id="' + CSS.escape(returnTask) + '"]');
+                if (returnedTask) setTaskCollapsed(returnedTask, false);
+            }
+            requestAnimationFrame(function () { returnedBoard.scrollIntoView({block:'start'}); });
+        }
+    }
+
     function setTaskCollapsed(task, collapsed) {
         task.classList.toggle('is-collapsed', collapsed);
         var toggle = task.querySelector('[data-task-toggle]');
