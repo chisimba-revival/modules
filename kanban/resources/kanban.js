@@ -183,6 +183,12 @@
         }
     });
     root.addEventListener('click', function (event) {
+        var noteLink = event.target.closest('[data-note-open]');
+        if (noteLink) {
+            event.preventDefault();
+            openNote(noteLink);
+            return;
+        }
         var taskToggle = event.target.closest('[data-task-toggle]');
         if (taskToggle) {
             var task = taskToggle.closest('.kanban-task');
@@ -199,6 +205,84 @@
         setCollapsed(board, collapsed);
 
     });
+
+    async function openNote(link) {
+        var dialog = document.getElementById('kanban-note-window');
+        var content = dialog && dialog.querySelector('[data-note-modal-content]');
+        if (!dialog || !content || typeof dialog.showModal !== 'function') {
+            window.location.assign(link.href);
+            return;
+        }
+        dialog.querySelector('.chisimba-ui-window__title').textContent = link.textContent.trim();
+        content.innerHTML = '<p class="chisimba-muted" role="status">Loading note…</p>';
+        dialog.showModal();
+        try {
+            var response = await fetch(link.dataset.editorUrl, {credentials:'same-origin', headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}});
+            var data = await response.json();
+            if (!response.ok || !data.ok) throw new Error(data.message || 'The note could not be opened.');
+            dialog.querySelector('.chisimba-ui-window__title').textContent = data.title;
+            content.innerHTML = data.html;
+            bindModalEditor(dialog, link);
+        } catch (error) {
+            content.innerHTML = '';
+            var message = document.createElement('p');
+            message.className = 'chisimba-notice chisimba-notice--error';
+            message.setAttribute('role', 'alert');
+            message.textContent = error.message;
+            var fallback = document.createElement('a');
+            fallback.className = 'button chisimba-button-secondary';
+            fallback.href = link.href;
+            fallback.textContent = 'Open note page';
+            content.append(message, fallback);
+        }
+    }
+
+    function bindModalEditor(dialog, openedLink) {
+        var form = dialog.querySelector('[data-modal-note-save]');
+        if (!form) return;
+        var editor = form.querySelector('[data-modal-note-editor]');
+        var body = form.querySelector('[data-modal-note-body]');
+        var feedback = form.querySelector('[data-modal-note-feedback]');
+        var dirty = false;
+        var sync = function () { body.value = editor.innerHTML; };
+        editor.addEventListener('input', function () { dirty = true; sync(); feedback.textContent = 'Unsaved changes'; });
+        form.querySelectorAll('[data-command]').forEach(function (button) {
+            button.addEventListener('mousedown', function (event) { event.preventDefault(); });
+            button.addEventListener('click', function () {
+                editor.focus();
+                var value = button.dataset.value || null;
+                if (button.dataset.command === 'createLink') { value = window.prompt('Link address'); if (!value) return; }
+                document.execCommand(button.dataset.command, false, value);
+                dirty = true; sync(); feedback.textContent = 'Unsaved changes';
+            });
+        });
+        sync();
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            sync();
+            var button = form.querySelector('[type="submit"]');
+            button.disabled = true; feedback.textContent = 'Saving…';
+            try {
+                var response = await fetch(form.action, {method:'POST',body:new FormData(form),credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','Accept':'application/json'}});
+                var data = await response.json();
+                if (data.csrfToken) form.elements.csrf_token.value = data.csrfToken;
+                if (!response.ok || !data.ok) throw new Error(data.message || 'The note could not be saved. Your work is kept.');
+                dirty = false; feedback.textContent = data.message; feedback.className = 'success';
+                dialog.querySelector('.chisimba-ui-window__title').textContent = data.title;
+                root.querySelectorAll('[data-note-open][data-note-id="' + CSS.escape(form.dataset.noteId) + '"]').forEach(function (item) { item.textContent = data.title; });
+            } catch (error) { feedback.textContent = error.message; feedback.className = 'error'; }
+            finally { button.disabled = false; }
+        });
+        var confirmClose = function (event) {
+            if (!dirty || window.confirm('Close this note without saving your changes?')) return;
+            event.preventDefault(); event.stopImmediatePropagation();
+        };
+        var closeButton = dialog.querySelector('[data-ui-close]');
+        dialog.addEventListener('cancel', confirmClose);
+        closeButton.addEventListener('click', confirmClose, true);
+        openedLink.dataset.noteActive = 'true';
+        dialog.addEventListener('close', function () { delete openedLink.dataset.noteActive;dialog.removeEventListener('cancel',confirmClose);closeButton.removeEventListener('click',confirmClose,true); }, {once:true});
+    }
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
         if (!task) return;
@@ -402,6 +486,7 @@
                 var item = document.createElement('li');
                 var link = document.createElement('a');
                 link.href = result.note.url; link.textContent = result.note.title;
+                link.dataset.noteOpen = ''; link.dataset.noteId = result.note.id; link.dataset.editorUrl = result.note.editorUrl;
                 item.appendChild(link); list.appendChild(item);
             }
             panel.querySelector('[data-note-empty]')?.remove();

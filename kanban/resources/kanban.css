@@ -80,3 +80,7 @@
 .kanban-task.is-collapsed .kanban-task__body { display: none; }
 .kanban-task.is-collapsed h4 { margin-bottom: 0; }
 .kanban-task-list { align-content: start; }
+.kanban-note-modal__editor { box-sizing: border-box; min-height: min(52vh, 28rem); max-height: 52vh; overflow: auto; }
+.kanban-note-modal .note-title-input { box-sizing: border-box; width: 100%; max-width: none; }
+.kanban-note-modal__readonly { min-height: 12rem; }
+.kanban-note-modal .chisimba-form-actions { justify-content: space-between; }

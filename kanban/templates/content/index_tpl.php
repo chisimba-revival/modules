@@ -67,3 +67,4 @@ $viewText=fn($key)=>$e($this->getObject('language','language')->languageText('mo
     </section>
     <?php endforeach; ?>
 </main>
+<?php $noteWindow=$this->getObject('window','ui');$noteWindow->setId('kanban-note-window')->setTitle('Note')->setWidth('56rem')->setContent('<div class="kanban-note-modal" data-note-modal-content><p class="chisimba-muted" role="status">Loading note…</p></div>');echo $noteWindow->show(); ?>

@@ -15,7 +15,7 @@ $kanbanReturn=$url($returnParams).'#board-'.$board['id'];
 <details class="kanban-note-connections" data-note-connections data-target-type="<?php echo $e($targetType); ?>" data-target-id="<?php echo $e($targetId); ?>">
     <summary class="button chisimba-button-secondary"><?php if(isset($icons))echo $icons->render('notebook-pen',array('decorative'=>true)); ?><span>Notes</span><?php if($linkedNotes): ?><span class="chisimba-pill" data-note-count><?php echo count($linkedNotes); ?></span><?php endif; ?></summary>
     <div class="kanban-note-connections__panel">
-        <ul class="kanban-note-links" data-note-links><?php foreach($linkedNotes as $linkedNote): ?><li><a href="<?php echo $e($this->uri(array('action'=>'view','noteid'=>$linkedNote['id'],'return'=>$kanbanReturn),'pagenotes')); ?>"><?php echo $e($linkedNote['title']); ?></a></li><?php endforeach; ?></ul>
+        <ul class="kanban-note-links" data-note-links><?php foreach($linkedNotes as $linkedNote): ?><li><a data-note-open data-note-id="<?php echo $e($linkedNote['id']); ?>" data-editor-url="<?php echo $e($this->uri(array('action'=>'modaldata','noteid'=>$linkedNote['id']),'pagenotes')); ?>" href="<?php echo $e($this->uri(array('action'=>'view','noteid'=>$linkedNote['id'],'return'=>$kanbanReturn),'pagenotes')); ?>"><?php echo $e($linkedNote['title']); ?></a></li><?php endforeach; ?></ul>
         <?php if(!$linkedNotes): ?><p class="chisimba-muted" data-note-empty>No notes connected yet.</p><?php endif; ?>
         <?php if($edit): ?>
         <form method="post" action="<?php echo $e($url(array('action'=>'connectnote'))); ?>" data-note-connect>

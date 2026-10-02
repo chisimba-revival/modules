@@ -115,7 +115,8 @@ class kanban extends controller
         $note=$this->noteService->connect($board,$type,$targetId,$target['title'],$noteId,$title,$targetUrl);
         if(!$note)return $json?$this->json(false,'The note could not be connected.',422):$this->index('','The note could not be connected.');
         $noteUrl=html_entity_decode($this->uri(array('action'=>'view','noteid'=>$note['id'],'return'=>$targetUrl),'pagenotes'),ENT_QUOTES,'UTF-8');
-        return $json?$this->json(true,'Note connected.',200,array('note'=>array('id'=>$note['id'],'title'=>$note['title'],'url'=>$noteUrl),'targetType'=>$type,'targetId'=>$targetId)):$this->index('Note connected.');
+        $editorUrl=html_entity_decode($this->uri(array('action'=>'modaldata','noteid'=>$note['id']),'pagenotes'),ENT_QUOTES,'UTF-8');
+        return $json?$this->json(true,'Note connected.',200,array('note'=>array('id'=>$note['id'],'title'=>$note['title'],'url'=>$noteUrl,'editorUrl'=>$editorUrl),'targetType'=>$type,'targetId'=>$targetId)):$this->index('Note connected.');
     }
     private function publicview(){
         $token=$this->param('token');

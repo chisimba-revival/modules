@@ -13,6 +13,7 @@ $checks=array(
  'typed links are unique per note target'=>str_contains(file_get_contents($root.'/sql/tbl_pagenotes_links.sql'),'pagenotes_links_unique'),
  'future group permissions have an extension seam'=>str_contains(file_get_contents($root.'/classes/noteauthorizationservice_class_inc.php'),'allowsFuturePrincipal'),
  'note saving is asynchronous'=>str_contains(file_get_contents($root.'/resources/notes.js'),'data-note-save'),
+ 'contextual editor remains permission checked'=>str_contains(file_get_contents($root.'/controller.php'),"action==='modaldata'")&&str_contains(file_get_contents($root.'/controller.php'),"note('view')")&&str_contains(file_get_contents($root.'/controller.php'),'modalMarkup'),
  'rich text is sanitized before persistence'=>str_contains(file_get_contents($root.'/controller.php'),"richtextsanitizer")&&str_contains(file_get_contents($root.'/controller.php'),'cleanBody()'),
  'shared formatting primitives are reused'=>str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'chisimba-editor-toolbar')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'chisimba-longform-editor'),
  'common note formatting is available'=>str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'insertUnorderedList')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'insertOrderedList')&&str_contains(file_get_contents($root.'/templates/content/view_tpl.php'),'data-command="bold"'),
