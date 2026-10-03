@@ -8,10 +8,11 @@
  const feedback=form.querySelector('[data-campaign-feedback]');
  const report=message=>{status.textContent=message;if(feedback)feedback.textContent=message;};
  const subject=form.elements.subject,subjectError=form.querySelector('[data-subject-error]');
- const missingSubject=()=>{if(!subject||!subjectError)return;subjectError.hidden=false;subject.setAttribute('aria-invalid','true');report(subjectError.textContent);subject.focus();};
+ const saveSubjectError=form.querySelector('[data-save-subject-error]');
+ const missingSubject=()=>{if(!subject||!subjectError)return;subjectError.hidden=false;subject.setAttribute('aria-invalid','true');report(subjectError.textContent);if(saveSubjectError){saveSubjectError.hidden=false;saveSubjectError.focus();}else subject.focus();};
  if(subject&&subjectError){
   subject.addEventListener('invalid',e=>{if(!subject.value.trim()){e.preventDefault();missingSubject();}});
-  subject.addEventListener('input',()=>{if(subject.value.trim()){subjectError.hidden=true;subject.removeAttribute('aria-invalid');if(status.textContent===subjectError.textContent)report('');}});
+  subject.addEventListener('input',()=>{if(subject.value.trim()){subjectError.hidden=true;if(saveSubjectError)saveSubjectError.hidden=true;subject.removeAttribute('aria-invalid');if(status.textContent===subjectError.textContent)report('');}});
  }
  let dirty=false,busy=false,revision=0;
  form.addEventListener('input',()=>{dirty=true;revision++;const q=form.querySelector('[data-campaign-queue]');if(q)q.disabled=true;});
