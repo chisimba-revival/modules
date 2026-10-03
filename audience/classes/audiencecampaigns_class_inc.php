@@ -21,7 +21,8 @@ class audiencecampaigns extends dbTable
  public function listing(){$this->store()->guard();return $this->store()->rows('SELECT id,subject,state,updated_at FROM tbl_audience_campaigns ORDER BY updated_at DESC LIMIT 50');}
  public function save($id,array $input){
   $this->store()->guard();$subject=trim($input['subject']??'');$body=trim($input['body']??'');$greeting=trim($input['greeting']??'');
-  if($subject===''||mb_strlen($subject)>240||strlen($body)>50000||mb_strlen($greeting)>500||preg_match('/[\r\n]/',$subject))throw new DomainException('invalid');
+  if($subject==='')throw new DomainException('subject_required');
+  if(mb_strlen($subject)>240||strlen($body)>50000||mb_strlen($greeting)>500||preg_match('/[\r\n]/',$subject))throw new DomainException('invalid');
   $id=$id?:($input['create_id']??'');if(!preg_match('/^[a-f0-9]{32}$/D',$id))throw new DomainException('invalid');
   $payload=['greeting'=>$greeting,'latest_recording'=>($input['latest_recording']??'')==='1','body'=>$body,'upcoming'=>($input['upcoming']??'')==='1','support'=>($input['support']??'')==='1','cursor'=>0];
   $payload['preview_html']=$this->composeHtml(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);

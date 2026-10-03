@@ -7,17 +7,24 @@
  if(panel){refreshProgress();setInterval(()=>{if(!document.hidden&&!busy)refreshProgress();},15000);}
  const feedback=form.querySelector('[data-campaign-feedback]');
  const report=message=>{status.textContent=message;if(feedback)feedback.textContent=message;};
+ const subject=form.elements.subject,subjectError=form.querySelector('[data-subject-error]');
+ const missingSubject=()=>{if(!subject||!subjectError)return;subjectError.hidden=false;subject.setAttribute('aria-invalid','true');report(subjectError.textContent);subject.focus();};
+ if(subject&&subjectError){
+  subject.addEventListener('invalid',e=>{if(!subject.value.trim()){e.preventDefault();missingSubject();}});
+  subject.addEventListener('input',()=>{if(subject.value.trim()){subjectError.hidden=true;subject.removeAttribute('aria-invalid');if(status.textContent===subjectError.textContent)report('');}});
+ }
  let dirty=false,busy=false,revision=0;
  form.addEventListener('input',()=>{dirty=true;revision++;const q=form.querySelector('[data-campaign-queue]');if(q)q.disabled=true;});
  window.addEventListener('beforeunload',e=>{if(dirty||busy){e.preventDefault();e.returnValue='';}});
  form.addEventListener('submit',async e=>{
+  if(subject&&!subject.disabled&&!e.submitter?.hasAttribute('formaction')&&!subject.value.trim()){e.preventDefault();missingSubject();return;}
   if(!window.fetch)return;e.preventDefault();if(busy)return;
   const button=e.submitter;if(button?.matches('[data-campaign-queue]')&&!window.confirm(form.dataset.confirm))return;
   const body=new FormData(form);body.set('ajax','1');const rev=revision;
   const controls=[...form.querySelectorAll('button')];const disabled=controls.map(b=>b.disabled);controls.forEach(b=>b.disabled=true);busy=true;form.setAttribute('aria-busy','true');report(form.dataset.saving);
   let result=null;const abort=new AbortController();const timer=setTimeout(()=>abort.abort(),30000);
   try{const res=await fetch(button?.hasAttribute('formaction')?button.formAction:form.action,{method:'POST',body,signal:abort.signal,credentials:'same-origin',headers:{Accept:'application/json'}});result=await res.json();if(result.csrf)form.elements.csrf_token.value=result.csrf;
-   if(!res.ok||!result.ok){report(result.message||form.dataset.failed);return;}
+   if(!res.ok||!result.ok){report(result.message||form.dataset.failed);if(result.error==='subject_required')missingSubject();return;}
    if(result.id)form.elements.id.value=result.id;if(result.version!==undefined){form.elements.version.value=result.version;form.elements.revision.value=result.version;}
    if(rev===revision)dirty=false;
    if(result.previewHtml!==undefined){const htmlPreview=form.querySelector('[data-audience-html-preview]');if(htmlPreview)htmlPreview.srcdoc=result.previewHtml;}

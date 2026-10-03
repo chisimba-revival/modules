@@ -25,13 +25,13 @@ class audience extends controller
     elseif($action==='queue')$record=$campaigns->queue($id,$input['version']);
     elseif($action==='cancel'){$campaigns->cancel($id,$input['version']);$record=$campaigns->one($id);}
     else $this->saveSettings($input);
-   }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','conflict','duplicate','consent_required','forbidden'],true)?$e->getMessage():'failed';}
+   }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','subject_required','conflict','duplicate','consent_required','forbidden'],true)?$e->getMessage():'failed';}
    catch(Throwable $e){$error='failed';}
   }
   $token=$this->csrf()->issue('audience-admin');
   if($write&&$this->param('ajax')==='1'){
    if($error!=='')http_response_code(422);header('Content-Type: application/json; charset=UTF-8');
-   $r=$this->getObject('audiencerenderer','audience');$data=['ok'=>$error==='','csrf'=>$token,'message'=>$r->text($error?:'saved')];
+   $r=$this->getObject('audiencerenderer','audience');$data=['ok'=>$error==='','error'=>$error,'csrf'=>$token,'message'=>$r->text($error?:'saved')];
    if($record){$data['id']=$record['id'];$data['version']=$record['version']??$record['revision'];$data['state']=$record['state'];$data['stateLabel']=$r->text($record['state']);if(isset($record['subject'])){$p=json_decode($record['payload'],true);$data['preview']=$p['rendered']??$campaigns->compose($record);$data['previewHtml']=$campaigns->composeHtml($record);$data['count']=count($p['recipients']??[]);if($action==='queue'&&$error==='')$data['message']=sprintf($r->text('queued_count'),$data['count']);if($action==='cancel'&&$error==='')$data['message']=$r->text('cancelled');}}
    echo json_encode($data,JSON_THROW_ON_ERROR);exit;
   }
