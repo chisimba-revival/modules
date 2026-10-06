@@ -5,6 +5,7 @@ $fields = array(
     'id' => array('type' => 'text','length' => 32,'notnull' => 1),
     'slug' => array('type' => 'text','length' => 190,'notnull' => 1),
     'title' => array('type' => 'text','length' => 250,'notnull' => 1),
+    'composition_json' => array('type'=>'clob'),
     'body_html' => array('type' => 'clob','notnull' => 1),
     'status' => array('type' => 'text','length' => 20,'notnull' => 1,'default' => 'draft'),
     'creatorid' => array('type' => 'text','length' => 32),

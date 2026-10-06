@@ -7,6 +7,6 @@ class helpcontent extends ChisimbaObject
         if (!$this->mayViewTopic($topicId)) return null;
         $language = $this->getObject('language', 'language');
         $text = fn($key) => $language->languageText('mod_kanban_help_'.$key, 'kanban');
-        return array('title'=>$text('title'), 'summary'=>$text('summary'), 'steps'=>array_map(fn($i)=>$text('step_'.$i),range(1,6)), 'sections'=>array(array('heading'=>$text('view_title'),'body'=>$text('view_body'))));
+        return array('title'=>$text('title'), 'summary'=>$text('summary'), 'steps'=>array_map(fn($i)=>$text('step_'.$i),range(1,6)), 'sections'=>array(array('heading'=>$text('view_title'),'body'=>$text('view_body')),array('heading'=>$text('subtasks_title'),'body'=>$text('subtasks_body'))));
     }
 }

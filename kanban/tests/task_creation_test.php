@@ -21,6 +21,12 @@ $_SERVER['REQUEST_METHOD'] = 'POST';
 $case = $argv[1];
 #[AllowDynamicProperties]
 class controller {
+    public function getObject($name,$module=null) { return new class {
+        public function languageText($key,$module) {
+            foreach(file(dirname(__DIR__).'/register.conf') as $line){$parts=explode('|',trim($line),3);if(($parts[0]??'')==='TEXT: '.$key)return $parts[2];}
+            return $key;
+        }
+    }; }
     public function getParam($name, $default='') {
         global $case;
         return array('response'=>'json', 'csrf_token'=>'old-token', 'scope'=>'personal', 'boardid'=>str_repeat('a',32), 'taskid'=>in_array($case,array('wrongboard','edit'),true)?str_repeat('c',32):'', 'title'=>$case==='title'?'':($case==='oversize'?str_repeat('x',256):'<script>alert(1)</script>'), 'description'=>'<img src=x onerror=alert(1)>', 'notes'=>'Meeting notes')[$name] ?? $default;

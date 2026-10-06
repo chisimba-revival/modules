@@ -1,2 +1,23 @@
-<?php $e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8'); ?>
-<main class="sitepages-view"><?php if(!empty($sitepagesMissing)):?><section class="sitepages-card"><h1><?= $e($sitepagesMissing) ?></h1></section><?php else:?><article class="sitepages-card sitepages-article"><h1><?= $e($sitepagesPage['title']) ?></h1><div class="sitepages-body"><?= $sitepagesPage['body_html'] ?></div></article><?php endif;?></main>
+<?php
+$e=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+if(empty($sitepagesMissing))foreach($this->getObject('pagemetadata','ui')->build($sitepagesPage['title'],$sitepagesPage['body_html'],($sitepagesPage['slug']==='home'?[]:['module'=>'sitepages','action'=>'view','slug'=>$sitepagesPage['slug']])) as $key=>$value)$this->setVar($key,$value);
+$hasComposition=!empty($sitepagesPage['composition_json']);
+?>
+<main class="chisimba-form-page">
+<?php if(!empty($sitepagesMissing)): ?>
+    <section class="chisimba-card"><h1><?= $e($sitepagesMissing) ?></h1></section>
+<?php else: ?>
+    <article class="<?= $hasComposition ? 'chisimba-composition-page' : 'chisimba-form-card chisimba-form-card--wide' ?>">
+        <header class="chisimba-page-heading">
+            <h1><?= $e($sitepagesPage['title']) ?></h1>
+            <?php if(!empty($sitepagesCanEdit)):
+                $editLabel=$this->getObject('language','language')->languageText('mod_sitepages_edit','sitepages').' '.$sitepagesPage['title'];
+                $editUrl=html_entity_decode($this->uri(['action'=>'manage','id'=>$sitepagesPage['id']],'sitepages'),ENT_QUOTES,'UTF-8');
+            ?>
+                <a class="chisimba-icon-button" href="<?= $e($editUrl) ?>" aria-label="<?= $e($editLabel) ?>" title="<?= $e($editLabel) ?>"><?= $this->getObject('iconservice','ui')->render('pencil',['decorative'=>true]) ?></a>
+            <?php endif; ?>
+        </header>
+        <div class="chisimba-flow<?= $hasComposition ? ' chisimba-content-cards' : '' ?>"><?= $sitepagesPage['body_html'] ?></div>
+    </article>
+<?php endif; ?>
+</main>

@@ -4,7 +4,7 @@ class kanban extends controller
 {
     public $user,$context,$boards,$tasks,$subtasks,$access,$auth,$service,$noteService,$csrf;
     const CSRF='kanban_mutation';
-    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink','connectnote');
+    private $mutations=array('saveproject','archiveproject','deleteproject','reorderprojects','savetask','deletetask','movetask','savesubtask','updatesubtask','togglesubtask','deletesubtask','saveaccess','savepubliclink','connectnote');
     public function init(){
         $this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');
         $this->boards=$this->getObject('dbkanbanboards');$this->tasks=$this->getObject('dbkanbantasks');$this->subtasks=$this->getObject('dbkanbansubtasks');$this->access=$this->getObject('dbkanbanaccess');
@@ -144,6 +144,20 @@ class kanban extends controller
             ||($_SERVER['HTTP_SEC_FETCH_SITE']??'')!=='same-origin'
             ||$this->param('actor')!==(string)$this->user->userId())return $this->json(false,'Sign in with the account that opened this board, then retry. Your text is kept.',403);
         return $this->json(true,'');
+    }
+    /** Rename a persisted subtask without trusting submitted board ownership. */
+    private function updatesubtask(){
+        $message=fn($key)=>html_entity_decode($this->getObject('language','language')->languageText('mod_kanban_subtask_'.$key,'kanban'),ENT_QUOTES|ENT_HTML5,'UTF-8');
+        $reply=function($ok,$key,$status=200,$extra=array())use($message){return $this->param('response')==='json'?$this->json($ok,$message($key),$status,$extra):$this->index($ok?$message($key):'',$ok?'':$message($key));};
+        if(!$this->validPost())return $reply(false,'verification',403);
+        $sub=$this->subtasks->one($this->id('subtaskid'));
+        $task=$sub?$this->tasks->one($sub['taskid']):false;
+        if(!$task||!$this->service->board($task['boardid'],'edit'))return $reply(false,'denied',403);
+        $title=$this->param('title');
+        if($title==='')return $reply(false,'required',422);
+        $result=$this->subtasks->renameSubtask($sub['id'],$this->param('original_title'),$title);
+        if($result!=='saved')return $reply(false,$result==='conflict'?'conflict':'failed',$result==='conflict'?409:500);
+        return $reply(true,'saved',200,array('subtask'=>array('id'=>$sub['id'],'title'=>$title)));
     }
     private function validPost(){return strtoupper((string)($_SERVER['REQUEST_METHOD']??''))==='POST'&&($this->param('actor')===''||$this->param('actor')===(string)$this->user->userId())&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function forbidden(){http_response_code(403);return $this->index('','You do not have permission for that board.');}

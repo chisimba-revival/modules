@@ -1,5 +1,4 @@
 <?php
-$css=htmlspecialchars($this->getResourceUri('sitepages.css','sitepages'),ENT_QUOTES,'UTF-8');
-$this->appendArrayVar('headerParams','<link rel="stylesheet" href="'.$css.'">');
+/** Shared skin owns page layout and components. */
 echo $this->getContent();
 ?>

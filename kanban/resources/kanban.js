@@ -12,6 +12,7 @@
             if (!names.length) return;
             var action = new URL(form.action, location.href).searchParams.get('action');
             var identity = ['boardid', 'taskid'].map(function (name) { return form.elements.namedItem(name)?.value || ''; });
+            if (form.elements.namedItem('subtaskid')) identity.push(form.elements.subtaskid.value);
             drafts.set(form, window.ChisimbaFormDrafts.attach(form, {
                 key: JSON.stringify([location.pathname, root.dataset.actor, root.dataset.draftScope, action, identity]),
                 fields: names, messages: messages,
@@ -71,13 +72,18 @@
     if (fullscreenButton && root.requestFullscreen) {
         var updateFullscreenButton = function (active) {
             fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
-            fullscreenButton.setAttribute('aria-label', active ? 'Exit full screen' : 'Enter full screen');
-            fullscreenButton.setAttribute('title', active ? 'Exit full screen' : 'Enter full screen');
-            fullscreenButton.textContent = active ? 'Exit full screen' : 'Full screen';
+            var label = active ? fullscreenButton.dataset.exitLabel : fullscreenButton.dataset.enterLabel;
+            fullscreenButton.setAttribute('aria-label', label);
+            fullscreenButton.querySelector('[data-fullscreen-label]').textContent = label;
         };
         fullscreenButton.addEventListener('click', function () {
-            if (document.fullscreenElement) document.exitFullscreen().then(function () { updateFullscreenButton(false); });
-            else root.requestFullscreen().then(function () { updateFullscreenButton(true); });
+            var feedback = root.querySelector('[data-fullscreen-feedback]');
+            feedback.hidden = true;
+            var operation = document.fullscreenElement ? document.exitFullscreen() : root.requestFullscreen();
+            operation.catch(function () {
+                updateFullscreenButton(document.fullscreenElement === root);
+                feedback.hidden = false;
+            });
         });
         document.addEventListener('fullscreenchange', function () {
             updateFullscreenButton(Boolean(document.fullscreenElement));
@@ -88,6 +94,22 @@
     var focusWasCollapsed = false;
     var focusScroll = 0;
     var hiddenNeighbours = [];
+    var boardsSurface = root.querySelector('[data-boards-surface]');
+    var boardsFocusButton = root.querySelector('[data-boards-focus]');
+    var boardsFocusToolbar = root.querySelector('[data-boards-focus-toolbar]');
+    // Both focus modes use the same surface/inert lifecycle, never duplicate forms.
+    function isolateSurface(surface) {
+        for (var current = surface; current.parentElement; current = current.parentElement) {
+            Array.from(current.parentElement.children).forEach(function (sibling) {
+                if (sibling === current || sibling.tagName === 'SCRIPT' || sibling.tagName === 'STYLE') return;
+                hiddenNeighbours.push({element:sibling, inert:sibling.inert});
+                sibling.inert = true;
+            });
+            if (current.parentElement === document.body) break;
+        }
+        surface.classList.add('chisimba-focus-surface--active');
+        document.body.classList.add('chisimba-focus-open');
+    }
     function exitProjectFocus() {
         if (!focusedBoard) return;
         var board = focusedBoard;
@@ -96,8 +118,17 @@
         document.body.classList.remove('chisimba-focus-open');
         hiddenNeighbours.forEach(function (item) { item.element.inert = item.inert; });
         hiddenNeighbours = [];
+        if (board === boardsSurface) {
+            boardsFocusToolbar.hidden = true;
+            root.querySelectorAll('[data-board-focus]').forEach(function (button) { button.hidden = false; });
+            boardsFocusButton.setAttribute('aria-pressed', 'false');
+            window.scrollTo(0, focusScroll);
+            boardsFocusButton.focus({preventScroll:true});
+            return;
+        }
         setCollapsed(board, focusWasCollapsed);
-        board.querySelector('[data-board-toggle]').disabled = false;
+        board.querySelector('[data-board-toggle]').hidden = false;
+        board.querySelector('[data-tasks-toggle]').hidden = true;
         var button = board.querySelector('[data-board-focus]');
         button.setAttribute('aria-pressed', 'false');
         button.querySelector('[data-board-focus-label]').textContent = button.dataset.enterLabel;
@@ -114,22 +145,29 @@
             focusScroll = window.scrollY;
             setCollapsed(board, false);
             // Keep the same DOM and forms, and remove hidden surroundings from keyboard navigation.
-            for (var current = board; current.parentElement; current = current.parentElement) {
-                Array.from(current.parentElement.children).forEach(function (sibling) {
-                    if (sibling === current || sibling.tagName === 'SCRIPT' || sibling.tagName === 'STYLE') return;
-                    hiddenNeighbours.push({element:sibling, inert:sibling.inert});
-                    sibling.inert = true;
-                });
-                if (current.parentElement === document.body) break;
-            }
-            board.classList.add('chisimba-focus-surface--active');
-            document.body.classList.add('chisimba-focus-open');
-            board.querySelector('[data-board-toggle]').disabled = true;
+            isolateSurface(board);
+            board.querySelector('[data-board-toggle]').hidden = true;
+            board.querySelector('[data-tasks-toggle]').hidden = false;
+            updateTasksToggle(board);
             button.setAttribute('aria-pressed', 'true');
             button.querySelector('[data-board-focus-label]').textContent = button.dataset.exitLabel;
             button.focus({preventScroll:true});
         });
     });
+    if (boardsFocusButton && boardsSurface && boardsFocusToolbar) {
+        boardsFocusButton.hidden = false;
+        boardsFocusButton.addEventListener('click', function () {
+            if (focusedBoard) return;
+            focusedBoard = boardsSurface;
+            focusScroll = window.scrollY;
+            boardsFocusToolbar.hidden = false;
+            root.querySelectorAll('[data-board-focus]').forEach(function (button) { button.hidden = true; });
+            boardsFocusButton.setAttribute('aria-pressed', 'true');
+            isolateSurface(boardsSurface);
+            boardsFocusToolbar.querySelector('button').focus({preventScroll:true});
+        });
+        boardsFocusToolbar.querySelector('button').addEventListener('click', exitProjectFocus);
+    }
     document.addEventListener('keydown', function (event) {
         // Let a modal editor handle its own Escape before leaving the project.
         if (event.key === 'Escape' && focusedBoard && !document.querySelector('dialog[open]')) {
@@ -137,6 +175,14 @@
             exitProjectFocus();
         }
     });
+
+    function updateTasksToggle(board) {
+        var button = board.querySelector('[data-tasks-toggle]');
+        var tasks = Array.from(board.querySelectorAll('.kanban-task'));
+        var collapsed = tasks.length > 0 && tasks.every(function (task) { return task.classList.contains('is-collapsed'); });
+        button.disabled = !tasks.length;
+        button.querySelector('[data-tasks-toggle-label]').textContent = collapsed ? button.dataset.expandLabel : button.dataset.collapseLabel;
+    }
 
     document.addEventListener('submit', function (event) {
         if (!root.contains(event.target)) return;
@@ -149,6 +195,10 @@
         if (!event.defaultPrevented && event.target.matches('[data-subtask-create]')) {
             event.preventDefault();
             createSubtask(event.target);
+        }
+        if (!event.defaultPrevented && event.target.matches('[data-subtask-edit]')) {
+            event.preventDefault();
+            editSubtask(event.target);
         }
         if (!event.defaultPrevented && event.target.matches('[data-task-move]')) {
             event.preventDefault();
@@ -187,6 +237,31 @@
         }
     });
     root.addEventListener('click', function (event) {
+        var tasksToggle = event.target.closest('[data-tasks-toggle]');
+        if (tasksToggle) {
+            var project = tasksToggle.closest('.kanban-board');
+            var tasks = Array.from(project.querySelectorAll('.kanban-task'));
+            var collapse = tasks.some(function (task) { return !task.classList.contains('is-collapsed'); });
+            tasks.forEach(function (task) {
+                setTaskCollapsed(task, collapse);
+                try { sessionStorage.setItem('kanban:task-collapsed:' + task.dataset.taskId, collapse ? '1' : '0'); } catch (error) {}
+            });
+            updateTasksToggle(project);
+            return;
+        }
+        var cancelSubtask = event.target.closest('[data-subtask-cancel]');
+        if (cancelSubtask) {
+            var subtaskForm = cancelSubtask.closest('form');
+            if (subtaskForm.dataset.saving === 'true') return;
+            subtaskForm.elements.title.value = subtaskForm.elements.original_title.value;
+            if (drafts.has(subtaskForm)) drafts.get(subtaskForm).reset();
+            var subtaskFeedback = subtaskForm.querySelector('[data-subtask-edit-feedback]');
+            subtaskFeedback.textContent = ''; subtaskFeedback.hidden = true;
+            var subtaskEditor = subtaskForm.closest('details');
+            subtaskEditor.open = false;
+            subtaskEditor.querySelector('summary').focus({preventScroll:true});
+            return;
+        }
         var noteLink = event.target.closest('[data-note-open]');
         if (noteLink) {
             event.preventDefault();
@@ -198,6 +273,7 @@
             var task = taskToggle.closest('.kanban-task');
             var taskCollapsed = !task.classList.contains('is-collapsed');
             setTaskCollapsed(task, taskCollapsed);
+            updateTasksToggle(task.closest('.kanban-board'));
             try { sessionStorage.setItem('kanban:task-collapsed:' + task.dataset.taskId, taskCollapsed ? '1' : '0'); }
             catch (error) { /* Keep the control usable without storage. */ }
             return;
@@ -376,16 +452,23 @@
         feedback.textContent = 'Adding subtask…';
         post(form.action, data, function (result) {
             if (!result.subtask || !result.subtask.id) throw new Error('Missing saved subtask');
-            var label = document.createElement('label');
-            label.className = 'kanban-subtask';
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
+            if (!/^[a-f0-9]{32}$/.test(result.subtask.id)) throw new Error('Invalid subtask identity');
+            var template = document.createElement('template');
+            template.innerHTML = container.querySelector('[data-subtask-row-template]').innerHTML.replaceAll('__SUBTASK__', result.subtask.id);
+            var row = template.content.querySelector('[data-subtask-row]');
+            var checkbox = row.querySelector('[data-subtask-id]');
             checkbox.dataset.subtaskId = result.subtask.id;
             checkbox.checked = Boolean(result.subtask.completed);
-            var text = document.createElement('span');
+            var text = row.querySelector('[data-subtask-title]');
             text.textContent = result.subtask.title;
-            label.append(checkbox, text);
-            container.insertBefore(label, form);
+            var editor = row.querySelector('[data-subtask-edit]');
+            editor.elements.title.value = result.subtask.title;
+            editor.elements.original_title.value = result.subtask.title;
+            var summary = row.querySelector('summary');
+            summary.setAttribute('aria-label', summary.dataset.editLabel + ': ' + result.subtask.title);
+            container.insertBefore(row, form);
+            refreshTokens();
+            prepareDrafts();
             form.reset();
             if (drafts.has(form)) drafts.get(form).reset();
             feedback.textContent = 'Added “' + title + '”.';
@@ -396,6 +479,34 @@
             delete form.dataset.saving;
             form.removeAttribute('aria-busy');
             form.elements.title.focus({preventScroll: true});
+        });
+    }
+
+    /** Rename only the selected subtask, retaining drafts and completion state. */
+    function editSubtask(form) {
+        if (form.dataset.saving === 'true') return;
+        var data = new URLSearchParams(new FormData(form));
+        var draft = drafts.get(form);
+        if (draft) draft.persist();
+        var feedback = form.querySelector('[data-subtask-edit-feedback]');
+        var controls = Array.from(form.querySelectorAll('input, button'));
+        var disabled = controls.map(function (control) { return control.disabled; });
+        form.dataset.saving = 'true'; form.setAttribute('aria-busy', 'true');
+        controls.forEach(function (control) { control.disabled = true; });
+        feedback.hidden = false; feedback.textContent = messages.saving;
+        post(form.action, data, function (result) {
+            if (!result.subtask || result.subtask.id !== data.get('subtaskid')) throw new Error('Missing saved subtask');
+            var row = form.closest('[data-subtask-row]');
+            row.querySelector('[data-subtask-title]').textContent = result.subtask.title;
+            form.elements.title.value = result.subtask.title;
+            form.elements.original_title.value = result.subtask.title;
+            var summary = row.querySelector('summary');
+            summary.setAttribute('aria-label', summary.dataset.editLabel + ': ' + result.subtask.title);
+            if (draft) draft.reset();
+            feedback.textContent = result.message;
+        }, function (message) { feedback.textContent = message; }).finally(function () {
+            controls.forEach(function (control, index) { control.disabled = disabled[index]; });
+            delete form.dataset.saving; form.removeAttribute('aria-busy');
         });
     }
 
@@ -573,7 +684,7 @@
         actions.querySelectorAll('[data-task-move]').forEach(function (form) { form.remove(); });
         var statuses = ['not_started', 'in_progress', 'completed'];
         var current = statuses.indexOf(status);
-        [{label: 'right', index: current + 1}, {label: 'left', index: current - 1}].forEach(function (move) {
+        [{label: 'left', index: current - 1}, {label: 'right', index: current + 1}].forEach(function (move) {
             if (!statuses[move.index]) return;
             var form = document.createElement('form');
             form.method = 'post';
@@ -591,7 +702,7 @@
             button.type = 'submit';
             button.textContent = 'Move ' + move.label;
             form.appendChild(button);
-            actions.insertBefore(form, actions.firstChild);
+            actions.insertBefore(form, actions.querySelector('[data-task-delete]'));
         });
     }
 

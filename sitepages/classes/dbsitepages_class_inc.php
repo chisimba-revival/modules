@@ -22,19 +22,31 @@ class dbsitepages extends dbTable
     {
         return $this->getAll("WHERE status<>'archived' ORDER BY title ASC");
     }
+    public static function version(array $row)
+    {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}
     public function savePage(array $data, $userId, $id = '')
+    {
+        $expected=$data['_expected_version']??null;unset($data['_expected_version']);
+        $db=$this->objEngine->getDbObj();$begin=$db->exec('START TRANSACTION');if(PEAR::isError($begin))throw new RuntimeException('failed');
+        try {
+            if($id!==''&&$expected!==null){$rows=$this->getArray('SELECT * FROM tbl_sitepages WHERE id='.$db->quote($id).' FOR UPDATE');if(!$rows||!hash_equals(self::version($rows[0]),$expected))throw new DomainException('conflict');}
+            $row=$this->persistPage($data,$userId,$id);if(!$row)throw new RuntimeException('failed');
+            $commit=$db->exec('COMMIT');if(PEAR::isError($commit))throw new RuntimeException('failed');return $row;
+        }catch(Throwable $error){$db->exec('ROLLBACK');throw $error;}
+    }
+    private function persistPage(array $data, $userId, $id = '')
     {
         $now = date('Y-m-d H:i:s');
         if ($id !== '') {
             if (!$this->find($id)) return false;
             $data['modifierid'] = $userId;
             $data['datemodified'] = $now;
-            $this->update('id', $id, $data);
+            if($this->update('id', $id, $data)===false)return false;
             return $this->find($id);
         }
         $id = md5(uniqid((string)mt_rand(), true));
         $data += array('id'=>$id,'creatorid'=>$userId,'modifierid'=>$userId,'datecreated'=>$now,'datemodified'=>$now);
-        $this->insert($data);
+        if($this->insert($data)===false)return false;
         return $this->find($id);
     }
     public function archive($id, $userId)

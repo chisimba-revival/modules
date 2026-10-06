@@ -187,3 +187,8 @@ what remains unverified, and any coordinated framework/schema changes. Keep
 commits scoped and state the branch. Local testing/update does not imply production
 deployment permission; honour the user's authorised site and scope. Do not merge
 unrelated feature work merely to share documentation or one fix.
+
+Sites share one versioned codebase; site differences belong in configuration,
+branding and content. Audit deployed source drift before release, reconcile
+newer shared fixes into source, and verify a common manifest. Do not preserve
+site-only module variants or overwrite newer deployed fixes blindly.
