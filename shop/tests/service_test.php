@@ -47,3 +47,12 @@ try{$s->fulfil($mi);throw new LogicException('Expected queue failure');}catch(Ru
 $assert($store->one('books',$id)['stock']===$stockBefore-1,'Email failure does not roll back confirmed stock');
 $mail->fail=false;$s->fulfil($mi);$assert($store->one('books',$id)['stock']===$stockBefore-1,'Email retry cannot double deduct stock');
 echo "PASS: $count shop permissions, stock, snapshots, idempotency and fulfilment checks\n";
+
+$beforeBook=$store->one('books',$id);$beforeOrders=$store->rows('orders');
+$user->admin=false;$reject(fn()=>$s->archiveBook(['id'=>$id,'revision'=>$beforeBook['revision']]),'forbidden');$user->admin=true;
+$reject(fn()=>$s->archiveBook(['id'=>$id,'revision'=>0]),'changed_elsewhere');
+$archived=$s->archiveBook(['id'=>$id,'revision'=>$beforeBook['revision']]);
+$assert($archived['status']==='archived' && $s->book($id)===null,'Archive hides product from public purchases');
+$assert($archived['stock']===$beforeBook['stock'] && $store->rows('orders')===$beforeOrders,'Archive preserves stock and every existing order');
+$assert($s->book($id,true)['status']==='archived','Managers retain access for restoration');
+echo "PASS: archive permissions, stale revision, public visibility and order preservation\n";

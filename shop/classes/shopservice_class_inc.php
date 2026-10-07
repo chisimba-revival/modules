@@ -181,6 +181,19 @@ class shopservice extends ChisimbaObject
         $book = $this->store->one('books', $id);
         return $book && ($managed || $book['status'] === 'published') ? $this->pricedBook($book) : null;
     }
+    /** Stop new purchases while retaining products referenced by existing orders. */
+    public function archiveBook(array $input)
+    {
+        $this->requireManager();
+        return $this->store->transaction(function () use ($input) {
+            $id = $this->id($input['id'] ?? '');
+            $book = $this->store->one('books', $id);
+            if (!$book) throw new DomainException('book_unavailable');
+            $this->revision($input, $book);
+            if ($book['status'] !== 'archived') $this->store->save('books', $id, ['status'=>'archived', 'revision'=>(int)$book['revision'] + 1]);
+            return $this->store->one('books', $id);
+        });
+    }
     public function saveBook(array $input)
     {
         $this->requireManager();

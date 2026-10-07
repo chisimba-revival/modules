@@ -10,7 +10,7 @@ class shop extends controller
         $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
     public function requiresLogin($action)
-    { return in_array($action, ['sales','editsale','savesale','stopsale','manage','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
+    { return in_array($action, ['sales','editsale','savesale','stopsale','manage','archiveconfirm','archivebook','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
     private function param($key) { $value = $this->getParam($key, ''); return is_string($value) ? $value : ''; }
     private function input()
     {
@@ -166,7 +166,16 @@ class shop extends controller
             case 'stopsale':
                 $this->post(); $this->service->stopSale($this->input()); $this->redirect('sales'); break;
             case 'manage':
-                $this->setVar('shopBooks', $this->service->books(true)); return 'manage_tpl.php';
+                $all = $this->param('archived') === '1';
+                $books = $this->service->books(true);
+                $this->setVar('shopShowArchived', $all);
+                $this->setVar('shopBooks', $all ? $books : array_values(array_filter($books, fn($book) => $book['status'] !== 'archived'))); return 'manage_tpl.php';
+            case 'archiveconfirm':
+                $book = $this->service->book($this->param('id'), true);
+                if (!$book) throw new DomainException('book_unavailable');
+                $this->setVar('shopBook', $book); return 'archive_tpl.php';
+            case 'archivebook':
+                $this->post(); $this->service->archiveBook($this->input()); $this->redirect('manage'); break;
             case 'edit':
                 $this->service->requireManager();
                 $this->setVar('shopBooks',$this->service->books(true));
