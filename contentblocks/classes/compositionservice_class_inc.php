@@ -161,10 +161,11 @@ class compositionservice extends ChisimbaObject
         if(count($blocks)>50)throw new DomainException('invalid');return $blocks;
     }
 
-    private function figure(array $block)
+    private function figure(array $block, array $badges = [])
     {
         if($block['url']==='')return '';
-        return '<figure><img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy">'
+        return '<figure>'.($badges ? '<div class="chisimba-media-badged">' : '').'<img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy">'
+            .($badges ? '<span class="chisimba-media-badged__labels">'.implode('', array_map(fn($label) => '<span class="chisimba-status-badge">'.self::escape($label).'</span>', $badges)).'</span></div>' : '')
             .($block['caption']!==''?'<figcaption>'.self::escape($block['caption']).'</figcaption>':'').'</figure>';
     }
 
@@ -195,11 +196,16 @@ class compositionservice extends ChisimbaObject
             $text=$block['text'];
             if(str_contains($text,'class="chisimba-social-links"'))$text=$this->getObject('sociallinksrenderer','contentblocks')->render($text);
             $copy=($block['title']!==''?'<h2>'.self::escape($block['title']).'</h2>':'').$text;
+            $badges = [];
             foreach ($block['attachments']??[] as $key=>$data) {
                 $provider=$this->attachments[$key];
                 $copy.=$interactive?$provider->renderBlock($data):$provider->previewBlock($data);
+                if ($interactive && is_callable([$provider, 'mediaBadge'])) {
+                    $label = $provider->mediaBadge($data);
+                    if (is_string($label) && $label !== '') $badges[] = $label;
+                }
             }
-            $image=$this->figure($block);$body='';
+            $image=$this->figure($block, $badges);$body='';
             if(in_array($block['type'],['hero','reverse_hero'],true) && $block['button_label']!=='' && $block['button_url']!=='') {
                 $button='<a class="button chisimba-button-primary" href="'.self::escape($block['button_url']).'">'.self::escape($block['button_label']).'</a>';
                 if($block['button_position']==='text'||$block['url']==='')$copy.='<div class="chisimba-form-actions">'.$button.'</div>';

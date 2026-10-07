@@ -33,6 +33,13 @@ class productbuttons extends ChisimbaObject
         if ($selected!==''&&!$found) $html.='<option selected value="'.$e($selected).'">'.$e($shop->text('book_unavailable')).'</option>';
         return $html.'</select><p>'.$e($shop->text('purchase_buttons_help')).'</p></div>';
     }
+    /** Plain text for the composition service's shared image badge. */
+    public function mediaBadge($data)
+    {
+        $shop = $this->getObject('shopservice', 'shop');
+        $book = empty($data['product_id']) ? null : $shop->book($data['product_id']);
+        return $book && $book['sale_price_minor'] !== null ? $shop->text('sale_badge') : '';
+    }
     public function renderBlock($data)
     {
         if (empty($data['product_id'])) return '';

@@ -1,6 +1,7 @@
 <?php
 /** Public shopping and private order operations. @author Derek Keats <derek@dkeats.com> */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
+require_once __DIR__.'/classes/shopcartsession.php';
 class shop extends controller
 {
     private $service; private $csrf;
@@ -26,7 +27,15 @@ class shop extends controller
     private function redirect($action, array $params = [])
     { header('Location: ' . $this->service->url($action, $params), true, 303); exit; }
     private function cart()
-    { return ShopRules::cart(is_array($_SESSION['shop_cart'] ?? null) ? $_SESSION['shop_cart'] : []); }
+    {
+        // Webhooks can confirm payment after the customer closes the return page.
+        foreach ($_SESSION['shop_checkouts'] ?? [] as $id => $checkout) {
+            if (!$checkout['cart']) continue;
+            $order = $this->service->order($this->service->token($id));
+            ShopCartSession::paid($_SESSION, $order);
+        }
+        return ShopRules::cart(is_array($_SESSION['shop_cart'] ?? null) ? $_SESSION['shop_cart'] : []);
+    }
     private function throttle()
     {
         $abuse = $this->getObject('nativeauthwebcomposition', 'security')->build()['abuse'];
@@ -55,7 +64,7 @@ class shop extends controller
             if (in_array($action,['savesale','stopsale'],true) && $this->service->canManage()) { $this->setVar('shopSale',$this->service->sale()); $this->setVar('shopSaleEditing',true); $this->setVar('shopBooks',$this->service->books(true)); $template='sales_tpl.php'; }
             if ($action === 'savebook' && $this->service->canManage()) { $this->setVar('shopBooks',$this->service->books(true)); $this->setVar('shopBook', $this->input()); $template = 'editor_tpl.php'; }
             if ($action === 'savesettings' && $this->service->canManage()) { $this->setVar('shopSettings', $this->service->settings()); $template = 'settings_tpl.php'; }
-            if (in_array($action,['prepare','acceptcombo'],true)) {
+            if (in_array($action,['prepare','acceptcombo','pageadd','add'],true)) {
                 try { $template = $this->cartPage(); } catch (DomainException $ignored) { /* Draft is still displayed by the error template. */ }
             }
         } catch (Throwable $error) {
@@ -109,7 +118,7 @@ class shop extends controller
                 header('Location: '.ShopRules::returnPath($this->param('return_url')).'#shop-product-'.$id,true,303);exit;
             case 'add':
             case 'updatecart':
-                $this->post(); $cart = $this->cart();
+                $this->post(); $cart = $this->cart(); $before = $cart;
                 if ($action === 'add') {
                     $id = $this->param('id'); if (!$this->service->book($id)) throw new DomainException('book_unavailable');
                     $cart[$id] = ($cart[$id] ?? 0) + ShopRules::integer($this->param('quantity'), 1, ShopRules::MAX_QUANTITY);
@@ -122,12 +131,15 @@ class shop extends controller
                         if ($remove !== '') unset($cart[$remove]);
                     }
                 }
+                if ($action === 'updatecart') ShopCartSession::edited($_SESSION, $before, $cart);
                 if (!$cart) unset($_SESSION['shop_offer_seen']);
                 $_SESSION['shop_cart'] = ShopRules::cart($cart); unset($_SESSION['shop_request']); $this->redirect('cart');
                 break;
             case 'acceptcombo':
                 $this->post();
-                $_SESSION['shop_cart']=$this->service->acceptCombo($this->cart(),$this->param('id'),$this->param('before_hash'),$this->param('after_hash'));
+                $before = $this->cart();
+                $_SESSION['shop_cart']=$this->service->acceptCombo($before,$this->param('id'),$this->param('before_hash'),$this->param('after_hash'));
+                ShopCartSession::edited($_SESSION, $before, $_SESSION['shop_cart']);
                 unset($_SESSION['shop_request']); $this->redirect('cart'); break;
             case 'cart': return $this->cartPage();
             case 'prepare':
@@ -135,6 +147,7 @@ class shop extends controller
                 $key = $this->param('request_key');
                 if (!isset($_SESSION['shop_request']) || !hash_equals($_SESSION['shop_request'], $key)) throw new DomainException('session_expired');
                 $order = $this->service->prepare($this->cart(), $this->input(), $key);
+                ShopCartSession::remember($_SESSION, $order, $this->cart());
                 $this->redirect('order', ['token' => $this->service->token($order['id'])]); break;
             case 'checkout':
                 $this->post(); $url = $this->service->checkout($this->param('token')); header('Location: ' . $url, true, 303); exit;
@@ -157,6 +170,7 @@ class shop extends controller
                     try { $order = $this->service->reconcile($this->param('token')); }
                     catch (Throwable $error) { error_log('Shop payment confirmation temporarily unavailable'); }
                 }
+                ShopCartSession::paid($_SESSION, $order);
                 $this->setVar('shopOrder', $order); $this->setVar('shopToken', $this->param('token')); return 'order_tpl.php';
             case 'editsale':
             case 'sales':

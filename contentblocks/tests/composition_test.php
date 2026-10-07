@@ -54,6 +54,7 @@ $s->registerAttachment('fixture',new class {
  function editBlock($prefix,$data){return '';}
  function renderBlock($data){return '<form>Live purchase</form>';}
  function previewBlock($data){return '<p>Purchase preview</p>';}
+ function mediaBadge($data){return 'Sale <safe>'; }
 });
 $right['attachments']=['fixture'=>['id'=>'example']];
 check(str_contains($s->validate([$right])[0]['attachments']['fixture']['id'],'example'),'Attachment retained');
@@ -64,3 +65,10 @@ echo "PASS: optional attachments persist, render live in cards and preview witho
 $cta['button_url']='#shop-product-abc';check(str_contains($s->render([$cta]),'href="#shop-product-abc"'),'Local anchor CTA');
 $cta['button_url']='#bad" onclick="x';rejects(fn()=>$s->validate([$cta]));
 $cta['button_url']='';$cta['url']='#image';rejects(fn()=>$s->validate([$cta]));
+
+foreach (['image_left','image_right'] as $type) {
+ $right['type']=$type;$html=$s->renderCards([$right]);
+ check(str_contains($html,'chisimba-media-badged__labels')&&str_contains($html,'Sale &lt;safe&gt;'),'Escaped badge rendered on '.$type);
+ check(!str_contains($s->render([$right]),'chisimba-media-badged'),'Dynamic badge never stored in page preview');
+}
+echo "PASS: attachment image badges on both layouts, escaped and public-only\n";

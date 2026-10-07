@@ -27,6 +27,7 @@ $csrf=new class($case) {
 };
 $shop=new shop;
 foreach(['service'=>$service,'csrf'=>$csrf] as $name=>$value){$p=new ReflectionProperty(shop::class,$name);$p->setValue($shop,$value);}
+$_SESSION=[];
 $_POST=['token'=>'fixture','csrf_token'=>'fixture'];$_SERVER['REQUEST_METHOD']='POST';
 $invalid=false;
 register_shutdown_function(function()use($service,$case,&$invalid,$shop){
