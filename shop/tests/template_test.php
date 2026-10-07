@@ -60,3 +60,9 @@ if(!str_contains($html,'Saved sale QA')||!str_contains($html,'action=editsale')|
 $data['shopSaleEditing']=true;$html=$host->render('sales_tpl.php',$data);
 if(!str_contains($html,'value="Saved sale QA"')||!str_contains($html,'action=savesale'))throw new RuntimeException('Edit must retain saved sale');
 echo "PASS: saved disabled sale summary and prefilled edit\n";
+
+$archived=$book;$archived['id']=str_repeat('f',32);$archived['title']='Archived checkout fixture';$archived['status']='archived';
+$data['shopBooks'][]=$archived;$data['shopSale']['book_ids']=[$archived['id']];
+$html=$host->render('sales_tpl.php',$data);
+if(str_contains($html,'Archived checkout fixture')||str_contains($html,'value="'.$archived['id'].'"'))throw new RuntimeException('Archived product offered in sale editor');
+echo "PASS: archived products absent from sale options and price previews\n";

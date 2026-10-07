@@ -2,13 +2,16 @@
 require __DIR__.'/common.php';
 $sale=$shopDraft?:$shopSale;
 $localDate=static fn($stamp)=>$stamp?(new DateTimeImmutable('@'.$stamp))->setTimezone(new DateTimeZone('Africa/Johannesburg'))->format('Y-m-d\TH:i'):'';
-$selected=$sale['book_ids']??[];
+// Archived products are retained for order history, never offered in a promotion.
+$shopBooks=array_values(array_filter($shopBooks,fn($book)=>$book['status']!=='archived'));
+$availableIds=array_column($shopBooks,'id');
+$selected=array_values(array_intersect($sale['book_ids']??[],$availableIds));
 ?>
 <main class="chisimba-workspace chisimba-stack">
 <header class="chisimba-cluster"><h1><?=$t('sales')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','sales',true)?></header>
 <?php if ($shopSale['revision']): ?>
 <section class="chisimba-form-card chisimba-form-card--wide chisimba-flow">
-<h2><?=$esc($shopSale['title'])?></h2><p><strong><?=$t($shopService->saleStatus($shopSale))?></strong> · <?=$esc($shopSale['percent'])?>% · <?=$esc(count($shopSale['book_ids']))?> <?=$t('sale_selected_books')?></p>
+<h2><?=$esc($shopSale['title'])?></h2><p><strong><?=$t($shopService->saleStatus($shopSale))?></strong> · <?=$esc($shopSale['percent'])?>% · <?=$esc(count(array_intersect($shopSale['book_ids'],$availableIds)))?> <?=$t('sale_selected_books')?></p>
 <p><?=$t('saved_sale_help')?></p><a class="button" href="<?=$url('editsale')?>"><?=$actionIcon('edit')?> <?=$t('edit_sale')?></a>
 </section>
 <?php else: ?><p><?=$t('sale_intro')?></p><?php endif; ?>

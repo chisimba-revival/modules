@@ -71,7 +71,11 @@ class shopservice extends ChisimbaObject
             $ids=$input['book_ids']??[];
             if (!is_array($ids) || count($ids)>500) throw new DomainException('invalid_sale_books');
             $ids=array_values(array_unique($ids));
-            foreach ($ids as $id) if (!is_string($id) || !$this->store->one('books', $this->id($id))) throw new DomainException('invalid_sale_books');
+            foreach ($ids as $id) {
+                if (!is_string($id)) throw new DomainException('invalid_sale_books');
+                $book=$this->store->one('books', $this->id($id));
+                if (!$book || $book['status']==='archived') throw new DomainException('invalid_sale_books');
+            }
             $starts=ShopSaleRules::timestamp($input['starts_at']??''); $ends=ShopSaleRules::timestamp($input['ends_at']??'');
             if ($ends <= $starts) throw new DomainException('invalid_sale_dates');
             $enabled=($input['enabled']??'')==='1';

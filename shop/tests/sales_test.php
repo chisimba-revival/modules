@@ -32,3 +32,9 @@ rejects(fn()=>$s->saveSale(array_replace($input,['revision'=>2,'percent'=>'100']
 rejects(fn()=>$s->saveSale(array_replace($input,['revision'=>2,'image_url'=>'https://evil.test/cover.jpg'])),'invalid_image');
 check($store->one('settings','shop')['revision']===1,'Sale does not rewrite shipping settings');
 echo "PASS: sale permissions, selections, scheduled boundaries, rounding, snapshots, stale prices, stop and regular-price preservation\n";
+
+$store->save('books',$other,['status'=>'archived']);
+rejects(fn()=>$s->saveSale(array_replace($input,['revision'=>2,'book_ids'=>[$other]])),'invalid_sale_books');
+$archived=$store->one('books',$other);
+check(ShopSaleRules::price($archived,array_replace($sale,['book_ids'=>[$other]]),$now)===null,'Archived book never receives actual sale price');
+echo "PASS: archived products rejected from promotions\n";
