@@ -106,6 +106,7 @@ class compositioneditor extends ChisimbaObject
                 }
                 $html.=$this->button('slide:'.$id,'add_slide','plus');
             }
+            if (in_array($type,['text','image_left','image_right','hero','reverse_hero'],true)) foreach ($s->attachments() as $key=>$attachment) $html.=$attachment->editBlock($prefix.'[attachments]['.$key.']',$block['attachments'][$key]??[]);
             $html.=$insertAfter.'</section>';
         }
         if($showPalette)$html.=$this->palette();

@@ -4,6 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class compositionservice extends ChisimbaObject
 {
     private $extensions=[];
+    private $attachments=[];
     public function init() {}
 
     /** Trusted modules register new block providers; requests never name executable classes. */
@@ -13,6 +14,14 @@ class compositionservice extends ChisimbaObject
         foreach(['label','validateBlock','renderBlock','editBlock'] as $method)if(!is_callable([$provider,$method]))throw new InvalidArgumentException('Incomplete block provider');
         $this->extensions[$key]=['icon'=>$icon,'provider'=>$provider];
     }
+    /** Optional module-owned controls appended inside an existing text/image block. */
+    public function registerAttachment($key,$provider)
+    {
+        if (!preg_match('/^[a-z][a-z0-9_]{1,29}$/D',$key) || isset($this->attachments[$key])) throw new InvalidArgumentException('Invalid attachment');
+        foreach (['validateBlock','renderBlock','editBlock','previewBlock'] as $method) if (!is_callable([$provider,$method])) throw new InvalidArgumentException('Incomplete attachment');
+        $this->attachments[$key]=$provider;
+    }
+    public function attachments() { return $this->attachments; }
     public function provider($key) { return $this->extensions[$key]['provider']??null; }
 
     /** The existing content-block vocabulary, extended with compositional layouts. */
@@ -102,6 +111,12 @@ class compositionservice extends ChisimbaObject
                 }
             }
             if($provider=$this->provider($type))$block['data']=$provider->validateBlock($input['data']??[]);
+            if (in_array($type,['text','image_left','image_right','hero','reverse_hero'],true)) {
+                foreach ($this->attachments as $key=>$attachment) {
+                    $data=$attachment->validateBlock($input['attachments'][$key]??[]);
+                    if ($data) $block['attachments'][$key]=$data;
+                }
+            }
             $out[]=$block;
         }
         return $out;
@@ -157,9 +172,9 @@ class compositionservice extends ChisimbaObject
     {
         $html = ''; $headings = '';
         foreach ($this->validate($blocks) as $block) {
-            $rendered = $this->render([$block]);
+            $rendered = $this->render([$block],true);
             if ($rendered === '') continue;
-            $headingOnly = $block['type'] === 'text' && (
+            $headingOnly = empty($block['attachments']) && $block['type'] === 'text' && (
                 ($block['title'] !== '' && trim($block['text']) === '') ||
                 ($block['title'] === '' && preg_match('~^\s*(?:<h[2-6]\b[^>]*>.*?</h[2-6]>\s*)+$~s', $block['text']))
             );
@@ -172,13 +187,17 @@ class compositionservice extends ChisimbaObject
     }
 
     /** Shared semantic rendering; the active skin supplies layout and appearance. */
-    public function render(array $blocks)
+    public function render(array $blocks,$interactive=false)
     {
         $html='';
         foreach($this->validate($blocks) as $block) {
             $text=$block['text'];
             if(str_contains($text,'class="chisimba-social-links"'))$text=$this->getObject('sociallinksrenderer','contentblocks')->render($text);
             $copy=($block['title']!==''?'<h2>'.self::escape($block['title']).'</h2>':'').$text;
+            foreach ($block['attachments']??[] as $key=>$data) {
+                $provider=$this->attachments[$key];
+                $copy.=$interactive?$provider->renderBlock($data):$provider->previewBlock($data);
+            }
             $image=$this->figure($block);$body='';
             if(in_array($block['type'],['hero','reverse_hero'],true) && $block['button_label']!=='' && $block['button_url']!=='') {
                 $button='<a class="button chisimba-button-primary" href="'.self::escape($block['button_url']).'">'.self::escape($block['button_label']).'</a>';

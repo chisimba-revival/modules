@@ -232,6 +232,27 @@ class shopservice extends ChisimbaObject
         }
         return ShopRules::quote($cart, $books, $country, $this->settings());
     }
+    public function addFromPage(array $cart, $id)
+    {
+        return $this->store->transaction(function()use($cart,$id){
+            $id=$this->id($id);$book=$this->book($id);
+            if (!$book) throw new DomainException('book_unavailable');
+            $cart=ShopRules::cart($cart);$cart[$id]=($cart[$id]??0)+1;$cart=ShopRules::cart($cart);
+            // Availability is checked without requiring shipping/checkout configuration.
+            $inventory=[];
+            foreach ($cart as $productId=>$quantity) {
+                $product=$this->book($productId);
+                if (!$product || (($product['kind']??'')==='combo' && count($product['components'])!==count($product['book_ids']))) throw new DomainException('book_unavailable');
+                foreach ($product['components']??[['book_id'=>$productId,'quantity'=>1]] as $child) $inventory[$child['book_id']]=($inventory[$child['book_id']]??0)+$quantity*$child['quantity'];
+            }
+            if (array_sum($inventory)>ShopRules::MAX_QUANTITY) throw new DomainException('quantity_unavailable');
+            foreach ($inventory as $bookId=>$quantity) {
+                $physical=$this->store->one('books',$bookId);
+                if (!$physical || (int)$physical['stock']-$this->store->reserved($bookId,time())<$quantity) throw new DomainException('out_of_stock');
+            }
+            return $cart;
+        });
+    }
     public function quoteHash(array $quote) { return hash('sha256', json_encode($quote, JSON_THROW_ON_ERROR)); }
     public function ready()
     { return !empty($this->settings()['enabled']) && $this->payments->providerAvailable('paystack'); }

@@ -7,6 +7,12 @@ final class ShopRules
     public const MAX_QUANTITY = 100;
     public const MAX_MONEY = 100000000;
 
+    /** Return only to a local absolute path, never to a supplied host or scheme. */
+    public static function returnPath($value): string
+    {
+        if (!is_string($value) || !str_starts_with($value,'/') || str_starts_with($value,'//') || preg_match('/[\\x00-\\x20\\x7f\\\\]/',$value)) return '/';
+        return explode('#',$value,2)[0];
+    }
     public static function integer($value, int $min, int $max): int
     {
         if (!is_int($value) && (!is_string($value) || !preg_match('/^(0|[1-9][0-9]*)$/D', $value))) {

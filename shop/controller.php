@@ -88,6 +88,25 @@ class shop extends controller
     private function route($action)
     {
         switch ($action) {
+            case 'pageadd':
+                $this->post();
+                $request=$this->param('request_key');
+                if (!preg_match('/^[a-f0-9]{32}$/D',$request)) throw new DomainException('session_expired');
+                $id=$this->param('id'); $intent=$this->param('intent');
+                if (!in_array($intent,['buy','stay'],true)) throw new DomainException('invalid_cart');
+                if (!isset($_SESSION['shop_page_requests'][$request])) {
+                    $_SESSION['shop_cart']=$this->service->addFromPage($this->cart(),$id);
+                    $_SESSION['shop_page_requests'][$request]=true;
+                    $_SESSION['shop_page_requests']=array_slice($_SESSION['shop_page_requests'],-100,null,true);
+                    unset($_SESSION['shop_request']);
+                }
+                if ($intent==='stay' && $this->param('format')==='json') {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode(['ok'=>true,'message'=>$this->service->text('added_to_cart'),'token'=>$this->csrf->issue('shop'),'request_key'=>bin2hex(random_bytes(16))]);exit;
+                }
+                if ($intent==='buy') $this->redirect('cart');
+                $_SESSION['shop_page_added'][$id]=true;
+                header('Location: '.ShopRules::returnPath($this->param('return_url')).'#shop-product-'.$id,true,303);exit;
             case 'add':
             case 'updatecart':
                 $this->post(); $cart = $this->cart();

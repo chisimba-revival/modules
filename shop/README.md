@@ -207,3 +207,19 @@ and the new basket total are computed from actual shipping bands.
 Check `php shop/tests/combos_test.php` plus existing service/rules/sales/template
 checks. Browser verification covers dismissal, repeat visits, acceptance, Help,
 keyboard focus and narrow screens with synthetic local data only.
+
+## Purchase buttons on Pages
+
+Pages text/image/hero blocks can link a shop product through the Shop product for
+purchase buttons selector. Contentblocks owns the generic attachment API; shop
+owns product selection, price/availability and the three purchase controls.
+Public cards render interactive attachments. Editor/storage rendering shows a
+non-interactive summary, avoiding nested forms and saved session tokens.
+
+Buy now POSTs one copy then opens the cart. Add to cart uses POST/CSRF and Ajax,
+renews all displayed purchase tokens and announces completion without navigation.
+Without JavaScript it returns to the same local page section. Go to cart is a
+normal link. Add requests have a session-scoped idempotency key; uncertain Ajax
+responses are not replayed. Public forms disable shared caching. Current product
+visibility, component inventory and quantity limits are checked server-side;
+linking a draft never exposes its details or permits purchase.

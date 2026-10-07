@@ -13,6 +13,7 @@ class sitepages extends controller
         $modules=$this->getObject('modules','modulecatalogue');
         if ($modules->checkIfRegistered('shop')) {
             $this->getObject('compositionservice','contentblocks')->registerType('shop_sale','tag',$this->getObject('salepromotion','shop'));
+            $this->getObject('compositionservice','contentblocks')->registerAttachment('shop_product',$this->getObject('productbuttons','shop'));
         }
         $this->setLayoutTemplate('layout_tpl.php');
     }

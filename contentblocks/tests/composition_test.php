@@ -49,3 +49,14 @@ check(strpos($cards,'Imported heading')<strpos($cards,'Related paragraph'),'Head
 check(str_contains($cards,'chisimba-content-block--image-left')===false&&str_contains($cards,'chisimba-content-block--image-right'),'Layout types retained');
 check($heading['text']===''&&$text['title']==='','Rendering does not rewrite imported content');
 echo "PASS: heading fragments share content cards; complete image sections remain separate\n";
+$s->registerAttachment('fixture',new class {
+ function validateBlock($data){return empty($data['id'])?[]:['id'=>(string)$data['id']];}
+ function editBlock($prefix,$data){return '';}
+ function renderBlock($data){return '<form>Live purchase</form>';}
+ function previewBlock($data){return '<p>Purchase preview</p>';}
+});
+$right['attachments']=['fixture'=>['id'=>'example']];
+check(str_contains($s->validate([$right])[0]['attachments']['fixture']['id'],'example'),'Attachment retained');
+check(!str_contains($s->render([$right]),'<form>'),'Editor/storage does not contain live forms');
+check(str_contains($s->renderCards([$right]),'<form>Live purchase</form>'),'Public card renders attachment');
+echo "PASS: optional attachments persist, render live in cards and preview without nested forms\n";
