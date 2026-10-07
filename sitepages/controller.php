@@ -38,19 +38,23 @@ class sitepages extends controller
     private function flash($message){$this->setSession('sitepages_flash',$message);}
     private function labels()
     {
-        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive') as $key)$labels[$key]=$this->text($key);return $labels;
+        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive','allpages','editing','settings','editorhint','viewpage') as $key)$labels[$key]=$this->text($key);return $labels;
     }
     private function manage()
     {
         $this->setVar('sitepagesError', false);
         if(!$this->canManage())$this->setVar('sitepagesDenied',true);
         $edit=false;$id=(string)$this->getParam('id','');if($id!==''&&$this->canManage())$edit=$this->db->find($id);
+        if($id!==''&&$this->canManage()&&!$edit){http_response_code(404);$this->setVar('sitepagesDenied',true);$this->setVar('sitepagesMissingEdit',true);}
+        $editing=$id!==''||$this->getParam('new','')==='1';
+        $this->setVar('sitepagesEditing',$editing);
         $this->setVar('sitepagesBlocks',$this->getObject('compositionservice','contentblocks')->fromPost(['composition_json'=>$edit['composition_json']??'','post_content'=>$edit['body_html']??'']));
-        $this->setVar('sitepagesLabels',$this->labels());$this->setVar('sitepagesRows',$this->canManage()?$this->db->activeRows():array());$this->setVar('sitepagesEdit',$edit);$this->setVar('sitepagesCsrf',$this->token());$this->setVar('sitepagesFlash',(string)$this->getSession('sitepages_flash'));$this->setSession('sitepages_flash','');return 'manage_tpl.php';
+        $this->setVar('sitepagesLabels',$this->labels());$this->setVar('sitepagesRows',$this->canManage()&&!$editing?$this->db->activeRows():array());$this->setVar('sitepagesEdit',$edit);$this->setVar('sitepagesCsrf',$this->token());$this->setVar('sitepagesFlash',(string)$this->getSession('sitepages_flash'));$this->setSession('sitepages_flash','');return 'manage_tpl.php';
     }
     private function recover(array $input,$message)
     {
         $result=$this->manage();
+        $this->setVar('sitepagesEditing',true);
         $this->setVar('sitepagesEdit',$input);
         $this->setVar('sitepagesBlocks',$input['blocks']??[]);
         $this->setVar('sitepagesActive',$this->getParam('composition_active',''));

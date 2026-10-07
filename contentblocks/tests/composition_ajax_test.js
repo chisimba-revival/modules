@@ -6,7 +6,7 @@ async function scenario(ok) {
     const canvas={parentElement:scroller,querySelectorAll(){return [field];},replaceWith(next){replacement=next;}};
     const next={querySelectorAll(){return [];},addEventListener(){},querySelector(){return null;}};
     const nextForm={elements:{csrf_token:{value:'fresh'}},querySelector(selector){return selector.includes('canvas')?next:{};}};
-    const form={dataset:{compositionFailure:'Retained',compositionPending:'Updating',compositionUpdated:'Updated'},elements:{csrf_token:token},action:'/save',matches(){return true;},querySelector(selector){return selector.includes('canvas')?canvas:selector.includes('history')?history:status;},setAttribute(){},removeAttribute(){}};
+    const form={dataset:{compositionFailure:'Retained',compositionPending:'Updating',compositionUpdated:'Updated'},elements:{csrf_token:token},action:'/save',hasAttribute(){return false;},querySelectorAll(){return [];},matches(){return true;},querySelector(selector){return selector.includes('canvas')?canvas:selector.includes('history')?history:status;},setAttribute(){},removeAttribute(){}};
     const document={addEventListener(name,callback){listeners[name]=callback;},querySelectorAll(){return [];},querySelector(){return null;}};
     class FormData { constructor(received){assert.equal(received,form);assert(synced);} set(key,value){assert.equal(key,'compose_command');assert.equal(value,'add:text');} }
     const window={fetch:true,scrollX:0,scrollY:200,scrollTo(x,y){assert.equal(y,200);},ChisimbaEditor:{sync(){synced=true;}},ChisimbaEditorMount:async()=>{mounted=true;},ChisimbaEditorUnmount(){assert(ok);}};

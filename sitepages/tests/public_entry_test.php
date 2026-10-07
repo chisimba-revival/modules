@@ -1,4 +1,5 @@
 <?php
+ob_start();
 /** Isolated controller behaviour: no database, accounts or sessions are changed. */
 class controller
 {
@@ -24,6 +25,7 @@ foreach (['anonymous', 'member', 'editor', 'administrator'] as $role) {
     };
     $db = new class {
         public array $reads = [];
+        public function find($id) { return $id==='chosen' ? ['id'=>'chosen','title'=>'Chosen page','body_html'=>'Kept content'] : false; }
         public function findBySlug($slug, $published) {
             $this->reads[] = [$slug, $published];
             return ['slug'=>$slug, 'title'=>'Public home', 'status'=>'published', 'body_html'=>'Home content'];
@@ -66,3 +68,16 @@ foreach (['unsaved'=>false, 'expired'=>true, 'invalid'=>true, 'failed'=>true] as
     check($page->vars['sitepagesBlocks'] === $input['blocks'], 'Submitted blocks lost: '.$message);
 }
 echo "PASS: unsaved block updates succeed; genuine errors retain submitted work\n";
+
+$page->params=['id'=>'chosen'];$page->vars=[];
+$page->dispatch('manage');
+check($page->vars['sitepagesEditing']===true,'Edit must open the focused editor');
+check($page->vars['sitepagesEdit']['id']==='chosen','Wrong page selected');
+check($page->vars['sitepagesRows']===[],'Page list must not precede the editor');
+$page->params=['new'=>'1'];$page->vars=[];$page->dispatch('manage');
+check($page->vars['sitepagesEditing']===true&&$page->vars['sitepagesRows']===[],'New page must open a focused empty editor');
+$page->params=[];$page->vars=[];$page->dispatch('manage');
+check($page->vars['sitepagesEditing']===false,'Page index must not contain an empty editor');
+$page->params=['id'=>'missing'];$page->vars=[];$page->dispatch('manage');
+check(http_response_code()===404&&!empty($page->vars['sitepagesMissingEdit']),'Missing edit target must not create a new page');
+echo "PASS: focused edit/new routes, separate index and missing-page handling\n";
