@@ -9,10 +9,11 @@
 <?php if ($order['courier']): ?><p><?=$t('courier')?>: <?=$esc($order['courier'])?> · <?=$t('tracking')?>: <?=$esc($order['tracking'])?></p><?php endif; ?>
 </div>
 <?php if (!$managed): ?>
+<?php if ($order['payment_state']==='paid'): ?><p class="chisimba-form-notice" role="status"><?=$t('payment_confirmed_help')?></p><?php endif; ?>
 <?php if ($order['payment_state']==='unpaid' && $order['fulfilment_state']==='held' && $order['hold_until']>time()): ?>
 <p><?=$t('hold_help')?></p><form method="post" action="<?=$url('checkout')?>" class="chisimba-cluster"><?php $csrf(); $hidden('token',$shopToken); ?><button type="submit" class="button"><?=$actionIcon('pay')?> <?=$t('pay')?></button></form>
 <?php elseif ($order['payment_state']==='unpaid'): ?><p><?=$t('order_expired')?></p><?php endif; ?>
-<?php if ($order['intent_id']): ?><form method="post" action="<?=$url('reconcile')?>" class="chisimba-form-actions chisimba-form-actions--equal"><?php $csrf(); $hidden('token',$shopToken); ?><button class="button chisimba-button-secondary" type="submit"><?=$actionIcon('check_payment')?> <?=$t('check_payment')?></button></form><?php endif; ?>
+<?php if ($order['intent_id'] && $order['payment_state']==='unpaid'): ?><form method="post" action="<?=$url('reconcile')?>" class="chisimba-form-actions chisimba-form-actions--equal"><?php $csrf(); $hidden('token',$shopToken); ?><button class="button chisimba-button-secondary" type="submit"><?=$actionIcon('check_payment')?> <?=$t('check_payment')?></button></form><?php endif; ?>
 <?php else: ?>
 <?php if ($order['payment_state']==='paid' && $order['fulfilment_state']==='packing'): ?>
 <form method="post" action="<?=$url('dispatchorder')?>" class="chisimba-form-card chisimba-form chisimba-flow"><?php $csrf(); $hidden('id',$order['id']); $hidden('revision',$order['revision']); ?><h2><?=$t('dispatch')?></h2><div class="chisimba-form-grid"><?php $field('courier',$shopDraft['courier']??''); $field('tracking',$shopDraft['tracking']??''); ?></div><button class="button" type="submit"><?=$actionIcon('mark_dispatched')?> <?=$t('mark_dispatched')?></button></form>

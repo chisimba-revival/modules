@@ -139,7 +139,16 @@ class shop extends controller
             case 'checkout':
                 $this->post(); $url = $this->service->checkout($this->param('token')); header('Location: ' . $url, true, 303); exit;
             case 'reconcile':
-                $this->post(); $this->service->reconcile($this->param('token')); $this->redirect('order', ['token' => $this->param('token')]); break;
+                // Validate the private order link before recovering a stale form.
+                $order = $this->service->order($this->param('token'));
+                if ($order['payment_state'] !== 'unpaid') $this->redirect('order', ['token' => $this->param('token')]);
+                try { $this->post(); }
+                catch (DomainException $error) {
+                    if ($error->getMessage() !== 'session_expired') throw $error;
+                    // Only display the order; never replay a provider request without CSRF.
+                    $this->redirect('order', ['token' => $this->param('token')]);
+                }
+                $this->service->reconcile($this->param('token')); $this->redirect('order', ['token' => $this->param('token')]); break;
             case 'order':
                 $this->setVar('shopOrder', $this->service->order($this->param('token'))); $this->setVar('shopToken', $this->param('token')); return 'order_tpl.php';
             case 'sales':

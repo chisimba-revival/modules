@@ -37,3 +37,13 @@ $data['shopOffer']=$s->comboOffer([$id=>1]);$html=$host->render('cart_tpl.php',$
 if(str_contains($html,'<script>inert</script>')||!str_contains($html,'No thanks, continue checkout')||!str_contains($html,'name="after_hash"'))throw new RuntimeException('Offer escaping/dismissal/hash');
 $data['shopBook']=$s->book($combo,true);$data['shopBooks']=$s->books(true);$host->render('editor_tpl.php',$data);
 echo "PASS: $count templates, registered labels, escaped content, POST tokens and retained input\n";
+
+$data['shopManaged']=false;$data['shopError']='';
+$data['shopOrder']['intent_id']='fixture-intent';
+$data['shopOrder']['payment_state']='unpaid';
+$html=$host->render('order_tpl.php',$data);
+if(!str_contains($html,'action=reconcile'))throw new RuntimeException('Pending payment needs status check');
+$data['shopOrder']['payment_state']='paid';$data['shopOrder']['fulfilment_state']='packing';
+$html=$host->render('order_tpl.php',$data);
+if(str_contains($html,'action=reconcile')||str_contains($html,'action=checkout')||!str_contains($html,'Payment received.'))throw new RuntimeException('Paid order must confirm payment without payment actions');
+echo "PASS: pending and paid customer payment actions\n";
