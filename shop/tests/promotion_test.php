@@ -18,3 +18,9 @@ $shop->on=false;if($p->renderBlock([])!=='')throw new RuntimeException('Disabled
 if($p->previewBlock([])==='')throw new RuntimeException('Missing editor explanation');
 $shop->on=true;$shop->stock=0;if($p->renderBlock([])!=='')throw new RuntimeException('Sold-out sale advertised');
 echo "PASS: promotion image, text, CTA, escaping, inactive preview and public visibility\n";
+
+$shop->on=true;$shop->stock=1;
+$id=str_repeat('a',32);$html=$p->renderBlock(['scroll_product_id'=>$id]);
+if(!str_contains($html,'href="#shop-product-'.$id.'"')||str_contains($html,'action=catalogue'))throw new RuntimeException('Same-page CTA failed');
+try{$p->validateBlock(['scroll_product_id'=>'bad" onclick="alert(1)']);throw new RuntimeException('Invalid target accepted');}catch(DomainException $expected){}
+echo "PASS: same-page promotion target and validation\n";
