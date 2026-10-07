@@ -60,3 +60,7 @@ check(str_contains($s->validate([$right])[0]['attachments']['fixture']['id'],'ex
 check(!str_contains($s->render([$right]),'<form>'),'Editor/storage does not contain live forms');
 check(str_contains($s->renderCards([$right]),'<form>Live purchase</form>'),'Public card renders attachment');
 echo "PASS: optional attachments persist, render live in cards and preview without nested forms\n";
+
+$cta['button_url']='#shop-product-abc';check(str_contains($s->render([$cta]),'href="#shop-product-abc"'),'Local anchor CTA');
+$cta['button_url']='#bad" onclick="x';rejects(fn()=>$s->validate([$cta]));
+$cta['button_url']='';$cta['url']='#image';rejects(fn()=>$s->validate([$cta]));

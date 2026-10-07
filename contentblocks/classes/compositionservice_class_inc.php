@@ -66,9 +66,10 @@ class compositionservice extends ChisimbaObject
     }
 
     /** Only managed relative URLs or explicit web URLs can become media sources. */
-    private function url($url)
+    private function url($url, $allowFragment=false)
     {
         if ($url==='') return '';
+        if ($allowFragment && preg_match('/^#[a-zA-Z][a-zA-Z0-9_-]*$/D',$url)) return $url;
         if (preg_match('/[\x00-\x20\x7f\\\\]/',$url) || str_starts_with($url,'//')) throw new DomainException('invalid');
         if (str_starts_with($url,'/') && !str_starts_with($url,'//')) return $url;
         if (preg_match('~^https?://~i',$url) && filter_var($url,FILTER_VALIDATE_URL)
@@ -93,7 +94,7 @@ class compositionservice extends ChisimbaObject
                 'url'=>$this->url($this->field($input,'url',2048)), 'alt'=>$this->field($input,'alt',1000),
                 'caption'=>$this->field($input,'caption',2000),
                 'button_label'=>$this->field($input,'button_label',200),
-                'button_url'=>$this->url($this->field($input,'button_url',2048)),'slides'=>[]];
+                'button_url'=>$this->url($this->field($input,'button_url',2048),true),'slides'=>[]];
             $block['button_position']=$this->field($input,'button_position',30)?:'text';
             if(!in_array($block['button_position'],['text','top-left','top-right','bottom-left','bottom-right'],true))throw new DomainException('invalid');
             if($type==='video_gallery'){
