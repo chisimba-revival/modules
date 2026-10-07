@@ -24,7 +24,12 @@ $assert($s->matchesIntent($intent),'Canonical intent accepted');$bad=$intent;$ba
 $assert(!$s->fulfil($intent)['ok'],'Browser/unverified payment cannot fulfil');
 $intent['state']='succeeded';$payments->rows[$intent['id']]=$intent;$s->fulfil($intent);$s->fulfil($intent);
 $assert($store->one('books',$id)['stock']===5,'Duplicate payment decrements stock once');$assert(count($mail->rows)===1,'Confirmation queued once');
+$s->objects['language']=new class {
+ public function languageText($key,$module){foreach(file(dirname(__DIR__).'/register.conf') as $line)if(str_starts_with($line,'TEXT: ')){[$name,$desc,$value]=explode('|',substr(trim($line),6),3);if($name===$key)return $value;}return $key;}
+};
 $paid=$s->order($token);$s->dispatchOrder(['id'=>$paid['id'],'revision'=>$paid['revision'],'courier'=>'Fixture Courier','tracking'=>'SYNTHETIC-001']);
+$notice=$mail->rows['shop:'.$paid['id'].':dispatched'];
+$assert($notice['to']===$details['email'] && str_contains($notice['text'],'on its way with Fixture Courier') && str_contains($notice['text'],'tracking number is SYNTHETIC-001') && str_contains($notice['text'],'The Fixture Books team.'),'Shipping email addresses customer with courier, tracking and site branding');
 $assert(count($mail->rows)===2,'Dispatch notice queued');$s->retryNotice($paid['id']);$assert(count($mail->rows)===2,'Retries do not duplicate mail');
 $intent['state']='refunded';$s->reverse($intent);$s->reverse($intent);$assert($store->one('books',$id)['stock']===5,'Refund does not invent returned stock');$assert($s->order($token)['fulfilment_state']==='dispatched','Financial reversal preserves dispatch history');
 $late=$make(5);$lateToken=$s->token($late['id']);$s->checkout($lateToken);$late=$s->order($lateToken);$store->save('orders',$late['id'],['hold_until'=>time()-1]);

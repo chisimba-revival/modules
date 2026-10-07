@@ -481,14 +481,15 @@ class shopservice extends ChisimbaObject
     {
         $address = json_decode($order['address_json'], true, 512, JSON_THROW_ON_ERROR);
         $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
-        $body = $this->text('email_' . $kind) . "\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
+        $intro = strtr($this->text('email_' . $kind), ['{courier}'=>$order['courier'], '{tracking}'=>$order['tracking']]);
+        $body = $intro . "\n\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
         foreach ($quote['lines'] as $line) {
             $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";
             foreach ($line['components']??[] as $child) $body .= '  '.($line['quantity']*$child['quantity']).' × '.$child['title']."\n";
         }
         $body .= $this->text('shipping') . ': ' . $this->money($quote['shipping_minor']) . "\n" . $this->text('total') . ': ' . $this->money($quote['amount_minor']) . "\n";
-        if ($kind === 'dispatched') $body .= $order['courier'] . ': ' . $order['tracking'] . "\n";
         $body .= $this->url('order', ['token' => $this->token($order['id'])]);
+        if ($kind === 'dispatched') $body .= "\n\n" . strtr($this->text('email_shipping_thanks'), ['{site}'=>$this->getObject('altconfig', 'config')->getSiteName()]);
         $result = $this->getObject('communicationservice', 'communications')->queueEmail(['to' => $order['email'], 'toName' => $address['name'],
             'subject' => $this->text('email_' . $kind . '_subject'), 'text' => $body,
             'idempotencyKey' => 'shop:' . $order['id'] . ':' . $kind, 'metadata' => ['purpose' => 'shop_order', 'orderId' => $order['id']]]);

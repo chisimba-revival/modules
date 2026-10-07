@@ -14,7 +14,7 @@ class ShopMemoryStore {
  public function recentOrders(){return $this->rows('orders');}
 }
 class ShopFixtureUser {public $admin=true;public function isLoggedIn(){return $this->admin;}public function isAdmin(){return $this->admin;}public function userId(){return $this->admin?'fixture-manager':'';}}
-class ShopFixtureConfig {public function getValue($k,$m){return str_repeat('d',64);}public function getSiteRoot(){return 'https://shop.test/';}}
+class ShopFixtureConfig {public function getSiteName(){return 'Fixture Books';}public function getValue($k,$m){return str_repeat('d',64);}public function getSiteRoot(){return 'https://shop.test/';}}
 class ShopFixtureLanguage {public function languageText($key,$module){return $key;}}
 class ShopFixtureMail {public $rows=[];public $fail=false;public function queueEmail($m){if($this->fail)return ['ok'=>false];$this->rows[$m['idempotencyKey']]=$m;return ['ok'=>true];}}
 class ShopFixturePayments {
