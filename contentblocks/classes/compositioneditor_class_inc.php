@@ -60,6 +60,8 @@ class compositioneditor extends ChisimbaObject
             $html.='</div></header>';
             if($id!==$active){
                 $preview=$s->render([$block]);
+                $provider=$s->provider($type);
+                if($preview==='' && $provider && method_exists($provider,'previewBlock'))$preview=$provider->previewBlock($block['data']??[]);
                 $html.='<div data-composition-preview>'.$preview.($preview===''?'<p>'.$s::escape($s->text('empty_preview')).'</p>':'').'</div>';
                 $html.=$this->hiddenFields($prefix,$block).$insertAfter.'</section>';continue;
             }

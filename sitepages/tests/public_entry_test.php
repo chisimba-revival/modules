@@ -36,6 +36,7 @@ foreach (['anonymous', 'member', 'editor', 'administrator'] as $role) {
     $page->objects['htmlcleaner'] = new class { public function cleanHtml($html) { return $html; } };
     $page->objects['language'] = new class { public function languageText($key, $module) { return $key; } };
     $page->objects['compositionservice'] = new class { public function fromPost($post) { return []; } };
+    $page->objects['modules']=new class { public function checkIfRegistered($id){return false;} };
     $page->init();
     foreach ([null, '', 'view'] as $action) {
         $page->vars = [];

@@ -50,3 +50,26 @@
         }
     }
 })();
+
+// Selection helpers do not replace server validation or individual checkboxes.
+document.querySelectorAll('[data-sale-select]').forEach(button => {
+    button.hidden = false;
+    button.addEventListener('click', () => {
+        button.closest('form').querySelectorAll('[name="book_ids[]"]').forEach(input => {
+            input.checked = button.dataset.saleSelect === 'all';
+        });
+    });
+});
+
+const salePercent = document.querySelector('[name="percent"]');
+if (salePercent) {
+    salePercent.min = '1'; salePercent.max = '99';
+    salePercent.addEventListener('input', () => {
+        const percent = Number(salePercent.value);
+        document.querySelectorAll('[data-sale-price]').forEach(row => {
+            const cents = Number(row.dataset.regularPrice);
+            row.querySelector('output').textContent = Number.isInteger(percent) && percent >= 1 && percent <= 99 && cents > 0
+                ? 'R' + (Math.max(1, Math.floor((cents * (100 - percent) + 50) / 100)) / 100).toFixed(2) : '—';
+        });
+    });
+}

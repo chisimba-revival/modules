@@ -5,6 +5,7 @@
  */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 require_once __DIR__ . '/shoprules.php';
+require_once __DIR__ . '/shopsalerules.php';
 class shopservice extends ChisimbaObject
 {
     public $store; public $payments;
@@ -56,13 +57,69 @@ class shopservice extends ChisimbaObject
             return $this->settings();
         });
     }
+    public function sale()
+    {
+        $row = $this->store->one('settings', 'sale');
+        return $row ? json_decode($row['settings_json'], true, 512, JSON_THROW_ON_ERROR) + ['revision'=>(int)$row['revision']]
+            : ['revision'=>0, 'enabled'=>false, 'title'=>'', 'description'=>'', 'image_url'=>'', 'button_label'=>'', 'percent'=>40, 'book_ids'=>[], 'starts_at'=>0, 'ends_at'=>0];
+    }
+    public function saveSale(array $input)
+    {
+        $this->requireManager();
+        return $this->store->transaction(function () use ($input) {
+            $old=$this->sale(); $this->revision($input, $old);
+            $ids=$input['book_ids']??[];
+            if (!is_array($ids) || count($ids)>500) throw new DomainException('invalid_sale_books');
+            $ids=array_values(array_unique($ids));
+            foreach ($ids as $id) if (!is_string($id) || !$this->store->one('books', $this->id($id))) throw new DomainException('invalid_sale_books');
+            $starts=ShopSaleRules::timestamp($input['starts_at']??''); $ends=ShopSaleRules::timestamp($input['ends_at']??'');
+            if ($ends <= $starts) throw new DomainException('invalid_sale_dates');
+            $enabled=($input['enabled']??'')==='1';
+            if ($enabled && (!$ids || $ends<=time())) throw new DomainException('invalid_sale_dates');
+            $image=$this->string($input['image_url']??'',1500,true);
+            if ($image!=='') {
+                $site=parse_url($this->getObject('altconfig','config')->getSiteRoot()); $url=parse_url($image);
+                if (!$url || ($url['scheme']??'')!=='https' || ($url['host']??'')!==($site['host']??'') || isset($url['user']) || isset($url['pass'])) throw new DomainException('invalid_image');
+            }
+            $sale=['enabled'=>$enabled,'title'=>$this->string($input['title']??'',191),
+                'description'=>$this->string($input['description']??'',5000,true),'image_url'=>$image,
+                'button_label'=>$this->string($input['button_label']??'',80),
+                'percent'=>ShopRules::integer($input['percent']??'',1,99),'book_ids'=>$ids,'starts_at'=>$starts,'ends_at'=>$ends];
+            $row=['settings_json'=>json_encode($sale,JSON_THROW_ON_ERROR),'revision'=>$old['revision']+1];
+            if ($old['revision']) $this->store->save('settings','sale',$row); else $this->store->add('settings',['id'=>'sale']+$row);
+            return $this->sale();
+        });
+    }
+    public function stopSale(array $input)
+    {
+        $this->requireManager();
+        return $this->store->transaction(function () use ($input) {
+            $sale=$this->sale(); $this->revision($input,$sale);
+            if (!$sale['revision']) return;
+            $revision=$sale['revision']; unset($sale['revision']); $sale['enabled']=false;
+            $this->store->save('settings','sale',['settings_json'=>json_encode($sale,JSON_THROW_ON_ERROR),'revision'=>$revision+1]);
+        });
+    }
+    public function saleStatus(array $sale)
+    {
+        if (empty($sale['enabled'])) return 'sale_inactive';
+        if (time() < $sale['starts_at']) return 'sale_scheduled';
+        return time() >= $sale['ends_at'] ? 'sale_ended' : 'sale_active';
+    }
+    public function pricedBook(array $book, ?array $sale=null, ?int $now=null)
+    {
+        $sale=$sale??$this->sale();
+        $book['sale_price_minor']=ShopSaleRules::price($book,$sale,$now??time());
+        $book['sale_revision']=$book['sale_price_minor']===null?0:$sale['revision'];
+        return $book;
+    }
     public function books($managed = false)
-    { if ($managed) $this->requireManager(); return $this->store->rows('books', $managed ? [] : ['status' => 'published'], 500); }
+    { if ($managed) $this->requireManager(); $sale=$this->sale(); $now=time(); return array_map(fn($book)=>$this->pricedBook($book,$sale,$now),$this->store->rows('books', $managed ? [] : ['status' => 'published'], 500)); }
     public function book($id, $managed = false)
     {
         if ($managed) $this->requireManager();
         $book = $this->store->one('books', $id);
-        return $book && ($managed || $book['status'] === 'published') ? $book : null;
+        return $book && ($managed || $book['status'] === 'published') ? $this->pricedBook($book) : null;
     }
     public function saveBook(array $input)
     {
@@ -94,7 +151,10 @@ class shopservice extends ChisimbaObject
     public function quote(array $cart, $country = 'ZA')
     {
         $books = [];
-        foreach (ShopRules::cart($cart) as $id => $quantity) $books[$id] = $this->book($id);
+        $sale=$this->sale(); $now=time();
+        foreach (ShopRules::cart($cart) as $id => $quantity) {
+            $book=$this->store->one('books',$id); $books[$id]=$book?$this->pricedBook($book,$sale,$now):null;
+        }
         return ShopRules::quote($cart, $books, $country, $this->settings());
     }
     public function quoteHash(array $quote) { return hash('sha256', json_encode($quote, JSON_THROW_ON_ERROR)); }

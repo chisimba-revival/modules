@@ -3,7 +3,7 @@
 <form method="post" action="<?=$url('savebook')?>" class="chisimba-form-card chisimba-form chisimba-flow"><?php $csrf(); $hidden('id',$book['id']??''); $hidden('revision',$book['revision']??0); ?>
 <?php $field('title',$book['title']??''); $field('description',$book['description']??'','textarea',false); ?>
 <div class="chisimba-form-grid"><?php $field('isbn',$book['isbn']??'','text',false); $field('price',$book['price']??(isset($book['price_minor'])?number_format($book['price_minor']/100,2,'.',''):'')); $field('stock',$book['stock']??0,'number'); ?></div>
-<p><?=$t('price_hint')?></p>
+<p><?=$t('price_hint')?></p><div class="chisimba-form-field"><label for="shop-sale-price"><?=$t('sale_price')?></label><input id="shop-sale-price" readonly value="<?=isset($book['sale_price_minor'])?$esc(number_format($book['sale_price_minor']/100,2,'.','')):''?>"><p><?=$t('sale_price_help')?> <a href="<?=$url('sales')?>"><?=$t('sales')?></a></p></div>
 <?php $field('image_url',$book['image_url']??'','url',false); ?>
 <img data-shop-cover class="chisimba-featured-image-preview"<?=empty($book['image_url'])?' hidden':' src="'.$esc($book['image_url']).'"'?> alt="<?=$esc($book['title']??'')?>">
 <div class="chisimba-form-actions chisimba-form-actions--equal"><button type="button" class="button chisimba-button-secondary" hidden data-shop-picker="<?=$esc($this->uri(['action'=>'filepicker','target'=>'shop-image_url','policy'=>'image','location'=>'user'],'filemanager'))?>"><?=$t('choose_image')?></button></div>

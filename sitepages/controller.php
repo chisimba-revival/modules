@@ -10,6 +10,10 @@ class sitepages extends controller
         $this->db=$this->getObject('dbsitepages','sitepages');
         $this->user=$this->getObject('user','security');
         $this->cleaner=$this->getObject('htmlcleaner','utilities');
+        $modules=$this->getObject('modules','modulecatalogue');
+        if ($modules->checkIfRegistered('shop')) {
+            $this->getObject('compositionservice','contentblocks')->registerType('shop_sale','tag',$this->getObject('salepromotion','shop'));
+        }
         $this->setLayoutTemplate('layout_tpl.php');
     }
     public function requiresLogin($action)
@@ -79,7 +83,8 @@ class sitepages extends controller
                 $this->setVar('sitepagesActive',$active);return $result;
             }
             $body=$builder->render($input['blocks']);$collision=$this->db->findBySlug($input['slug']);
-            if($input['title']===''||mb_strlen($input['title'])>250||$body===''||!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug'])||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
+            if($input['title']===''||mb_strlen($input['title'])>250||($body===''&&!array_filter($input['blocks'],static fn($block)=>$block['type']==='shop_sale'))||!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug'])||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
+            if ($body === '') $body = '<!-- Live sale promotion -->';
             $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'show_title'=>$input['show_title'],'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
             if(!$saved)throw new RuntimeException('failed');
             if($this->getParam('composition_save_ajax')==='1'){

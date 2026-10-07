@@ -20,7 +20,7 @@ $s->saveSettings(['revision'=>1,'bands'=>[['from'=>'1','amount'=>'110'],['from'=
 $id=str_repeat('a',32);$book=$s->saveBook(['id'=>$id,'revision'=>0,'title'=>'<script>inert</script>','price'=>'100','stock'=>'20','status'=>'published']);$cart=[$id=>5];$quote=$s->quote($cart);
 $details=['name'=>'Fixture','email'=>'fixture@example.invalid','phone'=>'0123456789','address_line'=>'1 Test','city'=>'Test','province'=>'Limpopo','postal_code'=>'1234','country'=>'ZA','accept_terms'=>'1','quote_hash'=>$s->quoteHash($quote)];
 $order=$s->prepare($cart,$details,str_repeat('b',64));
-$data=['shopService'=>$s,'shopCsrf'=>'synthetic-csrf','shopError'=>'','shopDraft'=>[],'shopBooks'=>[$book],'shopBook'=>$book,'shopCart'=>$cart,'shopQuote'=>$quote,'shopSettings'=>$s->settings(),'shopRequest'=>str_repeat('b',64),'shopAbuse'=>['issued_at'=>1,'nonce'=>'fixture','signature'=>'fixture'],'shopOrders'=>[$order],'shopOrder'=>$order,'shopToken'=>$s->token($order['id']),'shopManaged'=>false];
+$data=['shopSale'=>$s->sale(),'shopService'=>$s,'shopCsrf'=>'synthetic-csrf','shopError'=>'','shopDraft'=>[],'shopBooks'=>[$book],'shopBook'=>$book,'shopCart'=>$cart,'shopQuote'=>$quote,'shopSettings'=>$s->settings(),'shopRequest'=>str_repeat('b',64),'shopAbuse'=>['issued_at'=>1,'nonce'=>'fixture','signature'=>'fixture'],'shopOrders'=>[$order],'shopOrder'=>$order,'shopToken'=>$s->token($order['id']),'shopManaged'=>false];
 $host=new ShopTemplateHost;$count=0;
 foreach(glob(dirname(__DIR__).'/templates/content/*_tpl.php') as $file){
  $html=$host->render(basename($file),$data);

@@ -144,3 +144,33 @@ through the shared file/media service and retain their source mapping. Keep
 historic customer and order records in the archive; catalogue import does not
 create new orders, payments or customer accounts. Verify counts and representative
 books, then record the import result alongside the deployment backup.
+
+
+## Percentage sales
+
+Shop managers can prepare one non-stacking sale through Manage shop → Sales.
+It selects book IDs, a 1–99 percentage reduction, start/end timestamps, title,
+description, optional image and CTA text. Form dates use Africa/Johannesburg;
+storage uses Unix timestamps. The start is inclusive and the end exclusive.
+Save disabled to prepare; enable to schedule/start; Stop sale disables immediately.
+Regular book prices are never rewritten. Only selected published books receive a
+calculated sale price; cent rounding is half-up and prices cannot reach zero.
+
+The campaign uses the existing settings gateway under ID `sale`, with optimistic
+revision checks and the same transaction lock as checkout. No new schema is
+required. Catalogue, cart and quotes use the same rule. Quote hashes detect price
+changes; order snapshots retain regular/charged unit prices and sale revision.
+Existing reviewed orders honour their 15-minute reservation price.
+
+Pages offers a Sale promotion block when Shop is installed. The promotion is
+rendered from current sale settings and is absent outside its active dates or
+when no selected published book is in stock. Placement does not enable the sale,
+checkout, or any book. Its CTA points to the shop catalogue. The editor explains
+inactive previews. Empty live-only pages retain a harmless comment in legacy
+body storage while composition metadata remains authoritative.
+
+Cart item removal and Clear cart use POST and the same CSRF boundary as quantity
+updates. Clearing also invalidates the session order-request key.
+
+Checks: `php shop/tests/sales_test.php`, `php shop/tests/promotion_test.php`, plus
+existing rules, service and template tests. No test contacts a payment provider.

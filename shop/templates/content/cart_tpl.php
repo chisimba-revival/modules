@@ -4,10 +4,10 @@
 <div class="chisimba-publishing-layout"><section class="chisimba-stack">
 <form method="post" action="<?=$url('updatecart')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); ?>
 <?php foreach ($shopCart as $id=>$quantity): $book=$shopService->book($id); ?>
-<div class="chisimba-form-grid"><div><strong><?=$esc($book['title']??$shopService->text('book_unavailable'))?></strong><?php if ($book): ?><p><?=$money($book['price_minor'])?></p><?php endif; ?></div><div class="chisimba-form-field"><label for="cart-<?=$esc($id)?>"><?=$t('quantity')?> — <?=$esc($book['title']??$shopService->text('book_unavailable'))?></label>
-<input id="cart-<?=$esc($id)?>" type="number" name="quantity[<?=$esc($id)?>]" value="<?=$esc($quantity)?>" min="0" max="100" required></div></div>
+<div class="chisimba-form-grid"><div><strong><?=$esc($book['title']??$shopService->text('book_unavailable'))?></strong><?php if ($book): ?><p><?php $bookPrice($book); ?></p><?php endif; ?></div><div class="chisimba-form-field"><label for="cart-<?=$esc($id)?>"><?=$t('quantity')?> — <?=$esc($book['title']??$shopService->text('book_unavailable'))?></label>
+<input id="cart-<?=$esc($id)?>" type="number" name="quantity[<?=$esc($id)?>]" value="<?=$esc($quantity)?>" min="0" max="100" required></div><div class="chisimba-form-actions"><button class="button chisimba-button-secondary" type="submit" name="remove_book" value="<?=$esc($id)?>" aria-label="<?=$t('remove_item')?>: <?=$esc($book['title']??'')?>"><?=$actionIcon('remove_item')?> <?=$t('remove_item')?></button></div></div>
 <?php endforeach; ?>
-<p><?=$t('remove_hint')?></p><button class="button" type="submit"><?=$actionIcon('update_cart')?> <?=$t('update_cart')?></button></form>
+<div class="chisimba-form-actions"><button class="button" type="submit"><?=$actionIcon('update_cart')?> <?=$t('update_cart')?></button><button class="button chisimba-button-secondary" type="submit" name="clear_cart" value="1" formnovalidate><?=$actionIcon('clear_cart')?> <?=$t('clear_cart')?></button></div></form>
 <?php if ($shopQuote): ?>
 <?php if ($shopService->ready()): ?>
 <form method="post" action="<?=$url('prepare')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('request_key',$shopRequest); $hidden('quote_hash',$shopService->quoteHash($shopQuote)); ?>

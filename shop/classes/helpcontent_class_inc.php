@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class helpcontent extends ChisimbaObject
 {
     public function mayViewTopic($id)
-    { return $id === 'buying' || (in_array($id, ['managing', 'shipping', 'fulfilment'], true) && $this->getObject('shopservice', 'shop')->canManage()); }
+    { return $id === 'buying' || (in_array($id, ['sales', 'managing', 'shipping', 'fulfilment'], true) && $this->getObject('shopservice', 'shop')->canManage()); }
     public function getTopic($id)
     {
         if (!$this->mayViewTopic($id)) return null;

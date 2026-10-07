@@ -12,7 +12,7 @@
 <h2><a href="<?=$url('view',['id'=>$book['id']])?>"><?=$esc($book['title'])?></a></h2>
 <p><?=nl2br($esc($book['description']))?></p>
 <?php if ($book['isbn']): ?><p><?=$t('isbn')?>: <?=$esc($book['isbn'])?></p><?php endif; ?>
-<p><strong><?=$money($book['price_minor'])?></strong></p>
+<p><?php $bookPrice($book); ?></p>
 <?php if ((int)$book['stock'] > 0): ?>
 <form method="post" action="<?=$url('add')?>" class="chisimba-cluster"><?php $csrf(); $hidden('id',$book['id']); ?>
 <label for="quantity-<?=$esc($book['id'])?>"><?=$t('quantity')?></label><input id="quantity-<?=$esc($book['id'])?>" name="quantity" type="number" value="1" min="1" max="100" required>

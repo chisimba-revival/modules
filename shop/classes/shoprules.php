@@ -90,13 +90,15 @@ final class ShopRules
         foreach ($cart as $id => $quantity) {
             $book = $books[$id] ?? null;
             if (!$book || $book['status'] !== 'published') throw new DomainException('book_unavailable');
-            $price = self::integer($book['price_minor'], 1, self::MAX_MONEY);
+            $regular = self::integer($book['price_minor'], 1, self::MAX_MONEY);
+            $price = self::integer($book['sale_price_minor'] ?? $regular, 1, $regular);
             $total = $price * $quantity;
             $subtotal += $total;
             if ($subtotal > self::MAX_MONEY) throw new DomainException('invalid_money');
             $lines[] = ['book_id' => $id, 'title' => $book['title'], 'isbn' => $book['isbn'],
                 'revision' => (int)$book['revision'], 'quantity' => $quantity,
-                'unit_minor' => $price, 'total_minor' => $total];
+                'unit_minor' => $price, 'regular_unit_minor' => $regular,
+                'sale_revision' => (int)($book['sale_revision'] ?? 0), 'total_minor' => $total];
         }
         $shipping = self::shipping($country, array_sum($cart), $policy);
         $total = self::integer($subtotal + $shipping, 1, self::MAX_MONEY);
