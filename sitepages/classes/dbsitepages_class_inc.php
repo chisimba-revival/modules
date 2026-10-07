@@ -22,6 +22,13 @@ class dbsitepages extends dbTable
     {
         return $this->getAll("WHERE status<>'archived' ORDER BY title ASC");
     }
+    /** Missing display preferences keep legacy page titles visible. */
+    public static function showTitle(array $row)
+    {
+        if (array_key_exists('show_title', $row)) return (bool)$row['show_title'];
+        $composition = json_decode($row['composition_json'] ?? '', true);
+        return ($composition['show_title'] ?? true) !== false;
+    }
     public static function version(array $row)
     {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}
     public function savePage(array $data, $userId, $id = '')

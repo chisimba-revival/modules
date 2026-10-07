@@ -152,6 +152,25 @@ class compositionservice extends ChisimbaObject
             .($block['caption']!==''?'<figcaption>'.self::escape($block['caption']).'</figcaption>':'').'</figure>';
     }
 
+    /** Card presentation without rewriting imported block identities or content. */
+    public function renderCards(array $blocks)
+    {
+        $html = ''; $headings = '';
+        foreach ($this->validate($blocks) as $block) {
+            $rendered = $this->render([$block]);
+            if ($rendered === '') continue;
+            $headingOnly = $block['type'] === 'text' && (
+                ($block['title'] !== '' && trim($block['text']) === '') ||
+                ($block['title'] === '' && preg_match('~^\s*(?:<h[2-6]\b[^>]*>.*?</h[2-6]>\s*)+$~s', $block['text']))
+            );
+            if ($headingOnly) { $headings .= $rendered; continue; }
+            $html .= '<div class="chisimba-content-card chisimba-prose">'.$headings.$rendered.'</div>';
+            $headings = '';
+        }
+        // A trailing heading has no following content; retain it without an empty card.
+        return $html.($headings === '' ? '' : '<div class="chisimba-prose">'.$headings.'</div>');
+    }
+
     /** Shared semantic rendering; the active skin supplies layout and appearance. */
     public function render(array $blocks)
     {

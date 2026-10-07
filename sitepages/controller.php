@@ -38,7 +38,7 @@ class sitepages extends controller
     private function flash($message){$this->setSession('sitepages_flash',$message);}
     private function labels()
     {
-        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive','allpages','editing','settings','editorhint','viewpage') as $key)$labels[$key]=$this->text($key);return $labels;
+        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive','allpages','editing','settings','editorhint','viewpage','showtitle','showtitlehelp') as $key)$labels[$key]=$this->text($key);return $labels;
     }
     private function manage()
     {
@@ -64,7 +64,7 @@ class sitepages extends controller
     }
     private function save()
     {
-        $input=['id'=>(string)$this->getParam('id',''),'slug'=>strtolower(trim((string)$this->getParam('slug',''))),'title'=>trim((string)$this->getParam('title','')),'body_html'=>(string)$this->getParam('body_html',''),'status'=>$this->getParam('status','draft')==='published'?'published':'draft','blocks'=>$this->getParam('content_blocks',[]),'version'=>(string)$this->getParam('version','')];
+        $input=['id'=>(string)$this->getParam('id',''),'slug'=>strtolower(trim((string)$this->getParam('slug',''))),'title'=>trim((string)$this->getParam('title','')),'body_html'=>(string)$this->getParam('body_html',''),'status'=>$this->getParam('status','draft')==='published'?'published':'draft','show_title'=>$this->getParam('show_title','1')==='1','blocks'=>$this->getParam('content_blocks',[]),'version'=>(string)$this->getParam('version','')];
         if(!$this->canManage()){http_response_code(403);return $this->manage();}
         if(!$this->validPost()){http_response_code(403);return $this->recover($input,'expired');}
         try {
@@ -80,7 +80,7 @@ class sitepages extends controller
             }
             $body=$builder->render($input['blocks']);$collision=$this->db->findBySlug($input['slug']);
             if($input['title']===''||mb_strlen($input['title'])>250||$body===''||!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug'])||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
-            $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
+            $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'show_title'=>$input['show_title'],'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
             if(!$saved)throw new RuntimeException('failed');
             if($this->getParam('composition_save_ajax')==='1'){
                 $input['id']=$saved['id'];$input['version']=dbsitepages::version($saved);
@@ -99,7 +99,7 @@ class sitepages extends controller
     private function view()
     {
         $this->setVar('sitepagesCanEdit', $this->canManage());
-        $page=$this->db->findBySlug((string)$this->getParam('slug','home'),!$this->canManage());if(!$page||(!$this->canManage()&&($page['status']??'')!=='published')){http_response_code(404);$this->setVar('sitepagesMissing',$this->text('notfound'));}else {if(!empty($page['composition_json']))$page['body_html']=$this->getObject('compositionservice','contentblocks')->render($this->getObject('compositionservice','contentblocks')->fromPost($page));else $page['body_html']=$this->cleaner->cleanHtml($page['body_html']);$this->setVar('sitepagesPage',$page);}return 'view_tpl.php';
+        $page=$this->db->findBySlug((string)$this->getParam('slug','home'),!$this->canManage());if(!$page||(!$this->canManage()&&($page['status']??'')!=='published')){http_response_code(404);$this->setVar('sitepagesMissing',$this->text('notfound'));}else {if(!empty($page['composition_json']))$page['body_html']=$this->getObject('compositionservice','contentblocks')->renderCards($this->getObject('compositionservice','contentblocks')->fromPost($page));else $page['body_html']=$this->cleaner->cleanHtml($page['body_html']);$this->setVar('sitepagesPage',$page);}return 'view_tpl.php';
     }
 }
 ?>

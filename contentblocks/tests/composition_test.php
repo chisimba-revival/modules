@@ -39,3 +39,13 @@ $sliderHtml=$s->render([$slider]);check(substr_count($sliderHtml,'<img')===2&&st
 $s->registerType('custom','file-text',new class {function label(){return 'Custom';}function validateBlock($data){return ['value'=>(string)($data['value']??'')];}function renderBlock($data){return '<p>'.htmlspecialchars($data['value'],ENT_QUOTES).'</p>';}function editBlock($prefix,$data){return '';}});
 $custom=$s->emptyBlock('custom');$custom['data']=['value'=>'Reusable'];check($s->render([$custom])==='<p>Reusable</p>','Registered extension');
 echo "PASS: composition validation, safe media, stable ordering, duplication, legacy content, sliders and extension providers\n";
+
+$heading=$s->emptyBlock('text');$heading['title']='Imported heading';
+$text=$s->emptyBlock('text');$text['text']='<p>Related paragraph</p>';
+$right=$s->emptyBlock('image_right');$right['url']='/right.jpg';$right['title']='Right section';
+$cards=$s->renderCards([$heading,$text,$b,$right]);
+check(substr_count($cards,'class="chisimba-content-card chisimba-prose"')===3,'Title-only fragment must not create an extra card');
+check(strpos($cards,'Imported heading')<strpos($cards,'Related paragraph'),'Heading precedes related content');
+check(str_contains($cards,'chisimba-content-block--image-left')===false&&str_contains($cards,'chisimba-content-block--image-right'),'Layout types retained');
+check($heading['text']===''&&$text['title']==='','Rendering does not rewrite imported content');
+echo "PASS: heading fragments share content cards; complete image sections remain separate\n";
