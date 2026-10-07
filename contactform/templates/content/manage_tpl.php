@@ -13,7 +13,7 @@
 <?php if(($op==='spam'&&$contactFolder==='spam')||($op==='trash'&&$contactFolder==='trash')||($op==='restore'&&$contactFolder==='inbox'))continue; ?>
 <button type="submit" class="button chisimba-button-secondary" name="operation" value="<?= $op ?>"><?= $icon($glyph) ?> <?= $e($t('action_'.$op)) ?></button><?php endforeach; ?></div>
 <p><?= $e($t('selection_hint')) ?></p>
-<?php foreach($contactRows as $row): ?><article class="chisimba-form-card chisimba-form-card--wide chisimba-flow">
+<?php foreach($contactRows as $row): ?><article class="chisimba-form-card chisimba-form-card--wide chisimba-flow chisimba-wrap-anywhere">
 <div class="chisimba-cluster"><input type="checkbox" name="ids[]" value="<?= $e($row['id']) ?>" id="select-<?= $e($row['id']) ?>"><h2><label for="select-<?= $e($row['id']) ?>"><?= $e($row['subject']) ?></label></h2></div>
 <p><?= $e($row['name']) ?> · <a href="mailto:<?= $e($row['email']) ?>"><?= $e($row['email']) ?></a></p>
 <p><?= $e($row['datecreated']) ?> UTC · <?= $e($t('state_'.$row['status'])) ?></p>
