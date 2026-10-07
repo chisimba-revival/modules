@@ -89,3 +89,54 @@ if (comboOffer && typeof comboOffer.showPopover === 'function') {
     comboOffer.showPopover();
     comboOffer.querySelector('[popovertargetaction="hide"]').focus({preventScroll:true});
 }
+
+// Refresh server-calculated quantities/totals without discarding delivery inputs.
+(() => {
+    let updating = false;
+    let needsRefresh = false;
+    document.addEventListener('submit', event => {
+        if (updating && event.target.closest('[data-shop-cart]')) event.preventDefault();
+        if (needsRefresh && event.target.matches('[data-cart-delivery]')) event.preventDefault();
+    });
+    document.addEventListener('change', async event => {
+        if (!event.target.matches('[data-cart-quantities] input[type="number"]')) return;
+        const form = event.target.closest('form');
+        if (updating || !form.reportValidity()) return;
+        const main = form.closest('[data-shop-cart]');
+        const status = main.querySelector('[data-cart-status]');
+        const body = new FormData(form);
+        const focusId = event.target.id;
+        updating = true;
+        needsRefresh = true;
+        main.setAttribute('aria-busy', 'true');
+        status.hidden = false;
+        status.textContent = main.dataset.updating;
+        const controls = [...form.querySelectorAll('input, button')];
+        controls.forEach(control => { control.disabled = true; });
+        try {
+            const response = await fetch(form.action, {method:'POST', body, credentials:'same-origin'});
+            const html = await response.text();
+            const page = new DOMParser().parseFromString(html, 'text/html');
+            const replacement = page.querySelector('[data-shop-cart]');
+            if (!response.ok || !replacement || page.querySelector('.chisimba-form-error')) throw new Error('Cart update failed');
+            // Read just before replacing: the customer may still be typing delivery details.
+            main.querySelectorAll('[data-cart-delivery] input:not([type="hidden"]), [data-cart-delivery] select').forEach(input => {
+                if (!input.name) return;
+                const target = [...replacement.querySelectorAll('[data-cart-delivery] input, [data-cart-delivery] select')].find(other => other.name === input.name);
+                if (target) { target.value = input.value; target.checked = input.checked; }
+            });
+            const active = document.activeElement;
+            const restoreId = active && active.id ? active.id : focusId;
+            main.replaceWith(replacement);
+            const restore = document.getElementById(restoreId);
+            if (restore) restore.focus({preventScroll:true});
+            needsRefresh = false;
+        } catch (_) {
+            status.textContent = main.dataset.updateFailed;
+        } finally {
+            controls.forEach(control => { control.disabled = false; });
+            main.removeAttribute('aria-busy');
+            updating = false;
+        }
+    });
+})();

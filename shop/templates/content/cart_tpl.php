@@ -1,8 +1,9 @@
 <?php require __DIR__.'/common.php'; $draft=$shopDraft??[]; ?>
-<main class="chisimba-workspace chisimba-stack"><header class="chisimba-cluster"><h1><?=$t('cart')?></h1><a class="button chisimba-button-secondary" href="<?=$url('catalogue')?>"><?=$actionIcon('continue_shopping')?> <?=$t('continue_shopping')?></a><?=$this->getObject('contextualhelp','help')->show('shop','buying',true)?></header>
+<main class="chisimba-workspace chisimba-stack" data-shop-cart data-updating="<?=$t('cart_updating')?>" data-update-failed="<?=$t('cart_update_failed')?>"><header class="chisimba-cluster"><h1><?=$t('cart')?></h1><a class="button chisimba-button-secondary" href="<?=$url('catalogue')?>"><?=$actionIcon('continue_shopping')?> <?=$t('continue_shopping')?></a><?=$this->getObject('contextualhelp','help')->show('shop','buying',true)?></header>
+<p data-cart-status role="status" hidden></p>
 <?php if (!$shopCart): ?><p><?=$t('empty_cart')?></p><?php else: ?>
 <div class="chisimba-publishing-layout"><section class="chisimba-stack">
-<form method="post" action="<?=$url('updatecart')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); ?>
+<form method="post" data-cart-quantities action="<?=$url('updatecart')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); ?>
 <?php foreach ($shopCart as $id=>$quantity): $book=$shopService->book($id); ?>
 <div class="chisimba-form-grid"><div><strong><?=$esc($book['title']??$shopService->text('book_unavailable'))?></strong><?php if ($book): ?><p><?php $bookPrice($book); ?></p><?php if (!empty($book['components'])): ?><ul><?php foreach($book['components'] as $child): ?><li><?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?><?php endif; ?></div><div class="chisimba-form-field"><label for="cart-<?=$esc($id)?>"><?=$t('quantity')?> — <?=$esc($book['title']??$shopService->text('book_unavailable'))?></label>
 <input id="cart-<?=$esc($id)?>" type="number" name="quantity[<?=$esc($id)?>]" value="<?=$esc($quantity)?>" min="0" max="100" required></div><div class="chisimba-form-actions"><button class="button chisimba-button-secondary" type="submit" name="remove_book" value="<?=$esc($id)?>" aria-label="<?=$t('remove_item')?>: <?=$esc($book['title']??'')?>"><?=$actionIcon('remove_item')?> <?=$t('remove_item')?></button></div></div>
@@ -10,7 +11,7 @@
 <div class="chisimba-form-actions"><button class="button" type="submit"><?=$actionIcon('update_cart')?> <?=$t('update_cart')?></button><button class="button chisimba-button-secondary" type="submit" name="clear_cart" value="1" formnovalidate><?=$actionIcon('clear_cart')?> <?=$t('clear_cart')?></button></div></form>
 <?php if ($shopQuote): ?>
 <?php if ($shopService->ready()): ?>
-<form method="post" action="<?=$url('prepare')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('request_key',$shopRequest); $hidden('quote_hash',$shopService->quoteHash($shopQuote)); ?>
+<form method="post" data-cart-delivery action="<?=$url('prepare')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('request_key',$shopRequest); $hidden('quote_hash',$shopService->quoteHash($shopQuote)); ?>
 <h2><?=$t('delivery_details')?></h2><p><?=$t('delivery_only')?></p>
 <div class="chisimba-form-grid"><?php foreach (['name','email','phone','address_line','suburb','city','province','postal_code'] as $name) $field($name,$draft[$name]??'',$name==='email'?'email':($name==='phone'?'tel':'text'),$name!=='suburb'); ?></div>
 <div class="chisimba-form-field"><label for="shop-country"><?=$t('country')?></label><select id="shop-country" name="country"><option value="ZA"><?=$t('south_africa')?></option></select></div>

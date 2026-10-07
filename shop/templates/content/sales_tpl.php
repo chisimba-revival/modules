@@ -6,8 +6,15 @@ $selected=$sale['book_ids']??[];
 ?>
 <main class="chisimba-workspace chisimba-stack">
 <header class="chisimba-cluster"><h1><?=$t('sales')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','sales',true)?></header>
-<p><strong><?=$t($shopService->saleStatus($shopSale))?></strong> · <?=$t('sale_intro')?></p>
+<?php if ($shopSale['revision']): ?>
+<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow">
+<h2><?=$esc($shopSale['title'])?></h2><p><strong><?=$t($shopService->saleStatus($shopSale))?></strong> · <?=$esc($shopSale['percent'])?>% · <?=$esc(count($shopSale['book_ids']))?> <?=$t('sale_selected_books')?></p>
+<p><?=$t('saved_sale_help')?></p><a class="button" href="<?=$url('editsale')?>"><?=$actionIcon('edit')?> <?=$t('edit_sale')?></a>
+</section>
+<?php else: ?><p><?=$t('sale_intro')?></p><?php endif; ?>
 <?php if(!empty($shopSale['enabled'])): ?><form method="post" action="<?=$url('stopsale')?>"><?php $csrf();$hidden('revision',$shopSale['revision']); ?><button class="button chisimba-button-secondary" type="submit"><?=$actionIcon('stop_sale')?> <?=$t('stop_sale')?></button></form><?php endif; ?>
+<?php if (!empty($shopSaleEditing) || !$shopSale['revision']): ?>
+<h2><?=$t($shopSale['revision']?'edit_sale':'sale_details')?></h2>
 <form method="post" action="<?=$url('savesale')?>" class="chisimba-form chisimba-stack"><?php $csrf();$hidden('revision',$sale['revision']??$shopSale['revision']); ?>
 <section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2><?=$t('sale_details')?></h2>
 <?php $field('title',$sale['title']??'');$field('description',$sale['description']??'','textarea',false); ?>
@@ -25,4 +32,4 @@ $selected=$sale['book_ids']??[];
 <div class="chisimba-form-actions"><button type="button" class="button chisimba-button-secondary" hidden data-shop-picker="<?=$esc($this->uri(['action'=>'filepicker','target'=>'shop-image_url','policy'=>'image','location'=>'user'],'filemanager'))?>"><?=$actionIcon('choose_image')?> <?=$t('choose_image')?></button></div>
 </section>
 <section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><label><input name="enabled" type="checkbox" value="1"<?=!empty($sale['enabled'])?' checked':''?>> <?=$t('enable_sale')?></label><p><?=$t('sale_enable_help')?></p><div class="chisimba-form-actions"><button class="button" type="submit"><?=$actionIcon('save')?> <?=$t('save_sale')?></button><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('cancel')?> <?=$t('cancel')?></a></div></section>
-</form></main>
+</form><?php endif; ?></main>

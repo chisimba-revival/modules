@@ -10,7 +10,7 @@ class shop extends controller
         $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
     public function requiresLogin($action)
-    { return in_array($action, ['sales','savesale','stopsale','manage','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
+    { return in_array($action, ['sales','editsale','savesale','stopsale','manage','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
     private function param($key) { $value = $this->getParam($key, ''); return is_string($value) ? $value : ''; }
     private function input()
     {
@@ -52,7 +52,7 @@ class shop extends controller
             http_response_code($error->getMessage() === 'forbidden' ? 403 : 400);
             $this->setVar('shopError', $error->getMessage()); $this->setVar('shopDraft', $this->input());
             $template = 'error_tpl.php';
-            if (in_array($action,['savesale','stopsale'],true) && $this->service->canManage()) { $this->setVar('shopSale',$this->service->sale()); $this->setVar('shopBooks',$this->service->books(true)); $template='sales_tpl.php'; }
+            if (in_array($action,['savesale','stopsale'],true) && $this->service->canManage()) { $this->setVar('shopSale',$this->service->sale()); $this->setVar('shopSaleEditing',true); $this->setVar('shopBooks',$this->service->books(true)); $template='sales_tpl.php'; }
             if ($action === 'savebook' && $this->service->canManage()) { $this->setVar('shopBooks',$this->service->books(true)); $this->setVar('shopBook', $this->input()); $template = 'editor_tpl.php'; }
             if ($action === 'savesettings' && $this->service->canManage()) { $this->setVar('shopSettings', $this->service->settings()); $template = 'settings_tpl.php'; }
             if (in_array($action,['prepare','acceptcombo'],true)) {
@@ -62,7 +62,7 @@ class shop extends controller
             error_log('Shop request failed: ' . get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine());
             http_response_code(503); $this->setVar('shopError', 'temporarily_unavailable'); $this->setVar('shopDraft', $this->input()); $template = 'error_tpl.php';
         }
-        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.003', ENT_QUOTES, 'UTF-8') . '"></script>');
+        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.006', ENT_QUOTES, 'UTF-8') . '"></script>');
         $this->setVar('shopCsrf', $this->csrf->issue('shop'));
         return $template;
     }
@@ -150,9 +150,17 @@ class shop extends controller
                 }
                 $this->service->reconcile($this->param('token')); $this->redirect('order', ['token' => $this->param('token')]); break;
             case 'order':
-                $this->setVar('shopOrder', $this->service->order($this->param('token'))); $this->setVar('shopToken', $this->param('token')); return 'order_tpl.php';
+                $order = $this->service->order($this->param('token'));
+                // The private link identifies the order, never the payment outcome.
+                // Ask the provider using the stored intent, including on its return URL.
+                if ($order['payment_state'] === 'unpaid' && $order['intent_id'] !== '') {
+                    try { $order = $this->service->reconcile($this->param('token')); }
+                    catch (Throwable $error) { error_log('Shop payment confirmation temporarily unavailable'); }
+                }
+                $this->setVar('shopOrder', $order); $this->setVar('shopToken', $this->param('token')); return 'order_tpl.php';
+            case 'editsale':
             case 'sales':
-                $this->service->requireManager(); $this->setVar('shopSale',$this->service->sale()); $this->setVar('shopBooks',$this->service->books(true)); return 'sales_tpl.php';
+                $this->service->requireManager(); $sale=$this->service->sale(); $this->setVar('shopSale',$sale); $this->setVar('shopSaleEditing',$action==='editsale' || !$sale['revision']); $this->setVar('shopBooks',$this->service->books(true)); return 'sales_tpl.php';
             case 'savesale':
                 $this->post(); $this->service->saveSale($this->input()); $this->redirect('sales'); break;
             case 'stopsale':

@@ -47,3 +47,16 @@ $data['shopOrder']['payment_state']='paid';$data['shopOrder']['fulfilment_state'
 $html=$host->render('order_tpl.php',$data);
 if(str_contains($html,'action=reconcile')||str_contains($html,'action=checkout')||!str_contains($html,'Payment received.'))throw new RuntimeException('Paid order must confirm payment without payment actions');
 echo "PASS: pending and paid customer payment actions\n";
+
+$data['shopOrder']['payment_state']='unpaid';
+$html=$host->render('order_tpl.php',$data);
+if(str_contains($html,'action=checkout')||!str_contains($html,'Confirming your payment'))throw new RuntimeException('Unconfirmed provider outcome must not invite another payment');
+echo "PASS: unconfirmed payment guidance\n";
+
+$data['shopSale']=$s->sale();$data['shopSale']['revision']=1;$data['shopSale']['title']='Saved sale QA';
+$data['shopSaleEditing']=false;$data['shopDraft']=[];
+$html=$host->render('sales_tpl.php',$data);
+if(!str_contains($html,'Saved sale QA')||!str_contains($html,'action=editsale')||str_contains($html,'action=savesale'))throw new RuntimeException('Saved disabled sale needs explicit edit entry');
+$data['shopSaleEditing']=true;$html=$host->render('sales_tpl.php',$data);
+if(!str_contains($html,'value="Saved sale QA"')||!str_contains($html,'action=savesale'))throw new RuntimeException('Edit must retain saved sale');
+echo "PASS: saved disabled sale summary and prefilled edit\n";
