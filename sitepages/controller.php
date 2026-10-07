@@ -22,7 +22,7 @@ class sitepages extends controller
         // Public entry routes stay public for every role; management is explicit.
         return match($action){'manage'=>$this->manage(),'save'=>$this->save(),'archive'=>$this->archive(),default=>$this->view()};
     }
-    private function canManage(){return $this->user->isAdmin();}
+    private function canManage(){return $this->getObject('pagepolicy','sitepages')->canManage();}
     private function text($key){return $this->getObject('language','language')->languageText('mod_sitepages_'.$key,'sitepages');}
     private function token()
     {
