@@ -1,0 +1,52 @@
+/* Progressive shop form behaviour. Server validation remains authoritative.
+ * @author Derek Keats <derek@dkeats.com>
+ */
+(() => {
+    'use strict';
+    const rows = document.querySelector('[data-shop-bands]');
+    const add = document.querySelector('[data-shop-add-band]');
+    if (rows && add) {
+        add.hidden = false;
+        add.addEventListener('click', () => {
+            const index = rows.children.length;
+            if (index >= 20) return;
+            const row = rows.lastElementChild.cloneNode(true);
+            row.querySelectorAll('input').forEach(input => {
+                const old = input.id;
+                input.id = old.replace(/-\d+$/, '-' + index);
+                input.name = input.name.replace(/\[\d+\]/, '[' + index + ']');
+                input.value = '';
+                const label = row.querySelector('label[for="' + old + '"]');
+                label.htmlFor = input.id;
+                label.textContent = label.textContent.replace(/\d+$/, String(index + 1));
+            });
+            rows.appendChild(row);
+            row.querySelector('input').focus();
+            add.disabled = rows.children.length >= 20;
+        });
+    }
+    const image = document.querySelector('[name="image_url"]');
+    const preview = document.querySelector('[data-shop-cover]');
+    const picker = document.querySelector('[data-shop-picker]');
+    if (image && preview) {
+        const update = () => {
+            let url;
+            try { url = new URL(image.value); } catch (_) { preview.hidden = true; return; }
+            preview.hidden = url.origin !== location.origin || url.protocol !== 'https:';
+            if (!preview.hidden) preview.src = url.href;
+        };
+        image.addEventListener('change', update);
+        if (picker) {
+            picker.hidden = false;
+            picker.addEventListener('click', () => window.open(picker.dataset.shopPicker, 'chisimbaFilePicker', 'width=920,height=720,resizable=yes,scrollbars=yes'));
+            const previous = window.ChisimbaFilePickerReceive;
+            window.ChisimbaFilePickerReceive = (target, file) => {
+                if (target !== image.id) { if (previous) previous(target, file); return; }
+                if (!file || !file.url) return;
+                const url = new URL(file.url, location.href);
+                if (url.origin !== location.origin || url.protocol !== 'https:') return;
+                image.value = url.href; image.dispatchEvent(new Event('change', {bubbles:true}));
+            };
+        }
+    }
+})();

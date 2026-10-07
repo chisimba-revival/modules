@@ -1,9 +1,12 @@
 <?php
-/** Server-owned catalogue. Historic price rows are never edited. */
+/** Server-owned catalogue. Historic price rows are never edited.
+ * @author Derek Keats <derek@dkeats.com>
+ */
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class paymentcatalogservice extends ChisimbaObject
 {
-    private const PURPOSES=array('membership','private_course','contribution');
+    private $products; private $prices; private $contexts;
+    private const PURPOSES=array('membership','private_course','contribution','event');
     private const PERIODS=array('monthly','annual','one_off');
     /** Resolve the site's active monthly offer for a required membership. */
     public function monthlyMembershipProduct($requiredTier)
@@ -60,10 +63,10 @@ class paymentcatalogservice extends ChisimbaObject
     }
     public function createProduct(array $input) {
         $purpose=$this->enum($input['purposeType']??null,self::PURPOSES); $period=$this->enum($input['billingPeriod']??null,self::PERIODS);
-        if($purpose==='contribution'&&$period!=='one_off') return array('ok'=>false,'code'=>'invalid_product');
+        if(in_array($purpose,array('contribution','event'),true)&&$period!=='one_off') return array('ok'=>false,'code'=>'invalid_product');
         $duration=filter_var($input['durationMonths']??null,FILTER_VALIDATE_INT,array('options'=>array('min_range'=>1,'max_range'=>120)));
         if($period==='one_off'&&$purpose==='private_course') $duration=null;
-        if($purpose==='contribution') $duration=null;
+        if(in_array($purpose,array('contribution','event'),true)) $duration=null;
         $values=array('code'=>$this->identifier($input['code']??null,96),'name'=>$this->text($input['name']??null,191),'purpose_type'=>$purpose,'purpose_id'=>$this->text($input['purposeId']??null,191),'billing_period'=>$period,'duration_months'=>$duration===false?null:$duration,'active'=>1);
         if($values['code']===null||$values['name']===null||$values['purpose_type']===null||$values['purpose_id']===null||$values['billing_period']===null||($purpose==='membership'&&($duration===null||($period==='one_off'&&$duration!==1)||(!isset($this->getObject('membershipservice','membership-service')->tiers(true)[$values['purpose_id']]) || $values['purpose_id']===$this->getObject('membershipservice','membership-service')->baselineTier())))) return array('ok'=>false,'code'=>'invalid_product');
         if($purpose==='private_course') {

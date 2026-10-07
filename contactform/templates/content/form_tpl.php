@@ -1,0 +1,16 @@
+<?php require __DIR__.'/common.php';$in=$contactInput;foreach($this->getObject('pagemetadata','ui')->build($t('title'),$t('intro'),['module'=>'contactform']) as $key=>$value)$this->setVar($key,$value);
+$this->appendArrayVar('headerParams','<script defer src="'.$e($this->getResourceUri('draftform.js','htmlelements')).'"></script>'); ?>
+<main class="chisimba-form-page"><section class="chisimba-form-card chisimba-form-card--wide">
+<header><h1><?= $e($t('title')) ?></h1><p><?= $e($t('intro')) ?></p><div class="chisimba-form-actions"><?= $this->getObject('contextualhelp','help')->show('contactform','sending',true) ?><?php if($service->canManage()): ?><a class="button" href="<?= $e($url(['action'=>'manage'])) ?>"><?= $icon('inbox') ?><?= $e($t('manage')) ?></a><?php endif; ?></div></header>
+<?php if($service->mode()==='preview'): ?><p role="status"><?= $e($t('preview_notice')) ?></p><?php elseif($service->mode()!=='live'): ?><p role="alert"><?= $e($t('unavailable')) ?></p><?php endif; ?>
+<?php if($contactError!==''): ?><p role="alert"><?= $e($contactError) ?></p><?php endif; ?>
+<form method="post" class="chisimba-form" action="<?= $e($url(['action'=>'submit'])) ?>" data-draft-form="contactform" data-draft-fields="id,name,email,subject,message" data-token-url="<?= $e($url(['action'=>'token'])) ?>" data-draft-saving="<?= $e($t('sending')) ?>" data-draft-failure="<?= $e($t('failed')) ?>" data-draft-stored="<?= $e($t('local_draft')) ?>" data-draft-unavailable="<?= $e($t('storage_unavailable')) ?>">
+<?php foreach($contactEvidence as $key=>$value): ?><input type="hidden" name="abuse_<?= $e($key) ?>" value="<?= $e($value) ?>"><?php endforeach; ?>
+<input type="hidden" name="id" value="<?= $e($in['id']) ?>"><input type="hidden" name="csrf_token" value="<?= $e($contactToken) ?>">
+<div data-draft-recovery hidden><p><?= $e($t('recover_notice')) ?></p><div class="chisimba-form-actions"><button type="button" class="button" data-draft-restore><?= $icon('rotate-ccw') ?><?= $e($t('restore')) ?></button><button type="button" class="button" data-draft-discard><?= $icon('x') ?><?= $e($t('discard')) ?></button></div></div>
+<div hidden aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off" value=""></div>
+<?php foreach(['name'=>['text',150,'name'],'email'=>['email',254,'email'],'subject'=>['text',200,'off']] as $key=>$field): ?><div class="chisimba-form-field"><label for="contact-<?= $key ?>"><?= $e($t($key==='name'?'sender_name':$key)) ?></label><input id="contact-<?= $key ?>" name="<?= $key ?>" type="<?= $field[0] ?>" maxlength="<?= $field[1] ?>" autocomplete="<?= $field[2] ?>" required value="<?= $e($in[$key]) ?>"></div><?php endforeach; ?>
+<div class="chisimba-form-field"><label for="contact-message"><?= $e($t('message')) ?></label><textarea id="contact-message" name="message" rows="8" minlength="5" maxlength="10000" required><?= $e($in['message']) ?></textarea></div>
+<p><?= $e($t('privacy')) ?></p>
+<p role="status" aria-live="polite" data-draft-status></p><div class="chisimba-form-actions"><button class="button chisimba-button-primary" type="submit"><?= $icon('send') ?><?= $e($t('send')) ?></button></div>
+</form></section></main>

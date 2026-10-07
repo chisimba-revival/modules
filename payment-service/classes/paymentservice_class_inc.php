@@ -1,10 +1,14 @@
 <?php
-/** Provider-neutral payment core. Browser returns never confirm payment. */
+/** Provider-neutral payment core. Browser returns never confirm payment.
+ * @author Derek Keats <derek@dkeats.com>
+ */
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 
 class paymentservice extends ChisimbaObject
 {
-    private const PURPOSES = array('membership', 'private_course', 'contribution');
+    private $intents; private $events; private $payments; private $catalog;
+    private $subscriptions; private $users; private $accountEvents;
+    private const PURPOSES = array('membership', 'private_course', 'contribution', 'event', 'shop_order');
     private const PROVIDERS = array('fake', 'yoco', 'paystack');
     private const EVENT_STATES = array(
         'payment.succeeded' => 'succeeded',
@@ -87,7 +91,9 @@ class paymentservice extends ChisimbaObject
         $values = $this->normaliseIntent($input);
         if ($values === NULL) { return $this->result(FALSE, 'invalid_intent'); }
         if ($values['user_id'] !== null && $this->users->findByUserId($values['user_id']) === NULL) { return $this->result(FALSE, 'user_not_found'); }
-        if ($values['user_id'] === null && !$this->getObject('contributionservice')->matchesIntent($values)) { return $this->result(FALSE, 'invalid_contribution'); }
+        if ($values['purpose_type'] === 'event' && !$this->getObject('eventservice','events')->matchesIntent($values)) { return $this->result(FALSE, 'invalid_event_booking'); }
+        if ($values['purpose_type'] === 'shop_order' && !$this->getObject('shopservice', 'shop')->matchesIntent($values)) { return $this->result(FALSE, 'invalid_shop_order'); }
+        if ($values['user_id'] === null && !in_array($values['purpose_type'], array('event', 'shop_order'), true) && !$this->getObject('contributionservice')->matchesIntent($values)) { return $this->result(FALSE, 'invalid_contribution'); }
         $existing = $this->intents->byIdempotency($values['idempotency_key']);
         if ($existing !== NULL) { return $this->result(TRUE, 'already_created', $existing['id']); }
         $values['id'] = bin2hex(random_bytes(16));
@@ -105,7 +111,19 @@ class paymentservice extends ChisimbaObject
         if ($intent['state'] !== 'created') { return $this->result(TRUE, 'checkout_already_started', $intent['id']); }
         $provider = $this->provider($intent['provider_code']);
         if ($provider === NULL || !$provider->isAvailable()) { return $this->result(FALSE, 'provider_unavailable', $intent['id']); }
-        if($intent['provider_code']!=='fake') $options['product']=$this->catalog->productVersion($intent['product_code'],$intent['price_version']);
+        if ($intent['purpose_type'] === 'shop_order') {
+            if (!$this->getObject('shopservice', 'shop')->matchesIntent($intent)) return $this->result(FALSE, 'invalid_shop_order', $intent['id']);
+            $options['product'] = array('billing_period' => 'one_off');
+            // Paystack receives this reference even if the HTTP response is lost.
+            // Retain it before contacting the provider so explicit reconciliation
+            // can recover an uncertain checkout without creating another charge.
+            if (empty($intent['provider_reference'])) {
+                if ($this->intents->transition($intent['id'], 'created', array('provider_reference' => $intent['id'])) === false) {
+                    return $this->result(FALSE, 'state_transition_failed', $intent['id']);
+                }
+                $intent['provider_reference'] = $intent['id'];
+            }
+        } elseif($intent['provider_code']!=='fake') $options['product']=$this->catalog->productVersion($intent['product_code'],$intent['price_version']);
         $checkout = $provider->createCheckout($intent, $intent['provider_code']==='fake' ? ($options['scenario'] ?? 'success') : $options);
         if (empty($checkout['ok'])) { return array_merge($this->result(FALSE, $checkout['code'] ?? 'checkout_failed', $intent['id']), array('retryable'=>!empty($checkout['retryable']))); }
         $this->intents->transition($intent['id'], 'created', array(
@@ -188,6 +206,7 @@ class paymentservice extends ChisimbaObject
             if ($event['type'] === 'payment.succeeded' && is_array($intent)) {
                 $this->applyFulfilment($intent, $event['providerPaymentId']);
             }
+            if(is_array($intent)&&in_array($intent['purpose_type'],array('event','shop_order'),true)&&in_array($intent['state'],array('refunded','reversed','disputed'),true)) $this->reverseFulfilment($intent,$event['providerPaymentId']);
             if(is_array($event['subscription']??null)) $this->rememberSubscription($providerCode,$event);
             return $this->result(TRUE, 'duplicate_event_ignored', $event['intentId']);
         }
@@ -281,7 +300,7 @@ class paymentservice extends ChisimbaObject
                 return $this->result(TRUE, 'payment_succeeded_fulfilment_pending', $intent['id']);
             }
         }
-        if (in_array($next,array('refunded','reversed'),TRUE)) {
+        if (in_array($next,array('refunded','reversed'),TRUE) || ($next==='disputed'&&in_array($intent['purpose_type'],array('event','shop_order'),true))) {
             $originalPayment=method_exists($this->payments,'successfulReferenceForIntent')
                 ? $this->payments->successfulReferenceForIntent($intent['id']) : NULL;
             $this->reverseFulfilment($intent,$originalPayment?:$event['providerPaymentId']);
@@ -302,6 +321,8 @@ class paymentservice extends ChisimbaObject
 
     private function applyFulfilment(array $intent,$paymentReference)
     {
+        if ($intent['purpose_type'] === 'shop_order') return $this->getObject('shopservice', 'shop')->fulfil($intent);
+        if($intent['purpose_type']==='event') return $this->getObject('eventservice','events')->fulfil($intent);
         // Contributions are financial records only; they never confer access.
         if($intent['purpose_type']==='contribution') {
             return $intent['user_id'] === null
@@ -332,6 +353,8 @@ class paymentservice extends ChisimbaObject
 
     private function reverseFulfilment(array $intent,$paymentReference)
     {
+        if ($intent['purpose_type'] === 'shop_order') return $this->getObject('shopservice', 'shop')->reverse($intent);
+        if($intent['purpose_type']==='event') return $this->getObject('eventservice','events')->reverse($intent);
         if($intent['purpose_type']==='contribution') return array('ok'=>true,'code'=>'contribution_reversed');
         try {
             if($intent['purpose_type']==='membership') return $this->getObject('membershipservice','membership-service')->endPeriodByIdempotency('payment-intent:'.$intent['id'],$intent['correlation_id']);
@@ -364,7 +387,7 @@ class paymentservice extends ChisimbaObject
             'correlation_id'=>$this->identifier($input['correlationId'] ?? NULL,64),
         );
         $required=$values;
-        if($values['purpose_type']==='contribution' && empty($input['userId'])) { $values['user_id']=null; unset($required['user_id']); }
+        if(in_array($values['purpose_type'],array('contribution','event','shop_order'),true) && empty($input['userId'])) { $values['user_id']=null; unset($required['user_id']); }
         return in_array(NULL,$required,TRUE) || $amount===FALSE || !preg_match('/^[A-Z]{3}$/',$values['currency']) ? NULL : $values;
     }
 

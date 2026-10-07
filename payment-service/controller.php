@@ -36,7 +36,7 @@ class payment_service extends controller
     }
     private function saveTiers(){if(!$this->user->isAdmin()||!$this->validPost())return $this->tiers('','invalid_request',true);$input=array();foreach(array_keys($this->getObject('membershipservice','membership-service')->tiers(true)) as $tier){$input[$tier.'_summary']=$this->param($tier.'_summary');$input[$tier.'_features']=$this->param($tier.'_features');}$result=$this->getObject('tierpresentationservice')->save($input);return $this->tiers($result['ok']?'Membership page saved.':'',$result['ok']?'':$result['code'],!$result['ok']);}
     private function catalogue($message='',$error=''){
-        $products=$this->catalog->listProducts(true); $userId=$this->user->userId();
+        $products=array_values(array_filter($this->catalog->listProducts(true),static fn($p)=>$p['purpose_type']!=='event')); $userId=$this->user->userId();
         $requested=$this->param('product');
         $purpose=$this->param('purpose');
         $requestedTier=$this->param('tier');

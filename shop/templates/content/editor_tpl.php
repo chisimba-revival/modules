@@ -1,0 +1,12 @@
+<?php require __DIR__.'/common.php'; $book=$shopBook??[]; ?>
+<main class="chisimba-workspace chisimba-stack"><header class="chisimba-cluster"><h1><?=$t('edit_book')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','managing',true)?></header>
+<form method="post" action="<?=$url('savebook')?>" class="chisimba-form-card chisimba-form chisimba-flow"><?php $csrf(); $hidden('id',$book['id']??''); $hidden('revision',$book['revision']??0); ?>
+<?php $field('title',$book['title']??''); $field('description',$book['description']??'','textarea',false); ?>
+<div class="chisimba-form-grid"><?php $field('isbn',$book['isbn']??'','text',false); $field('price',$book['price']??(isset($book['price_minor'])?number_format($book['price_minor']/100,2,'.',''):'')); $field('stock',$book['stock']??0,'number'); ?></div>
+<p><?=$t('price_hint')?></p>
+<?php $field('image_url',$book['image_url']??'','url',false); ?>
+<img data-shop-cover class="chisimba-featured-image-preview"<?=empty($book['image_url'])?' hidden':' src="'.$esc($book['image_url']).'"'?> alt="<?=$esc($book['title']??'')?>">
+<div class="chisimba-form-actions chisimba-form-actions--equal"><button type="button" class="button chisimba-button-secondary" hidden data-shop-picker="<?=$esc($this->uri(['action'=>'filepicker','target'=>'shop-image_url','policy'=>'image','location'=>'user'],'filemanager'))?>"><?=$t('choose_image')?></button></div>
+<p><?=$t('image_hint')?></p>
+<div class="chisimba-form-field"><label for="shop-status"><?=$t('status')?></label><select id="shop-status" name="status"><?php foreach (['draft','published','archived'] as $status): ?><option value="<?=$esc($status)?>"<?=($book['status']??'draft')===$status?' selected':''?>><?=$t($status)?></option><?php endforeach; ?></select></div>
+<div class="chisimba-form-actions chisimba-form-actions--equal"><button type="submit" class="button"><?=$actionIcon('save')?> <?=$t('save')?></button><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('cancel')?> <?=$t('cancel')?></a></div></form></main>

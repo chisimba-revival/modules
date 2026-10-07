@@ -1,0 +1,1 @@
+<?php require __DIR__.'/common.php'; ?><main class="chisimba-form-page"><section class="chisimba-form-card"><h1><?= $e($t('title')) ?></h1><p role="status"><?= $e($contactMessage) ?></p><a class="button" href="<?= $e($url(['action'=>'view'])) ?>"><?= $icon('arrow-left') ?><?= $e($t('back')) ?></a></section></main>
