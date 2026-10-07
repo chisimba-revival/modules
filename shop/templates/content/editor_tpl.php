@@ -4,7 +4,7 @@
 <?php $field('title',$book['title']??''); $field('description',$book['description']??'','textarea',false); ?>
 <div class="chisimba-form-grid"><?php if (!$isCombo) $field('isbn',$book['isbn']??'','text',false); $field('price',$book['price']??(isset($book['price_minor'])?number_format($book['price_minor']/100,2,'.',''):'')); if (!$isCombo) $field('stock',$book['stock']??0,'number'); ?></div>
 <?php if ($isCombo): ?><fieldset class="chisimba-form-field"><legend><?=$t('combo_books')?></legend><p><?=$t('combo_help')?></p>
-<?php foreach ($shopBooks??[] as $child): if (($child['kind']??'')==='combo'||$child['id']===($book['id']??'')) continue; ?>
+<?php foreach ($shopBooks??[] as $child): if ($child['status']==='archived'||($child['kind']??'')==='combo'||$child['id']===($book['id']??'')) continue; ?>
 <label><input type="checkbox" name="book_ids[]" value="<?=$esc($child['id'])?>"<?=in_array($child['id'],$book['book_ids']??[],true)?' checked':''?>> <?=$esc($child['title'])?> · <?=$t($child['status'])?> · <?=$money($child['sale_price_minor']??$child['price_minor'])?></label>
 <?php endforeach; ?></fieldset><p><label><input type="checkbox" name="cross_sell" value="1"<?=!empty($book['cross_sell'])?' checked':''?>> <?=$t('cross_sell')?></label></p><?php endif; ?>
 <p><?=$t('price_hint')?></p><div class="chisimba-form-field"><label for="shop-sale-price"><?=$t('sale_price')?></label><input id="shop-sale-price" readonly value="<?=isset($book['sale_price_minor'])?$esc(number_format($book['sale_price_minor']/100,2,'.','')):''?>"><p><?=$t('sale_price_help')?> <a href="<?=$url('sales')?>"><?=$t('sales')?></a></p></div>

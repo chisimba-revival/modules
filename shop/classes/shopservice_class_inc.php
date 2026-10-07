@@ -214,7 +214,9 @@ class shopservice extends ChisimbaObject
                 $ids=$input['book_ids']??[];
                 if (!is_array($ids) || count($ids)<2 || count($ids)>20 || count(array_unique($ids))!==count($ids)) throw new DomainException('invalid_combo');
                 foreach ($ids as $child) {
-                    if (!is_string($child) || $child===$id || !$this->store->one('books',$this->id($child)) || $this->combo($child)) throw new DomainException('invalid_combo');
+                    if (!is_string($child) || $child===$id) throw new DomainException('invalid_combo');
+                    $component=$this->store->one('books',$this->id($child));
+                    if (!$component || $component['status']==='archived' || $this->combo($child)) throw new DomainException('invalid_combo');
                 }
                 sort($ids);
             }

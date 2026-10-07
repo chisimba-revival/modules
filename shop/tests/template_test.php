@@ -66,3 +66,8 @@ $data['shopBooks'][]=$archived;$data['shopSale']['book_ids']=[$archived['id']];
 $html=$host->render('sales_tpl.php',$data);
 if(str_contains($html,'Archived checkout fixture')||str_contains($html,'value="'.$archived['id'].'"'))throw new RuntimeException('Archived product offered in sale editor');
 echo "PASS: archived products absent from sale options and price previews\n";
+
+$data['shopBook']=$s->book($combo,true);
+$html=$host->render('editor_tpl.php',$data);
+if(str_contains($html,'Archived checkout fixture')||str_contains($html,'value="'.$archived['id'].'"'))throw new RuntimeException('Archived product offered in combo editor');
+echo "PASS: archived products absent from combo choices\n";

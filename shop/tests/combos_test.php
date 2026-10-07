@@ -37,3 +37,7 @@ $intent['state']='refunded';$s->reverse($intent);$order=$s->order($token);$s->up
 $ok($store->one('books',$ids[0])['stock']===10&&$store->one('books',$ids[2])['stock']===10,'Refund restock uses original contents');
 $reject(fn()=>$s->quote([$combo=>51]),'invalid_number');
 echo "PASS: $n combo pricing, overlap, stock, reservation, fulfilment, shipping and stale-offer checks\n";
+
+$store->save('books',$ids[2],['status'=>'archived']);
+$reject(fn()=>$s->saveBook(array_replace($input,['id'=>str_repeat('9',32),'book_ids'=>[$ids[0],$ids[2]]])),'invalid_combo');
+echo "PASS: archived combo components rejected\n";
