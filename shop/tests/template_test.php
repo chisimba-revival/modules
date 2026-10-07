@@ -31,4 +31,9 @@ foreach(glob(dirname(__DIR__).'/templates/content/*_tpl.php') as $file){
 }
 $data['shopManaged']=true;$host->render('order_tpl.php',$data);
 $data['shopError']='session_expired';$data['shopDraft']=$details;$host->render('error_tpl.php',$data);
+$b=str_repeat('c',32);$s->saveBook(['id'=>$b,'revision'=>0,'title'=>'Second fixture','price'=>'100','stock'=>'10','status'=>'published']);
+$combo=str_repeat('e',32);$s->saveBook(['id'=>$combo,'revision'=>0,'kind'=>'combo','title'=>'<script>inert</script>','price'=>'150','status'=>'published','book_ids'=>[$id,$b],'cross_sell'=>'1']);
+$data['shopOffer']=$s->comboOffer([$id=>1]);$html=$host->render('cart_tpl.php',$data);
+if(str_contains($html,'<script>inert</script>')||!str_contains($html,'No thanks, continue checkout')||!str_contains($html,'name="after_hash"'))throw new RuntimeException('Offer escaping/dismissal/hash');
+$data['shopBook']=$s->book($combo,true);$data['shopBooks']=$s->books(true);$host->render('editor_tpl.php',$data);
 echo "PASS: $count templates, registered labels, escaped content, POST tokens and retained input\n";

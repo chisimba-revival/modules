@@ -10,7 +10,7 @@ class ShopMemoryStore {
  public function add($t,$row){if(isset($this->tables[$t][$row['id']]))throw new RuntimeException('duplicate');$this->tables[$t][$row['id']]=$row;return $row;}
  public function save($t,$id,$changes){$this->tables[$t][$id]=array_merge($this->tables[$t][$id],$changes);}
  public function transaction($fn){$before=$this->tables;try{return $fn();}catch(Throwable $e){$this->tables=$before;throw $e;}}
- public function reserved($id,$now,$except=''){$n=0;foreach($this->tables['orders'] as $o){if($o['id']===$except||$o['payment_state']!=='unpaid'||$o['fulfilment_state']!=='held'||$o['hold_until']<=$now)continue;foreach(json_decode($o['snapshot'],true)['lines'] as $line)if($line['book_id']===$id)$n+=$line['quantity'];}return $n;}
+ public function reserved($id,$now,$except=''){$n=0;foreach($this->tables['orders'] as $o){if($o['id']===$except||$o['payment_state']!=='unpaid'||$o['fulfilment_state']!=='held'||$o['hold_until']<=$now)continue;foreach(ShopRules::inventory(json_decode($o['snapshot'],true)) as $line)if($line['book_id']===$id)$n+=$line['quantity'];}return $n;}
  public function recentOrders(){return $this->rows('orders');}
 }
 class ShopFixtureUser {public $admin=true;public function isLoggedIn(){return $this->admin;}public function isAdmin(){return $this->admin;}public function userId(){return $this->admin?'fixture-manager':'';}}

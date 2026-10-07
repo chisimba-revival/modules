@@ -3,7 +3,7 @@
 <p><?=$t('reference')?>: <?=$esc($order['id'])?></p><p role="status"><?=$t($order['payment_state'])?> · <?=$t($order['fulfilment_state'])?></p>
 <?php if ($order['fulfilment_state']==='review'): ?><p class="chisimba-form-notice"><?=$t('review_help')?></p><?php endif; ?>
 <div class="chisimba-form-card">
-<?php foreach ($q['lines'] as $line): ?><p><?=$esc($line['quantity'])?> × <?=$esc($line['title'])?> — <?=$money($line['total_minor'])?></p><?php endforeach; ?>
+<?php foreach ($q['lines'] as $line): ?><p><?=$esc($line['quantity'])?> × <?=$esc($line['title'])?> — <?=$money($line['total_minor'])?></p><?php if (!empty($line['components'])): ?><ul><?php foreach($line['components'] as $child): ?><li><?=$esc($line['quantity']*$child['quantity'])?> × <?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?><?php endforeach; ?>
 <dl class="chisimba-details"><dt><?=$t('subtotal')?></dt><dd><?=$money($q['subtotal_minor'])?></dd><dt><?=$t('shipping')?></dt><dd><?=$money($q['shipping_minor'])?></dd><dt><?=$t('total')?></dt><dd><strong><?=$money($q['amount_minor'])?></strong></dd></dl>
 <h2><?=$t('delivery_details')?></h2><address><?php foreach ($address as $key=>$value): ?><?=$esc($key==='country'?$shopService->text('south_africa'):$value)?><br><?php endforeach; ?></address>
 <?php if ($order['courier']): ?><p><?=$t('courier')?>: <?=$esc($order['courier'])?> · <?=$t('tracking')?>: <?=$esc($order['tracking'])?></p><?php endif; ?>

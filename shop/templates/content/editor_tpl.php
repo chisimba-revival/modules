@@ -1,8 +1,12 @@
-<?php require __DIR__.'/common.php'; $book=$shopBook??[]; ?>
-<main class="chisimba-workspace chisimba-stack"><header class="chisimba-cluster"><h1><?=$t('edit_book')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','managing',true)?></header>
-<form method="post" action="<?=$url('savebook')?>" class="chisimba-form-card chisimba-form chisimba-flow"><?php $csrf(); $hidden('id',$book['id']??''); $hidden('revision',$book['revision']??0); ?>
+<?php require __DIR__.'/common.php'; $book=$shopBook??[]; $isCombo=($book['kind']??'')==='combo'||!empty($book['book_ids']); ?>
+<main class="chisimba-workspace chisimba-stack"><header class="chisimba-cluster"><h1><?=$t($isCombo?'edit_combo':'edit_book')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','managing',true)?></header>
+<form method="post" action="<?=$url('savebook')?>" class="chisimba-form-card chisimba-form chisimba-flow"><?php $csrf(); $hidden('id',$book['id']??''); $hidden('revision',$book['revision']??0); $hidden('kind',$isCombo?'combo':'book'); ?>
 <?php $field('title',$book['title']??''); $field('description',$book['description']??'','textarea',false); ?>
-<div class="chisimba-form-grid"><?php $field('isbn',$book['isbn']??'','text',false); $field('price',$book['price']??(isset($book['price_minor'])?number_format($book['price_minor']/100,2,'.',''):'')); $field('stock',$book['stock']??0,'number'); ?></div>
+<div class="chisimba-form-grid"><?php if (!$isCombo) $field('isbn',$book['isbn']??'','text',false); $field('price',$book['price']??(isset($book['price_minor'])?number_format($book['price_minor']/100,2,'.',''):'')); if (!$isCombo) $field('stock',$book['stock']??0,'number'); ?></div>
+<?php if ($isCombo): ?><fieldset class="chisimba-form-field"><legend><?=$t('combo_books')?></legend><p><?=$t('combo_help')?></p>
+<?php foreach ($shopBooks??[] as $child): if (($child['kind']??'')==='combo'||$child['id']===($book['id']??'')) continue; ?>
+<label><input type="checkbox" name="book_ids[]" value="<?=$esc($child['id'])?>"<?=in_array($child['id'],$book['book_ids']??[],true)?' checked':''?>> <?=$esc($child['title'])?> · <?=$t($child['status'])?> · <?=$money($child['sale_price_minor']??$child['price_minor'])?></label>
+<?php endforeach; ?></fieldset><p><label><input type="checkbox" name="cross_sell" value="1"<?=!empty($book['cross_sell'])?' checked':''?>> <?=$t('cross_sell')?></label></p><?php endif; ?>
 <p><?=$t('price_hint')?></p><div class="chisimba-form-field"><label for="shop-sale-price"><?=$t('sale_price')?></label><input id="shop-sale-price" readonly value="<?=isset($book['sale_price_minor'])?$esc(number_format($book['sale_price_minor']/100,2,'.','')):''?>"><p><?=$t('sale_price_help')?> <a href="<?=$url('sales')?>"><?=$t('sales')?></a></p></div>
 <?php $field('image_url',$book['image_url']??'','url',false); ?>
 <img data-shop-cover class="chisimba-featured-image-preview"<?=empty($book['image_url'])?' hidden':' src="'.$esc($book['image_url']).'"'?> alt="<?=$esc($book['title']??'')?>">

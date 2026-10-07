@@ -174,3 +174,36 @@ updates. Clearing also invalidates the session order-request key.
 
 Checks: `php shop/tests/sales_test.php`, `php shop/tests/promotion_test.php`, plus
 existing rules, service and template tests. No test contacts a payment provider.
+
+
+## Combo products and optional checkout offers
+
+Add combo creates a normal catalogue product with a manually set price and 2–20
+unique individual book IDs (one copy each). Product type is fixed after creation;
+combos cannot contain other combos. The definition uses the existing settings table
+under the product's 32-character ID. Book revision protects both edits in one
+transaction. There is no new schema or automatic production combo creation.
+
+Stock is derived from published constituents and their reservations. Shipping uses
+physical copy count, including mixed combo/individual baskets. Order lines snapshot
+contents; reservation, payment allocation and refund restocking aggregate that
+snapshot, preserving older orders and definitions edited after order review.
+Catalogue SAVE compares current individual selling prices and never shows a
+negative saving. General sales apply only to explicitly selected product IDs.
+
+Managers opt a combo into checkout offers. A partially represented combo with a
+positive saving and sufficient stock can be offered; a combo already present,
+all its books already present, or any overlapping combo suppresses the offer.
+Acceptance replaces one matching individual copy of each included book and adds
+one combo, retaining extra copies. Both old and new quote hashes are checked
+server-side under the shop lock. Nothing is purchased by accepting the offer.
+
+The native non-modal popover opens at most once per shopping session, resetting
+only when the cart is emptied. Close, No thanks, Escape and click-away dismiss it
+without a request or loss of checkout input. It never opens on validation errors.
+Unsupported browsers keep checkout available without a popup. Savings on shipping
+and the new basket total are computed from actual shipping bands.
+
+Check `php shop/tests/combos_test.php` plus existing service/rules/sales/template
+checks. Browser verification covers dismissal, repeat visits, acceptance, Help,
+keyboard focus and narrow screens with synthetic local data only.

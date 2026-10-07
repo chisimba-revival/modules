@@ -4,7 +4,7 @@
 <div class="chisimba-publishing-layout"><section class="chisimba-stack">
 <form method="post" action="<?=$url('updatecart')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); ?>
 <?php foreach ($shopCart as $id=>$quantity): $book=$shopService->book($id); ?>
-<div class="chisimba-form-grid"><div><strong><?=$esc($book['title']??$shopService->text('book_unavailable'))?></strong><?php if ($book): ?><p><?php $bookPrice($book); ?></p><?php endif; ?></div><div class="chisimba-form-field"><label for="cart-<?=$esc($id)?>"><?=$t('quantity')?> — <?=$esc($book['title']??$shopService->text('book_unavailable'))?></label>
+<div class="chisimba-form-grid"><div><strong><?=$esc($book['title']??$shopService->text('book_unavailable'))?></strong><?php if ($book): ?><p><?php $bookPrice($book); ?></p><?php if (!empty($book['components'])): ?><ul><?php foreach($book['components'] as $child): ?><li><?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?><?php endif; ?></div><div class="chisimba-form-field"><label for="cart-<?=$esc($id)?>"><?=$t('quantity')?> — <?=$esc($book['title']??$shopService->text('book_unavailable'))?></label>
 <input id="cart-<?=$esc($id)?>" type="number" name="quantity[<?=$esc($id)?>]" value="<?=$esc($quantity)?>" min="0" max="100" required></div><div class="chisimba-form-actions"><button class="button chisimba-button-secondary" type="submit" name="remove_book" value="<?=$esc($id)?>" aria-label="<?=$t('remove_item')?>: <?=$esc($book['title']??'')?>"><?=$actionIcon('remove_item')?> <?=$t('remove_item')?></button></div></div>
 <?php endforeach; ?>
 <div class="chisimba-form-actions"><button class="button" type="submit"><?=$actionIcon('update_cart')?> <?=$t('update_cart')?></button><button class="button chisimba-button-secondary" type="submit" name="clear_cart" value="1" formnovalidate><?=$actionIcon('clear_cart')?> <?=$t('clear_cart')?></button></div></form>
@@ -23,3 +23,17 @@
 <?php endif; ?></section><?php if ($shopQuote): ?><aside class="chisimba-form-card chisimba-sticky-summary"><dl class="chisimba-details"><dt><?=$t('subtotal')?></dt><dd><?=$money($shopQuote['subtotal_minor'])?></dd><dt><?=$t('shipping')?></dt><dd><?=$money($shopQuote['shipping_minor'])?></dd><dt><?=$t('total')?></dt><dd><strong><?=$money($shopQuote['amount_minor'])?></strong></dd></dl><p><?=$t('shipping_hint')?></p>
 <details><summary><?=$t('shipping_costs')?></summary><dl class="chisimba-details"><?php foreach ($shopSettings['zones']['ZA']['bands'] as $band): ?><dt><?=$esc($band['from'])?> <?=$t('books_from')?></dt><dd><?=$money($band['amount_minor'])?></dd><?php endforeach; ?></dl></details></aside>
 <?php endif; ?></div><?php endif; ?></main>
+
+<?php if (!empty($shopOffer)): $offer=$shopOffer; $combo=$offer['book']; ?>
+<section id="shop-combo-offer" popover="auto" class="chisimba-popover chisimba-offer-popover chisimba-stack" role="dialog" aria-modal="false" aria-labelledby="shop-offer-title" data-shop-offer>
+<header class="chisimba-page-heading"><h2 id="shop-offer-title"><?=$t('combo_offer')?></h2><button type="button" class="chisimba-icon-button" popovertarget="shop-combo-offer" popovertargetaction="hide" aria-label="<?=$t('dismiss_offer')?>"><?=$actionIcon('cancel')?></button></header>
+<h3><?=$esc($combo['title'])?></h3>
+<?php if ($combo['image_url']): ?><img class="chisimba-featured-image-preview" src="<?=$esc($combo['image_url'])?>" alt="<?=$esc($combo['title'])?>"><?php endif; ?>
+<p><?=$t('combo_replace_help')?></p><ul><?php foreach($combo['components'] as $child): ?><li><?=$esc($child['title'])?></li><?php endforeach; ?></ul>
+<p><?php $bookPrice($combo); ?> — <?=$t('versus_separate')?></p>
+<dl class="chisimba-details"><dt><?=$t('new_shipping')?></dt><dd><?=$money($offer['quote']['shipping_minor'])?></dd><dt><?=$t('new_total')?></dt><dd><?=$money($offer['quote']['amount_minor'])?></dd>
+<dt><?=$t($offer['extra_minor']>=0?'extra_to_pay':'basket_saving')?></dt><dd><?=$money(abs($offer['extra_minor']))?></dd></dl>
+<?php if ($offer['shipping_saving_minor']>0): ?><p><?=$t('shipping_saving')?>: <?=$money($offer['shipping_saving_minor'])?></p><?php endif; ?>
+<form method="post" action="<?=$url('acceptcombo')?>" class="chisimba-form-actions"><?php $csrf(); $hidden('id',$combo['id']); $hidden('before_hash',$offer['before_hash']); $hidden('after_hash',$shopService->quoteHash($offer['quote'])); ?>
+<button class="button" type="submit"><?=$actionIcon('add_to_cart')?> <?=$t('upgrade_combo')?></button><button class="button chisimba-button-secondary" type="button" popovertarget="shop-combo-offer" popovertargetaction="hide"><?=$actionIcon('cancel')?> <?=$t('no_thanks')?></button></form>
+</section><?php endif; ?>

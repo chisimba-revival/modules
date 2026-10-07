@@ -106,12 +106,72 @@ class shopservice extends ChisimbaObject
         if (time() < $sale['starts_at']) return 'sale_scheduled';
         return time() >= $sale['ends_at'] ? 'sale_ended' : 'sale_active';
     }
+    /** Combo definitions live alongside optional sale settings; product IDs stay stable. */
+    public function combo($id)
+    {
+        $row=$this->store->one('settings',$id);
+        return $row ? json_decode($row['settings_json'],true,512,JSON_THROW_ON_ERROR) : null;
+    }
+    private function comboBook(array $book, array $sale, int $now)
+    {
+        $definition=$this->combo($book['id']);
+        if (!$definition) return $book;
+        $book['kind']='combo'; $book['book_ids']=$definition['book_ids'];
+        $book['cross_sell']=!empty($definition['cross_sell']);
+        $book['components']=[]; $book['stock']=1000000; $separate=0;
+        foreach ($definition['book_ids'] as $id) {
+            $child=$this->store->one('books',$id);
+            if (!$child || $child['status']!=='published' || $this->combo($id)) { $book['stock']=0; continue; }
+            $book['stock']=min($book['stock'],max(0,(int)$child['stock']-$this->store->reserved($id,$now)));
+            $separate+=ShopSaleRules::price($child,$sale,$now)??(int)$child['price_minor'];
+            $book['components'][]=['book_id'=>$id,'title'=>$child['title'],'isbn'=>$child['isbn'],'quantity'=>1];
+        }
+        $book['saving_minor']=max(0,$separate-($book['sale_price_minor']??(int)$book['price_minor']));
+        return $book;
+    }
+    /** Only upgrade a partially represented combo; never duplicate an existing combo's books. */
+    public function comboOffer(array $cart, $onlyId=null)
+    {
+        $cart=ShopRules::cart($cart); if (!$cart) return null;
+        $before=$this->quote($cart); $covered=[];
+        foreach ($cart as $id=>$quantity) {
+            $definition=$this->combo($id);
+            if ($definition) foreach ($definition['book_ids'] as $child) $covered[$child]=true;
+        }
+        foreach ($this->books() as $combo) {
+            if (($onlyId!==null && $combo['id']!==$onlyId) || empty($combo['cross_sell']) || isset($cart[$combo['id']]) || $combo['stock']<1 || empty($combo['saving_minor'])) continue;
+            $ids=$combo['book_ids']; $present=array_intersect($ids,array_keys($cart));
+            if (!$present || count($present)===count($ids) || array_intersect($ids,array_keys($covered))) continue;
+            $next=$cart;
+            foreach ($present as $id) { if (--$next[$id]===0) unset($next[$id]); }
+            $next[$combo['id']]=1;
+            try {
+                $after=$this->quote($next);
+                foreach (ShopRules::inventory($after) as $line) {
+                    $book=$this->store->one('books',$line['book_id']);
+                    if (!$book || (int)$book['stock']-$this->store->reserved($book['id'],time())<$line['quantity']) throw new DomainException('out_of_stock');
+                }
+            } catch (DomainException $error) { continue; }
+            return ['book'=>$combo,'cart'=>$next,'quote'=>$after,'before_hash'=>$this->quoteHash($before),
+                'extra_minor'=>$after['amount_minor']-$before['amount_minor'],
+                'shipping_saving_minor'=>max(0,$before['shipping_minor']-$after['shipping_minor'])];
+        }
+        return null;
+    }
+    public function acceptCombo(array $cart, $id, $beforeHash, $afterHash)
+    {
+        return $this->store->transaction(function()use($cart,$id,$beforeHash,$afterHash){
+            $offer=$this->comboOffer($cart,$this->id($id));
+            if (!$offer || !hash_equals($offer['before_hash'],(string)$beforeHash) || !hash_equals($this->quoteHash($offer['quote']),(string)$afterHash)) throw new DomainException('offer_changed');
+            return $offer['cart'];
+        });
+    }
     public function pricedBook(array $book, ?array $sale=null, ?int $now=null)
     {
         $sale=$sale??$this->sale();
         $book['sale_price_minor']=ShopSaleRules::price($book,$sale,$now??time());
         $book['sale_revision']=$book['sale_price_minor']===null?0:$sale['revision'];
-        return $book;
+        return $this->comboBook($book,$sale,$now??time());
     }
     public function books($managed = false)
     { if ($managed) $this->requireManager(); $sale=$this->sale(); $now=time(); return array_map(fn($book)=>$this->pricedBook($book,$sale,$now),$this->store->rows('books', $managed ? [] : ['status' => 'published'], 500)); }
@@ -130,7 +190,18 @@ class shopservice extends ChisimbaObject
             $this->revision($input, $old ?? ['revision' => 0]);
             $status = $input['status'] ?? '';
             if (!in_array($status, ['draft', 'published', 'archived'], true)) throw new DomainException('invalid_book');
-            $stock = ShopRules::integer($input['stock'] ?? '', 0, 1000000);
+            $definition=$this->combo($id);
+            $isCombo=$definition!==null || (!$old && ($input['kind']??'')==='combo');
+            $ids=[];
+            if ($isCombo) {
+                $ids=$input['book_ids']??[];
+                if (!is_array($ids) || count($ids)<2 || count($ids)>20 || count(array_unique($ids))!==count($ids)) throw new DomainException('invalid_combo');
+                foreach ($ids as $child) {
+                    if (!is_string($child) || $child===$id || !$this->store->one('books',$this->id($child)) || $this->combo($child)) throw new DomainException('invalid_combo');
+                }
+                sort($ids);
+            }
+            $stock = $isCombo ? 0 : ShopRules::integer($input['stock'] ?? '', 0, 1000000);
             if ($stock < $this->store->reserved($id, time())) throw new DomainException('stock_reserved');
             $image = $this->string($input['image_url'] ?? '', 1500, true);
             if ($image !== '') {
@@ -145,7 +216,11 @@ class shopservice extends ChisimbaObject
             if (!$row['price_minor']) throw new DomainException('invalid_money');
             if ($old) { $changes = $row; unset($changes['id']); $this->store->save('books', $id, $changes); }
             else $this->store->add('books', $row);
-            return $row;
+            if ($isCombo) {
+                $meta=['settings_json'=>json_encode(['book_ids'=>$ids,'cross_sell'=>($input['cross_sell']??'')==='1'],JSON_THROW_ON_ERROR),'revision'=>$row['revision']];
+                if ($definition) $this->store->save('settings',$id,$meta); else $this->store->add('settings',['id'=>$id]+$meta);
+            }
+            return $this->pricedBook($row);
         });
     }
     public function quote(array $cart, $country = 'ZA')
@@ -173,7 +248,7 @@ class shopservice extends ChisimbaObject
             if ($country !== 'ZA') throw new DomainException('country_unavailable');
             $quote = $this->quote($cart, $country);
             if (!hash_equals($this->quoteHash($quote), (string)($input['quote_hash'] ?? ''))) throw new DomainException('price_changed');
-            foreach ($quote['lines'] as $line) {
+            foreach (ShopRules::inventory($quote) as $line) {
                 $book = $this->store->one('books', $line['book_id']);
                 if ((int)$book['stock'] - $this->store->reserved($book['id'], time()) < $line['quantity']) throw new DomainException('out_of_stock');
             }
@@ -274,11 +349,11 @@ class shopservice extends ChisimbaObject
             if ($order['payment_state'] !== 'unpaid') return $order;
             $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
             $available = $order['fulfilment_state'] === 'held';
-            foreach ($quote['lines'] as $line) {
+            foreach (ShopRules::inventory($quote) as $line) {
                 $book = $this->store->one('books', $line['book_id']);
                 if (!$book || (int)$book['stock'] - $this->store->reserved($line['book_id'], time(), $order['id']) < $line['quantity']) $available = false;
             }
-            if ($available) foreach ($quote['lines'] as $line) {
+            if ($available) foreach (ShopRules::inventory($quote) as $line) {
                 $book = $this->store->one('books', $line['book_id']);
                 $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] - $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
             }
@@ -334,11 +409,11 @@ class shopservice extends ChisimbaObject
             } elseif ($operation === 'allocate' && $order['payment_state'] === 'paid' && $order['fulfilment_state'] === 'review' && !(int)$order['stock_applied']) {
                 if (!$this->confirmedPayment($order)) throw new DomainException('invalid_operation');
                 $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
-                foreach ($quote['lines'] as $line) {
+                foreach (ShopRules::inventory($quote) as $line) {
                     $book = $this->store->one('books', $line['book_id']);
                     if (!$book || (int)$book['stock'] - $this->store->reserved($book['id'], time(), $order['id']) < $line['quantity']) throw new DomainException('out_of_stock');
                 }
-                foreach ($quote['lines'] as $line) {
+                foreach (ShopRules::inventory($quote) as $line) {
                     $book = $this->store->one('books', $line['book_id']);
                     $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] - $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
                 }
@@ -346,7 +421,7 @@ class shopservice extends ChisimbaObject
             } elseif ($operation === 'restock' && in_array($order['payment_state'], ['refunded', 'reversed'], true)
                 && $order['fulfilment_state'] === 'review' && (int)$order['stock_applied'] === 1) {
                 $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
-                foreach ($quote['lines'] as $line) {
+                foreach (ShopRules::inventory($quote) as $line) {
                     $book = $this->store->one('books', $line['book_id']);
                     if (!$book) throw new DomainException('book_unavailable');
                     $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] + $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
@@ -373,7 +448,10 @@ class shopservice extends ChisimbaObject
         $address = json_decode($order['address_json'], true, 512, JSON_THROW_ON_ERROR);
         $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
         $body = $this->text('email_' . $kind) . "\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
-        foreach ($quote['lines'] as $line) $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";
+        foreach ($quote['lines'] as $line) {
+            $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";
+            foreach ($line['components']??[] as $child) $body .= '  '.($line['quantity']*$child['quantity']).' × '.$child['title']."\n";
+        }
         $body .= $this->text('shipping') . ': ' . $this->money($quote['shipping_minor']) . "\n" . $this->text('total') . ': ' . $this->money($quote['amount_minor']) . "\n";
         if ($kind === 'dispatched') $body .= $order['courier'] . ': ' . $order['tracking'] . "\n";
         $body .= $this->url('order', ['token' => $this->token($order['id'])]);

@@ -73,3 +73,19 @@ if (salePercent) {
         });
     });
 }
+
+// Native non-modal popovers support Escape and click-away without blocking checkout.
+// The server offers at most once until the basket is emptied, including reload/back.
+const comboOffer = document.querySelector('[data-shop-offer]');
+if (comboOffer && typeof comboOffer.showPopover === 'function') {
+    const previousFocus = document.activeElement === document.body ? document.querySelector('#shop-name, h1') : document.activeElement;
+    comboOffer.addEventListener('toggle', event => {
+        if (event.newState === 'closed') requestAnimationFrame(() => {
+            // Native light-dismiss may restore body focus after the toggle event.
+            // Preserve an input deliberately clicked outside the offer.
+            if ((document.activeElement === document.body || comboOffer.contains(document.activeElement)) && previousFocus instanceof HTMLElement) previousFocus.focus({preventScroll:true});
+        });
+    });
+    comboOffer.showPopover();
+    comboOffer.querySelector('[popovertargetaction="hide"]').focus({preventScroll:true});
+}

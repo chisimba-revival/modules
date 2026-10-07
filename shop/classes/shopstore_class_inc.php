@@ -4,6 +4,7 @@
  * @author Derek Keats <derek@dkeats.com>
  */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
+require_once __DIR__ . '/shoprules.php';
 class shopstore extends dbTable
 {
     private const TABLES = ['books', 'orders', 'settings', 'history'];
@@ -66,7 +67,7 @@ class shopstore extends dbTable
         $quantity = 0;
         foreach ($rows as $order) {
             if ($order['id'] === $except) continue;
-            foreach (json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR)['lines'] as $line) {
+            foreach (ShopRules::inventory(json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR)) as $line) {
                 if ($line['book_id'] === $bookId) $quantity += (int)$line['quantity'];
             }
         }

@@ -11,6 +11,7 @@
 <?php if ($book['image_url']): ?><img class="chisimba-featured-image-preview" src="<?=$esc($book['image_url'])?>" alt="<?=$esc($book['title'])?>" loading="lazy"><?php endif; ?>
 <h2><a href="<?=$url('view',['id'=>$book['id']])?>"><?=$esc($book['title'])?></a></h2>
 <p><?=nl2br($esc($book['description']))?></p>
+<?php if (!empty($book['components'])): ?><p><?=$t('combo_books')?>:</p><ul><?php foreach($book['components'] as $child): ?><li><?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?>
 <?php if ($book['isbn']): ?><p><?=$t('isbn')?>: <?=$esc($book['isbn'])?></p><?php endif; ?>
 <p><?php $bookPrice($book); ?></p>
 <?php if ((int)$book['stock'] > 0): ?>

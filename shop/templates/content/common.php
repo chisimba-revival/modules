@@ -22,5 +22,6 @@ $bookPrice = function ($book) use ($money, $t) {
     if (($book['sale_price_minor'] ?? null) !== null) {
         echo '<span>'.$t('regular_price').' <del>'.$money($book['price_minor']).'</del></span> <strong>'.$t('sale_price').' '.$money($book['sale_price_minor']).'</strong>';
     } else echo '<strong>'.$money($book['price_minor']).'</strong>';
+    if (!empty($book['saving_minor'])) echo ' <span class="chisimba-status-badge">'.$t('save_amount').' '.$money($book['saving_minor']).'</span>';
 };
 ?>

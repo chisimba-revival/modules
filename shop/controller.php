@@ -53,24 +53,30 @@ class shop extends controller
             $this->setVar('shopError', $error->getMessage()); $this->setVar('shopDraft', $this->input());
             $template = 'error_tpl.php';
             if (in_array($action,['savesale','stopsale'],true) && $this->service->canManage()) { $this->setVar('shopSale',$this->service->sale()); $this->setVar('shopBooks',$this->service->books(true)); $template='sales_tpl.php'; }
-            if ($action === 'savebook' && $this->service->canManage()) { $this->setVar('shopBook', $this->input()); $template = 'editor_tpl.php'; }
+            if ($action === 'savebook' && $this->service->canManage()) { $this->setVar('shopBooks',$this->service->books(true)); $this->setVar('shopBook', $this->input()); $template = 'editor_tpl.php'; }
             if ($action === 'savesettings' && $this->service->canManage()) { $this->setVar('shopSettings', $this->service->settings()); $template = 'settings_tpl.php'; }
-            if ($action === 'prepare') {
+            if (in_array($action,['prepare','acceptcombo'],true)) {
                 try { $template = $this->cartPage(); } catch (DomainException $ignored) { /* Draft is still displayed by the error template. */ }
             }
         } catch (Throwable $error) {
             error_log('Shop request failed: ' . get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine());
             http_response_code(503); $this->setVar('shopError', 'temporarily_unavailable'); $this->setVar('shopDraft', $this->input()); $template = 'error_tpl.php';
         }
-        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.002', ENT_QUOTES, 'UTF-8') . '"></script>');
+        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.003', ENT_QUOTES, 'UTF-8') . '"></script>');
         $this->setVar('shopCsrf', $this->csrf->issue('shop'));
         return $template;
     }
     private function cartPage()
     {
-        $cart = $this->cart(); $this->setVar('shopCart', $cart); $this->setVar('shopQuote', null);
+        $cart = $this->cart(); $this->setVar('shopOffer',null); $this->setVar('shopCart', $cart); $this->setVar('shopQuote', null);
         if ($cart) {
-            try { $this->setVar('shopQuote', $this->service->quote($cart)); }
+            try {
+                $this->setVar('shopQuote', $this->service->quote($cart));
+                if (($_SERVER['REQUEST_METHOD']??'GET')==='GET' && empty($_SESSION['shop_offer_seen']) && $this->service->ready()) {
+                    $offer=$this->service->comboOffer($cart);
+                    if ($offer) { $this->setVar('shopOffer',$offer); $_SESSION['shop_offer_seen']=true; }
+                }
+            }
             catch (DomainException $error) { $this->setVar('shopError', $error->getMessage()); }
         }
         if (empty($_SESSION['shop_request'])) $_SESSION['shop_request'] = bin2hex(random_bytes(32));
@@ -97,8 +103,13 @@ class shop extends controller
                         if ($remove !== '') unset($cart[$remove]);
                     }
                 }
+                if (!$cart) unset($_SESSION['shop_offer_seen']);
                 $_SESSION['shop_cart'] = ShopRules::cart($cart); unset($_SESSION['shop_request']); $this->redirect('cart');
                 break;
+            case 'acceptcombo':
+                $this->post();
+                $_SESSION['shop_cart']=$this->service->acceptCombo($this->cart(),$this->param('id'),$this->param('before_hash'),$this->param('after_hash'));
+                unset($_SESSION['shop_request']); $this->redirect('cart'); break;
             case 'cart': return $this->cartPage();
             case 'prepare':
                 $this->post(); $this->throttle();
@@ -122,7 +133,8 @@ class shop extends controller
                 $this->setVar('shopBooks', $this->service->books(true)); return 'manage_tpl.php';
             case 'edit':
                 $this->service->requireManager();
-                $this->setVar('shopBook', $this->param('id') ? $this->service->book($this->param('id'), true) : ['id' => bin2hex(random_bytes(16)), 'revision' => 0]); return 'editor_tpl.php';
+                $this->setVar('shopBooks',$this->service->books(true));
+                $this->setVar('shopBook', $this->param('id') ? $this->service->book($this->param('id'), true) : ['id' => bin2hex(random_bytes(16)), 'revision' => 0,'kind'=>$this->param('kind')==='combo'?'combo':'book']); return 'editor_tpl.php';
             case 'savebook':
                 $this->post(); $book = $this->service->saveBook($this->input()); $this->redirect('edit', ['id' => $book['id']]); break;
             case 'settings':
