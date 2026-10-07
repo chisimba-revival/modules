@@ -1,6 +1,7 @@
 <?php
 /** Shop-owned purchase controls attached to page text/image blocks. */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
+require_once __DIR__.'/shopprice.php';
 class productbuttons extends ChisimbaObject
 {
     private $token;
@@ -44,7 +45,7 @@ class productbuttons extends ChisimbaObject
         header('Cache-Control: private, no-store');
         $this->token??=$this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('shop');
         $icon=$this->getObject('iconservice','ui');
-        $html='<div id="shop-product-'.$e($book['id']).'" class="chisimba-stack" data-shop-purchase><p><strong>'.$e($shop->money($book['sale_price_minor']??$book['price_minor'])).'</strong></p>';
+        $html='<div id="shop-product-'.$e($book['id']).'" class="chisimba-stack" data-shop-purchase><p>'.ShopPrice::render($book, [$shop,'money'], [$shop,'text']).'</p>';
         if ((int)$book['stock']>0) {
             $return=$_SERVER['REQUEST_URI']??'/';
             $html.='<form method="post" action="'.$e($shop->url('pageadd')).'" class="chisimba-form-actions" data-shop-page-add data-pending="'.$e($shop->text('adding')).'" data-uncertain="'.$e($shop->text('add_uncertain')).'">';
