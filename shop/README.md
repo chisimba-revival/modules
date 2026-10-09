@@ -1,7 +1,7 @@
 # Shop
 
-Reusable physical-book sales for Chisimba. Version 1.000 is a development release;
-Payment Service 1.036 adds its provider-neutral `shop_order` payment boundary.
+Physical and virtual product sales for Chisimba. Shop 1.014 adds virtual fulfilment;
+Payment Service 1.037 and File Manager 1.100 provide the coordinated catalogue and protected delivery changes.
 Author: Derek Keats.
 
 ## Scope
@@ -223,3 +223,63 @@ normal link. Add requests have a session-scoped idempotency key; uncertain Ajax
 responses are not replayed. Public forms disable shared caching. Current product
 visibility, component inventory and quantity limits are checked server-side;
 linking a draft never exposes its details or permits purchase.
+
+## Physical and virtual products
+
+Existing products and historic order snapshots default to **Physical**. Their stock,
+combo composition, delivery bands and dispatch workflow are retained. New products
+also start Physical. Use **Add virtual product**, or change Product type in the editor,
+for the following fulfilment types:
+
+- **Contribution:** one-off payment, guest checkout, no stock or delivery fields.
+- **Membership:** choose an enabled paid membership tier and monthly or annual
+  billing. Save creates an immutable offer and price through Payment Service.
+  The Subscribe button uses its existing account-based checkout, verified payment,
+  renewal and reversal handling. Subscriptions are purchased separately; the book
+  cart is retained. Old product revisions cannot start new purchases, but existing
+  subscriptions retain their original price and continue through the canonical
+  renewal path. Memberships are excluded from percentage sales.
+- **Download:** one-off payment, one copy per product per order, signed-in purchaser
+  required. Select personal files through File Manager after setting Private selected
+  access. The files must exist exclusively in its configured secure storage;
+  public copies, course files and assignment files are rejected. Originals are not
+  republished or copied into the shop. The shared download picker accepts the existing
+  document, media, image and ZIP allowlists.
+
+Mixed carts calculate shipping bands and reserve/deduct stock only for physical
+items. Virtual-only checkout collects a name and email without postal-address fields
+or shipping configuration. Empty shipping bands permit a virtual-only shop; physical
+checkout remains blocked until bands are configured. Virtual-only paid orders become
+Complete; mixed orders retain the existing packing/dispatch workflow.
+
+**My purchases** lists orders associated with the current authenticated account.
+Paid file links check current account ownership, the immutable purchased file IDs,
+the order payment state and the canonical payment intent on every request, including
+HEAD/ranges. The shared File Manager streams bytes as attachments from secure storage.
+Anonymous users, other accounts, unpaid orders and recorded refunds/reversals/disputes
+are denied. Changing or archiving a product does not rewrite old purchase snapshots.
+Already downloaded files cannot be recalled.
+
+## Upgrading to virtual fulfilment
+
+Update File Manager, Toolbar (1.811), Payment Service and Shop through Module Catalogue, including
+Shop's guarded installation hook. The repeatable upgrade adds product type/options
+and an optional purchasing-account ID. It preserves existing book prices, stock,
+revisions, order snapshots and signing keys; no products or subscriptions are seeded.
+File Manager's secure-storage path must be configured before publishing downloads.
+Confirm the existing web-server private-file routing as part of site deployment.
+
+Focused checks (run from the modules repository):
+
+```sh
+php shop/tests/virtual_products_test.php
+php shop/tests/service_test.php
+php shop/tests/template_test.php
+php payment-service/tests/shop_payment_test.php
+```
+
+`shop/tests/upgrade_test.php` is an opt-in MariaDB test using
+`SHOP_UPGRADE_TEST_HOST`, optional `SHOP_UPGRADE_TEST_USER` and
+`SHOP_UPGRADE_TEST_PASSWORD`. It creates and removes a random `shop_test_*` database;
+use only a disposable test server. It checks both fresh and legacy installation and
+repeated upgrades. No test sends mail or contacts a payment provider.

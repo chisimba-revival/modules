@@ -7,6 +7,22 @@ final class ShopRules
     public const MAX_QUANTITY = 100;
     public const MAX_MONEY = 100000000;
 
+    /** Missing type means a legacy physical book, including old order snapshots. */
+    public static function physical(array $product): bool
+    { return ($product['product_type'] ?? 'physical') === 'physical'; }
+
+    public static function options(array $product): array
+    { return isset($product['virtual']) ? $product['virtual'] : (json_decode($product['product_options'] ?? '{}', true, 512, JSON_THROW_ON_ERROR) ?: []); }
+
+    public static function membership(array $product): bool
+    { return !self::physical($product) && (self::options($product)['kind'] ?? '') === 'membership'; }
+
+    public static function needsAccount(array $quote): bool
+    {
+        foreach ($quote['lines'] as $line) if (!self::physical($line) && (self::options($line)['kind'] ?? '') === 'download') return true;
+        return false;
+    }
+
     /** Return only to a local absolute path, never to a supplied host or scheme. */
     public static function returnPath($value): string
     {
@@ -96,30 +112,33 @@ final class ShopRules
         foreach ($cart as $id => $quantity) {
             $book = $books[$id] ?? null;
             if (!$book || $book['status'] !== 'published') throw new DomainException('book_unavailable');
+            if (self::membership($book)) throw new DomainException('membership_separate');
+            if (!self::physical($book) && (self::options($book)['kind'] ?? '') === 'download' && $quantity !== 1) throw new DomainException('download_quantity');
             $regular = self::integer($book['price_minor'], 1, self::MAX_MONEY);
             $price = self::integer($book['sale_price_minor'] ?? $regular, 1, $regular);
             $components=$book['components']??[];
             if (($book['kind']??'')==='combo' && (count($components)!==count($book['book_ids']) || !$components)) throw new DomainException('book_unavailable');
-            $physicalQuantity+=$quantity*max(1,count($components));
+            if (self::physical($book)) $physicalQuantity+=$quantity*max(1,count($components));
             $total = $price * $quantity;
             $subtotal += $total;
             if ($subtotal > self::MAX_MONEY) throw new DomainException('invalid_money');
             $lines[] = ['book_id' => $id, 'title' => $book['title'], 'isbn' => $book['isbn'],
                 'revision' => (int)$book['revision'], 'quantity' => $quantity,
                 'unit_minor' => $price, 'regular_unit_minor' => $regular,
-                'sale_revision' => (int)($book['sale_revision'] ?? 0), 'total_minor' => $total] + ($components ? ['components'=>$components] : []);
+                'sale_revision' => (int)($book['sale_revision'] ?? 0), 'total_minor' => $total] + (!self::physical($book) ? ['product_type'=>'virtual','virtual'=>self::options($book)] : []) + ($components ? ['components'=>$components] : []);
         }
-        $shipping = self::shipping($country, $physicalQuantity, $policy);
+        $shipping = $physicalQuantity ? self::shipping($country, $physicalQuantity, $policy) : 0;
         $total = self::integer($subtotal + $shipping, 1, self::MAX_MONEY);
         return ['lines' => $lines, 'quantity' => $physicalQuantity, 'subtotal_minor' => $subtotal,
             'shipping_minor' => $shipping, 'amount_minor' => $total, 'currency' => 'ZAR',
-            'shipping_revision' => (int)($policy['revision'] ?? 0), 'country' => $country];
+            'shipping_revision' => (int)($policy['revision'] ?? 0), 'country' => $physicalQuantity ? $country : ''];
     }
     /** Aggregate physical copies, including legacy orders without component snapshots. */
     public static function inventory(array $quote): array
     {
         $items=[];
         foreach ($quote['lines'] as $line) {
+            if (!self::physical($line)) continue;
             foreach ($line['components']??[['book_id'=>$line['book_id'],'title'=>$line['title'],'isbn'=>$line['isbn']??'','quantity'=>1]] as $child) {
                 $id=$child['book_id'];
                 if (!isset($items[$id])) $items[$id]=['book_id'=>$id,'title'=>$child['title'],'isbn'=>$child['isbn']??'','quantity'=>0];

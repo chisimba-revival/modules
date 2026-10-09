@@ -25,9 +25,10 @@ class ShopFixturePayments {
  public function startCheckout($id,$options){++$this->calls;return $this->uncertain?['ok'=>false]:['ok'=>true,'approvalUrl'=>'https://checkout.paystack.com/fixture'];}
  public function reconcileIntent($id){return ['ok'=>true];}
 }
+class ShopFixtureMemberships {public function tiers($enabled=true){return ['free'=>['rank'=>0,'label'=>'Free'],'tier_1'=>['rank'=>1,'label'=>'Tier 1']];}}
 class ShopFixtureService extends shopservice {
  public $objects;
- public function __construct($objects){$this->objects=$objects;$this->init();}
+ public function __construct($objects){$this->objects=$objects+['membershipservice'=>new ShopFixtureMemberships];$this->init();}
  public function getObject($name,$module=''){return $this->objects[$name]??throw new RuntimeException('Unknown fixture '.$name);}
  public function uri($params,$module='', $uriMode='', $omitServerName=false, $javascriptCompatibility=false, $Strict=false){return 'https://shop.test/index.php?'.http_build_query(['module'=>$module]+$params);}
 }

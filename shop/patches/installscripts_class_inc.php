@@ -23,6 +23,17 @@ class shop_installscripts extends ChisimbaObject
                 }
             }
         }
+        // Repeatable upgrades preserve every legacy product as physical and old guest orders.
+        foreach (['tbl_shop_books'=>['product_type'=>"VARCHAR(16) NOT NULL DEFAULT 'physical'",'product_options'=>'LONGTEXT NULL'],
+            'tbl_shop_orders'=>['user_id'=>'VARCHAR(25) NULL']] as $table=>$columns) {
+            $existing=$db->queryAll('SHOW COLUMNS FROM '.$table, null, MDB2_FETCHMODE_ASSOC);
+            if (!is_array($existing)) throw new RuntimeException('Shop columns unavailable');
+            $names=array_column($existing,'field');
+            foreach ($columns as $name=>$definition) if (!in_array($name,$names,true)) {
+                $result=$db->exec('ALTER TABLE '.$table.' ADD COLUMN '.$name.' '.$definition);
+                if ($result===false || PEAR::isError($result)) throw new RuntimeException('Shop upgrade failed');
+            }
+        }
         $permissions = $this->getObject('permissionservice', 'security');
         $area = $permissions->ensureArea('chisimba', 'shop');
         if (!$area || !$permissions->ensureRight($area, 'manage')) throw new RuntimeException('Shop permissions unavailable');

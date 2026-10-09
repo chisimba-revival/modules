@@ -1,7 +1,7 @@
 <?php require __DIR__.'/common.php'; $draft=$shopDraft??[]; $zone=$shopSettings['zones']['ZA']??[]; $bands=$draft['bands']??array_map(fn($b)=>['from'=>$b['from'],'amount'=>number_format($b['amount_minor']/100,2,'.','')],$zone['bands']??[]); ?>
 <main class="chisimba-workspace chisimba-stack"><header class="chisimba-cluster"><h1><?=$t('shipping_settings')?></h1><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?=$this->getObject('contextualhelp','help')->show('shop','shipping',true)?></header>
 <form method="post" action="<?=$url('savesettings')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('revision',$draft['revision']??$shopSettings['revision']); ?>
-<p><?=$t('bands_help')?></p><p><?=$t('delivery_only')?></p>
+<p><?=$t('bands_help')?></p><p><?=$t('virtual_shipping_help')?></p><p><?=$t('delivery_only')?></p>
 <div data-shop-bands class="chisimba-stack">
 <?php for ($i=0;$i<min(20,max(1,count($bands)+1));++$i): ?>
 <div class="chisimba-form-grid"><div class="chisimba-form-field"><label for="from-<?=$i?>"><?=$t('from_quantity')?> <?=$i+1?></label><input id="from-<?=$i?>" name="bands[<?=$i?>][from]" type="number" min="1" max="100" value="<?=$esc($bands[$i]['from']??'')?>"></div><div class="chisimba-form-field"><label for="amount-<?=$i?>"><?=$t('delivery_charge')?> <?=$i+1?></label><input id="amount-<?=$i?>" name="bands[<?=$i?>][amount]" type="text" inputmode="decimal" value="<?=$esc($bands[$i]['amount']??'')?>"></div></div>

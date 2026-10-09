@@ -45,14 +45,14 @@ class shopservice extends ChisimbaObject
                 if (($band['from'] ?? '') === '' && ($band['amount'] ?? '') === '') continue;
                 $bands[] = ['from' => $band['from'] ?? '', 'amount_minor' => ShopRules::money($band['amount'] ?? '')];
             }
-            $bands = ShopRules::bands($bands);
+            $bands = $bands ? ShopRules::bands($bands) : [];
             $max = ShopRules::integer($input['max_quantity'] ?? '', 1, ShopRules::MAX_QUANTITY);
-            if (end($bands)['from'] > $max) throw new DomainException('invalid_shipping');
+            if ($bands && end($bands)['from'] > $max) throw new DomainException('invalid_shipping');
             $terms = $this->string($input['terms'] ?? '', 10000, true);
             $enabled = ($input['enabled'] ?? '') === '1';
             if ($enabled && ($terms === '' || !$this->payments->providerAvailable('paystack'))) throw new DomainException('checkout_unavailable');
             $settings = ['enabled' => $enabled, 'terms' => $terms,
-                'zones' => ['ZA' => ['enabled' => true, 'max_quantity' => $max, 'bands' => $bands]]];
+                'zones' => ['ZA' => ['enabled' => (bool)$bands, 'max_quantity' => $max, 'bands' => $bands]]];
             $this->store->save('settings', 'shop', ['settings_json' => json_encode($settings, JSON_THROW_ON_ERROR), 'revision' => $old['revision'] + 1]);
             return $this->settings();
         });
@@ -74,7 +74,7 @@ class shopservice extends ChisimbaObject
             foreach ($ids as $id) {
                 if (!is_string($id)) throw new DomainException('invalid_sale_books');
                 $book=$this->store->one('books', $this->id($id));
-                if (!$book || $book['status']==='archived') throw new DomainException('invalid_sale_books');
+                if (!$book || $book['status']==='archived' || ShopRules::membership($book)) throw new DomainException('invalid_sale_books');
             }
             $starts=ShopSaleRules::timestamp($input['starts_at']??''); $ends=ShopSaleRules::timestamp($input['ends_at']??'');
             if ($ends <= $starts) throw new DomainException('invalid_sale_dates');
@@ -125,7 +125,7 @@ class shopservice extends ChisimbaObject
         $book['components']=[]; $book['stock']=1000000; $separate=0;
         foreach ($definition['book_ids'] as $id) {
             $child=$this->store->one('books',$id);
-            if (!$child || $child['status']!=='published' || $this->combo($id)) { $book['stock']=0; continue; }
+            if (!$child || $child['status']!=='published' || $this->combo($id) || !ShopRules::physical($child)) { $book['stock']=0; continue; }
             $book['stock']=min($book['stock'],max(0,(int)$child['stock']-$this->store->reserved($id,$now)));
             $separate+=ShopSaleRules::price($child,$sale,$now)??(int)$child['price_minor'];
             $book['components'][]=['book_id'=>$id,'title'=>$child['title'],'isbn'=>$child['isbn'],'quantity'=>1];
@@ -172,8 +172,10 @@ class shopservice extends ChisimbaObject
     }
     public function pricedBook(array $book, ?array $sale=null, ?int $now=null)
     {
+        $book['product_type']=$book['product_type']??'physical';
+        $book['virtual']=ShopRules::options($book);
         $sale=$sale??$this->sale();
-        $book['sale_price_minor']=ShopSaleRules::price($book,$sale,$now??time());
+        $book['sale_price_minor']=ShopRules::membership($book)?null:ShopSaleRules::price($book,$sale,$now??time());
         $book['sale_revision']=$book['sale_price_minor']===null?0:$sale['revision'];
         return $this->comboBook($book,$sale,$now??time());
     }
@@ -207,8 +209,16 @@ class shopservice extends ChisimbaObject
             $this->revision($input, $old ?? ['revision' => 0]);
             $status = $input['status'] ?? '';
             if (!in_array($status, ['draft', 'published', 'archived'], true)) throw new DomainException('invalid_book');
+            $type=$input['product_type']??($old['product_type']??'physical');
+            if (!in_array($type,['physical','virtual'],true)) throw new DomainException('invalid_product_type');
+            // Do not reinterpret stock held by an existing order or physical combo.
+            if ($old && $type!==($old['product_type']??'physical')) {
+                if ($this->store->reserved($id,time())>0) throw new DomainException('stock_reserved');
+                foreach ($this->store->rows('books') as $other) if (in_array($id,$this->combo($other['id'])['book_ids']??[],true)) throw new DomainException('invalid_combo');
+            }
             $definition=$this->combo($id);
             $isCombo=$definition!==null || (!$old && ($input['kind']??'')==='combo');
+            if ($isCombo && $type!=='physical') throw new DomainException('invalid_combo');
             $ids=[];
             if ($isCombo) {
                 $ids=$input['book_ids']??[];
@@ -216,12 +226,12 @@ class shopservice extends ChisimbaObject
                 foreach ($ids as $child) {
                     if (!is_string($child) || $child===$id) throw new DomainException('invalid_combo');
                     $component=$this->store->one('books',$this->id($child));
-                    if (!$component || $component['status']==='archived' || $this->combo($child)) throw new DomainException('invalid_combo');
+                    if (!$component || $component['status']==='archived' || $this->combo($child) || !ShopRules::physical($component)) throw new DomainException('invalid_combo');
                 }
                 sort($ids);
             }
-            $stock = $isCombo ? 0 : ShopRules::integer($input['stock'] ?? '', 0, 1000000);
-            if ($stock < $this->store->reserved($id, time())) throw new DomainException('stock_reserved');
+            $stock = ($isCombo || $type==='virtual') ? 0 : ShopRules::integer($input['stock'] ?? '', 0, 1000000);
+            if ($type==='physical' && $stock < $this->store->reserved($id, time())) throw new DomainException('stock_reserved');
             $image = $this->string($input['image_url'] ?? '', 1500, true);
             if ($image !== '') {
                 $root = $this->getObject('altconfig', 'config')->getSiteRoot();
@@ -233,6 +243,8 @@ class shopservice extends ChisimbaObject
                 'image_url' => $image, 'price_minor' => ShopRules::money($input['price'] ?? ''),
                 'stock' => $stock, 'status' => $status, 'revision' => (int)($old['revision'] ?? 0) + 1];
             if (!$row['price_minor']) throw new DomainException('invalid_money');
+            $row['product_type']=$type;
+            $row['product_options']=json_encode($type==='virtual'?$this->virtualProduct($row,$input):[],JSON_THROW_ON_ERROR);
             if ($old) { $changes = $row; unset($changes['id']); $this->store->save('books', $id, $changes); }
             else $this->store->add('books', $row);
             if ($isCombo) {
@@ -256,12 +268,18 @@ class shopservice extends ChisimbaObject
         return $this->store->transaction(function()use($cart,$id){
             $id=$this->id($id);$book=$this->book($id);
             if (!$book) throw new DomainException('book_unavailable');
+            if (ShopRules::membership($book)) throw new DomainException('membership_separate');
             $cart=ShopRules::cart($cart);$cart[$id]=($cart[$id]??0)+1;$cart=ShopRules::cart($cart);
             // Availability is checked without requiring shipping/checkout configuration.
             $inventory=[];
             foreach ($cart as $productId=>$quantity) {
                 $product=$this->book($productId);
                 if (!$product || (($product['kind']??'')==='combo' && count($product['components'])!==count($product['book_ids']))) throw new DomainException('book_unavailable');
+                if (!ShopRules::physical($product)) {
+                    if (ShopRules::membership($product)) throw new DomainException('membership_separate');
+                    if (($product['virtual']['kind']??'')==='download' && $quantity!==1) throw new DomainException('download_quantity');
+                    continue;
+                }
                 foreach ($product['components']??[['book_id'=>$productId,'quantity'=>1]] as $child) $inventory[$child['book_id']]=($inventory[$child['book_id']]??0)+$quantity*$child['quantity'];
             }
             if (array_sum($inventory)>ShopRules::MAX_QUANTITY) throw new DomainException('quantity_unavailable');
@@ -284,8 +302,7 @@ class shopservice extends ChisimbaObject
             if ($existing) return $existing;
             if (!$this->ready()) throw new DomainException('checkout_unavailable');
             if (($input['accept_terms'] ?? '') !== '1') throw new DomainException('accept_terms_required');
-            $country = $input['country'] ?? '';
-            if ($country !== 'ZA') throw new DomainException('country_unavailable');
+            $country = $input['country'] ?? 'ZA';
             $quote = $this->quote($cart, $country);
             if (!hash_equals($this->quoteHash($quote), (string)($input['quote_hash'] ?? ''))) throw new DomainException('price_changed');
             foreach (ShopRules::inventory($quote) as $line) {
@@ -294,14 +311,17 @@ class shopservice extends ChisimbaObject
             }
             $email = $this->string($input['email'] ?? '', 254);
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) throw new DomainException('invalid_email');
+            $user=$this->getObject('user','security');
+            $userId=$user->isLoggedIn()?(string)$user->userId():null;
+            if (ShopRules::needsAccount($quote) && !$userId) throw new DomainException('download_login');
             $address = [];
-            foreach (['name', 'phone', 'address_line', 'suburb', 'city', 'province', 'postal_code'] as $field) {
+            foreach ($quote['quantity'] ? ['name', 'phone', 'address_line', 'suburb', 'city', 'province', 'postal_code'] : ['name'] as $field) {
                 $address[$field] = $this->string($input[$field] ?? '', $field === 'address_line' ? 255 : 120, $field === 'suburb');
             }
-            if (!preg_match('/^[0-9]{4}$/D', $address['postal_code'])) throw new DomainException('invalid_postcode');
-            $address['country'] = 'ZA';
+            if ($quote['quantity'] && !preg_match('/^[0-9]{4}$/D', $address['postal_code'])) throw new DomainException('invalid_postcode');
+            if ($quote['quantity']) $address['country'] = 'ZA';
             $quote['terms'] = $this->settings()['terms'];
-            $row = ['id' => bin2hex(random_bytes(16)), 'request_hash' => hash('sha256', $requestKey),
+            $row = ['user_id'=>$userId, 'id' => bin2hex(random_bytes(16)), 'request_hash' => hash('sha256', $requestKey),
                 'email' => strtolower($email), 'address_json' => json_encode($address, JSON_THROW_ON_ERROR),
                 'snapshot' => json_encode($quote, JSON_THROW_ON_ERROR), 'payment_state' => 'unpaid',
                 'fulfilment_state' => 'held', 'stock_applied' => 0, 'hold_until' => time() + 900,
@@ -397,8 +417,8 @@ class shopservice extends ChisimbaObject
                 $book = $this->store->one('books', $line['book_id']);
                 $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] - $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
             }
-            $changes = ['payment_state' => 'paid', 'fulfilment_state' => $available ? 'packing' : 'review',
-                'stock_applied' => $available ? 1 : 0, 'revision' => (int)$order['revision'] + 1, 'updated_at' => time()];
+            $changes = ['payment_state' => 'paid', 'fulfilment_state' => $available ? ($quote['quantity'] ? 'packing' : 'complete') : 'review',
+                'stock_applied' => $available && $quote['quantity'] ? 1 : 0, 'revision' => (int)$order['revision'] + 1, 'updated_at' => time()];
             $this->store->save('orders', $order['id'], $changes); $this->history($order['id'], $available ? 'paid' : 'paid_review');
             return array_merge($order, $changes);
         });
@@ -457,6 +477,7 @@ class shopservice extends ChisimbaObject
                     $book = $this->store->one('books', $line['book_id']);
                     $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] - $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
                 }
+                if (!$quote['quantity']) throw new DomainException('invalid_operation');
                 $changes += ['fulfilment_state' => 'packing', 'stock_applied' => 1];
             } elseif ($operation === 'restock' && in_array($order['payment_state'], ['refunded', 'reversed'], true)
                 && $order['fulfilment_state'] === 'review' && (int)$order['stock_applied'] === 1) {
@@ -487,7 +508,7 @@ class shopservice extends ChisimbaObject
     {
         $address = json_decode($order['address_json'], true, 512, JSON_THROW_ON_ERROR);
         $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
-        $intro = strtr($this->text('email_' . $kind), ['{courier}'=>$order['courier'], '{tracking}'=>$order['tracking']]);
+        $intro = strtr($this->text('email_' . ($kind==='paid' && !$quote['quantity']?'virtual_paid':$kind)), ['{courier}'=>$order['courier'], '{tracking}'=>$order['tracking']]);
         $body = $intro . "\n\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
         foreach ($quote['lines'] as $line) {
             $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";
@@ -500,6 +521,77 @@ class shopservice extends ChisimbaObject
             'subject' => $this->text('email_' . $kind . '_subject'), 'text' => $body,
             'idempotencyKey' => 'shop:' . $order['id'] . ':' . $kind, 'metadata' => ['purpose' => 'shop_order', 'orderId' => $order['id']]]);
         if (empty($result['ok'])) throw new RuntimeException('Shop notice could not be queued');
+    }
+    /** Virtual fulfilment metadata is immutable in each order snapshot. */
+    private function virtualProduct(array $row, array $input): array
+    {
+        $kind=$input['virtual_kind']??'';
+        if (!in_array($kind,['contribution','membership','download'],true)) throw new DomainException('invalid_virtual_kind');
+        $period=$input['billing_period']??'one_off';
+        if (!in_array($period,$kind==='membership'?['monthly','annual']:['one_off'],true)) throw new DomainException('invalid_billing_period');
+        $options=['kind'=>$kind,'billing_period'=>$period];
+        if ($kind==='download') {
+            $ids=preg_split('/[\s,]+/',trim($input['download_files']??''),-1,PREG_SPLIT_NO_EMPTY);
+            if (!$ids || count($ids)>20 || count(array_unique($ids))!==count($ids)) throw new DomainException('invalid_download');
+            foreach ($ids as $id) $this->getObject('shopdownloads','shop')->validateFile($id);
+            $options['file_ids']=$ids;
+        }
+        if ($kind==='membership') {
+            $options['tier']=$this->string($input['membership_tier']??'',64);
+            $catalogue=$this->getObject('paymentcatalogservice','payment-service');
+            // A new product revision never alters a subscriber's agreed plan or price.
+            $code='shop-'.$row['id'].'-'.$row['revision'];
+            $created=$catalogue->createProduct(['code'=>$code,'name'=>$row['title'],'purposeType'=>'membership',
+                'purposeId'=>$options['tier'],'billingPeriod'=>$period,'durationMonths'=>$period==='annual'?12:1]);
+            if (empty($created['ok'])) throw new DomainException('invalid_membership');
+            $price=$catalogue->addPrice($created['productId'],['versionCode'=>'1','amountMinor'=>$row['price_minor'],'currency'=>'ZAR']);
+            if (empty($price['ok'])) throw new DomainException('invalid_membership');
+            $options['payment_code']=$code;
+        }
+        return $options;
+    }
+    public function downloadFileNames($selected): array
+    {
+        $this->requireManager();$names=[];
+        foreach (preg_split('/[\s,]+/',trim((string)$selected),-1,PREG_SPLIT_NO_EMPTY) as $id) {
+            try { $file=$this->getObject('shopdownloads','shop')->validateFile($id);$names[$id]=$file['filename']; }
+            catch (DomainException $error) { $names[$id]=$this->text('invalid_download'); }
+        }
+        return $names;
+    }
+    public function membershipTiers(): array
+    { return $this->getObject('membershipservice','membership-service')->tiers(true); }
+    public function isLoggedIn(): bool
+    { return (bool)$this->getObject('user','security')->isLoggedIn(); }
+    public function membershipUrl(array $book)
+    { return $this->uri(['action'=>'catalogue','product'=>$book['virtual']['payment_code']??''],'payment-service'); }
+
+    /** New membership checkouts must match the current published Shop revision. */
+    public function membershipProductAvailable($code): bool
+    {
+        if (!is_string($code) || !preg_match('/^shop-([a-f0-9]{32})-([0-9]+)$/D',$code,$match)) return false;
+        $book=$this->store->one('books',$match[1]);
+        return $book && $book['status']==='published' && ShopRules::membership($book) && $this->ready()
+            && (ShopRules::options($book)['payment_code']??'')===$code;
+    }
+    public function myPurchases(): array
+    {
+        $user=$this->getObject('user','security');
+        if (!$user->isLoggedIn()) throw new DomainException('forbidden');
+        return $this->store->rows('orders',['user_id'=>(string)$user->userId()]);
+    }
+    /** Order links alone never grant a paid download; ownership and payment are rechecked. */
+    public function downloadOrder($orderId, $fileId): array
+    {
+        $user=$this->getObject('user','security');
+        if (!$user->isLoggedIn()) throw new DomainException('forbidden');
+        $order=$this->store->one('orders',$this->id($orderId));
+        if (!$order || ($order['user_id']??null)!==(string)$user->userId() || $order['payment_state']!=='paid'
+            || !$this->confirmedPayment($order)) throw new DomainException('forbidden');
+        $quote=json_decode($order['snapshot'],true,512,JSON_THROW_ON_ERROR);
+        foreach ($quote['lines'] as $line) if (!ShopRules::physical($line)
+            && ($line['virtual']['kind']??'')==='download' && in_array($fileId,$line['virtual']['file_ids']??[],true)) return $order;
+        throw new DomainException('forbidden');
     }
     private function history($id, $event)
     {

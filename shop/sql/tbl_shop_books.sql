@@ -11,6 +11,8 @@ $fields=[
     'price_minor'=>['type'=>'integer','notnull'=>true],
     'stock'=>['type'=>'integer','notnull'=>true],
     'status'=>['type'=>'text','length'=>20,'notnull'=>true],
+    'product_type'=>['type'=>'text','length'=>16,'notnull'=>true,'default'=>'physical'],
+    'product_options'=>['type'=>'clob','notnull'=>false],
     'revision'=>['type'=>'integer','notnull'=>true],
 ];
 $tableIndexes=['shop_books_id'=>['unique'=>true,'fields'=>['id'=>[]]],

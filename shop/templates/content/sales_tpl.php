@@ -3,7 +3,7 @@ require __DIR__.'/common.php';
 $sale=$shopDraft?:$shopSale;
 $localDate=static fn($stamp)=>$stamp?(new DateTimeImmutable('@'.$stamp))->setTimezone(new DateTimeZone('Africa/Johannesburg'))->format('Y-m-d\TH:i'):'';
 // Archived products are retained for order history, never offered in a promotion.
-$shopBooks=array_values(array_filter($shopBooks,fn($book)=>$book['status']!=='archived'));
+$shopBooks=array_values(array_filter($shopBooks,fn($book)=>$book['status']!=='archived' && !ShopRules::membership($book)));
 $availableIds=array_column($shopBooks,'id');
 $selected=array_values(array_intersect($sale['book_ids']??[],$availableIds));
 ?>

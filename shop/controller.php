@@ -11,7 +11,7 @@ class shop extends controller
         $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
     public function requiresLogin($action)
-    { return in_array($action, ['sales','editsale','savesale','stopsale','manage','archiveconfirm','archivebook','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
+    { return in_array($action, ['purchases','download','sales','editsale','savesale','stopsale','manage','archiveconfirm','archivebook','edit','savebook','settings','savesettings','orders','operation','dispatchorder','retrynotice','reconcileadmin','fulfilment'], true); }
     private function param($key) { $value = $this->getParam($key, ''); return is_string($value) ? $value : ''; }
     private function input()
     {
@@ -71,7 +71,7 @@ class shop extends controller
             error_log('Shop request failed: ' . get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine());
             http_response_code(503); $this->setVar('shopError', 'temporarily_unavailable'); $this->setVar('shopDraft', $this->input()); $template = 'error_tpl.php';
         }
-        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.006', ENT_QUOTES, 'UTF-8') . '"></script>');
+        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.014', ENT_QUOTES, 'UTF-8') . '"></script>');
         $this->setVar('shopCsrf', $this->csrf->issue('shop'));
         return $template;
     }
@@ -97,6 +97,10 @@ class shop extends controller
     private function route($action)
     {
         switch ($action) {
+            case 'purchases':
+                $this->setVar('shopPurchases',$this->service->myPurchases()); return 'purchases_tpl.php';
+            case 'download':
+                $this->getObject('shopdownloads','shop')->send($this->param('order_id'),$this->param('file_id')); exit;
             case 'pageadd':
                 $this->post();
                 $request=$this->param('request_key');
@@ -120,7 +124,8 @@ class shop extends controller
             case 'updatecart':
                 $this->post(); $cart = $this->cart(); $before = $cart;
                 if ($action === 'add') {
-                    $id = $this->param('id'); if (!$this->service->book($id)) throw new DomainException('book_unavailable');
+                    $id = $this->param('id'); $product=$this->service->book($id); if (!$product) throw new DomainException('book_unavailable');
+                    if (ShopRules::membership($product)) throw new DomainException('membership_separate');
                     $cart[$id] = ($cart[$id] ?? 0) + ShopRules::integer($this->param('quantity'), 1, ShopRules::MAX_QUANTITY);
                 } else {
                     $posted = $_POST['quantity'] ?? null;
@@ -193,7 +198,7 @@ class shop extends controller
             case 'edit':
                 $this->service->requireManager();
                 $this->setVar('shopBooks',$this->service->books(true));
-                $this->setVar('shopBook', $this->param('id') ? $this->service->book($this->param('id'), true) : ['id' => bin2hex(random_bytes(16)), 'revision' => 0,'kind'=>$this->param('kind')==='combo'?'combo':'book']); return 'editor_tpl.php';
+                $this->setVar('shopBook', $this->param('id') ? $this->service->book($this->param('id'), true) : ['id' => bin2hex(random_bytes(16)), 'revision' => 0,'kind'=>$this->param('kind')==='combo'?'combo':'book','product_type'=>$this->param('type')==='virtual'?'virtual':'physical']); return 'editor_tpl.php';
             case 'savebook':
                 $this->post(); $book = $this->service->saveBook($this->input()); $this->redirect('edit', ['id' => $book['id']]); break;
             case 'settings':

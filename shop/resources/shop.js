@@ -140,3 +140,61 @@ if (comboOffer && typeof comboOffer.showPopover === 'function') {
         }
     });
 })();
+
+// Physical products remain the default. Hidden groups are disabled so stale values cannot be submitted.
+(() => {
+    const type = document.getElementById('shop-product-type');
+    const kind = document.getElementById('shop-virtual-kind');
+    const billing = document.getElementById('shop-billing-period');
+    if (!type || !kind || !billing) return;
+    const show = (group, visible) => {
+        if (!group) return;
+        group.hidden = !visible;
+        group.querySelectorAll('input,select,textarea,button').forEach(control => { control.disabled = !visible; });
+    };
+    const update = () => {
+        const virtual = type.value === 'virtual';
+        show(document.querySelector('[data-shop-virtual]'), virtual);
+        ['isbn','stock'].forEach(name => show(document.getElementById('shop-' + name)?.closest('.chisimba-form-field'), !virtual));
+        show(document.querySelector('[data-shop-membership]'), virtual && kind.value === 'membership');
+        show(document.querySelector('[data-shop-download]'), virtual && kind.value === 'download');
+        const recurring = kind.value === 'membership';
+        [...billing.options].forEach(option => { option.disabled = recurring ? option.value === 'one_off' : option.value !== 'one_off'; });
+        if (billing.selectedOptions[0]?.disabled) billing.value = recurring ? 'monthly' : 'one_off';
+    };
+    type.addEventListener('change', update); kind.addEventListener('change', update); update();
+    const list = document.querySelector('[data-shop-download-list]');
+    const fileField = document.getElementById('shop-download_files');
+    // Keep the identifier fallback available without JavaScript; show file names in the enhanced picker.
+    if (fileField) fileField.closest('.chisimba-form-field').hidden = true;
+    const addRemoval = item => {
+        const remove = document.createElement('button');
+        remove.type = 'button'; remove.className = 'button chisimba-button-secondary';
+        remove.textContent = list.dataset.remove;
+        remove.setAttribute('aria-label', list.dataset.remove + ': ' + item.textContent);
+        remove.addEventListener('click', () => {
+            fileField.value = fileField.value.split(/[\s,]+/).filter(id => id && id !== item.dataset.fileId).join('\n');
+            item.remove(); document.querySelector('[data-shop-download-picker]').focus();
+        });
+        item.className = 'chisimba-cluster'; item.append(' ', remove);
+    };
+    list?.querySelectorAll('[data-file-id]').forEach(addRemoval);
+    const picker = document.querySelector('[data-shop-download-picker]');
+    if (picker) {
+        picker.hidden = false;
+        picker.addEventListener('click', () => window.open(picker.dataset.shopDownloadPicker, 'chisimbaDownloadPicker', 'width=920,height=720,resizable=yes,scrollbars=yes'));
+        const previous = window.ChisimbaFilePickerReceive;
+        window.ChisimbaFilePickerReceive = (target, file) => {
+            if (target !== 'shop-download_files') { if (previous) previous(target, file); return; }
+            if (!file || !/^[A-Za-z0-9_-]{1,64}$/.test(file.id || '')) return;
+            const field = document.getElementById(target);
+            const ids = field.value.split(/[\s,]+/).filter(Boolean);
+            if (!ids.includes(file.id)) {
+                ids.push(file.id);
+                const item = document.createElement('li'); item.dataset.fileId = file.id; item.textContent = file.name || file.id;
+                addRemoval(item); list.append(item);
+            }
+            field.value = ids.join('\n'); picker.focus();
+        };
+    }
+})();

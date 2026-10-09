@@ -75,7 +75,7 @@ class payment_service extends controller
     private function buy(){
         if(!$this->validPost()) return $this->catalogue('','invalid_request');
         $correlation='checkout:'.date('YmdHis').':'.bin2hex(random_bytes(6));
-        $provider=$this->payments->preferredProvider();
+        $provider=$this->payments->preferredProvider($this->param('product_code'));
         $result=$this->payments->createIntentFromProduct($this->user->userId(),$this->param('product_code'),$provider,$correlation,$correlation);
         if(empty($result['ok'])) return $this->catalogue('',$result['code']);
         $configuredRoot=$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT');
@@ -204,7 +204,7 @@ class payment_service extends controller
         $this->setVar('contributionName',$submit?$this->param('name'):'');$this->setVar('contributionEmail',$submit?$this->param('email'):'');
         $this->common('','');return 'contributions_tpl.php';
     }
-    private function common($message,$error){ $provider=$this->payments->preferredProvider();$errors=array('checkout_requires_deliverable_email'=>'This account needs a real email address before it can continue to secure payment. Update the email address in My Profile, then try again.');$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$errors[$error]??$error); $this->setVar('paymentIsLoggedIn',$this->user->isLoggedIn()); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
+    private function common($message,$error){ $provider=$this->payments->preferredProvider($this->param('product')?:$this->param('product_code'));$errors=array('checkout_requires_deliverable_email'=>'This account needs a real email address before it can continue to secure payment. Update the email address in My Profile, then try again.');$this->setVar('paymentProviderCode',$provider);$this->setVar('paymentProviderName',$provider==='paystack'?'Paystack':($provider==='yoco'?'Yoco':'test checkout'));$this->setVar('paymentCsrf',$this->csrf->issue(self::CSRF)); $this->setVar('paymentMessage',$message); $this->setVar('paymentError',$errors[$error]??$error); $this->setVar('paymentIsLoggedIn',$this->user->isLoggedIn()); $this->setVar('paymentIsAdmin',$this->user->isAdmin()); $this->setVar('paymentLearnerName',$this->user->fullname()); }
     private function validPost(){return strtoupper($_SERVER['REQUEST_METHOD']??'GET')==='POST'&&$this->csrf->consume(self::CSRF,$this->param('csrf_token'));}
     private function param($name){$value=$this->getParam($name,null);return is_scalar($value)?trim((string)$value):'';}
 }

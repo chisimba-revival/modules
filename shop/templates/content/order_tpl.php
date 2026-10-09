@@ -5,11 +5,12 @@
 <div class="chisimba-form-card">
 <?php foreach ($q['lines'] as $line): ?><p><?=$esc($line['quantity'])?> × <?=$esc($line['title'])?> — <?=$money($line['total_minor'])?></p><?php if (!empty($line['components'])): ?><ul><?php foreach($line['components'] as $child): ?><li><?=$esc($line['quantity']*$child['quantity'])?> × <?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?><?php endforeach; ?>
 <dl class="chisimba-details"><dt><?=$t('subtotal')?></dt><dd><?=$money($q['subtotal_minor'])?></dd><dt><?=$t('shipping')?></dt><dd><?=$money($q['shipping_minor'])?></dd><dt><?=$t('total')?></dt><dd><strong><?=$money($q['amount_minor'])?></strong></dd></dl>
-<h2><?=$t('delivery_details')?></h2><address><?php foreach ($address as $key=>$value): ?><?=$esc($key==='country'?$shopService->text('south_africa'):$value)?><br><?php endforeach; ?></address>
+<h2><?=$t($q['quantity']?'delivery_details':'contact_details')?></h2><address><?php foreach ($address as $key=>$value): ?><?=$esc($key==='country'?$shopService->text('south_africa'):$value)?><br><?php endforeach; ?></address>
 <?php if ($order['courier']): ?><p><?=$t('courier')?>: <?=$esc($order['courier'])?> · <?=$t('tracking')?>: <?=$esc($order['tracking'])?></p><?php endif; ?>
 </div>
 <?php if (!$managed): ?>
-<?php if ($order['payment_state']==='paid'): ?><p class="chisimba-form-notice" role="status"><?=$t('payment_confirmed_help')?></p><?php endif; ?>
+<?php if(ShopRules::needsAccount($q)): ?><p><a class="button" href="<?=$url('purchases')?>"><?=$t('my_downloads')?></a></p><?php endif; ?>
+<?php if ($order['payment_state']==='paid'): ?><p class="chisimba-form-notice" role="status"><?=$t($q['quantity']?'payment_confirmed_help':'virtual_confirmed_help')?></p><?php endif; ?>
 <?php if ($order['payment_state']==='unpaid' && !$order['intent_id'] && $order['fulfilment_state']==='held' && $order['hold_until']>time()): ?>
 <p><?=$t('hold_help')?></p><form method="post" action="<?=$url('checkout')?>" class="chisimba-cluster"><?php $csrf(); $hidden('token',$shopToken); ?><button type="submit" class="button"><?=$actionIcon('pay')?> <?=$t('pay')?></button></form>
 <?php elseif ($order['payment_state']==='unpaid' && $order['intent_id']): ?><p class="chisimba-form-notice"><?=$t('confirmation_pending_help')?></p>
@@ -24,7 +25,7 @@
 $actions=[];
 if ($order['payment_state']==='unpaid' && !$order['intent_id'] && $order['fulfilment_state']==='held') $actions['cancel']='cancel_order';
 if ($order['fulfilment_state']==='dispatched') $actions['delivered']='mark_delivered';
-if ($order['payment_state']==='paid' && $order['fulfilment_state']==='review' && !(int)$order['stock_applied']) $actions['allocate']='allocate_stock';
+if ($q['quantity'] && $order['payment_state']==='paid' && $order['fulfilment_state']==='review' && !(int)$order['stock_applied']) $actions['allocate']='allocate_stock';
 if (in_array($order['payment_state'],['refunded','reversed'],true) && $order['fulfilment_state']==='review' && (int)$order['stock_applied']===1) $actions['restock']='restock_unsent';
 ?>
 <div class="chisimba-form-actions chisimba-form-actions--equal"><?php foreach ($actions as $operation=>$label): ?><form method="post" action="<?=$url('fulfilment')?>"><?php $csrf(); $hidden('id',$order['id']); $hidden('revision',$order['revision']); $hidden('operation',$operation); ?><button class="button chisimba-button-secondary" type="submit"><?=$actionIcon($label)?> <?=$t($label)?></button></form><?php endforeach; ?></div>

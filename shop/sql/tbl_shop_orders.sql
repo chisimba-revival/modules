@@ -3,6 +3,7 @@
 $tablename='tbl_shop_orders';
 $options=['comment'=>'Shop orders','type'=>'InnoDB','charset'=>'utf8mb4','collate'=>'utf8mb4_unicode_ci','character_set'=>'utf8mb4'];
 $fields=[
+    'user_id'=>['type'=>'text','length'=>25,'notnull'=>false],
     'id'=>['type'=>'text','length'=>32,'notnull'=>true],
     'request_hash'=>['type'=>'text','length'=>64,'notnull'=>true],
     'email'=>['type'=>'text','length'=>254,'notnull'=>true],

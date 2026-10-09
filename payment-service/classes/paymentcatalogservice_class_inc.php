@@ -24,6 +24,7 @@ class paymentcatalogservice extends ChisimbaObject
     public function init() { $this->products=$this->getObject('dbpaymentproducts'); $this->prices=$this->getObject('dbpaymentprices'); $this->contexts=$this->getObject('dbcontext','context'); }
     public function listProducts($activeOnly=false) {
         $rows=$activeOnly?$this->products->activeProducts():$this->products->allProducts();
+        if($activeOnly) $rows=array_values(array_filter($rows,fn($row)=>$this->shopAvailable($row)));
         if($activeOnly) $rows=array_values(array_filter($rows,fn($row)=>$row['purpose_type']!=='membership'||isset($this->getObject('membershipservice','membership-service')->tiers(true)[$row['purpose_id']])));
         foreach($rows as &$row){ $row['current_price']=$this->prices->currentForProduct($row['id']); $row['prices']=$this->prices->forProduct($row['id']); } unset($row);
         return $rows;
@@ -39,7 +40,7 @@ class paymentcatalogservice extends ChisimbaObject
     }
     public function purchasable($code,$version=null) {
         $code=$this->identifier($code,96); $product=$code===null?null:$this->products->byCode($code);
-        if(!is_array($product)||empty($product['active'])) return null;
+        if(!is_array($product)||empty($product['active'])||!$this->shopAvailable($product)) return null;
         if($product['purpose_type']==='membership'&&!isset($this->getObject('membershipservice','membership-service')->tiers(true)[$product['purpose_id']])) return null;
         $price=$version===null?$this->prices->currentForProduct($product['id']):$this->prices->byVersion($product['id'],$this->identifier($version,64));
         if(!is_array($price)) return null;
@@ -88,6 +89,12 @@ class paymentcatalogservice extends ChisimbaObject
         $existing=$this->prices->byVersion($product['id'],$version); if($existing) return array('ok'=>true,'code'=>'already_created','priceId'=>$existing['id']);
         $values=array('id'=>bin2hex(random_bytes(16)),'product_id'=>$product['id'],'version_code'=>$version,'amount_minor'=>$amount,'vat_minor'=>$vat,'currency'=>$currency,'effective_from'=>$from,'effective_until'=>$until,'created_at'=>date('Y-m-d H:i:s'));
         return $this->prices->insert($values)===false?array('ok'=>false,'code'=>'price_failed'):array('ok'=>true,'code'=>'price_created','priceId'=>$values['id']);
+    }
+    /** Shop owns publication of its membership offers; historic renewal prices stay readable. */
+    private function shopAvailable(array $product): bool
+    {
+        if (!preg_match('/^shop-[a-f0-9]{32}-[0-9]+$/D',$product['code']??'')) return true;
+        return $this->getObject('shopservice','shop')->membershipProductAvailable($product['code']);
     }
     private function enum($v,array $a){$v=is_scalar($v)?strtolower(trim((string)$v)):'';return in_array($v,$a,true)?$v:null;}
     private function identifier($v,$m){$v=is_scalar($v)?trim((string)$v):'';return $v!==''&&strlen($v)<=$m&&preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/',$v)?$v:null;}

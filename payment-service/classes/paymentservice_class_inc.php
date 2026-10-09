@@ -51,8 +51,10 @@ class paymentservice extends ChisimbaObject
     public function intent($intentId) { return $this->intents->byId($this->hexId($intentId)); }
     public function operations($limit=200) { return array('intents'=>$this->intents->recent($limit),'payments'=>$this->payments->recent($limit),'events'=>$this->events->recent($limit),'subscriptions'=>$this->subscriptions->recent($limit)); }
     public function providerAvailable($code) { $provider=$this->provider($code); return $provider!==NULL&&$provider->isAvailable(); }
-    public function preferredProvider()
+    public function preferredProvider($productCode=null)
     {
+        // Shop subscription offers require Paystack plans; never silently fall back to one-off checkout.
+        if (is_string($productCode) && preg_match('/^shop-[a-f0-9]{32}-[0-9]+$/D',$productCode)) return 'paystack';
         $config=$this->getObject('dbsysconfig','sysconfig');
         $preferred=strtolower(trim((string)$config->getValue('PAYMENT_DEFAULT_PROVIDER','payment-service')));
         foreach(array($preferred,'paystack','yoco','fake') as $code) {

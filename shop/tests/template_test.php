@@ -8,7 +8,7 @@ class ShopLabels {
  public function languageText($key,$module){return $this->labels[$key]??throw new RuntimeException('Missing label: '.$key);}
 }
 class ShopTemplateHelp {public function show($module,$topic,$compact){return '<button type="button">Help</button>';}}
-class ShopTemplateIcons {public function render($name,$options){return '<svg aria-hidden="true" data-icon="'.$name.'"></svg>';}}
+class ShopTemplateIcons {public function render($name,$options){return '<svg width="20" height="20" aria-hidden="true" data-icon="'.$name.'"></svg>';}}
 class ShopTemplateHost {
  public function getObject($name,$module=''){return $name === 'iconservice' ? new ShopTemplateIcons : new ShopTemplateHelp;}
  public function uri($p,$m){return 'https://shop.test/index.php?'.http_build_query(['module'=>$m]+$p);}
@@ -71,3 +71,15 @@ $data['shopBook']=$s->book($combo,true);
 $html=$host->render('editor_tpl.php',$data);
 if(str_contains($html,'Archived checkout fixture')||str_contains($html,'value="'.$archived['id'].'"'))throw new RuntimeException('Archived product offered in combo editor');
 echo "PASS: archived products absent from combo choices\n";
+
+$virtual=$s->saveBook(['id'=>str_repeat('9',32),'revision'=>0,'title'=>'Virtual contribution','price'=>'50','status'=>'published','product_type'=>'virtual','virtual_kind'=>'contribution']);
+$data['shopError']='';$data['shopDraft']=[];$data['shopCart']=[$virtual['id']=>1];$data['shopQuote']=$s->quote($data['shopCart']);$data['shopOffer']=null;
+$html=$host->render('cart_tpl.php',$data);
+if(str_contains($html,'name="address_line"')||str_contains($html,'name="postal_code"')||str_contains($html,'name="country"')||!str_contains($html,'Contact details'))throw new RuntimeException('Virtual checkout must omit delivery controls');
+$data['shopCart'][$id]=1;$data['shopQuote']=$s->quote($data['shopCart']);$html=$host->render('cart_tpl.php',$data);
+if(!str_contains($html,'name="address_line"')||!str_contains($html,'Delivery details'))throw new RuntimeException('Mixed checkout retains address fields');
+$data['shopBooks']=[$virtual];$html=$host->render('catalogue_tpl.php',$data);
+if(str_contains($html,'Out of stock')||!str_contains($html,'action=add'))throw new RuntimeException('Virtual products need purchase controls without stock');
+$data['shopBook']=$virtual;$html=$host->render('editor_tpl.php',$data);
+if(!str_contains($html,'value="virtual" selected')||!str_contains($html,'policy=download'))throw new RuntimeException('Virtual editor or shared download picker missing');
+echo "PASS: virtual editor, download picker, stock-free buying and virtual/mixed checkout fields.\n";

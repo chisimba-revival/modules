@@ -46,6 +46,7 @@ class productbuttons extends ChisimbaObject
         $shop=$this->getObject('shopservice','shop');$book=$shop->book($data['product_id']);
         $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
         if (!$book) return '<p>'.$e($shop->text('book_unavailable')).'</p>';
+        if (ShopRules::membership($book)) return '<div class="chisimba-stack"><p>'.ShopPrice::render($book,[$shop,'money'],[$shop,'text']).' · '.$e($shop->text($book['virtual']['billing_period'])).'</p><a class="button" href="'.$e($shop->membershipUrl($book)).'">'.$e($shop->text('subscribe')).'</a></div>';
         if (!$this->assets) {
             $this->appendArrayVar('headerParams','<script defer src="'.$e($this->getResourceUri('pagecart.js','shop').'?v=1.004').'"></script>');$this->assets=true;
         }
@@ -53,13 +54,13 @@ class productbuttons extends ChisimbaObject
         $this->token??=$this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('shop');
         $icon=$this->getObject('iconservice','ui');
         $html='<div id="shop-product-'.$e($book['id']).'" class="chisimba-stack" data-shop-purchase><p>'.ShopPrice::render($book, [$shop,'money'], [$shop,'text']).'</p>';
-        if ((int)$book['stock']>0) {
+        if ((!ShopRules::physical($book)||(int)$book['stock']>0)) {
             $return=$_SERVER['REQUEST_URI']??'/';
             $html.='<form method="post" action="'.$e($shop->url('pageadd')).'" class="chisimba-form-actions" data-shop-page-add data-pending="'.$e($shop->text('adding')).'" data-uncertain="'.$e($shop->text('add_uncertain')).'">';
             foreach (['csrf_token'=>$this->token,'id'=>$book['id'],'request_key'=>bin2hex(random_bytes(16)),'return_url'=>$return] as $name=>$value) $html.='<input type="hidden" name="'.$name.'" value="'.$e($value).'">';
             $html.='<button class="button" type="submit" name="intent" value="buy">'.$icon->render('shopping-bag',['decorative'=>true]).' '.$e($shop->text('buy_now')).'</button><button class="button chisimba-button-secondary" type="submit" name="intent" value="stay">'.$icon->render('plus',['decorative'=>true]).' '.$e($shop->text('add_to_cart')).'</button>';
         } else $html.='<p>'.$e($shop->text('out_of_stock')).'</p><div class="chisimba-form-actions">';
-        $html.='<a class="button chisimba-button-secondary" href="'.$e($shop->url('cart')).'">'.$icon->render('shopping-cart',['decorative'=>true]).' '.$e($shop->text('go_to_cart')).'</a>'.((int)$book['stock']>0?'</form>':'</div>');
+        $html.='<a class="button chisimba-button-secondary" href="'.$e($shop->url('cart')).'">'.$icon->render('shopping-cart',['decorative'=>true]).' '.$e($shop->text('go_to_cart')).'</a>'.((!ShopRules::physical($book)||(int)$book['stock']>0)?'</form>':'</div>');
         $notice=!empty($_SESSION['shop_page_added'][$book['id']])?$shop->text('added_to_cart'):'';
         unset($_SESSION['shop_page_added'][$book['id']]);
         return $html.'<p role="status" aria-live="polite" data-shop-add-status>'.$e($notice).'</p></div>';

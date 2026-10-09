@@ -3,7 +3,8 @@
 <a class="button" href="<?=$url('cart')?>"><?=$actionIcon('cart')?> <?=$t('cart')?></a>
 <?php if ($shopService->canManage()): ?><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('manage')?> <?=$t('manage')?></a><?php endif; ?>
 <?=$this->getObject('contextualhelp','help')->show('shop','buying',true)?></header>
-<p><?=$t('delivery_only')?></p>
+<?php if (array_filter($shopBooks,fn($book)=>ShopRules::physical($book))): ?><p><?=$t('delivery_only')?></p><?php endif; ?>
+<a class="button chisimba-button-secondary" href="<?=$url('purchases')?>"><?=$t('my_purchases')?></a>
 <?php if (!$shopBooks): ?><p><?=$t('no_books')?></p><?php endif; ?>
 <div class="chisimba-form-grid">
 <?php foreach ($shopBooks as $book): ?>
@@ -14,9 +15,11 @@
 <?php if (!empty($book['components'])): ?><p><?=$t('combo_books')?>:</p><ul><?php foreach($book['components'] as $child): ?><li><?=$esc($child['title'])?></li><?php endforeach; ?></ul><?php endif; ?>
 <?php if ($book['isbn']): ?><p><?=$t('isbn')?>: <?=$esc($book['isbn'])?></p><?php endif; ?>
 <p><?php $bookPrice($book); ?></p>
-<?php if ((int)$book['stock'] > 0): ?>
+<?php if (!ShopRules::physical($book)): ?><p><?=$t($book['virtual']['kind'])?> · <?=$t($book['virtual']['billing_period'])?></p><?php endif; ?>
+<?php if (ShopRules::membership($book)): ?><p><?=$t('membership_checkout_help')?></p><a class="button" href="<?=$esc($shopService->membershipUrl($book))?>"><?=$t('subscribe')?></a>
+<?php elseif (!ShopRules::physical($book) || (int)$book['stock'] > 0): ?>
 <form method="post" action="<?=$url('add')?>" class="chisimba-cluster"><?php $csrf(); $hidden('id',$book['id']); ?>
-<label for="quantity-<?=$esc($book['id'])?>"><?=$t('quantity')?></label><input id="quantity-<?=$esc($book['id'])?>" name="quantity" type="number" value="1" min="1" max="100" required>
+<label for="quantity-<?=$esc($book['id'])?>"><?=$t('quantity')?></label><input id="quantity-<?=$esc($book['id'])?>" name="quantity" type="number" value="1" min="1" max="<?=!ShopRules::physical($book)&&($book['virtual']['kind']??'')==='download'?1:100?>" required>
 <button class="button" type="submit"><?=$actionIcon('add_to_cart')?> <?=$t('add_to_cart')?></button></form>
 <?php else: ?><p><?=$t('out_of_stock')?></p><?php endif; ?>
 </article><?php endforeach; ?></div></main>
