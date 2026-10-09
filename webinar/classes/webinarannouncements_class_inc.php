@@ -12,15 +12,43 @@ class webinarannouncements extends ChisimbaObject
    $items[]=['record'=>$record,'title'=>html_entity_decode($record['title'],ENT_QUOTES|ENT_HTML5,'UTF-8'),'date'=>webinarschedule::start($record)->format('j F Y, H:i T'),'url'=>$root.'/index.php?module=webinar&action=view&id='.rawurlencode($record['id'])];
   }return $items;
  }
+ /** Calendar weeks run Monday to Sunday in the webinar's time zone. */
+ public static function headingKey(array $record,$now=null){
+  $start=webinarschedule::start($record);
+  $send=(new DateTimeImmutable('@'.($now??time())))->setTimezone($start->getTimezone());
+  if($send->format('o-W')===$start->format('o-W'))return 'email_this_week';
+  return $send->format('Y-m')===$start->format('Y-m')?'email_this_month':'email_next_month';
+ }
+ /** Freeze the reviewed first event while allowing its heading to follow the send date. */
+ public function headingSnapshot($ids=null){
+  $items=$this->upcomingItems($ids);if(!$items)return null;
+  $record=$items[0]['record'];
+  return ['record'=>['presented_at'=>$record['presented_at'],'payload'=>$record['payload']],
+   'label'=>$this->getObject('webinarrenderer','webinar')->text(self::headingKey($record))];
+ }
+ public function refreshHeading(array $payload,$now=null){
+  $heading=$payload['upcoming_heading']??null;if(!$heading)return $payload;
+  $label=$this->getObject('webinarrenderer','webinar')->text(self::headingKey($heading['record'],$now));
+  $e=static fn($v)=>htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+  foreach(['preview','preview_html','rendered','rendered_html'] as $key){
+   if(!isset($payload[$key]))continue;
+   $old=!str_ends_with($key,'_html')?"\n\n".$heading['label']."\n\n":'<h2>'.$e($heading['label']).'</h2>';
+   $new=!str_ends_with($key,'_html')?"\n\n".$label."\n\n":'<h2>'.$e($label).'</h2>';
+   $at=strpos($payload[$key],$old);if($at!==false)$payload[$key]=substr_replace($payload[$key],$new,$at,strlen($old));
+  }
+  $payload['upcoming_heading']['label']=$label;
+  return $payload;
+ }
  public function upcomingText($ids=null){
   $r=$this->getObject('webinarrenderer','webinar');$parts=[];
-  foreach($this->upcomingItems($ids) as $item)$parts[]=$r->text('email_title').' '.$item['title']."\n".$r->text('email_datetime').' '.$item['date']."\n".$r->text('email_register').' '.$item['url'];
+  foreach($this->upcomingItems($ids) as $i=>$item){if($i<2)$parts[]=$r->text($i===0?self::headingKey($item['record']):'email_later');$parts[]=$r->text('email_title').' '.$item['title']."\n".$r->text('email_datetime').' '.$item['date']."\n".$r->text('email_register').' '.$item['url'];}
   return implode("\n\n",$parts);
  }
  /** Email markup is self-contained; mail clients do not load the site's skin. */
  public function upcomingHtml($ids=null){
   $r=$this->getObject('webinarrenderer','webinar');$e=static fn($v)=>htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');$html='';
-  foreach($this->upcomingItems($ids) as $item){
+  foreach($this->upcomingItems($ids) as $i=>$item){
+   if($i<2)$html.='<h2>'.$e($r->text($i===0?self::headingKey($item['record']):'email_later')).'</h2>';
    $html.='<section>';$image=$this->getObject('webinaremailimage','webinar')->thumbnail($item['record']);
    if($image)$html.='<p><img src="'.$e($image['url']).'" width="'.$image['width'].'" height="'.$image['height'].'" alt="'.$e($item['title']).'" style="max-width:100%;height:auto"></p>';
    $html.='<p><strong>'.$e($r->text('email_title')).'</strong> '.$e($item['title']).'<br><strong>'.$e($r->text('email_datetime')).'</strong> '.$e($item['date']).'<br><strong>'.$e($r->text('email_register')).'</strong> <a href="'.$e($item['url']).'">'.$e($item['url']).'</a></p></section>';
@@ -41,6 +69,14 @@ class webinarannouncements extends ChisimbaObject
   $embed=$this->getObject('contentmediaservice','contentblocks')->videoEmbed($url);
   if(!is_string($embed)||!preg_match('~^https://www\.youtube-nocookie\.com/embed/([a-zA-Z0-9_-]{6,20})$~D',$embed,$match))return '';
   return $this->getObject('webinarrenderer','webinar')->text('latest_recording')."\n".html_entity_decode($record['title'],ENT_QUOTES|ENT_HTML5,'UTF-8')."\nhttps://www.youtube.com/watch?v=".$match[1];
+ }
+ /** A linked preview stays in the recording section even in clients with link previews. */
+ public function latestRecordingHtml(){
+  $text=$this->latestRecordingText();if($text==='')return '';
+  $lines=explode("\n",$text);$url=array_pop($lines);$heading=array_shift($lines);
+  parse_str(parse_url($url,PHP_URL_QUERY),$query);
+  $e=static fn($v)=>htmlspecialchars($v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
+  return '<h2>'.$e($heading).'</h2><p><a href="'.$e($url).'"><img src="https://i.ytimg.com/vi/'.$e($query['v']).'/hqdefault.jpg" width="320" alt="'.$e(implode(' ', $lines)).'" style="max-width:100%;height:auto"><br>'.$e(implode(' ', $lines)).'</a></p>';
  }
  /** Every Monday's general newsletter contains all currently bookable webinars.
   * The newsletter follows one site time zone, independently of event dates.

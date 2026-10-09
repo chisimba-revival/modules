@@ -27,6 +27,7 @@ class audiencecampaigns extends dbTable
   $payload=['greeting'=>$greeting,'latest_recording'=>($input['latest_recording']??'')==='1','body'=>$body,'upcoming'=>($input['upcoming']??'')==='1','support'=>($input['support']??'')==='1','cursor'=>0];
   $payload['preview_html']=$this->composeHtml(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
   $payload['preview']=$this->compose(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
+  if($payload['upcoming'])$payload['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot();
   $s=$this->store();$s->execute('START TRANSACTION');
   try{$old=$this->one($id,true);if($old&&($old['state']!=='draft'||(int)$old['version']!==(int)($input['version']??0)))throw new DomainException('conflict');
    if($old){if($this->update('id',$id,['subject'=>$subject,'payload'=>json_encode($payload,JSON_THROW_ON_ERROR),'version'=>(int)$old['version']+1,'updated_at'=>gmdate('Y-m-d H:i:s')])===false)throw new RuntimeException('storage');}
@@ -55,10 +56,10 @@ class audiencecampaigns extends dbTable
   // Existing frozen campaigns keep their reviewed text, including when resuming delivery.
   if(isset($p['rendered']))return '<p>'.self::htmlText($p['rendered']).'</p>';
   if(isset($p['preview']))return '<p>'.self::htmlText($p['preview']).'</p>';
-  $parts=[trim($p['greeting']??'')];
-  if(!empty($p['latest_recording']))$parts[]=$this->getObject('webinarannouncements','webinar')->latestRecordingText();
-  $parts[]=trim($p['body']??'');$html='';
-  foreach($parts as $part)if($part!=='')$html.='<p>'.self::htmlText($part).'</p>';
+  $html='';$greeting=trim($p['greeting']??'');
+  if($greeting!=='')$html.='<p>'.self::htmlText($greeting).'</p>';
+  if(!empty($p['latest_recording']))$html.=$this->getObject('webinarannouncements','webinar')->latestRecordingHtml();
+  $body=trim($p['body']??'');if($body!=='')$html.='<p>'.self::htmlText($body).'</p>';
   if(!empty($p['upcoming']))$html.=$this->getObject('webinarannouncements','webinar')->upcomingHtml($p['event_ids']??null);
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$html.='<p>'.self::htmlText(trim($support)).'</p>';}
   return '<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;max-width:600px;overflow-wrap:anywhere;word-break:break-word">'.$html.'</div>';
@@ -68,7 +69,9 @@ class audiencecampaigns extends dbTable
   try{$r=$this->one($id,true);if(!$r)throw new DomainException('invalid');
    if($r['state']!=='draft'){$s->execute('COMMIT');return $r;}
    if((int)$r['version']!==(int)$version)throw new DomainException('conflict');
-   $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);if($p['rendered']==='')throw new DomainException('invalid');
+   $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
+   if(isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
+   $r['payload']=json_encode($p,JSON_THROW_ON_ERROR);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);if($p['rendered']==='')throw new DomainException('invalid');
    $p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$p['cursor']=0;
    $this->persist($r,$p,'queued');$s->execute('COMMIT');return $this->one($id);
   }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
@@ -79,7 +82,7 @@ class audiencecampaigns extends dbTable
   if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$id=substr(hash('sha256','audience:'.$key),0,32);$s=$this->store();$s->execute('START TRANSACTION');
   try{if($this->one($id,true)){$s->execute('COMMIT');return;}
    $r=['id'=>$id,'version'=>1,'state'=>'queued','subject'=>$subject,'created_at'=>gmdate('Y-m-d H:i:s'),'updated_at'=>gmdate('Y-m-d H:i:s')];
-   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>true,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
+   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>true,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot($eventIds);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
    if($this->insert($r)===false)throw new RuntimeException('storage');$s->execute('COMMIT');
   }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
  }
@@ -90,7 +93,9 @@ class audiencecampaigns extends dbTable
   foreach($s->rows("SELECT id FROM tbl_audience_campaigns WHERE state='queued' ORDER BY created_at LIMIT 5") as $item){
    while($count<max(1,min(100,$limit))){$s->execute('START TRANSACTION');try{
     $r=$this->one($item['id'],true);if(!$r||$r['state']!=='queued'){$s->execute('COMMIT');break;}
-    $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$i=(int)$p['cursor'];$recipient=$p['recipients'][$i]??null;
+    $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$i=(int)$p['cursor'];
+    if($i===0&&isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
+    $recipient=$p['recipients'][$i]??null;
     if(!$recipient){$this->persist($r,$p,'dispatched');$s->execute('COMMIT');break;}
     $c=$this->getObject('audienceservice','audience')->one($recipient['id']);
     if(self::eligible($c,$recipient)){

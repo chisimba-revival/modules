@@ -109,7 +109,10 @@ class webinareditservice extends ChisimbaObject
             if($id!==''&&(!$old||$old['kind']!==$kind))throw new DomainException('editor_forbidden');
             if($old&&$old['status']==='trashed')throw new DomainException('editor_forbidden');
             if($old&&(!is_string($input['version']??null)||!hash_equals(self::version($old),$input['version'])))throw new DomainException('editor_conflict');
-            $row=$this->values($kind,$input,$old);$this->store->persist($row,(bool)$old);
+            $row=$this->values($kind,$input,$old);
+            // Prepare the protected email copy when a published featured image is saved.
+            if($kind==='webinar'&&$row['status']==='published')$this->getObject('webinaremailimage','webinar')->thumbnail($row);
+            $this->store->persist($row,(bool)$old);
             if($kind==='webinar'){
                 $categories=$input['categories']??[];if(!is_array($categories))throw new DomainException('editor_invalid');
                 $c=$this->classification();$c->assign('webinar',$row['id'],'category',$categories);

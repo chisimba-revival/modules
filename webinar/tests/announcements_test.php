@@ -27,3 +27,9 @@ $dst=event('dst','2026-10-29 19:00',['timezone'=>'Europe/London']);
 ensure(webinarschedule::reminderDue($dst,'monday')===(new DateTimeImmutable('2026-10-26 08:00',new DateTimeZone('Europe/London')))->getTimestamp(),'Attendee Monday observes local DST boundary');
 ensure(!(new webinarannouncements)->stillCurrent(['schedule_key'=>'month:old','expires_at'=>time()+86400]),'Old automatic announcement policies cannot deliver');
 echo "PASS every-Monday general newsletter; no monthly/after-event mail; booked Monday/morning/90-minute timing; grouping, activation, cancellation and DST.\n";
+
+foreach(['2026-09-28'=>'email_next_month','2026-10-05'=>'email_this_month','2026-10-12'=>'email_this_week','2026-10-18'=>'email_this_week'] as $day=>$key){ensure(webinarannouncements::headingKey($oct,stamp($day.' 08:00'))===$key,'Calendar heading '.$day);}
+ensure(webinarannouncements::headingKey(event('cross','2026-11-01 19:00'),stamp('2026-10-26 08:00'))==='email_this_week','Week wins across month boundary');
+ensure(webinarannouncements::headingKey(event('cross','2027-01-01 19:00'),stamp('2026-12-28 08:00'))==='email_this_week','ISO week across year boundary');
+ensure(webinarannouncements::headingKey($oct,strtotime('2026-10-11 22:01 UTC'))==='email_this_week','Local Monday before UTC Monday');
+echo "PASS heading month, week, year and timezone boundaries.\n";

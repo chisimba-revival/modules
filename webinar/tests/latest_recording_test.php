@@ -13,6 +13,7 @@ $old=row('old',-10,'https://youtu.be/abcdefghijk');$recent=row('recent',-2,'http
 $future=row('future',2,'https://youtu.be/abcdefghijk');$private=row('draft',-1,'https://youtu.be/abcdefghijk');$private['status']='draft';$cancel=row('cancel',-1,'https://youtu.be/abcdefghijk',['cancelled'=>true]);
 $store->rows=[$future,$old,$private,$cancel,$recent];
 check($service->latestRecordingText()==="Watch our latest webinar\nBirds & islands\nhttps://www.youtube.com/watch?v=lmnopqrstuv",'Latest public completed recording with canonical direct URL');
+check(str_contains($service->latestRecordingHtml(),'<h2>Watch our latest webinar</h2>')&&str_contains($service->latestRecordingHtml(),'https://i.ytimg.com/vi/lmnopqrstuv/hqdefault.jpg'),'Inline recording heading and correct linked preview');
 foreach(['','https://vimeo.com/123456789','javascript:alert(1)','https://youtube.com.evil.test/watch?v=abcdefghijk'] as $url){$store->rows=[$old,row('recent',-2,$url)];check($service->latestRecordingText()==='','No unsupported URL or older fallback');}
 $store->rows=[$future,$private,$cancel];check($service->latestRecordingText()==='','No completed public webinar');
 echo "PASS latest recording selection, cancellation, privacy, URL validation, omission and no older fallback.\n";
