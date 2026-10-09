@@ -20,7 +20,7 @@ class shopstore extends dbTable
     {
         $clauses = [];
         foreach ($where as $field => $value) $clauses[] = $this->field($field) . '=' . $this->quote($value);
-        $sql = 'SELECT * FROM ' . $this->table($table) . ($clauses ? ' WHERE ' . implode(' AND ', $clauses) : '') . ' ORDER BY id';
+        $sql = 'SELECT * FROM ' . $this->table($table) . ($clauses ? ' WHERE ' . implode(' AND ', $clauses) : '') . ($table === 'books' ? ' ORDER BY display_order, id' : ' ORDER BY id');
         if ($limit !== null) $sql .= ' LIMIT ' . max(1, min(500, (int)$limit));
         $result = $this->objEngine->getDbObj()->queryAll($sql, null, MDB2_FETCHMODE_ASSOC);
         if (!is_array($result)) throw new RuntimeException('Shop read failed');

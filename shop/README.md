@@ -283,3 +283,6 @@ php payment-service/tests/shop_payment_test.php
 `SHOP_UPGRADE_TEST_PASSWORD`. It creates and removes a random `shop_test_*` database;
 use only a disposable test server. It checks both fresh and legacy installation and
 repeated upgrades. No test sends mail or contacts a payment provider.
+
+## Catalogue order and Buy now
+Product Display order controls catalogue order (lower numbers first; default 0 preserves prior ordering). Upgrade through Module Catalogue for the repeatable column addition. Shop settings includes Show Buy now buttons, off by default. The shortcut uses the existing CSRF-protected cart flow and jumps to checkout details without a combo upsell; it preserves current cart contents and the normal review/payment verification steps. Featured images remain optional.

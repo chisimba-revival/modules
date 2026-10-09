@@ -71,7 +71,7 @@ class shop extends controller
             error_log('Shop request failed: ' . get_class($error) . ' at ' . basename($error->getFile()) . ':' . $error->getLine());
             http_response_code(503); $this->setVar('shopError', 'temporarily_unavailable'); $this->setVar('shopDraft', $this->input()); $template = 'error_tpl.php';
         }
-        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.014', ENT_QUOTES, 'UTF-8') . '"></script>');
+        if (in_array($template, ['editor_tpl.php', 'settings_tpl.php', 'sales_tpl.php', 'cart_tpl.php'], true)) $this->appendArrayVar('headerParams', '<script defer src="' . htmlspecialchars($this->getResourceUri('shop.js') . '?v=1.015', ENT_QUOTES, 'UTF-8') . '"></script>');
         $this->setVar('shopCsrf', $this->csrf->issue('shop'));
         return $template;
     }
@@ -138,7 +138,12 @@ class shop extends controller
                 }
                 if ($action === 'updatecart') ShopCartSession::edited($_SESSION, $before, $cart);
                 if (!$cart) unset($_SESSION['shop_offer_seen']);
-                $_SESSION['shop_cart'] = ShopRules::cart($cart); unset($_SESSION['shop_request']); $this->redirect('cart');
+                $_SESSION['shop_cart'] = ShopRules::cart($cart); unset($_SESSION['shop_request']);
+                if ($action === 'add' && $this->param('buy_now') === '1' && !empty($this->service->settings()['buy_now'])) {
+                    $_SESSION['shop_offer_seen'] = true;
+                    header('Location: ' . $this->service->url('cart') . '#shop-checkout', true, 303); exit;
+                }
+                $this->redirect('cart');
                 break;
             case 'acceptcombo':
                 $this->post();

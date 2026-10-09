@@ -29,7 +29,7 @@ try {
   foreach (glob(dirname(__DIR__).'/sql/tbl_shop_*.sql') as $schema) {
    require $schema;$pdo->exec('DROP TABLE IF EXISTS '.$tablename);$cols=[];
    foreach($fields as $field=>$def) {
-    if($legacy && in_array($field,['product_type','product_options','user_id'],true))continue;
+    if($legacy && in_array($field,['product_type','product_options','user_id','display_order'],true))continue;
     $type=match($def['type']){'integer'=>'INT','clob'=>'LONGTEXT',default=>'VARCHAR('.$def['length'].')'};
     $cols[]=$field.' '.$type.(!empty($def['notnull'])?' NOT NULL':' NULL').(isset($def['default'])?' DEFAULT '.$pdo->quote($def['default']):'');
    }
@@ -38,11 +38,15 @@ try {
   $pdo->exec("INSERT INTO tbl_shop_books (id,title,isbn,description,image_url,price_minor,stock,status,revision) VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','Original book','','','',15000,12,'published',4)");
   $hook->postinstall();$hook->postinstall();
   $row=$store->one('books',str_repeat('a',32));
-  if($row['product_type']!=='physical'||$row['product_options']!==null||(int)$row['stock']!==12||(int)$row['price_minor']!==15000||(int)$row['revision']!==4)throw new RuntimeException('Legacy book changed');
+  if((int)$row['display_order']!==0||$row['product_type']!=='physical'||$row['product_options']!==null||(int)$row['stock']!==12||(int)$row['price_minor']!==15000||(int)$row['revision']!==4)throw new RuntimeException('Legacy book changed');
   $columns=array_column($db->queryAll('SHOW COLUMNS FROM tbl_shop_orders'),'field');
   if(!in_array('user_id',$columns,true))throw new RuntimeException('Account column missing');
   $pdo->exec("UPDATE tbl_shop_books SET product_type='virtual',product_options='{\"kind\":\"contribution\"}'");
   $hook->postinstall();if($store->one('books',str_repeat('a',32))['product_type']!=='virtual')throw new RuntimeException('Upgrade overwrote product type');
+  $pdo->exec("INSERT INTO tbl_shop_books (id,title,isbn,description,image_url,price_minor,stock,status,revision,display_order) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb','Earlier','','','',10000,1,'published',1,10)");
+  $pdo->exec("UPDATE tbl_shop_books SET display_order=20 WHERE id='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'");
+  $hook->postinstall();$ordered=$store->rows('books');
+  if($ordered[0]['title']!=='Earlier'||(int)$ordered[1]['display_order']!==20)throw new RuntimeException('Explicit order ignored or reset');
   echo 'PASS: '.($legacy?'legacy upgrade':'fresh installation').", repeatable hooks, physical defaults, preserved stock/price/revision and virtual metadata.\n";
  }
 } finally {$pdo->exec('DROP DATABASE '.$name);}

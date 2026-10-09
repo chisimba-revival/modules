@@ -32,7 +32,7 @@ class shopservice extends ChisimbaObject
     {
         $row = $this->store->one('settings', 'shop');
         if (!$row) throw new RuntimeException('Shop needs Module Catalogue installation');
-        return json_decode($row['settings_json'], true, 512, JSON_THROW_ON_ERROR) + ['revision' => (int)$row['revision']];
+        return json_decode($row['settings_json'], true, 512, JSON_THROW_ON_ERROR) + ['revision' => (int)$row['revision'], 'buy_now' => false];
     }
     public function saveSettings(array $input)
     {
@@ -51,7 +51,7 @@ class shopservice extends ChisimbaObject
             $terms = $this->string($input['terms'] ?? '', 10000, true);
             $enabled = ($input['enabled'] ?? '') === '1';
             if ($enabled && ($terms === '' || !$this->payments->providerAvailable('paystack'))) throw new DomainException('checkout_unavailable');
-            $settings = ['enabled' => $enabled, 'terms' => $terms,
+            $settings = ['enabled' => $enabled, 'buy_now' => ($input['buy_now'] ?? '') === '1', 'terms' => $terms,
                 'zones' => ['ZA' => ['enabled' => (bool)$bands, 'max_quantity' => $max, 'bands' => $bands]]];
             $this->store->save('settings', 'shop', ['settings_json' => json_encode($settings, JSON_THROW_ON_ERROR), 'revision' => $old['revision'] + 1]);
             return $this->settings();
@@ -241,7 +241,7 @@ class shopservice extends ChisimbaObject
             $row = ['id' => $id, 'title' => $this->string($input['title'] ?? '', 191),
                 'isbn' => $this->string($input['isbn'] ?? '', 32, true), 'description' => $this->string($input['description'] ?? '', 20000, true),
                 'image_url' => $image, 'price_minor' => ShopRules::money($input['price'] ?? ''),
-                'stock' => $stock, 'status' => $status, 'revision' => (int)($old['revision'] ?? 0) + 1];
+                'stock' => $stock, 'display_order' => ShopRules::integer($input['display_order'] ?? ($old['display_order'] ?? 0), 0, 1000000), 'status' => $status, 'revision' => (int)($old['revision'] ?? 0) + 1];
             if (!$row['price_minor']) throw new DomainException('invalid_money');
             $row['product_type']=$type;
             $row['product_options']=json_encode($type==='virtual'?$this->virtualProduct($row,$input):[],JSON_THROW_ON_ERROR);

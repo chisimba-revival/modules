@@ -83,3 +83,13 @@ if(str_contains($html,'Out of stock')||!str_contains($html,'action=add'))throw n
 $data['shopBook']=$virtual;$html=$host->render('editor_tpl.php',$data);
 if(!str_contains($html,'value="virtual" selected')||!str_contains($html,'policy=download'))throw new RuntimeException('Virtual editor or shared download picker missing');
 echo "PASS: virtual editor, download picker, stock-free buying and virtual/mixed checkout fields.\n";
+$html=$host->render('catalogue_tpl.php',$data);
+if(str_contains($html,'name="buy_now"'))throw new RuntimeException('Buy now must default off');
+$settings=$s->settings();$s->saveSettings(['revision'=>$settings['revision'],'max_quantity'=>'100','terms'=>'Test terms','enabled'=>'1','buy_now'=>'1']);
+$html=$host->render('catalogue_tpl.php',$data);
+if(!str_contains($html,'name="buy_now" value="1"')||!str_contains($html,'Buy now')||!str_contains($html,'Add to cart'))throw new RuntimeException('Both purchase choices required when enabled');
+$html=$host->render('cart_tpl.php',$data);if(!str_contains($html,'id="shop-checkout"'))throw new RuntimeException('Checkout shortcut destination missing');
+$sorted=$s->saveBook(['id'=>str_repeat('8',32),'revision'=>0,'title'=>'Ordered product','price'=>'115','stock'=>'1','display_order'=>'10','status'=>'published']);
+if($sorted['display_order']!==10)throw new RuntimeException('Order not persisted');
+try{$s->saveBook(['id'=>str_repeat('7',32),'revision'=>0,'title'=>'Invalid order','price'=>'115','stock'=>'1','display_order'=>'-1','status'=>'published']);throw new RuntimeException('Negative order accepted');}catch(DomainException $e){}
+echo "PASS: Buy now defaults off, enabled controls retain cart choice, checkout target, display order validation.\n";

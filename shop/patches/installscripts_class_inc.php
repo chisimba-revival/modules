@@ -24,7 +24,7 @@ class shop_installscripts extends ChisimbaObject
             }
         }
         // Repeatable upgrades preserve every legacy product as physical and old guest orders.
-        foreach (['tbl_shop_books'=>['product_type'=>"VARCHAR(16) NOT NULL DEFAULT 'physical'",'product_options'=>'LONGTEXT NULL'],
+        foreach (['tbl_shop_books'=>['product_type'=>"VARCHAR(16) NOT NULL DEFAULT 'physical'",'product_options'=>'LONGTEXT NULL','display_order'=>'INT NOT NULL DEFAULT 0'],
             'tbl_shop_orders'=>['user_id'=>'VARCHAR(25) NULL']] as $table=>$columns) {
             $existing=$db->queryAll('SHOW COLUMNS FROM '.$table, null, MDB2_FETCHMODE_ASSOC);
             if (!is_array($existing)) throw new RuntimeException('Shop columns unavailable');

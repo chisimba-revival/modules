@@ -20,6 +20,7 @@
 <?php elseif (!ShopRules::physical($book) || (int)$book['stock'] > 0): ?>
 <form method="post" action="<?=$url('add')?>" class="chisimba-cluster"><?php $csrf(); $hidden('id',$book['id']); ?>
 <label for="quantity-<?=$esc($book['id'])?>"><?=$t('quantity')?></label><input id="quantity-<?=$esc($book['id'])?>" name="quantity" type="number" value="1" min="1" max="<?=!ShopRules::physical($book)&&($book['virtual']['kind']??'')==='download'?1:100?>" required>
-<button class="button" type="submit"><?=$actionIcon('add_to_cart')?> <?=$t('add_to_cart')?></button></form>
+<?php if (!empty($shopService->settings()['buy_now'])): ?><button class="button" type="submit" name="buy_now" value="1"><?=$actionIcon('pay')?> <?=$t('buy_now')?></button><?php endif; ?>
+<button class="button<?=!empty($shopService->settings()['buy_now'])?' chisimba-button-secondary':''?>" type="submit"><?=$actionIcon('add_to_cart')?> <?=$t('add_to_cart')?></button></form>
 <?php else: ?><p><?=$t('out_of_stock')?></p><?php endif; ?>
 </article><?php endforeach; ?></div></main>

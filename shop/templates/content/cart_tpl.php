@@ -11,7 +11,7 @@
 <div class="chisimba-form-actions"><button class="button" type="submit"><?=$actionIcon('update_cart')?> <?=$t('update_cart')?></button><button class="button chisimba-button-secondary" type="submit" name="clear_cart" value="1" formnovalidate><?=$actionIcon('clear_cart')?> <?=$t('clear_cart')?></button></div></form>
 <?php if ($shopQuote): ?>
 <?php if ($shopService->ready()): ?>
-<form method="post" data-cart-delivery action="<?=$url('prepare')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('request_key',$shopRequest); $hidden('quote_hash',$shopService->quoteHash($shopQuote)); ?>
+<form id="shop-checkout" tabindex="-1" method="post" data-cart-delivery action="<?=$url('prepare')?>" class="chisimba-form-card chisimba-form-card--wide chisimba-form chisimba-flow"><?php $csrf(); $hidden('request_key',$shopRequest); $hidden('quote_hash',$shopService->quoteHash($shopQuote)); ?>
 <h2><?=$t($shopQuote['quantity']?'delivery_details':'contact_details')?></h2><?php if($shopQuote['quantity']): ?><p><?=$t('delivery_only')?></p><?php endif; ?>
 <?php if(ShopRules::needsAccount($shopQuote) && !$shopService->isLoggedIn()): ?><p class="chisimba-form-notice"><?=$t('download_login')?> <a href="<?=$url('purchases')?>"><?=$t('sign_in')?></a></p><?php endif; ?>
 <div class="chisimba-form-grid"><?php foreach ($shopQuote['quantity']?['name','email','phone','address_line','suburb','city','province','postal_code']:['name','email'] as $name) $field($name,$draft[$name]??'',$name==='email'?'email':($name==='phone'?'tel':'text'),$name!=='suburb'); ?></div>
@@ -21,7 +21,7 @@
 <?php foreach (['issued_at','nonce','signature'] as $key) $hidden('abuse_'.$key,$shopAbuse[$key]??''); ?>
 <div hidden aria-hidden="true"><label for="shop-website">Website</label><input id="shop-website" name="website" tabindex="-1" autocomplete="off"></div>
 <div class="chisimba-form-actions chisimba-form-actions--equal"><button type="submit" class="button"><?=$actionIcon('review_order')?> <?=$t('review_order')?></button><span><?=$t('review_before_payment')?></span></div></form>
-<?php else: ?><p role="status"><?=$t('checkout_unavailable')?></p><?php endif; ?>
+<?php else: ?><p id="shop-checkout" role="status"><?=$t('checkout_unavailable')?></p><?php endif; ?>
 <?php endif; ?></section><?php if ($shopQuote): ?><aside class="chisimba-form-card chisimba-sticky-summary"><dl class="chisimba-details"><dt><?=$t('subtotal')?></dt><dd><?=$money($shopQuote['subtotal_minor'])?></dd><dt><?=$t('shipping')?></dt><dd><?=$money($shopQuote['shipping_minor'])?></dd><dt><?=$t('total')?></dt><dd><strong><?=$money($shopQuote['amount_minor'])?></strong></dd></dl><?php if($shopQuote['quantity']): ?><p><?=$t('shipping_hint')?></p>
 <details><summary><?=$t('shipping_costs')?></summary><dl class="chisimba-details"><?php foreach ($shopSettings['zones']['ZA']['bands'] as $band): ?><dt><?=$esc($band['from'])?> <?=$t('books_from')?></dt><dd><?=$money($band['amount_minor'])?></dd><?php endforeach; ?></dl></details><?php endif; ?></aside>
 <?php endif; ?></div><?php endif; ?></main>

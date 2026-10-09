@@ -13,6 +13,7 @@ $fields=[
     'status'=>['type'=>'text','length'=>20,'notnull'=>true],
     'product_type'=>['type'=>'text','length'=>16,'notnull'=>true,'default'=>'physical'],
     'product_options'=>['type'=>'clob','notnull'=>false],
+    'display_order'=>['type'=>'integer','notnull'=>true,'default'=>0],
     'revision'=>['type'=>'integer','notnull'=>true],
 ];
 $tableIndexes=['shop_books_id'=>['unique'=>true,'fields'=>['id'=>[]]],
