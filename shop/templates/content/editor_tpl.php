@@ -17,6 +17,8 @@
 <label><input type="checkbox" name="book_ids[]" value="<?=$esc($child['id'])?>"<?=in_array($child['id'],$book['book_ids']??[],true)?' checked':''?>> <?=$esc($child['title'])?> · <?=$t($child['status'])?> · <?=$money($child['sale_price_minor']??$child['price_minor'])?></label>
 <?php endforeach; ?></fieldset><p><label><input type="checkbox" name="cross_sell" value="1"<?=!empty($book['cross_sell'])?' checked':''?>> <?=$t('cross_sell')?></label></p><?php endif; ?>
 <p><?=$t('price_hint')?></p><div class="chisimba-form-field"><label for="shop-sale-price"><?=$t('sale_price')?></label><input id="shop-sale-price" readonly value="<?=isset($book['sale_price_minor'])?$esc(number_format($book['sale_price_minor']/100,2,'.','')):''?>"><p><?=$t('sale_price_help')?> <a href="<?=$url('sales')?>"><?=$t('sales')?></a></p></div>
+<fieldset class="chisimba-stack"><legend><?=$t('thank_you_heading')?></legend><label><input type="checkbox" name="send_thank_you" value="1"<?=($shopDraft?($shopDraft['send_thank_you']??'')==='1':!empty($virtual['thank_you']))?' checked':''?>> <?=$t('send_thank_you')?></label>
+<?php $field('thank_you_message',$shopDraft['thank_you_message']??($virtual['thank_you']??''),'textarea',false); ?><p><?=$t('thank_you_help')?></p></fieldset>
 <?php $field('display_order',$book['display_order']??0,'number'); ?><p><?=$t('display_order_help')?></p>
 <?php $field('image_url',$book['image_url']??'','url',false); ?>
 <img data-shop-cover class="chisimba-featured-image-preview"<?=empty($book['image_url'])?' hidden':' src="'.$esc($book['image_url']).'"'?> alt="<?=$esc($book['title']??'')?>">

@@ -244,7 +244,14 @@ class shopservice extends ChisimbaObject
                 'stock' => $stock, 'display_order' => ShopRules::integer($input['display_order'] ?? ($old['display_order'] ?? 0), 0, 1000000), 'status' => $status, 'revision' => (int)($old['revision'] ?? 0) + 1];
             if (!$row['price_minor']) throw new DomainException('invalid_money');
             $row['product_type']=$type;
-            $row['product_options']=json_encode($type==='virtual'?$this->virtualProduct($row,$input):[],JSON_THROW_ON_ERROR);
+            $options=$type==='virtual'?$this->virtualProduct($row,$input):[];
+            if (($input['send_thank_you']??'')==='1') {
+                if ($type==='virtual' && ($options['kind']??'')==='membership') throw new DomainException('thank_you_membership');
+                $message=trim($this->string($input['thank_you_message']??'',10000,true));
+                if ($message==='') throw new DomainException('thank_you_required');
+                $options['thank_you']=$message;
+            }
+            $row['product_options']=json_encode($options,JSON_THROW_ON_ERROR);
             if ($old) { $changes = $row; unset($changes['id']); $this->store->save('books', $id, $changes); }
             else $this->store->add('books', $row);
             if ($isCombo) {
@@ -509,6 +516,15 @@ class shopservice extends ChisimbaObject
         $address = json_decode($order['address_json'], true, 512, JSON_THROW_ON_ERROR);
         $quote = json_decode($order['snapshot'], true, 512, JSON_THROW_ON_ERROR);
         $intro = strtr($this->text('email_' . ($kind==='paid' && !$quote['quantity']?'virtual_paid':$kind)), ['{courier}'=>$order['courier'], '{tracking}'=>$order['tracking']]);
+        if ($kind==='paid') {
+            if ($order['payment_state']!=='paid') return;
+            $messages=[];
+            foreach ($quote['lines'] as $line) {
+                $message=trim((string)($line['thank_you']??''));
+                if ($message!=='' && !in_array($message,$messages,true)) $messages[]=$message;
+            }
+            if ($messages) $intro .= "\n\n" . implode("\n\n",$messages);
+        }
         $body = $intro . "\n\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
         foreach ($quote['lines'] as $line) {
             $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";

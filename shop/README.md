@@ -286,3 +286,6 @@ repeated upgrades. No test sends mail or contacts a payment provider.
 
 ## Catalogue order and Buy now
 Product Display order controls catalogue order (lower numbers first; default 0 preserves prior ordering). Upgrade through Module Catalogue for the repeatable column addition. Shop settings includes Show Buy now buttons, off by default. The shortcut uses the existing CSRF-protected cart flow and jumps to checkout details without a combo upsell; it preserves current cart contents and the normal review/payment verification steps. Featured images remain optional.
+
+## Product thank-you messages
+Optional plain-text acknowledgements are stored in product options and frozen into new order lines. Verified paid-order notifications include each distinct enabled message once, using the existing idempotent confirmation email. No extra email, retroactive send or recurring-membership acknowledgement is created. Existing orders retain their original snapshot. Customer email is shown only within the existing private order-link/manager access boundary. Virtual-only orders omit stock-reservation wording.

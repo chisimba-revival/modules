@@ -125,7 +125,8 @@ final class ShopRules
             $lines[] = ['book_id' => $id, 'title' => $book['title'], 'isbn' => $book['isbn'],
                 'revision' => (int)$book['revision'], 'quantity' => $quantity,
                 'unit_minor' => $price, 'regular_unit_minor' => $regular,
-                'sale_revision' => (int)($book['sale_revision'] ?? 0), 'total_minor' => $total] + (!self::physical($book) ? ['product_type'=>'virtual','virtual'=>self::options($book)] : []) + ($components ? ['components'=>$components] : []);
+                'sale_revision' => (int)($book['sale_revision'] ?? 0), 'total_minor' => $total,
+                'thank_you' => (string)(self::options($book)['thank_you'] ?? '')] + (!self::physical($book) ? ['product_type'=>'virtual','virtual'=>self::options($book)] : []) + ($components ? ['components'=>$components] : []);
         }
         $shipping = $physicalQuantity ? self::shipping($country, $physicalQuantity, $policy) : 0;
         $total = self::integer($subtotal + $shipping, 1, self::MAX_MONEY);

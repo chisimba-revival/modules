@@ -93,3 +93,9 @@ $sorted=$s->saveBook(['id'=>str_repeat('8',32),'revision'=>0,'title'=>'Ordered p
 if($sorted['display_order']!==10)throw new RuntimeException('Order not persisted');
 try{$s->saveBook(['id'=>str_repeat('7',32),'revision'=>0,'title'=>'Invalid order','price'=>'115','stock'=>'1','display_order'=>'-1','status'=>'published']);throw new RuntimeException('Negative order accepted');}catch(DomainException $e){}
 echo "PASS: Buy now defaults off, enabled controls retain cart choice, checkout target, display order validation.\n";
+$data['shopOrder']['email']='customer+<tag>@example.invalid';$data['shopOrder']['snapshot']=json_encode($s->quote([$virtual['id']=>1]));$data['shopOrder']['intent_id']='';$data['shopOrder']['payment_state']='unpaid';$data['shopOrder']['fulfilment_state']='held';$data['shopOrder']['hold_until']=time()+900;$data['shopManaged']=false;
+$html=$host->render('order_tpl.php',$data);
+if(!str_contains($html,'customer+&lt;tag&gt;@example.invalid')||str_contains($html,'Stock is held for'))throw new RuntimeException('Order email escaping or virtual stock wording');
+$data['shopOrder']['snapshot']=json_encode($quote);$html=$host->render('order_tpl.php',$data);
+if(!str_contains($html,'Stock is held for'))throw new RuntimeException('Physical stock guidance missing');
+echo "PASS: escaped order email, virtual guidance and physical reservation wording.\n";
