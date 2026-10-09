@@ -35,10 +35,14 @@ class audiencecampaigns extends dbTable
    $s->execute('COMMIT');return $this->one($id);
   }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
  }
+ private function messageHeading(){
+  $heading=trim((string)$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_MESSAGE_HEADING','audience',''));
+  return $heading!==''?$heading:$this->getObject('audiencerenderer','audience')->text('message_heading');
+ }
  public function compose(array $row){
   $p=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);if(isset($p['preview']))return $p['preview'];$parts=[trim($p['greeting']??'')];
   if(!empty($p['latest_recording']))$parts[]=$this->getObject('webinarannouncements','webinar')->latestRecordingText();
-  $parts[]=trim($p['body']??'');$body=implode("\n\n",array_filter($parts,static fn($part)=>$part!==''));
+  $message=trim($p['body']??'');if($message!=='')$parts[]=$this->messageHeading()."\n\n".$message;$body=implode("\n\n",array_filter($parts,static fn($part)=>$part!==''));
   if(!empty($p['upcoming']))$body.="\n\n".$this->getObject('webinarannouncements','webinar')->upcomingText($p['event_ids']??null);
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$body.="\n\n".trim($support);}
   return trim($body);
@@ -59,7 +63,7 @@ class audiencecampaigns extends dbTable
   $html='';$greeting=trim($p['greeting']??'');
   if($greeting!=='')$html.='<p>'.self::htmlText($greeting).'</p>';
   if(!empty($p['latest_recording']))$html.=$this->getObject('webinarannouncements','webinar')->latestRecordingHtml();
-  $body=trim($p['body']??'');if($body!=='')$html.='<p>'.self::htmlText($body).'</p>';
+  $body=trim($p['body']??'');if($body!=='')$html.='<h2>'.htmlspecialchars($this->messageHeading(),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</h2><p>'.self::htmlText($body).'</p>';
   if(!empty($p['upcoming']))$html.=$this->getObject('webinarannouncements','webinar')->upcomingHtml($p['event_ids']??null);
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$html.='<p>'.self::htmlText(trim($support)).'</p>';}
   return '<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;max-width:600px;overflow-wrap:anywhere;word-break:break-word">'.$html.'</div>';
