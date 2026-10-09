@@ -5,7 +5,8 @@ $GLOBALS['kewl_entry_point_run']=true;
 class ChisimbaObject { public function getObject($name,$module=''){return $GLOBALS['services'][$name];} public function appendArrayVar($name,$value){} public function getResourceUri($file,$module){return $file;} }
 require dirname(__DIR__).'/classes/compositionservice_class_inc.php';
 require dirname(__DIR__).'/classes/contentmediaservice_class_inc.php';
-require dirname(__DIR__,3).'/framework/app/core_modules/utilities/classes/richtextsanitizer_class_inc.php';
+$framework=getenv('CHISIMBA_FRAMEWORK_ROOT')?:dirname(__DIR__,3).'/framework';
+require $framework.'/app/core_modules/utilities/classes/richtextsanitizer_class_inc.php';
 $GLOBALS['services']=['richtextsanitizer'=>new richtextsanitizer(),'contentmediaservice'=>new contentmediaservice(),'language'=>new class {function code2Txt($code,$module){return $code;}}];
 $s=new compositionservice();
 function check($ok,$message){if(!$ok)throw new RuntimeException($message);}

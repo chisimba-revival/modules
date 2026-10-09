@@ -1,0 +1,9 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const state={},status={},feedback={},label={};let submit,calls=0;
+const button={disabled:false,dataset:{queuedLabel:'Already queued'},matches:()=>true,hasAttribute:()=>true,formAction:'/queue',querySelector:()=>label};
+const fields={},cancel={},preview={};
+const selectors={'[data-campaign-feedback]':feedback,'[data-campaign-queue]':button,'[data-campaign-cancel]':cancel,'[data-draft-fields]':fields,'[data-campaign-state]':state,'[data-audience-preview]':preview};
+const form={dataset:{confirm:'Confirm',saving:'Saving',failed:'Failed'},elements:{csrf_token:{},id:{},version:{},revision:{}},addEventListener:(n,f)=>{if(n==='submit')submit=f;},querySelector:s=>selectors[s],querySelectorAll:()=>[button],setAttribute(){},removeAttribute(){}};
+const context={document:{querySelector:s=>s==='[data-audience-form]'?form:status},window:{fetch:true,confirm:()=>true,addEventListener(){}},FormData:class{set(){}},AbortController,URL,setTimeout,clearTimeout,location:{href:'https://example.test/'},history:{replaceState(){}},fetch:async()=>{calls++;return {ok:true,json:async()=>({ok:true,id:'fixture',version:2,state:'queued',stateLabel:'Queued',message:'Queued for 1676 subscribers',preview:'Hello'})};}};
+vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/admin.js','utf8'),context);
+(async()=>{const event={preventDefault(){},submitter:button};const first=submit(event);await submit(event);await first;assert.equal(calls,1);assert.equal(button.disabled,true);assert.equal(fields.disabled,true);assert.equal(label.textContent,'Already queued');assert.equal(state.textContent,'Queued');assert.equal(feedback.textContent,'Queued for 1676 subscribers');console.log('PASS busy duplicate protection, disabled queued button, visible state and adjacent confirmation');})().catch(e=>{console.error(e);process.exitCode=1;});
