@@ -21,18 +21,10 @@ class rttutil extends ChisimbaObject {
     }
 
     function checkSipParams() {
-        $userparamsObj = $this->objDbUserparamsadmin->readConfig();
-
-        $userparams = $userparamsObj->toArray();
-        $userparams = $userparams['root']['Settings'];
-        $userpart = "-1";
-        $userpartArray = $userparams[0];
-        if (!key_exists("rtt_username", $userpartArray)) {
-
-            $pname = "rtt_username";
-            $ptag = "0000";
-            $this->objDbUserparamsadmin->writeProperties("add", $this->objUser->userId(), $pname, $ptag);
+        if ($this->objDbUserparamsadmin->getValue('rtt_username') === null) {
+            return $this->objDbUserparamsadmin->setItem('rtt_username', '0000');
         }
+        return $this->objDbUserparamsadmin->getValue('rtt_username') !== false;
     }
 
     function runJNLP() {
@@ -60,17 +52,8 @@ class rttutil extends ChisimbaObject {
         $isDemo = $objSysConfig->getValue('IS_DEMO', 'rtt');
         $roomName = $objSysConfig->getValue('DEFAULT_ROOM', 'rtt');
         $defaultSIPPwd = $objSysConfig->getValue('DEFAULT_SIP_PWD', 'rtt');
-        $userparamsObj = $this->objDbUserparamsadmin->readConfig();
-
-        $userparams = $userparamsObj->toArray();
-        $userparams = $userparams['root']['Settings'];
-        $userpartArray = $userparams[0];
-
-        $userpart = "-1";
-        if (key_exists("rtt_username", $userpartArray)) {
-            $userpart = $userpartArray['rtt_username'];
-        }
-
+        $userpart = $this->objDbUserparamsadmin->getValue('rtt_username');
+        if ($userpart === null || $userpart === false) { $userpart = '-1'; }
 
         $this->objContext = $this->getObject('dbcontext', 'context');
         if ($this->objContext->isInContext()) {
