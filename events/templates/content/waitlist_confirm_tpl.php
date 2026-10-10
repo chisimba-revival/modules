@@ -1,0 +1,1 @@
+<?php require __DIR__.'/common.php'; ?><h1><?=$t('confirm_waitlist')?></h1><form method="post" action="<?=$url('waitlistconfirm')?>"><?php $csrf(); $hidden('token',$eventToken); ?><button type="submit" class="button"><?=$t('confirm_waitlist')?></button></form>
