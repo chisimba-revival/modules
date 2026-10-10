@@ -46,13 +46,7 @@ class registrationguard extends ChisimbaObject
     /** A narrow review hint, never an account deletion or access decision. */
     public function suspiciousName($first, $surname = '')
     {
-        foreach (array($first, $surname) as $part) {
-            $part = trim((string) $part);
-            if (!preg_match('/^[A-Za-z]{14,50}$/D', $part)) { continue; }
-            preg_match_all('/[a-z][A-Z]|[A-Z][a-z]/', $part, $transitions);
-            preg_match_all('/[A-Z]/', $part, $upper);
-            if (count($transitions[0]) >= 5 && count($upper[0]) >= 5) { return true; }
-        }
-        return false;
+        $this->loadClass('submissioncontentpolicy', 'abuseprotection');
+        return SubmissionContentPolicy::suspiciousName($first . ' ' . $surname);
     }
 }
