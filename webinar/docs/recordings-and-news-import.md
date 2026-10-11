@@ -1,3 +1,5 @@
+> Historical migration record: the staging PHP import commands below were retired on 11 October 2026. See `modules/docs/retired-staging-imports.md`; do not execute them.
+
 # Learn-the-Birds: Recordings and WordPress articles
 
 Implemented on protected `migrate.learnthebirds.com`, 15 September 2026. Live WordPress, DNS, mail, subscribers and registrations are unchanged.

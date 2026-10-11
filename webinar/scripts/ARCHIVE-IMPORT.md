@@ -1,3 +1,5 @@
+> Historical migration record: the staging PHP import commands below were retired on 11 October 2026. See `modules/docs/retired-staging-imports.md`; do not execute them.
+
 # Learn-the-Birds historical archive adapter
 
 These CLI adapters target the protected migration site only. They are not general-purpose import endpoints.
