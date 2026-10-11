@@ -40,6 +40,8 @@ class webinarregistrationservice extends ChisimbaObject
         $this->audience->checkRate($email,$client);
         $this->registrations->beginTransaction();
         try {
+            $record=$this->registrations->lockWebinar($record['id']);
+            if(!$record||!webinarschedule::canRegister($record))throw new DomainException('closed');
             $contact=$this->audience->contact($email,$name);
             $existing=$this->registrations->forContact($record['id'],$contact['id']);
             if($existing && (int)$existing['contact_revision']===(int)$contact['revision']
@@ -47,6 +49,7 @@ class webinarregistrationservice extends ChisimbaObject
                     || ($verify && $existing['state']==='pending' && (int)$existing['expires_at']>time()))) {
                 $this->registrations->commitTransaction();return $existing['state']==='confirmed'?'already_registered':'pending';
             }
+            $this->requireCapacity($record,$contact['id']);
             $token=bin2hex(random_bytes(32));
             $row=['id'=>$existing['id']??bin2hex(random_bytes(16)),'webinar_id'=>$record['id'],
                 'contact_id'=>$contact['id'],'state'=>$verify?'pending':'confirmed','confirm_hash'=>hash('sha256',$token),
@@ -60,20 +63,28 @@ class webinarregistrationservice extends ChisimbaObject
         }catch(Throwable $error){$this->registrations->rollbackTransaction();throw $error;}
     }
 
+    private function requireCapacity(array $record,$contact)
+    {
+        if($this->registrations->occupied($record['id'],$contact,time())>=webinarschedule::registrationLimit($record))throw new DomainException('full');
+    }
+
     public function confirm($token)
     {
+        // Resolve the event before starting the transaction: its row lock must
+        // precede snapshot/contact reads, just as it does for registration.
+        $initial=$this->registrations->token($token);
+        if(!$initial)throw new DomainException('expired');
         $this->registrations->beginTransaction();
         try {
+            $record=$this->registrations->lockWebinar($initial['webinar_id']);
+            $contact=$this->audience->lock($initial['contact_id']);
             $r=$this->registrations->token($token);
-            if(!$r)throw new DomainException('expired');
-            $contact=$this->audience->lock($r['contact_id']);
-            $r=$this->registrations->token($token);
-            $record=$this->records->one($r['webinar_id']);
-            if(!$contact || !$record || (int)$r['expires_at']<time() || (int)$r['contact_revision']!==(int)$contact['revision'])throw new DomainException('expired');
+            if(!$r || !$contact || !$record || (int)$r['expires_at']<=time() || (int)$r['contact_revision']!==(int)$contact['revision'])throw new DomainException('expired');
             if($r['state']==='confirmed'){$this->registrations->commitTransaction();return $record;}
             if($r['state']!=='pending'||!webinarschedule::canRegister($record))throw new DomainException('closed');
+            $this->requireCapacity($record,$contact['id']);
             if(!$this->audience->confirm($contact['id'],$r['contact_revision'],'webinar:'.$record['id'],$this->text('consent')))throw new DomainException('expired');
-            $this->registrations->update('id',$r['id'],['state'=>'confirmed','confirmed_at'=>gmdate('Y-m-d H:i:s')]);
+            if($this->registrations->update('id',$r['id'],['state'=>'confirmed','confirmed_at'=>gmdate('Y-m-d H:i:s')])===false)throw new RuntimeException('Registration persistence failed');
             $r['state']='confirmed';$contact=$this->audience->one($contact['id']);
             $this->queue($r,$record,$contact,'confirmed');
             $this->registrations->commitTransaction();return $record;
@@ -113,8 +124,9 @@ class webinarregistrationservice extends ChisimbaObject
         foreach($this->records->published('webinar') as $record){
             if(!webinarschedule::canRegister($record,$now))continue;
             foreach(['monday','morning','ninety'] as $kind){
-                $due=webinarschedule::reminderDue($record,$kind);
-                if($due===null||$due>$now||$now-$due>3600)continue;
+                $schedule=$this->getObject('webinarreminders','webinar');
+                $due=$schedule->due($record,$kind);
+                if(!$schedule->eligibleNow($record,$kind,$now))continue;
                 foreach($this->registrations->confirmed($record['id']) as $r){
                     $contact=$this->audience->one($r['contact_id']);
                     if(!$contact||$contact['state']!=='subscribed'||(int)$contact['revision']!==(int)$r['contact_revision']

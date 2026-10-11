@@ -21,6 +21,7 @@ class webinar extends controller
         if($this->param('action')===''&&($_SERVER['REQUEST_METHOD']??'GET')==='GET')return $this->nextAction('upcoming');
         $action=$this->param('action')?:'upcoming';
         if(in_array($action,['manage','edit','save','preview','tag_suggestions','editor_aux','trash','restore'],true))return $this->editorAction($action);
+        if(in_array($action,['dashboard','save_reminders'],true))return $this->dashboard($action);
         if($action==='booking_status')return $this->bookingStatus();
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
         if($action==='recordings')return $this->recordings();
@@ -36,6 +37,31 @@ class webinar extends controller
         }
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
+    }
+    private function dashboard($action)
+    {
+        header('Cache-Control: private, no-store');
+        $service=$this->getObject('webinarreminders','webinar');
+        if(!$service->allowed()){http_response_code(404);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+        $this->loadClass('webinareditservice','webinar');
+        $rows=$this->getObject('webinareditstore','webinar')->listing('webinar');
+        $this->loadClass('webinarmanagement','webinar');$groups=webinarmanagement::groups($rows);
+        $default=$groups['upcoming'][0]['id']??($rows[0]['id']??'');$id=$this->param('id')?:$default;
+        $record=$id?$this->getObject('webinareditstore','webinar')->record($id):null;
+        if($record&&$record['kind']!=='webinar')$record=null;
+        $error='';$input=null;
+        if($action==='save_reminders'){
+            $input=[];foreach(['subscribers','morning','ninety','monday','morning_time','lead_minutes','version'] as $key)$input[$key]=$this->param($key);
+            if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'||!$this->csrf()->consume('webinar-reminders',$this->param('csrf_token')))$error='session_expired';
+            else try{$record=$service->save($id,$input['version'],$input);return $this->nextAction('dashboard',['id'=>$id,'saved'=>'1']);}
+            catch(DomainException $e){$error=in_array($e->getMessage(),['editor_forbidden','editor_invalid','editor_conflict','reminder_invalid'],true)?$e->getMessage():'editor_save_failed';}
+            catch(Throwable $e){$error='editor_save_failed';}
+            http_response_code(422);
+        }
+        $this->setVar('webinarDashboardRows',$rows);$this->setVar('webinarRecord',$record);
+        $this->setVar('webinarReminderInput',$input);$this->setVar('webinarError',$error);
+        $this->setVar('webinarCsrf',$this->csrf()->issue('webinar-reminders'));
+        return 'dashboard_tpl.php';
     }
     /** Authenticated editor, with identical permission/CSRF checks for native and Ajax forms. */
     private function editorAction($action)
@@ -70,7 +96,7 @@ class webinar extends controller
         }
         $error='';$aux=null;$saved=null;
         if(in_array($action,['save','editor_aux'],true)){
-            $input=[];foreach(['title','description','image','image_alt','status','starts_at','ends_at','duration_minutes','timezone','recording','joining_url','tags','version','create_id','registration_open','cancelled'] as $key)$input[$key]=$this->param($key);
+            $input=[];foreach(['title','description','image','image_alt','status','starts_at','ends_at','duration_minutes','timezone','recording','joining_url','tags','version','create_id','registration_open','cancelled','registration_limit'] as $key)$input[$key]=$this->param($key);
             $input['status']=$this->param('publish_action')?:$input['status'];
             $input['categories']=$this->getParam('categories',[]);$input['speakers']=$this->getParam('speakers',[]);
             $this->setVar('webinarEditInput',$input);
@@ -90,7 +116,7 @@ class webinar extends controller
             }catch(DomainException $e){$error=$e->getMessage();}
             catch(Throwable $e){$error='editor_save_failed';}
         }
-        $allowed=['editor_invalid','editor_forbidden','editor_conflict','editor_date','editor_duration','editor_end','editor_url','editor_recording','editor_speaker','editor_description','editor_save_failed','session_expired'];
+        $allowed=['editor_invalid','editor_forbidden','editor_conflict','editor_date','editor_duration','editor_registration_limit','editor_end','editor_url','editor_recording','editor_speaker','editor_description','editor_save_failed','session_expired'];
         if($error!==''&&!in_array($error,$allowed,true))$error=str_starts_with($error,'classification_')?'editor_classification':'editor_invalid';
         $csrf=$this->csrf()->issue('webinar-editor');$this->setVar('webinarEditCsrf',$csrf);$this->setVar('webinarEditError',$error);
         if($this->param('ajax')==='1'&&in_array($action,['save','editor_aux'],true)){
@@ -154,7 +180,7 @@ class webinar extends controller
                     if(!$this->getObject('audienceservice','audience')->unsubscribe($token))throw new DomainException('expired');
                     $this->redirectNotice('unsubscribed');
                 }
-            }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','closed','expired','try_later'],true)?$e->getMessage():'invalid';}
+            }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','closed','full','expired','try_later'],true)?$e->getMessage():'invalid';}
             catch(Throwable $e){$error='unavailable';}
         }
         $this->setVar('webinarFormAction',$action);$this->setVar('webinarRecord',$record);

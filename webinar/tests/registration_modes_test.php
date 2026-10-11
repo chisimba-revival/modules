@@ -12,7 +12,7 @@ class TestAudience extends audienceservice {
  function update($key,$id,$data){$this->row=array_merge($this->row,$data);return true;}
  function insert($r,$table=null){$this->audit[]=$r;return true;}
 }
-class TestRegs {public $row=null;function forContact($a,$b){return $this->row;}function insert($r){$this->row=$r;return true;}function update($a,$b,$r){$this->row=$r;return true;}function beginTransaction(){}function commitTransaction(){}function rollbackTransaction(){}}
+class TestRegs {function lockWebinar($id){return $GLOBALS["w"];}function occupied($a,$b,$now){return 0;}public $row=null;function forContact($a,$b){return $this->row;}function insert($r){$this->row=$r;return true;}function update($a,$b,$r){$this->row=$r;return true;}function beginTransaction(){}function commitTransaction(){}function rollbackTransaction(){}}
 class TestService extends webinarregistrationservice {public $sent=[];function queue(array $r,array $w,array $c,$kind,$token=''){$this->sent[]=$kind;}}
 function check($ok,$msg){if(!$ok)throw new RuntimeException($msg);}
 $config=new class {public $value='TRUE';function getValue($a,$b){return $this->value;}};

@@ -5,10 +5,10 @@ class webinareditpolicy extends ChisimbaObject
 {
     public function init() {}
     /** Only administrators or the persisted original creator may see booking totals. */
-    public function canViewRegistrationCount(array $record)
+    public function canViewRegistrationCount(array $record,$management=false)
     {
         $user=$this->getObject('user','security');
-        if(!$user->isLoggedIn()||($record['kind']??'')!=='webinar'||($record['status']??'')!=='published')return false;
+        if(!$user->isLoggedIn()||($record['kind']??'')!=='webinar'||(!$management&&($record['status']??'')!=='published'))return false;
         if($user->isAdmin())return true;
         $payload=json_decode($record['payload']??'',true);
         $creator=$payload['created_by']??null;

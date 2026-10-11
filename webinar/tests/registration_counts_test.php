@@ -9,7 +9,7 @@ class ChisimbaObject {
 }
 class dbTable extends ChisimbaObject {
  public $queries=0;
- public function getArray($sql){$this->queries++;return $GLOBALS['db']->query($sql)->fetchAll(PDO::FETCH_ASSOC);}
+ public function selectPrepared($sql,$params=[]){$this->queries++;$s=$GLOBALS['db']->prepare($sql);$s->execute($params);return $s->fetchAll(PDO::FETCH_ASSOC);}
 }
 foreach(['webinarschedule','webinareditpolicy','webinarregistrations','webinarrenderer','helpcontent'] as $class)require dirname(__DIR__).'/classes/'.$class.'_class_inc.php';
 function check($ok,$why){if(!$ok)throw new RuntimeException($why);}

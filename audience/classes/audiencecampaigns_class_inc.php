@@ -5,12 +5,11 @@ class audiencecampaigns extends dbTable
 {
  public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_audience_campaigns',$pearDb,$errorCallback);}
  private function store(){return $this->getObject('audienceadmin','audience');}
- private function q($v){return $this->store()->q($v);}
- public function one($id,$lock=false){if(!is_string($id)||!preg_match('/^[a-f0-9]{32}$/D',$id))return null;return $this->store()->rows('SELECT * FROM tbl_audience_campaigns WHERE id='.$this->q($id).($lock?' FOR UPDATE':''))[0]??null;}
+ public function one($id,$lock=false){if(!is_string($id)||!preg_match('/^[a-f0-9]{32}$/D',$id))return null;return $this->store()->rows('SELECT * FROM tbl_audience_campaigns WHERE id=?'.($lock?' FOR UPDATE':''),[$id])[0]??null;}
  public function progress($id){
   $this->store()->guard();$row=$this->one($id);if(!$row)throw new DomainException('invalid');
   $payload=json_decode($row['payload'],true);$total=count($payload['recipients']??[]);$counts=[];
-  foreach($this->store()->rows('SELECT status,COUNT(*) n FROM tbl_communications_outbox WHERE idempotency_key LIKE '.$this->q('audience:'.$id.':%').' GROUP BY status') as $item)$counts[$item['status']]=(int)$item['n'];
+  foreach($this->store()->rows('SELECT status,COUNT(*) n FROM tbl_communications_outbox WHERE idempotency_key LIKE ? GROUP BY status',['audience:'.$id.':%']) as $item)$counts[$item['status']]=(int)$item['n'];
   $sent=$counts['sent']??0;$pending=$counts['queued']??0;$failed=($counts['failed']??0)+($counts['cancelled']??0);
   $key=$row['state']==='draft'?'draft':($row['state']==='cancelled'?'cancelled':'mail_queued');
   if($row['state']==='dispatched'&&$pending===0)$key=$sent===$total&&$total>0?'mail_sent':'mail_attention';
@@ -28,12 +27,12 @@ class audiencecampaigns extends dbTable
   $payload['preview_html']=$this->composeHtml(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
   $payload['preview']=$this->compose(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
   if($payload['upcoming'])$payload['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot();
-  $s=$this->store();$s->execute('START TRANSACTION');
+  $s=$this->store();$s->beginTransaction();
   try{$old=$this->one($id,true);if($old&&($old['state']!=='draft'||(int)$old['version']!==(int)($input['version']??0)))throw new DomainException('conflict');
    if($old){if($this->update('id',$id,['subject'=>$subject,'payload'=>json_encode($payload,JSON_THROW_ON_ERROR),'version'=>(int)$old['version']+1,'updated_at'=>gmdate('Y-m-d H:i:s')])===false)throw new RuntimeException('storage');}
    elseif($this->insert(['id'=>$id,'version'=>1,'subject'=>$subject,'payload'=>json_encode($payload,JSON_THROW_ON_ERROR),'state'=>'draft','created_at'=>gmdate('Y-m-d H:i:s'),'updated_at'=>gmdate('Y-m-d H:i:s')])===false)throw new RuntimeException('storage');
-   $s->execute('COMMIT');return $this->one($id);
-  }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
+   $s->commitTransaction();return $this->one($id);
+  }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
  }
  private function messageHeading(){
   $heading=trim((string)$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_MESSAGE_HEADING','audience',''));
@@ -73,38 +72,38 @@ class audiencecampaigns extends dbTable
   return '<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;max-width:600px;overflow-wrap:anywhere;word-break:break-word">'.$html.'</div>';
  }
  public function queue($id,$version){
-  $this->store()->guard();$s=$this->store();$s->execute('START TRANSACTION');
+  $this->store()->guard();$s=$this->store();$s->beginTransaction();
   try{$r=$this->one($id,true);if(!$r)throw new DomainException('invalid');
-   if($r['state']!=='draft'){$s->execute('COMMIT');return $r;}
+   if($r['state']!=='draft'){$s->commitTransaction();return $r;}
    if((int)$r['version']!==(int)$version)throw new DomainException('conflict');
    $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
    if(isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
    $r['payload']=json_encode($p,JSON_THROW_ON_ERROR);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);if($p['rendered']==='')throw new DomainException('invalid');
    $p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$p['cursor']=0;
-   $this->persist($r,$p,'queued');$s->execute('COMMIT');return $this->one($id);
-  }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
+   $this->persist($r,$p,'queued');$s->commitTransaction();return $this->one($id);
+  }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
  }
  private function persist($r,$payload,$state){if($this->update('id',$r['id'],['payload'=>json_encode($payload,JSON_THROW_ON_ERROR),'state'=>$state,'version'=>(int)$r['version']+1,'updated_at'=>gmdate('Y-m-d H:i:s')])===false)throw new RuntimeException('storage');}
  /** Called only by the CLI scheduler with a deterministic date/event key. */
- public function schedule($key,$subject,$body,array $eventIds,$expiresAt){
-  if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$id=substr(hash('sha256','audience:'.$key),0,32);$s=$this->store();$s->execute('START TRANSACTION');
-  try{if($this->one($id,true)){$s->execute('COMMIT');return;}
+ public function schedule($key,$subject,$body,array $eventIds,$expiresAt,$latestRecording=true){
+  if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$id=substr(hash('sha256','audience:'.$key),0,32);$s=$this->store();$s->beginTransaction();
+  try{if($this->one($id,true)){$s->commitTransaction();return;}
    $r=['id'=>$id,'version'=>1,'state'=>'queued','subject'=>$subject,'created_at'=>gmdate('Y-m-d H:i:s'),'updated_at'=>gmdate('Y-m-d H:i:s')];
-   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>true,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot($eventIds);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
-   if($this->insert($r)===false)throw new RuntimeException('storage');$s->execute('COMMIT');
-  }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}
+   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>$latestRecording,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot($eventIds);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
+   if($this->insert($r)===false)throw new RuntimeException('storage');$s->commitTransaction();
+  }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
  }
- public function cancel($id,$version){$this->store()->guard();$s=$this->store();$s->execute('START TRANSACTION');try{$r=$this->one($id,true);if(!$r||(int)$r['version']!==(int)$version)throw new DomainException('conflict');$this->persist($r,json_decode($r['payload'],true),'cancelled');$s->execute('COMMIT');}catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}}
+ public function cancel($id,$version){$this->store()->guard();$s=$this->store();$s->beginTransaction();try{$r=$this->one($id,true);if(!$r||(int)$r['version']!==(int)$version)throw new DomainException('conflict');$this->persist($r,json_decode($r['payload'],true),'cancelled');$s->commitTransaction();}catch(Throwable $e){$s->rollbackTransaction();throw $e;}}
  /** No web request performs delivery. Transactions cover a single recipient and cursor. */
  public function pump($limit=20){
   if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$s=$this->store();$count=0;
   foreach($s->rows("SELECT id FROM tbl_audience_campaigns WHERE state='queued' ORDER BY created_at LIMIT 5") as $item){
-   while($count<max(1,min(100,$limit))){$s->execute('START TRANSACTION');try{
-    $r=$this->one($item['id'],true);if(!$r||$r['state']!=='queued'){$s->execute('COMMIT');break;}
+   while($count<max(1,min(100,$limit))){$s->beginTransaction();try{
+    $r=$this->one($item['id'],true);if(!$r||$r['state']!=='queued'){$s->commitTransaction();break;}
     $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);$i=(int)$p['cursor'];
     if($i===0&&isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
     $recipient=$p['recipients'][$i]??null;
-    if(!$recipient){$this->persist($r,$p,'dispatched');$s->execute('COMMIT');break;}
+    if(!$recipient){$this->persist($r,$p,'dispatched');$s->commitTransaction();break;}
     $c=$this->getObject('audienceservice','audience')->one($recipient['id']);
     if(self::eligible($c,$recipient)){
      $key='audience:'.$r['id'].':'.$c['id'];$mail=$this->getObject('communicationservice','communications');
@@ -121,8 +120,8 @@ class audiencecampaigns extends dbTable
       if(empty($result['ok']))throw new RuntimeException('queue_blocked');
      }
     }
-    $p['cursor']=$i+1;$this->persist($r,$p,'queued');$s->execute('COMMIT');$count++;
-   }catch(Throwable $e){$s->execute('ROLLBACK');throw $e;}}
+    $p['cursor']=$i+1;$this->persist($r,$p,'queued');$s->commitTransaction();$count++;
+   }catch(Throwable $e){$s->rollbackTransaction();throw $e;}}
   }return ['processed'=>$count];
  }
  /** Subscriber names currently share one full-name field. Keep punctuation and

@@ -15,6 +15,8 @@ class ChisimbaObject {
 }
 class dbTable extends ChisimbaObject {
  private $table;
+ function selectExactPrepared($sql,$values=[]){$st=$GLOBALS['pdo']->prepare($sql);$st->execute($values);return $st->fetchAll(PDO::FETCH_ASSOC);}
+ function executeExactPrepared($sql,$values=[]){$st=$GLOBALS['pdo']->prepare($sql);$st->execute($values);return $st->rowCount();}
  function init($t=null,$p=null,$e=null){$this->table=$t;}
  function getRow($k,$v,$t=null){$st=$GLOBALS['pdo']->prepare('SELECT * FROM '.($t?:$this->table).' WHERE '.$k.'=?');$st->execute([$v]);return $st->fetch(PDO::FETCH_ASSOC)?:null;}
  function getArray($s){return $GLOBALS['pdo']->query($s)->fetchAll(PDO::FETCH_ASSOC);}
@@ -31,7 +33,7 @@ foreach($schema as $file){include $file;$cols=[];foreach($fields as $name=>$f){$
 foreach(['tbl_audience_contacts'=>['id','email'],'tbl_audience_campaigns'=>['id'],'tbl_communications_outbox'=>['id','idempotency_key']] as $table=>$cols)foreach($cols as $col)$pdo->exec("ALTER TABLE $table ADD UNIQUE KEY u_$col ($col)");
 $user=new class{public $admin=true;function isLoggedIn(){return true;}function isAdmin(){return $this->admin;}function userId(){return 'fixture-admin';}};
 $config=new class{function getValue($k,$m,$d=null){return ['COMMUNICATION_FROM_EMAIL'=>'sender@example.test','COMMUNICATION_FROM_NAME'=>'Test','COMMUNICATION_ALLOWED_RECIPIENTS'=>'','AUDIENCE_SUPPORT_MESSAGE'=>'Support fixture'][$k]??$d;}};
-$GLOBALS['objects']=['user'=>$user,'dbsysconfig'=>$config,'altconfig'=>new class{function getSiteRoot(){return 'https://example.test/';}function getSiteName(){return 'Test';}},'language'=>new class{function code2Txt($k,$m){return 'Unsubscribe';}},'webinarannouncements'=>new class{public $recording='Recording fixture';function latestRecordingText(){return $this->recording;}function upcomingText($ids=null){return 'Public webinar details';}function upcomingHtml($ids=null){return '<section><img src="https://example.test/banner.jpg" width="250"><p><strong>Title:</strong> Public webinar details</p></section>';}function stillCurrent($p){return true;}}];
+$GLOBALS['objects']=['audiencerenderer'=>new class{function text($k){return ['message_heading'=>'Message from the team','support_heading'=>'Support','greeting_default'=>'Hello {FIRSTNAME},'][$k]??$k;}},'user'=>$user,'dbsysconfig'=>$config,'altconfig'=>new class{function getSiteRoot(){return 'https://example.test/';}function getSiteName(){return 'Test';}},'language'=>new class{function code2Txt($k,$m){return 'Unsubscribe';}},'webinarannouncements'=>new class{public $recording='Recording fixture';function latestRecordingText(){return $this->recording;}function latestRecordingHtml(){return '<p>'.$this->recording.'</p>';}function headingSnapshot($ids=null){return null;}function upcomingText($ids=null){return 'Public webinar details';}function upcomingHtml($ids=null){return '<section><img src="https://example.test/banner.jpg" width="250"><p><strong>Title:</strong> Public webinar details</p></section>';}function stillCurrent($p){return true;}}];
 foreach(['audienceadmin','audienceservice','audiencecampaigns','communicationservice','communicationdeliverygate'] as $class){$o=new $class;$GLOBALS['objects'][$class]=$o;$o->init();}
 $a=$GLOBALS['objects']['audienceadmin'];$contacts=$GLOBALS['objects']['audienceservice'];$campaigns=$GLOBALS['objects']['audiencecampaigns'];
 $user->admin=false;reject(fn()=>$a->search('','',1),'forbidden');reject(fn()=>$campaigns->save('',[]),'forbidden');$user->admin=true;
@@ -43,13 +45,13 @@ reject(fn()=>$a->save($c['id'],['name'=>'One','email'=>'two@example.test','state
 check($a->search("' OR 1=1 --",'',1)['count']===0,'Search remains quoted');
 $id=bin2hex(random_bytes(16));$draft=$campaigns->save('',['create_id'=>$id,'subject'=>'Fixture','greeting'=>'Hello {FIRSTNAME},','body'=>'A message','upcoming'=>'1','support'=>'1']);
 check(str_contains($campaigns->compose($draft),'Public webinar details')&&str_contains($campaigns->compose($draft),'Support fixture'),'Optional content assembled');
-$plain=$campaigns->save('', ['create_id'=>bin2hex(random_bytes(16)),'subject'=>'Plain','body'=>'Only text']);check($campaigns->compose($plain)==='Only text','Optional content omitted');
+$plain=$campaigns->save('', ['create_id'=>bin2hex(random_bytes(16)),'subject'=>'Plain','body'=>'Only text']);check($campaigns->compose($plain)==="Message from the team\n\nOnly text",'Optional content omitted');
 $recorded=$campaigns->save('', ['create_id'=>bin2hex(random_bytes(16)),'subject'=>'Recording','greeting'=>'Hello,','latest_recording'=>'1','body'=>'My message']);
-check($campaigns->compose($recorded)==="Hello,\n\nRecording fixture\n\nMy message",'Recording follows greeting before message');
+check($campaigns->compose($recorded)==="Hello,\n\nRecording fixture\n\nMessage from the team\n\nMy message",'Recording follows greeting before message');
 $GLOBALS['objects']['webinarannouncements']->recording='';
-check($campaigns->compose($recorded)==="Hello,\n\nRecording fixture\n\nMy message",'Reviewed preview stays frozen');
+check($campaigns->compose($recorded)==="Hello,\n\nRecording fixture\n\nMessage from the team\n\nMy message",'Reviewed preview stays frozen');
 $without=$campaigns->save('', ['create_id'=>bin2hex(random_bytes(16)),'subject'=>'No recording','greeting'=>'Hello,','latest_recording'=>'1','body'=>'My message']);
-check($campaigns->compose($without)==="Hello,\n\nMy message",'Unavailable recording leaves no empty section');
+check($campaigns->compose($without)==="Hello,\n\nMessage from the team\n\nMy message",'Unavailable recording leaves no empty section');
 foreach(['Derek Keats'=>'Derek',''=>'there',"  \t \n"=>'there','Élodie Smith'=>'Élodie','Anne-Marie Smith'=>'Anne-Marie',"O’Connor Smith"=>"O’Connor",'person@example.test'=>'there'] as $name=>$expected){check(audiencecampaigns::personalise('Hello {FIRSTNAME},',['name'=>$name])==='Hello '.$expected.',','Personalised name and fallback');}
 check(str_starts_with($campaigns->compose($draft),'Hello {FIRSTNAME},'),'Saved preview retains recipient placeholder');
 $q=$campaigns->queue($id,1);$p=json_decode($q['payload'],true);check(count($p['recipients'])===1,'Only subscribed recipients');

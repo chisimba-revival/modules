@@ -4,6 +4,13 @@ if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
 class webinarschedule extends ChisimbaObject
 {
     public function init(){}
+    /** Older webinars get the same finite default as newly created ones. */
+    public static function registrationLimit(array $record)
+    {
+        $data=json_decode($record['payload']??'{}',true);
+        $limit=filter_var($data['registration_limit']??170,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>100000]]);
+        return $limit===false?170:$limit;
+    }
     public static function start(array $record)
     {
         $data=json_decode($record['payload'],true);

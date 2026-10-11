@@ -51,6 +51,9 @@ class webinareditservice extends ChisimbaObject
         $payload['description']=$description;$payload['image']=$image['url'];$payload['image_alt']=$image['alt'];
         $date='';
         if($kind==='webinar'){
+            $limit=filter_var($input['registration_limit']??($payload['registration_limit']??170),FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>100000]]);
+            if($limit===false)throw new DomainException('editor_registration_limit');
+            $payload['registration_limit']=$limit;
             // Duration is the editor contract; retain end-time input for older clients.
             if(array_key_exists('duration_minutes',$input)){
                 $minutes=filter_var($input['duration_minutes'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>10080]]);

@@ -1,6 +1,8 @@
 <?php
 $GLOBALS['kewl_entry_point_run']=true;
 class ChisimbaObject {public static $objects=[];public function getObject($name,$module=null){return self::$objects[$name];}public function loadClass($name,$module=null){}}
+class dbTable extends ChisimbaObject {}
+require __DIR__.'/../classes/webinarreminders_class_inc.php';
 require dirname(__DIR__).'/classes/webinarschedule_class_inc.php';
 require dirname(__DIR__).'/classes/communicationpolicy_class_inc.php';
 $n=0;function check($ok,$label){global $n;if(!$ok)throw new RuntimeException($label);$n++;}
@@ -17,6 +19,8 @@ check(webinarschedule::reminderDue($r,'unknown')===null,'Unknown reminder');
 class RowStore{public $row;function one($id){return $this->row;}}
 $regs=new RowStore;$contacts=new RowStore;$records=new RowStore;
 ChisimbaObject::$objects=['webinarregistrations'=>$regs,'audienceservice'=>$contacts,'webinarstore'=>$records];
+ChisimbaObject::$objects['dbsysconfig']=new class{function getValue($k,$m,$d=null){return $d;}};
+ChisimbaObject::$objects['webinarreminders']=new webinarreminders();
 $regs->row=['state'=>'pending','expires_at'=>time()+1000,'contact_id'=>'x','webinar_id'=>'y','confirm_hash'=>hash('sha256','test')];$contacts->row=['state'=>'pending','revision'=>0];$records->row=$r;
 $m=['registration_id'=>'r','kind'=>'verify','revision'=>0,'confirm_hash'=>hash('sha256','test'),'starts_at'=>$start->getTimestamp()];$p=new communicationpolicy;
 check($p->allows($m),'Pending verification permitted');

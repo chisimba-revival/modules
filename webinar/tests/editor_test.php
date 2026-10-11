@@ -42,3 +42,8 @@ check(json_decode($service->values('webinar',$forged,$owned)['payload'],true)['c
 $legacy=$owned;unset($ownedPayload['created_by']);$ownedPayload['edited_by']='editor';$legacy['payload']=json_encode($ownedPayload);
 check(!isset(json_decode($service->values('webinar',$forged,$legacy)['payload'],true)['created_by']),'Do not assign imported record to last editor');
 echo "PASS immutable server-assigned creator and legacy ownership safety.\n";
+
+check(json_decode($service->values('webinar',$input)['payload'],true)['registration_limit']===170,'Default limit');
+$capInput=$input;$capInput['registration_limit']='25';check(json_decode($service->values('webinar',$capInput)['payload'],true)['registration_limit']===25,'Custom limit');
+foreach(['0','-1','1.5','abc','',[],100001] as $bad){$capInput['registration_limit']=$bad;rejects(fn()=>$service->values('webinar',$capInput),'editor_registration_limit');}
+echo "PASS registration limit default, custom value and invalid values.\n";

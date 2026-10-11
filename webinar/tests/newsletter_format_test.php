@@ -54,7 +54,7 @@ $GLOBALS['services']['webinarstore']->record['title']='Birds and islands';$paylo
 file_put_contents($dir.'/preview.html','<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Newsletter preview</title><body>'.$composed.'</body></html>');
 echo "PASS real 600px thumbnail, smaller bytes, read policy, external-image omission, labels, banner order, escaping, links, scope and frozen previews.\n";
 
-$small=imagecreatetruecolor(800,300);imagepng($small,$source);imagedestroy($small);
+$small=imagecreatetruecolor(800,300);imagepng($small,$source);unset($small);
 $thumb=$imageService->thumbnail($record);check($thumb['width']===400&&$thumb['height']===150,'Half dimensions even below the old 600px limit');
 $before=['upcoming_heading'=>['record'=>$record,'label'=>'email_next_month'],'preview'=>"Hello\n\nemail_next_month\n\nReviewed title",'preview_html'=>'<p>Hello</p><h2>email_next_month</h2><p>Reviewed title</p>'];
 $after=$announcements->refreshHeading($before,(new DateTimeImmutable('2099-10-15 08:00',new DateTimeZone('Africa/Johannesburg')))->getTimestamp());

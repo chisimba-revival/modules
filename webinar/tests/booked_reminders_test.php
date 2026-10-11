@@ -1,6 +1,8 @@
 <?php
 $GLOBALS['kewl_entry_point_run']=true;
 class ChisimbaObject {function getObject($n,$m=null){return $GLOBALS['objects'][$n];}function loadClass($n,$m=null){}}
+class dbTable extends ChisimbaObject {}
+require __DIR__.'/../classes/webinarreminders_class_inc.php';
 require __DIR__.'/../classes/webinarschedule_class_inc.php';require __DIR__.'/../classes/webinarregistrationservice_class_inc.php';
 function check($v,$message){if(!$v)throw new RuntimeException($message);}
 function ts($s){return (new DateTimeImmutable($s,new DateTimeZone('Africa/Johannesburg')))->getTimestamp();}
@@ -11,6 +13,8 @@ foreach(['active','unsubscribed','stale','late','pending'] as $id){$audience->ro
 $records=new class($record){function __construct(public $record){}function published($kind){return [$this->record];}};
 $GLOBALS['objects']=['audienceservice'=>$audience,'webinarregistrations'=>$regs,'webinarstore'=>$records,'communicationservice'=>new stdClass];
 class ReminderProbe extends webinarregistrationservice {public $queued=[];function queue(array $r,array $w,array $c,$kind,$token=''){$this->queued[]=$r['id'].':'.$kind;}}
+$GLOBALS['objects']['dbsysconfig']=new class{function getValue($k,$m,$d=null){return $d;}};
+$GLOBALS['objects']['webinarreminders']=new webinarreminders();
 $s=new ReminderProbe;$s->init();$s->reminders(ts('2030-09-16 08:01'));
 check($s->queued===['active:monday'],'Monday goes only to confirmed, subscribed, current-consent attendees booked before it was due');
 $s->queued=[];$s->reminders(ts('2030-09-19 08:01'));check($s->queued===['active:morning','late:morning'],'Morning includes later bookings');

@@ -97,17 +97,33 @@ class webinarannouncements extends ChisimbaObject
  }
  public function eventTimes(array $ids){$times=[];foreach($ids as $id){$r=$this->getObject('webinarstore','webinar')->one($id);if($r&&webinarschedule::canRegister($r))$times[$id]=webinarschedule::start($r)->getTimestamp();}return $times;}
  public function stillCurrent(array $payload){
-  if(!str_starts_with($payload['schedule_key']??'','weekly:')||time()>=(int)($payload['expires_at']??0))return false;
+  if(time()>=(int)($payload['expires_at']??0))return false;
+  if(str_starts_with($payload['schedule_key']??'','webinar-day:')){
+   $ids=$payload['event_ids']??[];if(count($ids)!==1)return false;
+   $record=$this->getObject('webinarstore','webinar')->one($ids[0]);
+   if(!$record||!webinarschedule::canRegister($record))return false;
+   $schedule=$this->getObject('webinarreminders','webinar');
+   return $schedule->due($record,'subscribers')!==null&&$schedule->subscriberKey($record)===$payload['schedule_key']
+    &&$this->eventTimes($ids)===($payload['event_times']??[]);
+  }
+  if(!str_starts_with($payload['schedule_key']??'','weekly:'))return false;
   $times=$payload['event_times']??[];if(!$times)return false;
   return $this->eventTimes(array_keys($times))===$times;
  }
- public function run(){
+ public function run($now=null){
+  $now=$now??time();
   if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$cfg=$this->getObject('dbsysconfig','sysconfig');
-  if($cfg->getValue('WEBINAR_ANNOUNCEMENTS_ENABLED','webinar')!=='TRUE')return ['scheduled'=>0];
-  $enabled=(int)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_SINCE','webinar',0);if(!$enabled)return ['scheduled'=>0];
-  $plans=self::plan($this->getObject('webinarstore','webinar')->published('webinar'),time(),$enabled,(int)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_HOUR','webinar',8),(string)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_TIMEZONE','webinar','Africa/Johannesburg'));
+  $dayCount=0;$schedule=$this->getObject('webinarreminders','webinar');
+  foreach($this->getObject('webinarstore','webinar')->published('webinar') as $record){
+   if(!$schedule->eligibleNow($record,'subscribers',$now))continue;
+   $r=$this->getObject('webinarrenderer','webinar');$subject=sprintf($r->text('announcement_day'),html_entity_decode($record['title'],ENT_QUOTES|ENT_HTML5,'UTF-8'));
+   $this->getObject('audiencecampaigns','audience')->schedule($schedule->subscriberKey($record),$subject,$r->text('announcement_day_body'),[$record['id']],webinarschedule::start($record)->getTimestamp(),false);$dayCount++;
+  }
+  if($cfg->getValue('WEBINAR_ANNOUNCEMENTS_ENABLED','webinar')!=='TRUE')return ['scheduled'=>$dayCount];
+  $enabled=(int)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_SINCE','webinar',0);if(!$enabled)return ['scheduled'=>$dayCount];
+  $plans=self::plan($this->getObject('webinarstore','webinar')->published('webinar'),$now,$enabled,(int)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_HOUR','webinar',8),(string)$cfg->getValue('WEBINAR_ANNOUNCEMENTS_TIMEZONE','webinar','Africa/Johannesburg'));
   $r=$this->getObject('webinarrenderer','webinar');$site=$this->getObject('altconfig','config')->getSiteName();
   foreach($plans as $p){$subject=sprintf($r->text('announcement_'.$p['kind']),$site);$this->getObject('audiencecampaigns','audience')->schedule($p['key'],$subject,$subject,$p['ids'],$p['due']+86400);}
-  return ['scheduled'=>count($plans)];
+  return ['scheduled'=>count($plans)+$dayCount];
  }
 }
