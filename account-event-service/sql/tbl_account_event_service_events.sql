@@ -39,5 +39,3 @@ $tableIndexes = array(
         'fields' => array('event_type' => array(), 'occurred_at' => array())
     )
 );
-?>
-

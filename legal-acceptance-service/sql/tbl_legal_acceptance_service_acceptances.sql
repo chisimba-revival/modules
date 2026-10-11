@@ -47,5 +47,3 @@ $tableIndexes = array(
         'fields' => array('correlation_id' => array())
     )
 );
-?>
-

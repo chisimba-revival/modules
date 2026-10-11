@@ -39,5 +39,3 @@ $tableIndexes = array(
         'fields' => array('expires_at' => array(), 'consumed_at' => array())
     )
 );
-?>
-
