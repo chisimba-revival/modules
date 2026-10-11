@@ -7,9 +7,11 @@ if($this->getObject('webinarreminders','webinar')->allowed())$newsletter=$r->but
 if($this->getObject('modules','modulecatalogue')->checkIfRegistered('audience')&&$this->getObject('audienceadmin','audience')->allowed()){
  $newsletter.='<a class="button" href="'.$e($this->uri(['action'=>'campaigns'],'audience')).'">'.$this->getObject('iconservice','ui')->render('mail',['decorative'=>true]).'<span>'.$e($r->text('newsletters')).'</span></a>';
 }
-echo '<section class="chisimba-form-card chisimba-form-card--wide"><header class="chisimba-form-actions"><h1>'.$e($r->text($kind==='speaker'?'manage_speakers':'manage')).'</h1>'.$this->getObject('contextualhelp','help')->show('webinar','editing',true).'</header><nav class="chisimba-form-actions">'.$r->button($kind==='speaker'?'add_speaker':'add','plus',['action'=>'edit','kind'=>$kind]).$r->button($kind==='speaker'?'manage':'manage_speakers','list',['action'=>'manage','kind'=>$kind==='speaker'?'webinar':'speaker']).$r->button('title','calendar',['action'=>'upcoming']).$newsletter.'</nav>';
 $trashed=$kind==='webinar'&&$this->getParam('trashed')==='1';
-if($kind==='webinar')echo '<nav class="chisimba-form-actions">'.$r->button($trashed?'manage':'trash_list','list',['action'=>'manage','kind'=>'webinar','trashed'=>$trashed?'0':'1']).'</nav><p>'.$e($r->text('trash_help')).'</p>';
+echo '<section class="chisimba-form-card chisimba-form-card--wide"><header class="chisimba-form-actions"><h1>'.$e($r->text($kind==='speaker'?'manage_speakers':'manage')).'</h1>'.$this->getObject('contextualhelp','help')->show('webinar','editing',true).'</header><nav class="chisimba-form-actions">'.$r->button($kind==='speaker'?'add_speaker':'add','plus',['action'=>'edit','kind'=>$kind]).$r->button($kind==='speaker'?'manage':'manage_speakers','list',['action'=>'manage','kind'=>$kind==='speaker'?'webinar':'speaker']).$r->button('title','calendar',['action'=>'upcoming']).$newsletter;
+if($kind==='webinar')echo $r->button($trashed?'manage':'trash_list','list',['action'=>'manage','kind'=>'webinar','trashed'=>$trashed?'0':'1']);
+echo '</nav>';
+if($kind==='webinar')echo '<p>'.$e($r->text('trash_help')).'</p>';
 if($this->getVar('webinarRemovalError'))echo '<p role="alert">'.$e($r->text($this->getVar('webinarRemovalError'))).'</p>';
 $iconLink=function($label,$icon,$action,$row)use($r,$e){return '<a class="chisimba-icon-button" href="'.$e($this->uri(['action'=>$action,'id'=>$row['id']],'webinar')).'" aria-label="'.$e($r->text($label).' '.$row['title']).'" title="'.$e($r->text($label)).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'</a>';};
 $removeButton=function($row)use($r,$e,$trashed){
