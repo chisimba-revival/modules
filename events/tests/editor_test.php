@@ -9,7 +9,7 @@ $engine->loadClass('hostservice','host-service');
  */
 class EditorHostFixture extends hostservice {
     public $identity;
-    public function __construct($engine,$identity){$this->objEngine=$engine;$this->moduleName='host-service';$this->identity=$identity;}
+    public function __construct($engine,$identity){$this->objEngine=$engine;$this->moduleName='host-service';$this->identity=$identity;$this->init();}
     public function getObject($name,$moduleName=''){return $name==='user'?$this->identity:parent::getObject($name,$moduleName);}
 }
 /** Default terms isolated from the site's actual configuration.
@@ -37,6 +37,6 @@ try {
     $assert($s->bookingTerms(['details'=>json_encode(['terms'=>'Event-specific terms'])])==='Event-specific terms','Event override preserved');
     echo "PASS: host authorisation and retry, shared biography, legacy ID replacement, configured and overridden terms, field-specific validation.\n";
 } finally {
-    if($eventId)$db->exec('DELETE FROM tbl_events_events WHERE id='.$db->quote($eventId));
-    $db->exec('DELETE FROM tbl_host_service_profiles WHERE id='.$db->quote($hostId).' AND owner_id='.$db->quote('events-test-user'));
+    if($eventId)$db->executeExactPrepared('DELETE FROM tbl_events_events WHERE id=?',[$eventId]);
+    $db->executeExactPrepared('DELETE FROM tbl_host_service_profiles WHERE id=? AND owner_id=?',[$hostId,'events-test-user']);
 }

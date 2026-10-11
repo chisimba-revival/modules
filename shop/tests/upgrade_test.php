@@ -8,10 +8,20 @@ $name='shop_test_'.bin2hex(random_bytes(6));$pdo->exec('CREATE DATABASE '.$name)
 $GLOBALS['kewl_entry_point_run']=true;define('MDB2_FETCHMODE_ASSOC',2);
 class PEAR{static function isError($v){return false;}}
 class ChisimbaObject{public $objEngine;function getObject($n,$m=''){return $GLOBALS['services'][$n];}}
-class dbTable extends ChisimbaObject{}
+class dbTable extends ChisimbaObject {
+ function selectPrepared($sql,array $parameters=[]) {
+  $statement=$GLOBALS['services']['modulesadmin']->pdo->db->prepare($sql);$statement->execute($parameters);
+  $rows=$statement->get_result()->fetch_all(MYSQLI_ASSOC);$statement->close();
+  return array_map(static function($row){$result=[];foreach($row as $key=>$value)$result[strtolower($key)]=$value===null||$value===''?null:rtrim((string)$value);return $result;},$rows);
+ }
+ function executeExactPrepared($sql,array $parameters=[]) {
+  $statement=$GLOBALS['services']['modulesadmin']->pdo->db->prepare($sql);$statement->execute($parameters);$count=$statement->affected_rows;$statement->close();return $count;
+ }
+}
 class ShopUpgradeDb{
  public $manager;function __construct(public $pdo){$this->manager=$this;}
  function loadModule($name){}
+ function executeSchemaStatement($sql){return $this->exec($sql);}
  function queryAll($sql,$types=null,$mode=null){return array_map(fn($row)=>array_change_key_case($row,CASE_LOWER),$this->pdo->query($sql)->fetch_all(MYSQLI_ASSOC));}
  function exec($sql){return $this->pdo->exec($sql);}
  function quote($v,$type='text'){return $this->pdo->quote($v);}
@@ -22,7 +32,7 @@ require dirname(__DIR__).'/classes/shopstore_class_inc.php';
 require dirname(__DIR__).'/patches/installscripts_class_inc.php';
 $db=new ShopUpgradeDb($pdo);$engine=new class($db){function __construct(public $db){}function getDbObj(){return $this->db;}};
 $store=new shopstore;$store->objEngine=$engine;
-$GLOBALS['services']=['shopstore'=>$store,'permissionservice'=>new class{function ensureArea($a,$b){return 'shop';}function ensureRight($a,$b){return true;}},'dbsysconfig'=>new class{function getValue($a,$b){return str_repeat('a',64);}}];
+$GLOBALS['services']=['modulesadmin'=>$db,'shopstore'=>$store,'permissionservice'=>new class{function ensureArea($a,$b){return 'shop';}function ensureRight($a,$b){return true;}},'dbsysconfig'=>new class{function getValue($a,$b){return str_repeat('a',64);}}];
 $hook=new shop_installscripts;$hook->objEngine=$engine;
 try {
  foreach ([true,false] as $legacy) {

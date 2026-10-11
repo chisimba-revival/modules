@@ -10,7 +10,7 @@ class LocalContactConfig {function getValue($k,$m,$d=''){return ['CONTACT_MODE'=
 class LocalContactUser {function isLoggedIn(){return true;}function isAdmin(){return true;}function userId(){return 'contact-test';}}
 class LocalContactGuard {function check($input){return '192.0.2.10';}}
 $store=$engine->getObject('contactstore','contactform');$service=new LocalContactService;$service->objEngine=$engine;$service->fixtures=['contactstore'=>$store,'dbsysconfig'=>new LocalContactConfig,'user'=>new LocalContactUser,'contactguard'=>new LocalContactGuard];$service->init();
-$ids=[bin2hex(random_bytes(16)),bin2hex(random_bytes(16))];$db=$engine->getDbObj();
+$ids=[bin2hex(random_bytes(16)),bin2hex(random_bytes(16))];$db=$store;
 function verifyContact($ok){if(!$ok)throw new RuntimeException('Contact database check failed');}
 try{
  $input=['id'=>$ids[0],'name'=>'Reader','email'=>'contact-fixture@example.invalid','subject'=>'Synthetic contact test','message'=>'Please quote for five books.','website'=>''];
@@ -22,8 +22,8 @@ try{
  $evidence=$engine->getObject('contactguard','contactform')->evidence();verifyContact(strlen($evidence['signature'])===64);
  echo "PASS: Catalogue schema, actual storage, repeat submission, quarantine, trash/restore, block/unblock and shared guard loading\n";
 }finally{
- foreach($ids as $id)foreach(['review','messages'] as $table)$db->exec('DELETE FROM tbl_contactform_'.$table.' WHERE id='.$db->quote($id));
- $rate=hash_hmac('sha256','192.0.2.10|'.floor(time()/3600),str_repeat('q',32));$db->exec('DELETE FROM tbl_contactform_limits WHERE id='.$db->quote($rate));
- if(isset($hash))$db->exec('DELETE FROM tbl_contactform_blocks WHERE id='.$db->quote($hash));
+ foreach($ids as $id)foreach(['review','messages'] as $table)$db->executeExactPrepared('DELETE FROM tbl_contactform_'.$table.' WHERE id=?',[$id]);
+ $rate=hash_hmac('sha256','192.0.2.10|'.floor(time()/3600),str_repeat('q',32));$db->executeExactPrepared('DELETE FROM tbl_contactform_limits WHERE id=?',[$rate]);
+ if(isset($hash))$db->executeExactPrepared('DELETE FROM tbl_contactform_blocks WHERE id=?',[$hash]);
  echo "PASS: synthetic contact data removed; no mail sent\n";
 }

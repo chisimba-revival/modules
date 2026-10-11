@@ -51,6 +51,9 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class db_contextcontent_comment extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
 
     /**
      * Constructor
@@ -58,7 +61,7 @@ class db_contextcontent_comment extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_page_comment');
-        $this->objUser =& $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
     }
 
 	/**
@@ -83,7 +86,7 @@ class db_contextcontent_comment extends dbtable
 			'userid' => $userid,
 			'pageid' => $pageid,
             'comment' => $comment,
-			'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
+			'datecreated' => date('Y-m-d H:i:s')
         );
 
         return $this->insert($arrayOfRecords, 'tbl_contextcontent_page_comment');

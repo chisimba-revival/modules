@@ -3,7 +3,7 @@
  * @author Derek Keats <derek@dkeats.com>
  */
 if(empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
-class hostservice extends ChisimbaObject
+class hostservice extends dbTable
 {
     public function canCreate()
     {
@@ -16,11 +16,7 @@ class hostservice extends ChisimbaObject
         }
         return false;
     }
-    private function rows()
-    {
-        $rows=$this->objEngine->getDbObj()->queryAll('SELECT * FROM tbl_host_service_profiles ORDER BY name',null,MDB2_FETCHMODE_ASSOC);
-        if(!is_array($rows)) throw new RuntimeException('Host directory unavailable'); return $rows;
-    }
+    private function rows() {return $this->selectPrepared('SELECT * FROM tbl_host_service_profiles ORDER BY name');}
     public function choices()
     {
         $result=[]; foreach($this->rows() as $r) $result[]=['id'=>'host:'.$r['id'],'name'=>$r['name']];
@@ -60,10 +56,8 @@ class hostservice extends ChisimbaObject
         foreach($this->rows() as $r) if($r['id']===$id) {
             if($r['owner_id']!==$owner) throw new DomainException('forbidden'); return 'host:'.$id;
         }
-        $db=$this->objEngine->getDbObj(); $quote=fn($v)=>$v===''?"''":$db->quote($v,'text');
         $row=['id'=>$id,'owner_id'=>$owner]+$values;
-        $result=$db->exec('INSERT INTO tbl_host_service_profiles ('.implode(',',array_keys($row)).') VALUES ('.implode(',',array_map($quote,array_values($row))).')');
-        if($result===false||PEAR::isError($result)) throw new RuntimeException('Host could not be saved');
+        $this->executeExactPrepared('INSERT INTO tbl_host_service_profiles ('.implode(',',array_keys($row)).') VALUES ('.implode(',',array_fill(0,count($row),'?')).')',array_values($row));
         return 'host:'.$id;
     }
 }

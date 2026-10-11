@@ -3,6 +3,12 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class paystackpaymentprovider extends ChisimbaObject
 {
+    /** Shared payment services supplied during initialisation. */
+    public $config;
+    public $intents;
+    public $plans;
+    public $subscriptions;
+
     private const API='https://api.paystack.co';
     public function init(){
         $this->config=$this->getObject('dbsysconfig','sysconfig');
@@ -158,12 +164,13 @@ class paystackpaymentprovider extends ChisimbaObject
         }
         return $descriptor;
     }
-    private function request($method,$path,$payload=null){
+    /** Transport boundary; overridden only by deterministic provider tests. */
+    protected function request($method,$path,$payload=null){
         if(!function_exists('curl_init'))return $this->failure('curl_unavailable');
         $handle=curl_init(self::API.$path);$headers=array('Authorization: Bearer '.$this->secret(),'Content-Type: application/json','Cache-Control: no-cache');
         $options=array(CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>10,CURLOPT_TIMEOUT=>30,CURLOPT_HTTPHEADER=>$headers,CURLOPT_CUSTOMREQUEST=>$method);
         if($payload!==null){$json=json_encode($payload,JSON_UNESCAPED_SLASHES);if($json===false)return $this->failure('json_encoding_failed');$options[CURLOPT_POSTFIELDS]=$json;}
-        curl_setopt_array($handle,$options);$body=curl_exec($handle);$error=curl_error($handle);$status=(int)curl_getinfo($handle,CURLINFO_RESPONSE_CODE);curl_close($handle);
+        curl_setopt_array($handle,$options);$body=curl_exec($handle);$error=curl_error($handle);$status=(int)curl_getinfo($handle,CURLINFO_RESPONSE_CODE);unset($handle);
         if($body===false)return $this->failure('paystack_transport_error',true,$error);$decoded=json_decode((string)$body,true);
         if($status<200||$status>=300||!is_array($decoded)||empty($decoded['status']))return $this->failure('paystack_api_rejected_'.$status,$status>=500||$status===429,is_array($decoded)?($decoded['message']??null):null);
         return array('ok'=>true,'data'=>$decoded);

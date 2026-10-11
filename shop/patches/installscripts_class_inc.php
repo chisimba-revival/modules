@@ -3,35 +3,35 @@
  * @author Derek Keats <derek@dkeats.com>
  */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
-class shop_installscripts extends ChisimbaObject
+class shop_installscripts extends dbTable
 {
     public function postinstall($version = null)
     {
-        $db = $this->objEngine->getDbObj(); $db->loadModule('Manager');
+        $admin=$this->getObject('modulesadmin','modulecatalogue');
         foreach (glob(dirname(__DIR__) . '/sql/tbl_shop_*.sql') as $schema) {
             require $schema;
-            $status = $db->queryAll("SHOW TABLE STATUS WHERE Name='" . $tablename . "'", null, MDB2_FETCHMODE_ASSOC);
+            $status = $this->selectPrepared("SHOW TABLE STATUS WHERE Name='" . $tablename . "'");
             if (!is_array($status) || strtolower($status[0]['engine'] ?? '') !== 'innodb') throw new RuntimeException('Shop requires InnoDB: ' . $tablename);
-            $existing = $db->queryAll('SHOW INDEX FROM ' . $tablename, null, MDB2_FETCHMODE_ASSOC);
+            $existing = $this->selectPrepared('SHOW INDEX FROM ' . $tablename);
             if (!is_array($existing)) throw new RuntimeException('Shop indexes unavailable');
             foreach ($tableIndexes as $name => $definition) {
                 $field = array_key_first($definition['fields']); $found = false;
                 foreach ($existing as $index) if ($index['column_name'] === $field && (empty($definition['unique']) || !(int)$index['non_unique'])) $found = true;
                 if (!$found) {
-                    $result = !empty($definition['unique']) ? $db->manager->createConstraint($tablename, $name . '_unique', $definition) : $db->manager->createIndex($tablename, $name, $definition);
-                    if ($result === false || PEAR::isError($result)) throw new RuntimeException('Shop index creation failed: ' . $name);
+                    $result = !empty($definition['unique']) ? $admin->createConstraint($tablename, $name . '_unique', $definition) : $admin->createIndex($tablename, $name, $definition);
+                    if ($result === false) throw new RuntimeException('Shop index creation failed: ' . $name);
                 }
             }
         }
         // Repeatable upgrades preserve every legacy product as physical and old guest orders.
         foreach (['tbl_shop_books'=>['product_type'=>"VARCHAR(16) NOT NULL DEFAULT 'physical'",'product_options'=>'LONGTEXT NULL','display_order'=>'INT NOT NULL DEFAULT 0'],
             'tbl_shop_orders'=>['user_id'=>'VARCHAR(25) NULL']] as $table=>$columns) {
-            $existing=$db->queryAll('SHOW COLUMNS FROM '.$table, null, MDB2_FETCHMODE_ASSOC);
+            $existing=$this->selectPrepared('SHOW COLUMNS FROM '.$table);
             if (!is_array($existing)) throw new RuntimeException('Shop columns unavailable');
             $names=array_column($existing,'field');
             foreach ($columns as $name=>$definition) if (!in_array($name,$names,true)) {
-                $result=$db->exec('ALTER TABLE '.$table.' ADD COLUMN '.$name.' '.$definition);
-                if ($result===false || PEAR::isError($result)) throw new RuntimeException('Shop upgrade failed');
+                $result=$admin->executeSchemaStatement('ALTER TABLE '.$table.' ADD COLUMN '.$name.' '.$definition);
+                if ($result===false) throw new RuntimeException('Shop upgrade failed');
             }
         }
         $permissions = $this->getObject('permissionservice', 'security');

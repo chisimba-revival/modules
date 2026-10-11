@@ -8,6 +8,7 @@ class ChisimbaObject {
         return $GLOBALS['permissions'];
     }
 }
+class dbTable extends ChisimbaObject {}
 $GLOBALS['permissions']=new class {
     public $rights=[];
     public function ensureArea($system,$module){if($system!=='chisimba'||$module!=='simpleblog')throw new RuntimeException('Incorrect area');return 'area';}

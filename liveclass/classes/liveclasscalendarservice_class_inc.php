@@ -2,6 +2,11 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class liveclasscalendarservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $calendar;
+    public $clock;
+    public $user;
+
     public function init(){ $this->calendar=$this->getObject('dbcalendar','calendarbase');$this->clock=$this->getObject('timeanddateservice','timeanddate-service');$this->user=$this->getObject('user','security'); }
     public function publish(array $session){
         if(($session['session_type']??'')!=='context'||empty($session['context_code']))return null;

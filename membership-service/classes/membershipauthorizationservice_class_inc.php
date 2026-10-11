@@ -6,6 +6,13 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class membershipauthorizationservice extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objEvents;
+    public $objGroups;
+    public $objIdentity;
+    public $objPermissions;
+    public $objUser;
+
     public const ROLE_NAME = 'Membership Manager';
 
     private const CAPABILITIES = array(
@@ -170,11 +177,11 @@ class membershipauthorizationservice extends dbTable
         if (!$aclId) {
             return false;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT COUNT(*) AS cnt FROM tbl_permissions_acl'
-            . ' WHERE acl_id = ' . $this->quote($aclId)
+            . ' WHERE acl_id = ' . '?'
             . ' AND group_id = ' . (int) $groupId
-        );
+        ,[$aclId]);
         if (is_array($rows) && isset($rows[0]['cnt'])
             && (int) $rows[0]['cnt'] > 0) {
             return true;
@@ -221,13 +228,7 @@ class membershipauthorizationservice extends dbTable
             ? $value : null;
     }
 
-    private function quote($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+
 
     private function result($ok, $code, $groupId = null)
     {

@@ -14,55 +14,34 @@ class shopstore extends dbTable
     { if (!in_array($table, self::TABLES, true)) throw new InvalidArgumentException('Invalid shop table'); return 'tbl_shop_' . $table; }
     private function field($field)
     { if (!preg_match('/^[a-z_]+$/D', $field)) throw new InvalidArgumentException('Invalid field'); return $field; }
-    private function quote($value)
-    { return $value === null ? 'NULL' : ((string)$value === '' ? "''" : $this->objEngine->getDbObj()->quote((string)$value, 'text')); }
-    public function rows($table, array $where = [], $limit = null)
-    {
-        $clauses = [];
-        foreach ($where as $field => $value) $clauses[] = $this->field($field) . '=' . $this->quote($value);
-        $sql = 'SELECT * FROM ' . $this->table($table) . ($clauses ? ' WHERE ' . implode(' AND ', $clauses) : '') . ($table === 'books' ? ' ORDER BY display_order, id' : ' ORDER BY id');
-        if ($limit !== null) $sql .= ' LIMIT ' . max(1, min(500, (int)$limit));
-        $result = $this->objEngine->getDbObj()->queryAll($sql, null, MDB2_FETCHMODE_ASSOC);
-        if (!is_array($result)) throw new RuntimeException('Shop read failed');
-        return $result;
+
+    public function rows($table,array $where=[],$limit=null) {
+        $clauses=[];foreach($where as $field=>$value)$clauses[]=$this->field($field).'=?';
+        $sql='SELECT * FROM '.$this->table($table).($clauses?' WHERE '.implode(' AND ',$clauses):'').($table==='books'?' ORDER BY display_order,id':' ORDER BY id');
+        if($limit!==null)$sql.=' LIMIT '.max(1,min(500,(int)$limit));
+        return $this->selectPrepared($sql,array_values($where));
     }
     public function one($table, $id) { return $this->rows($table, ['id' => $id], 1)[0] ?? null; }
-    public function add($table, array $row)
-    {
-        $fields = array_map([$this, 'field'], array_keys($row));
-        $this->write('INSERT INTO ' . $this->table($table) . ' (' . implode(',', $fields) . ') VALUES (' . implode(',', array_map([$this, 'quote'], array_values($row))) . ')');
-        return $row;
+    public function add($table,array $row) {
+        $fields=array_keys($row);foreach($fields as $field)if(!preg_match('/^[a-z_]+$/D',$field))throw new InvalidArgumentException('Invalid field');
+        $this->executeExactPrepared('INSERT INTO '.$this->table($table).' ('.implode(',',$fields).') VALUES ('.implode(',',array_fill(0,count($fields),'?')).')',array_map(static fn($value)=>(string)$value,array_values($row)));return $row;
     }
-    public function save($table, $id, array $changes)
-    {
-        $pairs = [];
-        foreach ($changes as $field => $value) $pairs[] = $this->field($field) . '=' . $this->quote($value);
-        $this->write('UPDATE ' . $this->table($table) . ' SET ' . implode(',', $pairs) . ' WHERE id=' . $this->quote($id));
+    public function save($table,$id,array $changes) {
+        $pairs=[];foreach($changes as $field=>$value){if(!preg_match('/^[a-z_]+$/D',$field))throw new InvalidArgumentException('Invalid field');$pairs[]=$field.'=?';}
+        $this->executeExactPrepared('UPDATE '.$this->table($table).' SET '.implode(',',$pairs).' WHERE id=?',array_merge(array_map(static fn($value)=>(string)$value,array_values($changes)),[$id]));
     }
-    private function write($sql)
-    {
-        $result = $this->objEngine->getDbObj()->exec($sql);
-        if ($result === false || PEAR::isError($result)) throw new RuntimeException('Shop write failed');
-    }
-    public function transaction(callable $work)
-    {
-        $db = $this->objEngine->getDbObj();
-        if (!$db->supports('transactions') || !empty($db->in_transaction)) throw new RuntimeException('Shop requires an independent transaction');
-        $started = $db->beginTransaction();
-        if ($started === false || PEAR::isError($started)) throw new RuntimeException('Shop transaction failed');
-        try {
-            $lock = $db->queryAll("SELECT id FROM tbl_shop_settings WHERE id='shop' FOR UPDATE", null, MDB2_FETCHMODE_ASSOC);
-            if (!is_array($lock) || count($lock) !== 1) throw new RuntimeException('Shop installation incomplete');
-            $result = $work();
-            $committed = $db->commit();
-            if ($committed === false || PEAR::isError($committed)) throw new RuntimeException('Shop commit failed');
-            return $result;
-        } catch (Throwable $error) { $db->rollback(); throw $error; }
+
+    public function transaction(callable $work) {
+        return parent::transaction(function()use($work){
+            $lock=$this->selectPrepared("SELECT id FROM tbl_shop_settings WHERE id='shop' FOR UPDATE");
+            if(count($lock)!==1)throw new RuntimeException('Shop installation incomplete');
+            return $work();
+        });
     }
     public function reserved($bookId, $now, $except = '')
     {
         $sql = "SELECT id, snapshot FROM tbl_shop_orders WHERE payment_state='unpaid' AND fulfilment_state='held' AND hold_until>" . (int)$now;
-        $rows = $this->objEngine->getDbObj()->queryAll($sql, null, MDB2_FETCHMODE_ASSOC);
+        $rows = $this->selectPrepared($sql);
         if (!is_array($rows)) throw new RuntimeException('Shop reservation read failed');
         $quantity = 0;
         foreach ($rows as $order) {
@@ -75,7 +54,7 @@ class shopstore extends dbTable
     }
     public function recentOrders()
     {
-        $rows = $this->objEngine->getDbObj()->queryAll('SELECT * FROM tbl_shop_orders ORDER BY created_at DESC, id DESC LIMIT 200', null, MDB2_FETCHMODE_ASSOC);
+        $rows = $this->selectPrepared('SELECT * FROM tbl_shop_orders ORDER BY created_at DESC, id DESC LIMIT 200');
         if (!is_array($rows)) throw new RuntimeException('Shop order read failed');
         return $rows;
     }

@@ -44,14 +44,14 @@ class registrationtokenservice extends dbTable
         $selector = bin2hex(random_bytes(12));
         $id = bin2hex(random_bytes(16));
         $this->beginTransaction();
-        $superseded = $this->_execute(
+        $superseded = $this->executePrepared(
             'UPDATE ' . self::TABLE_NAME
-            . ' SET superseded_at = ' . $this->quote($now)
-            . ' WHERE purpose = ' . $this->quote($purpose)
-            . ' AND subject_type = ' . $this->quote($subjectType)
-            . ' AND subject_id = ' . $this->quote($subjectId)
+            . ' SET superseded_at = ' . '?'
+            . ' WHERE purpose = ' . '?'
+            . ' AND subject_type = ' . '?'
+            . ' AND subject_id = ' . '?'
             . ' AND consumed_at IS NULL AND superseded_at IS NULL'
-        );
+        ,[$now,$purpose,$subjectType,$subjectId]);
         if ($superseded === false || $this->insert(array(
             'id' => $id,
             'purpose' => $purpose,
@@ -82,12 +82,12 @@ class registrationtokenservice extends dbTable
     {
         $pendingId = is_scalar($pendingId) ? strtolower(trim((string) $pendingId)) : '';
         if (!preg_match('/^[a-f0-9]{32}$/', $pendingId)) { return false; }
-        return $this->_execute(
-            'UPDATE ' . self::TABLE_NAME . ' SET superseded_at = ' . $this->quote(date('Y-m-d H:i:s'))
+        return $this->executePrepared(
+            'UPDATE ' . self::TABLE_NAME . ' SET superseded_at = ' . '?'
             . " WHERE purpose = 'email_verification' AND subject_type = 'pending_registration'"
-            . ' AND subject_id = ' . $this->quote($pendingId)
+            . ' AND subject_id = ' . '?'
             . ' AND consumed_at IS NULL AND superseded_at IS NULL'
-        ) !== false;
+        ,[date('Y-m-d H:i:s'),$pendingId]) !== false;
     }
 
     /**
@@ -105,13 +105,13 @@ class registrationtokenservice extends dbTable
             return $this->result(false, 'invalid_token');
         }
         $this->beginTransaction();
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT id, subject_type, subject_id, verifier_hash, expires_at'
             . ' FROM ' . self::TABLE_NAME
-            . ' WHERE selector = ' . $this->quote($parts[1])
-            . ' AND purpose = ' . $this->quote($purpose)
+            . ' WHERE selector = ' . '?'
+            . ' AND purpose = ' . '?'
             . ' AND consumed_at IS NULL AND superseded_at IS NULL LIMIT 2 FOR UPDATE'
-        );
+        ,[$parts[1],$purpose]);
         if (!is_array($rows) || count($rows) !== 1
             || strtotime($rows[0]['expires_at']) <= time()
             || !hash_equals($rows[0]['verifier_hash'], hash('sha256', $parts[2]))) {
@@ -127,12 +127,12 @@ class registrationtokenservice extends dbTable
             return $this->result(false, 'token_transition_failed');
         }
         $consumedAt = date('Y-m-d H:i:s');
-        if ($this->_execute(
+        if ($this->executePrepared(
             'UPDATE ' . self::TABLE_NAME
-            . ' SET consumed_at = ' . $this->quote($consumedAt)
-            . ' WHERE id = ' . $this->quote($rows[0]['id'])
+            . ' SET consumed_at = ' . '?'
+            . ' WHERE id = ' . '?'
             . ' AND consumed_at IS NULL AND superseded_at IS NULL'
-        ) === false) {
+        ,[$consumedAt,$rows[0]['id']]) === false) {
             $this->rollbackTransaction();
             return $this->result(false, 'token_consume_failed');
         }
@@ -168,13 +168,7 @@ class registrationtokenservice extends dbTable
             && !preg_match('/[\x00-\x1F\x7F]/', $value) ? $value : null;
     }
 
-    private function quote($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+
 
     private function result($ok, $code, $tokenId = null, $rawToken = null)
     {

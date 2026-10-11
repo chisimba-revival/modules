@@ -4,6 +4,11 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 /** Sections are informational stops placed by chapter membership. */
 class sectionprogressionservice extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $objContextChapters;
+    public $objGates;
+    public $objSections;
+
     public function init()
     {
         $this->objContext=$this->getObject('dbcontext','context');

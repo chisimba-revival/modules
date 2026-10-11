@@ -3,6 +3,17 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die(); }
 class certificate_service extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $context;
+    public $csrf;
+    public $groups;
+    public $language;
+    public $registrations;
+    public $service;
+    public $settings;
+    public $user;
+    public $users;
+
     private const CSRF='certificate_service_manage';
     public function init(){ $this->service=$this->getObject('certificateservice','certificate-service');$this->user=$this->getObject('user','security');$this->users=$this->getObject('userservice','security');$this->context=$this->getObject('dbcontext','context');$this->language=$this->getObject('language','language');$this->settings=$this->getObject('dbsysconfig','sysconfig');$this->groups=$this->getObject('groupservice','groupadmin');$this->registrations=$this->getObject('registrationservice','registration-service');$stack=$this->getObject('nativeauthwebcomposition','security')->build();$this->csrf=$stack['csrf']; }
     public function dispatch($action)

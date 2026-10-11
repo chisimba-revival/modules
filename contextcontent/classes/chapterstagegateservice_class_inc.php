@@ -9,6 +9,11 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class chapterstagegateservice extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $objContextChapters;
+    public $objResults;
+    public $objTests;
+
     public function init()
     {
         $this->objContext = $this->getObject('dbcontext', 'context');

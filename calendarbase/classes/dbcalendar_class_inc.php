@@ -30,6 +30,14 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class dbcalendar extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objCalendar;
+    public $objDateFunctions;
+    public $objEventAttachments;
+    public $objFileIcons;
+    public $objLanguage;
+    public $objSimpleCal;
+
     /**
     * @var boolean $showEditDelete A flag to indicate whether to show the edit delete buttons for a context calendar
     */
@@ -70,8 +78,8 @@ class dbcalendar extends dbTable
         // Load Language Class
         $this->objLanguage = $this->getObject('language', 'language');
 
-        //$this->objEventAttachments =& $this->getObject('dbeventattachments');
-        $this->objEventAttachments =& $this->getObject('attachments','calendar');
+        //$this->objEventAttachments = $this->getObject('dbeventattachments');
+        $this->objEventAttachments = $this->getObject('attachments','calendar');
         $this->objFileIcons = $this->getObject('fileicons', 'files');
     }
 
@@ -93,7 +101,7 @@ class dbcalendar extends dbTable
     * @param string $dateFirstEntry - Date the first entry was made
     * @param string $dateLastModified - Date the entry was last updated.
     */
-    public function insertSingle($date, $multidayevent=0, $multidaystart=NULL, $eventtitle, $eventdetails, $eventurl, $userorcontext, $context, $workgroup, $showusers, $userFirstEntry, $userLastModified, $dateFirstEntry, $dateLastModified, $timeFrom = NULL, $timeTo = NULL)
+    public function insertSingle($date, $multidayevent, $multidaystart, $eventtitle, $eventdetails, $eventurl, $userorcontext, $context, $workgroup, $showusers, $userFirstEntry, $userLastModified, $dateFirstEntry, $dateLastModified, $timeFrom = NULL, $timeTo = NULL)
     {
 
         // This is a check to ensure that the url entered is not the default 'http://'
@@ -433,7 +441,7 @@ class dbcalendar extends dbTable
     {
         $preparedArray = array();
 
-        $objTrim =& $this->getObject('trimstr', 'strings');
+        $objTrim = $this->getObject('trimstr', 'strings');
 
         foreach ($events as $event)
         {
@@ -813,7 +821,7 @@ class dbcalendar extends dbTable
         // Previous Month Settings
         $previousMonth = $this->objDateFunctions->previousMonthYear($month, $year);
 
-        $previousIcon =& $this->getObject('geticon', 'htmlelements');
+        $previousIcon = $this->getObject('geticon', 'htmlelements');
         $previousIcon->setIcon('prev');
         $previousIcon->title = $this->objLanguage->languageText('mod_calendarbase_previousmonth','calendar');
 
@@ -823,7 +831,7 @@ class dbcalendar extends dbTable
         // Next Month Settings
         $nextMonth = $this->objDateFunctions->nextMonthYear($month, $year);
 
-        $nextIcon =& $this->getObject('geticon', 'htmlelements');
+        $nextIcon = $this->getObject('geticon', 'htmlelements');
         $nextIcon->setIcon('next');
         $nextIcon->title = $this->objLanguage->languageText('mod_calendarbase_nextmonth','calendar');
 
@@ -844,7 +852,7 @@ class dbcalendar extends dbTable
     /**
     * This method out
     */
-    public function getCalendarSQL($user=NULL, $context=NULL, $month, $year)
+    public function getCalendarSQL($user, $context, $month, $year)
     {
         // Determine Start and End Date
         if (!isset($month)) {

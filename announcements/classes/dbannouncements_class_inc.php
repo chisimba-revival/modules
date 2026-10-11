@@ -38,6 +38,18 @@ define('CHISIMBA_ANNOUNCEMENTS_ADD', 0);
 define('CHISIMBA_ANNOUNCEMENTS_UPDATE', 1);
 
 class dbAnnouncements extends dbTable {
+    /** Dependencies and state initialised by this component. */
+    public $dbSysConfig;
+    public $emailBody1;
+    public $emailBody2;
+    public $emailBody3;
+    public $emailTitle;
+    public $isAdmin;
+    public $objIndexData;
+    public $objLanguage;
+    public $objUser;
+    public $userId;
+
 
     /**
      * Constructor method to define the table
@@ -362,21 +374,12 @@ class dbAnnouncements extends dbTable {
     }
 
     /** Return active site and context announcements visible to this user. */
-    public function getVisibleAnnouncements(array $contexts, array $audiences, $limit, $offset)
-    {
-        $audienceSql = array();
-        foreach ($audiences as $audience) $audienceSql[] = $this->quoteValue($audience);
-        if (!$audienceSql) return array();
-        $scope = array("a.contextid = 'site'");
-        foreach ($contexts as $context) $scope[] = 'ac.contextid = ' . $this->quoteValue($context);
-        $limit = max(1, min(100, (int) $limit));
-        $offset = max(0, (int) $offset);
-        $now = $this->quoteValue($this->now());
-        $sql = 'SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid = a.id '
-            . 'WHERE (' . implode(' OR ', $scope) . ') AND a.audience IN (' . implode(',', $audienceSql) . ') '
-            . "AND (a.publish_at IS NULL OR a.publish_at <= {$now}) AND (a.expires_at IS NULL OR a.expires_at > {$now}) "
-            . 'ORDER BY COALESCE(a.publish_at,a.createdon) DESC ' . "LIMIT {$offset},{$limit}";
-        return $this->getArray($sql);
+    public function getVisibleAnnouncements(array $contexts,array $audiences,$limit,$offset) {
+        if(!$audiences)return [];
+        $scope=["a.contextid='site'"];foreach($contexts as $context)$scope[]='ac.contextid=?';
+        $params=array_merge(array_values($contexts),array_values($audiences),[$this->now(),$this->now()]);
+        $limit=max(1,min(100,(int)$limit));$offset=max(0,(int)$offset);
+        return $this->selectPrepared('SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid=a.id WHERE ('.implode(' OR ',$scope).') AND a.audience IN ('.implode(',',array_fill(0,count($audiences),'?')).') AND (a.publish_at IS NULL OR a.publish_at<=?) AND (a.expires_at IS NULL OR a.expires_at>?) ORDER BY COALESCE(a.publish_at,a.createdon) DESC LIMIT '.$offset.','.$limit,$params);
     }
 
     /**
@@ -406,27 +409,25 @@ class dbAnnouncements extends dbTable {
 
     /** Return active site announcements addressed to authors for the sidebar. */
     public function getLatestAuthorUpdates($limit=3) {
-        $limit=max(1,min(10,(int)$limit));
-        $now=$this->quoteValue($this->now());
-        $cutoff=$this->quoteValue(date('Y-m-d H:i:s',strtotime($this->now())-(7*86400)));
-        return $this->getArray("SELECT * FROM tbl_announcements WHERE contextid='site' AND audience='authors' AND COALESCE(publish_at,createdon)>={$cutoff} AND (publish_at IS NULL OR publish_at<={$now}) AND (expires_at IS NULL OR expires_at>{$now}) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT {$limit}");
+        $limit=max(1,min(10,(int)$limit));$now=$this->now();$cutoff=date('Y-m-d H:i:s',strtotime($now)-(7*86400));
+        return $this->selectPrepared("SELECT * FROM tbl_announcements WHERE contextid='site' AND audience='authors' AND COALESCE(publish_at,createdon)>=? AND (publish_at IS NULL OR publish_at<=?) AND (expires_at IS NULL OR expires_at>?) ORDER BY COALESCE(publish_at,createdon) DESC LIMIT ".$limit,[$cutoff,$now,$now]);
     }
 
     /** Resolve active notification recipients for a site or selected contexts. */
     public function recipientUserIds($audience, array $contexts=array()) {
-        $audience=(string)$audience;$join='';$where='u.isactive=1';
+        $audience=(string)$audience;$join='';$params=[];$where='u.isactive=1';
         if($audience!=='everyone'||$contexts){$join=' JOIN tbl_perms_perm_users pu ON pu.auth_user_id=u.userid JOIN tbl_perms_groupusers gu ON gu.perm_user_id=pu.perm_user_id JOIN tbl_perms_groups g ON g.group_id=gu.group_id';}
         if($audience==='admins')$where.=" AND g.group_define_name='Site Admin'";
         elseif($audience==='authors')$where.=" AND (g.group_define_name='Lecturers' OR g.group_define_name LIKE '%^Lecturers')";
         elseif($audience==='readonlys')$where.=" AND (g.group_define_name='Students' OR g.group_define_name LIKE '%^Students')";
         elseif($audience!=='everyone')return array();
-        if($contexts){$parts=array();foreach(array_unique($contexts) as $code)$parts[]="g.group_define_name LIKE ".$this->quoteValue((string)$code.'^%');$where.=' AND ('.implode(' OR ',$parts).')';}
-        $rows=$this->getArray("SELECT DISTINCT u.userid FROM tbl_users u{$join} WHERE {$where} ORDER BY u.userid");
+        if($contexts){$parts=array();foreach(array_unique($contexts) as $code){$parts[]='g.group_define_name LIKE ?';$params[]=(string)$code.'^%';}$where.=' AND ('.implode(' OR ',$parts).')';}
+        $rows=$this->selectPrepared("SELECT DISTINCT u.userid FROM tbl_users u{$join} WHERE {$where} ORDER BY u.userid",$params);
         return array_values(array_filter(array_map(fn($row)=>(string)($row['userid']??''),$rows)));
     }
 
     /** Quote one scalar through the active framework database adapter. */
-    private function quoteValue($value){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'";}
+
 
     /**
      * Method to get a list of announcements for a particular context

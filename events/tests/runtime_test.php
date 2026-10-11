@@ -28,7 +28,7 @@ class EventFixtureService extends eventservice {
 }
 $user=new EventFixtureUser(); $policy=new EventFixturePolicy($engine,$user); $mail=new EventFixtureMail(); $payments=new EventFixturePayments();
 $s=new EventFixtureService($engine,['eventpolicy'=>$policy,'user'=>$user,'communicationservice'=>$mail,'paymentservice'=>$payments]);
-$store=$engine->getObject('eventstore','events'); $db=$engine->getDbObj();
+$store=$engine->getObject('eventstore','events'); $db=$store;
 $assert=function($condition,$message){if(!$condition)throw new RuntimeException($message);};
 $reject=function($call,$expected)use($assert){try{$call();throw new RuntimeException('Expected rejection: '.$expected);}catch(DomainException $e){$assert($e->getMessage()===$expected,'Wrong rejection: '.$e->getMessage());}};
 $input=['name'=>'Fixture Purchaser','email'=>'events-test@example.invalid','quantity'=>'1','attendees'=>'Fixture Attendee','accept_terms'=>'1','campaign'=>'fixture'];
@@ -109,11 +109,11 @@ try {
     foreach($created as $id) {
         $occurrences=$store->rows('occurrences',['event_id'=>$id]);
         foreach($occurrences as $o) {
-            foreach(['tickets','bookings','waitlist'] as $table)$db->exec('DELETE FROM tbl_events_'.$table.' WHERE occurrence_id='.$db->quote($o['id']));
-            $products=$db->queryAll('SELECT id FROM tbl_payment_service_products WHERE code='.$db->quote($o['product_code']),null,MDB2_FETCHMODE_ASSOC);
-            foreach($products as $p)$db->exec('DELETE FROM tbl_payment_service_prices WHERE product_id='.$db->quote($p['id']));
-            $db->exec('DELETE FROM tbl_payment_service_products WHERE code='.$db->quote($o['product_code']));
+            foreach(['tickets','bookings','waitlist'] as $table)$db->executeExactPrepared('DELETE FROM tbl_events_'.$table.' WHERE occurrence_id=?',[$o['id']]);
+            $products=$db->selectPrepared('SELECT id FROM tbl_payment_service_products WHERE code=?',[$o['product_code']]);
+            foreach($products as $p)$db->executeExactPrepared('DELETE FROM tbl_payment_service_prices WHERE product_id=?',[$p['id']]);
+            $db->executeExactPrepared('DELETE FROM tbl_payment_service_products WHERE code=?',[$o['product_code']]);
         }
-        $db->exec('DELETE FROM tbl_events_reviews WHERE event_id='.$db->quote($id));$db->exec('DELETE FROM tbl_events_occurrences WHERE event_id='.$db->quote($id));$db->exec('DELETE FROM tbl_events_events WHERE id='.$db->quote($id));
+        $db->executeExactPrepared('DELETE FROM tbl_events_reviews WHERE event_id=?',[$id]);$db->executeExactPrepared('DELETE FROM tbl_events_occurrences WHERE event_id=?',[$id]);$db->executeExactPrepared('DELETE FROM tbl_events_events WHERE id=?',[$id]);
     }
 }

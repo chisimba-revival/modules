@@ -4,12 +4,20 @@ if (PHP_SAPI!=='cli' || getenv('REGISTRATION_GUARD_TEST')!=='1') { fwrite(STDERR
 chdir('/var/www/html/ch');$_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='localhost:8086';$_SERVER['SCRIPT_NAME']='/ch/index.php';$_SERVER['QUERY_STRING']='';$GLOBALS['kewl_entry_point_run']=true;
 require 'classes/core/engine_class_inc.php';$engine=new engine();
 if(!str_ends_with(KEWL_DB_DSN,'/registration_guard_test'))throw new RuntimeException('Wrong database');
-$db=$engine->getDbObj();
-function sql($query,$args=[],$read=true) { global $db; $s=$db->prepare($query,null,$read?MDB2_PREPARE_RESULT:MDB2_PREPARE_MANIP);if(PEAR::isError($s))throw new RuntimeException('prepare');$r=$s->execute($args);$s->free();if(PEAR::isError($r))throw new RuntimeException($r->getMessage());if(!$read)return $r;$rows=$r->fetchAll(MDB2_FETCHMODE_ASSOC);$r->free();return $rows; }
+$db=$engine->getObject('registrationservice','registration-service');
+function sql($query,$args=[],$read=true) {
+    global $db;
+    return $read ? $db->selectPrepared($query,$args) : $db->executeExactPrepared($query,$args);
+}
+
 function check($ok,$message) { if(!$ok)throw new RuntimeException($message); }
 $service=$engine->getObject('registrationservice','registration-service');$cleanup=$engine->getObject('registrationcleanup','registration-service');$guard=$engine->getObject('registrationguard','registration-service');$ids=[];
 function pending($name='Synthetic') { global $service,$ids; $key='guard'.bin2hex(random_bytes(6));$r=$service->createPending(['username'=>$key,'emailAddress'=>$key.'@example.test','firstName'=>$name,'surname'=>'Test','countryCallingCode'=>'27','mobileNumber'=>'0821234567','identityDocumentType'=>'passport','identityDocumentNumber'=>'SYNTHETIC','password'=>'Registration-Fixture-2026!','correlationId'=>$key]);check(!empty($r['ok']),'create pending: '.($r['code']??''));$ids[]=$r['pendingId'];return $r['pendingId']; }
 $canonicalBefore=sql('CHECKSUM TABLE tbl_users');
+$config=$engine->getObject('dbsysconfig','sysconfig');
+$previousCleanup=$config->getValue('REGISTRATION_AUTO_CLEANUP','registration-service','0');
+$config->changeParam('REGISTRATION_AUTO_CLEANUP','registration-service','1');
+$config->setProperties('registration-service');
 try {
     check($guard->suspiciousName('AfLxMnOwvslpOvVtkyZKT','Sachchgzy'),'provided random name flagged');
     foreach(['Derek','Christopher','Nkosinathi','María-José','张伟','McDonald','ALEXANDER','Mpho'] as $name)check(!$guard->suspiciousName($name),'ordinary and international names not flagged');
@@ -49,5 +57,6 @@ try {
     check($canonicalBefore===sql('CHECKSUM TABLE tbl_users'),'canonical accounts unchanged');
     echo "PASS: creation, permissions, protected states, token invalidation, expiry, redaction, repeat runs and audit\n";
 } finally {
+    $config->changeParam('REGISTRATION_AUTO_CLEANUP','registration-service',$previousCleanup);
     foreach($ids as $id) { sql('DELETE FROM tbl_registration_service_tokens WHERE subject_type=? AND subject_id=?',['pending_registration',$id],false);sql('DELETE FROM tbl_registration_service_pending WHERE id=?',[$id],false);sql('DELETE FROM tbl_account_event_service_events WHERE subject_type=? AND subject_id=?',['pending_registration',$id],false); }
 }

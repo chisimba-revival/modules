@@ -58,6 +58,14 @@ define('UNKNOWN', 'UNKNOWN');
  */
 
 class alertutils extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $objGroupOps;
+    public $objGroups;
+    public $objLanguage;
+    public $objManageGroups;
+    public $objSysConfig;
+    public $objUser;
+
     function init() {
         $uname = php_uname('s');
         switch ($uname) {

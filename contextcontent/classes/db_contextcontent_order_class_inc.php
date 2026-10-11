@@ -48,18 +48,31 @@ if (!
  *
  */
 class db_contextcontent_order extends dbtable {
+    /** Dependencies and state initialised by this component. */
+    public $defaultSelected;
+    public $disabledNode;
+    public $objAltConfig;
+    public $contextCode;
+    public $eventsEnabled;
+    public $objContentTypes;
+    public $objContext;
+    public $objContextActivityStreamer;
+    public $objIconService;
+    public $objLanguage;
+    public $objModuleCatalogue;
+    public $objUser;
+
 
     /**
      * Constructor
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_order');
-        $this->_db = $this->objEngine->getDbObj();
-        $this->objUser = & $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objContentTypes = $this->getObject('contenttyperegistry', 'contextcontent');
         $this->objIconService = $this->getObject('iconservice', 'ui');
-        $this->objConfig = & $this->getObject('altconfig', 'config');
+        $this->objConfig = $this->getObject('altconfig', 'config');
         //Load Module Catalogue Class
         $this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
         //Load Activity Streamer
@@ -99,15 +112,7 @@ class db_contextcontent_order extends dbtable {
 
     /** Count pages belonging to chapters that expose their content to students. */
     public function getNumLearnerContextPages($contextCode) {
-        $context=$this->_db->quote((string)$contextCode);
-        $rows=$this->getArray(
-            'SELECT COUNT(o.id) AS pagecount FROM tbl_contextcontent_order o '
-            .'INNER JOIN tbl_contextcontent_chaptercontext c ON '
-            .'c.contextcode=o.contextcode AND c.chapterid=o.chapterid '
-            .'WHERE o.contextcode='.$context." AND c.visibility='Y'"
-        );
-        return is_array($rows)&&isset($rows[0]['pagecount'])
-            ? (int)$rows[0]['pagecount'] : 0;
+        $rows=$this->selectPrepared("SELECT COUNT(o.id) AS pagecount FROM tbl_contextcontent_order o INNER JOIN tbl_contextcontent_chaptercontext c ON c.contextcode=o.contextcode AND c.chapterid=o.chapterid WHERE o.contextcode=? AND c.visibility='Y'",[$contextCode]);return (int)($rows[0]['pagecount']??0);
     }
 
     /**
@@ -116,7 +121,6 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getFirstPage($contextCode) {
-        $contextCode = $this->_db->quote((string) $contextCode);
         $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_titles.contenttype, lft, rght
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_chaptercontext ON (
@@ -125,13 +129,13 @@ class db_contextcontent_order extends dbtable {
         )
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE tbl_contextcontent_order.contextcode=' . $contextCode . '
+        WHERE tbl_contextcontent_order.contextcode=?
             AND tbl_contextcontent_order.parentid = \'root\'
             AND tbl_contextcontent_chaptercontext.visibility = \'Y\'
         ORDER BY tbl_contextcontent_chaptercontext.chapterorder,
             tbl_contextcontent_order.lft, tbl_contextcontent_order.pageorder LIMIT 1';
 
-        $results = $this->getArray($sql);
+        $results = $this->selectPrepared($sql,[$contextCode]);
 
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
@@ -146,16 +150,14 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getFirstChapterPage($contextCode, $chapter) {
-        $contextCode = $this->_db->quote((string) $contextCode);
-        $chapter = $this->_db->quote((string) $chapter);
         $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_titles.contenttype, lft, rght
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE tbl_contextcontent_order.chapterid=' . $chapter . ' AND contextcode=' . $contextCode . ' AND parentid = \'root\'
+        WHERE tbl_contextcontent_order.chapterid=? AND contextcode=? AND parentid = \'root\'
         ORDER BY lft, pageorder LIMIT 1';
 
-        $results = $this->getArray($sql);
+        $results = $this->selectPrepared($sql,[$chapter,$contextCode]);
 
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
@@ -172,16 +174,14 @@ class db_contextcontent_order extends dbtable {
      * @access public
      */
     public function getPage($pageId, $contextCode) {
-        $pageId = $this->_db->quote((string) $pageId);
-        $contextCode = $this->_db->quote((string) $contextCode);
         $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.chapterid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, pagecontent, tbl_contextcontent_pages.language, tbl_contextcontent_titles.contenttype, tbl_contextcontent_titles.providermodule, tbl_contextcontent_titles.provideritemid, lft, rght, tbl_contextcontent_pages.id as pageid, tbl_contextcontent_order.titleid
         FROM tbl_contextcontent_order 
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id AND original=\'Y\') 
-        WHERE tbl_contextcontent_order.id=' . $pageId . ' AND contextcode=' . $contextCode . '
+        WHERE tbl_contextcontent_order.id=? AND contextcode=?
         ORDER BY lft LIMIT 1';
 
-        $results = $this->getArray($sql);
+        $results = $this->selectPrepared($sql,[$pageId,$contextCode]);
 
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
@@ -197,19 +197,19 @@ class db_contextcontent_order extends dbtable {
      * @return array
      */
     public function getContextPages($context, $chapter='') {
-        $context = $this->_db->quote((string) $context);
+        $params=[$context];
         $sql = 'SELECT tbl_contextcontent_order.id, tbl_contextcontent_order.titleid, tbl_contextcontent_order.parentid, tbl_contextcontent_pages.menutitle, tbl_contextcontent_titles.contenttype, lft, rght FROM tbl_contextcontent_order
         INNER JOIN tbl_contextcontent_titles ON (tbl_contextcontent_order.titleid = tbl_contextcontent_titles.id) 
         INNER JOIN tbl_contextcontent_pages ON (tbl_contextcontent_pages.titleid = tbl_contextcontent_titles.id) 
-        WHERE tbl_contextcontent_order.contextcode= ' . $context . '  ';
+        WHERE tbl_contextcontent_order.contextcode= ?  ';
 
         if ($chapter != '') {
-            $sql .= ' AND tbl_contextcontent_order.chapterid= ' . $this->_db->quote((string) $chapter);
+            $sql .= ' AND tbl_contextcontent_order.chapterid=?';$params[]=$chapter;
         }
 
         $sql .= ' ORDER BY lft';
 
-        return $this->getArray($sql);
+        return $this->selectPrepared($sql,$params);
     }
 
     /**
@@ -271,7 +271,7 @@ class db_contextcontent_order extends dbtable {
      * @return array Details of the Page, FALSE if does not exist
      * @access private
      */
-    private function generateHtmllistTree($results, $defaultSelected='', $module) {
+    private function generateHtmllistTree($results, $defaultSelected, $module) {
         $treeMenu = new treemenu();
 
         $nodeArray = array();
@@ -329,7 +329,7 @@ class db_contextcontent_order extends dbtable {
             if ($treeItem['parentid'] == 'root') {
                 $treeMenu->addItem($node);
             } else {
-                if (array_key_exists($treeItem['parentid'], $nodeArray)) {
+                if (array_key_exists($treeItem['parentid'] ?? '', $nodeArray)) {
                     $nodeArray[$treeItem['parentid']]->addItem($node);
                 }
             }
@@ -348,7 +348,7 @@ class db_contextcontent_order extends dbtable {
      * @return array Details of the Page, FALSE if does not exist
      * @access private
      */
-    private function generateDHTMLTree($results, $defaultSelected='', $module) {
+    private function generateDHTMLTree($results, $defaultSelected, $module) {
         $treeMenu = new treemenu();
 
         $nodeArray = array();
@@ -386,7 +386,7 @@ class db_contextcontent_order extends dbtable {
             if ($treeItem['parentid'] == 'root') {
                 $treeMenu->addItem($node);
             } else {
-                if (array_key_exists($treeItem['parentid'], $nodeArray)) {
+                if (array_key_exists($treeItem['parentid'] ?? '', $nodeArray)) {
                     $nodeArray[$treeItem['parentid']]->addItem($node);
                 }
             }
@@ -444,7 +444,7 @@ class db_contextcontent_order extends dbtable {
             if ($treeItem['parentid'] == 'root') {
                 $rootnode->addItem($node);
             } else {
-                if (array_key_exists($treeItem['parentid'], $nodeArray)) {
+                if (array_key_exists($treeItem['parentid'] ?? '', $nodeArray)) {
                     $nodeArray[$treeItem['parentid']]->addItem($node);
                 }
             }
@@ -490,11 +490,7 @@ class db_contextcontent_order extends dbtable {
             $rightPointer = $leftPointer + 1;
             $pageOrder = (int) $anchor['pageorder'] + 1;
             $this->updateLeftRightPointers($context, $chapter, (int) $anchor['rght']);
-            $contextQuoted = $this->_db->quote((string) $context);
-            $chapterQuoted = $this->_db->quote((string) $chapter);
-            $this->query('UPDATE tbl_contextcontent_order SET pageorder=pageorder+1'
-                . ' WHERE contextcode=' . $contextQuoted . ' AND chapterid=' . $chapterQuoted
-                . " AND parentid='root' AND pageorder >= " . $pageOrder);
+            $this->executePrepared("UPDATE tbl_contextcontent_order SET pageorder=pageorder+1 WHERE contextcode=? AND chapterid=? AND parentid='root' AND pageorder>=?",[$context,$chapter,$pageOrder]);
         } elseif ($isRoot) {
             $leftPointer = $this->getLastRight($context, '', $chapter) + 1;
             $rightPointer = $leftPointer + 1;
@@ -543,7 +539,7 @@ class db_contextcontent_order extends dbtable {
                     'pageorder' => $pageOrder,
                     'visibility' => $visibility,
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                    'datecreated' => date('Y-m-d H:i:s')
                 ));
 
         // Extra Step to Prevent Null Values
@@ -643,14 +639,9 @@ class db_contextcontent_order extends dbtable {
         }
     }
 
-    private function updateLeftRightPointers($context, $chapter, $base, $amount=2) {
-        $context = $this->_db->quote((string) $context);
-        $chapter = $this->_db->quote((string) $chapter);
-        $sqlLeft = 'UPDATE tbl_contextcontent_order SET rght=rght+' . $amount . ' WHERE rght > ' . $base . ' AND contextcode=' . $context . ' AND chapterid=' . $chapter;
-        $sqlRight = 'UPDATE tbl_contextcontent_order SET lft=lft+' . $amount . ' WHERE lft > ' . $base . ' AND contextcode=' . $context . ' AND chapterid=' . $chapter;
-
-        $this->query($sqlLeft);
-        $this->query($sqlRight);
+    private function updateLeftRightPointers($context,$chapter,$base,$amount=2) {
+        $this->executePrepared('UPDATE tbl_contextcontent_order SET rght=rght+? WHERE rght>? AND contextcode=? AND chapterid=?',[(int)$amount,(int)$base,$context,$chapter]);
+        $this->executePrepared('UPDATE tbl_contextcontent_order SET lft=lft+? WHERE lft>? AND contextcode=? AND chapterid=?',[(int)$amount,(int)$base,$context,$chapter]);
     }
 
     public function getPrevPageId($context, $chapter, $leftValue='', $module='contextcontent') {

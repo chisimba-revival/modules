@@ -1,7 +1,7 @@
 <?php
 /** Repeatable forward reconciliation through the catalogue's installation hooks. */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
-class simpleblog_installscripts extends ChisimbaObject
+class simpleblog_installscripts extends dbTable
 {
     public function preinstall($version = null)
     {
@@ -14,8 +14,8 @@ class simpleblog_installscripts extends ChisimbaObject
         $statements = $xml ? $xml->xpath('/updates/update[version="0.075"]/SQL') : false;
         if (!$statements) throw new RuntimeException('Publishing reconciliation migration missing');
         foreach ($statements as $statement) {
-            $result = $this->objEngine->getDbObj()->exec((string)$statement);
-            if ($result === false || PEAR::isError($result)) throw new RuntimeException('Publishing schema reconciliation failed');
+            $result = $this->getObject('modulesadmin','modulecatalogue')->executeSchemaStatement((string)$statement);
+            if ($result === false) throw new RuntimeException('Publishing schema reconciliation failed');
         }
     }
     public function postinstall($version = null)

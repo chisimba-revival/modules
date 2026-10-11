@@ -22,6 +22,10 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class dbessay_book extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $table;
+    public $topicTable;
+
     /**
     * Constructor method to define the table
     */

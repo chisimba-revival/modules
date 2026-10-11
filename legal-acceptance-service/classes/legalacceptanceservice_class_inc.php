@@ -6,6 +6,9 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class legalacceptanceservice extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objAccountEvents;
+
     private const TABLE_NAME = 'tbl_legal_acceptance_service_acceptances';
     private const SUBJECT_TYPES = array('user', 'pending_registration');
     private const METHODS = array('checkbox', 'signature', 'administrator', 'migration');
@@ -95,15 +98,15 @@ class legalacceptanceservice extends dbTable
             return false;
         }
 
-        $sql = 'SELECT id FROM ' . self::TABLE_NAME
-            . ' WHERE subject_type = ' . $this->quoteValue($subjectType)
-            . ' AND subject_id = ' . $this->quoteValue($subjectId)
-            . ' AND policy_key = ' . $this->quoteValue($policyKey)
-            . ' AND policy_version = ' . $this->quoteValue($policyVersion);
+        $params=[]; $sql = 'SELECT id FROM ' . self::TABLE_NAME
+            . ' WHERE subject_type = ' . $this->bindValue($subjectType,$params)
+            . ' AND subject_id = ' . $this->bindValue($subjectId,$params)
+            . ' AND policy_key = ' . $this->bindValue($policyKey,$params)
+            . ' AND policy_version = ' . $this->bindValue($policyVersion,$params);
         if ($contentDigest !== null) {
-            $sql .= ' AND content_digest = ' . $this->quoteValue($contentDigest);
+            $sql .= ' AND content_digest = ' . $this->bindValue($contentDigest,$params);
         }
-        $rows = $this->getArray($sql . ' LIMIT 1');
+        $rows = $this->selectPrepared($sql . ' LIMIT 1',$params);
         return is_array($rows) && count($rows) === 1;
     }
 
@@ -119,15 +122,15 @@ class legalacceptanceservice extends dbTable
             || $policyKey === null || $limit === false) {
             return array();
         }
-        $sql = 'SELECT id, subject_type, subject_id, policy_key, policy_version,'
+        $params=[]; $sql = 'SELECT id, subject_type, subject_id, policy_key, policy_version,'
             . ' content_digest, acceptance_method, accepted_at, recorded_at FROM '
             . self::TABLE_NAME
-            . ' WHERE subject_type = ' . $this->quoteValue($subjectType)
-            . ' AND subject_id = ' . $this->quoteValue($subjectId)
-            . ' AND policy_key = ' . $this->quoteValue($policyKey)
+            . ' WHERE subject_type = ' . $this->bindValue($subjectType,$params)
+            . ' AND subject_id = ' . $this->bindValue($subjectId,$params)
+            . ' AND policy_key = ' . $this->bindValue($policyKey,$params)
             . ' ORDER BY accepted_at DESC, recorded_at DESC, id DESC LIMIT '
             . (int) $limit;
-        $rows = $this->getArray($sql);
+        $rows = $this->selectPrepared($sql,$params);
         return is_array($rows) ? $rows : array();
     }
 
@@ -163,14 +166,14 @@ class legalacceptanceservice extends dbTable
 
     private function findExact(array $values)
     {
-        $sql = 'SELECT id FROM ' . self::TABLE_NAME
-            . ' WHERE subject_type = ' . $this->quoteValue($values['subject_type'])
-            . ' AND subject_id = ' . $this->quoteValue($values['subject_id'])
-            . ' AND policy_key = ' . $this->quoteValue($values['policy_key'])
-            . ' AND policy_version = ' . $this->quoteValue($values['policy_version'])
-            . ' AND content_digest = ' . $this->quoteValue($values['content_digest'])
+        $params=[]; $sql = 'SELECT id FROM ' . self::TABLE_NAME
+            . ' WHERE subject_type = ' . $this->bindValue($values['subject_type'],$params)
+            . ' AND subject_id = ' . $this->bindValue($values['subject_id'],$params)
+            . ' AND policy_key = ' . $this->bindValue($values['policy_key'],$params)
+            . ' AND policy_version = ' . $this->bindValue($values['policy_version'],$params)
+            . ' AND content_digest = ' . $this->bindValue($values['content_digest'],$params)
             . ' LIMIT 2';
-        $rows = $this->getArray($sql);
+        $rows = $this->selectPrepared($sql,$params);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -234,13 +237,7 @@ class legalacceptanceservice extends dbTable
             ? $value : null;
     }
 
-    private function quoteValue($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+    private function bindValue($value,array &$params) { $params[]=(string)$value; return '?'; }
 
     private function result($ok, $code, $acceptanceId = null)
     {

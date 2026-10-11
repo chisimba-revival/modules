@@ -56,7 +56,7 @@ ccCheck(strpos($controller, 'private function requireCourseManager') !== false,
 ccCheck(strpos($controller, '$contextCode = (string) $this->contextCode;') !== false
     && strpos($controller, "if (\$contextCode !== ''") !== false,
     'missing active-course sessions are not normalised before identifier validation');
-ccCheck(strpos($chapterForm, "new textinput('chaptertitle')") !== false
+ccCheck(strpos($chapterForm, 'name="chaptertitle"') !== false
     && strpos($controller, "getParam('chaptertitle')") !== false,
     'chapter titles must not collide with the chapter identifier parameter');
 ccCheck(strpos($chapterForm, "new textinput('chapter')") === false,

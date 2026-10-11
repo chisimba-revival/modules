@@ -48,6 +48,9 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class db_contextcontent_chaptercontent extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
     /**
      * The db object
      *
@@ -62,10 +65,9 @@ class db_contextcontent_chaptercontent extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_chaptercontent');
-        $this->objUser =& $this->getObject('user', 'security');
-        $this->_db = $this->objEngine->getDbObj();
+        $this->objUser = $this->getObject('user', 'security');
     }
-    
+
     /**
      * Method to get the context of a chapter
      *
@@ -75,17 +77,17 @@ class db_contextcontent_chaptercontent extends dbtable
     public function getChapterContent($chapterId)
     {
         $sql = 'WHERE chapterid=\''.$chapterId.'\' AND original=\'Y\' LIMIT 1';
-        
+
         $results = $this->getAll($sql);
-        
+
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
         }
     }
-    
-    
+
+
     /**
     * Method to add a Chapter
     *
@@ -105,7 +107,7 @@ class db_contextcontent_chaptercontent extends dbtable
                     'language' => $language,
                     'original' => 'Y',
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                    'datecreated' => date('Y-m-d H:i:s')
                 ));
         } else {
             return FALSE;
@@ -131,7 +133,7 @@ class db_contextcontent_chaptercontent extends dbtable
         }
     }
 
-    
+
     /**
     * Method to Check whether a Chapter exists for a title
     *
@@ -142,7 +144,7 @@ class db_contextcontent_chaptercontent extends dbtable
     public function checkChapterExists($chapterId, $language)
     {
         $recordCount = $this->getRecordCount('WHERE chapterid=\''.$chapterId.'\' AND language=\''.$language.'\'');
-        
+
         if ($recordCount == 0) {
             return FALSE;
         } else {
@@ -157,12 +159,8 @@ class db_contextcontent_chaptercontent extends dbtable
      * @param string $language The language of the title
      * @return boolean
      */
-    public function checkChapterTitleExists($chapterTitle, $language) {
-        $quotedChapterTitle = $this->_db->quote($chapterTitle);
-        $quotedLanguage = $this->_db->quote($language);
-        return (boolean) $this->getRecordCount("WHERE chaptertitle = $quotedChapterTitle AND language = $quotedLanguage");
-    }
-    
+    public function checkChapterTitleExists($chapterTitle,$language) {return (bool)$this->selectPrepared('SELECT 1 FROM '.$this->_tableName.' WHERE chaptertitle=? AND language=? LIMIT 1',[$chapterTitle,$language]);}
+
     /**
     * Method to Update the Content of a Page
     *
@@ -175,21 +173,21 @@ class db_contextcontent_chaptercontent extends dbtable
     public function updateChapter($id, $title, $intro)
     {
         //echo $id;
-        
+
         $result = $this->update('id', $id, array(
                 'chaptertitle'=>(stripslashes($title)), 
                 'introduction'=>(stripslashes($intro)), 
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datemodified' => date('Y-m-d H:i:s')
             ));
-        
+
         if ($result) {
-            
+
             $chapter = $this->getRow('id', $id);
-            
+
             $objChapterContext = $this->getObject('db_contextcontent_contextchapter');
             $contexts = $objChapterContext->getContextsWithChapter($chapter['chapterid']);
-            
+
             if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
                 foreach ($contexts as $context)
                 {
@@ -197,10 +195,10 @@ class db_contextcontent_chaptercontent extends dbtable
                 }
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
     * Method to delete a chapter
     * @param string $id Chapter Id
@@ -210,7 +208,7 @@ class db_contextcontent_chaptercontent extends dbtable
     {
         return $this->delete('chapterid', $id);
     }
-    
+
 
 }
 

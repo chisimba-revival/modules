@@ -40,7 +40,7 @@ class dbdescription extends dbtable {
         $this->table = 'tbl_test_description';
         //Get Objects
         $this->dbBlocks = $this->newObject('dbblocks');
-        $this->objUser = &$this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
     }
 

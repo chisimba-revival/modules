@@ -2,6 +2,13 @@
 if(empty($GLOBALS['kewl_entry_point_run'])) die();
 class payment_service extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $authorization;
+    public $catalog;
+    public $csrf;
+    public $payments;
+    public $user;
+
     private const CSRF='payment_service_web';
     public function init(){
         $this->setLayoutTemplate('payment_layout.php');

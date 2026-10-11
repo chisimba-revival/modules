@@ -1,6 +1,9 @@
 <?php
 if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly'); }
 class db_contextcontent_sections extends dbtable {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorCallback') { parent::init('tbl_contextcontent_sections'); $this->objUser=$this->getObject('user','security'); }
     public function forContext($contextCode, $includeHidden=FALSE) {
         $where="WHERE contextcode='".addslashes((string)$contextCode)."'";

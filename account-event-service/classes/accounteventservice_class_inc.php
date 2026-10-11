@@ -62,14 +62,14 @@ class accounteventservice extends dbTable
             return array();
         }
 
-        $sql = 'SELECT id, event_type, subject_type, subject_id, actor_type,'
+        $params=[]; $sql = 'SELECT id, event_type, subject_type, subject_id, actor_type,'
             . ' actor_id, outcome, reason_code, correlation_id, source_service,'
             . ' metadata_json, occurred_at, recorded_at FROM ' . self::TABLE_NAME
-            . ' WHERE subject_type = ' . $this->quoteValue($subjectType)
-            . ' AND subject_id = ' . $this->quoteValue($subjectId)
+            . ' WHERE subject_type = ' . $this->bindValue($subjectType,$params)
+            . ' AND subject_id = ' . $this->bindValue($subjectId,$params)
             . ' ORDER BY occurred_at DESC, recorded_at DESC, id DESC'
             . ' LIMIT ' . (int) $limit;
-        $rows = $this->getArray($sql);
+        $rows = $this->selectPrepared($sql,$params);
 
         return is_array($rows) ? $rows : array();
     }
@@ -182,13 +182,7 @@ class accounteventservice extends dbTable
             ? $value : null;
     }
 
-    private function quoteValue($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+    private function bindValue($value,array &$params) { $params[]=(string)$value; return '?'; }
 
     private function result($ok, $code, $eventId = null)
     {

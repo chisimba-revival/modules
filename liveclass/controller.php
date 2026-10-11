@@ -2,6 +2,19 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class liveclass extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $auth;
+    public $calendar;
+    public $clock;
+    public $context;
+    public $csrf;
+    public $lang;
+    public $life;
+    public $reminders;
+    public $service;
+    public $sessions;
+    public $user;
+
     const CSRF='liveclass_mutation';
     public function init(){
         $this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');$this->sessions=$this->getObject('dbliveclasssessions');

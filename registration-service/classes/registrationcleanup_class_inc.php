@@ -1,20 +1,10 @@
 <?php
 /** Pending-registration retention. Never deletes or modifies canonical accounts. */
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('No direct access'); }
-class registrationcleanup extends ChisimbaObject
+class registrationcleanup extends dbTable
 {
-    private function db() { return $this->objEngine->getDbObj(); }
-    private function sql($sql, array $args = array(), $read = true)
-    {
-        $statement = $this->db()->prepare($sql, null, $read ? MDB2_PREPARE_RESULT : MDB2_PREPARE_MANIP);
-        if (PEAR::isError($statement)) { throw new RuntimeException('Cleanup query unavailable.'); }
-        $result = $statement->execute($args); $statement->free();
-        if (PEAR::isError($result)) { throw new RuntimeException('Cleanup query failed.'); }
-        if (!$read) { return $result; }
-        $rows = $result->fetchAll(MDB2_FETCHMODE_ASSOC); $result->free();
-        if (PEAR::isError($rows)) { throw new RuntimeException('Cleanup read failed.'); }
-        return $rows;
-    }
+
+    private function sql($sql,array $args=[],$read=true) { return $read?$this->selectPrepared($sql,$args):$this->executeExactPrepared($sql,$args); }
     private function admin()
     {
         $user = $this->getObject('user', 'security');
@@ -86,22 +76,19 @@ class registrationcleanup extends ChisimbaObject
     private function transition($id, $target, $actor)
     {
         if (!preg_match('/^[a-f0-9]{32}$/D', (string)$id)) { return 'unavailable'; }
-        $db = $this->db();
-        if ($db->in_transaction) { throw new RuntimeException('Cleanup requires its own transaction.'); }
-        if (PEAR::isError($db->beginTransaction())) { throw new RuntimeException('Cleanup transaction unavailable.'); }
-        try {
+        return $this->transaction(function()use($id,$target,$actor){
             $rows = $this->sql('SELECT * FROM tbl_registration_service_pending WHERE id=? FOR UPDATE',array($id));
-            if (!$rows) { $db->rollback(); return 'unavailable'; }
+            if (!$rows) { return 'unavailable'; }
             $row = $rows[0]; $now = date('Y-m-d H:i:s');
-            if ($this->protected($row)) { $db->rollback(); return 'protected'; }
+            if ($this->protected($row)) { return 'protected'; }
             if ($target === 'redacted') {
                 $cutoff = date('Y-m-d H:i:s',time()-86400*$this->getObject('registrationguard')->retentionDays());
-                if (!in_array($row['status'],array('dismissed','expired'),true) || $row['updated_at'] > $cutoff) { $db->rollback(); return 'unavailable'; }
+                if (!in_array($row['status'],array('dismissed','expired'),true) || $row['updated_at'] > $cutoff) { return 'unavailable'; }
                 // Keep only opaque reference, status and timestamps; no name-based decisions.
                 $this->sql("UPDATE tbl_registration_service_pending SET status='redacted', username='',email_address='',first_name='',surname='',mobile_number='',identity_document_type='',identity_document_number='',password_hash=NULL,updated_at=? WHERE id=?",array($now,$id),false);
             } else {
                 if (!in_array($row['status'],array('awaiting_legal_acceptance','awaiting_verification'),true)
-                    || ($target === 'expired' && $row['expires_at'] > $now)) { $db->rollback(); return 'unavailable'; }
+                    || ($target === 'expired' && $row['expires_at'] > $now)) { return 'unavailable'; }
                 $this->sql('UPDATE tbl_registration_service_pending SET status=?,password_hash=NULL,expires_at=LEAST(expires_at,?),updated_at=? WHERE id=?',array($target,$now,$now,$id),false);
             }
             // Verification locks the same pending row before changing state. State and expiry
@@ -112,11 +99,7 @@ class registrationcleanup extends ChisimbaObject
                 'outcome'=>'succeeded','reasonCode'=>$target === 'dismissed' ? 'administrator_review' : 'retention_policy',
                 'correlationId'=>$row['correlation_id'],'sourceService'=>'registration-service','metadata'=>array()));
             if (empty($event['ok'])) { throw new RuntimeException('Cleanup audit failed.'); }
-            if (PEAR::isError($db->commit())) { throw new RuntimeException('Cleanup commit failed.'); }
             return 'changed';
-        } catch (Throwable $exception) {
-            if ($db->in_transaction) { $db->rollback(); }
-            throw $exception;
-        }
+        });
     }
 }

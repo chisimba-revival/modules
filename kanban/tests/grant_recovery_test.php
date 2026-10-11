@@ -3,12 +3,8 @@
 $GLOBALS['kewl_entry_point_run']=true;
 class dbTable {
     public $rows=['existing']; public $snapshot; public $fail=false; public $objEngine;
-    public function query($sql){
-        if($sql==='START TRANSACTION')$this->snapshot=$this->rows;
-        elseif($sql==='ROLLBACK')$this->rows=$this->snapshot;
-        elseif(str_starts_with($sql,'DELETE'))$this->rows=[];
-        return true;
-    }
+    public function transactionWithSavepoint(callable $work){$snapshot=$this->rows;try{return $work();}catch(Throwable $e){$this->rows=$snapshot;throw $e;}}
+    public function executePrepared($sql,$params=[]){if(str_starts_with($sql,'DELETE'))$this->rows=[];return 1;}
     public function insert($row){if($this->fail)return false;$this->rows[]=$row;return 'id';}
 }
 require dirname(__DIR__).'/classes/dbkanbanaccess_class_inc.php';

@@ -10,7 +10,6 @@ class registrationidentityservice extends dbTable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init($tableName ?: self::TABLE_NAME, $pearDb, $errorCallback);
-        $this->_db = $this->objEngine->getDbObj();
     }
 
     public function saveForUser($userId, $documentType, $documentNumber, $actorId)
@@ -44,7 +43,7 @@ class registrationidentityservice extends dbTable
     {
         $userId = $this->userId($userId);
         if ($userId === null) { return false; }
-        $rows = $this->getAll('WHERE user_id = ' . $this->_db->quote($userId) . ' LIMIT 1');
+        $rows = $this->selectPrepared('SELECT * FROM ' . self::TABLE_NAME . ' WHERE user_id = ? LIMIT 1', array($userId));
         return is_array($rows) && count($rows) === 1 ? $rows[0] : false;
     }
 
@@ -52,7 +51,7 @@ class registrationidentityservice extends dbTable
     {
         $documentNumber = $this->documentNumber($documentNumber);
         if ($documentNumber === null) { return array(); }
-        $rows = $this->getAll('WHERE document_fingerprint = ' . $this->_db->quote($this->fingerprint($documentNumber)));
+        $rows = $this->selectPrepared('SELECT * FROM ' . self::TABLE_NAME . ' WHERE document_fingerprint = ?', array($this->fingerprint($documentNumber)));
         return is_array($rows) ? $rows : array();
     }
 

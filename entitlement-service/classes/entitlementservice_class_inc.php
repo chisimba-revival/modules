@@ -150,17 +150,17 @@ class entitlementservice extends dbTable
             || $resourceType === null || $resourceId === null || $at === null) {
             return false;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT g.id FROM ' . self::GRANTS . ' AS g'
             . ' LEFT JOIN ' . self::REVOCATIONS . ' AS r ON r.grant_id = g.id'
-            . ' WHERE g.user_id = ' . $this->quote($userId)
-            . ' AND g.entitlement_type = ' . $this->quote($entitlementType)
-            . ' AND g.resource_type = ' . $this->quote($resourceType)
-            . ' AND g.resource_id = ' . $this->quote($resourceId)
-            . ' AND g.effective_at <= ' . $this->quote($at)
-            . ' AND (g.expires_at IS NULL OR g.expires_at > ' . $this->quote($at) . ')'
+            . ' WHERE g.user_id = ' . '?'
+            . ' AND g.entitlement_type = ' . '?'
+            . ' AND g.resource_type = ' . '?'
+            . ' AND g.resource_id = ' . '?'
+            . ' AND g.effective_at <= ' . '?'
+            . ' AND (g.expires_at IS NULL OR g.expires_at > ' . '?' . ')'
             . ' AND r.id IS NULL LIMIT 1'
-        );
+        ,[$userId,$entitlementType,$resourceType,$resourceId,$at,$at]);
         return is_array($rows) && count($rows) === 1;
     }
 
@@ -174,15 +174,15 @@ class entitlementservice extends dbTable
         if ($userId === null || $at === null || $limit === false) {
             return array();
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT g.* FROM ' . self::GRANTS . ' AS g'
             . ' LEFT JOIN ' . self::REVOCATIONS . ' AS r ON r.grant_id = g.id'
-            . ' WHERE g.user_id = ' . $this->quote($userId)
-            . ' AND g.effective_at <= ' . $this->quote($at)
-            . ' AND (g.expires_at IS NULL OR g.expires_at > ' . $this->quote($at) . ')'
+            . ' WHERE g.user_id = ' . '?'
+            . ' AND g.effective_at <= ' . '?'
+            . ' AND (g.expires_at IS NULL OR g.expires_at > ' . '?' . ')'
             . ' AND r.id IS NULL ORDER BY g.effective_at DESC, g.id DESC LIMIT '
             . (int) $limit
-        );
+        ,[$userId,$at,$at]);
         return is_array($rows) ? $rows : array();
     }
 
@@ -195,14 +195,14 @@ class entitlementservice extends dbTable
         if ($userId === null || $limit === false) {
             return array();
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT g.*, r.id AS revocation_id, r.reason_code,'
             . ' r.revoked_at, r.revoked_by_type, r.revoked_by_id'
             . ' FROM ' . self::GRANTS . ' AS g LEFT JOIN '
             . self::REVOCATIONS . ' AS r ON r.grant_id = g.id'
-            . ' WHERE g.user_id = ' . $this->quote($userId)
+            . ' WHERE g.user_id = ' . '?'
             . ' ORDER BY g.granted_at DESC, g.id DESC LIMIT ' . (int) $limit
-        );
+        ,[$userId]);
         return is_array($rows) ? $rows : array();
     }
 
@@ -221,14 +221,14 @@ class entitlementservice extends dbTable
         if ($prefix === null) {
             return null;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT g.* FROM ' . self::GRANTS . ' g'
             . ' LEFT JOIN ' . self::REVOCATIONS . ' r ON r.grant_id = g.id'
             . ' WHERE r.id IS NULL AND (g.idempotency_key = '
-            . $this->quote($prefix) . ' OR g.idempotency_key LIKE '
-            . $this->quote($prefix . ':amend:%') . ')'
+            . '?' . ' OR g.idempotency_key LIKE '
+            . '?' . ')'
             . ' ORDER BY g.granted_at DESC, g.id DESC LIMIT 1'
-        );
+        ,[$prefix,$prefix . ':amend:%']);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -323,19 +323,19 @@ class entitlementservice extends dbTable
         if (!in_array($column, array('id', 'idempotency_key'), true)) {
             return null;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . self::GRANTS . ' WHERE ' . $column . ' = '
-            . $this->quote($value) . ' LIMIT 2'
-        );
+            . '?' . ' LIMIT 2'
+        ,[$value]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
     private function revocationForGrant($grantId)
     {
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT id FROM ' . self::REVOCATIONS
-            . ' WHERE grant_id = ' . $this->quote($grantId) . ' LIMIT 2'
-        );
+            . ' WHERE grant_id = ' . '?' . ' LIMIT 2'
+        ,[$grantId]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -386,13 +386,7 @@ class entitlementservice extends dbTable
             && !preg_match('/[\x00-\x1F\x7F]/', $value) ? $value : null;
     }
 
-    private function quote($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+
 
     private function result($ok, $code, $grantId = null)
     {

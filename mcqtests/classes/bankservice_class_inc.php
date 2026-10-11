@@ -73,7 +73,7 @@ class bankservice extends ChisimbaObject
                 if (!$person) throw new DomainException('bank_manager');
                 $managers[]=(string)$person['userid'];
             }
-            $s=$this->store(); $s->run('UPDATE tbl_mcq_banks SET version=version+1,managers_json='.$s->q(json_encode(array_values(array_unique($managers)),JSON_THROW_ON_ERROR)).',shares_json='.$s->q(json_encode($shares,JSON_THROW_ON_ERROR)).' WHERE id='.$s->q($id));
+            $s=$this->store(); $s->run('UPDATE tbl_mcq_banks SET version=version+1,managers_json=?,shares_json=? WHERE id=?',false,[json_encode(array_values(array_unique($managers)),JSON_THROW_ON_ERROR),json_encode($shares,JSON_THROW_ON_ERROR),$id]);
         });
     }
     public function items($id,$context,$chapter='')
@@ -87,7 +87,7 @@ class bankservice extends ChisimbaObject
     public function test($id,$context,$write=false,$lock=false)
     {
         $this->requireCourse($context); $s=$this->store();
-        $test=$s->rows('SELECT * FROM tbl_tests WHERE id='.$s->q($id).($lock?' FOR UPDATE':''))[0]??null;
+        $test=$s->rows('SELECT * FROM tbl_tests WHERE id=?'.($lock?' FOR UPDATE':''),[$id])[0]??null;
         if (!$test || $test['context']!==$context) throw new DomainException('bank_forbidden');
         if ($write && $test['status']==='open') throw new DomainException('bank_open');
         return $test;
@@ -95,7 +95,7 @@ class bankservice extends ChisimbaObject
     public function tests($context)
     {
         $this->requireCourse($context); $s=$this->store();
-        return $s->rows('SELECT id,name,chapter,status FROM tbl_tests WHERE context='.$s->q($context).' ORDER BY name,id');
+        return $s->rows('SELECT id,name,chapter,status FROM tbl_tests WHERE context=? ORDER BY name,id',[$context]);
     }
     public function fromTest($id,$context)
     {
@@ -106,7 +106,7 @@ class bankservice extends ChisimbaObject
         }
         foreach ($this->getObject('dbquestions','mcqtests')->getQuestions($id) ?: [] as $row) {
             if (!in_array($row['questiontype'],['mcq','tf'],true)) continue;
-            $answers=$s->rows('SELECT answer,correct,commenttext FROM tbl_test_answers WHERE questionid='.$s->q($row['id']).' ORDER BY answerorder,id');
+            $answers=$s->rows('SELECT answer,correct,commenttext FROM tbl_test_answers WHERE questionid=? ORDER BY answerorder,id',[$row['id']]);
             $stored=$s->metadata($row['id']);
             $metadata=$stored['metadata']??$stored;
             $questions[]=$this->codec()->validate(['stem'=>$row['question'],'type'=>$row['questiontype'],'mark'=>(int)$row['mark'],'hint'=>$row['hint']??'','needsreview'=>(int)($row['needsreview']??0),'generalfeedback'=>$row['generalfeedback']??'','answers'=>$answers,
@@ -148,7 +148,7 @@ class bankservice extends ChisimbaObject
                     // Retain additional provenance without changing the first saved question.
                     $variants=$content['provenance']??[];$variants[]=$question['metadata']??[];
                     $content['provenance']=array_values(array_unique($variants,SORT_REGULAR));
-                    $json=json_encode($content,JSON_THROW_ON_ERROR);$s->run('UPDATE tbl_mcq_bank_items SET content_json='.$s->q($json).' WHERE id='.$s->q($item['id']));
+                    $json=json_encode($content,JSON_THROW_ON_ERROR);$s->run('UPDATE tbl_mcq_bank_items SET content_json=? WHERE id=?',false,[$json,$item['id']]);
                     $byHash[$hash]['content_json']=$json;$result['duplicates']++;continue;
                 }
                 if (isset($byStem[$stem])) { $result['conflicts']++; $result['conflictQuestions'][]=$question['stem'];continue; }

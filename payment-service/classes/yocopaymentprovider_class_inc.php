@@ -38,7 +38,7 @@ class yocopaymentprovider extends ChisimbaObject
             CURLOPT_HTTPHEADER=>array('Authorization: Bearer '.$secret,'Content-Type: application/json','Idempotency-Key: '.$intent['idempotency_key']),
         ));
         $response=curl_exec($handle); $error=curl_error($handle);
-        $status=(int)curl_getinfo($handle,CURLINFO_RESPONSE_CODE); curl_close($handle);
+        $status=(int)curl_getinfo($handle,CURLINFO_RESPONSE_CODE); unset($handle);
         if ($response===false) { return $this->failure('yoco_transport_error',true,$error); }
         $data=json_decode((string)$response,true);
         if ($status<200||$status>=300||!is_array($data)) {

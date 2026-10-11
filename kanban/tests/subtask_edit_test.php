@@ -11,8 +11,8 @@ if($argc===1){
     $GLOBALS['kewl_entry_point_run']=true;
     class dbTable {
         public $row=array('title'=>'Old title','iscompleted'=>1,'sortorder'=>7),$queries=array(),$fail=false,$objEngine;
-        public function query($sql){$this->queries[]=$sql;return true;}
-        public function getArray($sql){if(!str_ends_with($sql,'FOR UPDATE'))throw new RuntimeException('Missing row lock');return array($this->row);}
+        public function transactionWithSavepoint(callable $work){$snapshot=$this->row;try{$result=$work();$this->queries[]='COMMIT';return $result;}catch(Throwable $e){$this->row=$snapshot;$this->queries[]='ROLLBACK';throw $e;}}
+        public function selectPrepared($sql,$params=[]){if(!str_ends_with($sql,'FOR UPDATE'))throw new RuntimeException('Missing row lock');return array($this->row);}
         public function update($key,$id,$data){if(array_keys($data)!==array('title','datemodified'))throw new RuntimeException('Unexpected fields');if($this->fail)return false;$this->row=array_merge($this->row,$data);return true;}
     }
     require dirname(__DIR__).'/classes/dbkanbansubtasks_class_inc.php';

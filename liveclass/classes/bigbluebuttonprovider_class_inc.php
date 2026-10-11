@@ -2,6 +2,9 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class bigbluebuttonprovider extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $config;
+
     public function init(){ $this->config=$this->getObject('dbsysconfig','sysconfig'); }
     public function isAvailable(){return $this->endpoint()!==''&&$this->secret()!==''&&function_exists('curl_init');}
     public function signedUrl($call,array $parameters){ksort($parameters);$query=http_build_query($parameters,'','&',PHP_QUERY_RFC3986);return $this->endpoint().'/api/'.$call.'?'.$query.'&checksum='.sha1($call.$query.$this->secret());}

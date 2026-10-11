@@ -1,6 +1,12 @@
 <?php
 
 class formmanager extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $objNumericalOptions;
+    public $objNumericalUnit;
+    public $objQnAnswers;
+    public $objQuestionCalculated;
+
     /*
      * @var object to hold tbl description class
      */

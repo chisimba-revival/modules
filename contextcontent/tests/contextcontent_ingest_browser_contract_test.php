@@ -5,6 +5,13 @@ $template = file_get_contents($root . '/templates/content/importdocument_tpl.php
 $emptyCourseTemplate = file_get_contents($root . '/templates/content/nochapters_tpl.php');
 $courseLayout = file_get_contents($root . '/templates/layout/layout_firstpage_tpl.php');
 $register = file_get_contents($root . '/register.conf');
+// Parse the rule's action list so adding other actions cannot break this check.
+$importPermissions = array();
+foreach (preg_split('/\R/', $register) as $line) {
+    if (preg_match('/^RULE:\s*([^|]+)\|iscontextlecturer\s*$/', $line, $match)) {
+        $importPermissions = array_merge($importPermissions, array_map('trim', explode(',', $match[1])));
+    }
+}
 $checks = array(
     'three-step actions' => str_contains($controller, "case 'importdocument':")
         && str_contains($controller, "case 'previewdocumentimport':")
@@ -20,7 +27,7 @@ $checks = array(
         '<div class="chisimba-form-actions"><a class="button"'
     ) && str_contains(
         $register,
-        'mod_contextcontent_importdocument_return|Open course content action|Open course content'
+        'mod_contextcontent_importdocument_return|Open course content action|Open [-context-] content'
     ),
     'single URL encoding' => str_contains($template, 'html_entity_decode($this->uri(')
         && !str_contains($template, '$e($this->uri('),
@@ -39,7 +46,7 @@ $checks = array(
     ) && str_contains($courseLayout, 'html_entity_decode(')
         && !str_contains($emptyCourseTemplate, 'htmlspecialchars($importUrl')
         && !str_contains($courseLayout, 'htmlspecialchars($importUrl'),
-    'registered permissions' => str_contains($register, 'importdocument,previewdocumentimport,confirmdocumentimport|iscontextlecturer')
+    'registered permissions' => count(array_diff(array('importdocument', 'previewdocumentimport', 'confirmdocumentimport'), $importPermissions)) === 0
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

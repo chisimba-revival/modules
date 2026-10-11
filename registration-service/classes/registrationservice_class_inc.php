@@ -11,6 +11,17 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class registrationservice extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objAuthentication;
+    public $objCommunications;
+    public $objCredentials;
+    public $objEvents;
+    public $objIdentity;
+    public $objLegal;
+    public $objPhone;
+    public $objTokens;
+    public $objUsers;
+
     private const TABLE_NAME = 'tbl_registration_service_pending';
     private const VERIFICATION_TTL = 86400;
 
@@ -250,13 +261,13 @@ class registrationservice extends dbTable
     public function administrationSummary()
     {
         $cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
-        $pending=$this->getArray(
+        $pending=$this->selectPrepared(
             'SELECT id,first_name,surname,email_address,created_at,last_reminder_at FROM '.self::TABLE_NAME
-            .' WHERE status='.$this->quote('awaiting_verification')
-            .' AND created_at<='.$this->quote($cutoff)
-            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))
+            .' WHERE status=?'
+            .' AND created_at<=?'
+            .' AND expires_at>?'
             .' ORDER BY created_at ASC LIMIT 20'
-        );
+        ,['awaiting_verification',$cutoff,date('Y-m-d H:i:s')]);
         return array('unconfirmed'=>is_array($pending)?$pending:array());
     }
 
@@ -268,11 +279,11 @@ class registrationservice extends dbTable
         $id=is_scalar($pendingId)?strtolower(trim((string)$pendingId)):'';
         $actor=$this->text($actorId,25);$cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
         if(!preg_match('/^[a-f0-9]{32}$/',$id)||$actor===null){return $this->result(false,'invalid_reminder');}
-        $rows=$this->getArray(
-            'SELECT * FROM '.self::TABLE_NAME.' WHERE id='.$this->quote($id)
-            .' AND status='.$this->quote('awaiting_verification').' AND created_at<='.$this->quote($cutoff)
-            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s')).' LIMIT 2'
-        );
+        $rows=$this->selectPrepared(
+            'SELECT * FROM '.self::TABLE_NAME.' WHERE id=?'
+            .' AND status=? AND created_at<=?'
+            .' AND expires_at>? LIMIT 2'
+        ,[$id,'awaiting_verification',$cutoff,date('Y-m-d H:i:s')]);
         if(!is_array($rows)||count($rows)!==1){return $this->result(false,'reminder_not_available',$id);}
         $pending=$rows[0];
         if(!empty($pending['last_reminder_at'])&&strtotime($pending['last_reminder_at'])>strtotime('-24 hours')){
@@ -313,13 +324,13 @@ class registrationservice extends dbTable
         $actor=$this->text($actorId,25);$cutoff=date('Y-m-d H:i:s',strtotime('-24 hours'));
         if($actor===null)return array('ok'=>false,'code'=>'invalid_administrator','deleted'=>0);
         $this->beginTransaction();
-        $rows=$this->getArray(
+        $rows=$this->selectPrepared(
             'SELECT id,correlation_id FROM '.self::TABLE_NAME
-            .' WHERE status='.$this->quote('awaiting_verification')
-            .' AND created_at<='.$this->quote($cutoff)
-            .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))
+            .' WHERE status=?'
+            .' AND created_at<=?'
+            .' AND expires_at>?'
             .' ORDER BY created_at ASC LIMIT 20 FOR UPDATE'
-        );
+        ,['awaiting_verification',$cutoff,date('Y-m-d H:i:s')]);
         if(!is_array($rows)){ $this->rollbackTransaction();return array('ok'=>false,'code'=>'pending_registration_read_failed','deleted'=>0); }
         $now=date('Y-m-d H:i:s');$deleted=0;
         foreach($rows as $pending){
@@ -344,10 +355,10 @@ class registrationservice extends dbTable
         }
         if ($pending['status'] !== 'awaiting_verification') {
             // Do not resurrect a request dismissed while this form was open.
-            if ($this->query('UPDATE '.self::TABLE_NAME
-                .' SET status='.$this->quote('awaiting_verification').',updated_at='.$this->quote(date('Y-m-d H:i:s'))
-                .' WHERE id='.$this->quote($pending['id']).' AND status='.$this->quote('awaiting_legal_acceptance')
-                .' AND expires_at>'.$this->quote(date('Y-m-d H:i:s'))) === false) {
+            if ($this->executePrepared('UPDATE '.self::TABLE_NAME
+                .' SET status=?,updated_at=?'
+                .' WHERE id=? AND status=?'
+                .' AND expires_at>?',['awaiting_verification',date('Y-m-d H:i:s'),$pending['id'],'awaiting_legal_acceptance',date('Y-m-d H:i:s')]) === false) {
                 return $this->result(false, 'verification_state_failed', $pending['id']);
             }
             $pending['status'] = 'awaiting_verification';
@@ -457,13 +468,13 @@ class registrationservice extends dbTable
             return $this->result(false, 'invalid_pending_registration');
         }
         $this->beginTransaction();
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . self::TABLE_NAME
-            . ' WHERE id = ' . $this->quote($pendingId)
+            . ' WHERE id = ' . '?'
             . " AND status = 'verified'"
-            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' AND expires_at > ' . '?'
             . ' LIMIT 2 FOR UPDATE'
-        );
+        ,[$pendingId,date('Y-m-d H:i:s')]);
         if (!is_array($rows) || count($rows) !== 1) {
             $this->rollbackTransaction();
             return $this->result(false, 'pending_registration_not_verified');
@@ -752,13 +763,13 @@ class registrationservice extends dbTable
         if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
             return null;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . self::TABLE_NAME
-            . ' WHERE id = ' . $this->quote($id)
-            . ' AND status = ' . $this->quote($status)
-            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' WHERE id = ' . '?'
+            . ' AND status = ' . '?'
+            . ' AND expires_at > ' . '?'
             . ' LIMIT 2' . ($lock ? ' FOR UPDATE' : '')
-        );
+        ,[$id,$status,date('Y-m-d H:i:s')]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -781,13 +792,13 @@ class registrationservice extends dbTable
             return null;
         }
         $quoted = array_map(array($this, 'quote'), $statuses);
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . self::TABLE_NAME
-            . ' WHERE id = ' . $this->quote($id)
+            . ' WHERE id = ' . '?'
             . ' AND status IN (' . implode(',', $quoted) . ')'
-            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' AND expires_at > ' . '?'
             . ' LIMIT 2'
-        );
+        ,[$id,date('Y-m-d H:i:s')]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -802,13 +813,13 @@ class registrationservice extends dbTable
         if (!in_array($column, $allowed, true)) {
             return null;
         }
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT id, username, email_address, status FROM ' . self::TABLE_NAME
-            . ' WHERE ' . $column . ' = ' . $this->quote($value)
+            . ' WHERE ' . $column . ' = ' . '?'
             . " AND status IN ('awaiting_legal_acceptance','awaiting_verification','verified')"
-            . ' AND expires_at > ' . $this->quote(date('Y-m-d H:i:s'))
+            . ' AND expires_at > ' . '?'
             . ' LIMIT 1'
-        );
+        ,[$value,date('Y-m-d H:i:s')]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -938,13 +949,7 @@ class registrationservice extends dbTable
             && !preg_match('/[\x00-\x1F\x7F]/', $value) ? $value : null;
     }
 
-    private function quote($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+
 
     private function result($ok, $code, $pendingId = null)
     {

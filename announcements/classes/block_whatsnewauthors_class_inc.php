@@ -3,6 +3,13 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class block_whatsnewauthors extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $contexts;
+    public $dateTime;
+    public $items;
+    public $language;
+    public $user;
+
     public $title;
     public function init()
     {

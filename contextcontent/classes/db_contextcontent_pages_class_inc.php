@@ -51,6 +51,9 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class db_contextcontent_pages extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
 
     /**
      * Constructor
@@ -58,7 +61,7 @@ class db_contextcontent_pages extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_pages');
-        $this->objUser =& $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
     }
 
     /**
@@ -102,8 +105,8 @@ class db_contextcontent_pages extends dbtable
                     'original' => 'Y',
                     'scorm' => $scorm,
                     'creatorid' => $this->objUser->userId(),
-                    'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
-                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
+                    'datecreated' => date('Y-m-d H:i:s'),
+                    'datemodified' => date('Y-m-d H:i:s')
                 ));
         } else {
             return FALSE;
@@ -168,7 +171,7 @@ class db_contextcontent_pages extends dbtable
     {
         $row = array();
         $row['modifierid'] = $this->objUser->userId();
-        $row['datemodified'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['datemodified'] = date('Y-m-d H:i:s');
 
         if ($title !== false) {
             $row['menutitle'] = stripslashes($title);

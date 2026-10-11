@@ -3,6 +3,15 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class contentauthoringservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $chapterContent;
+    public $chapterRows;
+    public $chapters;
+    public $order;
+    public $pages;
+    public $registry;
+    public $titles;
+
     public function init()
     {
         $this->titles = $this->getObject('db_contextcontent_titles', 'contextcontent');

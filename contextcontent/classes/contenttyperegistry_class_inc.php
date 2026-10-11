@@ -3,6 +3,9 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class contenttyperegistry extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $language;
+
     private $types = array();
 
     public function init()

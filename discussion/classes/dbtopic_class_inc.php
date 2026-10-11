@@ -16,6 +16,15 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * This class controls the functionality for topics and tangents in a discussion discussion
  */
 class dbtopic extends dbTable {
+    /** Dependencies and state initialised by this component. */
+    public $contextCode;
+    public $contextObject;
+    public $objDateTime;
+    public $objDiscussion;
+    public $objIcon;
+    public $objLanguage;
+    public $objPost;
+
 
     /**
      * Constructor method to define the table(default)
@@ -26,14 +35,14 @@ class dbtopic extends dbTable {
         $this->loadClass('dropdown', 'htmlelements');
         $this->loadClass('textinput', 'htmlelements');
         $this->loadClass('link', 'htmlelements');
-        $this->objLanguage =& $this->getObject('language', 'language');
-        $this->objPost =& $this->getObject('dbpost');
-        $this->objDiscussion = & $this->getObject('dbDiscussion');
+        $this->objLanguage = $this->getObject('language', 'language');
+        $this->objPost = $this->getObject('dbpost');
+        $this->objDiscussion = $this->getObject('dbDiscussion');
 
         $this->objIcon = $this->getObject('geticon', 'htmlelements');
-        $this->objDateTime =& $this->getObject('dateandtime', 'utilities');
+        $this->objDateTime = $this->getObject('dateandtime', 'utilities');
         // Get Context Code Settings
-        $this->contextObject =& $this->getObject('dbcontext', 'context');
+        $this->contextObject = $this->getObject('dbcontext', 'context');
         $this->contextCode = $this->contextObject->getContextCode();
     }
 
@@ -194,7 +203,7 @@ class dbtopic extends dbTable {
         // Return single rows
         $sql .= ' GROUP  BY tbl_discussion_topic.id';
 
-        if (strtolower($direction) == 'asc') {
+        if (strtolower($direction ?? '') == 'asc') {
             $direction = NULL;
         } else {
             $direction = ' DESC ';
@@ -603,7 +612,7 @@ GROUP BY tbl_discussion_topic.id                ';
      * @param int $limit Number of Records per Page
      * @return string Paging
      */
-    function prepareTopicPagingLinks($discussion_id, $page=1, $limit) {
+    function prepareTopicPagingLinks($discussion_id, $page, $limit) {
         $numPages = $this->getNumDiscussionPages($discussion_id, $limit, FALSE);
 
         if ($numPages == 1) {

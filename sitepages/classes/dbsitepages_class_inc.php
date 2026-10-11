@@ -31,15 +31,12 @@ class dbsitepages extends dbTable
     }
     public static function version(array $row)
     {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}
-    public function savePage(array $data, $userId, $id = '')
-    {
+    public function savePage(array $data,$userId,$id='') {
         $expected=$data['_expected_version']??null;unset($data['_expected_version']);
-        $db=$this->objEngine->getDbObj();$begin=$db->exec('START TRANSACTION');if(PEAR::isError($begin))throw new RuntimeException('failed');
-        try {
-            if($id!==''&&$expected!==null){$rows=$this->getArray('SELECT * FROM tbl_sitepages WHERE id='.$db->quote($id).' FOR UPDATE');if(!$rows||!hash_equals(self::version($rows[0]),$expected))throw new DomainException('conflict');}
-            $row=$this->persistPage($data,$userId,$id);if(!$row)throw new RuntimeException('failed');
-            $commit=$db->exec('COMMIT');if(PEAR::isError($commit))throw new RuntimeException('failed');return $row;
-        }catch(Throwable $error){$db->exec('ROLLBACK');throw $error;}
+        return $this->transaction(function()use($data,$userId,$id,$expected){
+            if($id!==''&&$expected!==null){$rows=$this->selectPrepared('SELECT * FROM tbl_sitepages WHERE id=? FOR UPDATE',[$id]);if(!$rows||!hash_equals(self::version($rows[0]),$expected))throw new DomainException('conflict');}
+            $row=$this->persistPage($data,$userId,$id);if(!$row)throw new RuntimeException('failed');return $row;
+        });
     }
     private function persistPage(array $data, $userId, $id = '')
     {

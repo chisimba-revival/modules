@@ -55,6 +55,42 @@ if (!
  * @link      http://avoir.uwc.ac.za
  */
 class contextcontent extends controller {
+    /** Dependencies and state initialised by this component. */
+    public $csrf;
+    public $eventsEnabled;
+    public $moduleUri;
+    public $objAlertUtils;
+    public $objAltConfig;
+    public $objAssessmentPalette;
+    public $objAuthoring;
+    public $objBookmarks;
+    public $objChapterStageGates;
+    public $objChapters;
+    public $objContentInvolvement;
+    public $objContentOrder;
+    public $objContentPages;
+    public $objContentTitles;
+    public $objContentTypes;
+    public $objContextActivityStreamer;
+    public $objContextChapters;
+    public $objContextComments;
+    public $objContextGroups;
+    public $objFilePreview;
+    public $objFiles;
+    public $objFolders;
+    public $objIngest;
+    public $objIngestStaging;
+    public $objLanguage;
+    public $objMcqTests;
+    public $objMenuTools;
+    public $objModuleCatalogue;
+    public $objSectionProgression;
+    public $objSections;
+    public $objSysConfig;
+    public $objTikTokVideo;
+    public $siteRoot;
+    public $userId;
+
 
     const CSRF_CONTEXT = 'contextcontent_authoring';
 

@@ -29,7 +29,7 @@ class gradebook_installscripts extends dbtable
         $changes = array('add' => array('short_name' => $fields['short_name']));
         foreach (array(true, false) as $check) {
             $result = $admin->alterTable($table, $changes, $check);
-            if ($result !== true && $result !== MDB2_OK) {
+            if ($result !== true) {
                 throw new RuntimeException('Cannot add Gradebook assessment short_name column.');
             }
         }

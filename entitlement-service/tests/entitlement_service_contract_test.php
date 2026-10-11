@@ -47,8 +47,8 @@ $checks = array(
         $registration . $service,
         'userregistration'
     ),
-    'runtime database quoting' => !str_contains($service, '_objDB')
-        && str_contains($service, 'objEngine->getDbObj()'),
+    'shared prepared persistence' => !str_contains($service, '_objDB')
+        && !str_contains($service, 'objEngine->getDbObj()') && str_contains($service, 'selectPrepared('),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

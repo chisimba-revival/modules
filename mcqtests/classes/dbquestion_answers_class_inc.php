@@ -19,6 +19,9 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class dbquestion_answers extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $table;
+
     /**
      * Method to construct the class and initialise the table
      *

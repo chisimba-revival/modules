@@ -11,6 +11,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @copyright 2004 University of the Western Cape
  */
 class dbWorkgroup extends dbTable {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+    public $userId;
+
 
     /**
      * Constructor method to define the table
@@ -18,7 +22,7 @@ class dbWorkgroup extends dbTable {
     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_workgroup');
         //$this->USE_PREPARED_STATEMENTS=True;
-        $this->objUser = &$this->newObject('user', 'security');
+        $this->objUser = $this->newObject('user', 'security');
         $this->userId = $this->objUser->userId();
     }
 
@@ -239,7 +243,7 @@ class dbWorkgroup extends dbTable {
       $version
       )
       {
-      $this->objUpload =& $this->getObject('upload','filemanager');
+      $this->objUpload = $this->getObject('upload','filemanager');
       $result = $this->objUpload->uploadFile('upload');
       if ($result['success']=='1') {
       $this->insertFile(

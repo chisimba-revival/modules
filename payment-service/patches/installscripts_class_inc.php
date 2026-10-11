@@ -1,7 +1,7 @@
 <?php
 /** Preserve guest identity and immutable VAT through normal catalogue updates. */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
-class payment_service_installscripts extends ChisimbaObject
+class payment_service_installscripts extends dbTable
 {
     public function preinstall($version = null)
     {
@@ -13,8 +13,8 @@ class payment_service_installscripts extends ChisimbaObject
         foreach ($updates as $update) {
             if (!in_array((string)$update->table, $tables, true)) continue;
             foreach ($update->SQL as $statement) {
-                $result = $this->objEngine->getDbObj()->exec((string)$statement);
-                if ($result === false || PEAR::isError($result)) throw new RuntimeException('Payment schema reconciliation failed');
+                $result = $this->getObject('modulesadmin','modulecatalogue')->executeSchemaStatement((string)$statement);
+                if ($result === false) throw new RuntimeException('Payment schema reconciliation failed');
             }
         }
     }

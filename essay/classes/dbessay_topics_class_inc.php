@@ -22,6 +22,9 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class dbessay_topics extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $table;
+
     /** @var timeanddateservice Canonical UTC storage and site display service. */
     public $objTimeAndDate;
 

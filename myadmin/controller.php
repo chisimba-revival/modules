@@ -2,6 +2,9 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('You cannot view this page directly');
 class myadmin extends controller
 {
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+
  private $user;private $contextBlocks;private $dynamicBlocks;private $csrf;
  public function init(){$this->user=$this->getObject('user','security');$this->contextBlocks=$this->getObject('dbcontextblocks','context');$this->dynamicBlocks=$this->getObject('dynamicblocks','blocks');$this->objLanguage=$this->getObject('language','language');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];}
  public function dispatch($action){$blockAction=in_array($action,array('renderblock','addblock','removeblock','moveblock'),true);if($blockAction&&$this->user->isAdmin()){$this->dispatchBlockAction($action);return null;}if(!$this->user->isAdmin())return 'noaccess_tpl.php';$notice='';$registrationNotice='';if($action==='runmailqueue')$notice=$this->runMailQueue();if($action==='sendregistrationreminder')$registrationNotice=$this->sendRegistrationReminder();if($action==='deleteunconfirmedregistrations')$registrationNotice=$this->deleteUnconfirmedRegistrations();$managing=$action==='manage';$this->setVar('managingDashboard',$managing);$this->setVar('administrationOverview',$this->getObject('administrationoverview')->show($this->csrf->issue('myadmin_mail_queue'),$this->csrf->issue('myadmin_registration_reminder'),$notice,$this->csrf->issue('myadmin_registration_delete'),$registrationNotice));foreach(array('right'=>'upperBlocks','left'=>'lowerBlocks','middle'=>'wideBlocks') as $side=>$variable)$this->setVar($variable,$this->contextBlocks->getContextBlocks('myadmin',$side));$this->setVar('mayEditBlocks',$managing);$this->setVar('availableNarrowBlocks',$this->availableBlocks(false));$this->setVar('availableWideBlocks',$this->availableBlocks(true));return 'main_tpl.php';}

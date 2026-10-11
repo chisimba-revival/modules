@@ -189,8 +189,8 @@ class privateadmissionservice extends dbTable
     {
         $course = $this->privateCourse($courseCode);
         if ($course === null) { return array(); }
-        $rows = $this->getArray('SELECT * FROM ' . self::TABLE_NAME . ' WHERE course_code = '
-            . $this->quote($course['contextcode']) . ' ORDER BY updated_at DESC, id DESC LIMIT ' . min(500, max(1, (int) $limit)));
+        $rows = $this->selectPrepared('SELECT * FROM ' . self::TABLE_NAME . ' WHERE course_code = '
+            . '?' . ' ORDER BY updated_at DESC, id DESC LIMIT ' . min(500, max(1, (int) $limit)),[$course['contextcode']]);
         return is_array($rows) ? $rows : array();
     }
 
@@ -201,17 +201,17 @@ class privateadmissionservice extends dbTable
     }
 
     public function record($id) { $id = $this->hex($id); return $id === null ? null : $this->one('id', $id); }
-    private function latest($course, $user) { $r=$this->getArray('SELECT * FROM '.self::TABLE_NAME.' WHERE course_code='.$this->quote($course).' AND user_id='.$this->quote($user).' ORDER BY created_at DESC,id DESC LIMIT 1'); return is_array($r)&&count($r)?$r[0]:null; }
+    private function latest($course, $user) { $r=$this->selectPrepared('SELECT * FROM '.self::TABLE_NAME.' WHERE course_code=? AND user_id=? ORDER BY created_at DESC,id DESC LIMIT 1',[$course,$user]); return is_array($r)&&count($r)?$r[0]:null; }
     private function privateCourse($code) { $code=$this->text($code,255); $c=$code===null?false:$this->contexts->getContext($code); return is_array($c)&&strtolower((string)($c['access_policy']??''))==='private'?$c:null; }
     private function user($id) { $id=$this->text($id,25); return $id===null?null:$this->users->findByUserId($id); }
     private function audit($type,array $row,$outcome,array $actor=array()) { $actor=$this->actorDescriptor($actor['type']??'user',$actor['id']??null);$e=$this->events->append(array('eventType'=>$type,'subjectType'=>'user','subjectId'=>$row['user_id'],'actorType'=>$actor['type'],'actorId'=>$actor['id'],'outcome'=>$outcome,'correlationId'=>$row['correlation_id'],'sourceService'=>'membership-service','metadata'=>array('admission_id'=>$row['id'],'course_code'=>$row['course_code'],'review_status'=>$row['review_status'],'payment_status'=>$row['payment_status']))); return !empty($e['ok']); }
     private function actorDescriptor($type,$id) { $type=strtolower(trim((string)$type));if($type==='service'){return array('type'=>'service','id'=>$this->text($id,25)?:'payment-service');}return array('type'=>'user','id'=>(string)$this->actor->userId()); }
-    private function one($field,$value) { $r=$this->getAll('WHERE '.$field.' = '.$this->quote($value).' LIMIT 1'); return is_array($r)&&count($r)?$r[0]:null; }
+    private function one($field,$value) { $r=$this->selectPrepared('SELECT * FROM '.$this->_tableName.' '.('WHERE '.$field.' = ? LIMIT 1'),[$value]); return is_array($r)&&count($r)?$r[0]:null; }
     private function enum($v,array $a) { $v=strtolower(trim((string)$v)); return in_array($v,$a,true)?$v:null; }
     private function identifier($v,$m) { $v=trim((string)$v); return $v!==''&&strlen($v)<=$m&&preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:-]*$/',$v)?$v:null; }
     private function hex($v) { $v=strtolower(trim((string)$v)); return preg_match('/^[a-f0-9]{32}$/',$v)?$v:null; }
     private function text($v,$m,$empty=false) { if(!is_scalar($v))return null;$v=trim((string)$v);if($v==='')return $empty?'':null;return strlen($v)<=$m&&!preg_match('/[\x00-\x1F\x7F]/',$v)?$v:null; }
-    private function quote($v) { $d=$this->objEngine->getDbObj();return method_exists($d,'quoteSmart')?$d->quoteSmart((string)$v):"'".str_replace("'","''",(string)$v)."'"; }
+
     private function result($ok,$code,$id=null) { return array('ok'=>(bool)$ok,'code'=>$code,'admissionId'=>$id); }
 }
 ?>

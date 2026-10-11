@@ -5,6 +5,11 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
 class contributionservice extends ChisimbaObject
 {
+    /** Shared payment services supplied during initialisation. */
+    public $orders;
+    public $catalog;
+    public $config;
+
     public function init()
     {
         $this->orders=$this->getObject('dbcontributions');

@@ -48,13 +48,16 @@ $GLOBALS['kewl_entry_point_run']) {
  *
  */
 class db_contextcontent_contextchapter extends dbtable {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
 
 /**
  * Constructor
  */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_chaptercontext');
-        $this->objUser =& $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $existing = $this->query("SHOW COLUMNS FROM tbl_contextcontent_chaptercontext LIKE 'sectionid'");
         if (!is_array($existing) || count($existing) === 0) {
             $this->query("ALTER TABLE tbl_contextcontent_chaptercontext ADD COLUMN sectionid VARCHAR(32) NOT NULL DEFAULT ''");
@@ -259,7 +262,7 @@ WHERE (tbl_contextcontent_chaptercontent.chapterid = tbl_contextcontent_chapterc
         'chapterorder' => $order,
         'visibility' => $visibility,
         'creatorid' => $this->objUser->userId(),
-        'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
+        'datecreated' => date('Y-m-d H:i:s')
         ));
     }
 

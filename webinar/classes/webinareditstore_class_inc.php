@@ -5,20 +5,10 @@ class webinareditstore extends dbTable
 {
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler')
     { parent::init('tbl_webinar_records',$pearDb,$errorCallback); }
-    private function db(){return $this->objEngine->getDbObj();}
-    private function q($value){return $value===''?"''":$this->db()->quote($value);}
-    private function rows($sql)
-    {
-        $result=$this->db()->query($sql);
-        if(PEAR::isError($result))throw new RuntimeException('webinar_storage_failed');
-        return $result->fetchAll(MDB2_FETCHMODE_ASSOC);
-    }
-    private function execute($sql)
-    {
-        $result=$this->db()->exec($sql);
-        if(PEAR::isError($result))throw new RuntimeException('webinar_storage_failed');
-        return $result;
-    }
+
+
+    private function rows($sql,array $params=[]) {return $this->selectPrepared($sql,$params);}
+    private function execute($sql,array $params=[]) {return $this->executeExactPrepared($sql,$params);}
     /** Installation/upgrade only; duplicate identities fail instead of being discarded. */
     public function prepareSchema()
     {
@@ -39,26 +29,15 @@ class webinareditstore extends dbTable
         $indexes=$this->rows('SHOW INDEX FROM tbl_webinar_records');$unique=false;
         foreach($indexes as $index)if($index['key_name']==='webinar_id_unique'&&!$index['non_unique'])$unique=true;
         if(($status[0]['engine']??'')!=='InnoDB'||!$unique)throw new RuntimeException('webinar_setup_required');
-        $this->execute('START TRANSACTION');
+        $this->beginTransaction();
     }
-    public function commit(){$this->execute('COMMIT');}
-    public function rollback(){$this->execute('ROLLBACK');}
-    public function record($id,$lock=false)
-    {
-        if(!is_string($id)||!preg_match('/^[a-f0-9]{32}$/D',$id))return null;
-        $rows=$this->rows('SELECT * FROM tbl_webinar_records WHERE id='.$this->q($id).($lock?' FOR UPDATE':''));
-        return $rows[0]??null;
-    }
-    public function listing($kind='webinar')
-    {
-        if(!in_array($kind,['webinar','speaker'],true))return [];
-        return $this->rows('SELECT * FROM tbl_webinar_records WHERE kind='.$this->q($kind).' ORDER BY presented_at DESC,title,id');
-    }
-    public function persist(array $record,$existing)
-    {
-        $allowed=['id','kind','source_key','source_hash','title','status','presented_at','payload'];
-        $record=array_intersect_key($record,array_flip($allowed));
-        if($existing){$id=$record['id'];unset($record['id']);$sets=[];foreach($record as $key=>$value)$sets[]=$key.'='.$this->q($value);$this->execute('UPDATE tbl_webinar_records SET '.implode(',',$sets).' WHERE id='.$this->q($id));}
-        else $this->execute('INSERT INTO tbl_webinar_records ('.implode(',',array_keys($record)).') VALUES ('.implode(',',array_map(fn($v)=>$this->q($v),array_values($record))).')');
+    public function commit() {$this->commitTransaction();}
+    public function rollback() {$this->rollbackTransaction();}
+    public function record($id,$lock=false) {if(!is_string($id)||!preg_match('/^[a-f0-9]{32}$/D',$id))return null;$rows=$this->rows('SELECT * FROM tbl_webinar_records WHERE id=?'.($lock?' FOR UPDATE':''),[$id]);return $rows[0]??null;}
+    public function listing($kind='webinar') {if(!in_array($kind,['webinar','speaker'],true))return [];return $this->rows('SELECT * FROM tbl_webinar_records WHERE kind=? ORDER BY presented_at DESC,title,id',[$kind]);}
+    public function persist(array $record,$existing) {
+        $record=array_intersect_key($record,array_flip(['id','kind','source_key','source_hash','title','status','presented_at','payload']));
+        if($existing){$id=$record['id'];unset($record['id']);$sets=[];foreach($record as $key=>$value)$sets[]=$key.'=?';$this->execute('UPDATE tbl_webinar_records SET '.implode(',',$sets).' WHERE id=?',array_merge(array_values($record),[$id]));}
+        else $this->execute('INSERT INTO tbl_webinar_records ('.implode(',',array_keys($record)).') VALUES ('.implode(',',array_fill(0,count($record),'?')).')',array_values($record));
     }
 }

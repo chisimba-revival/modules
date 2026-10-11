@@ -4,6 +4,12 @@ if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page di
 
 class certificateservice extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $config;
+    public $events;
+    public $identities;
+    public $language;
+
     private const BASES = 'tbl_certificate_service_bases';
     private const SIGNERS = 'tbl_certificate_service_signers';
     private const ASSIGNMENTS = 'tbl_certificate_service_assignments';
@@ -12,7 +18,6 @@ class certificateservice extends dbTable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init($tableName ?: self::BASES, $pearDb, $errorCallback);
-        $this->_db = $this->objEngine->getDbObj();
         $this->events = $this->getObject('accounteventservice', 'account-event-service');
         $this->config = $this->getObject('altconfig', 'config');
         $this->identities = $this->getObject('registrationidentityservice', 'registration-service');
@@ -77,14 +82,14 @@ class certificateservice extends dbTable
     public function archiveBase($id)
     {
         $base=$this->find(self::BASES,$id);if(!$base){return array('ok'=>false,'code'=>'base_not_found');}
-        if($this->one(self::ASSIGNMENTS,'base_id='.$this->quote($base['id'])." AND status='active'")){return array('ok'=>false,'code'=>'in_use');}
+        if($this->one(self::ASSIGNMENTS,"base_id=? AND status='active'",[$base['id']])){return array('ok'=>false,'code'=>'in_use');}
         $ok=$this->updateIn(self::BASES,$base['id'],array('status'=>'inactive','date_updated'=>date('Y-m-d H:i:s')));return array('ok'=>(bool)$ok,'code'=>$ok?'base_archived':'base_archive_failed','id'=>$base['id']);
     }
 
     public function archiveSigner($id)
     {
         $signer=$this->find(self::SIGNERS,$id);if(!$signer){return array('ok'=>false,'code'=>'signer_not_found');}
-        if($this->one(self::ASSIGNMENTS,'signer_id='.$this->quote($signer['id'])." AND status='active'")){return array('ok'=>false,'code'=>'in_use');}
+        if($this->one(self::ASSIGNMENTS,"signer_id=? AND status='active'",[$signer['id']])){return array('ok'=>false,'code'=>'in_use');}
         $ok=$this->updateIn(self::SIGNERS,$signer['id'],array('status'=>'inactive','date_updated'=>date('Y-m-d H:i:s')));return array('ok'=>(bool)$ok,'code'=>$ok?'signer_archived':'signer_archive_failed','id'=>$signer['id']);
     }
 
@@ -184,7 +189,7 @@ class certificateservice extends dbTable
     {
         $type = $this->identifier($type, 64); $id = $this->text($id, 191);
         if ($type === null || $id === null) { return false; }
-        return $this->one(self::ASSIGNMENTS, "resource_type=".$this->quote($type)." AND resource_id=".$this->quote($id)." AND status='active'");
+        return $this->one(self::ASSIGNMENTS, "resource_type=? AND resource_id=? AND status='active'",[$type,$id]);
     }
     public function issuanceById($id)
     {
@@ -200,12 +205,12 @@ class certificateservice extends dbTable
     {
         $certificateNumber = is_scalar($certificateNumber) ? strtoupper(trim((string)$certificateNumber)) : '';
         $identityNumber = is_scalar($identityNumber) ? trim((string)$identityNumber) : '';
-        $where = array();
-        if ($certificateNumber !== '') { $where[] = 'certificate_number=' . $this->quote($certificateNumber); }
-        if ($identityNumber !== '') { $where[] = 'identity_document_fingerprint=' . $this->quote(hash('sha256',$this->normaliseIdentityNumber($identityNumber))); }
+        $where = array();$params=[];
+        if ($certificateNumber !== '') { $where[] = 'certificate_number=?';$params[]=$certificateNumber; }
+        if ($identityNumber !== '') { $where[]='identity_document_fingerprint=?';$params[]=hash('sha256',$this->normaliseIdentityNumber($identityNumber)); }
         if (!$where) { return array(); }
         $old=$this->_tableName;$this->_tableName=self::ISSUANCES;
-        $rows=$this->getAll('WHERE '.implode(' OR ',$where).' ORDER BY issued_at DESC LIMIT 50');
+        $rows=$this->selectPrepared('SELECT * FROM '.self::ISSUANCES.' WHERE '.implode(' OR ',$where).' ORDER BY issued_at DESC LIMIT 50',$params);
         $this->_tableName=$old;
         if (!is_array($rows)) { return array(); }
         foreach ($rows as &$row) { $row['snapshot']=json_decode($row['snapshot_json'],true); unset($row['snapshot_json']); }
@@ -222,19 +227,16 @@ class certificateservice extends dbTable
         ));
     }
 
-    private function issuanceFor($assignment, $user, $completion)
-    { return $this->one(self::ISSUANCES, 'assignment_id='.$this->quote($assignment).' AND subject_user_id='.$this->quote($user).' AND completion_reference='.$this->quote($completion)); }
+    private function issuanceFor($assignment,$user,$completion) {return $this->one(self::ISSUANCES,'assignment_id=? AND subject_user_id=? AND completion_reference=?',[$assignment,$user,$completion]);}
     private function rows($table)
     { $old=$this->_tableName; $this->_tableName=$table; $rows=$this->getAll("WHERE status='active' ORDER BY name"); $this->_tableName=$old; return is_array($rows)?$rows:array(); }
-    private function find($table, $id)
-    { $id=$this->text($id,32); return $id===null?false:$this->one($table, 'id='.$this->quote($id)); }
-    private function one($table, $where)
-    { $old=$this->_tableName; $this->_tableName=$table; $rows=$this->getAll('WHERE '.$where.' LIMIT 1'); $this->_tableName=$old; return is_array($rows)&&!empty($rows)?$rows[0]:false; }
+    private function find($table,$id) {$id=$this->text($id,32);return $id===null?false:$this->one($table,'id=?',[$id]);}
+    private function one($table,$where,array $params=[]) { $rows=$this->selectPrepared('SELECT * FROM '.$table.' WHERE '.$where.' LIMIT 1',$params);return $rows[0]??false; }
     private function insertInto($table, array $values)
     { $old=$this->_tableName; $this->_tableName=$table; $ok=$this->insert($values); $this->_tableName=$old; return $ok!==false; }
     private function updateIn($table, $id, array $values)
     { $old=$this->_tableName; $this->_tableName=$table; $ok=$this->update('id',$id,$values); $this->_tableName=$old; return $ok!==false; }
-    private function quote($value) { return $this->_db->quote((string)$value); }
+
     private function normaliseIdentityNumber($number) { return strtoupper(preg_replace('/[^\pL\pN]/u','',(string)$number)); }
     private function identifier($value,$max) { $value=is_scalar($value)?trim((string)$value):''; return $value!==''&&strlen($value)<=$max&&preg_match('/^[a-z][a-z0-9_.:-]*$/i',$value)?$value:null; }
     private function text($value,$max) { $value=is_scalar($value)?trim((string)$value):''; return $value!==''&&strlen($value)<=$max&&!preg_match('/[\x00-\x1F\x7F]/',$value)?$value:null; }

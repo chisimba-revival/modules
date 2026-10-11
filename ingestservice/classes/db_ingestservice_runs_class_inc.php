@@ -3,11 +3,13 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class db_ingestservice_runs extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_ingestservice_runs', $pearDb, $errorCallback);
         $this->objUser = $this->getObject('user', 'security');
-        $this->db = $this->objEngine->getDbObj();
     }
 
     public function findCompleted($fingerprint, $consumer, $target)
@@ -16,14 +18,7 @@ class db_ingestservice_runs extends dbtable
         return $row && $row['status'] === 'completed' ? $row : false;
     }
 
-    private function find($fingerprint, $consumer, $target)
-    {
-        $rows = $this->getAll('WHERE sourcefingerprint=' . $this->db->quote($fingerprint)
-            . ' AND consumer=' . $this->db->quote($consumer)
-            . ' AND consumertarget=' . $this->db->quote($target)
-            . ' LIMIT 1');
-        return $rows[0] ?? false;
-    }
+    private function find($fingerprint,$consumer,$target) {$rows=$this->selectPrepared('SELECT * FROM tbl_ingestservice_runs WHERE sourcefingerprint=? AND consumer=? AND consumertarget=? LIMIT 1',[$fingerprint,$consumer,$target]);return $rows[0]??false;}
 
     public function start($fingerprint, $consumer, $target)
     {

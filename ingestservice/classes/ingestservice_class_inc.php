@@ -3,6 +3,13 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class ingestservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $docx;
+    public $odt;
+    public $runs;
+    public $sysconfig;
+    public $validator;
+
     public function init()
     {
         $this->validator = $this->getObject('ingestvalidator', 'ingestservice');

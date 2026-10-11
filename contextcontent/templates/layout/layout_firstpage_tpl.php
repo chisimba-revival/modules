@@ -63,8 +63,8 @@ if ((is_countable($chapters) ? count($chapters) : 0) > 0) {
         if ($this->isValid('viewhiddencontent')) {
             $showChapter = TRUE;
         }
-        $releasedate = strtotime($chapter['releasedate']);
-        $enddate = strtotime($chapter['enddate']);
+        $releasedate = strtotime($chapter['releasedate'] ?? '');
+        $enddate = strtotime($chapter['enddate'] ?? '');
         //compate dates here, then decide on visibility
         if (!empty($releasedate) && !empty($enddate)) {
             if (($today <= $releasedate)) {

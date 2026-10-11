@@ -129,9 +129,9 @@ class membershipservice extends dbTable
     {
         $userId=$this->text($userId,25); $tierCode=$this->tier($tierCode);
         if($userId===null||$tierCode===null) return null;
-        $rows=$this->getArray('SELECT MAX(ends_at) AS coverage_end FROM '.self::PERIODS
-            .' WHERE user_id='.$this->quote($userId).' AND tier_code='.$this->quote($tierCode)
-            ." AND state IN ('scheduled','active','grace')");
+        $rows=$this->selectPrepared('SELECT MAX(ends_at) AS coverage_end FROM '.self::PERIODS
+            .' WHERE user_id=? AND tier_code=?'
+            ." AND state IN ('scheduled','active','grace')",[$userId,$tierCode]);
         return is_array($rows)&&!empty($rows[0]['coverage_end'])?$rows[0]['coverage_end']:null;
     }
 
@@ -426,8 +426,8 @@ class membershipservice extends dbTable
         if (!in_array($column, array('id', 'idempotency_key'), true)) {
             return null;
         }
-        $rows = $this->getArray('SELECT * FROM ' . self::PERIODS . ' WHERE '
-            . $column . ' = ' . $this->quote($value) . ' LIMIT 2');
+        $rows = $this->selectPrepared('SELECT * FROM ' . self::PERIODS . ' WHERE '
+            . $column . ' = ' . '?' . ' LIMIT 2',[$value]);
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
@@ -482,13 +482,7 @@ class membershipservice extends dbTable
         return preg_match('/^[a-f0-9]{32}$/', $value) ? $value : null;
     }
 
-    private function quote($value)
-    {
-        $database = $this->objEngine->getDbObj();
-        return method_exists($database, 'quoteSmart')
-            ? $database->quoteSmart((string) $value)
-            : "'" . str_replace("'", "''", (string) $value) . "'";
-    }
+
 
     private function mutationSucceeded($result)
     {

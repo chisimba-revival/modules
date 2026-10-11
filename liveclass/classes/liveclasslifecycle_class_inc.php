@@ -2,6 +2,9 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class liveclasslifecycle extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $config;
+
     public function init(){ $this->config=$this->getObject('dbsysconfig','sysconfig'); }
     public function joinWindowMinutes(){ $value=(int)$this->config->getValue('LIVECLASS_JOIN_WINDOW_MINUTES','liveclass');return max(0,min(180,$value?:15)); }
     public function state(array $session,$now=null){

@@ -3,6 +3,13 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 /** Modern wide dashboard preview of one discussion. */
 class dynamicblocks_discussionview extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $discussions;
+    public $icons;
+    public $language;
+    public $topics;
+    public $user;
+
  public function init(){$this->language=$this->getObject('language','language');$this->topics=$this->getObject('dbtopic','discussion');$this->discussions=$this->getObject('dbdiscussion','discussion');$this->user=$this->getObject('user','security');$this->icons=$this->getObject('iconservice','ui');}
  public function renderDiscussion($id){
   $discussion=$this->discussions->getDiscussion($id);if(!is_array($discussion)||empty($discussion['id']))return '';$items=(array)$this->topics->showTopicsInDiscussion($id,$this->user->userId(),$discussion['archivedate'],null,null,null,null);$e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');$mayStart=$discussion['discussionlocked']!=='Y'&&($discussion['studentstarttopic']==='Y'||$this->user->isCourseAdmin($discussion['discussion_context']));

@@ -2,6 +2,9 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 class liveclassservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $provider;
+
     public function init(){ $this->provider=$this->getObject('bigbluebuttonprovider'); }
     public function available(){return $this->provider->isAvailable();}
     public function prepare(array $session,$logoutUrl){$session['logout_url']=$logoutUrl;return $this->provider->create($session,$this->password($session,'attendee'),$this->password($session,'moderator'));}

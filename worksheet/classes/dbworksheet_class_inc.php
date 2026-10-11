@@ -20,6 +20,10 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class dbworksheet extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+    public $table;
+
     /** @var timeanddateservice Canonical UTC storage and site display service. */
     public $objTimeAndDate;
 

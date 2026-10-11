@@ -56,14 +56,23 @@ if (!
  * @see       core
  */
 class db_contextcontent_activitystreamer extends dbtable {
+    /** Dependencies and state initialised by this component. */
+    public $contextCode;
+    public $objContentChapter;
+    public $objContentPages;
+    public $objContentTitles;
+    public $objContext;
+    public $objFiles;
+    public $objUser;
+    public $sessionId;
+
 
     /**
      * Constructor
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_contextcontent_activitystreamer');
-        $this->_db = $this->objEngine->getDbObj();
-        $this->objUser = & $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         //Load content pages
         $this->objContentTitles = $this->getObject('db_contextcontent_titles');
         $this->objContentChapter = $this->getObject('db_contextcontent_contextchapter');
@@ -100,7 +109,7 @@ class db_contextcontent_activitystreamer extends dbtable {
         $row['userid'] = $userId;
         $row['contextcode'] = $contextCode;
         $row['contextitemid'] = $contextItemId;
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['datecreated'] = date('Y-m-d H:i:s');
         $row['sessionid'] = $this->sessionId;
         $row['modulecode'] = $modulecode;
         $row['pageorchapter'] = $pageorchapter;
@@ -109,7 +118,7 @@ class db_contextcontent_activitystreamer extends dbtable {
         } else {
             $row['description'] = $description;
         }
-        $row['starttime'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['starttime'] = date('Y-m-d H:i:s');
         $row['endtime'] = $sessionendtime;
         return $this->insert($row);
     }
@@ -162,33 +171,29 @@ class db_contextcontent_activitystreamer extends dbtable {
     /** Return the most recent ContextContent page visit for one user in one context. */
     public function getLatestPageVisit($userId, $contextCode)
     {
-        $userId = $this->_db->quote((string) $userId);
-        $contextCode = $this->_db->quote((string) $contextCode);
         $sql = "SELECT contextitemid, description, datecreated
                 FROM tbl_contextcontent_activitystreamer
-                WHERE userid = " . $userId . "
-                  AND contextcode = " . $contextCode . "
+                WHERE userid = ?
+                  AND contextcode = ?
                   AND modulecode = 'contextcontent'
                   AND pageorchapter = 'page'
                   AND contextitemid <> 'x'
                 ORDER BY datecreated DESC, puid DESC LIMIT 1";
-        $rows = $this->getArray($sql);
+        $rows = $this->selectPrepared($sql,[$userId,$contextCode]);
         return (!is_array($rows) || count($rows) === 0) ? FALSE : $rows[0];
     }
 
     /** Count distinct ContextContent pages visited by one user in one context. */
     public function countVisitedPages($userId, $contextCode)
     {
-        $userId = $this->_db->quote((string) $userId);
-        $contextCode = $this->_db->quote((string) $contextCode);
         $sql = "SELECT COUNT(DISTINCT contextitemid) AS visited
                 FROM tbl_contextcontent_activitystreamer
-                WHERE userid = " . $userId . "
-                  AND contextcode = " . $contextCode . "
+                WHERE userid = ?
+                  AND contextcode = ?
                   AND modulecode = 'contextcontent'
                   AND pageorchapter = 'page'
                   AND contextitemid <> 'x'";
-        $rows = $this->getArray($sql);
+        $rows = $this->selectPrepared($sql,[$userId,$contextCode]);
         return (!is_array($rows) || count($rows) === 0) ? 0 : (int) $rows[0]['visited'];
     }
 

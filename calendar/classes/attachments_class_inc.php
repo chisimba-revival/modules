@@ -3,13 +3,16 @@
 * Handles attachments to events.
 */
 class attachments extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $objFileUpload;
+
 	/**
 	* Constructor
 	*/
 	function init()
 	{
 		$this->objConfig=$this->getObject('altconfig','config');
-	    $this->objFileUpload =& $this->newObject('fileupload','utilities');
+	    $this->objFileUpload = $this->newObject('fileupload','utilities');
 		// Create directory structure if neccessary
         $siteRootPath = $this->objConfig->getsiteRootPath();
         $contentPath = $this->objConfig->getcontentPath();

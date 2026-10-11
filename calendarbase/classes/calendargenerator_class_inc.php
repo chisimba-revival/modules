@@ -39,6 +39,9 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class calendargenerator extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objSimpleCal;
+
     /**
     * @var year The Year for which the calendar should be generated
     */

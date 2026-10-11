@@ -6,15 +6,14 @@ class db_contextcontent_bookmarks extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_bookmarks');
-        $this->_db = $this->objEngine->getDbObj();
     }
 
     public function setBookmark($contextCode, $placementId, $userId, $enabled)
     {
         $where = array('contextcode' => $contextCode, 'placementid' => $placementId, 'userid' => $userId);
-        $existing = $this->getAll('WHERE contextcode = ' . $this->quote($contextCode)
-            . ' AND placementid = ' . $this->quote($placementId)
-            . ' AND userid = ' . $this->quote($userId));
+        $existing = $this->selectPrepared('SELECT * FROM '.$this->_tableName.' '.('WHERE contextcode = ' . '?'
+            . ' AND placementid = ' . '?'
+            . ' AND userid = ' . '?'),[$contextCode,$placementId,$userId]);
         if (!$enabled) {
             foreach ($existing as $row) { $this->delete('id', $row['id']); }
             return true;
@@ -28,17 +27,14 @@ class db_contextcontent_bookmarks extends dbtable
 
     public function idsForUser($contextCode, $userId)
     {
-        $rows = $this->getAll('WHERE contextcode = ' . $this->quote($contextCode)
-            . ' AND userid = ' . $this->quote($userId)
-            . ' ORDER BY datecreated DESC');
+        $rows = $this->selectPrepared('SELECT * FROM '.$this->_tableName.' '.('WHERE contextcode = ' . '?'
+            . ' AND userid = ' . '?'
+            . ' ORDER BY datecreated DESC'),[$contextCode,$userId]);
         $ids = array();
         foreach ($rows as $row) { $ids[] = $row['placementid']; }
         return $ids;
     }
 
-    private function quote($value)
-    {
-        return $this->_db->quote((string) $value);
-    }
+
 }
 ?>

@@ -280,10 +280,10 @@ class discussion extends controller {
                         case 'thread':
                                 return $this->showThread($this->getParam('id'));
 
-                        case 'singlethreadview';
+                        case 'singlethreadview':
                                 return $this->showSingleThread($this->getParam('id'));
 
-                        case 'flatview';
+                        case 'flatview':
 
                                 return $this->showFlatView($this->getParam('id'));
 

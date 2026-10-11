@@ -47,7 +47,7 @@ class dbcategory extends dbtable {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_category');
         $this->table = 'tbl_test_category';
-        $this->objUser = &$this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
         $this->objContext = $this->newObject('dbcontext', 'context');
         $this->contextCode = $this->objContext->getContextCode();

@@ -3,6 +3,15 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }
 class coursecompletioneligibilityservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $activity;
+    public $gates;
+    public $items;
+    public $order;
+    public $plans;
+    public $providers;
+    public $user;
+
     public function init()
     {
         $this->user=$this->getObject('user','security');

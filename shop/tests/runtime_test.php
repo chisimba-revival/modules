@@ -8,7 +8,7 @@ $_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='chisimba.test';$_SERVER[
 $GLOBALS['kewl_entry_point_run']=true;require 'classes/core/engine_class_inc.php';$engine=new engine();
 $engine->loadClass('shopservice','shop');
 require __DIR__.'/fixtures.php';
-$store=$engine->getObject('shopstore','shop');$db=$engine->getDbObj();
+$store=$engine->getObject('shopstore','shop');$db=$store;
 $user=new ShopFixtureUser;$mail=new ShopFixtureMail;$payments=new ShopFixturePayments;
 $s=new ShopFixtureService(['shopstore'=>$store,'paymentservice'=>$payments,'user'=>$user,'communicationservice'=>$mail,'dbsysconfig'=>new ShopFixtureConfig,'altconfig'=>new ShopFixtureConfig,'language'=>new ShopFixtureLanguage]);
 $details=['name'=>'Shop Fixture','email'=>'shop-fixture@example.invalid','phone'=>'0123456789','address_line'=>'1 Synthetic Street','city'=>'Fixture City','province'=>'Limpopo','postal_code'=>'1234','country'=>'ZA','accept_terms'=>'1'];
@@ -44,9 +44,9 @@ try {
 } finally {
     foreach($store->rows('orders') as $o) {
         $q=json_decode($o['snapshot'],true);if(!in_array($q['lines'][0]['book_id']??'',$ids,true))continue;
-        $oid=$db->quote($o['id'],'text');$db->exec('DELETE FROM tbl_shop_history WHERE order_id='.$oid);$db->exec('DELETE FROM tbl_shop_orders WHERE id='.$oid);
+        $db->executeExactPrepared('DELETE FROM tbl_shop_history WHERE order_id=?',[$o['id']]);$db->executeExactPrepared('DELETE FROM tbl_shop_orders WHERE id=?',[$o['id']]);
     }
-    foreach($ids as $id)$db->exec('DELETE FROM tbl_shop_books WHERE id='.$db->quote($id,'text'));
+    foreach($ids as $id)$db->executeExactPrepared('DELETE FROM tbl_shop_books WHERE id=?',[$id]);
     $store->save('settings','shop',['settings_json'=>$original['settings_json'],'revision'=>$original['revision']]);
     echo "PASS: fixtures removed and original disabled settings restored\n";
 }

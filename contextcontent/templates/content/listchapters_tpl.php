@@ -186,8 +186,8 @@ foreach ($chapters as $chapter) {
     }
 
 
-    $releasedate = strtotime($chapter['releasedate']);
-    $enddate = strtotime($chapter['enddate']);
+    $releasedate = strtotime($chapter['releasedate'] ?? '');
+    $enddate = strtotime($chapter['enddate'] ?? '');
 
     //compate dates here, then decide on visibility
     if (!empty($releasedate) && !empty($enddate)) {

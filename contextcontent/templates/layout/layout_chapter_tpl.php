@@ -100,7 +100,7 @@ if (isset($currentChapter)) {
     $objFieldset->contents = $toolbar->show();
 //$objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
     $cols = $this->objSysConfig->getValue('CONTEXTCONTENT_COLUMNS', 'contextcontent');
-    $cols = (integer)$cols;
+    $cols = (int)$cols;
     $cssLayout = $this->newObject('csslayout', 'htmlelements');
     $cssLayout->setNumColumns($cols);
     switch ($cols) {

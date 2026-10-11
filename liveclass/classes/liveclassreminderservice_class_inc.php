@@ -2,6 +2,16 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('You cannot view this page directly');
 class liveclassreminderservice extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $clock;
+    public $config;
+    public $jobs;
+    public $language;
+    public $mail;
+    public $members;
+    public $sessions;
+    public $users;
+
  public function init(){$this->jobs=$this->getObject('dbliveclassreminders');$this->sessions=$this->getObject('dbliveclasssessions');$this->members=$this->getObject('usercontext','context');$this->users=$this->getObject('user','security');$this->mail=$this->getObject('communicationservice','communications');$this->language=$this->getObject('language','language');$this->clock=$this->getObject('timeanddateservice','timeanddate-service');$this->config=$this->getObject('altconfig','config');}
  public function schedule(array $session,array $leads){$start=strtotime($session['starts_at']);foreach(array_unique(array_map('intval',$leads)) as $lead){if(!in_array($lead,array(1440,60),true))continue;$due=$start-($lead*60);if($due>time())$this->jobs->schedule($session['id'],$lead,date('Y-m-d H:i:s',$due));}}
  public function cancel($sessionId){$this->jobs->cancelSession($sessionId);}

@@ -144,7 +144,7 @@ class workshopservice extends ChisimbaObject
             if(!is_array($saved)||count($saved)!==count($questions))throw new RuntimeException('storage_failed');
             $answers=$this->getObject('dbanswers','mcqtests');
             foreach($saved as $question){
-                $rows=$answers->getAll("WHERE questionid=".$this->objEngine->getDbObj()->quote($question['id'],'text'));
+                $rows=$answers->selectPrepared('SELECT * FROM tbl_test_answers WHERE questionid=?',[$question['id']]);
                 if(!is_array($rows)||count($rows)!==4||array_sum(array_column($rows,'correct'))!==1)throw new RuntimeException('storage_failed');
             }
             return $test;

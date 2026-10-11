@@ -19,6 +19,19 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class calendarinterface extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $confirmDel;
+    public $contextTitle;
+    public $editIcon;
+    public $isInContext;
+    public $objCalendar;
+    public $objContext;
+    public $objDateFunctions;
+    public $objIcon;
+    public $objLanguage;
+    public $objUser;
+    public $userId;
+
     /**
      * An array of events formatted for rendering
      * 

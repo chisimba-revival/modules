@@ -14,15 +14,13 @@ class dbknowledgemaprelationships extends dbTable
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler'){parent::init('tbl_knowledgemap_relationships',$pearDb,$errorCallback);$this->query('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');}
 
     /** Return all relationships for a map. */
-    public function forMap($mapId){$rows=$this->getAll('WHERE mapid='.$this->q($mapId).' ORDER BY sortorder,id');return is_array($rows)?$rows:array();}
+    public function forMap($id) { return $this->selectPrepared('SELECT * FROM tbl_knowledgemap_relationships WHERE mapid=? ORDER BY sortorder,id', [$id]); }
 
     /** Insert one normalised graph relationship. */
-    public function addRelationship($mapId,array $relationship){return $this->insert(array('id'=>$relationship['id'],'mapid'=>$mapId,'relationshiptype'=>$relationship['type'],'fromnodeid'=>$relationship['from'],'tonodeid'=>$relationship['to'],'externaltarget'=>$relationship['externalTarget'],'properties'=>json_encode($relationship['properties'],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),'sortorder'=>$relationship['order'],'datecreated'=>date('Y-m-d H:i:s')));}
+    public function addRelationship($mapId,array $relationship){$result=$this->insert(array('id'=>$relationship['id'],'mapid'=>$mapId,'relationshiptype'=>$relationship['type'],'fromnodeid'=>$relationship['from'],'tonodeid'=>$relationship['to'],'externaltarget'=>$relationship['externalTarget'],'properties'=>json_encode($relationship['properties'],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),'sortorder'=>$relationship['order'],'datecreated'=>date('Y-m-d H:i:s')));if($result===false)throw new RuntimeException('Graph insertion failed');return $result;}
 
     /** Remove every relationship belonging to a map. */
-    public function removeForMap($mapId){return $this->query('DELETE FROM tbl_knowledgemap_relationships WHERE mapid='.$this->q($mapId))!==false;}
+    public function removeForMap($id) { $this->executePrepared('DELETE FROM tbl_knowledgemap_relationships WHERE mapid=?', [$id]); return true; }
 
-    /** Quote one scalar for the active database driver. */
-    private function q($value){$db=$this->objEngine->getDbObj();return method_exists($db,'quoteSmart')?$db->quoteSmart((string)$value):"'".str_replace("'","''",(string)$value)."'";}
 }
 ?>

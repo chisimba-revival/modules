@@ -53,6 +53,10 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class db_contextcontent_chapters extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objChapterContent;
+    public $objUser;
+
 
     /**
      * Constructor
@@ -60,8 +64,8 @@ class db_contextcontent_chapters extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_chapters');
-        $this->objUser =& $this->getObject('user', 'security');
-        $this->objChapterContent =& $this->getObject('db_contextcontent_chaptercontent');
+        $this->objUser = $this->getObject('user', 'security');
+        $this->objChapterContent = $this->getObject('db_contextcontent_chaptercontent');
     }
     
     /**
@@ -72,7 +76,7 @@ class db_contextcontent_chapters extends dbtable
      * @param string $language Language Version of the Chapter
      * @return string Record Id of the Chapter
      */
-    public function addChapter($chapterId='', $title, $intro, $language='en')
+    public function addChapter($chapterId, $title, $intro, $language='en')
     {
         if ($chapterId == '') {
             $chapterId = $this->autoCreateChapter();
@@ -109,7 +113,7 @@ class db_contextcontent_chapters extends dbtable
         $row = array();
         $row['id'] = $id;
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['datecreated'] = date('Y-m-d H:i:s');
 
         return $this->insert($row);
     }
@@ -124,7 +128,7 @@ class db_contextcontent_chapters extends dbtable
     {
         return $this->insert(array(
                 'creatorid' => $this->objUser->userId(),
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datecreated' => date('Y-m-d H:i:s')
             ));
     }
     

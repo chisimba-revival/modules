@@ -21,6 +21,38 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.1
  */
 class mcqtests extends controller {
+    /** Dependencies and state initialised by this component. */
+    public $contextCode;
+    public $contextUsers;
+    public $courseLauncher;
+    public $dbAnswers;
+    public $dbMarked;
+    public $dbQuestions;
+    public $dbRandomMatchingSA;
+    public $dbResults;
+    public $dbTag;
+    public $dbTestadmin;
+    public $eventsEnabled;
+    public $objChapterQuizGenerator;
+    public $objChapterQuizJobs;
+    public $objCond;
+    public $objContentNodes;
+    public $objContextChapters;
+    public $objContextGroups;
+    public $objDate;
+    public $objLanguage;
+    public $objMcqAiGenerator;
+    public $objMkdir;
+    public $objModuleCatalogue;
+    public $objModules;
+    public $objMultiAnswers;
+    public $objNumericalUnit;
+    public $objQuestionCalculated;
+    public $objQuestionMatching;
+    public $objQuestionNumerical;
+    public $objSysConfig;
+    public $objWashout;
+
 
     /**
      *

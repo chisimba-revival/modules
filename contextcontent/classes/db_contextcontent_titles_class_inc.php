@@ -61,6 +61,10 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class db_contextcontent_titles extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objContentPages;
+    public $objUser;
+
 
     /**
      * Constructor
@@ -68,8 +72,8 @@ class db_contextcontent_titles extends dbtable
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         parent::init('tbl_contextcontent_titles');
-        $this->objContentPages =& $this->getObject('db_contextcontent_pages');
-        $this->objUser =& $this->getObject('user', 'security');
+        $this->objContentPages = $this->getObject('db_contextcontent_pages');
+        $this->objUser = $this->getObject('user', 'security');
     }
     
     /**
@@ -83,7 +87,7 @@ class db_contextcontent_titles extends dbtable
      * @param string $headerScript Any Script to go in the header
      * @return string The title id.
      */
-    public function addTitle($titleId='', $menutitle, $content, $language, $headerScript=null,$scorm='N')
+    public function addTitle($titleId, $menutitle, $content, $language, $headerScript=null,$scorm='N')
     {
         if ($titleId == '') {
             $titleId = $this->autoCreateTitle();
@@ -131,7 +135,7 @@ class db_contextcontent_titles extends dbtable
         $row = array();
         $row['id'] = $id;
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['datecreated'] = date('Y-m-d H:i:s');
 
         return $this->insert($row);
     }
@@ -147,7 +151,7 @@ class db_contextcontent_titles extends dbtable
         $row = array();
         $row['contenttype'] = 'rich_text';
         $row['creatorid'] = $this->objUser->userId();
-        $row['datecreated'] = strftime('%Y-%m-%d %H:%M:%S', time());
+        $row['datecreated'] = date('Y-m-d H:i:s');
 
         return $this->insert($row);
     }

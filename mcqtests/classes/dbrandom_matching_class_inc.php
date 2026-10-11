@@ -33,7 +33,7 @@ class dbrandom_matching extends dbtable {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         parent::init('tbl_test_randomshortansmatch');
         $this->table = 'tbl_test_randomshortansmatch';
-        $this->objUser = &$this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->userId();
     }
 

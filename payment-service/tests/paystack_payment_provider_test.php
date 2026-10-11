@@ -9,8 +9,16 @@ $source=preg_replace('/^<\?php/','',$source);$source=preg_replace('/\?>\s*$/',''
 $source=str_replace("if (empty(\$GLOBALS['kewl_entry_point_run'])) { die('You cannot view this page directly'); }",'',$source);
 $source=str_replace('class paystackpaymentprovider extends ChisimbaObject','class paystackpaymentprovider extends PaystackProviderBase',$source);
 eval($source);
+class PaystackProviderFixture extends paystackpaymentprovider {
+    protected function request($method, $path, $payload = null) {
+        if ($method !== 'GET' || !str_starts_with($path, '/subscription?')) {
+            throw new RuntimeException('Unexpected provider request in offline contract test');
+        }
+        return array('ok' => true, 'data' => array('data' => array()));
+    }
+}
 $expect=function($condition,$message){if(!$condition)throw new RuntimeException($message);};
-$provider=new paystackpaymentprovider();$provider->config=new PaystackConfigStub();$provider->intents=new PaystackIntentStub();$provider->plans=new PaystackPlanStub();$provider->subscriptions=new PaystackSubscriptionStub();
+$provider=new PaystackProviderFixture();$provider->config=new PaystackConfigStub();$provider->intents=new PaystackIntentStub();$provider->plans=new PaystackPlanStub();$provider->subscriptions=new PaystackSubscriptionStub();
 $provider->config->values=array('PAYMENT_PAYSTACK_MODE'=>'test','PAYMENT_PAYSTACK_TEST_SECRET_KEY'=>'sk_test_contract_secret','PAYMENT_PAYSTACK_LIVE_SECRET_KEY'=>'sk_live_contract_secret','PAYMENT_PAYSTACK_SECRET_KEY'=>'sk_test_legacy_secret');
 $intent=array('id'=>str_repeat('a',32),'amount_minor'=>12500,'currency'=>'ZAR','product_code'=>'tier-1-monthly');
 $reserved=$provider->createCheckout($intent,array('email'=>'student@demo.test','successUrl'=>'https://example.org/return'));

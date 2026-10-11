@@ -4,6 +4,11 @@
 */
 class block_widecalendar extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objCalendarInterface;
+    public $objLanguage;
+    public $title;
+
     public function init()
     {
         $this->objLanguage = $this->getObject('language', 'language');
