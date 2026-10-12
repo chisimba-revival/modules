@@ -166,8 +166,6 @@ class video extends ChisimbaObject
      * @params boolean $autoplay Start playing the video as soon as possible 
      */
     public function setVideo($height, $width, $src, $format = 'ogg', $controls = TRUE, $preload = TRUE, $autoplay = FALSE ) {
-        $this->_addCSS();
-        $this->_addFlowplayer();
         $this->setWidth($width);
         $this->setHeight($height);
         $this->setSrc($src);
@@ -314,36 +312,7 @@ class video extends ChisimbaObject
      * @access public
      */
     public function show() {
-        $vid = NULL;
-        $vid .= '<video id="'.$this->videoId.'" width="'.$this->width.'" height="'.$this->height.'" '.$this->preload.' '.$this->controls.'>';
-        $vid .= '<source src="'.$this->src.'" type=\''.$this->type.'\'>';
-        $vid .= '</video>';
-        
-        return $vid;
+        return $this->getObject('nativeplayer', 'files')->video($this->src, $this->width, $this->height);
     }
     
-    /**
-     * Method to add extra CSS and javascript to fix IE based browsers
-     *
-     * @params void
-     * @return void
-     * @access private
-     */
-    private function _addCSS() {
-        $this->css = '<!--[if IE]>'.$this->getJavascriptfile('html5.js', 'html5elements').'<![endif]-->';
-        $this->appendArrayVar('headerParams', $this->css);
-    }
-    
-    /**
-     * Method to add flowplayer as an alternative to browsers that do not support html5 video
-     *
-     * @params void
-     * @return void
-     * @access private
-     */
-    private function _addFlowplayer() {
-        $this->getJavascriptfile('flowplayer-3.1.4.min.js', 'html5elements');
-        $this->getJavascriptfile('html5-video.js', 'html5elements');
-    }
-
 }

@@ -170,20 +170,7 @@ class podcastprovider extends ChisimbaObject
             $this->url = $targetUrl;
             $this->width = 290;
             $this->height = 24;
-            $this->html = "\n\n<object type=\"application/x-shockwave-flash\" "
-              . "data=\"core_modules/files/resources/flashmp3/player.swf\" "
-              . "id=\"audioplayer1\" height=\"24\" width=\"290\">\n"
-              . "<param name=\"movie\" "
-              . "value=\"core_modules/files/resources/flashmp3/player.swf\">\n"
-              . "<param name=\"FlashVars\" value=\"playerID=1&amp;soundFile=$targetUrl\">\n"
-              . "<param name=\"quality\" value=\"high\">\n"
-              . "<param name=\"menu\" value=\"false\">\n"
-              . "<param name=\"wmode\" value=\"transparent\">\n"
-              . "<embed src=\"core_modules/files/resources/flashmp3/player.swf\" "
-              . "width=\"290\" height=\"24\" "
-              . "flashvars=\"playerID=1&amp;soundFile=$targetUrl\" quality=\"high\" "
-              . "menu=\"false\" wmode=\"transparent\"></embed>\n"
-              . "</object>\n\n";
+            $this->html = $this->getObject('nativeplayer', 'files')->audio($targetUrl);
             // Turn the appropriate class properties into an array.
             $ar = $this->createArray();
             // Set either XML or json with the default being json.
