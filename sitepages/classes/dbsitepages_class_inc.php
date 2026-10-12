@@ -27,7 +27,9 @@ class dbsitepages extends dbTable
     {
         if (array_key_exists('show_title', $row)) return (bool)$row['show_title'];
         $composition = json_decode($row['composition_json'] ?? '', true);
-        return ($composition['show_title'] ?? true) !== false;
+        if (array_key_exists('show_title', (array)$composition)) return $composition['show_title'] !== false;
+        // Preserve the earlier deployed preference until the next normal page save.
+        return ($composition['hide_title'] ?? false) !== true;
     }
     public static function version(array $row)
     {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}

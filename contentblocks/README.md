@@ -34,3 +34,7 @@ remain supported for earlier manifests.
 
 Validation: `php contentblocks/tests/video_collection_test.php` from the modules
 repository; use `CHISIMBA_FRAMEWORK_ROOT` if the framework is not its sibling.
+
+## Audio recordings
+
+The Audio block accepts a managed recording URL or an explicit HTTP(S) URL, plus a title, caption and optional explanatory text. It renders native keyboard-accessible controls with `preload="none"`, no autoplay, and an ordinary recording link as a fallback. Credit recordings in the caption or accompanying text. Only use media intended for the publication’s audience. The shared page Help includes the audio workflow. Existing compositions and media addresses remain unchanged.

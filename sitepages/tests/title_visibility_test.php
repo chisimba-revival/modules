@@ -26,6 +26,9 @@ foreach([null,true,false] as $show){
   if($show===false&&!$editor)check(!str_contains($html,'<header'),'Hidden heading leaves no empty header');
  }
 }
+check(!dbsitepages::showTitle(['composition_json'=>'{"hide_title":true}']), 'Earlier hidden page title retained');
+check(dbsitepages::showTitle(['composition_json'=>'{"hide_title":false}']), 'Earlier visible page title retained');
+check(dbsitepages::showTitle(['composition_json'=>'{"show_title":true,"hide_title":true}']), 'Current preference takes precedence');
 check(!dbsitepages::showTitle(['show_title'=>false]),'Unchecked draft retained');
 check(dbsitepages::showTitle([]),'New page default');
 check(dbsitepages::version($base)!==dbsitepages::version($base+['composition_json'=>'{"show_title":false}']),'Visibility participates in stale-save detection');
