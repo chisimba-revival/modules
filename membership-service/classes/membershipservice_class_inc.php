@@ -486,20 +486,8 @@ class membershipservice extends dbTable
 
     private function mutationSucceeded($result)
     {
-        if ($result === false) {
-            return false;
-        }
-        if (!is_object($result)) {
-            return true;
-        }
-
-        // MDB2 may return a successful result object as well as PEAR_Error.
-        // Reject only recognised database errors; treating every object as an
-        // error makes valid UPDATE operations appear to have failed.
-        if (class_exists('PEAR') && PEAR::isError($result)) {
-            return false;
-        }
-        return !is_a($result, 'PEAR_Error');
+        // dbTable returns false on failure; native exceptions propagate.
+        return $result !== false;
     }
 
     private function result($ok, $code, $periodId = null)

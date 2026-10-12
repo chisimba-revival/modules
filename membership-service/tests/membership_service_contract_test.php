@@ -49,12 +49,8 @@ $checks = array(
         $service,
         "\$this->update(\n            'id',\n            \$periodId,\n            array("
     ),
-    'database errors fail without rejecting successful result objects' => str_contains(
-        $service,
-        'mutationSucceeded($updated)'
-    ) && str_contains($service, "PEAR::isError(\$result)")
-        && str_contains($service, "is_a(\$result, 'PEAR_Error')")
-        && !str_contains($service, 'return $result !== false && !is_object($result);'),
+    'native database failures remain false' => str_contains($service, 'mutationSucceeded($updated)')
+        && str_contains($service, 'return $result !== false;'),
     'canonical user validation' => str_contains($service, 'findByUserId('),
     'bounded period times' => str_contains($service, '$endsAt <= $startsAt'),
     'audited membership amendments replace entitlement' => str_contains(
