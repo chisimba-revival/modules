@@ -42,6 +42,9 @@ $GLOBALS['services']['webinarrenderer']=new class($labels){function __construct(
 $GLOBALS['services']['webinarstore']=new class($record){function __construct(public $record){}function published($k){return [$this->record];}};
 $announcements=new webinarannouncements();$GLOBALS['services']['webinarannouncements']=$announcements;
 $text=$announcements->upcomingText();$html=$announcements->upcomingHtml();
+$doc=new DOMDocument();$doc->loadHTML('<!doctype html><html><body>'.str_replace(['<section>','</section>'],['<div>','</div>'],$html).'</body></html>');$xpath=new DOMXPath($doc);
+$imageLinks=$xpath->query('//div/p/a[img]');$registrationLinks=$xpath->query('//div/p[strong]/a');
+check($imageLinks->length===1&&$registrationLinks->length===1&&$imageLinks->item(0)->getAttribute('href')===$registrationLinks->item(0)->getAttribute('href'),'Featured image opens the Register at destination');
 foreach($labels as $label)check(str_contains($text,$label)&&str_contains($html,$label),'Labels in both alternatives');
 check(strpos($html,'<img')<strpos($html,'<strong>Title:'),'Banner precedes title');check(!str_contains($html,'<script>'),'Escape hostile titles');check($announcements->upcomingText(['different'])===''&&$announcements->upcomingHtml(['different'])==='','Event scope respected');
 $GLOBALS['services']['dbsysconfig']=new class{function getValue($k,$m,$d=''){return 'Support us: https://example.test/support';}};

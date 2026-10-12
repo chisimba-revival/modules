@@ -50,7 +50,7 @@ class webinarannouncements extends ChisimbaObject
   foreach($this->upcomingItems($ids) as $i=>$item){
    if($i<2)$html.='<h2>'.$e($r->text($i===0?self::headingKey($item['record']):'email_later')).'</h2>';
    $html.='<section>';$image=$this->getObject('webinaremailimage','webinar')->thumbnail($item['record']);
-   if($image)$html.='<p><img src="'.$e($image['url']).'" width="'.$image['width'].'" height="'.$image['height'].'" alt="'.$e($item['title']).'" style="max-width:100%;height:auto"></p>';
+   if($image)$html.='<p><a href="'.$e($item['url']).'"><img src="'.$e($image['url']).'" width="'.$image['width'].'" height="'.$image['height'].'" alt="'.$e($item['title']).'" style="max-width:100%;height:auto"></a></p>';
    $html.='<p><strong>'.$e($r->text('email_title')).'</strong> '.$e($item['title']).'<br><strong>'.$e($r->text('email_datetime')).'</strong> '.$e($item['date']).'<br><strong>'.$e($r->text('email_register')).'</strong> <a href="'.$e($item['url']).'">'.$e($item['url']).'</a></p></section>';
   }return $html;
  }
