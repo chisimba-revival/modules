@@ -5,6 +5,7 @@
     var messages = JSON.parse(root.dataset.recoveryMessages || '{}');
     var drafts = new WeakMap();
     function prepareDrafts() {
+        root.querySelectorAll('.kanban-order-controls').forEach(function (controls) { controls.hidden = false; });
         if (!window.ChisimbaFormDrafts) return;
         root.querySelectorAll('form[method="post"]:not([data-note-connect])').forEach(function (form) {
             if (drafts.has(form)) return;
@@ -25,7 +26,13 @@
             }));
         });
     }
+    var orderMessages = JSON.parse(root.dataset.orderMessages || '{}');
     var dragged = null;
+    var moving = false;
+    var marker = document.createElement('div');
+    marker.className = 'chisimba-drop-marker';
+    marker.textContent = orderMessages.drop;
+    marker.setAttribute('aria-hidden', 'true');
     var pendingPost = Promise.resolve();
     root.querySelectorAll('.kanban-board').forEach(function (board) {
         // Start with a compact project overview; restored drafts reopen their board.
@@ -206,9 +213,7 @@
             var task = form.closest('.kanban-task');
             var status = form.elements.status.value;
             var column = form.closest('.kanban-board').querySelector('.kanban-column[data-status="' + status + '"]');
-            post(form.action, {taskid: form.elements.taskid.value, status: status, sortorder: Date.now()}, function () {
-                moveTask(task, column);
-            });
+            saveTaskPosition(task, column, null);
         }
         if (!event.defaultPrevented && event.target.matches('[data-task-delete]')) {
             event.preventDefault();
@@ -363,35 +368,79 @@
         openedLink.dataset.noteActive = 'true';
         dialog.addEventListener('close', function () { delete openedLink.dataset.noteActive;dialog.removeEventListener('cancel',confirmClose);closeButton.removeEventListener('click',confirmClose,true); }, {once:true});
     }
+    function clearDropMarker() {
+        marker.remove();
+        root.querySelectorAll('.is-dragover').forEach(function (column) { column.classList.remove('is-dragover'); });
+    }
+    function columnTasks(column, except) {
+        return Array.from(column.querySelector('.kanban-task-list').children).filter(function (item) { return item.matches('.kanban-task') && item !== except; });
+    }
+    function saveTaskPosition(task, column, before) {
+        if (moving || task.closest('.kanban-board') !== column.closest('.kanban-board')) return;
+        var source = task.closest('.kanban-column');
+        var order = columnTasks(column).map(function (item) { return item.dataset.taskId; });
+        moving = true;
+        task.setAttribute('aria-busy', 'true');
+        root.querySelector('[data-order-feedback]').textContent = orderMessages.saving;
+        post(root.dataset.moveUrl, {taskid: task.dataset.taskId, status: column.dataset.status,
+            expectedstatus: source.dataset.status, beforetaskid: before ? before.dataset.taskId : '', order: JSON.stringify(order)}, function () {
+            moveTask(task, column, before);
+            root.querySelector('[data-order-feedback]').textContent = orderMessages.saved;
+        }, function (message) {
+            root.querySelector('[data-order-feedback]').textContent = message;
+            window.alert(message);
+        }).finally(function () { moving = false; task.removeAttribute('aria-busy'); });
+    }
+    // Buttons provide the same ordering action for keyboard and touch users.
+    root.querySelectorAll('.kanban-order-controls').forEach(function (controls) { controls.hidden = false; });
+    root.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-task-reorder]');
+        if (!button) return;
+        var task = button.closest('.kanban-task');
+        var column = task.closest('.kanban-column');
+        var rows = columnTasks(column); var index = rows.indexOf(task);
+        if (button.dataset.taskReorder === 'up' && index > 0) saveTaskPosition(task, column, rows[index - 1]);
+        if (button.dataset.taskReorder === 'down' && index < rows.length - 1) saveTaskPosition(task, column, rows[index + 2] || null);
+    });
     root.addEventListener('dragstart', function (event) {
         var task = event.target.closest('.kanban-task[draggable="true"]');
-        if (!task) return;
+        if (!task || moving || event.target.closest('input,textarea,select,button,a,summary')) { event.preventDefault(); return; }
         dragged = task;
         task.classList.add('is-dragging');
         event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', task.dataset.taskId);
     });
     root.addEventListener('dragend', function () {
         if (dragged) dragged.classList.remove('is-dragging');
         dragged = null;
-        root.querySelectorAll('.is-dragover').forEach(function (element) { element.classList.remove('is-dragover'); });
+        clearDropMarker();
     });
-    root.addEventListener('dragover', function (event) {
+    function showDropPosition(event) {
         var column = event.target.closest('.kanban-column');
-        if (!column || !dragged) return;
+        if (!column || !dragged || column.closest('.kanban-board') !== dragged.closest('.kanban-board')) { clearDropMarker(); return; }
         event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        var before = columnTasks(column, dragged).find(function (task) {
+            var box = task.getBoundingClientRect(); return event.clientY < box.top + box.height / 2;
+        });
+        // Avoid removing/reinserting an unchanged marker, which can cause pointer jitter.
+        if (marker.parentElement !== column.querySelector('.kanban-task-list') || marker.nextElementSibling !== (before || null)) {
+            clearDropMarker(); column.querySelector('.kanban-task-list').insertBefore(marker, before || null);
+        }
         column.classList.add('is-dragover');
-    });
+    }
+    root.addEventListener('dragenter', showDropPosition);
+    root.addEventListener('dragover', showDropPosition);
     root.addEventListener('dragleave', function (event) {
         var column = event.target.closest('.kanban-column');
-        if (column) column.classList.remove('is-dragover');
+        if (column && (!event.relatedTarget || !column.contains(event.relatedTarget))) clearDropMarker();
     });
     root.addEventListener('drop', function (event) {
         var column = event.target.closest('.kanban-column');
-        if (!column || !dragged) return;
+        if (!column || !dragged || marker.parentElement !== column.querySelector('.kanban-task-list')) return;
         event.preventDefault();
-        var task = dragged;
-        column.classList.remove('is-dragover');
-        post(root.dataset.moveUrl, {taskid: task.dataset.taskId, status: column.dataset.status, sortorder: Date.now()}, function () { moveTask(task, column); });
+        var task = dragged; var before = marker.nextElementSibling;
+        clearDropMarker(); saveTaskPosition(task, column, before);
     });
     root.addEventListener('change', function (event) {
         if (!event.target.matches('[data-subtask-id]')) return;
@@ -669,10 +718,10 @@
         board.querySelector('progress').value = percentage;
     }
 
-    function moveTask(task, column) {
+    function moveTask(task, column, before) {
         var oldColumn = task.closest('.kanban-column');
-        if (!oldColumn || oldColumn === column) return;
-        column.querySelector('.kanban-task-list').appendChild(task);
+        if (!oldColumn) return;
+        column.querySelector('.kanban-task-list').insertBefore(task, before || null);
         refreshBoardCounts(oldColumn.closest('.kanban-board'));
         refreshBoardCounts(column.closest('.kanban-board'));
         refreshMoveControls(task, column.dataset.status);
@@ -690,7 +739,7 @@
             form.method = 'post';
             form.action = root.dataset.moveUrl;
             form.setAttribute('data-task-move', '');
-            [['taskid', task.dataset.taskId], ['status', statuses[move.index]], ['sortorder', Date.now()]].forEach(function (field) {
+            [['taskid', task.dataset.taskId], ['status', statuses[move.index]]].forEach(function (field) {
                 var input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = field[0];

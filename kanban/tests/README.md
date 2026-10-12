@@ -69,3 +69,14 @@ boards or accounts based on a broad title/username pattern.
 Required coordinated versions: Kanban 0.121, htmlelements 0.617, security 3.109,
 toolbar 1.806, and the framework request-entry restoration hook. See the framework
 `docs/SESSION_RECOVERY_AUDIT.md` for evidence, remaining workflows and limits.
+
+For 0.146, run `php kanban/tests/task_order_controller_test.php`. The framework's
+PDO and MDB2 suites include `task_order_database_checks.php`: old timestamp
+chronology, top/middle/bottom placement, cross-column moves, foreign anchors,
+stale order rejection, same-second creation and failure/outer rollback.
+
+Local browser acceptance uses a disposable board: create three tasks; reorder by
+keyboard and native drag; reload to confirm persistence; drag into an empty
+column; attempt a move from a stale second tab; check collapsed headers at 390 px;
+open ordering Help and close with Escape. Do not reorder a person's real board
+for testing. Remove the exact disposable board/tasks afterward.

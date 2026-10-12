@@ -60,3 +60,18 @@ keep your text and review the current title in another tab before retrying.
 This change also requires the shared skin's `chisimba-action-disclosure` and
 flow-notice spacing rules. Update the module's language/Help registrations as
 part of installation. There are no database schema changes.
+
+### Task order (0.146)
+
+Existing timestamp-based task positions display by creation date, oldest first,
+with ID as a stable tie-breaker for historical tasks created in the same second.
+New tasks append in insertion order. Drag within a board to the visible insertion
+marker, or use the header's up/down buttons with a keyboard or touch screen.
+Positions and status changes are saved atomically through dbTable. Another tab's
+changed destination order produces a conflict rather than overwriting its work.
+
+The existing signed `sortorder` field uses negative contiguous ranks for saved
+positions; historical non-negative second/millisecond timestamps are treated as
+unranked. No schema migration or bulk rewrite is required. Creating a task or
+reordering normalises that destination column while preserving its visible order.
+Board row locks serialise creation/reordering; outer transactions retain ownership.

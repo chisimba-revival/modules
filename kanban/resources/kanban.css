@@ -99,3 +99,8 @@
 .kanban-note-modal .note-title-input { box-sizing: border-box; width: 100%; max-width: none; }
 .kanban-note-modal__readonly { min-height: 12rem; }
 .kanban-note-modal .chisimba-form-actions { justify-content: space-between; }
+/* Ordering controls remain on the compact task header, including collapsed cards. */
+.kanban-task__header h4 { flex: 1; }
+.kanban-order-controls { flex-wrap: nowrap; flex-shrink: 0; gap: .15rem; }
+.kanban-order-controls[hidden] { display: none; }
+.kanban-order-controls .button { min-height: 1.9rem; padding: .32rem; }

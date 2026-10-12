@@ -57,7 +57,7 @@ class kanban extends controller
             if(!$task||$task['boardid']!==$board['id'])return $json?$this->json(false,'You do not have permission for that task.',403):$this->forbidden();
             $saved=$this->tasks->saveTask($id,$data);
         }else{
-            $data+=array('boardid'=>$board['id'],'status'=>'not_started','sortorder'=>time());
+            $data+=array('boardid'=>$board['id'],'status'=>'not_started','sortorder'=>0);
             $id=$this->tasks->createTask($data);
             $saved=$id!==false;
         }
@@ -92,7 +92,17 @@ class kanban extends controller
         if(!$this->tasks->removeTask($task['id']))return $json?$this->json(false,'The task could not be deleted.',500):$this->index('','The task could not be deleted.');
         return $json?$this->json(true,'Task deleted.'):$this->index('Task deleted.');
     }
-    private function movetask(){if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);$task=$this->tasks->one($this->id('taskid'));$status=$this->param('status');if(!$task||!in_array($status,array('not_started','in_progress','completed'),true)||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);if(!$this->tasks->saveTask($task['id'],array('status'=>$status,'sortorder'=>(int)$this->param('sortorder'))))return $this->json(false,'The task could not be moved.',500);return $this->param('response')==='json'?$this->json(true,'Task moved.'):$this->index('Task moved.');}
+    private function movetask(){
+        if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);
+        $task=$this->tasks->one($this->id('taskid'));$status=$this->param('status');
+        if(!$task||!in_array($status,['not_started','in_progress','completed'],true)||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);
+        $order=$this->param('order');$expected=$order===''?null:json_decode($order,true);
+        if($order!==''&&(!is_array($expected)||!array_is_list($expected)||count($expected)>10000))return $this->json(false,'Invalid task order.',422);
+        try{$this->tasks->moveTask($task['id'],$status,$this->id('beforetaskid'),$this->param('expectedstatus')?:null,$expected);}
+        catch(DomainException $error){return $this->json(false,$this->getObject('language','language')->languageText('mod_kanban_order_conflict','kanban'),409);}
+        catch(Throwable $error){return $this->json(false,'The task could not be moved.',500);}
+        return $this->param('response')==='json'?$this->json(true,'Task moved.'):$this->index('Task moved.');
+    }
     private function savesubtask(){$json=$this->param('response')==='json';if(!$this->validPost())return $json?$this->json(false,'The form could not be verified. Your text is kept; please try again.',403):$this->index('','The form could not be verified. Please try again.');$task=$this->tasks->one($this->id('taskid'));$title=$this->text('title');if(!$task||!$this->service->board($task['boardid'],'edit'))return $json?$this->json(false,'You do not have permission for that task.',403):$this->forbidden();if($title==='')return $json?$this->json(false,'A subtask title is required.',422):$this->index('','A subtask title is required.');$id=$this->subtasks->createSubtask($task['id'],$title,time());if($id===false)return $json?$this->json(false,'The subtask could not be saved. Your text is kept.',500):$this->index('','The subtask could not be saved. Your text is kept.');return $json?$this->json(true,'Subtask added.',200,array('subtask'=>array('id'=>$id,'title'=>$title,'completed'=>false))):$this->index('Subtask added.');}
     private function togglesubtask(){if(!$this->validPost())return $this->json(false,'The form could not be verified. Please try again.',403);$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->json(false,'Permission denied.',403);if(!$this->subtasks->saveSubtask($sub['id'],array('iscompleted'=>$this->boolParam('completed')?1:0)))return $this->json(false,'The subtask could not be updated.',500);return $this->param('response')==='json'?$this->json(true,'Subtask updated.'):$this->index('Subtask updated.');}
     private function deletesubtask(){if(!$this->validPost())return $this->index('','The form could not be verified. Please try again.');$sub=$this->subtasks->one($this->id('subtaskid'));$task=$sub?$this->tasks->one($sub['taskid']):false;if(!$task||!$this->service->board($task['boardid'],'edit'))return $this->forbidden();$this->subtasks->removeSubtask($sub['id']);return $this->index('Subtask deleted.');}

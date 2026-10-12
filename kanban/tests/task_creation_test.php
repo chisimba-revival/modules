@@ -22,6 +22,7 @@ $case = $argv[1];
 #[AllowDynamicProperties]
 class controller {
     public function getObject($name,$module=null) { return new class {
+        public function render($name,$options) { return ''; }
         public function languageText($key,$module) {
             foreach(file(dirname(__DIR__).'/register.conf') as $line){$parts=explode('|',trim($line),3);if(($parts[0]??'')==='TEXT: '.$key)return $parts[2];}
             return $key;
