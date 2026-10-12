@@ -186,7 +186,8 @@ class Zend_Filter_Compress_Gz extends Zend_Filter_Compress_CompressAbstract
             $archive = $content;
         }
 
-        if (file_exists($archive)) {
+        // Chisimba PHP 8: the in-memory mode has no archive path.
+        if (is_string($archive) && $archive !== '' && file_exists($archive)) {
             $handler = fopen($archive, "rb");
             if (!$handler) {
                 require_once 'Zend/Filter/Exception.php';
