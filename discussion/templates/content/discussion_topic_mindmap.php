@@ -89,13 +89,7 @@ if ($post['status'] =='CLOSE') {
 
 // Show Mind Map
 
-$objFreeMindMap = $this->getObject('flashfreemind', 'freemind');
-$objFreeMindMap->setMindMap($map.'&ext=.mm');
-$objFreeMindMap->mainNodeShape = 'rectangle';
-$objFreeMindMap->defaultWordWrap = 300;
-
-
-echo $objFreeMindMap->show();
+echo $this->getObject('nativeplayer', 'files')->download($map.'&ext=.mm', false);
 
 //
 
@@ -133,5 +127,5 @@ echo $returntodiscussion->show().'</p>';
 $display = ob_get_contents();
 ob_end_clean();
 
-$this->setVar('middleColumn', $display);
+$this->setVar('pageContent', $display);
 ?>

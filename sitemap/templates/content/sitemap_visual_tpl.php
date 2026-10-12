@@ -8,18 +8,15 @@ if (!in_array($showModule, $modules)) {
     $showModule = 'all';
 }
 
-$objFreeMind = $this->getObject('flashfreemind', 'freemind');
-$objFreeMind->setMindMap($this->uri(array('action'=>'visualmap', 'showmodule'=>$showModule)));
+$mapUrl = $this->uri(array('action'=>'visualmap', 'showmodule'=>$showModule));
 
 if ($showModule == 'all') {
-    $objFreeMind->startCollapsedToLevel = 1;
     
     $htmlHeading = new htmlheading();
     $htmlHeading->type = 1;
     $htmlHeading->str = $this->objLanguage->languageText('mod_sitemap_allmodules', 'sitemap');
     echo $htmlHeading->show();
 } else {
-    $objFreeMind->startCollapsedToLevel = 2;
     
     $htmlHeading = new htmlheading();
     $htmlHeading->type = 1;
@@ -29,6 +26,6 @@ if ($showModule == 'all') {
 
 echo $this->generateDropdownNavigation($modules, $showModule, 'visual');
 
-echo $objFreeMind->show();
+echo $this->getObject('nativeplayer', 'files')->download($mapUrl, false);
 
 ?>
