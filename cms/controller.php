@@ -109,7 +109,7 @@ class cms extends controller {
      * @var object
      */
     public $objConfig;
-    public $objRPC;
+
 
     /**
      *
@@ -120,6 +120,7 @@ class cms extends controller {
      *
      */
     public function init() {
+        if ($this->isRetiredPublishingAction()) return;
         try {
             $this->_objPreview = $this->getObject('dbcontentpreview', 'cmsadmin');
             // instantiate the database object for sections
@@ -162,8 +163,6 @@ class cms extends controller {
                 //   the inContextMode property of this object
                 $this->inContextMode = FALSE;
             }
-            // xmlrpc api class
-            $this->objRPC = $this->getObject('cmsrpcapi');
             //Get the activity logger class and log this module call
             $objLog = $this->getObject('logactivity', 'logger');
             $objLog->log();
@@ -200,6 +199,13 @@ class cms extends controller {
      *
      */
     public function dispatch() {
+        if ($this->isRetiredPublishingAction()) {
+            http_response_code(410);
+            $this->setPageTemplate(null);
+            $this->setLayoutTemplate(null);
+            $this->setVar('pageSuppressToolbar', true);
+            return 'publishing_retired_tpl.php';
+        }
         //Create a local variable for whether the user is logged in
         $isLoggedIn = $this->_objUser->isLoggedIn();
         //$this->setLayoutTemplate('cms_layout_tpl.php');
@@ -541,12 +547,7 @@ class cms extends controller {
         return 'dump_tpl.php';
     }
 
-    private function _serverpc() {
-        // cannot require any login, as remote clients use this. Auth is done internally
-        $this->requiresLogin();
-        // start the server.
-        $this->objRPC->serve();
-    }
+
 
     /**
      * Method to check if the user is in the CMS Authors group
@@ -671,6 +672,12 @@ class cms extends controller {
         }
         //output the feed
         echo htmlentities($feed);
+    }
+
+    private function isRetiredPublishingAction(): bool
+    {
+        $action = $this->getParam('action', '');
+        return is_string($action) && strtolower($action) === 'serverpc';
     }
 
 }

@@ -1,0 +1,6 @@
+[
+  "cms/classes/cmsrpcapi_class_inc.php",
+  "cmsadmin/classes/rpcdbcmsadmin_class_inc.php",
+  "simplegal/classes/simplegalxmlrpcapi_class_inc.php",
+  "simplegal/classes/simplegalmetaweblogapi_class_inc.php"
+]

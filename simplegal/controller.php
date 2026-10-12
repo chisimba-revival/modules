@@ -60,13 +60,6 @@ class simplegal extends controller
     public $objUser;
     public $objConfig;
     
-    /**
-     * XML-RPC Object
-     *
-     * @var    object
-     * @access public
-     */
-    public $objRPC;
 
     /**
      * Initialises the instance variables.
@@ -75,6 +68,7 @@ class simplegal extends controller
      */
     public function init()
     {
+        if ($this->isRetiredPublishingAction()) return;
         try {
             $this->objLanguage   = $this->getObject ( 'language', 'language' );
             $this->objConfig     = $this->getObject('altconfig', 'config');
@@ -82,7 +76,6 @@ class simplegal extends controller
             $this->objUser       = $this->getObject('user', 'security');
             $this->objModuleCat  = $this->getObject('modules', 'modulecatalogue');
             $this->jq            = $this->getObject('jquery', 'jquery');
-            $this->objRPC        = $this->getObject('simplegalxmlrpcapi');
             $this->objDbGal      = $this->getObject('dbsimplegal', 'simplegal');
             $this->objOps        = $this->getObject('simplegalops');
             $this->jq->show();
@@ -110,6 +103,13 @@ class simplegal extends controller
      * @return void
      */
     public function dispatch() {
+        if ($this->isRetiredPublishingAction()) {
+            http_response_code(410);
+            $this->setPageTemplate(null);
+            $this->setLayoutTemplate(null);
+            $this->setVar('pageSuppressToolbar', true);
+            return 'publishing_retired_tpl.php';
+        }
         $action = $this->getParam ( 'action' );
         switch ($action) {
             case NULL:
@@ -119,9 +119,7 @@ class simplegal extends controller
                 return 'view_tpl.php';
                 break;
                 
-            case 'metaweblog':
-                $this->objRPC->serve();   
-                break;
+
                 
             default:
                 $this->nextAction('');
@@ -137,7 +135,8 @@ class simplegal extends controller
      * @return boolean Whether the action requires the user to be logged in or not
      */
     function requiresLogin($action='') {
-        $allowedActions = array('', 'metaweblog');
+        if (is_string($action) && strtolower($action) === 'metaweblog') return false;
+        $allowedActions = array('');
 
         if (in_array($action, $allowedActions)) {
             return FALSE;
@@ -145,5 +144,11 @@ class simplegal extends controller
             return TRUE;
         }
     }
+    private function isRetiredPublishingAction(): bool
+    {
+        $action = $this->getParam('action', '');
+        return is_string($action) && strtolower($action) === 'metaweblog';
+    }
+
 }
 ?>

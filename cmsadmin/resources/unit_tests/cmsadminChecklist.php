@@ -35,7 +35,6 @@ class cmsadminChecklist extends PHPUnit_Framework_TestCase
     public $dbcmsadmin;
     public $dbcontentpreview;
     public $superfishtree;
-    public $rpcdbcmsadmin;
     public $dbhtmlblock;
     public $dbsections;
     public $dbtemplate;
@@ -70,7 +69,6 @@ class cmsadminChecklist extends PHPUnit_Framework_TestCase
         $this->dbcmsadmin = $this->eng->getObject('dbcmsadmin', 'cmsadmin');
         $this->dbcontentpreview = $this->eng->getObject('dbcontentpreview', 'cmsadmin');
         $this->superfishtree = $this->eng->getObject('superfishtree', 'cmsadmin');
-        $this->rpcdbcmsadmin = $this->eng->getObject('rpcdbcmsadmin', 'cmsadmin');
         $this->dbhtmlblock = $this->eng->getObject('dbhtmlblock', 'cmsadmin');
         $this->dbsections = $this->eng->getObject('dbsections', 'cmsadmin');
         $this->dbtemplate = $this->eng->getObject('dbtemplate', 'cmsadmin');
@@ -6510,60 +6508,6 @@ $result = $this->dbcontent->addContent($title,
 
     public function cmsadmin_superfishtree_appendArrayVar($name,$value) {
         return $this->superfishtree->appendArrayVar($name,$value);
-    }
-
-
-
-    /*
-     * =============== Logical Add Data Methods =======rpcdbcmsadmin_class_inc.php========
-     */
-
-    public function cmsadmin_rpcdbcmsadmin_init() {
-        return $this->rpcdbcmsadmin->init();
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getSections($params) {
-        return $this->rpcdbcmsadmin->getSections($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getFilteredSecs($params) {
-        return $this->rpcdbcmsadmin->getFilteredSecs($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getArcSections($params) {
-        return $this->rpcdbcmsadmin->getArcSections($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getSectionRootNodes($params) {
-        return $this->rpcdbcmsadmin->getSectionRootNodes($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getSectionId($params) {
-        return $this->rpcdbcmsadmin->getSectionId($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getFirstSectionId($params) {
-        return $this->rpcdbcmsadmin->getFirstSectionId($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_addSec($params) {
-        return $this->rpcdbcmsadmin->addSec($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_addPg($params) {
-        return $this->rpcdbcmsadmin->addPg($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin__changeTable($params) {
-        return $this->rpcdbcmsadmin->_changeTable($params);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getParam($name,$default) {
-        return $this->rpcdbcmsadmin->getParam($name,$default);
-    }
-
-    public function cmsadmin_rpcdbcmsadmin_getObject($name,$moduleName) {
-        return $this->rpcdbcmsadmin->getObject($name,$moduleName);
     }
 
 
