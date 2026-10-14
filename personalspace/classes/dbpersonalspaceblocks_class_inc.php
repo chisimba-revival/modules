@@ -95,6 +95,12 @@ class dbpersonalspaceblocks extends dbTable
             
             foreach ($results as $result)
             {
+                // Retain an editable placement without executing a revoked or foreign block.
+                if (!$this->getObject('personalspaceeditor')->allowed($result['block'], $side, $userId)) {
+                    $message=$this->getObject('language','language')->languageText('mod_personalspace_unavailableblock','personalspace');
+                    $str .= '<div id="'.htmlspecialchars($result['id'], ENT_QUOTES, 'UTF-8').'" class="block"><p>'.htmlspecialchars(html_entity_decode($message, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8').'</p></div>';
+                    continue;
+                }
                 $block = explode('|', $result['block']);
                 
                 $blockId = $side.'___'.str_replace('|', '___', $result['block']);
@@ -109,11 +115,11 @@ class dbpersonalspaceblocks extends dbTable
                     //$blockStr = preg_replace('/type\ *=\ *"submit"/i', 'type="button"', $blockStr);
                     //$blockStr = preg_replace('/href\ *=\ *".*?"/i', 'href="javascript:alert(\'Disabled\');"', $blockStr);
                     
-                    $str .= '<div id="'.$result['id'].'" class="block">'.$blockStr.'</div>';
+                    $str .= '<div id="'.htmlspecialchars($result['id'], ENT_QUOTES, 'UTF-8').'" class="block">'.$blockStr.'</div>';
                 } else if ($block[0] == 'dynamicblock') {
                     $block = explode('|', $result['block']);
                     $blockStr = $objDynamicBlocks->showBlock($block[1]);
-                    $str .= '<div id="'.$result['id'].'" class="block">'.$blockStr.'</div>';
+                    $str .= '<div id="'.htmlspecialchars($result['id'], ENT_QUOTES, 'UTF-8').'" class="block">'.$blockStr.'</div>';
                 }
            }
            
@@ -129,7 +135,7 @@ class dbpersonalspaceblocks extends dbTable
      */
     public function getUserBlocksList($userId, $side)
     {
-        return $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' ORDER BY position');
+        return $this->selectPrepared('SELECT * FROM tbl_personalspace_blocks WHERE side=? AND userid=? ORDER BY position, id', [$side, $userId]);
     }
     
     
@@ -140,7 +146,7 @@ class dbpersonalspaceblocks extends dbTable
      */
     public function getUserBlocksArray($userId)
     {
-        $results = $this->getAll(' WHERE userid=\''.$userId.'\' ');
+        $results = $this->editingRows($userId);
         
         $array = array();
         
@@ -155,166 +161,22 @@ class dbpersonalspaceblocks extends dbTable
     }
     
     
-    /**
-     * Method to add a block to a context
-     * @param string $block Block Id
-     * @param string $side Side Block is On
-     * @param string $contextCode Context Code
-     * @param string $module Module Block is from
-     *
-     */
-    public function addBlock($block, $side, $userId, $module)
+    /** Stable, owner-scoped snapshot shared by page rendering and saves. */
+    public function editingRows($userId)
     {
-        return $this->insert(array(
-                'userid' => $userId,
-                'block' => $block,
-                'side' => $side,
-                'module' => $module,
-                'position' => $this->getLastOrder($side, $userId)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
-            ));
+        return $this->selectPrepared('SELECT * FROM tbl_personalspace_blocks WHERE userid=? ORDER BY side, position, id', [$userId]);
     }
-    
-    /**
-     * Method to get the last order of a block on a side
-     * This is used for ordering purposes
-     *
-     * @param string $side Side block will be added
-     * @param string $contextCode Context Code
-     *
-     * @return int
-     */
-    private function getLastOrder($side, $userId)
+
+    public function editingRevision($userId)
     {
-        $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' ORDER BY position DESC LIMIT 1');
-        
-        if ((is_countable($results) ? count($results) : 0) == 0) {
-            return 0;
-        } else {
-            return $results[0]['position'];
-        }
+        return hash('sha256', json_encode($this->editingRows($userId)));
     }
-    
-    
-    /**
-     * Method to remove a block
-     * @param string $id Block Id
-     */
-    public function removeBlock($id)
+
+    public function editPlacement($userId, $revision, $action, $id, $side, $direction)
     {
-        return $this->delete('id', $id);
+        if (!$this->objUser->isLoggedIn() || $userId !== $this->objUser->userId()) throw new RuntimeException('block_denied');
+        return $this->getObject('blockplacementorder', 'blocks')->edit(
+            $this, $userId, $revision, $action, $id, $side, $direction, ['userid'=>$userId]
+        );
     }
-    
-    /**
-     * Method to remove a block
-     * @param string $id Block Id
-     */
-    public function removeUserBlocks($userId)
-    {
-        return $this->delete('userid', $userId);
-    }
-    
-    /**
-     * Method to move a block up
-     *
-     * @param string $id Block Id
-     * @param string $contextCode Context Code - required to prevent malicious changes
-     */
-    public function moveBlockUp($id, $userId)
-    {
-        $record = $this->getRow('id', $id);
-        
-        if ($record == FALSE) {
-            return FALSE;
-        } else {
-            
-            if ($record['userid'] != $userId) {
-                return FALSE;
-            }
-            
-            $prevRecord = $this->getPreviousBlock($record['userid'], $record['side'], $record['position']);
-            
-            if ($prevRecord == FALSE) {
-                return FALSE;
-            } else {
-                $this->update('id', $record['id'], array('position'=>$prevRecord['position']));
-                $this->update('id', $prevRecord['id'], array('position'=>$record['position']));
-                
-                return TRUE;
-            }
-        }
-    }
-    
-    /**
-     * Method to move a block down
-     *
-     * @param string $id Block Id
-     * @param string $contextCode Context Code - required to prevent malicious changes
-     */
-    public function moveBlockDown($id, $userId)
-    {
-        $record = $this->getRow('id', $id);
-        
-        if ($record == FALSE) {
-            return FALSE;
-        } else {
-            
-            if ($record['userid'] != $userId) {
-                return FALSE;
-            }
-            
-            $nextRecord = $this->getNextBlock($record['userid'], $record['side'], $record['position']);
-            
-            if ($nextRecord == FALSE) {
-                return FALSE;
-            } else {
-                $this->update('id', $record['id'], array('position'=>$nextRecord['position']));
-                $this->update('id', $nextRecord['id'], array('position'=>$record['position']));
-                
-                return TRUE;
-            }
-        }
-    }
-    
-    /**
-     * Method to get the details of the previous block
-     *
-     * @param string $contextCode Context Code - required to prevent malicious changes
-     * @param string $side Side Block is on
-     * @param int $position Position of the Block
-     *
-     * @return array
-     */
-    private function getPreviousBlock($userId, $side, $position)
-    {
-        $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position < '.$position.' ORDER BY position DESC LIMIT 1');
-        
-        if ((is_countable($results) ? count($results) : 0) == 0) {
-            return FALSE;
-        } else {
-            return $results[0];
-        }
-    }
-    
-    /**
-     * Method to get the details of the next block
-     *
-     * @param string $contextCode Context Code - required to prevent malicious changes
-     * @param string $side Side Block is on
-     * @param int $position Position of the Block
-     *
-     * @return array
-     */
-    private function getNextBlock($userId, $side, $position)
-    {
-        $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
-        
-        if ((is_countable($results) ? count($results) : 0) == 0) {
-            return FALSE;
-        } else {
-            return $results[0];
-        }
-    }
-    
 }
-?>

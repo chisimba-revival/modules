@@ -1,39 +1,52 @@
 <?php
-// Generate Icons used bu JavaScript
-$objIcon = $this->newObject('geticon', 'htmlelements');
-$objIcon->setIcon('up');
-$upIcon = $objIcon->show();
+$objLanguage=$this->getObject('language','language');
+$objIconService=$this->getObject('iconservice','ui');
+    $iconOptions = array('decorative' => TRUE, 'class' => 'block-control__icon');
+    $upIcon = $objIconService->render('chevron-up', $iconOptions);
+    $downIcon = $objIconService->render('chevron-down', $iconOptions);
+    $deleteIcon = $objIconService->render('trash-2', $iconOptions);
+    $moveUpLabel = $objLanguage->languageText(
+        'mod_context_moveblockup', 'context', 'Move block up');
+    $moveDownLabel = $objLanguage->languageText(
+        'mod_context_moveblockdown', 'context', 'Move block down');
+    $removeBlockLabel = $objLanguage->languageText(
+        'mod_context_removeblock', 'context', 'Remove block');
+    $blockControlsLabel = $objLanguage->languageText(
+        'mod_context_blockcontrols', 'context', 'Block controls');
+    ?>
+    <script type="text/javascript">
+        // <![CDATA[
+        upIcon = <?php echo json_encode($upIcon); ?>;
+        downIcon = <?php echo json_encode($downIcon); ?>;
+        deleteIcon = <?php echo json_encode($deleteIcon); ?>;
+        moveUpLabel = <?php echo json_encode($moveUpLabel); ?>;
+        moveDownLabel = <?php echo json_encode($moveDownLabel); ?>;
+        removeBlockLabel = <?php echo json_encode($removeBlockLabel); ?>;
+        blockControlsLabel = <?php echo json_encode($blockControlsLabel); ?>;
+        deleteConfirm = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_confirmremoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableMoveBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unablemoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableDeleteBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unabledeleteblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableAddBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unableaddblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOn = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingon', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOff = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingoff', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        theModule = 'personalspace';
+
+        // ]]>
+    </script>
 
 
-$objIcon->setIcon('down');
-$downIcon = $objIcon->show();
-
-$objIcon->setIcon('delete');
-$deleteIcon = $objIcon->show();
-
-$objLanguage = $this->getObject('language', 'language');
-
-
-// Set JavaScript Variables
-?>
-<script type="text/javascript">
-    // <![CDATA[
-    upIcon = '<?php echo $upIcon; ?>';
-    downIcon = '<?php echo $downIcon; ?>';
-    deleteIcon = '<?php echo $deleteIcon; ?>';
-    deleteConfirm = '<?php echo $objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block'); ?>';
-    unableMoveBlock = '<?php echo $objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block'); ?>';
-    unableDeleteBlock = '<?php echo $objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block'); ?>';
-    unableAddBlock = '<?php echo $objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block'); ?>';
-    turnEditingOn = '<?php echo $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On'); ?>';
-    turnEditingOff = '<?php echo $objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off'); ?>';
-    theModule = 'personalspace';
-
-    // ]]>
-</script>
-<?php
-echo $this->getJavaScriptFile('contextblocks.js', 'context');
-// End Addition of JavaScript
+    <?php
+    $editor=$this->getObject('personalspaceeditor','personalspace');
+    $attributes=['module'=>'personalspace','owner'=>$this->objUser->userId(),'csrf'=>$editor->csrf()->issue($editor->purpose($this->objUser->userId())),
+        'revision'=>$blockEditingRevision,'cancel'=>html_entity_decode($objLanguage->languageText('word_cancel'),ENT_QUOTES,'UTF-8')];
+    foreach(['saving','saved','failed','stale','uncertain','denied','method','csrf-error'] as $key) {
+        $attributes[$key]=html_entity_decode($objLanguage->languageText('mod_context_block_'.($key==='csrf-error'?'csrf':$key),'context'),ENT_QUOTES,'UTF-8');
+    }
+    $editorStatus = '<div id="block-editor-settings"';
+    foreach($attributes as $key=>$value)$editorStatus .= ' data-'.$key.'="'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'"';
+    $editorStatus .= '><p id="block-editor-status" role="status" aria-live="polite"></p></div>';
+    echo $this->getJavaScriptFile('contextblocks.js?v=2057', 'context');
+$editorHelp=$this->getObject('contextualhelp','help')->show('personalspace','editing');
 
 $this->loadClass('dropdown', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
@@ -119,7 +132,7 @@ $wideBlocksDropDown->cssId = 'ddmiddleblocks';
 $wideBlocksDropDown->addOption('', $objLanguage->languageText('phrase_selectone', 'context', 'Select One') . '...');
 
 foreach ($wideDynamicBlocks as $wideBlock) {
-    $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
+    $wideBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
 }
 
 foreach ($wideBlocks as $wideBlock) {
@@ -192,7 +205,7 @@ $objCssLayout->setLeftColumnContent($userMenu->show());
 $objCssLayout->leftColumnContent .= '<div id="leftblocks">' . $leftBlocksStr . '</div>';
 
 
-$objCssLayout->leftColumnContent .= '<div id="leftaddblock">' . $header->show() . $leftBlocks;
+$objCssLayout->leftColumnContent .= '<div id="leftaddblock" data-block-editor>' . '<label for="ddleftblocks">'.htmlspecialchars($objLanguage->languageText('mod_personalspace_leftpicker','personalspace'), ENT_QUOTES, 'UTF-8').'</label>' . $leftBlocks;
 $objCssLayout->leftColumnContent .= '<div id="lefttpreview"><div id="leftpreviewcontent"></div> ' . $leftButton . ' </div>';
 $objCssLayout->leftColumnContent .= '</div>';
 
@@ -201,14 +214,12 @@ $objCssLayout->rightColumnContent = '';
 
 
 $value = $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On');
-$objEdBut = $this->getObject('buildcanvas', 'canvas');
-$editBut = $objEdBut->getSwitchButton($value);
-$objCssLayout->rightColumnContent .= '<div id="editmode">' . $editBut . '</div>';
+$editorToolbar='<div class="chisimba-form-actions"><button type="button" id="editmodeswitchbutton" aria-pressed="false" onclick="switchEditMode()">'.htmlspecialchars($value, ENT_QUOTES, 'UTF-8').'</button>'.$editorHelp.'</div>';
 
 $objCssLayout->rightColumnContent .= '<div id="rightblocks">' . $rightBlocksStr . '</div>';
 
 
-$objCssLayout->rightColumnContent .= '<div id="rightaddblock">' . $header->show() . $rightBlocks;
+$objCssLayout->rightColumnContent .= '<div id="rightaddblock" data-block-editor>' . '<label for="ddrightblocks">'.htmlspecialchars($objLanguage->languageText('mod_personalspace_rightpicker','personalspace'), ENT_QUOTES, 'UTF-8').'</label>' . $rightBlocks;
 $objCssLayout->rightColumnContent .= '<div id="rightpreview"><div id="rightpreviewcontent"></div> ' . $rightButton . ' </div>';
 $objCssLayout->rightColumnContent .= '</div>';
 
@@ -216,10 +227,10 @@ $objCssLayout->rightColumnContent .= '</div>';
 $button = new button('addmiddleblock', $objLanguage->languageText('mod_prelogin_addblock', 'system', 'Add Block'));
 $button->cssId = 'middlebutton';
 
-$objCssLayout->middleColumnContent = '<div id="middleblocks">' . $middleBlocksStr . '</div>';
+$objCssLayout->middleColumnContent = $editorToolbar . $editorStatus . '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
 
-$objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show() . $wideBlocksDropDown->show();
+$objCssLayout->middleColumnContent .= '<div id="middleaddblock" data-block-editor>' . '<label for="ddmiddleblocks">'.htmlspecialchars($objLanguage->languageText('mod_personalspace_middlepicker','personalspace'), ENT_QUOTES, 'UTF-8').'</label>' . $wideBlocksDropDown->show();
 $objCssLayout->middleColumnContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $button->show() . ' </div>';
 $objCssLayout->middleColumnContent .= '</div>';
 

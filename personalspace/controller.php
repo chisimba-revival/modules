@@ -1,10 +1,5 @@
 <?php
-// security check - must be included in all scripts
-//if (!$GLOBALS['kewl_entry_point_run'])
-//{
-//	die("You cannot view this page directly");
-//}
-// end security check
+if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page directly');
 
 /**
 * Controller for Personal Space module - This module missing most of extra functionality (just basic page)
@@ -59,8 +54,6 @@ class personalspace extends controller
     {
         // Method to set the layout template for the given action
         $this->setLayoutTemplate('contextlayout_tpl.php');
-        
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
 
         /*
         * Convert the action into a method (alternative to
@@ -116,6 +109,8 @@ class personalspace extends controller
     
     function __home()
     {
+        // Capture before rendering blocks, so concurrent writes invalidate this page.
+        $this->setVar('blockEditingRevision', $this->objPersonalSpaceBlocks->editingRevision($this->userId));
         $leftBlocks = $this->objPersonalSpaceBlocks->getUserBlocks($this->userId, 'left');
         $this->setVarByRef('leftBlocksStr', $leftBlocks);
         
@@ -152,98 +147,21 @@ class personalspace extends controller
         return 'main_tpl.php';
     }
     
-    /**
-     * Method to render a block
-     */
-    protected function __renderblock()
+    /** All layout actions share the same authenticated, owner-scoped JSON boundary. */
+    protected function __renderblock() { $this->blockEditorResponse('renderblock'); }
+    protected function __addblock() { $this->blockEditorResponse('addblock'); }
+    protected function __removeblock() { $this->blockEditorResponse('removeblock'); }
+    protected function __moveblock() { $this->blockEditorResponse('moveblock'); }
+
+    private function blockEditorResponse($action)
     {
-        $blockId = $this->getParam('blockid');
-        $side = $this->getParam('side');
-        
-        $block = explode('|', $blockId);
-        
-        $this->setVar('pageSuppressSkin', TRUE);
-        $this->setVar('pageSuppressContainer', TRUE);
-        $this->setVar('pageSuppressBanner', TRUE);
-        $this->setVar('suppressFooter', TRUE);
-        
-        $blockId = $side.'___'.str_replace('|', '___', $blockId);
-        
-        if ($block[0] == 'block') {
-            $objBlocks = $this->getObject('blocks', 'blocks');
-            $block = '<div id="'.$blockId.'" class="block highlightblock">'.$objBlocks->showBlock($block[1], $block[2], NULL, 20, TRUE, FALSE).'</div>';
-            
-            
-            
-            echo $block;
-        } if ($block[0] == 'dynamicblock') {
-            $block = '<div id="'.$blockId.'" class="block highlightblock">'.$this->objDynamicBlocks->showBlock($block[1]).'</div>';
-            
-            echo $block;
-        } else {
-            echo '';
-        }
-    }
-    
-    /**
-     * Method to add a block
-     */
-    protected function __addblock()
-    {
-        $blockId = $this->getParam('blockid');
-        $side = $this->getParam('side');
-        
-        $block = explode('|', $blockId);
-        
-        if ($block[0] == 'block' || $block[0] == 'dynamicblock') {
-            // Add Block
-            $result = $this->objPersonalSpaceBlocks->addBlock($blockId, $side, $this->userId, $block[2]);
-            
-            if ($result == FALSE) {
-                echo '';
-            } else {
-                echo $result;
-            }
-        } else {
-            echo '';
-        }
-    }
-    
-    /**
-     * Method to remove a context block
-     */
-    protected function __removeblock()
-    {
-        $blockId = $this->getParam('blockid');
-        
-        $result = $this->objPersonalSpaceBlocks->removeBlock($blockId);
-        
-        if ($result) {
-            echo 'ok';
-        } else {
-            echo 'notok';
-        }
-    }
-    
-    /**
-     * Method to move a context block
-     */
-    protected function __moveblock()
-    {
-        $blockId = $this->getParam('blockid');
-        $direction = $this->getParam('direction');
-        
-        if ($direction == 'up') {
-            $result = $this->objPersonalSpaceBlocks->moveBlockUp($blockId, $this->userId);
-        } else {
-            $result = $this->objPersonalSpaceBlocks->moveBlockDown($blockId, $this->userId);
-        }
-        
-        if ($result) {
-            echo 'ok';
-        } else {
-            echo 'notok';
-        }
+        $input=[];
+        foreach (['blockid','side','direction','revision','csrf_token'] as $key) $input[$key]=$this->getParam($key);
+        $result=$this->getObject('personalspaceeditor')->handle($action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+        http_response_code($result['status']);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode($result);
+        exit;
     }
 }
-?>

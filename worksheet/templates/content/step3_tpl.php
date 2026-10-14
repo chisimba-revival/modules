@@ -1,7 +1,5 @@
 <?php
 
-
-
 $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('form', 'htmlelements');
 $this->loadClass('textinput', 'htmlelements');
@@ -10,16 +8,6 @@ $this->loadClass('button', 'htmlelements');
 $this->loadClass('hiddeninput', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
 $this->loadClass('radio', 'htmlelements');
-
-
-/*
-$js = $this->getJavascriptFile('jquery/jquery.form.js', 'htmlelements');
-$this->appendArrayVar('headerParams', $js);
-$this->appendArrayVar('headerParams', $this->getJavaScriptFile('worksheet.js'));
-
-$script = "jQuery('#form_addquestion').ajaxForm(options);";
-$this->appendArrayVar('bodyOnLoad', $script);
-*/
 
 $objIcon = $this->newObject('geticon', 'htmlelements');
 
