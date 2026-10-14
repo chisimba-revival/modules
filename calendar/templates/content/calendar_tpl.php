@@ -20,9 +20,7 @@ if (isset($message)) {
     }
 
     if ($text != '') {
-        $timeOutMessage =& $this->getObject('timeoutmessage', 'htmlelements');
-        $timeOutMessage->setMessage($text);
-        $timeOutMessage->setHideTypeToHidden();
+        $ret .= '<p class="chisimba-notice chisimba-notice--success" role="status">'.htmlspecialchars($text, ENT_QUOTES, 'UTF-8').'</p>';
     }
 }
 

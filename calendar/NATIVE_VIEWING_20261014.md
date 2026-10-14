@@ -56,3 +56,7 @@ Source tracing identified a separate security/reliability task in controller.php
 These issues should take priority over the next jQuery consumer. Other callers of
 calendarbase and the legacy attachment model need tracing before changing shared
 storage contracts. Do not treat the successful viewing tests as write-path tests.
+
+Follow-up: Calendar 1.536 addresses the editor/attachment issues above; see
+[the security implementation and validation report](SECURITY_20261014.md).
+Production attachment inventory remains a release prerequisite.

@@ -249,75 +249,13 @@ class calendarinterface extends ChisimbaObject
             $delete = '';
             $contextInfo = '';
             // Do different things depending on what type of calendar it is.
-            switch ($type)
-            {
-                case 'user':
-                    $css = 'event_user';
-                    if ($event['userfirstentry'] == $this->objUser->userId()) {
-                        $link = new link ($this->uri(array('action'=>'edit', 
-                          'id'=>$event['id'])));
-                        $link->link = $this->editIcon;
-                        $edit = $link->show();
-                        $delete = $this->objIcon->getDeleteIconWithConfirm(
-                          '', array('action' => 'delete', 'id'=>$event['id']), 
-                          'calendar', $this->confirmDel);
-                    }
-                    break;
-                case 'context':
-                    $css = 'event_context';
-                    if ($this->objUser->isContextLecturer($this->objUser->userId(), $event['context']) || $this->objUser->isAdmin()) {
-                        $link = new link ($this->uri(array('action'=>'edit', 'id'=>$event['id'])));
-                        $link->link = $this->editIcon;
-                        $edit = $link->show();
-                        $delete = $this->objIcon->getDeleteIconWithConfirm(
-                          '', array('action' => 'delete', 'id'=>$event['id']), 
-                          'calendar', $this->confirmDel);
-                    }
-                    $contextInfo = '<strong>' 
-                      . ucwords($this->objLanguage->code2Txt('mod_context_context', 
-                          'context', NULL, '[-context-]')) .':</strong> '
-                      . htmlspecialchars((string)$this->objContext->getTitle($event['context']),ENT_QUOTES,'UTF-8') . '<br />';
-                    break;
-                case 'site':
-                    $css = 'event_site';
-                    if ($this->objUser->isAdmin()) {
-                        $link = new link ($this->uri(array('action'=>'edit', 
-                          'id'=>$event['id'])));
-                        $link->link = $this->editIcon;
-                        $edit = $link->show();
-                        $delete = $this->objIcon->getDeleteIconWithConfirm(
-                          '', array('action' => 'delete', 'id'=>$event['id']), 
-                          'calendar', $this->confirmDel);
-                    }
-                    break;
-                case 'other':
-                    $css = 'event_othercontext';
-                    if ($this->objUser->isContextLecturer(
-                      $this->objUser->userId(), $event['context']) || 
-                      $this->objUser->isAdmin()) {
-                        $link = new link ($this->uri(array('action'=>'edit', 
-                          'id'=>$event['id'])));
-                        $link->link = $this->editIcon;
-                        $edit = $link->show();
-                        $delete = $this->objIcon->getDeleteIconWithConfirm(
-                          '', array('action' => 'delete', 'id'=>$event['id']), 
-                          'calendar', $this->confirmDel);
-                    }
-                    $contextInfo = '<strong>'
-                      . ucwords($this->objLanguage->code2Txt('mod_context_context', 
-                      'context', NULL, '[-context-]')).':</strong> '
-                      .htmlspecialchars((string)$this->objContext->getTitle($event['context']),ENT_QUOTES,'UTF-8').'<br />';
-                    break;
-                case 'workgroup':  $css = 'event_workgroup'; break;
-                default:           $css = ''; break;
+            $css=['user'=>'event_user','context'=>'event_context','site'=>'event_site','other'=>'event_othercontext','workgroup'=>'event_workgroup'][$type]??'';
+            if(in_array($type,['context','other'],true))$contextInfo='<strong>'.htmlspecialchars(ucwords($this->objLanguage->code2Txt('mod_context_context','context',null,'[-context-]')),ENT_QUOTES,'UTF-8').':</strong> '.htmlspecialchars((string)$this->objContext->getTitle($event['context']),ENT_QUOTES,'UTF-8').'<br />';
+            if($this->getObject('calendareditor','calendar')->mayManage($event)){
+                $icons=$this->getObject('iconservice','ui');
+                $edit='<a class="button chisimba-button-secondary" aria-label="'.htmlspecialchars($this->objLanguage->languageText('mod_calendar_secure_edit','calendar'),ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(['action'=>'edit','id'=>$event['id']],'calendar'),ENT_QUOTES,'UTF-8').'">'.$icons->render('edit-3',['decorative'=>true]).'</a>';
+                $delete='<a class="button chisimba-button-secondary" aria-label="'.htmlspecialchars($this->objLanguage->languageText('mod_calendar_secure_delete','calendar'),ENT_QUOTES,'UTF-8').'" href="'.htmlspecialchars($this->uri(['action'=>'delete','id'=>$event['id']],'calendar'),ENT_QUOTES,'UTF-8').'">'.$icons->render('trash-2',['decorative'=>true]).'</a>';
             }
-            
-            if ($this->calendarSize == 'small') {
-                
-            } else {
-                
-            }
-            
             $event['calendar_category']=$css;
             $this->rawEventsList[$day][] = $event; 
 
@@ -463,38 +401,9 @@ class calendarinterface extends ChisimbaObject
     */
     public function checkEventEditPermission($event)
     {
-        // If the event does not exists, return to the Calendar
-        if ($event == FALSE) {
-            return FALSE;
-        }
-        // Default to Access
-        $okToEdit = TRUE;
-        // Check if User has access to edit the event
-        if ($event['userorcontext'] == 0 && $event['userFirstEntry'] != $this->userId) {
-            $okToEdit = FALSE;
-        }
-        // Check that event is either for the current context or a site event
-        if ($event['userorcontext'] == 1 && ($event['context'] == $this->contextCode || $event['context'] == 'root')) {
-            $okToEdit = TRUE;
-        } else if ($event['userorcontext'] == 1) { // Additional if to only use context events
-            $okToEdit = FALSE;
-        }
-        // If event is for current event - check if user is lecturer
-        if ($event['userorcontext'] == 1 && $event['context'] == $this->contextCode && !$this->isContextLecturer) {
-            $okToEdit = FALSE;
-        }
-        // If event is a site event - check if user is admin
-        if ($event['userorcontext'] == 1 && $event['context'] == 'root' && !$this->manageSiteCalendar) {
-            $okToEdit = FALSE;
-        }
-        // Redirect if no permission
-        if ($okToEdit == FALSE) {
-            return FALSE;
-        } else {
-            return TRUE;
-        }
+        return $this->getObject('calendareditor','calendar')->mayManage($event);
     }
-    
+
     /**
      *
      * Method to get the event for display in the small calender
