@@ -23,3 +23,11 @@ Activity Streamer 0.045 also has a native private browser and protected blocks.
 It is installed locally for checks with automatic recording disabled. Event
 producers, privacy/retention and any future external publishing still need review
 before full revival. See `activitystreamer/README.md`.
+
+## Shared ExtJS retirement
+
+The framework ExtJS libraries and loaders have now been removed from maintained
+source/local. Practicals and any other paused module containing ExtJS calls must
+be migrated before reactivation. Triple Store and Activity Streamer use their
+native replacements. Deploy matching framework/modules releases together; older
+production context-content reports still need the coordinated migration.

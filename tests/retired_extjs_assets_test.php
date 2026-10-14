@@ -1,7 +1,7 @@
 <?php
 /** Guard removal of replaced teaching-module ExtJS assets. @author Derek Keats */
 $root = dirname(__DIR__);
-foreach (['assignment/resources/addedit_assignment.js', 'mcqtests/templates/content/choosequestiontype2_tpl.php', 'mcqtests/resources/js/chooseqtype.js', 'mcqtests/resources/js/mcqdb.js', 'mcqtests/resources/js/calculateQ.js'] as $path) {
+foreach (['assignment/resources/addedit_assignment.js', 'mcqtests/templates/content/choosequestiontype2_tpl.php', 'mcqtests/resources/js/chooseqtype.js', 'mcqtests/resources/js/main.js', 'mcqtests/resources/js/mcqdb.js', 'mcqtests/resources/js/calculateQ.js'] as $path) {
     if (file_exists($root . '/' . $path)) throw new RuntimeException('Retired asset returned: ' . $path);
 }
 $controller = file_get_contents($root . '/mcqtests/controller.php');
