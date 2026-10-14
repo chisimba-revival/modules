@@ -17,6 +17,8 @@ class mentorfuncs extends dbTable
     * @access private
     */
     private $objLanguage;
+    private $objDbTripleStore;
+    private $objDbWiki;
 
    /** @var object $objUser: The user class of the security module
     * @access public
@@ -96,8 +98,8 @@ class mentorfuncs extends dbTable
     public function addMentor($mentorId, $userId)
     {
 	//Check if relationship exists
-        $results = $this->objDbTripleStore->getTriples(array('predicate'=>'isMentorOf', 'object'=>$userId), array('userId'));
-        if(is_array($result) && (is_countable($result) ? count($result) : 0)>0){
+        $results = $this->objDbTripleStore->getTriples(array('subject'=>$mentorId, 'predicate'=>'isMentorOf', 'object'=>$userId), array('id'));
+        if(is_array($results) && count($results)>0){
             $return = 'Already mentoring user';
 	} else {
            $return = $this->objDbTripleStore->insert($mentorId, 'isMentorOf', $userId);
@@ -116,8 +118,8 @@ class mentorfuncs extends dbTable
     public function addStudent($mentorId, $userId)
     {
 	//Check if relationship exists
-        $results = $this->objDbTripleStore->getTriples(array('predicate'=>'isStudentOf', 'object'=>$mentorId), array('userId'));
-        if(is_array($result) && (is_countable($result) ? count($result) : 0)>0){
+        $results = $this->objDbTripleStore->getTriples(array('subject'=>$userId, 'predicate'=>'isStudentOf', 'object'=>$mentorId), array('id'));
+        if(is_array($results) && count($results)>0){
             $return = 'Already being mentored by user';
 	} else {
             $return = $this->objDbTripleStore->insert($userId, 'isStudentOf', $mentorId);

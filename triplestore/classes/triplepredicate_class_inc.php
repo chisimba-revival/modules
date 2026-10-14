@@ -129,7 +129,7 @@ class triplepredicate extends ChisimbaObject implements Iterator
      *
      * @access public
      */
-    public function current()
+    public function current(): mixed
     {
         return current($this->objects);
     }
@@ -167,7 +167,7 @@ class triplepredicate extends ChisimbaObject implements Iterator
      *
      * @access public
      */
-    public function key()
+    public function key(): mixed
     {
         return key($this->objects);
     }
@@ -177,9 +177,9 @@ class triplepredicate extends ChisimbaObject implements Iterator
      *
      * @access public
      */
-    public function next()
+    public function next(): void
     {
-        return next($this->objects);
+        next($this->objects);
     }
 
     /**
@@ -207,7 +207,7 @@ class triplepredicate extends ChisimbaObject implements Iterator
      *
      * @access public
      */
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->objects);
     }
@@ -256,7 +256,7 @@ class triplepredicate extends ChisimbaObject implements Iterator
      *
      * @access public
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->current() !== false;
     }

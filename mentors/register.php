@@ -2,7 +2,7 @@ MODULE_ID: mentors
 MODULE_NAME: Mentors
 MODULE_DESCRIPTION: The mentors module is a place where a user can be assigned a mentor who will assist him by responding to his posts via the wiki module.
 MODULE_RELEASEDATE: 2010 07 01
-MODULE_VERSION: 0.001
+MODULE_VERSION: 0.002
 MODULE_PATH: mentors
 MODULE_ISVISIBLE: 1
 MODULE_HASADMINPAGE: 1

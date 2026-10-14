@@ -10,3 +10,11 @@ Derek approved pausing Practicals and preserving Triple Store and Mentors for fu
 Read-only checks on 14 October found Practicals, Triple Store and Mentors unregistered on local and all six production sites. This source change does not deploy to production or change any database. Before a later deployment, recheck registrations and stored/site-specific references before moving deployed Practicals files.
 
 Before enabling any preserved module, review PHP 8 compatibility, dbTable persistence, permissions, CSRF, output escaping, dependencies and native accessible UI, then run local behavioural and browser checks. Triple Store's ExtJS interface must be migrated before its ExtJS dependency can be removed. Preserving its storage model does not require preserving the old UI library. Mentors and Triple Store need a coordinated review; Active Knowledge Maps uses separate storage.
+
+## Triple Store migration follow-up
+
+Triple Store 0.012 now has native administrator-only UI, protected writes and
+bound queries; its ExtJS/Ingrid/Editable surfaces are removed. See
+`triplestore/README.md` for validation, retired endpoints and remaining revival
+limits. It is installed on local for testing only; Mentors remains unregistered.
+Activity Streamer is the next preserved ExtJS caller to modernise.

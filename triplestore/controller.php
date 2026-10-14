@@ -53,527 +53,99 @@ if (!
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za/
  */
-class triplestore extends controller {
-
-    /**
-     * Instance of the dbtriplestore class of the triplestore module.
-     *
-     * @access protected
-     * @var    object
-     */
-    protected $objTriplestore;
-    /**
-     *
-     * @var string $objLanguage String object property for holding the
-     * language object
-     * @access public
-     *
-     */
+class triplestore extends controller
+{
     public $objLanguage;
+    private $store;
+    private $admin;
+    private $csrf;
+    private const TOKEN = 'triplestore.manage';
 
-    /**
-     * Standard constructor to load the necessary resources
-     * and populate the new object's instance variables.
-     *
-     * @access public
-     */
-    public function init() {
-        $this->objTriplestore = $this->getObject('dbtriplestore', 'triplestore');
+    public function init()
+    {
         $this->objLanguage = $this->getObject('language', 'language');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->admin = $this->getObject('tripleadmin', 'triplestore');
+        $this->store = $this->getObject('dbtriplestore', 'triplestore');
+        $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
-
-    /**
-     * Standard dispatch method to handle the various possible actions.
-     *
-     * @access public
-     */
-    public function olddispatch() {
-        $filters = array();
-        $filterTypes = array('subject', 'predicate', 'object');
-
-        foreach ($filterTypes as $filterType) {
-            $filter = $this->getParam($filterType);
-            if ($filter) {
-                $filters[$filterType] = $filter;
-            }
-        }
-
-        $nestedTriples = $this->objTriplestore->getNestedTriples($filters);
-
-        header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($nestedTriples);
+    public function requiresLogin($action = null) { return true; }
+    private function input($key, $default = ''): string
+    {
+        $value = $this->getParam($key, $default);
+        return is_string($value) ? $value : '';
     }
-
+    private function message($key, $status)
+    {
+        http_response_code($status);
+        $this->setVar('notice', $key);
+        return 'message_tpl.php';
+    }
     public function dispatch($action)
     {
-        // Convert the action into a method.
-        $method = $this->__getMethod($action);
-        // Return the template determined by the action.
-        return $this->$method();
-    }
-
-    /**
-     * Action to retrieve data from the triplestore in JSON format.
-     *
-     * @access private
-     */
-    private function __view() {
-        $filters = array();
-        $filterTypes = array('id', 'userid', 'subject', 'predicate', 'object');
-        foreach ($filterTypes as $filterType) {
-            $filter = $this->getParam($filterType);
-            if ($filter) {
-                $filters[$filterType] = $filter;
+        if (!$this->admin->mayManage()) return $this->message('forbidden', 403);
+        header('Cache-Control: private, no-store');
+        $action = strtolower((string) $action);
+        if (in_array($action, ['save', 'delete'], true)) return $this->write($action === 'delete');
+        if (in_array($action, ['edit','add','confirmdelete'], true)) {
+            $id = $action === 'add' ? '' : $this->input('id');
+            $row = $id === '' ? [] : ($this->store->getTriples(['id'=>$id])[0] ?? null);
+            if ($row === null || ($action === 'confirmdelete' && !$row)) return $this->message('missing', 404);
+            return $this->form($row, $action === 'confirmdelete');
+        }
+        // Old vendor-specific mutation/upload endpoints are deliberately unavailable.
+        if (!in_array($action, ['', 'home','search','view'], true)) return $this->message('retired', 410);
+        $filters = [];
+        foreach (['id','userid','subject','predicate','object'] as $field) {
+            $value = $this->input($field);
+            if ($value !== '') $filters[$field] = $value;
+        }
+        $data = $this->store->browse($filters, (int) $this->input('page', '1'));
+        if ($action === 'view') {
+            $format = $this->input('format', 'flat');
+            if (!in_array($format, ['flat','nested'], true)) return $this->message('invalid', 400);
+            $rows = $data['rows'];
+            if ($format === 'nested') {
+                $rows = [];
+                foreach ($data['rows'] as $row) $rows[$row['subject']][$row['predicate']][$row['id']] = $row['object'];
             }
-        }
-        $format = $this->getParam('format', 'flat');
-        switch ($format) {
-            case 'nested':
-                $triples = $this->objTriplestore->getNestedTriples($filters);
-                break;
-            case 'flat':
-                $triples = $this->objTriplestore->getTriples($filters);
-                break;
-            default:
-                $triples = FALSE;
-        }
-        if (is_array($triples)) {
             header('Content-Type: application/json; charset=UTF-8');
-            echo json_encode($triples);
-        } else {
-            header('HTTP/1.1 400 Bad Request');
+            header('X-Total-Count: '.$data['total']);
+            header('X-Page: '.$data['page']);
+            echo json_encode($rows, JSON_INVALID_UTF8_SUBSTITUTE);
+            return null;
         }
-    }
-
-    private function __getmytripples() {
-        $pageSize = $this->getParam('pagesize', 15);
-        $page = $this->getParam('page', 1);
-        $targetUrl = $this->uri(array('action' => 'getpage',
-                    'pagesize' => $pageSize), 'triplestore');
-        // Create an instance of the ingrid grid class
-        $objIh = & $this->getObject('ingridhelper', 'jqingrid');
-        $objIh->loadIngrid();
-        $objIh->loadCss();
-        $objIh->loadReadyFunction($targetUrl);
-        $objTripleUi = $this->getObject('tripleui', 'triplestore');
-        $str = $objTripleUi->getMyTriples($page, $pageSize);
-        $this->setvarByRef('str', $str);
-        return 'dump_tpl.php';
-    }
-
-    private function __getpage() {
-        $page = $this->getParam('page', 1);
-        $pageSize = $this->getParam('pagesize', 15);
-        $objTripleUi = $this->getObject('tripleui', 'triplestore');
-        $str = $objTripleUi->getMyTriples($page, $pageSize);
-        $this->setvarByRef('str', $str);
-        $this->setPageTemplate('plain_tpl.php');
-        return 'dump_tpl.php';
-    }
-
-    /**
-     *
-     * Method corresponding to the edit action. It sets the mode to
-     * edit and returns the edit template.
-     * @access private
-     *
-     */
-    private function __edit()
-    {
-        $id = $this->getParam('id');
-
-        if ($id) {
-            $triples = $this->objTriplestore->getTriples(array('id' => $id));
-            $this->setVarByRef('triple', $triples[0]);
-        }
-
-        return 'editform_tpl.php';
-    }
-
-    /**
-     * Action to delete a triple.
-     *
-     * @access private
-     */
-    private function __delete()
-    {
-        $id = $this->getParam('id');
-        $this->objTriplestore->delete($id);
-        $this->nextAction('search');
-    }
-
-    /**
-     *
-     * Method corresponding to the asjson action.  It gets a specific
-     * set of triples as json
-     *
-     * @access private
-     *
-     */
-    private function __asjson() {
-        $this->setvar('str', "JSON output will be here");
-        return 'dump_tpl.php';
-    }
-
-    /**
-     *
-     * Method corresponding to the add action. It sets the mode to
-     * add and returns the edit content template.
-     * @access private
-     *
-     */
-    private function __add() {
-        $this->setvar('mode', 'add');
-        return 'editform_tpl.php';
-    }
-
-    /**
-     *
-     * Method corresponding to the save action.
-     *
-     * @access private
-     *
-     */
-    private function __save()
-    {
-        $id = $this->getParam('id');
-        $subject = $this->getParam('subject');
-        $predicate = $this->getParam('predicate');
-        $object = $this->getParam('object');
-
-        if ($id) {
-            $this->objTriplestore->update($id, $subject, $predicate, $object);
-        } else {
-            $this->objTriplestore->insert($subject, $predicate, $object);
-        }
-
-        $this->nextAction('search');
-    }
-
-    /**
-     *
-     * Method corresponding to the save action.
-     *
-     * @access private
-     *
-     */
-    private function __saveinline() {
-        $id = $this->getParam('id', FALSE);
-        if ($id) {
-            $arId = explode('|', $id);
-            $parameter = $arId[0];
-            $key = $arId[1];
-        }
-        $value = $this->getParam('value', NULL);
-        $subject = FALSE;
-        if ($parameter == 'predicate') {
-            $predicate = $value;
-            $object = FALSE;
-        }
-        if ($parameter == 'object') {
-            $predicate = FALSE;
-            $object = $value;
-        }
-        $this->objTriplestore->update($key, $subject, $predicate, $object);
-        $extjs['success'] = true;
-        echo json_encode($extjs);
-        exit(0);
-    }
-
-    /**
-     *
-     * Method to return an error when the action is not a valid
-     * action method
-     *
-     * @access private
-     * @return string The dump template populated with the error message
-     *
-     */
-    private function __actionError() {
-        $this->setVar('str', "<h3>"
-                . $this->objLanguage->languageText("phrase_unrecognizedaction")
-                . ": " . $this->getParam('action', NULL) . "</h3>");
-        return 'dump_tpl.php';
-    }
-
-    /**
-     *
-     * Method to check if a given action is a valid method
-     * of this class preceded by double underscore (__). If it __action
-     * is not a valid method it returns FALSE, if it is a valid method
-     * of this class it returns TRUE.
-     *
-     * @access private
-     * @param string $action The action parameter passed byref
-     * @return boolean TRUE|FALSE
-     *
-     */
-    function __validAction(& $action) {
-        if (method_exists($this, "__" . $action)) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
-
-    /**
-     *
-     * Method to convert the action parameter into the name of
-     * a method of this class.
-     *
-     * @access private
-     * @param string $action The action parameter passed byref
-     * @return stromg the name of the method
-     *
-     */
-    function __getMethod(& $action) {
-        if ($this->__validAction($action)) {
-            return "__" . $action;
-        } else {
-            return "__home";
-        }
-    }
-
-    /**
-     * Overide the login object in the parent class.
-     *
-     * @access public
-     * @param  string $action The name of the action
-     * @return bool
-     */
-    public function requiresLogin($action = null) {
-        $action = $this->getParam('action', 'NULL');
-        switch ($action) {
-            case 'view':
-                return FALSE;
-                break;
-            default:
-                return TRUE;
-                break;
-        }
-    }
-
-    /**
-     * Default Action for triplestore module
-     * @access private
-     */
-    private function __home()
-    {
-        $id = $this->getParam('id');
-        $subject = $this->getParam('subject');
-        $predicate = $this->getParam('predicate');
-        $object = $this->getParam('object');
-
-        $filters = array();
-        if ($id) $filters['id'] = $id;
-        if ($subject) $filters['subject'] = $subject;
-        if ($predicate) $filters['predicate'] = $predicate;
-        if ($object) $filters['object'] = $object;
-
-        $columns = array('id', 'subject', 'predicate', 'object');
-
-        $this->triples = $this->objTriplestore->getTriples($filters, $columns);
-        $this->setVarByRef('triples', $triples);
-
+        $this->setVar('filters', $filters);
+        $this->setVar('data', $data);
+        $this->setVar('notice', $this->input('saved') === '1' ? 'saved' : '');
         return 'triplestore_tpl.php';
     }
-
-    /**
-     * Method to upload the csv or xml files to the triplestore
-     *
-     * @access private
-     * @return json formatted string
-     */
-    private function __upload() {
-
-        $filetype = $this->getParam('filetype');
-        $this->objUpload = $this->getObject('upload', 'filemanager');
-        $this->objUpload->setUploadFolder("users/" . $this->objUser->userId());
-        // Upload File
-        $results = $this->objUpload->uploadFiles();
-        $filename = $_FILES['path1']['name'];
-        $fileid = $results[$filename]['fileid'];
-        error_log(var_export($results, true));
-        // Use it
-        $fileurl = $results[$filename]['fullpath'];
-
-        if ($filetype == 'csv') {
-            $delimiter = $this->getParam('delimiter', ',');
-            $this->objTriplestore->importCSV($fileurl, $subject, $delimiter);
-        } else {
-            $this->objTriplestore->importXML($fileurl, $subject);
-        }
-
-        // Delete it
-        $this->objFiles = $this->getObject('dbfile', 'filemanager');
-        $this->objFiles->deleteFile($fileid, False);
-
-        // Respond to the client
-        $extjs['success'] = true;
-        //header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($extjs);
-        exit(0);
+    private function form(array $row, bool $deleting = false, string $notice = '')
+    {
+        $this->setVar('triple', $row);
+        $this->setVar('deleting', $deleting);
+        $this->setVar('notice', $notice);
+        $this->setVar('revision', $row['_revision'] ?? ($row ? tripleadmin::revision($row) : ''));
+        $this->setVar('token', $this->csrf->issueForSession(self::TOKEN));
+        return 'editform_tpl.php';
     }
-
-    /**
-     * Method to get the tree array with the following format
-     * [{     text: 'A leaf Node'
-     * 	},{
-     * 	    text: 'A folder Node',
-     * 	    children: [{
-     * 	        text: 'A child Node'
-     * 	     }]
-     * }]
-     * @access private
-     * @return json formatted string
-     */
-    private function __gettree() {
-        $filters = array();
-        $triples = $this->objTriplestore->getTriples($filters, null, 'subject');
-        $allarr = array();
-        if ((is_countable($triples) ? count($triples) : 0) > 0) {
-            foreach ($triples as $triple) {
-                $arr = array();
-                $arr['id'] = 'subject|' . $triple['id'];
-                $arr['text'] = $triple['subject'];
-                $arr['iconCls'] = 'add';
-
-                $filters = array();
-                $filters['subject'] = $triple['subject'];
-                $predicates = $this->objTriplestore->getTriples($filters, null, 'predicate');
-
-                $allpre = array();
-                if ((is_countable($predicates) ? count($predicates) : 0) > 0) {
-                    foreach ($predicates as $predicate) {
-                        $prearr = array();
-                        $prearr['id'] = 'predicate|' . $predicate['id'];
-                        $prearr['text'] = $predicate['predicate'];
-                        $prearr['leaf'] = true;
-                        $prearr['iconCls'] = 'add';
-                        $allpre[] = $prearr;
-                    }
-                    $arr['children'] = $allpre;
-                }
-                $allarr[] = $arr;
-            }
+    private function write(bool $deleting)
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') return $this->message('postonly', 405);
+        $row = ['id'=>$this->input('id'), '_revision'=>$this->input('revision')];
+        foreach (['subject','predicate','object'] as $field) $row[$field] = $this->input($field);
+        if (!$this->csrf->consume(self::TOKEN, $this->input('csrf_token'))) {
+            http_response_code(403);
+            return $this->form($row, $deleting, 'expired');
         }
-        //header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($allarr);
-	exit(0);
-    }
-
-    /**
-     * Method to get the triples of the selected subject or predicate
-     *
-     * @access private
-     * @return json formatted string
-     */
-    private function __getdata() {
-
-        $id = $this->getParam('node');
-        $ids = explode("|", $id);
-        $id = $ids[1];
-        $data = $ids[0];
-        $i = $this->objTriplestore->getTriples(array('id' => $id));
-        $arr = array();
-        if ($data == 'predicate') {
-            $arr['subject'] = $i[0]['subject'];
-            $arr['predicate'] = $i[0]['predicate'];
-        } else if ($data == 'subject') {
-            $arr['subject'] = $i[0]['subject'];
+        try {
+            $result = $this->admin->write($row['id'], $row, $row['_revision'], $deleting);
+        } catch (Throwable $error) {
+            // Do not log submitted relationship content or database exception values.
+            error_log('Triple Store administration write failed: '.get_class($error));
+            $result = 'failed';
         }
-
-        $filters = array();
-        $filterTypes = array('id', 'userid', 'subject', 'predicate', 'object');
-        foreach ($filterTypes as $filterType) {
-            $filter = $arr[$filterType];
-            if ($filter) {
-                $filters[$filterType] = $filter;
-            }
-        }
-        $triples = $this->objTriplestore->getTriples($filters);
-        $allarr = array();
-        if ((is_countable($triples) ? count($triples) : 0) > 0) {
-            foreach ($triples as $triple) {
-                $arr = array();
-                $arr['id'] = $triple['id'];
-                $arr['subject'] = $triple['subject'];
-                $arr['predicate'] = $triple['predicate'];
-                $arr['object'] = $triple['object'];
-                $allarr[] = $arr;
-            }
-        }
-        $arr = array();
-        $arr['data'] = $allarr;
-        //header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($arr);
-	exit(0);
-    }
-
-    /**
-     * Method to remove a seleted triple
-     *
-     * @access private
-     * @return json formatted string
-     */
-    private function __removeTriples() {
-        $id = $this->getParam('id');
-        $ids = explode("|", $id);
-        foreach ($ids as $id) {
-            $i = $this->objTriplestore->getTriples(array('id' => $id));
-            $arr = array();
-            if ($i) {
-                $result = $this->objTriplestore->delete($id);
-                $result != null ? $arr['success'] = true : $arr['success'] = false;
-            } else {
-                $arr['success'] = false;
-            }
-        }
-        //header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($arr);
-        exit(0);
-    }
-
-    /**
-     * Method to get a single triple
-     *
-     * @access private
-     * @return json formatted string
-     */
-    private function __getsingletriples() {
-
-        $id = $this->getParam('id');
-        $filters = array();
-        $filters['id'] = $id;
-        $data = $this->objTriplestore->getTriples($filters);
-        $arr['success'] = true;
-        $arr['data'] = $data[0];
-        //header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($arr);
-        exit(0);
-    }
-
-    /**
-     * Method to get a single triple
-     *
-     * @access private
-     * @return json formatted string
-     */
-    private function __getformdata(){
-        $id = $this->getParam('id');
-        $ids = explode("|", $id);
-	$id2 = $ids[1];
-        $field = $ids[0];
-        $data = $this->objTriplestore->getTriples(array('id' => $id2));
-	$arr = array();
-	$arr['success'] = true;
-        $arr['data']['subject'] = $data[0]['subject'];
-	if($field == 'predicate'){
-		$arr['data']['predicate'] = $data[0]['predicate'];
-	}
-	echo json_encode($arr);
-        exit(0);
+        if ($result === 'saved') return $this->nextAction('home', ['saved'=>'1']);
+        http_response_code($result === 'conflict' ? 409 : ($result === 'failed' ? 500 : 400));
+        return $this->form($row, $deleting, $result);
     }
 }
-?>

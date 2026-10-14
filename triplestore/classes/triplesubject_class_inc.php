@@ -188,6 +188,7 @@ class triplesubject extends ChisimbaObject
                 $triple['id']        = $id;
                 $triple['subject']   = $this->subject;
                 $triple['predicate'] = $predicate;
+                $triple['object'] = $object;
 
                 // Add the new triple to the triples property.
                 $this->triples[] = $triple;
