@@ -376,33 +376,58 @@ class contextcontent extends controller {
             case 'confirmdocumentimport':
                 return $this->confirmDocumentImport();
             case 'viewlogs':
-                $this->setLayoutTemplate('layout_firstpage_tpl.php');
-                $action = "viewlogdetails";
-                $this->setVarByRef("action", $action);
-                return 'selectdates_tpl.php';
             case 'viewlogdetails':
-                $this->setLayoutTemplate('layout_firstpage_tpl.php');
-                $this->setVarByRef("startdate", $this->getParam('startdate'));
-                $this->setVarByRef("enddate", $this->getParam('enddate'));
-                $this->setVarByRef("studentsonly", $this->getParam('studentsonly'));
-                return 'usersactivitylog_tpl.php';
-
+                return $this->activityReport(false);
             case 'viewcontextcontentusage':
-                $this->setLayoutTemplate('layout_firstpage_tpl.php');
-                $action = "viewcontextcontentusagedetails";
-                $this->setVarByRef("action", $action);
-                return 'selectdates_tpl.php';
-
             case 'viewcontextcontentusagedetails':
-                $this->setLayoutTemplate('layout_firstpage_tpl.php');
-                $this->setVarByRef("startdate", $this->getParam('startdate'));
-                $this->setVarByRef("enddate", $this->getParam('enddate'));
-                $this->setVarByRef("studentsonly", $this->getParam('studentsonly'));
-                return 'contextcontentusage_tpl.php';
+                return $this->activityReport(true);
             default:
                 //return $this->home_debug();
                 return $this->showContextChapters();
         }
+    }
+
+    /** Native reports and authorised, filtered CSV downloads. */
+    private function activityReport($summary)
+    {
+        $this->requireCourseManager();
+        $service = $this->getObject('contentactivityreport');
+        $input = [];
+        foreach (['startdate', 'enddate', 'studentsonly', 'q', 'page', 'sort'] as $name) {
+            $value = $this->getParam($name, null);
+            if ($value !== null) $input[$name] = $value;
+        }
+        try { $filters = $service->filters($input); }
+        catch (InvalidArgumentException $error) {
+            $filters = $service->filters([]);
+            $this->setVar('reportError', true);
+            $this->setVar('reportSummary', $summary);
+            $this->setVar('reportFilters', $filters);
+            $this->setVar('reportData', ['rows'=>[], 'total'=>0, 'page'=>1]);
+            $this->setLayoutTemplate('layout_firstpage_tpl.php');
+            return 'activityreport_tpl.php';
+        }
+        $report = $service->report((string) $this->contextCode, $filters, (bool) $summary);
+        if ($this->getParam('format') === 'csv') {
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="content-activity.csv"');
+            header('Cache-Control: private, no-store');
+            $out = fopen('php://output', 'w');
+            $columns = $summary ? ['username','fullname','accesses'] : ['username','fullname','title','pageorchapter','starttime','endtime'];
+            fputcsv($out, $columns, ',', '"', '');
+            for ($offset = 0; $offset < $report['total']; $offset += 500) {
+                $filters['offset'] = $offset;
+                $batch = $service->report((string) $this->contextCode, $filters, (bool) $summary, true);
+                foreach ($batch['rows'] as $row) fputcsv($out, array_map(fn($key) => $service->csvCell($row[$key] ?? ''), $columns), ',', '"', '');
+            }
+            fclose($out);
+            exit;
+        }
+        $this->setVar('reportSummary', $summary);
+        $this->setVar('reportFilters', $filters);
+        $this->setVar('reportData', $report);
+        $this->setLayoutTemplate('layout_firstpage_tpl.php');
+        return 'activityreport_tpl.php';
     }
 
     private function isPost()
