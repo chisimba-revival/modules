@@ -54,6 +54,8 @@ class formbuilder extends controller {
      */
 
     public $objlanguage;
+    public $objLanguage;
+    public $objUser;
 
     /*!
      * \brief Standard constructor that sets up this class. The constructor
@@ -62,6 +64,7 @@ class formbuilder extends controller {
      */
 
     public function init() {
+        if ($this->getParam('action') === 'newtest') return;
 ///Instatiate an object of the language classes that allows the output of
 ///some text.
         $this->objLanguage = $this->getObject('language', 'language');
@@ -166,17 +169,9 @@ class formbuilder extends controller {
      */
 
     private function __newtest() {
-        $objFlashGraphData = $this->newObject('flashgraphdata', 'utilities');
-///The classes inside the chsimba core modules that allow developers to 
-///create grpahs DO NOT WORK. So do not use them. Maybe in the future,
-///these classes might be rectified.
-        $objFlashGraphData->graphType = 'bar';
-        $objFlashGraphData->setupXAxisLabels(array('Jan', 'Feb', 'March'));
-        $objFlashGraphData->setupYAxis('Rainy Days', NULL, NULL, 10, 5);
-        $objFlashGraphData->addDataSet(array(4, 5, 4), '#3334AD', 50, 'bar', 'Cape Town');
-        $objFlashGraphData->addDataSet(array(6, 7, 2), '#00ff00', 50, 'glassbar', 'Johannesburg');
-        $objFlashGraphData->addDataSet(array(1, 4, 3), '#9900CC', 50, 'sketchbar', 'Durban');
-        return $test = $objFlashGraphData->show();
+        // Retired OpenFlashChart developer demo; no form data is changed.
+        http_response_code(410);
+        return null;
     }
 
     /*!
@@ -799,19 +794,19 @@ class formbuilder extends controller {
                 switch ($formElementType) {
 ///According to the form element type, the form element values
 ///get saved into the database differently.
-                    case 'checkbox';
+                    case 'checkbox':
                         if ($formElementValue == NULL) {
                             $formElementValue = "off";
                         }
                         $formElementValuesArray[] = $formElementValue;
 //$objDBFormSubmitResults->insertSingle($formNumber,$submitNumber, $formElementType, $formElementName,$formElementValue);
                         break;
-                    case 'datepicker';
-                    case 'dropdown';
-                    case 'multiselectable_dropdown';
-                    case 'radio';
-                    case 'text_area';
-                    case 'text_input';
+                    case 'datepicker':
+                    case 'dropdown':
+                    case 'multiselectable_dropdown':
+                    case 'radio':
+                    case 'text_area':
+                    case 'text_input':
                         if ($formElementValue == NULL) {
 ///If the user has not filled a form field, produce a
 ///chisimba dialog box with an error and return back to the current
@@ -824,7 +819,7 @@ class formbuilder extends controller {
                         $formElementValuesArray[] = $formElementValue;
 
                         break;
-                    default;
+                    default:
 ///If a form element type does not exist then spit out a error dialog box.
                         $this->setErrorMessage("Internal Error. The form element type \"" . $formElementType . "\" is not registered to be stored in a database.", $formElementType);
                         break;
@@ -902,19 +897,19 @@ class formbuilder extends controller {
                 switch ($formElementType) {
 ///According to the form element type, the form element values
 ///get saved into the email message differently.
-                    case 'checkbox';
+                    case 'checkbox':
                         if ($formElementValue == NULL) {
                             $formElementValue = "off";
                         }
                         $formElementValuesArray[] = $formElementValue;
 //$objDBFormSubmitResults->insertSingle($formNumber,$submitNumber, $formElementType, $formElementName,$formElementValue);
                         break;
-                    case 'datepicker';
-                    case 'dropdown';
-                    case 'multiselectable_dropdown';
-                    case 'radio';
-                    case 'text_area';
-                    case 'text_input';
+                    case 'datepicker':
+                    case 'dropdown':
+                    case 'multiselectable_dropdown':
+                    case 'radio':
+                    case 'text_area':
+                    case 'text_input':
                         if ($formElementValue == NULL) {
                             $this->setErrorMessage("The " . $formElementType . " named " . $formElementName . " cannot be NULL. Please complete all form fields.", $formElementName);
                             $this->setVar('formNumber', $formNumber);
@@ -922,7 +917,7 @@ class formbuilder extends controller {
                         }
                         $formElementValuesArray[] = $formElementValue;
                         break;
-                    default;
+                    default:
 ///If a form element type does not exist then spit out a error dialog box.
                         $this->setErrorMessage("Internal Error. The form element type \"" . $formElementType . "\" is not registered to be stored in a database.", $formElementType);
                         break;
@@ -1022,19 +1017,19 @@ class formbuilder extends controller {
                 $formElementName = $formElementNameArray[$i];
                 $formElementValue = $this->getParam($formElementName);
                 switch ($formElementType) {
-                    case 'checkbox';
+                    case 'checkbox':
                         if ($formElementValue == NULL) {
                             $formElementValue = "off";
                         }
                         $formElementValuesArray[] = $formElementValue;
 //$objDBFormSubmitResults->insertSingle($formNumber,$submitNumber, $formElementType, $formElementName,$formElementValue);
                         break;
-                    case 'datepicker';
-                    case 'dropdown';
-                    case 'multiselectable_dropdown';
-                    case 'radio';
-                    case 'text_area';
-                    case 'text_input';
+                    case 'datepicker':
+                    case 'dropdown':
+                    case 'multiselectable_dropdown':
+                    case 'radio':
+                    case 'text_area':
+                    case 'text_input':
                         if ($formElementValue == NULL) {
                             $this->setErrorMessage("The " . $formElementType . " named " . $formElementName . " cannot be NULL. Please complete all form fields.", $formElementName);
                             $this->setVar('formNumber', $formNumber);
@@ -1042,7 +1037,7 @@ class formbuilder extends controller {
                         }
                         $formElementValuesArray[] = $formElementValue;
                         break;
-                    default;
+                    default:
                         $this->setErrorMessage("Internal Error. The form element type \"" . $formElementType . "\" is not registered to be stored in a database.", $formElementType);
                         break;
                 }
