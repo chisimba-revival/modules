@@ -1,22 +1,3 @@
-<script language="JavaScript" type="text/javascript" >
-
- jQuery(document).ready(function(){
-        setupCalendarCheckbox('userbox', 'event_user');
-        setupCalendarCheckbox('contextbox', 'event_context');
-        setupCalendarCheckbox('otherbox', 'event_othercontext');
-        setupCalendarCheckbox('sitebox', 'event_site');
-    });
-
-
-function setupCalendarCheckbox(checkId, itemClass)
-{
-    jQuery("#"+checkId).livequery('click', function() {
-            jQuery("."+itemClass).toggle();
-        });
-}
-</script>
-
-
 <?php
 $ret = "";
 $this->loadClass('link', 'htmlelements');
@@ -24,7 +5,7 @@ $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('label', 'htmlelements');
 $this->loadclass('checkbox','htmlelements');
 
-$this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
+$this->appendArrayVar('headerParams', $this->getJavaScriptFile('calendar.js?v=1535', 'calendar'));
 
 
 $message = $this->getParam('message');
@@ -62,6 +43,7 @@ $heading = new htmlheading();
 $heading->str = str_replace('[someone]', $fullname, $title).' '.$addEventLink->show().'  '.$ical->show();
 $heading->type = 1;
 
+if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) $ret .= $this->getObject('contextualhelp','help')->show('calendar','viewing-events');
 $ret .= $heading->show()
         ;
 $checkboxes = array();
@@ -91,12 +73,14 @@ $checkbox = new checkbox('sitebox', NULL, TRUE);
 $checkbox->cssId='sitebox';
 $label = new label($this->objLanguage->languageText('mod_calendar_siteevents','calendar').' ('.$siteEvents.')', 'sitebox');
 $checkboxes[] = $checkbox->show().$label->show();
+$ret .= '<div class="chisimba-form-actions">';
 $divider = '';
 foreach ($checkboxes as $option)
 {
-    $ret .= $divider.$option;
+    $ret .= '<span>'.$option.'</span>';
     $divider = ' &nbsp; &nbsp; &nbsp; ';
 }
+$ret .= '</div>';
 $ret .= $calendarNavigation.$eventsCalendar;
 $ret .= $eventsList;
 $addEventLink = new link($this->uri(array('action' => 'add','groupid'=>$groupid)));

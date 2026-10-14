@@ -101,14 +101,15 @@ class calendarinterface extends ChisimbaObject
      * @var string
      * @access public
      */
-    public $rawEventsList;
+    public $rawEventsList = [];
     
     /**
      * An array to hold events
      * @var string
      * @access public
      */
-    public $eventsList;
+    public $eventsList = [];
+    public $numUserEvents=0, $numSiteEvents=0, $numContextEvents=0, $numOtherEvents=0;
     
     /**
     * Standard constructor methos, set up commonly used
@@ -154,6 +155,7 @@ class calendarinterface extends ChisimbaObject
     
     public function resetEventsArray()
     {
+        $this->rawEventsList = array();
         $this->eventsList = array();
         $this->preparedEventsArray = array();
         $this->preparedListArray = array();
@@ -161,8 +163,12 @@ class calendarinterface extends ChisimbaObject
     
     public function setupCalendar($month, $year)
     {
-        $this->month = $month;
-        $this->year = $year;
+        $month=filter_var(is_scalar($month)&&preg_match('/^[0-9]{1,2}$/D',(string)$month)?(int)$month:null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>12]]);
+        $year=filter_var($year,FILTER_VALIDATE_INT,['options'=>['min_range'=>1900,'max_range'=>2100]]);
+        $this->month = $month ?: (int)date('n');
+        $this->year = $year ?: (int)date('Y');
+        $month=$this->month; $year=$this->year;
+        $this->resetEventsArray();
         
         $siteEvents = $this->getSiteEvents($month, $year);
         $userEvents = $this->getUserEvents($this->userId, $month, $year);
@@ -270,7 +276,7 @@ class calendarinterface extends ChisimbaObject
                     $contextInfo = '<strong>' 
                       . ucwords($this->objLanguage->code2Txt('mod_context_context', 
                           'context', NULL, '[-context-]')) .':</strong> '
-                      . $this->objContext->getTitle($event['context']) . '<br />';
+                      . htmlspecialchars((string)$this->objContext->getTitle($event['context']),ENT_QUOTES,'UTF-8') . '<br />';
                     break;
                 case 'site':
                     $css = 'event_site';
@@ -300,7 +306,7 @@ class calendarinterface extends ChisimbaObject
                     $contextInfo = '<strong>'
                       . ucwords($this->objLanguage->code2Txt('mod_context_context', 
                       'context', NULL, '[-context-]')).':</strong> '
-                      .$this->objContext->getTitle($event['context']).'<br />';
+                      .htmlspecialchars((string)$this->objContext->getTitle($event['context']),ENT_QUOTES,'UTF-8').'<br />';
                     break;
                 case 'workgroup':  $css = 'event_workgroup'; break;
                 default:           $css = ''; break;
@@ -312,34 +318,35 @@ class calendarinterface extends ChisimbaObject
                 
             }
             
+            $event['calendar_category']=$css;
             $this->rawEventsList[$day][] = $event; 
 
             $eventList = '<div class="eventlist ' . $css
-              . '"><strong>' . $event['eventtitle'] . '</strong>';
+              . '"><strong>' . htmlspecialchars((string)$event['eventtitle'],ENT_QUOTES,'UTF-8') . '</strong>';
             
             if ($event['timefrom'] != '') {
                 $eventList .= '&nbsp;('. $event['timefrom'] . ' - ' 
                   . $event['timeto'] . ')';
             }
-            $eventList .= '<div>'. $contextInfo . $event['eventdetails']
+            $eventList .= '<div>'. $contextInfo . $this->getObject('htmlcleaner','utilities')->cleanHtml((string)$event['eventdetails'])
               .'</div>'. $edit . ' ' . $delete . '';
-            if ($event['eventurl'] != NULL) {
+            if (is_string($event['eventurl']) && preg_match('~^https?://~i',$event['eventurl'])) {
                 $link = new link($event['eventurl']);
-                $link->link = $event['eventurl'];
+                $link->link = htmlspecialchars($event['eventurl'],ENT_QUOTES,'UTF-8');
                 $eventList .= '<p>' . $link->show() . '</p>';
             }
             
             $eventList .= '</div>';
 
             if (array_key_exists($day, $this->preparedEventsArray)) {
-                $temp = rtrim ($this->preparedEventsArray[$day], '</ul>');
+                $temp = $this->preparedEventsArray[$day] === '' ? '' : substr($this->preparedEventsArray[$day], 0, -5);
                 $this->preparedEventsArray[$day] = $temp.'<li class="'
-                  .$css.'" title="'.stripslashes($event['eventtitle'])
-                  .'">'.$objTrim->strTrim(stripslashes($event['eventtitle']), 8)
+                  .$css.'" title="'.htmlspecialchars(stripslashes((string)$event['eventtitle']),ENT_QUOTES,'UTF-8')
+                  .'">'.$objTrim->strTrim(htmlspecialchars(stripslashes((string)$event['eventtitle']),ENT_QUOTES,'UTF-8'), 8)
                   .'</li></ul>';
                 $this->preparedListArray[$day] .= '<hr />'.$eventList;
             } else {
-                $this->preparedEventsArray[$day] = '<ul><li class="'.$css.'">'.stripslashes($event['eventtitle']).'</li></ul>';
+                $this->preparedEventsArray[$day] = '<ul><li class="'.$css.'">'.htmlspecialchars(stripslashes((string)$event['eventtitle']),ENT_QUOTES,'UTF-8').'</li></ul>';
                 $this->preparedListArray[$day] = $eventList;
             }
         }
@@ -378,7 +385,7 @@ class calendarinterface extends ChisimbaObject
 
     public function getSmallEventsList()
     {
-        $jq = $this->getCalenderEvents();
+        $this->getCalenderEvents();
         
         if (count($this->eventsList) == 0) {
             return '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_calendar_noeventsinmonth', 'calendar').'</div>';
@@ -395,7 +402,7 @@ class calendarinterface extends ChisimbaObject
                 $table->addCell($events, '', 'top', '', '', 'colspan="6"');
                 $table->endRow();
             }
-            return $table->show() . $jq;
+            return $table->show();
         }
     }
 
@@ -406,7 +413,7 @@ class calendarinterface extends ChisimbaObject
     
     public function getCalendar()
     {
-        $jq = $this->getCalenderEvents('wide');
+        $this->getCalenderEvents('wide');
         
         $objCalendarGenerator = $this->getObject('calendargenerator', 'calendarbase');
         
@@ -497,88 +504,27 @@ class calendarinterface extends ChisimbaObject
      */
     private function getCalenderEvents($type = 'small')
     {
-        $objTrim = $this->getObject('trimstr', 'strings');
-
-        $timeLabel = $this->objLanguage->languageText('word_from', 'system');
-        $titleLabel = $this->objLanguage->languageText('word_title', 'system');
-        $detailsLabel = $this->objLanguage->languageText('word_details', 'system');
-        
-        if (!empty($this->rawEventsList))
-        {
-            ksort($this->rawEventsList);
-            foreach ($this->rawEventsList as $day => $events)
-            {
-                if ((is_countable($events) ? count($events) : 0) > 1)
-                {
-                    $startTime = array();
-                    //$events = $this->rawEventsList[$day];
-                    foreach ($events as $key => $line)
-                    {
-                        $startTime[$key] = $line['timefrom'];
-                    }
-                    array_multisort($startTime, SORT_ASC, $events);
-                    $this->rawEventsList[$day] = $events;
+        $escape=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+        $this->eventsList=[];
+        ksort($this->rawEventsList);
+        foreach($this->rawEventsList as $day=>$events) {
+            usort($events,static fn($a,$b)=>strcmp((string)$a['timefrom'],(string)$b['timefrom']));
+            $items='';
+            foreach($events as $event) {
+                $title=$escape(strip_tags(stripslashes((string)$event['eventtitle'])));
+                $category=$escape($event['calendar_category']??'');
+                $from=$escape(substr((string)$event['timefrom'],0,5));
+                $to=$escape(substr((string)$event['timeto'],0,5));
+                if($type==='wide') {
+                    $items.='<div class="'.$category.'"><strong>'.$from.'</strong> - '.$title.'</div>';
+                } else {
+                    $details=$escape(strip_tags(stripslashes((string)$event['eventdetails'])));
+                    $items.='<details class="'.$category.'"><summary>'.$title.'</summary><p>'.$from.' - '.$to.'</p><p>'.$details.'</p></details>';
                 }
             }
-
-            $str = '';
-            foreach ($this->rawEventsList as $day => $events)
-            {
-                if ((is_countable($events) ? count($events) : 0) > 1)
-                {
-                    $array = array('date' => date('l, j F Y', strtotime($events[0]['eventdate'])));
-                    $title = $this->objLanguage->code2Txt('mod_calendar_events', 'calendar', $array);
-                }
-                else
-                {
-                    $array = array('date' => date('l, j F Y', strtotime($events[0]['eventdate'])));
-                    $title = $this->objLanguage->code2Txt('mod_calendar_event', 'calendar', $array);
-                }
-
-                $string = '';
-                foreach ($events as $key =>$event)
-                {
-                    if ($type == 'wide')
-                    {
-                        $temp = str_replace(' ', '~', strip_tags(stripcslashes($this->rawEventsList[$day][$key]['eventtitle'])));
-                        $temp = wordwrap($temp, 15, '&#8203;', TRUE);
-                        $temp = str_replace('~', ' ', $temp);
-                        $string .= '<div style="padding: 0.25em;"><b>'.date('H:i', strtotime($this->rawEventsList[$day][$key]['timefrom'])).'</b>';
-                        $string .= ' - '.$temp.'</div>';
-                    }   
-                    else
-                    {
-                        $eventTitle = strip_tags(wordwrap(stripslashes($this->rawEventsList[$day][$key]['eventtitle']), 25, '&#8203;', true));
-                        $string .= '<a href="#" id="event_'.$day.'_'.$key.'" onclick="jQuery(\'#jqdialogue_'.$day.'_'.$key.'\').dialog(\'open\')">'.$eventTitle.'</a><br />';                
-                    }
-
-                    $table = $this->newObject('htmltable', 'htmlelements');
-                    $table->startRow();
-                    $table->addCell($titleLabel . ': ', '10%');
-                    $table->addCell($event['eventtitle']);
-                    $table->endRow();
-                    $table->startRow();
-                    $table->addCell($timeLabel . ': ', '10%');
-                    $table->addCell(date('g:i a', strtotime($event['timefrom'])).'&nbsp;-&nbsp;'.date('g:i a', strtotime($event['timeto'])));
-                    $table->endRow();
-                    $table->startRow();
-                    $table->addCell($detailsLabel . ': ', '10%');
-                    $table->addCell(strip_tags($objTrim->strTrim(stripslashes($event['eventdetails'])), 120));
-                    $table->endRow();                   
-                    $content = $table->show().'<br /><br />';
-
-                    $this->objDialog = $this->newObject('dialog', 'jquerycore');
-                    $this->objDialog->setCssId('jqdialogue_'.$day.'_'.$key);
-                    $this->objDialog->setTitle($title);
-                    $this->objDialog->setContent($content);
-                    $this->objDialog->setWidth(350);
-                    $str .= $this->objDialog->show();
-                }
-                $this->eventsList[$day] = $string;
-            }
-            return $str;
+            $this->eventsList[$day]=$items;
         }
-        return NULL;
+        return '';
     }
 }
 ?>
