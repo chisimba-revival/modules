@@ -51,68 +51,19 @@ $GLOBALS['kewl_entry_point_run'])
  */
 class activityops extends ChisimbaObject
 {
-    /**
-     * The system configuration.
-     *
-     * @access protected
-     * @var    object
-     */
-    protected $objAltConfig;
-
-    /**
-     * Property to hold pubsubhubbub object.
-     * @access public
-     */
-    public $objPubSubHubbub;
-
-    /**
-     * Constructor
-     *
-     */
-    
+    private $store;
+    private $config;
     public function init()
     {
-        $this->objActDB = $this->getObject('activitydb');
-        $this->objAltConfig = $this->getObject('altconfig', 'config');
-        $this->objFeeds = $this->getObject('feeder', 'feed');
-        $this->objPubSubHubbub = $this->getObject('pubsubhubbub', 'pubsubhubbub');
+        $this->store = $this->getObject('activitydb','activitystreamer');
+        $this->config = $this->getObject('dbsysconfig','sysconfig');
     }
-    
-    /**
-     * This method will for the base for all 
-     * posts to be listed and distributed
-     *
-     * @param object $notification
-     */
-    public function postmade($notification) 
+    /** Recording is opt-in; installing the browser must not begin collecting events. */
+    public function postmade($notification)
     {
-        //add to database
-        $this->objActDB->insertPost($notification);
-
-        // Notify the hub of the new entry.
-        $id = $this->objAltConfig->getsiteRoot().'index.php?module=activitystreamer';
-        $this->objPubSubHubbub->publish($id);
-        
-        //send to somewhere with XMPP or something
-        
-        //email it if you like
-
+        if (!in_array(strtolower((string)$this->config->getValue('ENABLE_RECORDING','activitystreamer')), ['true','1'], true)) return false;
+        return $this->store->insertPost($notification);
     }
-    
-    public function createFeeds($notification)
-    {
-        $this->objFeeds->setupFeed(false, 'Latest Activity',' some description', $this->uri(array()), 'http://localhost/somefeeds.rss');
-        $content = $notification->getNotificationInfo();
-        $this->objFeeds->addItem($notification->getNotificationName(), $content['link'], $content['description'], "wwww.somewhere.com", $content['author'] );
-        error_log($this->objFeeds->output());
-        
-        //
-    }
-    
-    
-    
-    
-    
-    
-
+    /** Old demonstration feed publishing is retired; no external hub is contacted. */
+    public function createFeeds($notification) { return false; }
 }

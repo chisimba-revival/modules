@@ -57,79 +57,13 @@ $GLOBALS['kewl_entry_point_run'])
  */
 class block_browseactivities extends ChisimbaObject
 {
-    /**
-    * @var string $title The title of the block
-    */
     public $title;
-    
-    /**
-    * @var object $objLanguage String to hold the language object
-    */
-    private $objLanguage;
-
-    /**
-    * Standard init function to instantiate language object
-    * and create title, etc
-    */
     public function init()
     {
-        try {
-            $this->objLanguage =  $this->getObject('language', 'language');
-            $this->objUser =  $this->getObject('user', 'security');
-            $this->objConfig =  $this->getObject('altconfig', 'config');
-            //$this->objConfig->getSiteName()
-            $this->title = ucwords($this->objLanguage->code2Txt('mod_activitystreamer_siteupdates', 'activitystreamer', NULL, 'Site Updates'));
-            
-            $this->loadClass('checkbox', 'htmlelements');
-        } catch (customException $e) {
-            customException::cleanUp();
-        }
+        $this->title = $this->getObject('activityview','activitystreamer')->text('site');
     }
-    
-    /**
-    * Standard block show method. It uses the renderform
-    * class to render the login box
-    */
     public function show()
     {
-        //$objTab = $this->newObject('jqtabs', 'htmlelements');
-
-        $objUtils = $this->getObject('activityutilities', 'activitystreamer');
-        $objSysConfig  = $this->getObject('altconfig','config');
-        $this->appendArrayVar('headerParams', '
-        	<script type="text/javascript">
-        		var uri = "'.str_replace('&amp;','&',$this->uri(array('action' => 'jsonlistactivities', 'module' => 'activitystreamer'))).'"; 
-        		var baseuri = "'.$objSysConfig->getsiteRoot().'index.php"; </script>');        
-        //Ext stuff
-        $ext = "";
-        $ext .=$this->getJavaScriptFile('ext-3.0-rc2/adapter/ext/ext-base.js', 'ext');
-        $ext .=$this->getJavaScriptFile('ext-3.0-rc2/ext-all.js', 'ext');
-        $ext .=$this->getJavaScriptFile('button.js', 'activitystreamer');
-        //$ext .=$this->getJavaScriptFile('search.js', 'activitystreamer');
-        $ext .=$this->getJavaScriptFile('ext-3.0-rc2/examples/shared/examples.js', 'ext');
-       
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/resources/css/ext-all.css', 'ext').'" type="text/css" />';
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/examples/grid/grid-example.css', 'ext').'" type="text/css" />';
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/examples/shared/examples.css', 'ext').'" type="text/css" />';
-        $this->appendArrayVar('headerParams', $ext);
-        
-								//Div to render content
-        $str = '<input type="button" id="show-btn-siteupdates" value="Site Activities" /><br /><br />
-        <div id="hello-win-siteupdates" class="x-hidden">
-    <div class="x-window-header">'.$this->objConfig->getSiteName()." ".$this->title.'</div>
-    <div id="hello-tabs">
-        <!-- Auto create tab 1 -->
-        <div class="x-tab" title="'.$this->objConfig->getSiteName()." ".$this->title.'" id="activity-topic-grid">
-        </div>
-        <!-- Auto create tab 2 -->
-        <!--<div class="x-tab" title="Tab 2">
-            <p>... Tab 2!</p>
-        </div>-->
-    </div>
-</div>';
-        
-        return $str;
-
+        return $this->getObject('activityview','activitystreamer')->block('site', false);
     }
 }
-?>

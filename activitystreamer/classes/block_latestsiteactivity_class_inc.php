@@ -52,65 +52,13 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_latestsiteactivity extends ChisimbaObject
 {
-    /**
-     * The title of the block
-     *
-     * @var    object
-     * @access public
-     */
     public $title;
-    /**
-     * last ten posts box
-     *
-     * @var    object
-     * @access public
-     */
-    public $display;
-    
-    /**
-     * Description for public
-     *
-     * @var    object
-     * @access public
-     */
-    public $objLanguage;
-    public $objBlocks;
-    /**
-     * Standard init function
-     *
-     * Instantiate language and user objects and create title
-     *
-     * @return NULL
-     */
-    public function init() 
+    public function init()
     {
-    	
-        $this->objLanguage = $this->getObject('language', 'language');
-        $this->objDBActivities = $this->getObject('activitydb');
-        $this->title = $this->objLanguage->languageText('mod_activitystreamer_latestactivity', 'activitystreamer', 'Latest Activities');
+        $this->title = $this->getObject('activityview','activitystreamer')->text('site');
     }
-    /**
-     * Standard block show method.
-     *
-     * @return string $this->display block rendered
-     */
-    public function show() 
+    public function show()
     {
-    	//gets the 10 latest entries
-    	$recs = $this->objDBActivities->getSiteActivities();
-    	//var_dump($recs);
-    	$str = "";
-    	if((is_countable($recs) ? count($recs) : 0) > 0)
-    	{
-    		foreach($recs as $rec)
-    		{
-    			$str .="<div>".$rec['title']."</div>";
-    		}
-    		return $str;
-    	} else {
-    		return '<span class="subdued">No activities logged</span>';
-    	}
-        return "Latest course activity goes here ...";
+        return $this->getObject('activityview','activitystreamer')->block('site', false);
     }
 }
-?>

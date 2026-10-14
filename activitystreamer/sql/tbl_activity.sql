@@ -35,8 +35,8 @@ $fields = array(
 		'type' => 'timestamp',
 	),
 	'createdby' => array(
-		'type' => 'integer',
-		'length' => 10,
+		'type' => 'text',
+		'length' => 50,
 	),
 	'link' => array(
 		'type' => 'text',		

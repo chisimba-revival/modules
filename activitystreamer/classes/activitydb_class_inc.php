@@ -38,6 +38,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class activitydb extends dbTable
 {
+    private $objUser;
     /**
      * Constructor method to define the table
      */
@@ -77,12 +78,12 @@ class activitydb extends dbTable
     	}
     	$messageId = $this->insert(array(
                 'module' => $notification->getNotificationName(),
-                'description' => $content['description'],
-                'title' => $content['title'],
+                'description' => ($content['description'] ?? ''),
+                'title' => ($content['title'] ?? ''),
                 'createdon' => $this->now(),
                 'createdby' => $userId,
                 'contextcode' => $content['contextcode'],
-                'link'        => $content['link'],
+                'link'        => ($content['link'] ?? ''),
             ));
             
        return $messageId;
@@ -96,16 +97,12 @@ class activitydb extends dbTable
      */
     public function getActivities($filter = null, $limit = 10)
     {
-    	//Get the rowcount
-    	$rowcount = $this->getRecordCount();
-    	$offset = $rowcount - $limit;
-    	return $this->getAll("$filter ORDER BY puid DESC LIMIT {$limit}");
+        // Raw SQL fragments are no longer accepted by this legacy helper.
+        if ($filter !== null && $filter !== '') throw new InvalidArgumentException('Use the scoped activity browser.');
+        return $this->getObject('activitybrowser','activitystreamer')->browse('site', [], (int)$limit)['rows'];
     }
-    
     public function getSiteActivities($limit = 10)
     {
-    	$filter = "WHERE isNull(contextcode)";
-    	return $this->getActivities($filter, $limit);
+        return $this->getActivities(null, $limit);
     }
-    
 }

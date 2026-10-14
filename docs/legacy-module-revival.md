@@ -18,3 +18,8 @@ bound queries; its ExtJS/Ingrid/Editable surfaces are removed. See
 `triplestore/README.md` for validation, retired endpoints and remaining revival
 limits. It is installed on local for testing only; Mentors remains unregistered.
 Activity Streamer is the next preserved ExtJS caller to modernise.
+
+Activity Streamer 0.045 also has a native private browser and protected blocks.
+It is installed locally for checks with automatic recording disabled. Event
+producers, privacy/retention and any future external publishing still need review
+before full revival. See `activitystreamer/README.md`.

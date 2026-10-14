@@ -52,70 +52,13 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_latestcontextactivity extends ChisimbaObject
 {
-    /**
-     * The title of the block
-     *
-     * @var    object
-     * @access public
-     */
     public $title;
-    /**
-     * last ten posts box
-     *
-     * @var    object
-     * @access public
-     */
-    public $display;
-    
-    /**
-     * Description for public
-     *
-     * @var    object
-     * @access public
-     */
-    public $objLanguage;
-    public $objBlocks;
-    /**
-     * Standard init function
-     *
-     * Instantiate language and user objects and create title
-     *
-     * @return NULL
-     */
-    public function init() 
+    public function init()
     {
-    	
-        $this->objLanguage = $this->getObject('language', 'language');
-        $this->objDBActivities = $this->getObject('activitydb');
-        $this->title = $this->objLanguage->languageText('mod_activitystreamer_latestactivityall', 'activitystreamer', 'All course activities');
-        // Load Context Object
-        $this->objContext = $this->getObject('dbcontext', 'context');
-        // Store Context Code
-        $this->contextCode = $this->objContext->getContextCode();
-
+        $this->title = $this->getObject('activityview','activitystreamer')->text('context');
     }
-    /**
-     * Standard block show method.
-     *
-     * @return string $this->display block rendered
-     */
-    public function show() 
+    public function show()
     {
-    	//gets the 10 latest entries
-    	if(!empty($this->contextCode)){
-    		$recs = $this->objDBActivities->getActivities($filter = "WHERE contextcode='".$this->contextCode."'");
-    	} else {
-    		$recs = array();
-    	}
-    	$str = "";
-    	if((is_countable($recs) ? count($recs) : 0) > 0) {
-            foreach($recs as $rec) {
-                    $str .="<div>".$rec['title']."</div>";
-            }
-            return $str;
-    	} else {
-            return '<span class="subdued">No activities logged</span>';
-    	}
+        return $this->getObject('activityview','activitystreamer')->block('context', false);
     }
 }
-?>

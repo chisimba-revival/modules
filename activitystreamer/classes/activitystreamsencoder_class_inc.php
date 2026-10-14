@@ -106,9 +106,7 @@ class activitystreamsencoder extends ChisimbaObject
      */
     public function init()
     {
-        $this->objActDB = $this->getObject('activitydb');
-        $this->objPubSubHubbub = $this->getObject('pubsubhubbub', 'pubsubhubbub');
-        $this->hub = $this->objPubSubHubbub->getHub();
+        // Encoding is local and has no database or external hub dependency.
     }
     
     /**
@@ -176,7 +174,6 @@ class activitystreamsencoder extends ChisimbaObject
 	<link rel="alternate" type="text/html" href="{$this->link}" />
 	<id>{$this->id}</id>
 	<link rel="self" type="application/atom+xml" href="{$this->id}" />
-	<link rel="hub" href="{$this->hub}" />
    
 END;
         if (sizeof($this->entries))

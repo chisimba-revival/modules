@@ -57,63 +57,13 @@ $GLOBALS['kewl_entry_point_run'])
  */
 class block_browsecourseactivities extends ChisimbaObject
 {
-    /**
-    * @var string $title The title of the block
-    */
     public $title;
-    
-    /**
-    * @var object $objLanguage String to hold the language object
-    */
-    private $objLanguage;
-
-    /**
-    * Standard init function to instantiate language object
-    * and create title, etc
-    */
     public function init()
     {
-        try {
-            $this->objLanguage =  $this->getObject('language', 'language');
-            $this->objUser =  $this->getObject('user', 'security');
-            $this->title = ucwords($this->objLanguage->code2Txt('mod_activitystreamer_courseupdates', 'activitystreamer', NULL, 'Course Updates'));
-            
-            $this->loadClass('checkbox', 'htmlelements');
-        } catch (customException $e) {
-            customException::cleanUp();
-        }
+        $this->title = $this->getObject('activityview','activitystreamer')->text('pages');
     }
-    
-    /**
-    * Standard block show method. It uses the renderform
-    * class to render the login box
-    */
     public function show()
     {
-        //$objTab = $this->newObject('jqtabs', 'htmlelements');
-
-        $objUtils = $this->getObject('activityutilities', 'activitystreamer');
-        $objSysConfig  = $this->getObject('altconfig','config');
-        
-        //Ext stuff
-        $ext =$this->getJavaScriptFile('ext-3.0-rc2/adapter/ext/ext-base.js', 'htmlelements');
-        $ext .=$this->getJavaScriptFile('ext-3.0-rc2/ext-all.js', 'htmlelements');
-        $ext .=$this->getJavaScriptFile('searchcourseactivities.js', 'activitystreamer');
-        $ext .=$this->getJavaScriptFile('ext-3.0-rc2/examples/shared/examples.js', 'htmlelements');
-       
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/resources/css/ext-all.css', 'extjs').'" type="text/css" />';
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/examples/grid/grid-example.css', 'extjs').'" type="text/css" />';
-        $ext .= '<link rel="stylesheet" href="'.$this->getResourceUri('ext-3.0-rc2/examples/shared/examples.css', 'extjs').'" type="text/css" />';
-        $this->appendArrayVar('headerParams', $ext);
-        
-        $this->appendArrayVar('headerParams', '
-        	<script type="text/javascript">
-        		var uri = "'.str_replace('&amp;','&',$this->uri(array('action' => 'jsoncourseactivities', 'module' => 'activitystreamer'))).'"; 
-        		var baseuri = "'.$objSysConfig->getsiteRoot().'index.php"; </script>');
-								//Div to render content
-        $str = '<div id="courseactivities-topic-grid"></div>';
-        return $str;
-
+        return $this->getObject('activityview','activitystreamer')->block('pages', false);
     }
 }
-?>
