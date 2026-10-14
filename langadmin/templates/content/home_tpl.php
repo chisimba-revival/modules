@@ -21,7 +21,6 @@ $addbutton->setOnClick('javascript: window.location=\'' . $uri . '\'');
 
 echo $addbutton->show();
 $objConfig = $this->getObject("altconfig", "config");
-echo '&nbsp;|&nbsp;<a href="' . $objConfig->getsiteRoot() . '/packages/langadmin/resources/ChisimbaLangTranslator/dist/ChisimbaLangTranslator.jar">' . $this->objLanguage->languageText('mod_langadmin_downloadclient', 'langadmin') . '</a>';
 echo '</div>';
 
 $table = $this->getObject('htmltable', 'htmlelements');
