@@ -73,3 +73,16 @@ foreach (['image_left','image_right'] as $type) {
  check(!str_contains($s->render([$right]),'chisimba-media-badged'),'Dynamic badge never stored in page preview');
 }
 echo "PASS: attachment image badges on both layouts, escaped and public-only\n";
+
+$after=$s->command($blocks,'addafter:text:'.$blocks[0]['id']);check(count($after)===3&&$after[0]['id']===$blocks[0]['id']&&$after[2]['id']===$blocks[1]['id']&&$after[1]['id']!==$blocks[0]['id'],'Insert after middle preserves neighbours');
+$last=$s->command($blocks,'addafter:text:'.$blocks[1]['id']);check(count($last)===3&&$last[1]['id']===$blocks[1]['id'],'Insert after last');
+rejects(fn()=>$s->command($blocks,'addafter:text:missing'));
+echo "PASS: insert after preserves neighbours and rejects a missing target\n";
+
+$audio=$s->emptyBlock('audio');$audio['title']='Bird call';$audio['url']='/recordings/bird.mp3';
+$audioHtml=$s->render($s->validate([$audio]));
+check(str_contains($audioHtml,'<audio controls preload="none"')&&str_contains($audioHtml,'aria-label="Bird call"')&&!str_contains($audioHtml,'autoplay'),'Accessible audio is opt-in');
+check(str_contains($audioHtml,'href="/recordings/bird.mp3"'),'Audio has a direct fallback');
+$audio['url']='javascript:alert(1)';rejects(fn()=>$s->validate([$audio]));
+check($s->render([$s->emptyBlock('audio')])==='','Empty audio placeholder stays unpublished');
+echo "PASS: accessible audio, direct fallback and unsafe URL rejection\n";
