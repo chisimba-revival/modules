@@ -74,7 +74,6 @@ jQuery(function() {
                         jQuery("#wall_onlytext_"+id).html(tmpOnlytxt);
                         if(msg == "true") {
                             jQuery("#wall_"+id).prepend("<div class='wallpostrow'><span class='wallposter'>"+me+"</span><div class='msg'>"+status_text+"</div></div>");
-                            jQuery(".msg:first a").oembed(null, {maxWidth: 480, embedMethod: "append"});
                         } else {
                             alert(msg);
                             //alert("Cannot be posted at the moment! Please try again later.");
@@ -172,12 +171,10 @@ jQuery(function() {
                         if ( jQuery("#wct_"+fixedid).length > 0 ) {
                             jQuery("#wct_"+fixedid).prepend('<li><b><span class="wall_comment_author">'+youSaid+'</span></b>&nbsp;<div id=cmt_'+fixedid+'>'+comment_text+'<div>&nbsp;<div class="wall_comment_when"><strong>'+secsAgo+'</strong></div></li>');
                             jQuery("#c__"+fixedid).slideToggle(300);
-                            jQuery("#cmt_"+fixedid+":first a").oembed(null, {maxWidth: 480, embedMethod: "append"});
                         } else {
                             if ( jQuery("#wpr__"+fixedid).length > 0 ) {
                                 jQuery("#wpr__"+fixedid).append('<br /><br /><div class="wall_comments_top"></div><ol class="wall_replies" id="wct_'+fixedid+'"><li><b><span class="wall_comment_author">'+youSaid+'</span></b>&nbsp;'+comment_text+'<div class="wall_comment_when"><strong>'+secsAgo+'</strong></div></li></ol>');
                                 jQuery("#c__"+fixedid).slideToggle(300);
-                                jQuery("#cmt_"+fixedid+":first a").oembed(null, {maxWidth: 480, embedMethod: "append"});
                             } else {
                                 // We should never be able to get here
                                 alert(nothingApppendTo);

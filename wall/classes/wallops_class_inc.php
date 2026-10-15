@@ -128,11 +128,8 @@ class wallops extends ChisimbaObject {
         //$this->setVar('JQUERY_VERSION', '1.4.2');
         // Create an instance of the database class.
         $this->objDbwall = & $this->getObject('dbwall', 'wall');
-        // Load jQuery Oembed.
-        $oEmb = $this->getObject('jqoembed', 'oembed');
-        $oEmb->loadOembedPlugin();
-        // Load the functions specific to this module.
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('oembed.js'));
+        // Native previews also enhance newly inserted posts and replies.
+        $this->getObject('nativeembed','oembed')->load('.wall_post_content a, .wall_comment_content a, .msg a, .wall_replies a');
         // Load the functions specific to this module.
         $this->appendArrayVar('headerParams', $this->getJavaScriptFile('wall.js'));
         // Instantiate the user object.
