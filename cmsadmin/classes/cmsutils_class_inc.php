@@ -1943,12 +1943,7 @@
 					});
 				});
 				
-                jQuery(document).ready(function(){
-                    jQuery('#btnaddcontent').livequery('click',function(){
-                        alert(jQuery('#menuSelection').html());
-                        //document.href.location = '?module=cmsadmin&amp;action=addcontent';
-                    });
-                });
+
 			</script>";
 			
 			$this->appendArrayVar('headerParams', $script);

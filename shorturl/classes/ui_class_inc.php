@@ -46,9 +46,6 @@
 
                 //Loading the jqGrid with cms theme
                 $this->objGrid->loadGrid('shorturl');
-                
-                //Live Query
-                $this->jQuery->loadLiveQueryPlugin();
                 $this->jQuery->loadFormPlugin();
 
                 $this->loadClass('textinput', 'htmlelements');
@@ -317,44 +314,7 @@ HTSRC;
 
 
 //Attaching the callback method to dynamically bind EDIT events for Ajax loaded items
-//This will be called when the grid completes the JSON load
-/*
-$script = <<<EDITCALLBACK
-<script type="text/javascript">
-    //Method to provide a callback function to bind edit events
-    function bindAjaxEditForm(anchor_id, row_id){
-        //Initializing the AJAX Boxy Window
-        options = {
-            sessionName: 'PHPSESSID',
-            showBoxOnSessionExpiry: false,
-            ajaxComplete: function(data){
-                jQuery('#chisimba_grid_01').hideLoading();
 
-                //Firefox 3.05beta won't rebind after first event fired (Boxy submit only works once)
-                bindFormSubmit('frm_addgrid_' + row_id, 'frm_submit_btn_' + row_id);
-
-            },
-            ajaxError: function(data){
-                location.href="?module=shorturl";
-            },
-            ajaxSessionExpired: function(data){
-                jQuery('#chisimba_grid_01').hideLoading();
-                document.location.href="?module=shorturl";
-            }
-        };
-
-        jQuery('#' + anchor_id).livequery('click',function(){
-            jQuery('#chisimba_grid_01').showLoading();
-        });
-
-        jQuery('#' + anchor_id).boxy(options);
-
-    }
-
-</script>
-EDITCALLBACK;
-$this->appendArrayVar('headerParams', $script);
-*/
 
             $table = new htmlTable();
             $table->width = "100%";

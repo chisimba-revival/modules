@@ -58,9 +58,6 @@ class forms extends controller
 
         $this->objBox = $this->newObject('jqboxy', 'jquery');
         //$this->objConfig =$this->newObject('altconfig', 'config');
-
-        //Live Query
-        $this->jQuery->loadLiveQueryPlugin();
         //$this->jQuery->loadFormPlugin();
 
         // Log this module call
