@@ -32,7 +32,7 @@ $scripts .= '<script type="text/javascript">
                         id = stripId(ui.panel.id);
                         loadGroupTab(id);                       
                     }
-    
+
                     });         
 
             });
@@ -84,7 +84,7 @@ $script = $this->getJavaScriptFile('jquery/jquery.autocomplete.js', 'htmlelement
 $this->appendArrayVar('headerParams', $script);
 $str = '<link rel="stylesheet" href="'.$this->getResourceUri('jquery/jquery.autocomplete.css', 'htmlelements').'" type="text/css" />';
 $this->appendArrayVar('headerParams', $str);
-    
+
 $str = '<script type="text/javascript">
 $().ready(function() {
 
@@ -146,15 +146,15 @@ function submitSearchForm(frm)
     {
         addUser(groupId, username);
     }
-    
+
     frm.hiddensuggest4.value = "";
     frm.suggest4.value = "";
-    
+
 }
     </script>';
 $this->appendArrayVar('headerParams', $str);
 
-    
+
 
 
 
@@ -454,326 +454,13 @@ echo $objCmsTree->getCMSAdminTree($currentNode);
 
 <?php
 
-/*
-//Testing Flexigrid Plugin
-$jQuery = $this->newObject('jquery', 'htmlelements');
-$jQuery->loadJqGridPlugin();
-
-ob_start();
-?>
-<script type="text/javascript"> 
-    // initialise Superfish 
-    jQuery(document).ready(function(){
-        jQuery("#list2").jqGrid({
-            // the url parameter tells from where to get the data from server
-            // adding ?nd='+new Date().getTime() prevent IE caching
-            //url:'example.php?nd='+new Date().getTime(),
-            url:'flexijson.php',
-            // datatype parameter defines the format of data returned from the server
-            // in this case we use a JSON data
-            datatype: "json",
-            // colNames parameter is a array in which we describe the names
-            // in the columns. This is the text that apper in the head of the grid.
-            colNames:['Folder Title','Section Name', 'Pages', 'Display Type','Order','Published','Options', 'Date'],
-            // colModel array describes the model of the column.
-            // name is the name of the column,
-            // index is the name passed to the server to sort data
-            // note that we can pass here nubers too.
-            // width is the width of the column
-            // align is the align of the column (default is left)
-            // sortable defines if this column can be sorted (default true)
-            colModel:[
-                //{name:'id',index:'id', width:55},
-                {name:'title',index:'title', width:150},
-                {name:'sectionname',index:'title asc, date', width:100},
-                {name:'pages',index:'pages', width:40, align:"center"},
-                {name:'display',index:'layout', width:90, align:"right"},
-                {name:'order',index:'order', width:80,align:"right"},   
-                {name:'published',index:'published', width:80, sortable:false},
-                {name:'options',index:'options', width:80,align:"right"},
-                {name:'date',index:'date', width:80,align:"right"}
-            ],
-            multiselect: true,
-            height: "100%",
-            // pager parameter define that we want to use a pager bar
-            // in this case this must be a valid html element.
-            // note that the pager can have a position where you want
-            //pager: jQuery('#pager2'),
-            // rowNum parameter describes how many records we want to
-            // view in the grid. We use this in example.php to return
-            // the needed data.
-            rowNum:100,
-            // rowList parameter construct a select box element in the pager
-            //in wich we can change the number of the visible rows
-            rowList:[10,20,30],
-            // path to mage location needed for the grid
-            imgpath: 'themes/sand/images',
-            // sortname sets the initial sorting column. Can be a name or number.
-            // this parameter is added to the url
-            sortname: 'id',
-            //viewrecords defines the view the total records from the query in the pager
-            //bar. The related tag is: records in xml or json definitions.
-            viewrecords: true,
-            //sets the sorting order. Default is asc. This parameter is added to the url
-            sortorder: "desc",
-            caption: "Sections Manager"
-        });
-//*/
-
-/*
-        //jQuery("#list2").jqGrid();
-    });
-</script>
-<?php
-$jqgrid = ob_get_contents();
-ob_end_clean();
-
-$this->appendArrayVar('headerParams', $jqgrid);
-?>
-
-<!-- the grid definition in html is a table tag with class 'scroll' -->
-<table id="list2" class="scroll" cellpadding="0" cellspacing="0"></table>
-
-<!-- pager definition. class scroll tels that we want to use the same theme as grid -->
-<div id="pager2" class="scroll" style="text-align:center;"></div>
-
-<?php
-/*
-//Testing Flexigrid Plugin
-$jQuery = $this->newObject('jquery', 'htmlelements');
-$jQuery->loadFlexgridPlugin();
-
-
-ob_start();
-?>
-<script type="text/javascript"> 
-    // initialise Superfish 
-    jQuery(document).ready(function(){
-/*
-         //XML Implementation
-        jQuery("#flexixml").flexigrid
-                    (
-                    {
-                    url: 'flexixml.xml',
-                    dataType: 'xml',
-                    colModel : [
-                        {display: 'ISO', name : 'iso', width : 40, sortable : true, align: 'center'},
-                        {display: 'Name', name : 'name', width : 180, sortable : true, align: 'left'},
-                        {display: 'Printable Name', name : 'printable_name', width : 120, sortable : true, align: 'left'},
-                        {display: 'ISO3', name : 'iso3', width : 130, sortable : true, align: 'left', hide: true},
-                        {display: 'Number Code', name : 'numcode', width : 80, sortable : true, align: 'right'}
-                        ],
-                    searchitems : [
-                        {display: 'title', name : 'title'},
-                        {display: 'Name', name : 'name', isdefault: true}
-                        ],
-                    sortname: "title",
-                    sortorder: "asc",
-                    usepager: true,
-                    title: 'Sections Manager',
-                    useRp: true,
-                    rp: 15,
-                    showTableToggleBtn: true,
-                    width: 700,
-                    height: 200
-                    }
-                    );   
-    //*/
-/*
-         //JSON Implementation
-        jQuery("#flexjson").flexigrid
-                    (
-                    {
-                    url: 'flexijson.php',
-                    dataType: 'json',
-                    colModel : [
-                        {display: 'ISO', name : 'iso', width : 40, sortable : true, align: 'center'},
-                        {display: 'Name', name : 'name', width : 180, sortable : true, align: 'left'},
-                        {display: 'Printable Name', name : 'printable_name', width : 120, sortable : true, align: 'left'},
-                        {display: 'ISO3', name : 'iso3', width : 130, sortable : true, align: 'left', hide: true},
-                        {display: 'Number Code', name : 'numcode', width : 80, sortable : true, align: 'right'}
-                        ],
-                    searchitems : [
-                        {display: 'title', name : 'title'},
-                        {display: 'Name', name : 'name', isdefault: true}
-                        ],
-                    sortname: "title",
-                    sortorder: "asc",
-                    usepager: true,
-                    title: 'Sections Manager',
-                    useRp: true,
-                    rp: 15,
-                    showTableToggleBtn: true,
-                    width: 700,
-                    height: 200
-                    }
-                    );   
-    //*/
-    /*
-        jQuery("#flex1").flexigrid({
-            title: 'Sections Manager',
-            width: 700,
-            height: 200,
-        });
-    //*/
-/*
-        jQuery("#flexme1").flexigrid();
-    //*/
-/*
-    }); 
-
-    </script>
-<?php
-$flexjs = ob_get_contents();
-ob_end_clean();
-
-$this->appendArrayVar('headerParams', $flexjs);
-
-$css = "    
-
-     .flexigrid div.fbutton .add
-        {
-            background: url(css/images/add.png) no-repeat center left;
-        }   
-
-    .flexigrid div.fbutton .delete
-        {
-            background: url(css/images/close.png) no-repeat center left;
-        }   
-
-";
-
-$this->appendArrayVar('headerParams', '<style>'.$css.'</style>');
 
 
 
-?>
-
-<b>Example 1</b>
-<p>
-The most basic example with the zero configuration, with a table converted into flexigrid 
-(<a href="#" onclick="$(this).parent().next().toggle(); return false;">Show sample code</a>)
-</p>
-<div class="code">
-    <pre>$('.flexme').flexigrid();</pre>
-
-</div>
-<table id="flexme1">
-    <thead>
-            <tr>
-                <th width="100">Col 1</th>
-                <th width="100">Col 2</th>
-                <th width="100">Col 3 is a long header name</th>
-                <th width="300">Col 4</th>
-
-            </tr>
-    </thead>
-    <tbody>
-            <tr>
-                <td>This is data 1 with overflowing content</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-
-            </tr>
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-
-            <tr>
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            <tr>
-
-                <td>This is data 1</td>
-                <td>This is data 2</td>
-                <td>This is data 3</td>
-                <td>This is data 4</td>
-            </tr>
-            
-    </tbody>
-</table>
-
-<br />
-
-
-<?PHP
 
 
 
-//$script = ob_get_contents();
-//ob_end_flush();
 
-//ob_end_clean();
-//$this->appendArrayVar('headerParams', $script);
-
-
-/*
-$treeMenu = $this->newObject('superfishtree', 'cmsadmin');
-
-echo $treeMenu->getCMSAdminTree(0);
-*/
 /*
 
 //Tree Style Sections List (Spaces)
@@ -790,12 +477,12 @@ foreach($arrSections as $section) {
     $image = '<'.$img[0].'>';
     $linkText = $img[1];
     $noSpaces = strlen($matches[0]);
-    
+
     for ($i = 1; $i < $noSpaces; $i++) {
         $pref .= '&nbsp;&nbsp;';
     }
     $pref .= $image;
-    
+
     $section = $this->_objSections->getSection($section['id']);
     //View section link
     $link->link = $linkText;
@@ -819,7 +506,7 @@ var_dump($section['title'] . ' ' . $noSpaces);
     for ($i = 1; $i < $noSpaces; $i++) {
         $pref .= '&nbsp;&nbsp;';
     }
-    
+
     $section = $this->_objSections->getSection($section['id']);
     //View section link
     $link->link = $linkText;
@@ -855,7 +542,7 @@ $script = '<script>
     jQuery("#jQueryTab_5 > ul").tabs({
         selected: 2
     });
-    
+
   });
   </script>';
 
@@ -908,7 +595,7 @@ ob_start();
         dropShadows: false
         }); 
     }); 
-    
+
     </script>
 
 
@@ -1065,7 +752,7 @@ $this->appendArrayVar('headerParams', $script);
 
 ?>
 
-    
+
         <h1>jQuery Accordion Example</h1>
         
         <h2>A Navigation Menu</h2>
