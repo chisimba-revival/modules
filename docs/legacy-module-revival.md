@@ -31,3 +31,20 @@ source/local. Practicals and any other paused module containing ExtJS calls must
 be migrated before reactivation. Triple Store and Activity Streamer use their
 native replacements. Deploy matching framework/modules releases together; older
 production context-content reports still need the coordinated migration.
+
+## Switchboard retired — 15 October 2026
+
+Derek explicitly approved retiring Switchboard, the old editable shortcut-link
+page. Its 17 source files, registration, SQL definitions, templates and scripts
+are removed. This also removes its Validate loader and legacy Canvas module-block
+Ajax callers. Git history retains the old implementation for reference.
+
+A fresh tracked-source scan across framework and modules found no external
+runtime caller or dependency. Remaining source mentions are copied PHP package
+comments; dated inventories remain historical evidence. The earlier six-site
+read-only scan found it unregistered everywhere. No uninstall hook, table drop,
+site activation or production deployment is included. Historical database rows
+are preserved; recheck current site registrations/references before deployment.
+
+Validate remains for OER, OERuserdata and deprecated Pagenotes; Formbuilder still
+contains a bundled copy. The shared library cannot yet be removed.
