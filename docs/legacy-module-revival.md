@@ -48,3 +48,18 @@ are preserved; recheck current site registrations/references before deployment.
 
 Validate remains for OER, OERuserdata and deprecated Pagenotes; Formbuilder still
 contains a bundled copy. The shared library cannot yet be removed.
+
+## OER preserved and Validate retired — 15 October 2026
+
+OER and OERuserdata are now `oer__PAUSED` and `oeruserdata__PAUSED`. The dependency
+trace found no external OERuserdata caller outside OER, and no active OER caller
+elsewhere (one Discussion comment only). All 195 original files are preserved
+byte-for-byte. No schema or data change is included. Read each PAUSED.md before
+revival; the anonymous account-save path and other security debt remain unresolved
+inside the paused source.
+
+Deprecated Pagenotes remains preserved with disabled registration as a migration
+reference. Maintained Pagenotes does not load its validator. Formbuilder's unused
+bundled Validate file is removed; its separate validateConstructedForm.js remains.
+Matching framework changes remove shared Validate copies/catalogue entry.
+Paused/deprecated sources must migrate those old calls before reactivation.
