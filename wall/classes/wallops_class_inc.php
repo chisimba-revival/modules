@@ -283,7 +283,7 @@ class wallops extends ChisimbaObject {
                     $keyValue = $this->getParam('key', NULL);
                     $keyName = 'ownerid';
                     break;
-                case "3";
+                case "3":
                     $objContext = $this->getObject('dbcontext', 'context');
                     if ($objContext->isInContext()) {
                         $currentContextcode = $objContext->getcontextcode();
@@ -294,7 +294,7 @@ class wallops extends ChisimbaObject {
                         $keyname = NULL;
                     }
                     break;
-                case "4";
+                case "4":
                     $keyName = 'identifier';
                     $keyValue = $wallid;
                     break;
@@ -618,7 +618,7 @@ class wallops extends ChisimbaObject {
             case "personal":
                 $keyValue = $ownerId;
                 break;
-            case "3";
+            case "3":
                 $objContext = $this->getObject('dbcontext', 'context');
                 if ($objContext->isInContext()) {
                     $currentContextcode = $objContext->getcontextcode();
