@@ -87,6 +87,19 @@ class dbtextblock extends dbTable
     * Save method for editing a record in this table
     * @param string $mode: edit if coming from edit, add if coming from add
     */
+    /** Revision is captured from the same row as the displayed draft. */
+    public function rowRevision(array $row): string
+    {
+        ksort($row);
+        return hash('sha256', json_encode($row));
+    }
+
+    private function requireRevision(array $row): void
+    {
+        $revision = $this->getParam('revision', '');
+        if (!is_string($revision) || !hash_equals($this->rowRevision($row), $revision)) throw new DomainException('editor_stale');
+    }
+
     public function saveRecord($mode, $userId)
     {
         $id = $this->getParam('id', '');
@@ -101,11 +114,13 @@ class dbtextblock extends dbTable
             'modified' => $this->now()
         ];
         return $this->withDatabaseLock('textblock-edit', function () use ($id, $blockid, $mode, $userId, $values) {
-            return $this->transaction(function () use ($id, $blockid, $mode, $userId, $values) {
+            return $this->transactionWithSavepoint(function () use ($id, $blockid, $mode, $userId, $values) {
                 $duplicates = $this->selectPrepared('SELECT id FROM tbl_textblock WHERE blockid = ? AND id <> ?', [$blockid, $id === '' ? '-' : $id]);
                 if ($duplicates) throw new DomainException('Block slot already used');
                 if ($mode === 'edit') {
-                    if (!$this->getBlockById($id)) throw new DomainException('Missing block');
+                    $row = $this->getBlockById($id)[0] ?? null;
+                    if (!$row) throw new DomainException('editor_stale');
+                    $this->requireRevision($row);
                     if (!$this->update('id', $id, $values + ['datemodified'=>$this->now(), 'modifierid'=>$userId])) throw new RuntimeException('Save failed');
                     return $id;
                 }
@@ -116,4 +131,17 @@ class dbtextblock extends dbTable
             });
         });
     }
+    public function deleteRecord($id)
+    {
+        return $this->withDatabaseLock('textblock-edit', function () use ($id) {
+            return $this->transactionWithSavepoint(function () use ($id) {
+                $row = $this->getBlockById($id)[0] ?? null;
+                if (!$row) throw new DomainException('editor_stale');
+                $this->requireRevision($row);
+                if (!$this->delete('id', $id)) throw new RuntimeException('Delete failed');
+                return true;
+            });
+        });
+    }
+
 }

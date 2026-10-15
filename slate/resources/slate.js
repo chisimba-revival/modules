@@ -28,6 +28,7 @@ jQuery(function() {
     // The function for deleting a post
     jQuery(document).on("click", ".dellink", function(e) {
         var dId = jQuery(this).attr("id");
+        var revision = this.closest("[data-revision]").dataset.revision;
         //alert('clicked ' + dId);
         jQuery.ajax({
            beforeSend: function (request) {
@@ -37,7 +38,7 @@ jQuery(function() {
            },
            type: "POST",
            url: "index.php?module=slate&action=delete&id=" + dId,
-           data: {csrf_token: (document.querySelector('meta[name="slate-csrf"]') || {}).content || ''},
+           data: {revision: revision, csrf_token: (document.querySelector('meta[name="slate-csrf"]') || {}).content || ''},
            error: function(xhr) { alert(xhr.responseText || 'Request failed'); },
            cache: false,
            success: function(ret){

@@ -8,14 +8,14 @@ async function exercise(module, outcome, valid = true) {
     const button = {disabled:false};
     const status = {dataset:{failure:'Draft retained'},textContent:'',setAttribute(){}};
     const form = {dataset:{},action:'https://example.test/index.php?module=textblock&action=save&mode=add',
-        elements:{id:{value:''},mode:{value:'add'},page:{value:'1'},title:{value:'Draft'},blockid:{value:'widetext1'},csrf_token:{value:'synthetic'}},
+        elements:{revision:{value:''},id:{value:''},mode:{value:'add'},page:{value:'1'},title:{value:'Draft'},blockid:{value:'widetext1'},csrf_token:{value:'synthetic'}},
         reportValidity(){return valid;},querySelector(){return button;},querySelectorAll(){return [];},addEventListener(event, callback){submit=callback;}};
     const context = {document:{addEventListener(event,callback){ready=callback;},getElementById(id){return id.startsWith('form_')?form:status;}},
         URL, FormData:class {constructor(value){this.value=value;}},location:{href:'https://example.test/',assign(url){destination=url;}},
         status_success:'Saved',status_fail:'Draft retained', fetch:async(url,options)=>{
             calls++;assert.equal(options.method,'POST');assert.equal(options.body.value.elements.csrf_token.value,'synthetic');
             if(outcome==='network')throw new Error('Network error');
-            return {ok:outcome!=='reject',redirected:outcome==='login',headers:{get(){return module==='textblock'?'application/json':'text/plain';}},json:async()=>({ok:true}),text:async()=>outcome==='reject'?'Denied':'saved-id'};
+            return {ok:outcome!=='reject',redirected:outcome==='login',headers:{get(){return outcome==='reject'?'text/plain':'application/json';}},json:async()=>({ok:true,id:'saved-id',revision:'a'.repeat(64)}),text:async()=>outcome==='reject'?'Denied':'saved-id'};
         }};
     vm.runInNewContext(fs.readFileSync(path.join(__dirname,'..','..',module,'resources',module==='textblock'?'editblock.js':'editor.js'),'utf8'),context);
     ready();await submit({preventDefault(){}});

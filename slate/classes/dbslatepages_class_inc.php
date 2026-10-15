@@ -62,6 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class dbslatepages extends dbtable
 {
+    public string $savedRevision = "";
 
     /**
     *
@@ -84,6 +85,36 @@ class dbslatepages extends dbtable
      * @access public
      *
      */
+    public function pageKey(string $page): string
+    {
+        if ($page === '') return md5('slate:default');
+        $row = $this->selectPrepared('SELECT id FROM tbl_slate_pages WHERE page = ?', [$page])[0] ?? null;
+        if (!$row) throw new DomainException('editor_missing');
+        return md5('slate:page:'.$row['id']);
+    }
+
+    /** Unknown hashes cannot be reversed: retain their rows for explicit recovery. */
+    public function migratePageKeys(array $mapping): void
+    {
+        $this->withDatabaseLock('block-placements', function () use ($mapping) {
+            $this->transactionWithSavepoint(function () use ($mapping) {
+                foreach ($mapping as $old=>$new) {
+                    if (!preg_match('/^[a-f0-9]{32}$/D', $old)) throw new DomainException('editor_invalid');
+                    $this->requirePageKey($new);
+                    if ($old === $new) continue;
+                    $this->executePrepared('UPDATE tbl_slate_pageblocks SET pageid = ? WHERE pageid = ?', [$new, $old]);
+                }
+            });
+        });
+    }
+
+    public function requirePageKey(string $key): void
+    {
+        if (hash_equals(md5('slate:default'), $key)) return;
+        foreach ($this->getPages() as $row) if (hash_equals(md5('slate:page:'.$row['id']), $key)) return;
+        throw new DomainException('editor_missing');
+    }
+
     public function getPages()
     {
         return $this->getAll();
@@ -101,6 +132,25 @@ class dbslatepages extends dbtable
      * @return boolean TRUE|FALSE
      *
      */
+    /** Revision is captured from the same row as the displayed draft. */
+    public function rowRevision(array $row): string
+    {
+        ksort($row);
+        return hash('sha256', json_encode($row));
+    }
+
+    public function deleteRevision(array $row): string
+    {
+        $blocks = $this->selectPrepared('SELECT * FROM tbl_slate_pageblocks WHERE pageid = ? ORDER BY side, position, id', [md5('slate:page:'.$row['id'])]);
+        return hash('sha256', $this->rowRevision($row).json_encode($blocks));
+    }
+
+    private function requireRevision(array $row): void
+    {
+        $revision = $this->getParam('revision', '');
+        if (!is_string($revision) || !hash_equals($this->rowRevision($row), $revision)) throw new DomainException('editor_stale');
+    }
+
     public function savePage()
     {
         return $this->persistPage(true);
@@ -124,18 +174,21 @@ class dbslatepages extends dbtable
         $id = $this->getParam('id', '');
         $page = $this->getParam('page', '');
         $values = ['page'=>$page, 'title'=>trim($this->getParam('title', '')), 'description'=>trim($this->getParam('description', ''))];
-        return $this->withDatabaseLock('slate-edit', function () use ($id, $page, $values, $editing) {
-            return $this->transaction(function () use ($id, $page, $values, $editing) {
+        return $this->withDatabaseLock('block-placements', function () use ($id, $page, $values, $editing) {
+            return $this->transactionWithSavepoint(function () use ($id, $page, $values, $editing) {
                 $duplicates = $this->selectPrepared('SELECT id FROM tbl_slate_pages WHERE page = ? AND id <> ?', [$page, $id === '' ? '-' : $id]);
                 if ($duplicates) throw new DomainException('Page already exists');
                 if ($editing) {
                     $row = $this->getPageById($id)[0] ?? null;
                     if (!$row || (string)$row['page'] !== $page) throw new DomainException('Page changed');
+                    $this->requireRevision($row);
                     if (!$this->update('id', $id, $values)) throw new RuntimeException('Save failed');
+                    $this->savedRevision = $this->rowRevision($this->getPageById($id)[0]);
                     return $id;
                 }
                 $saved = $this->insert($values + ['datecreated'=>$this->now()]);
                 if (!$saved) throw new RuntimeException('Save failed');
+                $this->savedRevision = $this->rowRevision($this->getPageById($saved)[0]);
                 return $saved;
             });
         });
@@ -166,12 +219,13 @@ class dbslatepages extends dbtable
      */
     public function deletePage($id)
     {
-        return $this->withDatabaseLock('slate-edit', function () use ($id) {
-            return $this->transaction(function () use ($id) {
+        return $this->withDatabaseLock('block-placements', function () use ($id) {
+            return $this->transactionWithSavepoint(function () use ($id) {
                 $page = $this->getPageById($id)[0] ?? null;
                 if (!$page) return false;
-                $uri = str_replace('&amp;', '&', $this->uri(['page'=>$page['page']], 'slate'));
-                $this->executePrepared('DELETE FROM tbl_slate_pageblocks WHERE pageid = ?', [md5($uri)]);
+                $revision = $this->getParam('revision', '');
+                if (!is_string($revision) || !hash_equals($this->deleteRevision($page), $revision)) throw new DomainException('editor_stale');
+                $this->executePrepared('DELETE FROM tbl_slate_pageblocks WHERE pageid = ?', [md5('slate:page:'.$id)]);
                 return $this->executePrepared('DELETE FROM tbl_slate_pages WHERE id = ?', [$id]) === 1;
             });
         });

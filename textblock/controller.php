@@ -62,7 +62,7 @@ class textblock extends controller
             if (!in_array($this->getParam('blocktype', ''), ['', 'text', 'widetext'], true) || !in_array($this->getParam('mode', ''), ['', 'add', 'edit'], true) || strlen($this->getParam('id', '')) > 32) throw new DomainException('editor_invalid');
             if (in_array($this->action, ['save','deleteajax'], true)) {
                 $input = [];
-                foreach (['csrf_token','id','mode','blockid','title','blocktext','css_id','css_class','show_title'] as $key) $input[$key] = $this->getParam($key, '');
+                foreach (['revision','csrf_token','id','mode','blockid','title','blocktext','css_id','css_class','show_title'] as $key) $input[$key] = $this->getParam($key, '');
                 $security->check($this->action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
             }
         } catch (DomainException $error) {
@@ -104,8 +104,12 @@ class textblock extends controller
                 break;
             case 'deleteajax':
                 if ($this->objUser->isAdmin()) {
-                    if (!$this->objDb->delete("id", $this->getParam('id', Null))) {
-                        http_response_code(500); die('ERROR_DATA_DELETE_FAIL');
+                    try {
+                        $this->objDb->deleteRecord($this->getParam('id', ''));
+                    } catch (Throwable $error) {
+                        http_response_code($error->getMessage() === 'editor_stale' ? 409 : 422);
+                        header('Content-Type: text/plain; charset=UTF-8');
+                        die($this->objLanguage->languageText('mod_textblock_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'), 'textblock'));
                     }
                     die("RECORD_DELETED");
                 } else {
@@ -131,9 +135,9 @@ class textblock extends controller
                     try {
                         $this->objDb->saveRecord($this->getParam('mode', Null), $this->objUser->userId());
                     } catch (Throwable $error) {
-                        http_response_code(422);
+                        http_response_code($error->getMessage() === 'editor_stale' ? 409 : 422);
                         header('Content-Type: text/plain; charset=UTF-8');
-                        die($this->objLanguage->languageText('mod_textblock_editor_savefailed', 'textblock'));
+                        die($this->objLanguage->languageText('mod_textblock_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'), 'textblock'));
                     }
                     if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
                         header('Content-Type: application/json');

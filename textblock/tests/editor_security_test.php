@@ -7,11 +7,11 @@ class ChisimbaObject { public static array $objects=[]; public function getObjec
 require dirname(__DIR__).'/classes/textblocksecurity_class_inc.php';
 require dirname(__DIR__,2).'/slate/classes/slatesecurity_class_inc.php';
 $o = &ChisimbaObject::$objects;
-$o['user'] = new class { public bool $logged=true,$admin=true; function isLoggedIn(){return $this->logged;} function isAdmin(){return $this->admin;} };
+$o['user'] = new class { public bool $logged=true,$admin=true; function isLoggedIn(){return $this->logged;} function userId(){return 'fixture';}function lookupAdmin($id){return $this->admin;}function isAdmin(){return true;} };
 $csrf = new class { function consume($context,$token){return $token === $context.'-valid';} };
 $o['nativeauthwebcomposition'] = new class($csrf) { function __construct(private $csrf){} function build(){return ['csrf'=>$this->csrf];} };
 $o['dbtextblock'] = new class { function getBlockById($id){return $id==='existing'?[['id'=>$id]]:[];} };
-$o['dbslatepages'] = new class { function getPageById($id){return $id==='existing'?[['id'=>$id,'page'=>'1']]:[];} function selectPrepared($sql,$values){return $values===['placement',str_repeat('a',32)]?[['id'=>'placement']]:[];} };
+$o['dbslatepages'] = new class { function requirePageKey($key){if($key!==str_repeat('a',32))throw new DomainException('editor_missing');} function getPageById($id){return $id==='existing'?[['id'=>$id,'page'=>'1']]:[];} function selectPrepared($sql,$values){return $values===['placement',str_repeat('a',32)]?[['id'=>'placement']]:[];} };
 $o['dbmoduleblocks'] = new class { function getBlocks($width,$type){return [['moduleid'=>'textblock','blockname'=>'text1']];} };
 $o['dynamicblocks'] = new class { function getWideSiteBlocks(){return [];} function getSmallSiteBlocks(){return [['id'=>'site','module'=>'fixture']];} };
 $o['modules'] = new class { function checkIfRegistered($module){return in_array($module,['textblock','fixture'],true);} };

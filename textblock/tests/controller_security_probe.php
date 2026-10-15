@@ -11,8 +11,8 @@ class ChisimbaObject {
  public function getParam($key,$default=null){global $action,$token;return ['action'=>$action,'id'=>'existing','mode'=>'edit','page'=>'1','title'=>'Title','description'=>'Description','blockid'=>'text1','csrf_token'=>$token][$key] ?? $default;}
 }
 class controller extends ChisimbaObject { public $objUser; function appendArrayVar(...$a){} }
-$user=new class($role) {function __construct(private $role){}function isLoggedIn(){return $this->role!=='anonymous';}function isAdmin(){return $this->role==='admin';}};
-$repo=new class {function getBlockById($id){return [['id'=>$id]];}function getPageById($id){return [['id'=>$id,'page'=>'1']];}function delete(...$a){global $writes;$writes++;return true;}function deletePage(...$a){global $writes;$writes++;return true;}};
+$user=new class($role) {function __construct(private $role){}function isLoggedIn(){return $this->role!=='anonymous';}function userId(){return 'fixture';}function lookupAdmin($id){return $this->isAdmin();}function isAdmin(){return $this->role==='admin';}};
+$repo=new class {function getBlockById($id){return [['id'=>$id]];}function getPageById($id){return [['id'=>$id,'page'=>'1']];}function deleteRecord(...$a){global $writes;$writes++;return true;}function deletePage(...$a){global $writes;$writes++;return true;}};
 $csrf=new class {function consume($context,$token){return $token==='valid';}function issue($context){return 'synthetic';}};
 ChisimbaObject::$objects=['user'=>$user,'dbtextblock'=>$repo,'dbslatepages'=>$repo,'language'=>new class{function languageText($key,$module=null){return $key;}},'nativeauthwebcomposition'=>new class($csrf){function __construct(private $csrf){}function build(){return ['csrf'=>$this->csrf];}}];
 require dirname(__DIR__,2).'/'.$module.'/classes/'.$module.'security_class_inc.php';

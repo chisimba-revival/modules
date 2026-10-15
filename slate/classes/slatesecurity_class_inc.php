@@ -13,10 +13,11 @@ class slatesecurity extends ChisimbaObject
             return;
         }
         $user = $this->getObject('user','security');
-        if (!$user->isLoggedIn() || !$user->isAdmin()) throw new DomainException('editor_denied');
+        if (!$user->isLoggedIn() || !$user->lookupAdmin($user->userId())) throw new DomainException('editor_denied');
         if (in_array($action, ['manage','edit','gettaken'], true)) {
             foreach (['id','mode'] as $key) if (!is_string($input[$key] ?? '')) throw new DomainException('editor_invalid');
             if (strlen($input['id'] ?? '') > 32 || !in_array($input['mode'] ?? '', ['', 'add', 'edit'], true)) throw new DomainException('editor_invalid');
+            if ($action === 'edit' && ($input['mode'] ?? '') === 'edit' && !$this->getObject('dbslatepages','slate')->getPageById($input['id'])) throw new DomainException('editor_missing');
             return;
         }
         if ($method !== 'POST') throw new DomainException('editor_method');
@@ -42,6 +43,7 @@ class slatesecurity extends ChisimbaObject
         }
         $pageId = $input['pageId'] ?? '';
         if (!preg_match('/^[a-f0-9]{32}$/D', $pageId)) throw new DomainException('editor_invalid');
+        $repo->requirePageKey($pageId);
         $block = $input['blockid'] ?? '';
         if (in_array($action, ['removeblock','moveblock'], true)) {
             $rows = $repo->selectPrepared('SELECT id FROM tbl_slate_pageblocks WHERE id = ? AND pageid = ?', [$block, $pageId]);
@@ -51,20 +53,25 @@ class slatesecurity extends ChisimbaObject
         }
         $side = $input['side'] ?? '';
         if (!in_array($side, ['left','middle','right'], true)) throw new DomainException('editor_invalid');
+        if (!$this->allowed($block, $side)) throw new DomainException('editor_denied');
+    }
+
+    public function allowed(string $block, string $side): bool
+    {
         // Public Slate pages may contain site-scoped blocks, never a visitor's private blocks.
         $dynamic = $this->getObject('dynamicblocks','blocks');
         foreach ($side === 'middle' ? $dynamic->getWideSiteBlocks() : $dynamic->getSmallSiteBlocks() as $row) {
-            if ($block === 'dynamicblock|'.$row['id'].'|'.$row['module'] && $this->getObject('modules','modulecatalogue')->checkIfRegistered($row['module'])) return;
+            if ($block === 'dynamicblock|'.$row['id'].'|'.$row['module'] && $this->getObject('modules','modulecatalogue')->checkIfRegistered($row['module'])) return true;
         }
         if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('contentblocks')) {
             foreach ((array)$this->getObject('dbcontentblocks','contentblocks')->getBlocksArr($side === 'middle' ? 'content_widetext' : 'content_text') as $row) {
-                if ($block === 'block|'.$row['id'].'|contentblocks') return;
+                if ($block === 'block|'.$row['id'].'|contentblocks') return true;
             }
         }
         foreach ($this->getObject('dbmoduleblocks','modulecatalogue')->getBlocks($side === 'middle' ? 'wide' : 'normal', 'site') as $row) {
             if ($row['moduleid'] !== 'contentblocks' && $block === 'block|'.$row['blockname'].'|'.$row['moduleid']
-                && $this->getObject('modules','modulecatalogue')->checkIfRegistered($row['moduleid'])) return;
+                && $this->getObject('modules','modulecatalogue')->checkIfRegistered($row['moduleid'])) return true;
         }
-        throw new DomainException('editor_denied');
+        return false;
     }
 }

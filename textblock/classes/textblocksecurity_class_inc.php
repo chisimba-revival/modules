@@ -8,7 +8,7 @@ class textblocksecurity extends ChisimbaObject
     public function requireAdmin(): void
     {
         $user = $this->getObject('user', 'security');
-        if (!$user->isLoggedIn() || !$user->isAdmin()) throw new DomainException('editor_denied');
+        if (!$user->isLoggedIn() || !$user->lookupAdmin($user->userId())) throw new DomainException('editor_denied');
     }
     public function check($action, array $input, string $method): void
     {

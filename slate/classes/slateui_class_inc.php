@@ -61,6 +61,7 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class slateui extends ChisimbaObject
 {
+    private string $revision = "";
     public $mode, $page, $link, $title, $description, $id, $datecreated;
 
 
@@ -231,7 +232,7 @@ class slateui extends ChisimbaObject
                 $delLink->cssClass = "dellink";
                 $delLink->link = $delIcon->show();
                 $table->addCell($edLink->show());
-                $table->addCell($delLink->show());
+                $table->addCell('<span data-revision="'.$this->getObject('dbslatepages','slate')->deleteRevision($linkItem).'">'.$delLink->show().'</span>');
             }
             $table->endRow();
         }
@@ -285,117 +286,25 @@ class slateui extends ChisimbaObject
      */
     public function showPageEditForm()
     {
-        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) return '';
-        $this->appendArrayVar('headerParams',
-        $this->getJavaScriptFile('editor.js',
-          'slate'));
-        // Serialize language items to Javascript.
-        $arrayVars = array();
-        $arrayVars['status_success'] = "mod_slate_status_success";
-        $arrayVars['status_fail'] = "mod_slate_status_fail";
-        $objSerialize = $this->getObject('serializevars', 'utilities');
-        $objSerialize->languagetojs($arrayVars, 'slate');
-
-        // Load the HTML elements needed for the form.
-        $this->loadClass('htmltable','htmlelements');
-        $this->loadClass('textinput','htmlelements');
-        $this->loadClass('hiddeninput', 'htmlelements');
-        $mode = $this->mode;
-        $id = $this->getParam('id', NULL);
-        $page = $this->page;
-        $title = $this->title;
-        $description = $this->description;
-        // Table for the form.
-        $table = $this->newObject('htmltable', 'htmlelements');
-
-        // Input for the title.
-        $label = $this->objLanguage->languageText(
-          'mod_slate_pagetitle', 'slate', "Page title");
-        $table->startRow();
-        $table->addCell('<label for="input_title">'.$label.'</label>');
-        $textinput = new textinput('title');
-        $textinput->extra = 'required maxlength="250"';
-        $textinput->size = 60;
-        $textinput->setValue(htmlspecialchars((string)$title, ENT_QUOTES, 'UTF-8'));
-         $textinput->cssClass = 'required';
-        $table->addCell($textinput->show());
-        $table->endRow();
-
-        // Input for the page.
-
-        $label = $this->objLanguage->languageText(
-          'mod_slate_page', 'slate', "Page number for link");
-        $table->startRow();
-        $table->addCell('<label for="input_page">'.$label.'</label>');
-        if ($this->mode == 'edit' ) {
-            $textinput = new hiddeninput('page');
-            $extra = htmlspecialchars((string)$page, ENT_QUOTES, 'UTF-8');
-        } else {
-            $textinput = new textinput('page');
-            $textinput->extra = 'required inputmode="numeric" pattern="[1-9][0-9]{0,8}"';
-            $textinput->size = 60;
-            $textinput->cssClass = 'required';
-            $extra = NULL;
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->lookupAdmin($this->objUser->userId())) return '';
+        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('editor.js', 'slate'));
+        $this->getObject('serializevars','utilities')->languagetojs([
+            'status_success'=>'mod_slate_status_success', 'status_fail'=>'mod_slate_status_fail'
+        ], 'slate');
+        $escape = static fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+        $label = fn($key) => $escape(str_starts_with($key, 'mod_slate_') ? $this->objLanguage->languageText($key, 'slate') : $this->objLanguage->languageText($key));
+        $html = '<form id="form_slatepageEditor" method="post" action="'.$escape($this->uri(['action'=>'pagesave'],'slate')).'" class="chisimba-form-card chisimba-form-card--wide">';
+        $html .= $this->makeHeading();
+        $html .= $this->getObject('contextualhelp','help')->show('slate','editing');
+        foreach (['id'=>$this->getParam('id',''), 'mode'=>$this->mode, 'revision'=>$this->revision,
+            'csrf_token'=>$this->getObject('slatesecurity','slate')->csrf()->issue('slate_edit')] as $name=>$value) {
+            $html .= '<input type="hidden" name="'.$name.'" value="'.$escape($value).'">';
         }
-        $textinput->setValue(htmlspecialchars((string)$page, ENT_QUOTES, 'UTF-8'));
-        $table->addCell($textinput->show() . $extra);
-        $table->endRow();
-
-        // Input for the description
-        $label = $this->objLanguage->languageText(
-          'mod_slate_description', 'slate', "Page description");
-        $table->startRow();
-        $table->addCell('<label for="input_description">'.$label.'</label>');
-        $textinput = new textinput('description');
-        $textinput->extra = 'required maxlength="10000"';
-        $textinput->size = 60;
-        $textinput->setValue(htmlspecialchars((string)$description, ENT_QUOTES, 'UTF-8'));
-         $textinput->cssClass = 'required';
-        $table->addCell($textinput->show());
-        $table->endRow();
-
-        // Save button
-        $table->startRow();
-        $table->addCell("&nbsp;");
-        $buttonTitle = $this->objLanguage->languageText('word_save');
-        $button = new button('savePage', $buttonTitle);
-        $button->setToSubmit();
-        $table->addCell($button->show());
-        $table->endRow();
-
-        // Insert a message area for Ajax result to display.
-        $msgArea = "<br /><div id='save_results' class='ajax_results'></div>";
-
-        // Add hidden fields for use by JS
-        $token = $this->getObject('slatesecurity','slate')->csrf()->issue('slate_edit');
-        $hiddenFields = '<input type="hidden" name="csrf_token" value="'.htmlspecialchars($token, ENT_QUOTES, 'UTF-8').'">';
-        $hidMode = new hiddeninput('mode');
-        $hidMode->cssId = "mode";
-        $hidMode->value = htmlspecialchars((string)$mode, ENT_QUOTES, 'UTF-8');
-        $hiddenFields .= $hidMode->show() . "\n";
-        $hidId = new hiddeninput('id');
-        $hidId->cssId = "id";
-        $hidId->value = htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8');
-        $hiddenFields .= $hidId->show() . "\n\n";
-        // A route back to manage slate.
-        $back = $this->uri(array('action'=>'manage'), 'slate');
-        $this->loadClass('link','htmlelements');
-        $ln = new link($back);
-        $ln->cssClass = "slate_page_link";
-        $label = $this->objLanguage->languageText(
-          'mod_slate_manage', 'slate', "Manage slates");
-        $ln->link = $label;
-        $ret = $ln->show() . "<br />";
-
-         // Createform, add fields to it and display.
-        $formData = new form('slatepageEditor', NULL);
-        if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) $formData->addToForm($this->getObject('contextualhelp','help')->show('slate','editing'));
-        $formData->addToForm(
-            $this->makeHeading()
-          . $table->show()
-          . $hiddenFields
-          . $ret . $msgArea);
-        return $formData->show();
+        $html .= '<div class="chisimba-form-field"><label for="input_title">'.$label('mod_slate_pagetitle').'</label><input type="text" id="input_title" name="title" required maxlength="250" value="'.$escape($this->title).'"></div>';
+        $html .= '<div class="chisimba-form-field"><label for="input_page">'.$label('mod_slate_page').'</label><input type="text" id="input_page" name="page" required inputmode="numeric" pattern="[1-9][0-9]{0,8}"'.($this->mode==='edit'?' readonly':'').' value="'.$escape($this->page).'"></div>';
+        $html .= '<div class="chisimba-form-field"><label for="input_description">'.$label('mod_slate_description').'</label><textarea id="input_description" name="description" rows="4" required maxlength="10000">'.$escape($this->description).'</textarea></div>';
+        $html .= '<div class="chisimba-form-actions"><button type="submit">'.$label('word_save').'</button><a href="'.$escape($this->uri(['action'=>'manage'],'slate')).'">'.$label('mod_slate_manage').'</a></div>';
+        return $html.'<p id="save_results" role="status" aria-live="polite"></p></form>';
     }
 
     /**
@@ -413,6 +322,7 @@ class slateui extends ChisimbaObject
         $objDb = $this->getObject('dbslatepages', 'slate');
         $arData = $objDb->getPageById($id);
         if (!empty($arData)) {
+            $this->revision = $objDb->rowRevision($arData[0]);
             foreach ($arData[0] as $key=>$value) {
                 $this->$key =  $value;
             }

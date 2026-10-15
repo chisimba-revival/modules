@@ -70,14 +70,6 @@ class slate extends controller
     private $objLog;
 
     /**
-     *
-     * @var string object Holds the ajax generation object
-     * @access private
-     *
-     */
-    private $objAjax;
-
-    /**
     *
     * Intialiser for the myprofile controller
     * @access public
@@ -85,8 +77,6 @@ class slate extends controller
     */
     public function init()
     {
-        // Load the module block ajax helper.
-        // Resolve the block handler only after request authorisation.
         // Get the activity logger class.
         $this->objLog=$this->newObject('logactivity', 'logger');
         // Log this module call.
@@ -113,7 +103,7 @@ class slate extends controller
         $action=$this->getParam('action', 'view');
         $security = $this->getObject('slatesecurity', 'slate');
         $input = [];
-        foreach (['csrf_token','id','mode','page','title','description','pageId','blockid','side','direction'] as $key) $input[$key] = $this->getParam($key, '');
+        foreach (['revision','csrf_token','id','mode','page','title','description','pageId','blockid','side','direction'] as $key) $input[$key] = $this->getParam($key, '');
         try {
             $security->check($action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
         } catch (DomainException $error) {
@@ -124,7 +114,12 @@ class slate extends controller
         if ($this->objUser->isLoggedIn() && $this->objUser->isAdmin()) {
             $this->appendArrayVar('headerParams', '<meta name="slate-csrf" content="'.htmlspecialchars($security->csrf()->issue('slate_edit'), ENT_QUOTES, 'UTF-8').'">');
         }
-        if (in_array($action, ['renderblock','addblock','removeblock','moveblock'], true)) $this->objAjax = $this->getObject('pageblockajax','canvas');
+        if (in_array($action, ['renderblock','addblock','removeblock','moveblock'], true)) {
+            $result = $this->getObject('slateblockeditor','slate')->handle($action, $input);
+            http_response_code($result['status']);
+            header('Content-Type: application/json; charset=UTF-8');
+            die(json_encode($result));
+        }
         /*
         * Convert the action into a method (alternative to
         * using case selections)
@@ -201,12 +196,12 @@ class slate extends controller
         $objDb = $this->getObject('dbslatepages', 'slate');
         try {
             $ret = $this->getParam('mode', '') === 'edit' ? $objDb->savePage() : $objDb->addPage();
-            header('Content-Type: text/plain; charset=UTF-8');
-            die($ret);
+            header('Content-Type: application/json; charset=UTF-8');
+            die(json_encode(['ok'=>true, 'id'=>$ret, 'revision'=>$objDb->savedRevision]));
         } catch (Throwable $error) {
-            http_response_code(422);
+            http_response_code($error->getMessage() === 'editor_stale' ? 409 : 422);
             header('Content-Type: text/plain; charset=UTF-8');
-            die($this->getObject('language','language')->languageText('mod_slate_editor_savefailed','slate'));
+            die($this->getObject('language','language')->languageText('mod_slate_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'),'slate'));
         }
     }
 
@@ -228,7 +223,13 @@ class slate extends controller
             // retrieve the confirmation code from the querystring
             $id=$this->getParam("id", FALSE);
             if ($id) {
-                if (!$objDb->deletePage($id)) { http_response_code(409); die('ERROR_DATA_DELETE_FAIL'); }
+                try {
+                    if (!$objDb->deletePage($id)) throw new DomainException('editor_stale');
+                } catch (Throwable $error) {
+                    http_response_code($error->getMessage() === 'editor_stale' ? 409 : 422);
+                    header('Content-Type: text/plain; charset=UTF-8');
+                    die($this->getObject('language','language')->languageText('mod_slate_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'), 'slate'));
+                }
             }
             die("RECORD_DELETED");
         } else {
@@ -251,65 +252,6 @@ class slate extends controller
         $ret = json_encode($retAr);
         die($ret);
     }
-
-    /**
-    *
-    * Method to render a block for use by the ajax methods when
-    * 'Turn editing on' is enabled.
-    *
-    * @return string The rendered block
-    * @access protected
-    *
-    */
-    protected function __renderblock()
-    {
-        echo $this->objAjax->renderblock();
-        die();
-    }
-
-    /**
-    *
-    * Method to add a block for use by the ajax methods when
-    * 'Turn editing on' is enabled.
-    *
-    * @return string The results of the add action
-    * @access protected
-    *
-    */
-    protected function __addblock()
-    {
-        echo $this->objAjax->addblock();
-        die();
-    }
-
-    /**
-     * Method to remove a context block for use by the ajax methods when
-    * 'Turn editing on' is enabled.
-    *
-    * @return string The results of the remove action
-    * @access protected
-    *
-    */
-    protected function __removeblock()
-    {
-        echo $this->objAjax->removeblock();
-        die();
-    }
-
-    /**
-     * Method to move a context block for use by the ajax methods when
-    * 'Turn editing on' is enabled.
-    *
-    * @return string The results of the move action
-    * @access protected
-    *
-    */
-    protected function __moveblock()
-    {
-        echo $this->objAjax->moveblock();
-        die();
-    }
-
 
     /**
     *

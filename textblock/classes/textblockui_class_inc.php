@@ -61,6 +61,7 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class textblockui extends ChisimbaObject
 {
+    private string $revision = "";
     public $objH, $id, $css_id, $css_class, $show_title, $datecreated, $datemodified, $modified, $creatorid, $modifierid;
 
     
@@ -145,7 +146,7 @@ class textblockui extends ChisimbaObject
             $table->addCell(
               $this->insertEditIcon($id) 
               . "&nbsp;" 
-              . $this->insertDelIcon($id), 60
+              . $this->insertDelIcon($id, $objDb->rowRevision($block)), 60
             );        
             $table->endRow();
         }
@@ -267,7 +268,7 @@ class textblockui extends ChisimbaObject
      * @access public
      *  
      */
-    public function insertDelIcon($id)
+    public function insertDelIcon($id, $revision = "")
     {
         if ($this->objUser->isAdmin()) {
             $delIcon = $this->newObject('geticon', 'htmlelements');
@@ -277,7 +278,7 @@ class textblockui extends ChisimbaObject
             $delLink->cssId = $id;
             $delLink->cssClass = "dellink";
             $delLink->link = $delIcon->show();
-            return $delLink->show();
+            return '<span data-revision="'.htmlspecialchars($revision, ENT_QUOTES, 'UTF-8').'">'.$delLink->show().'</span>';
         } else {
             return NULL;
         }
@@ -370,6 +371,7 @@ class textblockui extends ChisimbaObject
         $objDb = $this->getObject("dbtextblock", "textblock");
         $arData = $objDb->getBlockById($id);
         if (!empty($arData)) {
+            $this->revision = $objDb->rowRevision($arData[0]);
             foreach ($arData[0] as $key=>$value) {
                 $this->$key =  $value;
             }
@@ -422,6 +424,7 @@ class textblockui extends ChisimbaObject
         if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) $objForm->addToForm($this->getObject('contextualhelp','help')->show('textblock','editing'));
         $token = $this->getObject('textblocksecurity','textblock')->csrf()->issue('textblock_edit');
         $objForm->addToForm('<input type="hidden" name="csrf_token" value="'.htmlspecialchars($token, ENT_QUOTES, 'UTF-8').'">');
+        $objForm->addToForm('<input type="hidden" name="revision" value="'.$this->revision.'">');
         $objForm->addToForm('<p id="textblock-save-status" role="status" data-failure="'.htmlspecialchars($this->objLanguage->languageText('mod_textblock_editor_savefailed','textblock'), ENT_QUOTES, 'UTF-8').'"></p>');
         
         // Create an element for the hidden text input for $id.
@@ -489,7 +492,7 @@ class textblockui extends ChisimbaObject
           "input_title");
         $objForm->addToForm($wsiLabel->show() 
           . "&nbsp;&nbsp;&nbsp;" 
-          . $objCheck->show()
+          . '<label for="input_show_title">'.$objCheck->show().'</label>'
           . "<br />" . $objElement->show() 
           . "<br /><br />");
         
@@ -561,7 +564,7 @@ class textblockui extends ChisimbaObject
         // Send it back.
         return $this->objH->show() 
           . "<br />\n\n" 
-          . $objForm->show();
+          . '<div class="chisimba-form-card chisimba-form-card--wide chisimba-form-field">'.$objForm->show().'</div>';
     }
     
     /**

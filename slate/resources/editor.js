@@ -13,12 +13,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var failureMessage = status_fail;
         try {
             var response = await fetch('index.php?module=slate&action=pagesave', {method:'POST', body:new FormData(form), credentials:'same-origin'});
-            var id = await response.text();
-            if (!response.ok || response.redirected || !/^[a-zA-Z0-9_-]{1,32}$/.test(id)) {
-                failureMessage = !response.redirected && !response.ok && (response.headers.get('content-type') || '').includes('text/plain') ? id : status_fail;
+            if (!response.ok || response.redirected || !(response.headers.get('content-type') || '').includes('application/json')) {
+                failureMessage = !response.redirected && !response.ok && (response.headers.get('content-type') || '').includes('text/plain') ? await response.text() : status_fail;
                 throw new Error('Save failed');
             }
-            form.elements.id.value = id;
+            var result = await response.json();
+            if (!result.ok || !/^[a-zA-Z0-9_-]{1,32}$/.test(result.id) || !/^[a-f0-9]{64}$/.test(result.revision)) throw new Error('Invalid save result');
+            form.elements.id.value = result.id;
+            form.elements.revision.value = result.revision;
             form.elements.mode.value = 'edit';
             form.elements.page.readOnly = true;
             status.textContent = status_success;
