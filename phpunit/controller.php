@@ -1,6 +1,6 @@
 <?php
 /**
- * Disable the obsolete browser-based test-code generator pending its retirement.
+ * Disable the obsolete browser-based test-code generator after its retirement.
  * This is unrelated to the PHPUnit CLI testing library.
  *
  * @package phpunit
