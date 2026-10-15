@@ -46,6 +46,8 @@ jQuery(function() {
            },
            type: "POST",
            url: "index.php?module=textblock&action=deleteajax&id=" + dId,
+           data: {csrf_token: (document.querySelector('meta[name="textblock-csrf"]') || {}).content || ''},
+           error: function(xhr) { alert(xhr.responseText || 'Request failed'); },
            cache: false,
            success: function(ret){
                if(ret == "RECORD_DELETED") {

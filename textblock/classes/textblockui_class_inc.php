@@ -61,6 +61,8 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class textblockui extends ChisimbaObject
 {
+    public $objH, $id, $css_id, $css_class, $show_title, $datecreated, $datemodified, $modified, $creatorid, $modifierid;
+
     
     /**
     * 
@@ -115,10 +117,11 @@ class textblockui extends ChisimbaObject
      */
     public function showAllBlocks($blockType)
     {
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) return '';
         //Create an instance of the database class for this module
         $objDb = $this->getObject("dbtextblock");
-        $ar = $objDb->getAll(" WHERE blockid LIKE '" 
-          . $blockType . "%' ");
+        if (!in_array($blockType, ['text','widetext'], true)) return '';
+        $ar = $objDb->selectPrepared('SELECT * FROM tbl_textblock WHERE blockid LIKE ?', [$blockType.'%']);
         $table = $this->newObject('htmltable', 'htmlelements');
         $table->cellpadding = 10;
         $icon = $this->getObject('image', 'htmlelements');
@@ -127,7 +130,7 @@ class textblockui extends ChisimbaObject
         $icon->src = $this->getResourceUri('images/block-32.png','textblock');
         $iconVw = $icon->show();
         foreach ($ar as $block) {
-            $title = $block['title'];
+            $title = htmlspecialchars((string)$block['title'], ENT_QUOTES, 'UTF-8');
             $blockid = $block['blockid'];
             $id = $block['id'];
             // Make title clickable to show the contents
@@ -386,6 +389,7 @@ class textblockui extends ChisimbaObject
      */
     public function showEditForm()
     {
+        $this->getObject('textblocksecurity','textblock')->requireAdmin();
         // Serialize language items to Javascript.
         $arrayVars['titlereq'] = "mod_textblock_titlereq";
         $objSerialize = $this->getObject('serializevars', 'utilities');
@@ -394,10 +398,7 @@ class textblockui extends ChisimbaObject
         // Set the mode.
         $mode = $this->mode;
         $id = $this->getParam('id', NULL);
-        // Load the jquery validate plugin.
-        $this->appendArrayVar('headerParams',
-        $this->getJavaScriptFile('plugins/validate/jquery.validate.min.js',
-          'jquery'));
+
         // Load the edit helper Javascript.
         $this->appendArrayVar('headerParams',
           $this->getJavaScriptFile('editblock.js',
@@ -418,10 +419,14 @@ class textblockui extends ChisimbaObject
         $formAction=$this->uri($paramArray);
         $objForm->setAction($formAction);
         $objForm->displayType=3;
+        if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) $objForm->addToForm($this->getObject('contextualhelp','help')->show('textblock','editing'));
+        $token = $this->getObject('textblocksecurity','textblock')->csrf()->issue('textblock_edit');
+        $objForm->addToForm('<input type="hidden" name="csrf_token" value="'.htmlspecialchars($token, ENT_QUOTES, 'UTF-8').'">');
+        $objForm->addToForm('<p id="textblock-save-status" role="status" data-failure="'.htmlspecialchars($this->objLanguage->languageText('mod_textblock_editor_savefailed','textblock'), ENT_QUOTES, 'UTF-8').'"></p>');
         
         // Create an element for the hidden text input for $id.
         $objElement = new textinput("id");
-        $objElement->setValue($id);
+        $objElement->setValue(htmlspecialchars((string)$id, ENT_QUOTES, 'UTF-8'));
         $objElement->fldType="hidden";
         $objForm->addToForm($objElement->show());
         
@@ -456,8 +461,9 @@ class textblockui extends ChisimbaObject
         
         // Create an element for the input of title.
         $objElement = new textinput ("title");
+        $objElement->extra = 'required maxlength="250"';
         if (isset($this->title)) {
-            $objElement->setValue($this->title);
+            $objElement->setValue(htmlspecialchars((string)$this->title, ENT_QUOTES, 'UTF-8'));
         }
         $wsiLabel = new label(
           $this->objLanguage->languageText(
@@ -491,12 +497,12 @@ class textblockui extends ChisimbaObject
         $objElement = new textinput ("css_class");
         // Set the value of the element to the chosen cssClass.
         if (isset($this->css_class)) {
-            $objElement->setValue($this->css_class);
+            $objElement->setValue(htmlspecialchars((string)$this->css_class, ENT_QUOTES, 'UTF-8'));
         }
         $wsiLabel = new label(
           $this->objLanguage->languageText(
           'mod_textblock_css_class','textblock'),
-          "input_title");
+          "input_css_class");
         $objForm->addToForm($wsiLabel->show()
           . " <br />" . $objElement->show() 
           ."<br /><br />");
@@ -505,12 +511,12 @@ class textblockui extends ChisimbaObject
         // Create input for an alternative cssId to use.
         $objElement = new textinput ("css_id");
         if (isset($this->css_id)) {
-            $objElement->setValue($this->css_id);
+            $objElement->setValue(htmlspecialchars((string)$this->css_id, ENT_QUOTES, 'UTF-8'));
         }
         $wsiLabel = new label(
           $this->objLanguage->languageText(
           'mod_textblock_css_id','textblock'), 
-          "input_title");
+          "input_css_id");
         $objForm->addToForm($wsiLabel->show()
           . " <br />" .$objElement->show() 
           ."<br /><br />");
@@ -570,7 +576,7 @@ class textblockui extends ChisimbaObject
     public function renderContent($content)
     {
         $objWashout = $this->getObject("washout", "utilities");
-        return $objWashout->parseText($content);
+        return $objWashout->parseText($this->getObject('richtextsanitizer','utilities')->cleanHtml($content));
     }
     
     /**

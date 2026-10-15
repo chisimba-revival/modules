@@ -103,17 +103,7 @@ class dbslatepages extends dbtable
      */
     public function savePage()
     {
-        $id = $this->getParam('id', NULL);
-        $page = $this->getParam('page', NULL);
-        $title = $this->getParam('title', NULL);
-        $description = $this->getParam('description', NULL);
-        $result = $this->update(
-          'id', $id, array(
-          'page' => $page,
-          'title' => $title,
-          'description' => $description)
-        );
-        return $result;
+        return $this->persistPage(true);
     }
 
     /**
@@ -126,16 +116,29 @@ class dbslatepages extends dbtable
      */
     public function addPage()
     {
-        $page = $this->getParam('page', NULL);
-        $title = $this->getParam('title', NULL);
-        $description = $this->getParam('description', NULL);
-        $data = array(
-          'page' => $page,
-          'title' => $title,
-          'datecreated' => $this->now(),
-          'description' => $description
-        );
-        return $this->insert($data);
+        return $this->persistPage(false);
+    }
+
+    private function persistPage(bool $editing)
+    {
+        $id = $this->getParam('id', '');
+        $page = $this->getParam('page', '');
+        $values = ['page'=>$page, 'title'=>trim($this->getParam('title', '')), 'description'=>trim($this->getParam('description', ''))];
+        return $this->withDatabaseLock('slate-edit', function () use ($id, $page, $values, $editing) {
+            return $this->transaction(function () use ($id, $page, $values, $editing) {
+                $duplicates = $this->selectPrepared('SELECT id FROM tbl_slate_pages WHERE page = ? AND id <> ?', [$page, $id === '' ? '-' : $id]);
+                if ($duplicates) throw new DomainException('Page already exists');
+                if ($editing) {
+                    $row = $this->getPageById($id)[0] ?? null;
+                    if (!$row || (string)$row['page'] !== $page) throw new DomainException('Page changed');
+                    if (!$this->update('id', $id, $values)) throw new RuntimeException('Save failed');
+                    return $id;
+                }
+                $saved = $this->insert($values + ['datecreated'=>$this->now()]);
+                if (!$saved) throw new RuntimeException('Save failed');
+                return $saved;
+            });
+        });
     }
 
     /**
@@ -163,18 +166,15 @@ class dbslatepages extends dbtable
      */
     public function deletePage($id)
     {
-        $page = $this->getPageById($id);
-        $pageId = $page[0]['page'];
-        $uri = $this->uri(array('page' => $pageId), 'slate');
-        $uri = str_replace('&amp;', '&', $uri);
-        $pageid = md5($uri);
-        $this->delete('pageid', $pageid, 'tbl_slate_pageblocks');
-        $ret = $this->delete('id', $id);
-        if ($ret) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
+        return $this->withDatabaseLock('slate-edit', function () use ($id) {
+            return $this->transaction(function () use ($id) {
+                $page = $this->getPageById($id)[0] ?? null;
+                if (!$page) return false;
+                $uri = str_replace('&amp;', '&', $this->uri(['page'=>$page['page']], 'slate'));
+                $this->executePrepared('DELETE FROM tbl_slate_pageblocks WHERE pageid = ?', [md5($uri)]);
+                return $this->executePrepared('DELETE FROM tbl_slate_pages WHERE id = ?', [$id]) === 1;
+            });
+        });
     }
 
     /**

@@ -25,6 +25,7 @@ class textblock extends controller
     * @var string $action The action parameter from the querystring 
     */
     public $action;
+    public $objDb, $objLanguage, $objLog;
 
     /**
     * Standard constructor method 
@@ -53,6 +54,23 @@ class textblock extends controller
     */
     public function dispatch()
     {
+        $security = $this->getObject('textblocksecurity', 'textblock');
+        try {
+            $security->requireAdmin();
+            if (!in_array($this->action, [null,'text','view','widetext','deleteajax','ajaxedit','save'], true)) throw new DomainException('editor_invalid');
+            foreach (['id','mode','blocktype'] as $key) if (!is_string($this->getParam($key, ''))) throw new DomainException('editor_invalid');
+            if (!in_array($this->getParam('blocktype', ''), ['', 'text', 'widetext'], true) || !in_array($this->getParam('mode', ''), ['', 'add', 'edit'], true) || strlen($this->getParam('id', '')) > 32) throw new DomainException('editor_invalid');
+            if (in_array($this->action, ['save','deleteajax'], true)) {
+                $input = [];
+                foreach (['csrf_token','id','mode','blockid','title','blocktext','css_id','css_class','show_title'] as $key) $input[$key] = $this->getParam($key, '');
+                $security->check($this->action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+            }
+        } catch (DomainException $error) {
+            http_response_code($error->getMessage() === 'editor_method' ? 405 : 403);
+            header('Content-Type: text/plain; charset=UTF-8');
+            die($this->objLanguage->languageText('mod_textblock_'.$error->getMessage(), 'textblock'));
+        }
+        $this->appendArrayVar('headerParams', '<meta name="textblock-csrf" content="'.htmlspecialchars($security->csrf()->issue('textblock_edit'), ENT_QUOTES, 'UTF-8').'">');
         switch ($this->action) {
             case null:
             case 'text':
@@ -86,7 +104,9 @@ class textblock extends controller
                 break;
             case 'deleteajax':
                 if ($this->objUser->isAdmin()) {
-                    $this->objDb->delete("id", $this->getParam('id', Null));
+                    if (!$this->objDb->delete("id", $this->getParam('id', Null))) {
+                        http_response_code(500); die('ERROR_DATA_DELETE_FAIL');
+                    }
                     die("RECORD_DELETED");
                 } else {
                     die("ERR_NOPERMISSION");
@@ -108,9 +128,18 @@ class textblock extends controller
                 break;
             case 'save':
                 if ($this->objUser->isAdmin()) {
-                    $this->objDb->saveRecord($this->getParam('mode', Null), 
-                      $this->objUser->userId());
-                    $blockType = $this->getParam('blocktype', 'narrowblock');
+                    try {
+                        $this->objDb->saveRecord($this->getParam('mode', Null), $this->objUser->userId());
+                    } catch (Throwable $error) {
+                        http_response_code(422);
+                        header('Content-Type: text/plain; charset=UTF-8');
+                        die($this->objLanguage->languageText('mod_textblock_editor_savefailed', 'textblock'));
+                    }
+                    if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
+                        header('Content-Type: application/json');
+                        die(json_encode(['ok'=>true]));
+                    }
+                    $blockType = str_starts_with($this->getParam('blockid', ''), 'widetext') ? 'widetext' : 'text';
                     return $this->nextAction($blockType);
                 } else {
                     $this->setVar('str', 

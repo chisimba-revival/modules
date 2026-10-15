@@ -86,7 +86,7 @@ class slate extends controller
     public function init()
     {
         // Load the module block ajax helper.
-        $this->objAjax = $this->getObject('pageblockajax', 'canvas');
+        // Resolve the block handler only after request authorisation.
         // Get the activity logger class.
         $this->objLog=$this->newObject('logactivity', 'logger');
         // Log this module call.
@@ -111,6 +111,20 @@ class slate extends controller
     {
         //Get action from query string and set default to view
         $action=$this->getParam('action', 'view');
+        $security = $this->getObject('slatesecurity', 'slate');
+        $input = [];
+        foreach (['csrf_token','id','mode','page','title','description','pageId','blockid','side','direction'] as $key) $input[$key] = $this->getParam($key, '');
+        try {
+            $security->check($action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+        } catch (DomainException $error) {
+            http_response_code($error->getMessage() === 'editor_method' ? 405 : 403);
+            header('Content-Type: text/plain; charset=UTF-8');
+            die($this->getObject('language','language')->languageText('mod_slate_'.$error->getMessage(), 'slate'));
+        }
+        if ($this->objUser->isLoggedIn() && $this->objUser->isAdmin()) {
+            $this->appendArrayVar('headerParams', '<meta name="slate-csrf" content="'.htmlspecialchars($security->csrf()->issue('slate_edit'), ENT_QUOTES, 'UTF-8').'">');
+        }
+        if (in_array($action, ['renderblock','addblock','removeblock','moveblock'], true)) $this->objAjax = $this->getObject('pageblockajax','canvas');
         /*
         * Convert the action into a method (alternative to
         * using case selections)
@@ -185,17 +199,14 @@ class slate extends controller
     private function __pagesave()
     {
         $objDb = $this->getObject('dbslatepages', 'slate');
-        $mode = $this->getParam('mode', 'add');
-        if ($mode == 'edit') {
-            $ret = $objDb->savePage();
-            if ($ret) {
-                die($this->getParam('id', NULL));
-            } else {
-                die ('ERROR_DATA_INSERT_FAIL');
-            }
-        } else {
-            $ret = $objDb->addPage();
+        try {
+            $ret = $this->getParam('mode', '') === 'edit' ? $objDb->savePage() : $objDb->addPage();
+            header('Content-Type: text/plain; charset=UTF-8');
             die($ret);
+        } catch (Throwable $error) {
+            http_response_code(422);
+            header('Content-Type: text/plain; charset=UTF-8');
+            die($this->getObject('language','language')->languageText('mod_slate_editor_savefailed','slate'));
         }
     }
 
@@ -217,7 +228,7 @@ class slate extends controller
             // retrieve the confirmation code from the querystring
             $id=$this->getParam("id", FALSE);
             if ($id) {
-                $objDb->deletePage($id);
+                if (!$objDb->deletePage($id)) { http_response_code(409); die('ERROR_DATA_DELETE_FAIL'); }
             }
             die("RECORD_DELETED");
         } else {

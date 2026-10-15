@@ -44,7 +44,7 @@ class textblockbase extends ChisimbaObject {
         if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $this->showTitle = $ar['show_title'];
             if ($this->showTitle == "1") {
-                $this->title = $ar['title'];
+                $this->title = htmlspecialchars((string)$ar['title'], ENT_QUOTES, 'UTF-8');
             } else {
                 $this->title = FALSE;
             }
@@ -61,11 +61,11 @@ class textblockbase extends ChisimbaObject {
             }
             $this->cssClass = $ar['css_class'];
             if ($this->cssClass !== "" && $this->cssClass !== NULL) {
-                $cssClass = " class='$this->cssClass'";
+                $cssClass = " class='".htmlspecialchars((string)$this->cssClass, ENT_QUOTES, 'UTF-8')."'";
                 $useDiv = TRUE;
             }
             $objWashout = $this->getObject("washout", "utilities");
-            $pText = $ar['blocktext'];
+            $pText = $this->getObject('richtextsanitizer','utilities')->cleanHtml($ar['blocktext']);
             $ret = $objWashout->parseText($pText, TRUE);
             if ($useDiv) {
                 $ret = "<div $cssClass>$ret</div>";
@@ -90,7 +90,7 @@ class textblockbase extends ChisimbaObject {
         if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $this->showTitle = $ar['show_title'];
             if ($this->showTitle == "1") {
-                $this->title = $ar['title'];
+                $this->title = htmlspecialchars((string)$ar['title'], ENT_QUOTES, 'UTF-8');
             } else {
                 $this->title = FALSE;
             }
@@ -106,11 +106,11 @@ class textblockbase extends ChisimbaObject {
             }
             $this->cssClass = $ar['css_class'];
             if ($this->cssClass !== "" && $this->cssClass !== NULL) {
-                $cssClass = " class='$this->cssClass'";
+                $cssClass = " class='".htmlspecialchars((string)$this->cssClass, ENT_QUOTES, 'UTF-8')."'";
                 $useDiv = TRUE;
             }
             $objWashout = $this->getObject("washout", "utilities");
-            $ret = $objWashout->parseText($ar['blocktext']);
+            $ret = $objWashout->parseText($this->getObject('richtextsanitizer','utilities')->cleanHtml($ar['blocktext']));
             if ($useDiv) {
                 $ret = "<div $cssClass>$ret</div>";
             }

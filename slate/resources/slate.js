@@ -32,11 +32,13 @@ jQuery(function() {
         jQuery.ajax({
            beforeSend: function (request) {
                 if (!confirm("You really want to delete?")) {
-                    return FALSE;
+                    return false;
                 }
            },
            type: "POST",
            url: "index.php?module=slate&action=delete&id=" + dId,
+           data: {csrf_token: (document.querySelector('meta[name="slate-csrf"]') || {}).content || ''},
+           error: function(xhr) { alert(xhr.responseText || 'Request failed'); },
            cache: false,
            success: function(ret){
                if(ret == "RECORD_DELETED") {

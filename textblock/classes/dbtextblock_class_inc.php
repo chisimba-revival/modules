@@ -88,53 +88,32 @@ class dbtextblock extends dbTable
     * @param string $mode: edit if coming from edit, add if coming from add
     */
     public function saveRecord($mode, $userId)
-    {   try
-        {
-            $id=$this->getParam('id', NULL);
-            $blockid = $this->getParam('blockid', NULL);
-            $title = $this->getParam('title', NULL);
-            $blocktext = $this->getParam('blocktext', NULL);
-            $objUser = $this->getObject("user", "security");
-            $showTitle = $this->getParam('show_title', '1');
-
-            $showTitle = ($showTitle == 'on')? '1' : '0';
-
-            $cssId = $this->getParam('css_id', NULL);
-            $cssClass = $this->getParam('css_class', NULL);
-            // if edit use update
-            if ($mode=="edit") {
-                $this->update("id", $id, array(
-                'blockid' => $blockid,
-                'title' => $title,
-                'blocktext' => $blocktext,
-                'datemodified' => $this->now(),
-                'modified' => $this->now(),
-                'modifierid' => $objUser->userId(),
-                'css_id' => $cssId,
-                'css_class' => $cssClass,
-                'show_title' => $showTitle));
-
-            }//if
-            // if add use insert
-            if ($mode=="add") {
-                $this->insert(array(
-                'blockid' => $blockid,
-                'title' => $title,
-                'blocktext' => $blocktext,
-                'datecreated' => $this->now(),
-                'creatorid' => $objUser->userId(),
-                'modified' => $this->now(),
-                'css_id' => $cssId,
-                'css_class' => $cssClass,
-                'show_title' => $showTitle));
-
-            }//if
-        } catch (customException $e)
-        {
-        	echo customException::cleanUp($e);
-        	die();
-        }
-    }//function
-
-} //end of class
-?>
+    {
+        $id = $this->getParam('id', '');
+        $blockid = $this->getParam('blockid', '');
+        $values = [
+            'blockid' => $blockid,
+            'title' => trim($this->getParam('title', '')),
+            'blocktext' => $this->getObject('richtextsanitizer','utilities')->cleanHtml($this->getParam('blocktext', '')),
+            'css_id' => $this->getParam('css_id', ''),
+            'css_class' => $this->getParam('css_class', ''),
+            'show_title' => $this->getParam('show_title', '') === 'on' ? '1' : '0',
+            'modified' => $this->now()
+        ];
+        return $this->withDatabaseLock('textblock-edit', function () use ($id, $blockid, $mode, $userId, $values) {
+            return $this->transaction(function () use ($id, $blockid, $mode, $userId, $values) {
+                $duplicates = $this->selectPrepared('SELECT id FROM tbl_textblock WHERE blockid = ? AND id <> ?', [$blockid, $id === '' ? '-' : $id]);
+                if ($duplicates) throw new DomainException('Block slot already used');
+                if ($mode === 'edit') {
+                    if (!$this->getBlockById($id)) throw new DomainException('Missing block');
+                    if (!$this->update('id', $id, $values + ['datemodified'=>$this->now(), 'modifierid'=>$userId])) throw new RuntimeException('Save failed');
+                    return $id;
+                }
+                if ($mode !== 'add') throw new DomainException('Invalid mode');
+                $saved = $this->insert($values + ['datecreated'=>$this->now(), 'creatorid'=>$userId]);
+                if (!$saved) throw new RuntimeException('Save failed');
+                return $saved;
+            });
+        });
+    }
+}
