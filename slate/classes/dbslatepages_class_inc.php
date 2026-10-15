@@ -149,8 +149,7 @@ class dbslatepages extends dbtable
      */
     public function getPageById($id)
     {
-        $filter = "WHERE id = '$id'";
-        return $this->getAll($filter);
+        return $this->selectPrepared('SELECT * FROM tbl_slate_pages WHERE id = ?', [$id]);
     }
 
     /**

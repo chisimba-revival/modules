@@ -17,6 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class dbtextblock extends dbTable
 {
+    private $objBlock;
 
     /**
     * Constructor method to define the table
@@ -32,11 +33,16 @@ class dbtextblock extends dbTable
     * @param string $blockId the blockId as per tbl_module_blocks.id.
     */
     public function getBlock($blockId)
-    {   
-		$blockArr = $this->objBlock->getBlock($blockId);;
-		$txtBlockId = trim($blockArr['blockname']);
-		$result = $this->getAll(" WHERE blockid = '$txtBlockId'");
-		return $result[0];
+    {
+        $blockArr = $this->objBlock->getRow('id', $blockId);
+        if (!$blockArr || $blockArr['moduleid'] !== 'textblock') {
+            return null;
+        }
+        $result = $this->selectPrepared(
+            'SELECT * FROM tbl_textblock WHERE blockid = ?',
+            [trim($blockArr['blockname'])]
+        );
+        return $result[0] ?? null;
     }
     
     /**
@@ -45,8 +51,7 @@ class dbtextblock extends dbTable
     */
     public function getBlockById($id)
     {   
-        $result = $this->getAll(" WHERE id = '$id'");
-        return $result;
+        return $this->selectPrepared('SELECT * FROM tbl_textblock WHERE id = ?', [$id]);
     }
     
     /** 
@@ -61,9 +66,13 @@ class dbtextblock extends dbTable
      */
     public function getArUsedBlockss($blockType)
     {
-        $sql = "SELECT blockid from tbl_textblock WHERE blockid LIKE '" 
-        . $blockType . "%'";
-        $ar = $this->getArray($sql);
+        if (!in_array($blockType, ['text', 'widetext'], true)) {
+            return null;
+        }
+        $ar = $this->selectPrepared(
+            'SELECT blockid FROM tbl_textblock WHERE blockid LIKE ?',
+            [$blockType . '%']
+        );
         if (!empty($ar)) {
             foreach($ar as $entry) {
                 $newAr[] = $entry['blockid'];
