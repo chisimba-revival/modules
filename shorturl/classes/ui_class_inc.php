@@ -46,7 +46,6 @@
 
                 //Loading the jqGrid with cms theme
                 $this->objGrid->loadGrid('shorturl');
-                $this->jQuery->loadFormPlugin();
 
                 $this->loadClass('textinput', 'htmlelements');
                 $this->loadClass('checkbox', 'htmlelements');
