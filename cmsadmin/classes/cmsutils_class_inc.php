@@ -421,31 +421,11 @@
             $objLayer = $this->newObject('layer', 'htmlelements');
             $this->loadClass('htmltable', 'htmlelements');
 
-			$this->_objQuery->loadCornerPlugin();
-
-			ob_start();
-			?>
-			<script type="text/javascript">
-				jQuery(function(){
-			        jQuery('#cpanel div.icon a').corner();
-			        jQuery('#cpanel div.icon a:hover').corner();
-			        jQuery('#cpanel div.icon').corner();
-			        //jQuery('.smallicon').corner();
-			    });
-			</script>
-			<?php
-			$script = ob_get_contents();
-			ob_end_clean();
-
-			$this->appendArrayVar('headerParams', $script);
-
-
             $tbl = new htmltable();
             $tbl->cellspacing = '5';
             $tbl->cellpadding = '5';
             $tbl->width = "45%";
 			$tbl->border = '0';
-            $tbl->align = "left";
 
             $link = $this->newObject('link', 'htmlelements');
             $objIcon = $this->newObject('geticon', 'htmlelements');
@@ -570,6 +550,7 @@
 
             $objLayer->str = $tbl->show();
             $objLayer->id = 'cpanel';
+            $objLayer->cssClass = 'chisimba-icon-panel';
             $fboxcontent = $objLayer->show();
 
             return $this->objFeatureBox->showContent('',$fboxcontent);
