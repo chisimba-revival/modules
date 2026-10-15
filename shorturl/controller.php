@@ -58,8 +58,6 @@ class shorturl extends controller
                 //Loading shorturl Common Styles
                 $this->appendArrayVar('headerParams', '<link rel="stylesheet" type="text/css" href="'.$this->getResourceUri('_common.css'.'">'));
 
-                //Loading the pngFix
-                $this->objQuery->loadPngFixPlugin();
         	}
         	catch (customException $e)
         	{

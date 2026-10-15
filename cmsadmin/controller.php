@@ -231,8 +231,6 @@ class cmsadmin extends controller {
 				';
             $this->appendArrayVar('headerParams', $loadie7);
 
-            //jQuery pngFix behaves wierdly in ies4linux but works on windows machines
-            $this->_objJQuery->loadPngFixPlugin();
 
             //Loading the ipod style menu
             $this->_objJQuery->loadFgMenuPlugin();
