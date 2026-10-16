@@ -365,6 +365,7 @@
             //Boxy Form Test URL
             //http://localhost/test/?module=cmsadmin&action=ajaxforms&type=showuserpermaddform
 
+            $arrUserPerms = [];
             //Load Edit Values when supplied with id
             if ($id != ''){
                 $arrUserPerms = $this->_objUserPerm->getRecord($id);
@@ -390,8 +391,7 @@
 
             $userName = '';
             if (isset($arrUserPerms['user_id'])){
-                $id = $arrUserPerms['user_id'];
-                $userName = $this->_objUser->userName($id);
+                $userName = $this->_objUser->userName($arrUserPerms['user_id']);
             }
 
             $drpUser = new dropdown('drp_owner');
@@ -404,7 +404,7 @@
                 $drpUser->addOption($allUsers[$i]['userid'], $allUsers[$i]['username']);
             }
 
-            $drpUser->setSelected($arrUserPerms['user_id']);
+            $drpUser->setSelected($arrUserPerms['user_id'] ?? '');
 
             $tbl->startRow();
             $tbl->addCell($lblUser, '', '', '', 'boxy_td_left', '','');
@@ -467,6 +467,7 @@
             $display .= str_replace("\n", '',$table->show());
             $display = str_replace("\n\r", '', $display);
 
+            $display .= $this->getObject('permissionrequest', 'cmsadmin')->tokenField();
             $display .= $action;
             $display .= '</form>';
 

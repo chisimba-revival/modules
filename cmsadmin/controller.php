@@ -33,6 +33,7 @@ class cmsadmin extends controller {
      * @var object
      */
     protected $_objSections;
+    protected $_objUserPerm;
 
     /**
      * The Content object
@@ -154,6 +155,7 @@ class cmsadmin extends controller {
      * @return void
      */
     public function init() {
+        $this->checkPermissionRequest(false);
         try {
             // Supressing Prototype and Setting jQuery Version with Template Variables
             $this->setVar('SUPPRESS_PROTOTYPE', true);
@@ -310,6 +312,27 @@ $this->_objJQuery->loadSimpleTreePlugin();
      * @access public
      * @return bool FALSE
      */
+    private function checkPermissionRequest(bool $checkWrite): void
+    {
+        $action = $this->getParam('action', '');
+        $type = $this->getParam('type', '');
+        $policy = $this->getObject('permissionrequest', 'cmsadmin');
+        if (!$policy->handles($action, $type)) return;
+        try {
+            $policy->check($action, $type, [
+                'id' => $this->getParam('id', ''),
+                'drp_owner' => $this->getParam('drp_owner', ''),
+                'chk_frontpage' => $this->getParam('chk_frontpage', ''),
+                'csrf_token' => $this->getParam('csrf_token', ''),
+                'confirm' => $this->getParam('confirm', ''),
+            ], $_SERVER['REQUEST_METHOD'] ?? '', $checkWrite);
+        } catch (DomainException $error) {
+            http_response_code($error->getMessage() === 'method' ? 405 : 403);
+            header('Content-Type: text/plain; charset=UTF-8');
+            die($this->getObject('language', 'language')->languageText('mod_cmsadmin_permissionrequestdenied', 'cmsadmin'));
+        }
+    }
+
     public function requiresLogin($action = null) {
         $action = $this->getParam('action', '');
         switch ($action) {
@@ -339,6 +362,7 @@ $this->_objJQuery->loadSimpleTreePlugin();
      * @return mixed Name of template to be viewed or function to call
      */
     public function dispatch() {
+        $this->checkPermissionRequest(true);
         $action = $this->getParam('action');
         $this->setLayoutTemplate('cms_layout_tpl.php');
         $this->setVar('pageSuppressXML',TRUE);

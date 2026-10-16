@@ -6804,6 +6804,7 @@ $this->appendArrayVar('headerParams', $script);
     */
         public function getDeleteConfirmForm($id = '', $type = 'flagoption')
         {
+            $permissionToken = $type === 'userperm' ? $this->getObject('permissionrequest', 'cmsadmin')->tokenField() : '';
 
 $innerHtml = <<<HTSRC
 <table>
@@ -6813,6 +6814,7 @@ $innerHtml = <<<HTSRC
 <tr>
     <td align="center">
         <form action="?module=cmsadmin&action=delete{$type}&confirm=yes&id={$id}" method="POST">
+            {$permissionToken}
             <input id="rm_{$id}" value = 'Yes' type="submit" style="width:50px;"/>
             <input type="button" onclick='Boxy.get(this).hide(); return false' value="No" style="width:50px;"/>
             <input type="button" onclick='Boxy.get(this).hide(); return false' value="Cancel" style="width:50px;"/>

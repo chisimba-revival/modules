@@ -38,6 +38,7 @@
         * @var object
         */
             protected $_objUser;
+            protected $_objGroupAdmin;
 
         /**
         * Class Constructor
@@ -116,11 +117,11 @@
         * @param userId The userId of the person who may add content to the frontpage
         * @return boolean
         */
-        public function editUserPermission($userId = NULL, $canAdd = TRUE)
+        public function editUserPermission($id = NULL, $userId = NULL, $canAdd = TRUE)
         {
             $fields['user_id'] = $userId;
             $fields['show_on_frontpage'] = $canAdd;
-            return $this->update('user_id', $userId, $fields);
+            return $this->update('id', $id, $fields);
         }
 
 
@@ -153,7 +154,7 @@
             }
 
             //Admin Can
-            if ($this->_objUser->isAdmin()){
+            if ($this->_objUser->isLoggedIn() && $this->_objUser->lookupAdmin($this->_objUser->userId())){
                 return TRUE;
             }
             return FALSE;
@@ -174,7 +175,7 @@
             }
 
             //Admin Can Do All
-            if ($this->_objUser->isAdmin()){
+            if ($this->_objUser->isLoggedIn() && $this->_objUser->lookupAdmin($this->_objUser->userId())){
                 return TRUE;
             }
 
