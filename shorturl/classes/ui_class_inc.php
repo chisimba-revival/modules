@@ -35,7 +35,6 @@
         {
             try {
                 $this->objMap =$this->newObject('dbmap', 'shorturl');
-                $this->objGrid =$this->newObject('jqgrid', 'jquery');
 
                 $this->setVar('jquery_boxy_theme', 'shorturl');
 
@@ -44,8 +43,6 @@
                 //$this->objConfig =$this->newObject('altconfig', 'config');
                 $this->objLanguage =$this->newObject('language', 'language');
 
-                //Loading the jqGrid with cms theme
-                $this->objGrid->loadGrid('shorturl');
 
                 $this->loadClass('textinput', 'htmlelements');
                 $this->loadClass('checkbox', 'htmlelements');
@@ -232,6 +229,7 @@
                 foreach ($arrMaps as $map){
                     //Attaching the Delete/Confirm Dialogs to the links
 
+$csrfField = $this->getObject('shorturlsecurity', 'shorturl')->tokenField();
 $innerHtml = <<<HTSRC
 <table>
     <tr style="padding-bottom:20px;">
@@ -240,6 +238,7 @@ $innerHtml = <<<HTSRC
     <tr>
         <td align="center">
             <form action="?module=shorturl&action=deletemapping&confirm=yes&id={$map['id']}" method="POST">
+                {$csrfField}
                 <input id="rm_$map[id]" value = 'Yes' type="submit" style="width:50px;"/>
                 <input type="button" onclick='Boxy.get(this).hide(); return false' value="No" style="width:50px;"/>
                 <input type="button" onclick='Boxy.get(this).hide(); return false' value="Cancel" style="width:50px;"/>
@@ -257,7 +256,7 @@ HTSRC;
                     // Binding the Actual Delete events to the 'OK' buttons of the corresponding confirm dialog
                     // When you click ok to delete, the handler will be ready to remove the specified row from 
                     // the grid via ajax request.
-                    $this->objGrid->attachDeleteEvent("rm_$map[id]", $map['id']);
+                    // The confirmation submits its normal POST form once.
                 }
             }
         }
@@ -462,6 +461,7 @@ HTSRC;
             $display = '<form id="frm_addgrid_'.$mapId.'" class="FormGrid" name="frm_addgrid" action="?module=shorturl&action=editmapping" method="POST">';
             $display .= str_replace("\n", '', $table->show());
             $display .= $action;
+            $display .= $this->getObject('shorturlsecurity', 'shorturl')->tokenField();
             $display .= '</form>';
 
             return $display;

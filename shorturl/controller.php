@@ -19,6 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class shorturl extends controller
 {
+        public $action, $objQuery, $objUi, $objLanguage, $objConf;
         /**
 		*
         * @var string object $_objContextCore A string to hold an instance of the contextcore object which ....
@@ -47,7 +48,10 @@ class shorturl extends controller
                 // instantiate the database object for sections
                 $this->objQuery = $this->getObject('jquery', 'jquery');
                 $this->objMap = $this->getObject('dbmap', 'shorturl');
-                $this->objUi = $this->getObject('ui', 'shorturl');
+                if ($this->getParam('action', '') !== 'redirect') {
+                    $this->checkRequest();
+                    $this->objUi = $this->getObject('ui', 'shorturl');
+                }
                 $this->objLanguage =  $this->newObject('language', 'language');
                 $this->objConf = $this->getObject('altconfig', 'config');
 
@@ -134,11 +138,28 @@ class shorturl extends controller
          *   with content.
          *
          */
+        private $requestChecked = false;
+        private function checkRequest(): void
+        {
+            if ($this->requestChecked) return;
+            $input = [];
+            foreach (['id','oper','csrf_token','txtMatchUrl','txtTargetUrl','ordering','is_dynamic'] as $key) $input[$key] = $this->getParam($key, in_array($key, ['ordering','is_dynamic'], true) ? '0' : '');
+            for ($i=1; $i<=5; $i++) foreach (['txtKeyTable','txtKeyField'] as $key) $input[$key.$i] = $this->getParam($key.$i, '');
+            try {
+                $this->getObject('shorturlsecurity','shorturl')->check($this->getParam('action', 'list'), $input, $_SERVER['REQUEST_METHOD'] ?? '');
+            } catch (DomainException $error) {
+                http_response_code($error->getMessage() === 'method' ? 405 : 403);
+                header('Content-Type: text/plain; charset=UTF-8');
+                die($this->getObject('language','language')->languageText('mod_shorturl_request_'.$error->getMessage(), 'shorturl'));
+            }
+            $this->requestChecked = true;
+        }
         public function dispatch()
         {
+            $this->checkRequest();
             try {
                 $this->setLayoutTemplate('shorturl_layout_tpl.php');
-                $this->action = $this->getParam('action','');
+                $this->action = $this->getParam('action','list');
 
             	switch ($this->action) {
             		default:
