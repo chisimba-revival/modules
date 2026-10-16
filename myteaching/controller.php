@@ -2,11 +2,55 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('You cannot view this page directly');
 class myteaching extends controller
 {
- private $user;private $userContext;private $contextBlocks;private $dynamicBlocks;
- public function init(){$this->user=$this->getObject('user','security');$this->userContext=$this->getObject('usercontext','context');$this->contextBlocks=$this->getObject('dbcontextblocks','context');$this->dynamicBlocks=$this->getObject('dynamicblocks','blocks');$this->objLanguage=$this->getObject('language','language');}
- public function dispatch($action){$blockAction=in_array($action,array('renderblock','addblock','removeblock','moveblock'),true);if($blockAction&&$this->user->isAdmin()){$this->dispatchBlockAction($action);return null;}$managing=$action==='manage'&&$this->user->isAdmin();if(!$managing&&!$this->mayView())return 'noaccess_tpl.php';$this->setVar('managingDashboard',$managing);$this->setVar('teachingOverview',$this->getObject('teachingcourseoverview')->show());foreach(array('right'=>'upperBlocks','left'=>'lowerBlocks','middle'=>'wideBlocks') as $side=>$variable)$this->setVar($variable,$this->contextBlocks->getContextBlocks('myteaching',$side));$this->setVar('mayEditBlocks',$managing);$this->setVar('availableNarrowBlocks',$this->availableBlocks(false));$this->setVar('availableWideBlocks',$this->availableBlocks(true));return 'main_tpl.php';}
- private function mayView(){return $this->user->isLoggedIn()&&count((array)$this->userContext->getContextWhereLecturer($this->user->userId()))>0;}
- private function dispatchBlockAction($action){$blockId=(string)$this->getParam('blockid','');$side=(string)$this->getParam('side','left');if(!in_array($side,array('left','right','middle'),true))return;if($action==='removeblock'){echo $this->contextBlocks->removeBlock($blockId)?'ok':'notok';return;}if($action==='moveblock'){$direction=$this->getParam('direction','down');$ok=$direction==='up'?$this->contextBlocks->moveBlockUp($blockId,'myteaching'):$this->contextBlocks->moveBlockDown($blockId,'myteaching');echo $ok?'ok':'notok';return;}$block=explode('|',$blockId);if(count($block)<3||!in_array($block[0],array('block','dynamicblock'),true))return;if($action==='addblock'){$result=$this->contextBlocks->addBlock($blockId,$side,'myteaching',$block[2]);echo $result===false?'':$result;return;}$domId=$side.'___'.str_replace('|','___',$blockId);$content=$block[0]==='dynamicblock'?$this->dynamicBlocks->showBlock($block[1]):$this->getObject('blocks','blocks')->showBlock($block[1],$block[2],null,20,true,false);echo '<div id="'.htmlspecialchars($domId,ENT_QUOTES,'UTF-8').'" class="block highlightblock">'.$content.'</div>';}
- private function availableBlocks($wide){if(!$this->user->isAdmin())return array();$options=array();foreach((array)($wide?$this->dynamicBlocks->getWideSiteBlocks():$this->dynamicBlocks->getSmallSiteBlocks()) as $block)$options[]=array('value'=>'dynamicblock|'.$block['id'].'|'.$block['module'],'title'=>(trim((string)($block['title']??''))?:$block['module']).' ('.$block['module'].')');$registry=$this->getObject('dbmoduleblocks','modulecatalogue');foreach((array)$registry->getBlocks($wide?'wide':'normal','site|user|postlogin','author') as $block){if($block['moduleid']==='contentblocks')continue;$instance=$this->newObject('block_'.$block['blockname'],$block['moduleid']);if(method_exists($instance,'isAvailableForBlockChooser')&&!$instance->isAvailableForBlockChooser())continue;$title=html_entity_decode(trim((string)$instance->title)?:$block['blockname'],ENT_QUOTES|ENT_HTML5,'UTF-8');$options[]=array('value'=>'block|'.$block['blockname'].'|'.$block['moduleid'],'title'=>$title.' ('.$block['moduleid'].')');}usort($options,fn($a,$b)=>strcasecmp($a['title'],$b['title']));return $options;}
+    private $blockEditor;
+    public $objLanguage;
+    private $user;
+    private $userContext;
+    private $contextBlocks;
+    public function init() {
+        $this->blockEditor = $this->newObject('dashboardblockeditor', 'context')->forModule('myteaching');
+        $this->user=$this->getObject('user','security');
+        $this->userContext=$this->getObject('usercontext','context');
+        $this->contextBlocks=$this->getObject('dbcontextblocks','context');
+        $this->objLanguage=$this->getObject('language','language');
+    }
+
+    public function dispatch($action) {
+        $blockAction=in_array($action,array('renderblock','addblock','removeblock','moveblock'),true);
+        if($blockAction) {
+            $this->dispatchBlockAction($action);
+            return null;
+        }
+        $managing=$action==='manage'&&$this->blockEditor->canEdit();
+        if(!$managing&&!$this->mayView())return 'noaccess_tpl.php';
+        $this->setVar('managingDashboard',$managing);
+        $this->setVar('teachingOverview',$this->getObject('teachingcourseoverview')->show());
+        $this->setVar('blockEditor', $this->blockEditor);
+
+        $this->setVar('blockEditingRevision', $managing ? $this->contextBlocks->editingRevision('myteaching') : '');
+
+        foreach(array('right'=>'upperBlocks','left'=>'lowerBlocks','middle'=>'wideBlocks') as $side=>$variable)$this->setVar($variable,$this->contextBlocks->getContextBlocks('myteaching',$side));
+        $this->setVar('mayEditBlocks',$managing);
+        $this->setVar('availableNarrowBlocks',$managing ? $this->blockEditor->options(false) : []);
+        $this->setVar('availableWideBlocks',$managing ? $this->blockEditor->options(true) : []);
+        return 'main_tpl.php';
+    }
+
+    private function mayView(){return $this->user->isLoggedIn()&&count((array)$this->userContext->getContextWhereLecturer($this->user->userId()))>0;}
+
+    /** Shared boundary enforces current administrator, POST, CSRF and fixed scope. */
+    private function dispatchBlockAction($action)
+    {
+        $input = [];
+        foreach (['contextcode','blockid','side','direction','revision','csrf_token'] as $key) {
+            $input[$key] = $this->getParam($key);
+        }
+        $result = $this->blockEditor->handle($action, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+        http_response_code($result['status']);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode($result);
+        exit;
+    }
 }
 ?>

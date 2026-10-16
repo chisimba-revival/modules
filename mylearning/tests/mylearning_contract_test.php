@@ -52,7 +52,8 @@ $checks = array(
         $controller,
         'dispatchBlockAction'
     ) && str_contains($template, 'contextblocks.js')
-        && str_contains($template, "theModule = 'mylearning'")
+        && str_contains($controller, "forModule('mylearning')")
+        && str_contains($template, '$blockEditor->settings($blockEditingRevision)')
         && str_contains($template, "\$makeEditor('right'")
         && str_contains($template, "\$makeEditor('left'")
         && str_contains($template, "\$makeEditor('middle'"),
