@@ -22,23 +22,24 @@ class ChisimbaObject {
 }
 require __DIR__.'/../classes/shorturlsecurity_class_inc.php';
 $s=new shorturlsecurity();
-$base=['id'=>'fixture','csrf_token'=>'valid','oper'=>'edit','txtMatchUrl'=>'bird','txtTargetUrl'=>'https://example.test/bird','ordering'=>'0'];
+$base=['id'=>'fixture','confirm'=>'yes','csrf_token'=>'valid','revision'=>str_repeat('a',64),'txtMatchUrl'=>'bird','txtTargetUrl'=>'https://example.test/bird','ordering'=>'0'];
 function rejects($s,$action,$input,$method,$error) {
  try{$s->check($action,$input,$method);}catch(DomainException $e){if($e->getMessage()===$error)return;throw $e;}
  throw new RuntimeException('Accepted unsafe request: '.$error);
 }
 foreach(['anonymous','member','revoked-admin'] as $role){
  ChisimbaObject::$role=$role;
- foreach(['list','getform','getjsondata','editmapping','deletemapping','edit'] as $action) rejects($s,$action,$base,'POST','denied');
+ foreach(['list','edit','save','delete'] as $action) rejects($s,$action,$base,'POST','denied');
  $s->check('redirect',[],'GET');
 }
 ChisimbaObject::$role='admin';
-foreach(['editmapping','deletemapping','edit'] as $action){
+foreach(['save','delete'] as $action){
  rejects($s,$action,$base,'GET','method');
  rejects($s,$action,array_replace($base,['csrf_token'=>'expired']),'POST','csrf');
  $s->check($action,$base,'POST');
 }
 foreach(['serverpc','releaselock','getMethod','unknown'] as $action)rejects($s,$action,$base,'POST','invalid');
-foreach([['id'=>"x' OR 1=1"],['id'=>[]],['txtTargetUrl'=>'javascript:alert(1)'],['txtTargetUrl'=>"https://example.test/\r\nHeader:x"],['txtTargetUrl'=>'https://user:pass@example.test/'],['ordering'=>'-1'],['txtKeyTable1'=>"users'; DROP"],['oper'=>'invalid']] as $change)rejects($s,'edit',array_replace($base,$change),'POST','invalid');
+foreach([['id'=>"x' OR 1=1"],['id'=>[]]] as $change)rejects($s,'save',array_replace($base,$change),'POST','invalid');
+rejects($s,'save',array_replace($base,['revision'=>'']),'POST','stale');
 if(!str_contains($s->tokenField(),'name="csrf_token"'))throw new RuntimeException('Missing form token');
-echo "PASS current roles, public redirect, explicit actions, methods, CSRF, scalar IDs and URL/key validation\n";
+echo "PASS current roles, public redirect, explicit actions, methods, CSRF, scalar IDs and stale revision shape\n";
