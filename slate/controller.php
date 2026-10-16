@@ -111,7 +111,7 @@ class slate extends controller
             header('Content-Type: text/plain; charset=UTF-8');
             die($this->getObject('language','language')->languageText('mod_slate_'.$error->getMessage(), 'slate'));
         }
-        if ($this->objUser->isLoggedIn() && $this->objUser->isAdmin()) {
+        if ($security->canEdit()) {
             $this->appendArrayVar('headerParams', '<meta name="slate-csrf" content="'.htmlspecialchars($security->csrf()->issue('slate_edit'), ENT_QUOTES, 'UTF-8').'">');
         }
         if (in_array($action, ['renderblock','addblock','removeblock','moveblock'], true)) {

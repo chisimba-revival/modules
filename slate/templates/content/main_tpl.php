@@ -11,7 +11,7 @@ try {
 $blocks = $this->getObject('dbslateblocks','slate');
 $revision = $blocks->capture($key);
 $settings = $this->getObject('slateblockeditor','slate')->settings($key, $revision);
-if ($this->objUser->isLoggedIn() && $this->objUser->isAdmin()) {
+if ($settings !== '') {
     echo $this->getObject('contextualhelp','help')->show('slate','editing');
 }
 echo $this->getObject('buildcanvas','canvas')->show('page', $key, $blocks, $settings);

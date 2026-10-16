@@ -24,6 +24,7 @@ class slateblockeditor extends ChisimbaObject
     }
     public function settings(string $key, string $revision): string
     {
+        if (!$this->getObject('slatesecurity','slate')->canEdit()) return '';
         $language = $this->getObject('language','language');
         $attributes = ['module'=>'slate','pageid'=>$key,'revision'=>$revision,
             'csrf'=>$this->getObject('slatesecurity','slate')->csrf()->issue('slate_edit'),

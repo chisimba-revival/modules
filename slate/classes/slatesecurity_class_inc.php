@@ -5,6 +5,11 @@ class slatesecurity extends ChisimbaObject
 {
     public function init() {}
     public function csrf() { return $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf']; }
+    public function canEdit(): bool
+    {
+        $user = $this->getObject('user','security');
+        return $user->isLoggedIn() && $user->lookupAdmin($user->userId());
+    }
     public function check($action, array $input, string $method): void
     {
         if (!in_array($action, ['view','manage','edit','pagesave','delete','gettaken','renderblock','addblock','removeblock','moveblock'], true)) throw new DomainException('editor_invalid');
@@ -12,8 +17,7 @@ class slatesecurity extends ChisimbaObject
             if (!is_string($input['page'] ?? '') || (($input['page'] ?? '') !== '' && !preg_match('/^[1-9][0-9]{0,8}$/D', $input['page']))) throw new DomainException('editor_invalid');
             return;
         }
-        $user = $this->getObject('user','security');
-        if (!$user->isLoggedIn() || !$user->lookupAdmin($user->userId())) throw new DomainException('editor_denied');
+        if (!$this->canEdit()) throw new DomainException('editor_denied');
         if (in_array($action, ['manage','edit','gettaken'], true)) {
             foreach (['id','mode'] as $key) if (!is_string($input[$key] ?? '')) throw new DomainException('editor_invalid');
             if (strlen($input['id'] ?? '') > 32 || !in_array($input['mode'] ?? '', ['', 'add', 'edit'], true)) throw new DomainException('editor_invalid');
