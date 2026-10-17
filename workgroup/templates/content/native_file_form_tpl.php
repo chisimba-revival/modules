@@ -1,0 +1,20 @@
+<?php
+$v=$this->getObject('sharingview','workgroup');echo $v->start($editing?'edit':'share',$error);
+echo '<h2>'.$v->e($group['description']).'</h2><p>'.$v->t('permissions').'</p>';
+$params=['action'=>$editing?'editfileupload':'uploadconfirm','workgroupid'=>$group['id']];
+if($editing)$params['fileid']=$draft['id']??'';
+echo '<form method="post" action="'.$v->url($params).'">';
+foreach(['id','revision'] as $key)echo $v->hidden($key,$draft[$key]??'');
+echo $v->hidden('csrf_token',$csrfToken);
+$fileId=is_string($draft['fileupload']??null)?$draft['fileupload']:'';
+$file=$fileId!=='' ? $service->readableFile($fileId) : null;
+$pickerUrl=$v->url(['action'=>'filepicker','policy'=>'download','location'=>'user','target'=>'wg-file-id'],'filemanager');
+$this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('sharing.js','workgroup').'"></script>');
+echo '<div class="chisimba-form-field"><label for="wg-file-name">'.$v->t('file').'</label>';
+echo '<input type="hidden" id="wg-file-id" name="fileupload" value="'.$v->e($file ? $fileId : '').'">';
+echo '<input id="wg-file-name" readonly value="'.$v->e($file['filename']??'').'">';
+echo '<div class="chisimba-form-actions"><button type="button" data-workgroup-picker="'.$pickerUrl.'">'.$v->t('choosefile').'</button><button type="button" data-workgroup-clear>'.$v->t('clearfile').'</button></div></div>';
+echo $v->input('title','title',$draft['title']??'',255,true);
+echo '<div class="chisimba-form-field"><label for="wg-description">'.$v->t('description').'</label><textarea id="wg-description" name="description" maxlength="255">'.$v->e($draft['description']??'').'</textarea></div>';
+echo $v->input('version','version',$draft['version']??'',32);
+echo '<div class="chisimba-form-actions"><button type="submit">'.$v->t('save').'</button>'.$v->link(['workgroupid'=>$group['id']],'back').'</div></form></section>';
