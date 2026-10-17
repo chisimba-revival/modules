@@ -38,12 +38,14 @@ class dbdiscussion_ratings extends dbTable
         if ($userId == '') {
             $userId = 'init_1';
         }
-        $this->insert(array(
+        return $this->insert(array(
                 'discussion_id' => $discussion_id,
                 'rating_description' => $rating_description,
                 'rating_value' => $rating_value,
                 'userId' => $userId,
-                'dateLastUpdated' => strftime('%Y-%m-%d %H:%M:%S', $dateLastUpdated)
+                'modifierid' => $userId,
+                'datecreated' => date('Y-m-d H:i:s', $dateLastUpdated),
+                'dateLastUpdated' => date('Y-m-d H:i:s', $dateLastUpdated)
             ));
             
     }#function

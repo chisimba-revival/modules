@@ -22,7 +22,7 @@ $fields = array(
 		),
     'userid' => array(
 		'type' => 'text',
-        'length' => '25',
+        'length' => '32',
         'notnull' => 1
 		),
     'datecreated' => array(
@@ -30,7 +30,7 @@ $fields = array(
 		),
     'modifierid' => array(
 		'type' => 'text',
-        'length' => '25',
+        'length' => '32',
         'notnull' => 1
 		),
     'datelastupdated' => array(

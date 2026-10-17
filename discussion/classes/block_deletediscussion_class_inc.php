@@ -66,6 +66,7 @@ class block_deletediscussion extends ChisimbaObject {
                         $firstCell .= '<p>' . $this->objLanguage->languageText('mod_discussion_confirmdeletediscussion', 'discussion') . '</p>';
 
                         $form1 = new form('deletediscussion', $this->uri(array('action' => 'deletediscussionconfirm')));
+                        $form1->addToForm('<input type="hidden" name="csrf_token" value="' . htmlspecialchars($this->getObject('nativeauthwebcomposition', 'security')->build()['csrf']->issue('discussion_manage'), ENT_QUOTES, 'UTF-8') . '">');
                         $hiddenInput = new hiddeninput('id', $discussion['id']);
                         $form1->addToForm($hiddenInput->show());
 
@@ -90,6 +91,7 @@ class block_deletediscussion extends ChisimbaObject {
                         $secondCell .= '<p>' . $this->objLanguage->languageText('mod_discussion_preservesdiscussioncontent', 'discussion') . '</p>';
 
                         $form2 = new form('makeinvisible', $this->uri(array('action' => 'changevisibilityconfirm', 'discussion')));
+                        $form2->addToForm('<input type="hidden" name="csrf_token" value="' . htmlspecialchars($this->getObject('nativeauthwebcomposition', 'security')->build()['csrf']->issue('discussion_manage'), ENT_QUOTES, 'UTF-8') . '">');
                         $radio = new radio('visible');
                         $radio->addOption('Y', $this->objLanguage->languageText('mod_discussion_makediscussionvisible', 'discussion'));
                         $radio->addOption('N', $this->objLanguage->languageText('mod_discussion_hidediscussion', 'discussion'));

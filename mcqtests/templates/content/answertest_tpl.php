@@ -10,7 +10,7 @@ if (isset($closeWin) && $closeWin) {
     //<![CDATA[
     function reloadPage()
     {
-        window.opener.location.reload(true);
+        if (window.opener && !window.opener.closed) window.opener.location.reload(true);
         //window.opener.location.href = window.opener.location.href;
         window.close();
     }
@@ -28,14 +28,14 @@ if ($mode == 'notoolbar') {
 }
 
 // set up html elements
-$objTable = &$this->loadClass('htmltable', 'htmlelements');
-$objRadio = &$this->loadClass('radio', 'htmlelements');
-$objButton = &$this->loadClass('button', 'htmlelements');
-$objInput = &$this->loadClass('textinput', 'htmlelements');
-$objForm = &$this->loadClass('form', 'htmlelements');
-$objImage = &$this->loadClass('image', 'htmlelements');
-$objLabel = &$this->loadClass('label', 'htmlelements');
-$objLayer = &$this->loadClass('layer', 'htmlelements');
+$objTable = $this->loadClass('htmltable', 'htmlelements');
+$objRadio = $this->loadClass('radio', 'htmlelements');
+$objButton = $this->loadClass('button', 'htmlelements');
+$objInput = $this->loadClass('textinput', 'htmlelements');
+$objForm = $this->loadClass('form', 'htmlelements');
+$objImage = $this->loadClass('image', 'htmlelements');
+$objLabel = $this->loadClass('label', 'htmlelements');
+$objLayer = $this->loadClass('layer', 'htmlelements');
 $objHighlightLabels = $this->newObject('highlightlabels', 'htmlelements');
 $ret = $objHighlightLabels->show();
 
@@ -91,7 +91,7 @@ if ($test['timed']) {
         function submitForm(val){
             document.getElementById('form_submittest').action.value=val;
             document.getElementById('form_submittest').submit();
-            opener.location.reload();
+            if (window.opener && !window.opener.closed) window.opener.location.reload();
         }
 
         function countDown(){
@@ -155,9 +155,9 @@ if ($test['timed']) {
     //]]>
     </script>";
     echo $javascript;
-    $body = 'onload="timeOut(); window.opener.location.reload();"
+    $body = 'onload="timeOut(); if (window.opener && !window.opener.closed) window.opener.location.reload();"
     onkeypress="javascript:return disableCtrlKeyCombination(event);"
-    onunload="opener.location.reload();"';
+    onunload="if (window.opener && !window.opener.closed) window.opener.location.reload();"';
     $this->setVarByRef('bodyParams', $body);
 } else {
     $javascript = "<script language=\"javascript\" type=\"text/javascript\">
@@ -203,9 +203,9 @@ if ($test['timed']) {
     //]]>
     </script>";
     echo $javascript;
-    $body = 'onload="javascript:window.opener.location.reload();"
+    $body = 'onload="javascript:if (window.opener && !window.opener.closed) window.opener.location.reload();"
     onkeypress="javascript:return disableCtrlKeyCombination(event);"
-    onunload="opener.location.reload();"';
+    onunload="if (window.opener && !window.opener.closed) window.opener.location.reload();"';
     $this->setVarByRef('bodyParams', $body);
 }
 // Display the test details
@@ -279,15 +279,6 @@ if (!empty($data)) {
         // Display answers
          if (!empty($line['answers'])) {
              if ($line['questiontype'] == 'freeform' ){
-                 $simple = array();
-                 foreach($line['answers'] as $key => $cloze ){
-
-                 $simple[] = $cloze['answer'];
-                 }
-                 $stringOut = implode(';',$simple);
-                 $objInput->textinput('freeform'.$line['questionorder'], $stringOut );
-                 $objInput->fldType = 'hidden';
-                 $hidden.= $objInput->show();
                  $objRadio = new textinput('ans'.$line['questionorder'], '');
 
                  $objInput = new textinput('qtype'.$line['questionorder'], 'freeform');
@@ -384,6 +375,14 @@ if ($action == 'continuetest') {
 }
 // form to submit the test
 $objForm = new form('submittest', $this->uri(''));
+$attemptToken=$this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('mcq_attempt_'.hash('sha256',(string)$resultId));
+$objForm->addToForm('<input type="hidden" name="csrf_token" value="'.htmlspecialchars($attemptToken,ENT_QUOTES,'UTF-8').'">');
+$attemptDraft=$this->getSession('mcq_attempt_draft_'.$resultId,array());
+if ($attemptDraft) {
+    $objForm->addToForm('<p role="status">'.htmlspecialchars($this->objLanguage->languageText('mod_mcqtests_attempt_retry','mcqtests'),ENT_QUOTES,'UTF-8').'</p>');
+    $objForm->addToForm('<script type="application/json" id="mcq-attempt-draft">'.json_encode($attemptDraft,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT).'</script>');
+    $this->appendArrayVar('headerParams','<script defer src="'.htmlspecialchars($this->getResourceUri('js/attempt-draft.js','mcqtests'),ENT_QUOTES,'UTF-8').'"></script>');
+}
 $objForm->addToForm($objTable->show());
 $str.= $objForm->show();
 // navigation & submission
@@ -393,7 +392,7 @@ $javascript = "<script language=\"javascript\" type=\"text/javascript\">
         document.getElementById('input_qnum').value=val;
         document.getElementById('form_submittest').action.value='continuetest';
         document.getElementById('form_submittest').submit();
-        opener.location.reload();
+        if (window.opener && !window.opener.closed) window.opener.location.reload();
     }
     //]]>
     </script>";

@@ -44,33 +44,20 @@ class block_discussionside extends ChisimbaObject {
         }
 
         function buildForm() {
-                $discussions = $this->objDiscussion->showAllDiscussions($this->contextCode);
-                if ((is_countable($discussions) ? count($discussions) : 0) > 0) {
-                        $div = "";
-                        $pointerLink = new link("#");
-                        $pointerLink->link = ">&nbsp;";
-                        //looping discussions
-                        foreach ($discussions as $discussion) {
-                                if ($this->contextObject->isInContext() || $discussion['discussion_context'] == 'root') {
-                                        $objLink = new link(/* $this->uri(array('module' => 'discussion', 'action' => 'discussion', 'id' => $discussion['discussion_id'])) */"#");
-                                        $topics = $this->objTopic->showTopicsInDiscussion($discussion['id'], $this->objUser->userId($this->objUser->userName()), $discussion['archivedate'], NULL, NULL, NULL, NULL);
-                                        $objLink->link = $discussion['discussion_name'];
-                                        $objLink->cssId = $discussion['id'];
-                                        $objLink->cssClass = "indicatorparent";
-                                        $html = $objLink->show() . "<br/>";
-                                        $html .= "<ul id='{$discussion['id']}' class='indicator' >";
-                                        //looping topics
-                                        foreach ($topics as $topic) {
-                                                $topicLink = new link($this->uri(array('module' => 'discussion', 'action' => 'viewtopic', 'id' => $topic['topic_id'])));
-                                                $topicLink->link = $topic['post_title'];
-                                                $html .= "<br/><li id='{$topic['discussion_id']}'  class='indicator'> {$topicLink->show()}<span class='indicator'> {$topic['replies']}</span></li>";
-                                        }
-                                        $html .= '</ul><br/>';
-                                        $div .= $html;
-                                }
+                $context = trim((string)$this->contextCode) ?: 'root';
+                if ($context !== 'root' && !$this->getObject('courseawarelaunchservice', 'context')->mayUseActiveCourse($this->objUser->userId(), 'discussion')) return '';
+                $e = static fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+                $html = '';
+                foreach ((array)$this->objDiscussion->getContextDiscussions($context) as $discussion) {
+                        if (!$this->getObject('discussionaccess', 'discussion')->mayRead($discussion)) continue;
+                        $html .= '<details><summary>' . $e($discussion['discussion_name']) . '</summary><ul>';
+                        foreach ((array)$this->objTopic->showTopicsInDiscussion($discussion['id'], $this->objUser->userId()) as $topic) {
+                                $url = $this->uri(array('module'=>'discussion','action'=>'viewtopic','id'=>$topic['topic_id']));
+                                $html .= '<li><a href="' . $e($url) . '">' . $e(stripslashes((string)$topic['post_title'])) . '</a></li>';
                         }
+                        $html .= '</ul></details>';
                 }
-                return $div . $this->getjavascriptFile('effects.js', 'discussion');
+                return $html;
         }
 
         function show() {

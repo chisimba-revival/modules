@@ -18,6 +18,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end security check
 class block_postreply extends ChisimbaObject {
+    public $title;
+    public $contextObject;
+    public $csrf;
+    public $configData;
 
     var $objUser;
     var $objPost;
@@ -38,12 +42,12 @@ class block_postreply extends ChisimbaObject {
         $this->objTopic = $this->getObject('dbtopic', 'discussion');
         $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
         // Get Context Code Settings
-        $this->contextObject = & $this->getObject('dbcontext', 'context');
+        $this->contextObject = $this->getObject('dbcontext', 'context');
         $this->contextCode = $this->contextObject->getContextCode();
         $this->objLanguage = $this->getObject('language', 'language');
         // Discussion Ratings
-        $this->objDiscussionRatings = & $this->getObject('dbdiscussion_ratings');
-        $this->objPostRatings = & $this->getObject('dbpost_ratings');
+        $this->objDiscussionRatings = $this->getObject('dbdiscussion_ratings');
+        $this->objPostRatings = $this->getObject('dbpost_ratings');
         $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
     }
 

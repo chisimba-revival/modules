@@ -78,6 +78,16 @@ class dbPostText extends dbTable
     * @param string $post_title Title of the Post
     * @param string $post_text Text if the Post
     */
+    /** Update exactly the original version shown by the edit form. */
+    public function updateRevision($postId, $revision, $title, $text) {
+        return $this->transaction(function () use ($postId, $revision, $title, $text) {
+            $rows = $this->selectPrepared('SELECT id, post_title, post_text FROM tbl_discussion_post_text WHERE post_id = ? AND original_post = 1 LIMIT 1 FOR UPDATE', array($postId));
+            if (!$rows || !hash_equals($revision, hash('sha256', (string)$rows[0]['post_title'] . "\0" . (string)$rows[0]['post_text']))) return false;
+            if ($this->update('id', $rows[0]['id'], array('post_title'=>$title, 'post_text'=>$text)) === false) throw new RuntimeException('Post edit not saved');
+            return true;
+        });
+    }
+
     function updatePostText($post_id, $post_title, $post_text)
     {
         $filter = ' WHERE post_id = "'.$post_id.'" LIMIT 1';

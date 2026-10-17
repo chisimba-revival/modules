@@ -20,6 +20,9 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class dbtopicread extends dbTable
  {
+    // Explicit component state for current PHP runtimes.
+    public $objTopic;
+
 
 	/**
 	* Constructor method to define the table(default)

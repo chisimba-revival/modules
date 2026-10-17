@@ -25,6 +25,19 @@ class dbpost_ratings extends dbTable
         parent::init('tbl_discussion_post_ratings');
     }
 
+    /** Serialize changes on the post row; failed inserts roll back the prior rating. */
+    public function adjustRating($postId, $userId, $delta) {
+        return $this->transaction(function () use ($postId, $userId, $delta) {
+            $post = $this->selectPrepared('SELECT id FROM tbl_discussion_post WHERE id = ? FOR UPDATE', array($postId));
+            if (!$post) throw new RuntimeException('Post unavailable');
+            $rows = $this->selectPrepared('SELECT rating FROM tbl_discussion_post_ratings WHERE post_id = ? AND userid = ?', array($postId, $userId));
+            $rating = max(0, (int)($rows[0]['rating'] ?? 0) + ($delta > 0 ? 1 : -1));
+            $this->executePrepared('DELETE FROM tbl_discussion_post_ratings WHERE post_id = ? AND userid = ?', array($postId, $userId));
+            if (!$this->insert(array('post_id'=>$postId, 'rating'=>$rating, 'userid'=>$userId, 'modifierid'=>$userId, 'datecreated'=>date('Y-m-d H:i:s'), 'datelastupdated'=>date('Y-m-d H:i:s')))) throw new RuntimeException('Rating not saved');
+            return $rating;
+        });
+    }
+
     /**
     * Save a rating for a post
     *

@@ -17,6 +17,13 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 // end security check
 class block_flatview extends ChisimbaObject {
+    // Explicit component state for current PHP runtimes.
+    public $configData;
+    public $csrf;
+    public $objDateTime;
+    public $objIcon;
+    public $title;
+
 
         var $objUser;
         var $objLanguage;
@@ -43,7 +50,7 @@ class block_flatview extends ChisimbaObject {
                 $this->loadClass('checkbox', 'htmlelements');
                 $this->loadClass('radio', 'htmlelements');
                 // Get Context Code Settings
-                $this->contextObject = & $this->getObject('dbcontext', 'context');
+                $this->contextObject = $this->getObject('dbcontext', 'context');
                 $this->contextCode = $this->contextObject->getContextCode();
                 $this->objLanguage = $this->getObject('language', 'language');
                 $this->objUser = $this->getObject('user', 'security');
@@ -51,13 +58,13 @@ class block_flatview extends ChisimbaObject {
                 $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
                 $this->dbDiscussionPost = $this->getObject('dbtopicsubscriptions', 'discussion');
                 // Discussion Ratings
-                $this->objDiscussionRatings = & $this->getObject('dbdiscussion_ratings');
+                $this->objDiscussionRatings = $this->getObject('dbdiscussion_ratings');
                 //discussion subscriptions
                 $this->dbDiscussionSubscriptions = $this->getObject('dbdiscussionsubscriptions', 'discussion');
-                $this->objPostRatings = & $this->getObject('dbpost_ratings');
+                $this->objPostRatings = $this->getObject('dbpost_ratings');
                 $this->objIcon = $this->newObject('geticon', 'htmlelements');
                 $this->objTopic = $this->getObject('dbtopic', 'discussion');
-                $this->objDateTime = & $this->getObject('dateandtime', 'utilities');
+                $this->objDateTime = $this->getObject('dateandtime', 'utilities');
                 $this->csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
                 $this->title=NULL;
                 $this->js = '
@@ -355,6 +362,7 @@ class block_flatview extends ChisimbaObject {
                         return '<main class="chisimba-workspace discussion-workspace"><section class="chisimba-card discussion-empty-state"><h1>Topic unavailable</h1><p>This topic could not be found.</p></section></main>';
                 }
                 $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
+                if (!$this->getObject('discussionaccess', 'discussion')->mayRead($discussion)) return '';
                 if (!is_array($discussion)) {
                         return '<main class="chisimba-workspace discussion-workspace"><section class="chisimba-card discussion-empty-state"><h1>Discussion unavailable</h1><p>This discussion could not be found.</p></section></main>';
                 }
@@ -419,7 +427,7 @@ class block_flatview extends ChisimbaObject {
                         };
                         $subscription = '<details class="chisimba-card discussion-topic-notifications"><summary>'
                                 . $icons->render('bell', array('decorative'=>true)) . '<span>Notification preferences</span></summary><form method="post" action="'
-                                . $escape($this->uri(array('action'=>'usersubscription'))) . '"><input type="hidden" name="discussion_id" value="'
+                                . $escape($this->uri(array('action'=>'usersubscription'))) . '"><input type="hidden" name="csrf_token" value="' . $escape($this->csrf->issue('disc_sub_' . hash('sha256',$topicId))) . '"><input type="hidden" name="discussion_id" value="'
                                 . $escape($discussion['id']) . '"><input type="hidden" name="topic_id" value="' . $escape($topicId) . '"><fieldset><legend>Notify me about this conversation</legend><div class="discussion-choice-grid">'
                                 . $choice('nosubscription', 'Do not notify me') . $choice('subscribetopic', 'Replies to this topic')
                                 . $choice('subscribetoall', 'All activity in this discussion') . '</div></fieldset><div class="chisimba-form-actions"><button class="button chisimba-button-compact" type="submit">'
@@ -442,7 +450,7 @@ class block_flatview extends ChisimbaObject {
                 foreach($posts as $item){$byId[(string)$item['post_id']]=$item;}$html='';
                 foreach($posts as $index=>$item){$postId=(string)$item['post_id'];$parentId=(string)($item['post_parent']??'0');$author=trim((string)($item['firstname']??'').' '.(string)($item['surname']??''));if($author===''){$author=trim((string)($item['username']??''))?:'Unknown participant';}$depth=max(0,min(4,(int)($item['level']??1)-1));$context='Started by '.$author;
                         if($parentId!=='0'&&isset($byId[$parentId])){$parent=$byId[$parentId];$parentAuthor=trim((string)($parent['firstname']??'').' '.(string)($parent['surname']??''));if($parentAuthor===''){$parentAuthor=trim((string)($parent['username']??''))?:'another participant';}$context='Replying to <a href="#post-'.$e($parentId).'">'.$e($parentAuthor).': '.stripslashes($e($parent['post_title']??'post')).'</a>';}
-                        $actions='';if($this->objPost->repliesAllowed){$actions.='<a class="button chisimba-button-secondary chisimba-button-compact" href="'.$e($this->uri(array('action'=>'postreply','id'=>$postId,'type'=>$discussionType))).'">'.$icons->render('reply',array('decorative'=>true)).'<span>Reply to this post</span></a>';}
+                        $actions=$this->getObject('postcontrols', 'discussion')->show($item, $discussion);if($this->objPost->repliesAllowed){$actions.='<a class="button chisimba-button-secondary chisimba-button-compact" href="'.$e($this->uri(array('action'=>'postreply','id'=>$postId,'type'=>$discussionType))).'">'.$icons->render('reply',array('decorative'=>true)).'<span>Reply to this post</span></a>';}
                         $assessed=($discussion['assessment_enabled']??'N')==='Y';$created=strtotime((string)($item['datelastupdated']??''));$fresh=$created!==false&&time()-$created>=0&&time()-$created<=120;$own=hash_equals((string)$this->objUser->userId(),(string)($item['userid']??''));
                         if($assessed&&$parentId!=='0'&&empty($item['replypost'])&&$fresh&&$own){$csrf=$this->csrf->issue('disc_own_'.hash('sha256',$postId));$actions.='<form method="post" action="'.$e($this->uri(array('action'=>'deleteownpost'))).'"><input type="hidden" name="csrf_token" value="'.$e($csrf).'"><input type="hidden" name="id" value="'.$e($postId).'"><button class="button chisimba-button-danger chisimba-button-compact" type="submit">'.$icons->render('trash-2',array('decorative'=>true)).'<span>Delete my reply</span></button></form>';}
                         if(!$assessed&&$this->objPost->showModeration){$actions.='<a class="button chisimba-button-secondary chisimba-button-compact" href="'.$e($this->uri(array('action'=>'moderatepost','id'=>$postId,'type'=>$discussionType))).'">'.$icons->render('shield-check',array('decorative'=>true)).'<span>Moderate post</span></a>';}

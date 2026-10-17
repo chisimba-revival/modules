@@ -16,6 +16,45 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1
  */
 class discussion extends controller {
+    // Explicit component state for current PHP runtimes.
+    public $contextObject;
+    public $contextTitle;
+    public $eventsEnabled;
+    public $ignoreGroupMembership;
+    public $isLoggedIn;
+    public $objActivityStreamer;
+    public $objAltConfig;
+    public $objContextGroups;
+    public $objDateTime;
+    public $objDiscussion;
+    public $objDiscussionEmail;
+    public $objDiscussionNotifications;
+    public $objDiscussionRatings;
+    public $objDiscussionStats;
+    public $objDiscussionSubscriptions;
+    public $objDiscussionType;
+    public $objFiles;
+    public $objLanguage;
+    public $objLog;
+    public $objManageGroups;
+    public $objMenuTools;
+    public $objModuleCatalogue;
+    public $objPost;
+    public $objPostAttachments;
+    public $objPostRatings;
+    public $objPostText;
+    public $objSysConfig;
+    public $objTempAttachments;
+    public $objTopic;
+    public $objTopicRead;
+    public $objTopicSubscriptions;
+    public $objWorkGroup;
+    public $objWorkGroupUser;
+    public $showFullName;
+    public $trimstrObj;
+    public $userId;
+    public $usingWorkGroupsFlag;
+
 
         private const CSRF_MANAGE = 'discussion_manage';
 
@@ -77,43 +116,43 @@ class discussion extends controller {
 
                 $this->objAltConfig = $this->getObject("altconfig", "config");
                 // General Classes
-                $this->objUser = & $this->getObject('user', 'security');
+                $this->objUser = $this->getObject('user', 'security');
                 $this->csrf = $this->getObject(
                         'nativeauthwebcomposition', 'security'
                 )->build()['csrf'];
                 $this->userId = $this->objUser->userId();
                 $this->isLoggedIn = $this->objUser->isLoggedIn();
-                $this->objLanguage = & $this->getObject('language', 'language');
+                $this->objLanguage = $this->getObject('language', 'language');
 
                 // Discussion Classes
-                $this->objDiscussion = & $this->getObject('dbdiscussion');
-                $this->objDiscussionType = & $this->getObject('dbdiscussiontypes');
-                $this->objTopic = & $this->getObject('dbtopic');
-                $this->objPost = & $this->getObject('dbpost');
-                $this->objPostText = & $this->getObject('dbposttext');
-                $this->objTopicRead = & $this->getObject('dbtopicread');
+                $this->objDiscussion = $this->getObject('dbdiscussion');
+                $this->objDiscussionType = $this->getObject('dbdiscussiontypes');
+                $this->objTopic = $this->getObject('dbtopic');
+                $this->objPost = $this->getObject('dbpost');
+                $this->objPostText = $this->getObject('dbposttext');
+                $this->objTopicRead = $this->getObject('dbtopicread');
 
                 // Discussion Attachments
-                $this->objTempAttachments = & $this->getObject('dbtempattachments');
-                $this->objPostAttachments = & $this->getObject('dbpostattachments');
+                $this->objTempAttachments = $this->getObject('dbtempattachments');
+                $this->objPostAttachments = $this->getObject('dbpostattachments');
 
                 // Discussion Ratings
-                $this->objDiscussionRatings = & $this->getObject('dbdiscussion_ratings');
-                $this->objPostRatings = & $this->getObject('dbpost_ratings');
+                $this->objDiscussionRatings = $this->getObject('dbdiscussion_ratings');
+                $this->objPostRatings = $this->getObject('dbpost_ratings');
 
                 // Discussion Email Class
-                $this->objDiscussionEmail = & $this->getObject('discussionemail');
+                $this->objDiscussionEmail = $this->getObject('discussionemail');
                 $this->objDiscussionNotifications = $this->getObject('discussionnotificationpublisher');
 
                 // Load Discussion Subscription classes
-                $this->objDiscussionSubscriptions = & $this->getObject('dbdiscussionsubscriptions');
-                $this->objTopicSubscriptions = & $this->getObject('dbtopicsubscriptions');
+                $this->objDiscussionSubscriptions = $this->getObject('dbdiscussionsubscriptions');
+                $this->objTopicSubscriptions = $this->getObject('dbtopicsubscriptions');
 
                 // Discussion Statistics
-                $this->objDiscussionStats = & $this->getObject('discussionstats');
+                $this->objDiscussionStats = $this->getObject('discussionstats');
 
                 // Get Context Code Settings
-                $this->contextObject = & $this->getObject('dbcontext', 'context');
+                $this->contextObject = $this->getObject('dbcontext', 'context');
                 $this->contextCode = $this->contextObject->getContextCode();
 
                 // If not in context, set code to be 'root' called 'Lobby'
@@ -131,14 +170,14 @@ class discussion extends controller {
                 $this->objDiscussionEmail->setContextCode($this->contextCode);
 
                 // Trim String Functions
-                $this->trimstrObj = & $this->getObject('trimstr', 'strings');
+                $this->trimstrObj = $this->getObject('trimstr', 'strings');
 
                 // Workgroup Classes
                 $this->objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
                 $this->usingWorkGroupsFlag = $this->objModuleCatalogue->checkIfRegistered('workgroup');
                 if ($this->usingWorkGroupsFlag) {
-                        $this->objWorkGroup = & $this->getObject('dbworkgroup', 'workgroup');
-                        $this->objWorkGroupUser = & $this->getObject('dbworkgroupusers', 'workgroup');
+                        $this->objWorkGroup = $this->getObject('dbworkgroup', 'workgroup');
+                        $this->objWorkGroupUser = $this->getObject('dbworkgroupusers', 'workgroup');
                 }
 
                 // Check for workgroup
@@ -153,9 +192,9 @@ class discussion extends controller {
                 $this->objPost->discussiontype = $this->discussiontype;
 
                 // Load Menu Tools Class
-                $this->objMenuTools = & $this->getObject('tools', 'toolbar');
-                $this->objDateTime = & $this->getObject('dateandtime', 'utilities');
-                $this->objFiles = & $this->getObject('dbfile', 'filemanager');
+                $this->objMenuTools = $this->getObject('tools', 'toolbar');
+                $this->objDateTime = $this->getObject('dateandtime', 'utilities');
+                $this->objFiles = $this->getObject('dbfile', 'filemanager');
                 $this->loadClass('link', 'htmlelements');
 
                 // Course changes must pass through context's canonical launcher.
@@ -809,7 +848,7 @@ class discussion extends controller {
                         // Send the Record Id to the template
                         $this->setVarByRef('topic_id', $topic_id);
                         // Form with Drop down to switch between flat, threaded and single view
-                        $this->setVarByRef('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'thread'));
+                        $this->setVar('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'thread'));
                         // Mark the Topic as read for the current user if user is logged in
                         if ($this->isLoggedIn) {
                                 $this->objTopicRead->markTopicRead($topic_id, $this->userId);
@@ -886,7 +925,7 @@ class discussion extends controller {
                         // Send the Record I
                         $this->setVarByRef('topic_id', $topic_id);
                         $this->setVarByRef('objTopic', $this->objTopic);
-                        $this->setVarByRef('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'singlethreadview'));
+                        $this->setVar('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'singlethreadview'));
                         // Mark the Topic as read for the current user if user is logged in
                         if ($this->isLoggedIn) {
                                 $this->objTopicRead->markTopicRead($topic_id, $this->userId);
@@ -905,7 +944,7 @@ class discussion extends controller {
          */
         function loadTranslation($postId, $language) {
                 $post = $this->objPostText->getTranslatedPost($postId, $language);
-                $objLanguageCode = & $this->getObject('languagecode', 'language');
+                $objLanguageCode = $this->getObject('languagecode', 'language');
                 if ($post != FALSE) {
                         if ($post['original_post'] == '1') {
                                 $text = '<strong class="warning">Viewing Original Post Made in ' . $objLanguageCode->getLanguage($language) . '</strong><br />';
@@ -1019,7 +1058,7 @@ class discussion extends controller {
                         $this->setVarByRef('thread', $thread);
                         // Send the Record Id to the template
                         $this->setVarByRef('topic_id', $topic_id);
-                        $this->setVarByRef('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'flatview'));
+                        $this->setVar('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'flatview'));
                         // Mark the Topic as read for the current user if user is logged in
                         if ($this->isLoggedIn) {
                                 $this->objTopicRead->markTopicRead($topic_id, $this->userId);
@@ -1201,46 +1240,58 @@ class discussion extends controller {
          * @param string $id Record Id of the Post
          */
         public function editPost($id) {
-                $id = $this->getParam('id');
-                $post = $this->objPost->getPostWithText($id);
+                $post = $this->objPost->getPostWithText($id, true);
+                if (!$this->mayEditOwnPost($post)) return $this->moderationDenied();
+                $this->setVar('editPostData', $post);
+                $this->setVar('editPostDraft', $this->getSession('discussion_edit_draft_' . $id, null));
+                $this->setVar('editPostToken', $this->csrf->issue('disc_edit_' . hash('sha256', $id)));
+                return 'discussion_native_edit.php';
+        }
 
-//                if ($post['replypost'] == NULL && $this->objPost->checkOkToEdit($post['datelastupdated'], $post['userid'])) {
-                $this->setVarByRef('post', $post);
+        /** Own, unanswered posts remain editable for thirty minutes, except assessment evidence. */
+        private function mayEditOwnPost($post) {
+                if (!is_array($post) || !$this->objUser->isLoggedIn()
+                    || !hash_equals((string)$this->userId, (string)($post['userid'] ?? ''))
+                    || !empty($post['replypost'])) return false;
                 $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
-                // Check if user has access to workgroup discussion else redirect
-                $this->checkWorkgroupAccessOrRedirect($discussion);
-                $this->setVarByRef('discussion', $discussion);
-//                        $temporaryId = $this->objUser->userId() . '_' . mktime();
-//                        $this->setVarByRef('temporaryId', $temporaryId);
-                // Move posts from tbl_discussion_attachments to tbl_discussion_temp_attachments
-//                        $attachments = $this->objPostAttachments->getAttachments($id);
-//                        foreach ($attachments AS $attachment) {
-//                                $this->objTempAttachments->insertSingle($temporaryId, $attachment['attachment_id'], $post['discussion_id'], $this->userId, mktime());
-//                        }
-//                        $acch = $this->objTempAttachments->getQuickList($temporaryId);
-//                        return 'discussion_editpost.php';
-//                } else {
-//                        return $this->nextAction('viewtopic', array('message' => 'unabletoeditpost', 'id' => $post['topic_id'], 'post' => $post['post_id'], 'type' => $this->discussiontype));
-//                }
+                return $this->mayReadDiscussion($discussion)
+                    && ($discussion['assessment_enabled'] ?? 'N') !== 'Y'
+                    && !$this->objDiscussion->checkIfDiscussionLocked($post['discussion_id'])
+                    && ($post['status'] ?? '') !== 'CLOSE'
+                    && $this->objPost->checkOkToEdit($post['datelastupdated'], $post['userid']);
+        }
+
+        /** Check current scope, membership, visibility and workgroup access together. */
+        private function mayReadDiscussion($discussion) {
+                return $this->getObject('discussionaccess', 'discussion')->mayRead($discussion);
         }
 
         /**
          * Method to update a post after editing
          */
         public function updatePost() {
-                $tempPostId = $_POST['temporaryId'];
-                $this->saveTempAttachmentIfAny($tempPostId);
-                $post_id = $_POST['post_id'];
-                $title = $_POST['title'];
-                $text = $_POST['message'];
-                $topic_id = $_POST['topic'];
-                $this->objPostText->updatePostText($post_id, $title, $text);
-                $this->objPostAttachments->deleteAttachments($post_id);
-                $this->handleAttachments($post_id, $_POST['temporaryId']);
-                return $this->nextAction('viewtopic', array('message' => 'postupdated', 'id' => $topic_id, 'post' => $post_id, 'type' => $this->discussiontype));
+                $id = trim((string)$this->getParam('post_id', ''));
+                $post = $this->objPost->getPostWithText($id, true);
+                if (!$this->mayEditOwnPost($post)) return $this->moderationDenied();
+                $draft = array('title' => (string)$this->getParam('title', ''), 'message' => (string)$this->getParam('message', ''));
+                if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') return $this->moderationDenied();
+                $this->setSession('discussion_edit_draft_' . $id, $draft);
+                $revision = hash('sha256', (string)$post['post_title'] . "\0" . (string)$post['post_text']);
+                if (!$this->validManagementMutation('disc_edit_' . hash('sha256', $id))
+                    || !hash_equals($revision, (string)$this->getParam('revision', ''))
+                    || trim($draft['title']) === '' || trim(strip_tags($draft['message'])) === '') {
+                        return $this->nextAction('editpost', array('id' => $id, 'message' => 'editretry'));
+                }
+                $text = $this->getObject('script', 'utilities')->removeScript($draft['message']);
+                try { $saved=$this->objPostText->updateRevision($id, $revision, mb_substr(trim($draft['title']), 0, 160), $text); }
+                catch (Throwable $error) { $saved=false; }
+                if (!$saved) {
+                        return $this->nextAction('editpost', array('id' => $id, 'message' => 'editretry'));
+                }
+                $this->unsetSession('discussion_edit_draft_' . $id);
+                return $this->nextAction('viewtopic', array('message' => 'postupdated', 'id' => $post['topic_id']));
         }
 
-        // --------------------------------------------------------------------------------
 
         /**
          * Discussion Administration Page
@@ -1463,15 +1514,8 @@ class discussion extends controller {
          * Dynamically change the discussion visibility
          */
         function updateDiscussionSetting() {
-                $discussion_id = $this->getParam('discussion_id');
-                $discussion_status = $this->getParam('discussion_status');
-                $discussion_setting = $this->getParam('discussion_setting');
-                if ($this->objUser->isLoggedIn()) {
-                        echo $this->objDiscussion->updateDiscussion($discussion_id, $discussion_setting, $discussion_status);
-                } else {
-                        die();
-                }
-                die();
+                // Settings are saved by the scoped, token-protected editdiscussionsave form.
+                return $this->moderationDenied();
         }
 
         /**
@@ -1488,6 +1532,7 @@ class discussion extends controller {
          * Method to Delete a Discussion following confirmation
          */
         public function deleteDiscussionConfirm() {
+                if (!$this->validManagementMutation()) return $this->moderationDenied();
                 // Get the Id
                 $id = $this->getParam('id');
                 // Get Discussion Details
@@ -1511,6 +1556,7 @@ class discussion extends controller {
          * Method to update the visibility status of a discussion
          */
         public function updateDiscussionVisibility() {
+                if (!$this->validManagementMutation()) return $this->moderationDenied();
                 $id = $this->getParam('id');
                 $visibility = $this->getParam('visible');
                 // Get Discussion Details
@@ -1535,6 +1581,7 @@ class discussion extends controller {
          * @return string Template - redirects back to discussion administration
          */
         public function setDefaultDiscussion() {
+                if (!$this->validManagementMutation()) return $this->moderationDenied();
                 $this->objDiscussion->setDefaultDiscussion($_POST['discussion'], $this->contextCode);
                 return $this->nextAction('administration', array('message' => 'defaultdiscussionchanged'));
         }
@@ -1567,7 +1614,7 @@ class discussion extends controller {
                 $userId = $this->objUser->userId();
                 $dateLastUpdated = time();
 //                $attachment_id = $this->getVar('attachment_id');
-                if ($attachment_id != '') {
+                if ($attachment_id != '' && $this->getObject('filereadpolicy','filemanager')->mayRead($this->objFiles->getRow('id',$attachment_id))) {
                         $this->objTempAttachments->insertSingle($temp_id, $attachment_id, $userId, $dateLastUpdated);
                 } else {
                         echo "<h4>failed to insert values into database<h4>";
@@ -1630,15 +1677,14 @@ class discussion extends controller {
          * @return string Template - discussion_view.php
          */
         public function downloadAttachment($id, $topic) {
-                $files = $this->objPostAttachments->downloadAttachment($id);
-                if ((is_countable($files) ? count($files) : 0) > 0) {
-                        $location = $this->objFiles->getFullFilePath($files[0]['id']);
-                        header('Content-Disposition: attachment; filename="' . $files[0]['filename'] . '"');
-                        readfile($location);
-                        //header('Location:'.$location); // Todo - Force Download
-                } else {
-                        return $this->nextAction('thread', array('id' => $topic, 'type' => $this->discussiontype, 'message' => 'invalidattachment'));
-                }
+                if (preg_match('/^[A-Za-z0-9_-]{1,128}$/D', (string)$id) !== 1) return $this->moderationDenied();
+                $attachment = $this->objPostAttachments->getRow('id', $id);
+                $post = is_array($attachment) ? $this->objPost->getPostWithText($attachment['post_id']) : null;
+                $discussion = is_array($post) ? $this->objDiscussion->getDiscussion($post['discussion_id']) : null;
+                $file = is_array($attachment) ? $this->objFiles->getRow('id', $attachment['attachment_id']) : null;
+                if (!$this->mayReadDiscussion($discussion) || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) return $this->moderationDenied();
+                // File Manager owns delivery and repeats its current file-access check.
+                return $this->nextAction('file', array('id'=>$file['id'], 'filename'=>$file['filename']), 'filemanager');
         }
 
         /**
@@ -1825,54 +1871,20 @@ class discussion extends controller {
         /**
          * Method to save the ratings of a post
          */
-        public function savePostRatingDown() {
-                // Collect All Posted Values and put them in an array
-//                $postedArray = $_POST;
-                // Remove the submit button from the list
-//                unset($postedArray['submitForm']);
-                // Store the Topic Id - for redirecting
-//                $topic = $this->getParam('') /* $_POST['topic'] */;
-                // Remove the Topic Id from the list
-//                unset($postedArray['topic']);
-//                if (isset($_POST['currentPost'])) {
-//                        $currentPost = $_POST['currentPost'];
-//                        unset($postedArray['currentPost']);
-//                } else {
-//                        $currentPost = NULL;
-//                }
-                // Start Inserting Values
-//                foreach ($postedArray AS $post => $value) {
-//                        if ($value != 'n/a') {
-                $post_id = $this->getParam('post_id');
-                $currentRating = $this->objPostRatings->getPostRatings($post_id);
-//                var_dump($currentRating);
-                if ($currentRating >= 1) {
-                        $currentRating -= 1;
-                        return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
-                } else {
-                        return FALSE;
-                }
-//                        }
-//                }
-//                return $this->nextAction('viewtopic', array('message' => 'ratingsaved', 'id' => $topic, 'post' => $currentPost, 'type' => $this->discussiontype));
-        }
+        public function savePostRatingDown() { return $this->saveNativeRating(-1); }
+        public function savePostRatingUp() { return $this->saveNativeRating(1); }
 
-        /**
-         * increase the post rating by one
-         */
-        function savePostRatingUp() {
-                $post_id = $this->getParam('post_id');
-                if (isset($post_id)) {
-                        $currentRating = $this->objPostRatings->getPostRatings($post_id);
-                        print_r($currentRating);
-                        if (empty($currentRating)) {
-                                $currentRating = 1;
-                                return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
-                        } else {
-                                $currentRating += 1;
-                                return $this->objPostRatings->insertRecord($post_id, $currentRating, $this->userId);
-                        }
-                }
+        /** Ratings use authenticated identity and a post-specific one-time token. */
+        private function saveNativeRating($delta) {
+                $id = (string)$this->getParam('post_id', '');
+                if (preg_match('/^[A-Za-z0-9_-]{1,128}$/D', $id) !== 1 || !$this->objUser->isLoggedIn()) return $this->moderationDenied();
+                $post = $this->objPost->getPostWithText($id);
+                $discussion = is_array($post) ? $this->objDiscussion->getDiscussion($post['discussion_id']) : null;
+                if (!$this->mayReadDiscussion($discussion) || ($discussion['ratingsenabled'] ?? 'N') !== 'Y'
+                    || $this->objDiscussion->checkIfDiscussionLocked($post['discussion_id']) || ($post['status'] ?? '') === 'CLOSE'
+                    || !$this->validManagementMutation('disc_rate_' . hash('sha256', $id))) return $this->moderationDenied();
+                $this->objPostRatings->adjustRating($id, $this->userId, $delta);
+                return $this->nextAction('viewtopic', array('id'=>$post['topic_id']));
         }
 
         /**
@@ -2169,7 +2181,7 @@ class discussion extends controller {
                 // Check if user has access to workgroup discussion else redirect
                 $this->checkWorkgroupAccessOrRedirect($discussion);
                 $this->setVar('map', $this->uri(array('action' => 'generatetopicmindmap', 'id' => $topic_id)));
-                $this->setVarByRef('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'viewtopicmindmap'));
+                $this->setVar('changeDisplayForm', $this->objTopic->showChangeDisplayTypeForm($topic_id, 'viewtopicmindmap'));
                 // Mark the Topic as read for the current user if user is logged in
                 if ($this->isLoggedIn) {
                         $this->objTopicRead->markTopicRead($topic_id, $this->userId);
@@ -2316,7 +2328,7 @@ class discussion extends controller {
                         'moderate_movetonewtopic', 'moderate_topicsticky',
                         'viewtopicmindmap', 'generatetopicmindmap'
                 );
-                $postActions = array('postreply', 'showeditpostpopup', 'deleteownpost', 'moderatepost', 'moderatepostdeleteconfirm');
+                $postActions = array('editpost', 'updatepost', 'postreply', 'showeditpostpopup', 'deleteownpost', 'moderatepost', 'moderatepostdeleteconfirm');
                 $bounded = array_merge($discussionActions, $topicActions, $postActions);
                 if (!in_array($action, $bounded, true)) {
                         return true;
@@ -2326,7 +2338,7 @@ class discussion extends controller {
                         'setdefaultdiscussion' => 'discussion',
                         'updatediscussionsetting' => 'discussion_id',
                         'changetopicstatus' => 'topic',
-                        'showeditpostpopup' => 'post_id'
+                        'showeditpostpopup' => 'post_id', 'updatepost' => 'post_id'
                 );
                 $parameter = isset($parameterMap[$action])
                         ? $parameterMap[$action] : 'id';
@@ -2347,7 +2359,7 @@ class discussion extends controller {
                                 (string) $this->contextCode,
                                 (string) $resource['discussion_context']
                         );
-                return $allowed;
+                return $allowed && $this->mayReadDiscussion($resource);
         }
 
         /** Require site administration in Lobby or course administration in a course. */
@@ -2581,7 +2593,7 @@ class discussion extends controller {
         function subscribeUserToTopic() {
                 $topic_id = $this->getParam('topic_id');
                 $discussion_id = $this->getParam('discussion_id');
-                $objTopic = &$this->getObject('dbtopicsubscriptions', 'discussion');
+                $objTopic = $this->getObject('dbtopicsubscriptions', 'discussion');
                 $this->objDiscussionSubscriptions->unsubscribeUserFromDiscussion($discussion_id, $this->objUser->userId());
                 return $objTopic->subscribeUserToTopic($topic_id, $this->objUser->userId());
         }
@@ -2592,7 +2604,7 @@ class discussion extends controller {
         function unsubscribeUser() {
                 $discussion_id = $this->getParam('discussion_id');
                 $topic_id = $this->getParam('topic_id');
-                $objTopic = &$this->getObject('dbtopicsubscriptions', 'discussion');
+                $objTopic = $this->getObject('dbtopicsubscriptions', 'discussion');
                 $objTopic->unsubscribeUserFromTopic($this->objUser->userId(), $topic_id);
                 return $this->objDiscussionSubscriptions->unsubscribeUserFromDiscussion($discussion_id, $this->objUser->userId());
         }
@@ -2602,6 +2614,12 @@ class discussion extends controller {
          */
         function usersubscription() {
                 $topicId = trim((string) $this->getParam('topic_id'));
+                if (preg_match('/^[A-Za-z0-9_-]{1,128}$/D', $topicId)!==1) return $this->moderationDenied();
+                $discussion=$this->objTopic->getTopicDiscussionDetails($topicId);
+                if (!$this->objUser->isLoggedIn() || !$this->mayReadDiscussion($discussion)
+                    || ($discussion['subscriptions']??'N')!=='Y'
+                    || !hash_equals((string)$discussion['id'], (string)$this->getParam('discussion_id',''))
+                    || !$this->validManagementMutation('disc_sub_' . hash('sha256',$topicId))) return $this->moderationDenied();
                 $userChoice = $this->getParam('subscription');
                 if (!empty($userChoice)) {
                         switch ($userChoice) {
@@ -2761,33 +2779,19 @@ class discussion extends controller {
          * @access public
          */
         function savepostedit() {
-                if ($this->objUser->isLoggedIn()) {
-                        $_id = $this->getParam('_id');
-                        $new_text = $this->getParam('new_text');
-                        $postDetails = $this->objPost->getPostWithText($_id);
-                        $this->objPostText->updatePostText($postDetails['post_id'], $postDetails['post_title'], $new_text);
-                        die();
-                } else {
-                        die();
-                }
+                // Old popup clients cannot bypass the native edit form's ownership and revision checks.
+                return $this->moderationDenied();
         }
+
 
         /**
          * Show form for editing post text
          */
         function showeditpostpopup() {
-                if ($this->objUser->isloggedIn()) {
-                        $_id = $this->getParam('_id');
-                        $post_id = $this->getParam('post_id');
-                        $new_text = $this->getPAram('new_text');
-                        $this->ckElement->cssClass = $_id;
-                        $this->ckElement->cssId = $post_id;
-                        $this->ckElement->value = $new_text;
-                        echo $this->ckElement->show();
-                } else {
-                        die();
-                }
+                return $this->editPost((string)$this->getParam('post_id', ''));
         }
+
+
 
 }
 

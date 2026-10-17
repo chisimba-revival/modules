@@ -6,6 +6,12 @@
 */
 class discussionsearch extends dbtable
 {
+    public $contextCode;
+    public $contextObject;
+    public $contextTitle;
+    public $objDiscussion;
+    public $objLanguage;
+
     /**
     * @var string $defaultDiscussion The Default Selected Discussion on the search drop down
     */
@@ -41,10 +47,10 @@ class discussionsearch extends dbtable
         $this->loadClass('htmlheading', 'htmlelements');
         $this->loadClass('hiddeninput', 'htmlelements');
         
-        $this->objDiscussion =& $this->getObject('dbdiscussion');
+        $this->objDiscussion = $this->getObject('dbdiscussion');
         
         // Get Context Code Settings
-        $this->contextObject =& $this->getObject('dbcontext', 'context');
+        $this->contextObject = $this->getObject('dbcontext', 'context');
         $this->contextCode = $this->contextObject->getContextCode();
         
         // If not in context, set code to be 'root' called 'Lobby'
@@ -54,7 +60,7 @@ class discussionsearch extends dbtable
             $this->contextTitle = 'Lobby';
         }
         
-        $this->objLanguage =& $this->getObject('language', 'language'); 
+        $this->objLanguage = $this->getObject('language', 'language');
     }
     
     /**

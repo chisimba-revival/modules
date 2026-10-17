@@ -411,6 +411,7 @@ $objHeading->str = $this->objLanguage->languageText('mod_mcqtests_activatetest',
 echo $objHeading->show();
 
 $form = new form ('activatetest', $this->uri(array('action'=>'activatetest')));
+$form->addToForm('<input type="hidden" name="csrf_token" value="' . htmlspecialchars($this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('mcq_manage_' . hash('sha256',(string)$data['id'])), ENT_QUOTES, 'UTF-8') . '">');
 
 $radio = new radio ('status');
 $radio->addOption('inactive', $this->objLanguage->languageText('mod_mcqtests_inactive', 'mcqtests', 'Not Active'));

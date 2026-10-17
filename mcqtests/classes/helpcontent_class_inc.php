@@ -3,10 +3,14 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
 class helpcontent extends ChisimbaObject
 {
-    public function mayViewTopic($topic) { return $topic==='banks' && $this->getObject('user','security')->isLoggedIn(); }
+    public function mayViewTopic($topic) { return in_array($topic, ['banks','numerical'], true) && $this->getObject('user','security')->isLoggedIn(); }
     public function getTopic($topic)
     {
         if (!$this->mayViewTopic($topic)) return null;
+        if ($topic === 'numerical') {
+            $t=fn($key)=>$this->getObject('language','language')->languageText('mod_mcqtests_numerical_'.$key,'mcqtests');
+            return ['title'=>$t('help_title'),'summary'=>$t('help_summary'),'steps'=>[$t('help_save'),$t('help_recovery')]];
+        }
         $t=fn($key)=>ucfirst($this->getObject('language','language')->code2Txt('mod_mcqtests_bank_'.$key,'mcqtests'));
         return ['title'=>$t('title'),'summary'=>$t('intro'),'steps'=>[$t('help_create'),$t('help_add'),$t('help_pull')],
             'sections'=>[['heading'=>$t('sharing'),'body'=>$t('sharing_help')],['heading'=>$t('duplicates'),'body'=>$t('conflict_help')],['heading'=>$t('recovery'),'body'=>$t('help_recovery')]]];

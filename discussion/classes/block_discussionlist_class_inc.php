@@ -11,6 +11,12 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 // end security check
 
 class block_discussionlist extends ChisimbaObject {
+    public $configData;
+    public $contextCode;
+    public $showFullName;
+    public $title;
+    public $trimstrObj;
+
 
         var $objLanguage;
         var $objPost;
@@ -44,11 +50,11 @@ class block_discussionlist extends ChisimbaObject {
                 $this->objDiscussion = $this->getObject('dbdiscussion', 'discussion');
                 $this->objIcon = $this->getObject('iconservice', 'ui');
                 // Get Context Code Settings
-                $this->contextObject = & $this->getObject('dbcontext', 'context');
+                $this->contextObject = $this->getObject('dbcontext', 'context');
                 $this->contextCode = $this->contextObject->getContextCode();
                 // Trim String Functions
-                $this->trimstrObj = & $this->getObject('trimstr', 'strings');
-                $this->objDateTime = & $this->getObject('dateandtime', 'utilities');
+                $this->trimstrObj = $this->getObject('trimstr', 'strings');
+                $this->objDateTime = $this->getObject('dateandtime', 'utilities');
                 $this->objTimeOutMessage = $this->getObject('timeoutmessage', 'htmlelements');
         }
 
@@ -74,7 +80,7 @@ class block_discussionlist extends ChisimbaObject {
                 $rowcount = 0;
 //user object to be used in determining if user is admin
 //                $objUser = $this->getObject('user', 'security');
-//                $objDB = &$this->getObject('dbdiscussion', 'discussion');
+//                $objDB = $this->getObject('dbdiscussion', 'discussion');
 //        $discussions = $objDB->getAll();
                 $discussions = $this->objDiscussion->showAllDiscussions($this->contextCode);
 

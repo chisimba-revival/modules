@@ -3,6 +3,14 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('You cannot view this page dire
 /** Role-aware navigation for the Discussion workspace. */
 class block_discussionnavigation extends ChisimbaObject
 {
+    public $configData;
+    public $context;
+    public $discussions;
+    public $icons;
+    public $language;
+    public $title;
+    public $user;
+
  public function init(){$this->language=$this->getObject('language','language');$this->user=$this->getObject('user','security');$this->context=$this->getObject('dbcontext','context');$this->discussions=$this->getObject('dbdiscussion','discussion');$this->icons=$this->getObject('iconservice','ui');$this->title=$this->language->languageText('mod_discussion_navigation_title','discussion','Discussion tools');}
  public function show(){
   $id=trim((string)$this->getParam('id',''));$action=trim((string)$this->getParam('action',''));$discussion=$id!==''?$this->discussions->getDiscussion($id):null;$contextCode=$this->context->getContextCode();$mayManage=$this->user->isAdmin()||($contextCode!==''&&$this->user->isCourseAdmin($contextCode));$e=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');$links=array(array('messages-square',$this->language->languageText('mod_discussion_navigation_overview','discussion','All discussions'),$this->uri(array(),'discussion'),$action===''));

@@ -363,15 +363,9 @@ if (!empty($questions)) {
         }
         $conQuestion = substr($line['question'], 0, $pos) .'...';
 
-        $objConfirm = new confirm();
-        $objConfirm->setConfirm($deleteIcon , $this->uri(array(
-            'action' => 'deletequestion2',
-            'questionId' => $line['id'],
-            'id' => $data['id'],
-            'mark' => $line['mark'],
-            'type' => $line['questiontype']
-            )) , $lbConfirm);
-        $icons.= $objConfirm->show();
+        $escape = static fn($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+        $token = $this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('mcq_manage_' . hash('sha256',(string)$data['id']));
+        $icons .= '<form method="post" action="' . $escape($this->uri(array('action'=>'deletequestion2'))) . '" onsubmit="' . $escape('return window.confirm(' . json_encode($lbConfirm) . ');') . '"><input type="hidden" name="csrf_token" value="' . $escape($token) . '"><input type="hidden" name="id" value="' . $escape($data['id']) . '"><input type="hidden" name="questionId" value="' . $escape($line['id']) . '"><input type="hidden" name="type" value="' . $escape($line['questiontype']) . '"><button class="chisimba-icon-button" type="submit" aria-label="' . $escape($deleteLabel) . '">' . $deleteIcon . '</button></form>';
         if ($questionEditingLocked) {
             $iconsUD = '';
             $icons = '';
@@ -464,6 +458,7 @@ $objHeading->str = $this->objLanguage->languageText('mod_mcqtests_activatetest',
 echo $objHeading->show();
 
 $form = new form ('activatetest', $this->uri(array('action'=>'activatetest')));
+$form->addToForm('<input type="hidden" name="csrf_token" value="' . htmlspecialchars($this->getObject('nativeauthwebcomposition','security')->build()['csrf']->issue('mcq_manage_' . hash('sha256',(string)$data['id'])), ENT_QUOTES, 'UTF-8') . '">');
 
 $radio = new radio ('status');
 $radio->addOption('inactive', $this->objLanguage->languageText('mod_mcqtests_inactive', 'mcqtests', 'Not Active'));

@@ -12,10 +12,10 @@ $stageGateReturnSection=$stageGateReturnSection??'';
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 
 // set up html elements
-$objTable = &$this->loadClass('htmltable', 'htmlelements');
-$objLayer = &$this->loadClass('layer', 'htmlelements');
-$objLink = &$this->loadClass('link', 'htmlelements');
-$objIcon = &$this->newObject('geticon', 'htmlelements');
+$objTable = $this->loadClass('htmltable', 'htmlelements');
+$objLayer = $this->loadClass('layer', 'htmlelements');
+$objLink = $this->loadClass('link', 'htmlelements');
+$objIcon = $this->newObject('geticon', 'htmlelements');
 
 
 // set up language items

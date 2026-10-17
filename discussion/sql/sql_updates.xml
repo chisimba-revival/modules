@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updates>
+    <update>
+        <table>tbl_discussion_post_ratings</table>
+        <version>3.036</version>
+        <description>Preserve full native user identifiers for post ratings.</description>
+        <data><change>
+            <userid><definition><type>text</type><length>32</length><notnull>1</notnull></definition></userid>
+            <modifierid><definition><type>text</type><length>32</length><notnull>1</notnull></definition></modifierid>
+        </change></data>
+    </update>
+</updates>

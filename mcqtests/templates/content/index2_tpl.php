@@ -47,7 +47,7 @@ if ($this->isValid('add'))
 }
 $this->setVarByRef('heading', $heading);
 if (!empty($testId)) {
-    $testData = $this->dbTestadmin->getTests('', 'name', $testId);
+    $testData = $this->dbTestadmin->getTests($this->contextCode, 'name', $testId);
     $array = array(
         'item' => $testData[0]['name'],
         'date' => $this->objDate->formatDateTime($this->objDate->nowStorage())

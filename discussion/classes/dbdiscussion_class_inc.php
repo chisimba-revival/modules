@@ -264,7 +264,7 @@ class dbdiscussion extends dbTable {
 
                 // Prep Data
                 $docId = 'discussion_entry_' . $newDiscussionId;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
+                $docDate = date('Y-m-d H:i:s');
                 $url = $this->uri(array('action' => 'discussion', 'id' => $newDiscussionId), 'discussion');
                 $title = $discussion_name;
                 $contents = $discussion_name . ': ' . $discussion_description;
@@ -362,7 +362,7 @@ class dbdiscussion extends dbTable {
 
                 // Prep Data
                 $docId = 'discussion_entry_' . $discussion_id;
-                $docDate = strftime('%Y-%m-%d %H:%M:%S', time());
+                $docDate = date('Y-m-d H:i:s');
                 $url = $this->uri(array('action' => 'discussion', 'id' => $discussion_id), 'discussion');
                 $title = $discussion_name;
                 $contents = $discussion_name . ': ' . $discussion_description;

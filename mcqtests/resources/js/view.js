@@ -1,48 +1,54 @@
-jQuery(document).ready(function() {
-    jQuery("#existingQ").change(function() {
-        goToPage(jQuery(this).val());
-    });
-    hideAll();
+/** Native question descriptions and navigation; preserves server-generated routes. */
+function setDescriptionVisible(id, visible) {
+    var node = document.getElementById(id);
+    if (node) { node.hidden = !visible; node.style.display = visible ? "" : "none"; }
+}
+document.addEventListener("DOMContentLoaded", function() {
+    var choice = document.getElementById("existingQ");
+    if (!choice) return;
+    choice.addEventListener("change", function() { goToPage(choice.value); });
+    goToPage(choice.value);
 });
 
 var goToPage = function(page) {
+    hideAll();
     if(page != '-') {
         switch(page) {
             case 'mcq':
                 hideAll();
-                jQuery("#simpleDesc").show();
+                setDescriptionVisible("simpleDesc", true);
                 break;
             case 'calcQ':
                 hideAll();
-                jQuery('#calcQDesc').show();
+                setDescriptionVisible("calcQDesc", true);
                 break;
             case 'matchQ':
                 hideAll();
-                jQuery('#matchQDesc').show();
+                setDescriptionVisible("matchQDesc", true);
                 break;
             case 'numericalQ':
                 hideAll();
-                jQuery('#numericalQDesc').show();
+                setDescriptionVisible("numericalQDesc", true);
                 break;
             case 'shortansQ':
                 hideAll();
-                jQuery('#shortansQDesc').show();
+                setDescriptionVisible("shortansQDesc", true);
                 break;
             case 'category':
                 hideAll();
-                jQuery('#categoryDesc').show();
+                setDescriptionVisible("categoryDesc", true);
                 break;
             case 'descriptionlist':
                 hideAll();
-                jQuery('#adddescriptionDesc').show();
+                setDescriptionVisible("adddescriptionDesc", true);
                 break;
             case 'showRSA':
                 hideAll();
-                jQuery('#RSA').show();
+                setDescriptionVisible("RSA", true);
                 break;
             case 'showSCQ':
                 hideAll();
-                jQuery('#SCQ').show();
+                setDescriptionVisible("SCQ", true);
                 break;
             default:
                 hideAll();
@@ -51,19 +57,21 @@ var goToPage = function(page) {
 }
 
 var hideAll = function() {
-    jQuery('#calcQDesc').hide();
-    jQuery('#matchQDesc').hide();
-    jQuery('#numericalQDesc').hide();
-    jQuery('#shortansQDesc').hide();
-    jQuery('#categoryDesc').hide();
-    jQuery('#adddescriptionDesc').hide();
-    jQuery("#simpleDesc").hide();
-    jQuery("#RSA").hide();
-    jQuery("#SCQ").hide();
+    setDescriptionVisible("calcQDesc", false);
+    setDescriptionVisible("matchQDesc", false);
+    setDescriptionVisible("numericalQDesc", false);
+    setDescriptionVisible("shortansQDesc", false);
+    setDescriptionVisible("categoryDesc", false);
+    setDescriptionVisible("adddescriptionDesc", false);
+    setDescriptionVisible("simpleDesc", false);
+    setDescriptionVisible("RSA", false);
+    setDescriptionVisible("SCQ", false);
 }
 
 var goAddQuestion = function() {
-    var page = jQuery("#existingQ").val();
+    var choice = document.getElementById("existingQ");
+    if (!choice) return;
+    var page = choice.value;
     if(page != '-') {
         switch(page) {
             case 'calcQ':

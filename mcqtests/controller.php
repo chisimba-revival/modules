@@ -242,9 +242,79 @@ class mcqtests extends controller {
         if ($this->contextCode == '') {
             return $this->nextAction(NULL, NULL, '_default');
         }
+        // Attempt routes must remain within the active course and current learner.
+        if (in_array($action, array('answertest','answertest2','continuetest','continuetest2','marktest','marktest2','showtest'), true)) {
+            $attemptTest=$this->dbTestadmin->getRow('id',(string)$this->getParam('id',''));
+            if (!is_array($attemptTest) || !hash_equals((string)$this->contextCode,(string)$attemptTest['context'])
+                || ($action==='showtest' && !$this->isValid('add') && !hash_equals((string)$this->userId,(string)$this->getParam('studentId','')))) {
+                return $this->nextAction('courseactivitydenied',array(),'context');
+            }
+        }
+        if (in_array($action, array('continuetest','continuetest2','marktest','marktest2'), true)) {
+            $attemptId=(string)$this->getParam('resultId','');
+            $attempt=$this->dbResults->getAttempt($attemptId,$this->userId,$this->getParam('id',''));
+            $csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
+            if (!$attempt || (int)$attempt['mark']!==-1
+                || strtoupper((string)($_SERVER['REQUEST_METHOD']??'GET'))!=='POST'
+                || !$csrf->consume('mcq_attempt_'.hash('sha256',$attemptId),(string)$this->getParam('csrf_token',''))) {
+                // Keep the submitted answers in the renewed form; do not persist an expired request.
+                $this->setSession('mcq_attempt_draft_'.$attemptId,$this->boundedAttemptDraft());
+                return $this->nextAction('answertest',array('id'=>$this->getParam('id'),'resume'=>'1','resume_result_id'=>$attemptId));
+            }
+        }
+        // Numerical authoring is scoped before any renderer or persistence method runs.
+        if (in_array($action, array('viewnumericalquestions', 'addnumericalquestion'), true)
+            || ($action === 'editquestion' && $this->getParam('type') === 'numerical')) {
+            $testId = (string)$this->getParam('id', '');
+            $test = $this->dbTestadmin->getRow('id', $testId);
+            $questionId = (string)$this->getParam('questionId', '');
+            $question = $questionId !== '' ? $this->dbQuestions->getRow('id', $questionId) : null;
+            if (!$this->objUser->isCourseAdmin($this->contextCode) || !is_array($test)
+                || !hash_equals((string)$this->contextCode, (string)($test['context'] ?? ''))
+                || ($test['status'] ?? '') === 'open'
+                || ($questionId !== '' && (!is_array($question) || !hash_equals($testId, (string)$question['testid']) || ($question['questiontype'] ?? '') !== 'numerical'))) {
+                return $this->nextAction('courseactivitydenied', array(), 'context');
+            }
+            if ($action === 'addnumericalquestion') {
+                $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+                if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST'
+                    || !$csrf->consume('mcq_numerical_' . hash('sha256', $testId . '|' . $questionId), (string)$this->getParam('csrf_token', ''))) {
+                    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST') {
+                        $this->setSession('mcq_numerical_draft_' . $testId . '_' . $questionId, $this->numericalDraft());
+                        return $this->nextAction('viewnumericalquestions', array('id'=>$testId, 'questionId'=>$questionId));
+                    }
+                    return $this->nextAction('courseactivitydenied', array(), 'context');
+                }
+            }
+        }
+        if (in_array($action, array('view','view2','edit','edit2','editquestion','addnumericalquestion','viewnumericalquestions','activatetest','deletequestion2'), true)
+            && !$this->objUser->isCourseAdmin($this->contextCode)) return $this->nextAction('courseactivitydenied', array(), 'context');
+        if (in_array($action, array('view','view2','edit','edit2'), true)) {
+            $scopedTest=$this->dbTestadmin->getRow('id',(string)$this->getParam('id',''));
+            if (!is_array($scopedTest) || !hash_equals((string)$this->contextCode,(string)($scopedTest['context']??''))) return $this->nextAction('courseactivitydenied',array(),'context');
+        }
+        if (in_array($action, array('activatetest','deletequestion2'), true)) {
+            $testId=(string)$this->getParam('id','');$test=$this->dbTestadmin->getRow('id',$testId);
+            $csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
+            if (!is_array($test) || !hash_equals((string)$this->contextCode,(string)($test['context']??''))
+                || strtoupper((string)($_SERVER['REQUEST_METHOD']??'GET'))!=='POST'
+                || !$csrf->consume('mcq_manage_' . hash('sha256',$testId), (string)$this->getParam('csrf_token',''))) return $this->nextAction('courseactivitydenied',array(),'context');
+            if ($action==='deletequestion2') {
+                $question=$this->dbQuestions->getRow('id',(string)$this->getParam('questionId',''));
+                if (!is_array($question) || !hash_equals($testId,(string)$question['testid']) || $test['status']==='open') return $this->nextAction('courseactivitydenied',array(),'context');
+            } elseif (!in_array($this->getParam('status'),array('open','inactive'),true)) return $this->nextAction('courseactivitydenied',array(),'context');
+        }
         // Tests that are open to learners are immutable. Enforce this before
         // dispatch so hand-crafted URLs cannot bypass the lecturer templates.
         $lockedTestId = $this->getQuestionMutationTestId($action);
+        if ($lockedTestId !== NULL) {
+            $test=$this->dbTestadmin->getRow('id',$lockedTestId);
+            $qid=(string)$this->getParam('questionId','');
+            $question=$qid!==''?$this->dbQuestions->getRow('id',$qid):null;
+            if (!$this->objUser->isCourseAdmin($this->contextCode) || !is_array($test)
+                || !hash_equals((string)$this->contextCode,(string)($test['context']??''))
+                || ($qid!=='' && (!is_array($question) || !hash_equals((string)$lockedTestId,(string)$question['testid'])))) return $this->nextAction('courseactivitydenied',array(),'context');
+        }
         if ($lockedTestId !== NULL && $this->isOpenTest($lockedTestId)) {
             $this->setSession('confirm', $this->objLanguage->languageText(
                 'mod_mcqtests_openeditlocked',
@@ -520,7 +590,7 @@ class mcqtests extends controller {
             case 'activatetest':
                 $id = $this->getParam('id', '');
                 $this->applyChangeStatus();
-                return $this->nextAction('view', array(
+                return $this->nextAction(str_starts_with((string)$test['testtype'],'Advanc')?'view2':'view', array(
                     'id' => $id
                 ));
             case 'addnewquestion': {
@@ -925,13 +995,15 @@ class mcqtests extends controller {
                 ));
 
             case 'deletequestion2':
-                $type = $this->getParam('type');
+                // Use the persisted type; a request must not select which child records are removed.
+                $type = $question['questiontype'];
                 if ($type == 'matching') {
                     $this->objQuestionMatching->deleteQuestions($this->getParam('questionId'));
                     $this->objMultiAnswers->deleteAnswers($this->getParam('questionId'));
                 } else if ($type == 'numerical') {
                     $this->objQuestionNumerical->deleteNumericalQuestion($this->getParam('questionId'));
                     $this->objNumericalUnit->deleteNumericalUnit($this->getParam('questionId'));
+                    $this->objNumericalOptions->deleteNumericalOptions($this->getParam('questionId'));
                 }
                 $this->dbQuestions->deleteQuestion($this->getParam('questionId'));
                 $this->dbTestadmin->setTotal($this->getParam('id'), $this->dbQuestions->getTotalMarks($this->getParam('id')));
@@ -1677,7 +1749,7 @@ class mcqtests extends controller {
                 return $this->calcqForm();
             case 'addmatchingquestion':
                 $qtype = $this->objLanguage->languageText('mod_mcqtests_matching', 'mcqtests');
-                if (strlen($this->getParam('edit')) > 0) {
+                if (strlen((string)$this->getParam('edit')) > 0) {
                     if ($this->getParam('edit') == 'true') {
                         $edit = true;
                     }
@@ -1690,24 +1762,17 @@ class mcqtests extends controller {
                 $this->dbTestadmin->setTotal($this->getParam('id'), $this->dbQuestions->getTotalMarks($this->getParam('id')));
                 return $this->nextAction('view2', array('id' => $this->getParam('id')));
             case 'addnumericalquestion':
-                $qtype = $this->objLanguage->languageText('mod_mcqtests_numerical', 'mcqtests');
-                if (strlen($this->getParam('edit')) > 0) {
-                    if ($this->getParam('edit') == 'true') {
-                        $edit = true;
-                    }
-                    $questionId = $this->addGeneralFormQuestions($qtype, $edit);
-                    $this->addNumericalQuestions($questionId, $edit);
-                    $this->addNumericalOptions($questionId, $edit);
-                    $this->addNumericalUnits($questionId, $edit);
-                } else {
-                    $questionId = $this->addGeneralFormQuestions($qtype);
-                    $this->addNumericalQuestions($questionId);
-                    $this->addNumericalOptions($questionId);
-                    $this->addNumericalUnits($questionId);
+                $testId = (string)$this->getParam('id', '');
+                $questionId = (string)$this->getParam('questionId', '');
+                $draft = $this->numericalDraft();
+                $this->setSession('mcq_numerical_draft_' . $testId . '_' . $questionId, $draft);
+                try {
+                    $this->getObject('numericalauthoring')->save($this->contextCode, $testId, $questionId, $draft);
+                } catch (Throwable $error) {
+                    return $this->nextAction('viewnumericalquestions', array('id'=>$testId, 'questionId'=>$questionId));
                 }
-                $this->dbTestadmin->setTotal($this->getParam('id'), $this->dbQuestions->getTotalMarks($this->getParam('id')));
-                return $this->nextAction('view2', array('id' => $this->getParam('id')));
-                break;
+                $this->unsetSession('mcq_numerical_draft_' . $testId . '_' . $questionId);
+                return $this->nextAction('view2', array('id'=>$testId));
             case 'viewmatchingquestions':
                 return $this->viewMatchingQuestions();
             case 'viewnumericalquestions':
@@ -2234,9 +2299,13 @@ class mcqtests extends controller {
     public function isValid($action, $default = true) {
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
-        } else {
-            return FALSE; //parent::isValid ( $action );
         }
+        // Learners may use only their own attempt journey, never authoring or exports.
+        return in_array((string)$action, array('', 'newhome', 'studenthome2',
+            'answertest', 'answertest2', 'continuetest', 'continuetest2',
+            'marktest', 'marktest2', 'showtest'), true)
+            && $this->objUser->isLoggedIn()
+            && $this->objCond->isContextMember('Students');
     }
 
     /**
@@ -3140,7 +3209,7 @@ class mcqtests extends controller {
         $latestAttempt = $this->dbResults->getLatestAttempt($this->userId, $testId);
         if ($latestAttempt !== FALSE && (int) $latestAttempt['mark'] === -1) return $latestAttempt['id'];
         if ($latestAttempt === FALSE) return $this->dbResults->addResult(array('testid' => $testId, 'studentid' => $this->userId, 'mark' => -1));
-        $test = $this->dbTestadmin->getTests('', 'testtype', $testId);
+        $test = $this->dbTestadmin->getTests($this->contextCode, 'testtype', $testId);
         if (!empty($test) && $test[0]['testtype'] === 'Formative' && $this->getParam('retry', '0') === '1') {
             return $this->dbResults->addResult(array('testid' => $testId, 'studentid' => $this->userId, 'mark' => -1));
         }
@@ -3157,7 +3226,7 @@ class mcqtests extends controller {
     private function setTest($testId, $num = 0, $resultId = NULL) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
-        $test = $this->dbTestadmin->getTests('', $fieldlist, $this->getParam('id'));
+        $test = $this->dbTestadmin->getTests($this->contextCode, $fieldlist, $this->getParam('id'));
         $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
@@ -3238,7 +3307,7 @@ class mcqtests extends controller {
     private function setTest2($testId, $num = 0, $resultId = NULL) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
-        $test = $this->dbTestadmin->getTests2('', $fieldlist, $this->getParam('id'));
+        $test = $this->dbTestadmin->getTests2($this->contextCode, $fieldlist, $this->getParam('id'));
         $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
 
@@ -3328,7 +3397,7 @@ class mcqtests extends controller {
     private function previewTest($testId, $num = 0) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
-        $test = $this->dbTestadmin->getTests('', $fieldlist, $this->getParam('id'));
+        $test = $this->dbTestadmin->getTests($this->contextCode, $fieldlist, $this->getParam('id'));
         $results = FALSE; // Preview is not a learner attempt.
         //
         $allowScrambledQuestions = strtoupper($this->objSysConfig->getValue('PREVIEW_SCRAMBLED_QUESTIONS', 'mcqtests', 'TRUE'))==='TRUE';
@@ -3417,7 +3486,7 @@ class mcqtests extends controller {
     private function previewTest2($testId, $num = 0) {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
-        $test = $this->dbTestadmin->getTests2('', $fieldlist, $this->getParam('id'));
+        $test = $this->dbTestadmin->getTests2($this->contextCode, $fieldlist, $this->getParam('id'));
         $results = FALSE; // Preview is not a learner attempt.
         // new code for scrambling tests
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
@@ -3501,6 +3570,15 @@ class mcqtests extends controller {
      * @param string $resultId The id of the students result in the results table
      * @return string $resultId The id of the students result in the results table.
      */
+    private function boundedAttemptDraft() {
+        $draft=array();
+        foreach ($_POST as $key=>$value) {
+            if (preg_match('/^(ans|questionId)[0-9]{1,4}$/D',(string)$key) && is_scalar($value)) $draft[$key]=mb_substr((string)$value,0,10000);
+            if (count($draft)>=2000) break;
+        }
+        return $draft;
+    }
+
     private function saveTest($resultId) {
         $total = 0;
         $testId = $this->getParam('id', '');
@@ -3510,13 +3588,20 @@ class mcqtests extends controller {
         }
         $postCount = $this->getParam('count', NULL);
         if ($postCount) {
-            for ($i = $this->getParam('first', 0); $i <= $postCount; $i++) {
+            for ($i = max(0, (int)$this->getParam('first', 0)); $i <= min(1000, (int)$postCount); $i++) {
                 // Check if answer selected and needs updating
                 $postSelected = $this->getParam('selected' . $i, NULL);
                 // Save the students answers.
                 $testId = $this->getParam('id');
                 $questType = $this->getParam('qtype' . $i);
                 $questId = $this->getParam('questionId' . $i);
+                $question=$this->dbQuestions->getRow('id',(string)$questId);
+                if (!is_array($question) || !hash_equals((string)$testId,(string)$question['testid'])) continue;
+                $questType=$question['questiontype'];
+                if ($questType !== 'freeform') {
+                    $answer=$this->dbAnswers->getRow('id',(string)$this->getParam('ans'.$i,''));
+                    if (!is_array($answer) || !hash_equals((string)$questId,(string)$answer['questionid']) || !hash_equals((string)$testId,(string)$answer['testid'])) continue;
+                }
                 if (!empty($testId) && !empty($questId)) {
                     $fields = array();
                     $fields['testid'] = $testId;
@@ -3536,6 +3621,7 @@ class mcqtests extends controller {
                 }
             }
         }
+        $this->unsetSession('mcq_attempt_draft_'.$resultId);
         return $resultId;
     }
 
@@ -3826,8 +3912,8 @@ class mcqtests extends controller {
         if (empty($testId)) {
             return FALSE;
         }
-        $test = $this->dbTestadmin->getTests($this->contextCode, 'id,status', $testId);
-        return !empty($test) && $test[0]['status'] === 'open';
+        $test = $this->dbTestadmin->getRow('id', $testId);
+        return is_array($test) && hash_equals((string)$this->contextCode, (string)$test['context']) && $test['status'] === 'open';
     }
 
     public function getIps($comLab) {
@@ -3961,7 +4047,7 @@ class mcqtests extends controller {
     public function addNumericalOptions($questionid, $edit=false) {
         $optionsData = array();
         // get info for unit marked
-        if (strlen($this->getParam('unitmarked')) > 0) {
+        if (strlen((string)$this->getParam('unitmarked')) > 0) {
             $unitmarked = 'yes';
         } else {
             $unitmarked = 'no';
@@ -4000,7 +4086,16 @@ class mcqtests extends controller {
         return 'editmatchingquestion_tpl.php';
     }
 
+    private function numericalDraft() {
+        $keys=array('qName','qText','qMark','qPenalty','calcqgenfeedback','aNumerical1','aNumerical2','aNumerical3','mark_1','mark_2','mark_3','unitmode','dispUnit','instructions','penaltyUnit','aUnit');
+        $draft=array();foreach($keys as $key){$value=$this->getParam($key,'');$draft[$key]=is_scalar($value)?mb_substr((string)$value,0,100000):'';}
+        return $draft;
+    }
+
     public function viewNumericalQuestions() {
+        $id=(string)$this->getParam('questionId','');
+        $this->setVar('mode',$id!==''?'edit':'add');
+        $this->setVar('data',$id!==''?$this->dbQuestions->getRow('id',$id):array());
         return 'editnumericalquestion_tpl.php';
     }
 

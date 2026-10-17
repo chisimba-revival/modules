@@ -68,19 +68,16 @@ class dbtestadmin extends dbtable {
      * @return array $data The details of the test or list of tests.
      */
     public function getTests($context, $fields = '*', $id = NULL) {
-        $sql = "SELECT $fields FROM " . $this->table;
-        if ($id) {
-            $sql.= " WHERE id='$id'";
-        } else {
-            $sql.= " WHERE context='$context'";
+        // Field lists come from source callers; values always remain bound parameters.
+        if (!preg_match('/^(?:\*|[a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)$/D', $fields)) {
+            throw new InvalidArgumentException('Invalid test field list');
         }
-        $sql.= " and testtype not like 'Advanc%' ORDER BY closingdate DESC, name";
-        
-        $data = $this->getArray($sql);
-        if (!empty($data)) {
-            return $data;
-        }
-        return FALSE;
+        $sql = "SELECT $fields FROM " . $this->table . " WHERE context = ?";
+        $params = array($context);
+        if ($id !== null && $id !== '') { $sql .= ' AND id = ?'; $params[] = $id; }
+        $sql .= " AND testtype not like 'Advanc%' ORDER BY closingdate DESC, name";
+        $data = $this->selectPrepared($sql, $params);
+        return $data ?: FALSE;
     }
 
     /**
@@ -92,18 +89,16 @@ class dbtestadmin extends dbtable {
      * @return array $data The details of the test or list of tests.
      */
     public function getTests2($context, $fields = '*', $id = NULL) {
-        $sql = "SELECT $fields FROM " . $this->table;
-        if ($id) {
-            $sql.= " WHERE id='$id'";
-        } else {
-            $sql.= " WHERE context='$context'";
+        // Field lists come from source callers; values always remain bound parameters.
+        if (!preg_match('/^(?:\*|[a-zA-Z_][a-zA-Z0-9_]*(?:\s*,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)$/D', $fields)) {
+            throw new InvalidArgumentException('Invalid test field list');
         }
-        $sql.= " and testtype like 'Advanc%' ORDER BY closingdate DESC, name";
-        $data = $this->getArray($sql);
-        if (!empty($data)) {
-            return $data;
-        }
-        return FALSE;
+        $sql = "SELECT $fields FROM " . $this->table . " WHERE context = ?";
+        $params = array($context);
+        if ($id !== null && $id !== '') { $sql .= ' AND id = ?'; $params[] = $id; }
+        $sql .= " AND testtype like 'Advanc%' ORDER BY closingdate DESC, name";
+        $data = $this->selectPrepared($sql, $params);
+        return $data ?: FALSE;
     }
 
     /**

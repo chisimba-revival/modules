@@ -34,6 +34,13 @@ define('CATCH_ALL_BASE', 'chisimba.tohir.co.za');
  * @version 1
  */
 class discussionemail extends ChisimbaObject {
+    // Explicit component state for current PHP runtimes.
+    public $contextGroups;
+    public $dbPost;
+    public $dbTopic;
+    public $objLanguage;
+    public $objMailer;
+
 
         /**
          * @var Object $eMailReciever object to get emails from the server
@@ -62,11 +69,11 @@ class discussionemail extends ChisimbaObject {
                 $this->dbPost = $this->getObject('dbpost', 'discussion');
                 $this->dbTopic = $this->getObject('dbtopic', 'discussion');
                 $this->objUser = $this->getObject('user', 'security');
-                $this->objPostText = & $this->getObject('dbposttext');
-                $this->dbDiscussion = & $this->getObject('dbdiscussion');
+                $this->objPostText = $this->getObject('dbposttext');
+                $this->dbDiscussion = $this->getObject('dbdiscussion');
                 $this->objUserContext = $this->getObject('usercontext','context');
-                $this->contextGroups = & $this->getObject('managegroups', 'contextgroups');
-                $this->objLanguage = & $this->getObject('language', 'language');
+                $this->contextGroups = $this->getObject('managegroups', 'contextgroups');
+                $this->objLanguage = $this->getObject('language', 'language');
 
                 /**
                  * @TESTING
@@ -137,7 +144,7 @@ class discussionemail extends ChisimbaObject {
                 /*
                  * END
                  */
-//                $this->objUser = & $this->getObject('user', 'security');
+//                $this->objUser = $this->getObject('user', 'security');
 //                $this->objTopic = $this->getObject('dbtopic', 'discussion');
         }
 
@@ -147,7 +154,7 @@ class discussionemail extends ChisimbaObject {
          */
         function setContextCode($context) {
                 $this->contextCode = $context;
-                $this->objMailer = &$this->getObject('mailer', 'mail');
+                $this->objMailer = $this->getObject('mailer', 'mail');
         }
 
         /**
@@ -160,7 +167,7 @@ class discussionemail extends ChisimbaObject {
                 $this->emailList = array();
 
                 // Get Users Subscribed to Topic
-                $objTopicSubscribers = & $this->getObject('dbtopicsubscriptions');
+                $objTopicSubscribers = $this->getObject('dbtopicsubscriptions');
                 $topicSubscribers = $objTopicSubscribers->getUsersSubscribedTopic($topic_id);
 
                 // Add the Email to the array
@@ -168,11 +175,11 @@ class discussionemail extends ChisimbaObject {
                         array_push($this->emailList, $user['emailaddress']);
                 }
 
-                $objTopic = & $this->getObject('dbtopic');
+                $objTopic = $this->getObject('dbtopic');
                 $topicDetails = $objTopic->listSingle($topic_id);
 
                 // Get Users Subscribed to Discussion
-                $objDiscussionSubscribers = & $this->getObject('dbdiscussionsubscriptions');
+                $objDiscussionSubscribers = $this->getObject('dbdiscussionsubscriptions');
                 $discussionSubscribers = $objDiscussionSubscribers->getUsersSubscribedDiscussion($topicDetails['discussion_id']);
 
                 // Add the Email to the array
