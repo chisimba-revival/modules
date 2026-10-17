@@ -30,30 +30,22 @@ class dbtempattachments extends dbTable
     * @param string $id Temporary Post Id
     * @return array List of Attachments
     */
-    function getList($id)
-    {
-        $sql = 'SELECT tbl_discussion_temp_attachment.id AS attachment_id,
-        tbl_files.* FROM tbl_discussion_temp_attachment 
-        INNER JOIN tbl_files ON (tbl_discussion_temp_attachment.attachment_id = tbl_files.id)
-        WHERE tbl_discussion_temp_attachment.temp_id = "'.$id.'" ORDER BY filename';
-        
-        return $this->getArray($sql);
-    
+    function getList($id, $userId=null) {
+        if ($userId===null) return array();
+        return $this->selectPrepared('SELECT pending.id AS pending_id, files.* FROM tbl_discussion_temp_attachment AS pending INNER JOIN tbl_files AS files ON pending.attachment_id=files.id WHERE pending.temp_id=? AND pending.userid=? ORDER BY files.filename',array($id,$userId));
     }
-    
+
     /**
     * Method to get a list of attachment record by providing the temporary post id
     *
     * @param string $id Temporary Post Id
     * @return array List of Attachments
     */
-    function getQuickList($id)
-    {
-        $sql = ' WHERE temp_id="'.$id.'"';
-        
-        return $this->getAll($sql);
+    function getQuickList($id, $userId=null) {
+        if ($userId===null) return array();
+        return $this->selectPrepared('SELECT * FROM tbl_discussion_temp_attachment WHERE temp_id=? AND userid=?',array($id,$userId));
     }
-    
+
     /**
     * Method to save a temprary attachement
     *
@@ -70,7 +62,7 @@ class dbtempattachments extends dbTable
                 'temp_id' => $temp_id,
                 'attachment_id' => $attachment_id,
                 'userid' => $userId,
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', $dateLastUpdated)));
+                'datecreated' => date('Y-m-d H:i:s', $dateLastUpdated)));
     }
     
     /**
@@ -79,29 +71,19 @@ class dbtempattachments extends dbTable
     * @param string $attachment_id Record Id of the Attachment
     *
     */
-    function deleteAttachment($temp_id, $attachment_id)
-    {
-        $list = $this->getAll('WHERE temp_id="'.$temp_id.'" AND attachment_id="'.$attachment_id.'"');
-        
-        if ((is_countable($list) ? count($list) : 0) > 0) {
-            foreach ($list as $item)
-            {
-                $this->delete('id', $item['id']);
-            }
-        }
-        
-        return ;
+    function deleteAttachment($temp_id, $attachment_id, $userId=null) {
+        if ($userId===null) return false;
+        return $this->executePrepared('DELETE FROM tbl_discussion_temp_attachment WHERE temp_id=? AND attachment_id=? AND userid=?',array($temp_id,$attachment_id,$userId));
     }
-    
+
     /**
     * Method to delete the temporary records for attachments
     *
     * @param string $id Temporary Post Id
     */
-    function deleteTemps($id)
-    {
-        return $this->delete('temp_id', $id);
-    
+    function deleteTemps($id, $userId=null) {
+        if ($userId===null) return false;
+        return $this->executePrepared('DELETE FROM tbl_discussion_temp_attachment WHERE temp_id=? AND userid=?',array($id,$userId));
     }
 
 

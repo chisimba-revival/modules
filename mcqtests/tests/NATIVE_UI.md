@@ -31,3 +31,29 @@ end to end in this batch. Do not present it as a revived assessment engine.
 Warnings observed in shared login/profile/denial pages and Workgroup are
 outside this module batch; the changed Discussion/MCQ paths were cleaned up.
 Production deployment requires a separate release and smoke pass.
+
+
+## Security follow-up — 17 October 2026
+
+Version 4.189 adds POST/CSRF review and draft recovery to legacy author mutations,
+checks course/question/answer and legacy category child-record ownership, and uses
+checked transactions for standard question and answer-set saves. Answer IDs and
+existing feedback survive edits. Laboratory uploads accept bounded CSV filenames
+and cannot replace an existing definition. Standard question deletion now supplies
+the actual question ID when removing answers.
+
+Timed attempts derive the deadline from their stored UTC start time. Posted
+remaining-time fields cannot extend it. A 15-second transport grace allows the
+browser's final automatic submission; later requests finalise previously saved
+answers without accepting new answers.
+
+The disposable PDO and HTTP checks cover standard question totals, stable answer
+IDs, partial-save rollback, cross-course/child-ID rejection, expired-token draft
+recovery, denied learner authoring, ordinary learner grading, an eleven-page timed
+attempt and a forged remaining-time value after expiry. Chrome verified ordinary
+answer editing/saving, feedback retention and contextual Help/Escape.
+
+Advanced matching/calculated types are retained at the user's request. Their
+incomplete grading and full authoring journeys still need a dedicated revival and
+must not be represented as verified assessment features. This batch does not
+complete a comprehensive audit of every historical MCQ route or concurrency path.

@@ -69,7 +69,8 @@ $labLink=new link($this->uri(array('action'=>'addlab','id'=>$id,'mode'=>$mode)))
 $descriptionInput=new textarea('description',$description,7,67);
 $hidden=$mode==='edit'?'<input type="hidden" name="id" value="'.$esc($id).'" />':'';
 $formAction=$this->getParam('action')==='edit2'?$this->uri(array('action'=>'applyaddtest','prevaction'=>'edit2')):$this->uri(array('action'=>'applyaddtest'));
-$form=new form('savetest',$formAction); $form->addRule('name',$errName,'required');
+$form=new form('savetest',$formAction);
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input()); $form->addRule('name',$errName,'required');
 $section=function($title,$body){return '<section class="chisimba-form-section mcq-form-section"><h2 class="mcq-form-section-title">'.$title.'</h2><div class="mcq-form-section-body">'.$body.'</div></section>';};
 $field=function($label,$control,$class=''){return '<div class="chisimba-form-field '.$class.'"><label>'.$label.'</label>'.$control.'</div>';};
 $choice=function($label,$control){return '<fieldset class="chisimba-form-field chisimba-choice-field"><legend>'.$label.'</legend><div class="chisimba-choice-group">'.$control.'</div></fieldset>';};
@@ -93,5 +94,6 @@ $content='<div class="chisimba-workspace mcq-test-editor"><div class="chisimba-f
     .'<button class="button chisimba-button-secondary" type="button" onclick="document.getElementById(\'form_exit\').submit()">'.$cancelIcon.'<span>'.$esc($exitLabel).'</span></button></div></div></div>';
 $form->addToForm($content); echo $form->show();
 $exitAction=$this->getParam('action')==='edit2'?$this->uri(array('action'=>'applyaddtest','prevaction'=>'edit2')):$this->uri(array('action'=>'applyaddtest'));
-$exitForm=new form('exit',$exitAction); $exitForm->addToForm($hidden.'<input type="hidden" name="save" value="'.$esc($exitLabel).'" />'); echo $exitForm->show();
+$exitForm=new form('exit',$exitAction);
+$exitForm->addToForm($this->getObject('authoringrequest','mcqtests')->input()); $exitForm->addToForm($hidden.'<input type="hidden" name="save" value="'.$esc($exitLabel).'" />'); echo $exitForm->show();
 ?>

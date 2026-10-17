@@ -21,7 +21,7 @@ class dbWorkgroupUsers extends dbTable
     {
         parent::init('tbl_workgroup_users');
         //$this->USE_PREPARED_STATEMENTS=True;
-        $this->objUser =& $this->getObject('user', 'security');
+        $this->objUser = $this->getObject('user', 'security');
     }
 
     /**

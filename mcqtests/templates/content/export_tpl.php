@@ -64,6 +64,7 @@ $objForm = new form('optionform', $this->uri(array(
     'action' => 'doexport',
     'testId' => $testId
 )));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 $objForm->addToForm($optionTable.'<br />'.$submitButton);
 $objForm->addRule('exporttype', $errorLabel, 'required');
 $optionForm = $objForm->show();

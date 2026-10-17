@@ -473,7 +473,7 @@ class discussion extends controller {
                                 return $this->deleteOwnPost();
 
                         case 'translationajax':
-                                return $this->translationAjax();
+                                return $this->loadTranslation($this->getParam('id'),$this->getParam('lang'));
 
                         case 'loadtranslation':
                                 return $this->loadTranslation($this->getParam('id'), $this->getParam('lang'));
@@ -943,19 +943,10 @@ class discussion extends controller {
          *
          */
         function loadTranslation($postId, $language) {
-                $post = $this->objPostText->getTranslatedPost($postId, $language);
-                $objLanguageCode = $this->getObject('languagecode', 'language');
-                if ($post != FALSE) {
-                        if ($post['original_post'] == '1') {
-                                $text = '<strong class="warning">Viewing Original Post Made in ' . $objLanguageCode->getLanguage($language) . '</strong><br />';
-                        } else {
-                                $text = '<strong class="warning">Viewing Translation of Post in <em>' . $objLanguageCode->getLanguage($language) . '</em></strong><br />';
-                        }
-                        $text .= $post['post_text'];
-                        echo $text;
-                } else {
-                        echo 'Could not find translation or post';
-                }
+                if (!$this->translationTarget($postId)) return $this->moderationDenied();
+                $post=$this->objPostText->getTranslatedPost($postId,(string)$language);
+                if (!$post) return $this->moderationDenied();
+                echo $this->objPost->renderSafePostText($post['post_text']);
         }
 
         /**
@@ -1596,14 +1587,17 @@ class discussion extends controller {
          * @param $id Record Id of the Temporary ID
          */
         public function showAttachments($id) {
-                $this->setVarByRef('id', $id);
-                $files = $this->objTempAttachments->getList($id);
+                if (!$this->ownsAttachmentDraft($id)) return $this->moderationDenied();
+                $this->setVar('id', $id);
+                $files = array_filter($this->objTempAttachments->getList($id,$this->userId),fn($file)=>$this->getObject('filereadpolicy','filemanager')->mayRead($file));
+                $this->setVar('attachmentToken',$this->csrf->issue('disc_attach_'.hash('sha256',$id)));
                 $this->setVarByRef('files', $files);
                 $this->setVar('pageSuppressIM', TRUE);
                 $this->setVar('pageSuppressToolbar', TRUE);
                 $this->setVar('pageSuppressBanner', TRUE);
                 $this->setVar('pageSuppressContainer', TRUE);
                 $this->setVar('suppressFooter', TRUE);
+                $this->setLayoutTemplate(null);
                 return 'discussion_attachments.php';
         }
 
@@ -1626,27 +1620,23 @@ class discussion extends controller {
         /**
          * Method to add an attachment to a file
          */
-        public function saveAttachment($temp_id, $attachment_id) {
-
-//                $temp_id = $this->getVar('attachment_tempid');
-                $userId = $this->objUser->userId();
-                $dateLastUpdated = time();
-//                $attachment_id = $this->getVar('attachment_id');
-//                if ($attachment_id != '') {
-                echo $this->objTempAttachments->insertSingle($temp_id, $attachment_id, $userId, $dateLastUpdated);
-//                }  else {
-//                        echo "<h1>Failed to insert values into database</h1>";
-//                }
-//                return $this->nextAction('attachments', array('id' => $temp_id, 'attachment' => $attachment_id));
+        private function ownsAttachmentDraft($id) {
+                return $this->objUser->isLoggedIn() && preg_match('/^'.preg_quote((string)$this->userId,'/').'_[0-9]{1,12}$/D',(string)$id)===1;
         }
 
-        /**
-         *
-         *
-         */
+        public function saveAttachment() {
+                $id=(string)$this->getParam('id','');$fileId=(string)$this->getParam('attachment','');
+                $file=$this->objFiles->getRow('id',$fileId);
+                if (!$this->ownsAttachmentDraft($id) || !$this->validManagementMutation('disc_attach_'.hash('sha256',$id))
+                    || !$this->getObject('filereadpolicy','filemanager')->mayRead($file)) return $this->moderationDenied();
+                $this->objTempAttachments->insertSingle($id,$fileId,$this->userId,time());
+                return $this->nextAction('attachments',array('id'=>$id));
+        }
+
         public function deleteAttachment($temp_id, $attachment_id) {
-                $this->objTempAttachments->deleteAttachment($temp_id, $attachment_id);
-                return $this->nextAction('attachments', array('id' => $temp_id));
+                if (!$this->ownsAttachmentDraft($temp_id) || !$this->validManagementMutation('disc_attach_'.hash('sha256',$temp_id))) return $this->moderationDenied();
+                $this->objTempAttachments->deleteAttachment($temp_id,$attachment_id,$this->userId);
+                return $this->nextAction('attachments',array('id'=>$temp_id));
         }
 
         /**
@@ -1660,12 +1650,12 @@ class discussion extends controller {
          * @param $temporaryId The Record's Temporary Post Id
          */
         private function handleAttachments($postId, $temporaryId) {
-                $files = $this->objTempAttachments->getQuickList($postId);
+                $files = $this->objTempAttachments->getQuickList($postId,$this->userId);
 //                print_r($this->objTempAttachments->getQuickList($temporaryId));
                 foreach ($files AS $file) {
                         $this->objPostAttachments->insertSingle($postId, $file['attachment_id'], $this->userId, time());
                 }
-                $this->objTempAttachments->deleteTemps($temporaryId);
+                $this->objTempAttachments->deleteTemps($postId,$this->userId);
 //                return;
         }
 
@@ -1691,50 +1681,58 @@ class discussion extends controller {
          * Shows the form to translate a post
          * @param string $post_id Record Id of the Post
          */
+        private function translationTarget($id, $writing=false) {
+                if (!preg_match('/^[A-Za-z0-9_-]{1,128}$/D',(string)$id)) return null;
+                $post=$this->objPost->getPostWithText($id,true);
+                $discussion=is_array($post)?$this->objDiscussion->getDiscussion($post['discussion_id']):null;
+                if (!$this->mayReadDiscussion($discussion)) return null;
+                if ($writing && (!$this->objUser->isLoggedIn() || ($discussion['assessment_enabled']??'N')==='Y'
+                    || ($post['status']??'')==='CLOSE' || $this->objDiscussion->checkIfDiscussionLocked($post['discussion_id']))) return null;
+                return $post;
+        }
+
         public function translatePost($post_id) {
-                // These are dummy permission to prevent the display of reply, edit and translate links
-                $this->objPost->repliesAllowed = FALSE;
-                $this->objPost->editingPostsAllowed = FALSE;
-                $this->objPost->discussionLocked = TRUE;
-                $post = $this->objPost->getPostWithText($post_id);
-                $postDisplay = $this->objPost->displayPost($post);
-                // Get a list of languages for the current post
-                // Will be deleted from the list of languages to translate in
-                $postLanguages = $this->objPostText->getPostLanguages($post_id);
-                $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
-                $this->checkWorkgroupAccessOrRedirect($discussion);
-                // Send the topic to the template
-                $this->setVarByRef('post', $post);
-                $this->setVarByRef('postDisplay', $postDisplay);
-                $this->setVarByRef('postLanguages', $postLanguages);
-                return 'discussion_translatepost_form.php';
+                $post=$this->translationTarget($post_id,true);
+                if (!$post) return $this->moderationDenied();
+                $this->setVar('translationPostData',$post);
+                $this->setVar('translationDraft',$this->getSession('discussion_translation_'.$post_id,null));
+                $this->setVar('translationToken',$this->csrf->issue('disc_translate_'.hash('sha256',$post_id)));
+                return 'discussion_native_edit.php';
         }
 
-        /**
-         * Method to process a form to save translation
-         */
         public function saveTranslation() {
-                $post_id = $_POST['post'];
-                $post_title = $_POST['title'];
-                $post_text = $_POST['message'];
-                $language = $_POST['language'];
-                $original_post = 0; // Set to Zero. this is a translation, not an original post
-                $newId = $this->objPostText->insertSingle($post_id, $post_title, $post_text, $language, $original_post, $this->userId);
-                return $this->nextAction('viewtranslation', array('id' => $newId, 'message' => 'translationsaved', 'type' => $this->discussiontype));
+                $id=(string)$this->getParam('post','');
+                if (!$this->translationTarget($id,true) || strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST') return $this->moderationDenied();
+                $draft=array();
+                foreach(array('title','message','language') as $key) {
+                    $value=$this->getParam($key,'');$draft[$key]=is_scalar($value)?mb_substr((string)$value,0,$key==='message'?100000:160):'';
+                }
+                $draft['language']=strtolower(trim($draft['language']));
+                $this->setSession('discussion_translation_'.$id,$draft);
+                $languages=$this->getObject('languagecode','language')->iso_639_2_tags->codes;
+                if (!$this->validManagementMutation('disc_translate_'.hash('sha256',$id))
+                    || !isset($languages[$draft['language']]) || strlen($draft['language'])!==2
+                    || trim($draft['title'])==='' || trim(strip_tags($draft['message']))==='') {
+                    return $this->nextAction('translate',array('id'=>$id,'message'=>'editretry'));
+                }
+                try {
+                    $saved=$this->objPostText->addTranslation($id,trim($draft['title']),
+                        $this->getObject('script','utilities')->removeScript($draft['message']),$draft['language'],$this->userId);
+                } catch (Throwable $error) { $saved=false; }
+                if (!$saved) return $this->nextAction('translate',array('id'=>$id,'message'=>'editretry'));
+                $this->unsetSession('discussion_translation_'.$id);
+                return $this->nextAction('viewtranslation',array('id'=>$saved,'message'=>'translationsaved'));
         }
 
-        /**
-         * Method to view the translation of a post in another language
-         */
         public function viewtranslation($postTextId) {
-                $post = $this->objPost->getPostInLanguage($postTextId);
-                $postDisplay = $this->objPost->displayPost($post);
-                // Send the topic to the template
-                $this->setVarByRef('post', $post);
-                $this->setVarByRef('postDisplay', $postDisplay);
-                $discussion = $this->objDiscussion->getDiscussion($post['discussion_id']);
-                $this->checkWorkgroupAccessOrRedirect($discussion);
-                $this->setVarByRef('discussion', $discussion);
+                $text=$this->objPostText->getRow('id',(string)$postTextId);
+                $post=is_array($text)?$this->translationTarget($text['post_id']):null;
+                if (!$post) return $this->moderationDenied();
+                foreach(array('post_title','post_text','language') as $key) $post[$key]=$text[$key];
+                $this->setVar('post',$post);
+                $this->setVar('postDisplay',$this->objPost->displayPost($post));
+                $this->setVar('discussion',$this->objDiscussion->getDiscussion($post['discussion_id']));
+                $this->setLayoutTemplate(null);
                 return 'discussion_viewtranslation.php';
         }
 

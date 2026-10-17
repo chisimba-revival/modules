@@ -133,6 +133,7 @@ if (!in_array($currentstep, array('1', '2a', '3a'), true)) {
 $objForm = new form('exit', $this->uri(array(
     'action' => 'savestep' , 'currentstep'=>(int) $currentstep + 1
 )));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 
 //we will try to include a switch condition for step menu:
 switch($currentstep) {

@@ -23,6 +23,7 @@ $form->addToForm(' &nbsp; &nbsp; '.$button->show());
 
 $hiddeninput = new hiddeninput('id', $id);
 $form->addToForm($hiddeninput->show());
+$form->addToForm('<input type="hidden" name="csrf_token" value="'.htmlspecialchars($attachmentToken,ENT_QUOTES,'UTF-8').'">');
 
 echo $form->show();
 
@@ -32,9 +33,9 @@ if ((is_countable($files) ? count($files) : 0) > 0) {
     
     foreach ($files AS $file)
     {
-        $icon = $objIcon->getDeleteIconWithConfirm($file['id'], array('action'=>'deleteattachment', 'id'=>$file['id'], 'attachmentwindow'=>$id), 'discussion', 'Are you sure wou want to remove this attachment');
-        echo ('<li>'.$file['filename'].' '.$icon.'</li>');
-    
+        $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+        echo '<li>'.$e($file['filename']).'<form method="post" action="'.$e($this->uri(array('action'=>'deleteattachment'))).'"><input type="hidden" name="attachmentwindow" value="'.$e($id).'"><input type="hidden" name="id" value="'.$e($file['id']).'"><input type="hidden" name="csrf_token" value="'.$e($attachmentToken).'"><button class="button chisimba-button-secondary" type="submit">'.$e($this->objLanguage->languageText('word_remove','system')).'</button></form></li>';
+
     }
     
     echo '</ul>';

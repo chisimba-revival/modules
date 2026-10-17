@@ -20,6 +20,35 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 1.2
  */
 class dbquestions extends dbtable {
+    /** Persist standard authoring under the test lock and keep its total consistent. */
+    public function saveStandardQuestion($context,$testId,$questionId,array $fields) {
+        if (!in_array($fields['questiontype']??'',array('mcq','tf','freeform'),true)
+            || !is_scalar($fields['mark']??null) || !is_numeric($fields['mark'])
+            || !is_finite((float)$fields['mark']) || (float)$fields['mark']<0 || (float)$fields['mark']>99999
+            || !is_string($fields['question']??null) || trim(strip_tags($fields['question']))===''
+            || strlen($fields['question'])>100000 || !is_string($fields['hint']??null)) throw new DomainException('invalid');
+        $clean=$this->getObject('script','utilities');
+        $fields['question']=$clean->removeScript($fields['question']);
+        $fields['hint']=mb_substr(strip_tags($fields['hint']),0,120);
+        return $this->transaction(function() use($context,$testId,$questionId,$fields) {
+            $test=$this->selectPrepared('SELECT id,status FROM tbl_tests WHERE id=? AND context=? FOR UPDATE',array($testId,$context));
+            if (!$test || $test[0]['status']==='open') throw new DomainException('forbidden');
+            if ($questionId!=='') {
+                $rows=$this->selectPrepared('SELECT questionorder,questiontype FROM tbl_test_questions WHERE id=? AND testid=? FOR UPDATE',array($questionId,$testId));
+                if (!$rows || $rows[0]['questiontype']!==$fields['questiontype']) throw new DomainException('forbidden');
+                $fields['questionorder']=$rows[0]['questionorder'];
+                if ($this->update('id',$questionId,$fields)===false) throw new RuntimeException('Question not saved');
+            } else {
+                $rows=$this->selectPrepared('SELECT COALESCE(MAX(questionorder),0)+1 AS nextorder FROM tbl_test_questions WHERE testid=?',array($testId));
+                $fields['questionorder']=$rows[0]['nextorder'];
+                $questionId=$this->insert($fields);
+                if (!$questionId) throw new RuntimeException('Question not saved');
+            }
+            $this->executePrepared('UPDATE tbl_tests SET totalmark=(SELECT COALESCE(SUM(mark),0) FROM tbl_test_questions WHERE testid=?) WHERE id=?',array($testId,$testId));
+            return $questionId;
+        });
+    }
+
     /** Existing service state, explicitly declared for PHP 8.5. */
     public $table;
     public $objWashout;
@@ -250,7 +279,7 @@ class dbquestions extends dbtable {
      */
     public function deleteQuestion($id) {
         //Get All answers and delete
-        $this->dbAnswers->removeAnswers('questionid', $id);
+        $this->dbAnswers->removeAnswers($id);
         //Get all question tag instances and delete
         $this->dbTagInstance->deleteInstance($id);
         //Delete all related datasets

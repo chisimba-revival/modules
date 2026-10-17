@@ -3,10 +3,14 @@
 if(empty($GLOBALS['kewl_entry_point_run']))die('No direct access');
 class helpcontent extends ChisimbaObject
 {
-    public function mayViewTopic($topic) { return in_array($topic, ['banks','numerical'], true) && $this->getObject('user','security')->isLoggedIn(); }
+    public function mayViewTopic($topic) { return in_array($topic, ['banks','numerical','authoring'], true) && $this->getObject('user','security')->isLoggedIn(); }
     public function getTopic($topic)
     {
         if (!$this->mayViewTopic($topic)) return null;
+        if ($topic === 'authoring') {
+            $t=fn($key)=>$this->getObject('language','language')->languageText('mod_mcqtests_author_'.$key,'mcqtests');
+            return array('title'=>$t('title'),'summary'=>$t('summary'),'steps'=>array($t('save'),$t('recovery')));
+        }
         if ($topic === 'numerical') {
             $t=fn($key)=>$this->getObject('language','language')->languageText('mod_mcqtests_numerical_'.$key,'mcqtests');
             return ['title'=>$t('help_title'),'summary'=>$t('help_summary'),'steps'=>[$t('help_save'),$t('help_recovery')]];

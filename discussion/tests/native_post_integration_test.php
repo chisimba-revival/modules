@@ -24,6 +24,19 @@ try {
     check($text->getRow('id',$translation)['post_title']==='Translation','edit leaves translation intact');
     check(!$text->updateRevision($post,$revision,'Stale','Stale body'),'stale revision is rejected');
     check($text->getRow('id',$original)['post_title']==='Edited','stale edit preserves saved text');
+    check($text->addTranslation($post,'Second','Second translation','fr','translator'),'new translation saves');
+    check($text->addTranslation($post,'Overwrite','Must not overwrite','fr','translator')===false,'duplicate translation refused');
+    check($text->getTranslatedPost($post,'fr')['post_title']==='Second','duplicate leaves translation intact');
+    check($text->getTranslatedPost($post,"fr' OR 1=1 --")===false,'translation language stays bound');
+    $pending=$engine->getObject('dbtempattachments','discussion');
+    $pending->insertSingle('nativeqa_123','fixture-file','owner-a',time());
+    try {
+        check(count($pending->getQuickList('nativeqa_123','owner-a'))===1,'owner can read pending attachment');
+        check($pending->getQuickList('nativeqa_123','owner-b')===array(),'other user cannot read pending attachment');
+        check($pending->getQuickList('nativeqa_123')===array(),'unscoped attachment lookup fails closed');
+        $pending->deleteAttachment('nativeqa_123','fixture-file','owner-b');
+        check(count($pending->getQuickList('nativeqa_123','owner-a'))===1,'other user cannot remove pending attachment');
+    } finally {$pending->deleteTemps('nativeqa_123','owner-a');}
     check($posts->getPostWithText("' OR 1=1 --",true)===null,'post identifier stays bound');
 } finally {
     $text->delete('post_id',$post); $posts->delete('id',$post); $topics->delete('id',$topic);

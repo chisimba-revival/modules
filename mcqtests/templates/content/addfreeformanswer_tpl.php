@@ -10,13 +10,13 @@
      $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 
 // set up html elements
-     $objTable = &$this->loadClass('htmltable', 'htmlelements');
-     $objForm = &$this->loadClass('form', 'htmlelements');
-     $objInput = &$this->loadClass('textinput', 'htmlelements');
-     $objText = &$this->loadClass('textarea', 'htmlelements');
-     $objButton = &$this->loadClass('button', 'htmlelements');
-     $objInput = &$this->loadClass('dropdown', 'htmlelements');
-     $objInput = &$this->loadClass('checkbox', 'htmlelements');
+     $objTable = $this->loadClass('htmltable', 'htmlelements');
+     $objForm = $this->loadClass('form', 'htmlelements');
+     $objInput = $this->loadClass('textinput', 'htmlelements');
+     $objText = $this->loadClass('textarea', 'htmlelements');
+     $objButton = $this->loadClass('button', 'htmlelements');
+     $objInput = $this->loadClass('dropdown', 'htmlelements');
+     $objInput = $this->loadClass('checkbox', 'htmlelements');
      $objRadio = $this->loadClass('radio', 'htmlelements');
 
 // set up language items
@@ -129,6 +129,7 @@ echo '<strong>'.$questionLabel.':</strong>&nbsp;&nbsp;'.$objWashout->parseText($
    $objForm = new form('addfreeformanswer', $this->uri(array(
     'action' => 'applyfreeformanswer'
 )));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
    $objForm->addToForm($objTable->show());
    $objForm->addToForm($objTableButtons->show());
    $str = $objForm->show();

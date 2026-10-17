@@ -111,14 +111,23 @@ class dbPostText extends dbTable
     * @param string $language Language NOT to check post for
     * @return array List of languages the post is in.
     */
+    /** Serialize translations for a post; never replace an existing language or original. */
+    public function addTranslation($postId,$title,$body,$language,$userId) {
+        return $this->transaction(function() use($postId,$title,$body,$language,$userId) {
+            $posts=$this->selectPrepared('SELECT id FROM tbl_discussion_post WHERE id=? FOR UPDATE',array($postId));
+            if (!$posts || $this->getTranslatedPost($postId,$language)!==false) return false;
+            $id=$this->insertSingle($postId,$title,$body,$language,0,$userId);
+            if (!$id) throw new RuntimeException('Translation not saved');
+            return $id;
+        });
+    }
+
     function getPostLanguages($id, $language = NULL)
     {
-        $sql = 'SELECT id, language FROM tbl_discussion_post_text WHERE post_id = "'.$id.'" ';
-        if (isset($language)) {
-            $sql .= ' AND language != "'.$language.'" ';
-        }
-
-        return $this->getArray($sql);
+        $sql='SELECT id, language FROM tbl_discussion_post_text WHERE post_id = ?';
+        $params=array($id);
+        if ($language !== null) { $sql.=' AND language <> ?'; $params[]=$language; }
+        return $this->selectPrepared($sql,$params);
     }
 
     /**
@@ -162,7 +171,7 @@ class dbPostText extends dbTable
     */
     function getTranslatedPost($postId, $language)
     {
-        $result = $this->getAll(' WHERE post_id=\''.$postId.'\' AND language=\''.strtolower($language).'\'');
+        $result = $this->selectPrepared('SELECT * FROM tbl_discussion_post_text WHERE post_id = ? AND language = ?',array($postId,strtolower((string)$language)));
 
         if ((is_countable($result) ? count($result) : 0) == 0) {
             return FALSE;

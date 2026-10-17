@@ -19,6 +19,7 @@ class short_answer_question extends ChisimbaObject {
         
         // Create form and add the table
         $objForm = new form('shortanswerq', str_replace("amp;", "", $this->uri(array('action'=>'addshortanswerquestion'))));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $objForm->addToForm($generalForm);
         $objForm->addToForm($ansMessage);
         $objForm->addToForm($objAnswerFieldset);

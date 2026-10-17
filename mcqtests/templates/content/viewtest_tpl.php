@@ -326,14 +326,8 @@ if (!empty($questions)) {
         }
         $conQuestion = substr($line['question'], 0, $pos) .'...';
 
-        $objConfirm = new confirm();
-        $objConfirm->setConfirm($deleteIcon , $this->uri(array(
-            'action' => 'deletequestion',
-            'questionId' => $line['id'],
-            'id' => $data['id'],
-            'mark' => $line['mark']
-            )) , $lbConfirm);
-        $icons.= $objConfirm->show();
+        $deleteUrl=$this->uri(array('action'=>'deletequestion','questionId'=>$line['id'],'id'=>$data['id']));
+        $icons.='<a class="button chisimba-button-secondary" href="'.htmlspecialchars($deleteUrl,ENT_QUOTES,'UTF-8').'" aria-label="'.htmlspecialchars($deleteLabel,ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('trash-2').'</a>';
         if ($questionEditingLocked) {
             $iconsUD = '';
             $icons = '';

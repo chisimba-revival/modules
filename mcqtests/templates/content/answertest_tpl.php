@@ -78,7 +78,10 @@ $alpha = array(
 );
 // Get duration of test in minutes, convert to milliseconds, set timeout
 if ($test['timed']) {
-    if (isset($testDuration) && !empty($testDuration)) {
+    if (isset($attemptRemainingSeconds)) {
+        $duration = max(0,(int)$attemptRemainingSeconds)*1000;
+        $time = (int)ceil(max(0,(int)$attemptRemainingSeconds)/60);
+    } elseif (isset($testDuration) && !empty($testDuration)) {
         $duration = $testDuration*60*1000;
         $time = $testDuration;
     } else {

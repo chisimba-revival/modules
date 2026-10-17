@@ -263,6 +263,7 @@ $topStr.= $objInput->show();
 
 // Create form and add the table
 $objFormEdit = new form('addquestion', $this->uri(array('action'=>'applyaddquestion')));
+$objFormEdit->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 $objFormEdit->addToForm($topStr);
 $objFormEdit->addToForm($objTableButtons->show());
 //$objFormEdit->addRule('question', $errQuestion, 'required');

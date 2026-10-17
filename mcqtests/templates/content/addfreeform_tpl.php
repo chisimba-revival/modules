@@ -144,6 +144,7 @@ if (!empty($data)) {
    
    //Create form 
   $objForm = new form('addfreeformquestion', $this->uri(array('action'=>'applyaddquestion')));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
   $objForm->addToForm($headStr);
   $objForm->addToForm($objTableButtons->show());
 

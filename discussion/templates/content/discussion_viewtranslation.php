@@ -1,6 +1,6 @@
 <?php
 //Sending display to 1 column layout
-ob_start();
+
 
 $this->loadClass('htmlheading', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
@@ -8,11 +8,11 @@ $this->loadClass('link', 'htmlelements');
 $header = new htmlheading();
 $header->type=1;
 
-$languageCodes = & $this->newObject('languagecode','language');
+$languageCodes = $this->newObject('languagecode','language');
 
 $link = new link($this->uri(array('action'=>'discussion', 'id'=>$post['discussion_id'])));
-$link->link = $discussion['discussion_name'];
-$headerString = $link->show().' &gt; '.stripslashes($post['post_title']);
+$link->link = htmlspecialchars($discussion['discussion_name'],ENT_QUOTES,'UTF-8');
+$headerString = $link->show().' &gt; '.htmlspecialchars(stripslashes($post['post_title']),ENT_QUOTES,'UTF-8');
 $headerString .= ' - <em>'.$languageCodes->getLanguage($post['language']).'</em>';
 
 $header->str=$headerString;
@@ -29,12 +29,9 @@ if ($this->getParam('message') == 'translationsaved') {
 echo $postDisplay;
 
 $link = new link ($this->uri(array('action'=>'viewtopic', 'id'=>$post['topic_id'], 'post'=>$post['post_id'])));
-$link->link = 'Topic: '.stripslashes($post['post_title']);
+$link->link = 'Topic: '.htmlspecialchars(stripslashes($post['post_title']),ENT_QUOTES,'UTF-8');
 
 echo '<p align="center">'.$link->show().'</p>';
 
-$display = ob_get_contents();
-ob_end_clean();
 
-$this->setVar('middleColumn', $display);
 ?>

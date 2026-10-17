@@ -209,6 +209,7 @@ class formmanager extends ChisimbaObject {
 
         //Create form
         $objForm = new form('addfreeformquestion', $this->uri(array('action' => 'applyaddquestion', 'formtype' => 'freeform')));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $objForm->addToForm($headStr);
         $objForm->addToForm($objTableButtons->show());
         return $objForm->show();
@@ -412,6 +413,7 @@ class formmanager extends ChisimbaObject {
 
         // Create form and add the table
         $objFormEdit = new form('addquestion', $this->uri(array('action' => 'applyaddquestion')));
+$objFormEdit->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $objFormEdit->addToForm($topStr);
         $objFormEdit->addToForm($objTableButtons->show());
         //$objFormEdit->addRule('question', $errQuestion, 'required');
@@ -552,6 +554,7 @@ class formmanager extends ChisimbaObject {
                             'module' => 'mcqtest',
                             'action' => 'mcqlisting'
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         //Add General Fieldset to form
         $form->addToForm($objFieldset->show());
 
@@ -598,6 +601,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'addcategoryconfirm',
                             'id' => $id
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $data = "";
 
         if (!empty($id)) {
@@ -856,6 +860,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'questionbank',
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         //Add General Fieldset to form
         $form->addToForm($objFieldset->show());
 
@@ -907,6 +912,7 @@ class formmanager extends ChisimbaObject {
                             'id' => $id,
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $data = "";
         if (!empty($id)) {
             $data = $this->dbDescription->getDescription($id);
@@ -1130,6 +1136,7 @@ class formmanager extends ChisimbaObject {
                             'id' => $id,
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $data = "";
         if (!empty($id)) {
             $data = $this->dbDescription->getDescription($id);
@@ -1224,6 +1231,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'addshortansconfirm',
                             'id' => $id
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 
         //Form Heading/Title
         $objHeading = &$this->getObject('htmlheading', 'htmlelements');
@@ -1665,6 +1673,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'questionbank',
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         //Add General Fieldset to form
         $form->addToForm($objFieldset->show());
 
@@ -1730,6 +1739,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'addrandomshortansconfirm',
                             'id' => $id
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $qnData = $this->dbQuestions->getQuestion($id);
 
         $randSAData = $this->dbRandomMatching->getRecords("questionid='" . $id . "'");
@@ -2128,6 +2138,7 @@ class formmanager extends ChisimbaObject {
                             'test' => $test,
                             'id' => $qnId
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 
         //fetch question data
         if (!empty($qnId)) {
@@ -2607,6 +2618,7 @@ class formmanager extends ChisimbaObject {
                             'action' => 'mcqlisting',
                             'test' => $testId
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         //Add General Fieldset to form
         $form->addToForm($objFieldset->show());
 
@@ -2712,6 +2724,7 @@ class formmanager extends ChisimbaObject {
                             'id' => $id,
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 
         $qnData = $this->dbQuestions->getQuestion($id);
 
@@ -4200,6 +4213,7 @@ class formmanager extends ChisimbaObject {
                             'id' => $id,
                             'test' => $test
                         )));
+$form->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 
         //Form Heading/Title
         $objHeading = &$this->getObject('htmlheading', 'htmlelements');

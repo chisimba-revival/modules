@@ -261,6 +261,12 @@ class mcqtests extends controller {
                 $this->setSession('mcq_attempt_draft_'.$attemptId,$this->boundedAttemptDraft());
                 return $this->nextAction('answertest',array('id'=>$this->getParam('id'),'resume'=>'1','resume_result_id'=>$attemptId));
             }
+            if ($this->attemptSecondsRemaining($attemptTest,$attempt)<=0) {
+                // Allow a short transport grace for the browser's final automatic submit.
+                if ($this->attemptSecondsRemaining($attemptTest,$attempt)>=-15) $this->saveTest($attemptId);
+                $this->markTest($attemptId);
+                return $this->nextAction('showtest',array('id'=>$attemptTest['id'],'studentId'=>$this->userId,'resultId'=>$attemptId));
+            }
         }
         // Numerical authoring is scoped before any renderer or persistence method runs.
         if (in_array($action, array('viewnumericalquestions', 'addnumericalquestion'), true)
@@ -321,6 +327,25 @@ class mcqtests extends controller {
                 'mcqtests'
             ));
             return $this->nextAction('view', array('id' => $lockedTestId, 'confirm' => 'yes'));
+        }
+
+        // Old author forms also require POST/CSRF; GET links display a review form.
+        $legacyMutations=array('applyaddquestion','applyaddtest','saveanswer','applyaddanswer','applyfreeformanswer',
+            'deletescq','deletersa','deletecat','deletedesc','delete','deletequestion','deleteanswer','questionup','questiondown','reopen',
+            'addsimplecalculated','addsimplecalculatedunit','addrandomshortansconfirm','addcategoryconfirm','adddescconfirm',
+            'addmatchingquestion','applyaddlab');
+        $wizardMutation=$action==='savestep' && !in_array((string)$this->getParam('currentstep'),array('1','2a','3a'),true);
+        if (in_array($action,$legacyMutations,true) || $wizardMutation) {
+            if (!$this->objUser->isCourseAdmin($this->contextCode) || !$this->authorTargetAllowed($action)) return $this->nextAction('courseactivitydenied',array(),'context');
+            $requests=$this->getObject('authoringrequest');
+            if (!$requests->valid($this->getParam('author_token',''))) {
+                $targetQuestion=$this->dbQuestions->getRow('id',(string)$this->getParam('questionId',''));
+                $targetTest=$this->dbTestadmin->getRow('id',(string)$this->getParam('id',$this->getParam('testId','')));
+                $this->setVar('authorTargetLabel',strip_tags((string)($targetQuestion['question']??$targetTest['name']??'')));
+                $this->setVar('authorAction',$action);
+                $this->setVar('authorDraft',$requests->draft(array_merge($_GET,$_POST)));
+                return 'author_request_review_tpl.php';
+            }
         }
 
         // Now the main switch for $action
@@ -474,13 +499,13 @@ class mcqtests extends controller {
                 }
                 $fields['categoryid'] = $this->getParam('categoryid', Null);
                 $fields['name'] = $this->getParam('qnName', Null);
-                $fields['question'] = $this->getParam('qntext', Null);
-                $fields['questiontext'] = $this->getParam('qntext', Null);
+                $fields['question'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qntext', ''));
+                $fields['questiontext'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qntext', ''));
                 $fields['mark'] = $this->getParam('qngrade', Null);
                 $fields['penalty'] = $this->getParam('penaltyfactor', Null);
                 $fields['qtype'] = "RSA";
                 $fields['questiontype'] = "RSA";
-                $fields['generalfeedback'] = $this->getParam('genfeedback', Null);
+                $fields['generalfeedback'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('genfeedback', ''));
                 $qncount = $this->getParam('qncount', Null);
                 //Insert/Update Question
                 if (!empty($fields)) {
@@ -575,8 +600,8 @@ class mcqtests extends controller {
                 $fields = array();
                 $fields['categoryid'] = $this->getParam('desccategoryid', Null);
                 $fields['questionname'] = $this->getParam('descqnname', Null);
-                $fields['questiontext'] = $this->getParam('descqntext', Null);
-                $fields['feedback'] = $this->getParam('descgenfeedback', Null);
+                $fields['questiontext'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('descqntext', ''));
+                $fields['feedback'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('descgenfeedback', ''));
                 $fields['tags'] = $this->getParam('descofficialtags', Null);
                 $fields['othertags'] = $this->getParam('descothertags', Null);
                 $id = $this->dbDescription->addDescription($fields, $descId);
@@ -766,8 +791,13 @@ class mcqtests extends controller {
                     $qId = $this->getParam('questionId', '');
 
                     // Add to database and set the total mark for the test
-                    $qId = $this->dbQuestions->addQuestion($fields, $qId);
-                    $this->dbTestadmin->setTotal($id, $this->dbQuestions->getTotalMarks($id));
+                    try {
+                        $qId = $this->dbQuestions->saveStandardQuestion($this->contextCode,$id,$qId,$fields);
+                    } catch (Throwable $error) {
+                        $this->setVar('authorAction',$action);
+                        $this->setVar('authorDraft',$this->getObject('authoringrequest')->draft($_POST));
+                        return 'author_request_review_tpl.php';
+                    }
 
                     if ($qType == 'mcq') {
                         return $this->nextAction('addanswers', array(
@@ -1024,12 +1054,12 @@ class mcqtests extends controller {
             case 'addanswers':
                 $questionId = $this->getParam('questionId');
                 $testId = $this->getParam('testId');
-                $qNum = $this->getParam('qNum');
+                $qNum = max(1,min(50,(int)$this->getParam('qNum',4)));
                 $data[0]['count'] = $this->getParam('count');
                 $truefalse = $this->getParam('truefalse');
 
                 $data = $this->dbQuestions->getQuestion($questionId);
-                $answers = $this->dbAnswers->getAll("WHERE testid = '$testId' AND questionid = '$questionId'");
+                $answers = $this->dbAnswers->selectPrepared('SELECT * FROM tbl_test_answers WHERE testid=? AND questionid=? ORDER BY answerorder,id',array($testId,$questionId));
 
                 $this->setVarByRef('data', $data[0]);
                 $this->setVarByRef('qNum', $qNum);
@@ -1051,11 +1081,11 @@ class mcqtests extends controller {
 
                 $questionId = $this->getParam('questionId');
                 $testId = $this->getParam('testId');
-                $qNum = $this->getParam('qNum');
+                $qNum = max(1,min(50,(int)$this->getParam('qNum',4)));
                 $data[0]['count'] = $this->getParam('count');
 
                 $data = $this->dbQuestions->getQuestion($questionId);
-                $answers = $this->dbAnswers->getAll("WHERE testid = '$testId' AND questionid = '$questionId'");
+                $answers = $this->dbAnswers->selectPrepared('SELECT * FROM tbl_test_answers WHERE testid=? AND questionid=? ORDER BY answerorder,id',array($testId,$questionId));
 
                 $this->setVarByRef('data', $data[0]);
                 $this->setVarByRef('qNum', $qNum);
@@ -1072,17 +1102,14 @@ class mcqtests extends controller {
 
 
             case 'saveanswer':
-                $postAns = $this->getParam('correctans', NULL);
-                $postCorId = $this->getParam('correctId', NULL);
-                if (!$postAns) {
-                    $postAns = $this->getParam('firstans', '');
+                try {
+                    $this->dbAnswers->selectCorrectAnswer($this->contextCode,$this->getParam('testId',''),$this->getParam('questionId',''),$this->getParam('correctans',$this->getParam('firstans','')));
+                } catch (Throwable $error) {
+                    $this->setVar('authorAction',$action);
+                    $this->setVar('authorDraft',$this->getObject('authoringrequest')->draft($_POST));
+                    return 'author_request_review_tpl.php';
                 }
-                if (!$postCorId) {
-                    $this->dbAnswers->setCorrect($postAns, 1);
-                } else if ($postAns != $postCorId) {
-                    $this->dbAnswers->setCorrect($postAns, 1);
-                    $this->dbAnswers->setCorrect($postCorId, 0);
-                }
+                return $this->nextAction('view',array('id'=>$this->getParam('testId','')));
 
             case 'applyaddanswer':
                 $postSave = $this->getParam('save', '');
@@ -1095,7 +1122,11 @@ class mcqtests extends controller {
                     ));
                 }
 
-                $this->addAnswers($postTestId, $postQuestionId, $_POST, $qNum);
+                try { $this->addAnswers($postTestId, $postQuestionId, $_POST, $qNum); } catch (Throwable $error) {
+                    $this->setVar('authorAction',$action);
+                    $this->setVar('authorDraft',$this->getObject('authoringrequest')->draft($_POST));
+                    return 'author_request_review_tpl.php';
+                }
                 $msg = $this->objLanguage->languageText('mod_mcqtests_confirmaddanswer', 'mcqtests');
                 $this->setSession('confirm', $msg);
 
@@ -1114,23 +1145,25 @@ class mcqtests extends controller {
                         'questionId' => $postQuestionId
                     ));
                 }
-                $this->addAnswers($postTestId, $postQuestionId, $_POST, 4);
+                try { $this->addAnswers($postTestId, $postQuestionId, $_POST, 4); } catch (Throwable $error) {
+                    $this->setVar('authorAction',$action);
+                    $this->setVar('authorDraft',$this->getObject('authoringrequest')->draft($_POST));
+                    return 'author_request_review_tpl.php';
+                }
                 $msg = $this->objLanguage->languageText('mod_mcqtests_confirmaddanswer', 'mcqtests');
                 $this->setSession('confirm', $msg);
 
                 return $this->nextAction('view', array(
                     'id' => $postTestId,
-                    'qNum' => $qNum
+                    'qNum' => 4
                 ));
             // display template to edit a specified answer
 
             case 'editanswer':
-                $answer = $this->dbAnswers->getAnswer($this->getParam('answerId'));
-                $data = $this->dbQuestions->getQuestion($this->getParam('questionId'));
-                $this->setVarByRef('answer', $answer[0]);
-                $this->setVarByRef('data', $data[0]);
-                $this->setVar('mode', 'edit');
-                return 'addanswer_tpl.php';
+                $answer=$this->dbAnswers->getRow('id',(string)$this->getParam('answerId',''));
+                $qid=(string)$this->getParam('questionId','');
+                if (!$answer || (string)$answer['questionid']!==$qid) return $this->nextAction('courseactivitydenied',array(),'context');
+                return $this->nextAction('addanswers',array('testId'=>$lockedTestId,'questionId'=>$qid,'qNum'=>$this->dbAnswers->countAnswers($qid)));
             // delete an answer
 
             case 'deleteanswer':
@@ -1507,7 +1540,11 @@ class mcqtests extends controller {
                 $id = $this->getParam('id');
                 $mode = $this->getParam('mode');
                 $file = $_FILES;
-                if ($file['comLab']['type'] != 'text/x-comma-separated-values') {
+                $upload=$file['comLab']??array();
+                $filename=$upload['name']??'';
+                if (!is_string($filename) || !preg_match('/^[A-Za-z0-9_-]{1,100}\.csv$/iD',$filename)
+                    || ($upload['error']??UPLOAD_ERR_NO_FILE)!==UPLOAD_ERR_OK
+                    || ($upload['size']??0)>1048576 || !is_uploaded_file($upload['tmp_name']??'')) {
                     return $this->nextAction('addlab', array(
                         'id' => $id,
                         'mode' => $mode,
@@ -1521,7 +1558,10 @@ class mcqtests extends controller {
                         $this->objMkdir->makedir();
                     }
                     $labFileLocation = $fileLocation . $file['comLab']['name'];
-                    move_uploaded_file($file['comLab']['tmp_name'], $labFileLocation);
+                    // Never overwrite a laboratory definition already used by an assessment.
+                    if (file_exists($labFileLocation) || !move_uploaded_file($upload['tmp_name'],$labFileLocation)) {
+                        return $this->nextAction('addlab',array('id'=>$id,'mode'=>$mode,'error'=>true));
+                    }
                     if ($mode == 'add') {
                         return $this->nextAction('addtest', array(
                             'mode' => $mode
@@ -1979,14 +2019,14 @@ class mcqtests extends controller {
         $fieldsQn = array();
         //$fieldsQn['categoryid'] = $this->getParam('categoryid', Null);
         $fieldsQn['name'] = $this->getParam('qnName', Null);
-        $fieldsQn['question'] = $this->getParam('qntext', Null);
+        $fieldsQn['question'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qntext', ''));
         $fieldsQn['testid'] = $test;
-        $fieldsQn['questiontext'] = $this->getParam('qntext', Null);
+        $fieldsQn['questiontext'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qntext', ''));
         $fieldsQn['mark'] = $this->getParam('qngrade', Null);
         $fieldsQn['penalty'] = $this->getParam('penaltyfactor', Null);
         $fieldsQn['qtype'] = "SimpleCalculated";
         $fieldsQn['questiontype'] = "SimpleCalculated";
-        $fieldsQn['generalfeedback'] = $this->getParam('genfeedback', Null);
+        $fieldsQn['generalfeedback'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('genfeedback', ''));
 
         $qncount = $this->getParam('qncount', Null);
         $id = $this->getParam('id', Null);
@@ -2875,50 +2915,7 @@ class mcqtests extends controller {
      * @return bool
      */
     private function addAnswers($testId, $questionId, $answers, $num = 4) {
-        $answerId = $this->getParam('answerId');
-        $questiontype = $this->getParam('qtype');
-        /* if ($answerId) {
-          $fields = array();
-          $fields['testid'] = $testId;
-          $fields['questionid'] = $questionId;
-          $fields['answer'] = $answers['answer1'];
-          $fields['commenttext'] = $answers['comment1'];
-          $this->dbAnswers->addAnswers($fields, $answerId);
-          return TRUE;
-          } */
-
-        $i = 1;
-        $order = 1;
-        $f = 1;
-
-        // Remove Existing Answers
-        $this->dbAnswers->removeAnswers($questionId);
-
-        while ($i <= $num) {
-            $fields = array();
-            $fields['testid'] = $testId;
-            $fields['questionid'] = $questionId;
-            $fields['answer'] = $answers['answer' . $i];
-            $fields['commenttext'] = $answers['comment' . $i];
-            $fields['answerorder'] = $order++;
-
-            if ($questiontype == 'freeform') {
-                $fields['correct'] = 1;
-                $f++;
-            } else
-            if ($answers['correctans'] == $i) {
-                $fields['correct'] = 1;
-            } else {
-                $fields['correct'] = 0;
-            }
-            if ($answerId == '') {
-                $this->dbAnswers->addAnswers($fields);
-            } else {
-                $this->dbAnswers->addAnswers($fields, $answerId);
-            }
-
-            $i++;
-        } // end while
+        return $this->dbAnswers->saveAnswerSet($this->contextCode,$testId,$questionId,$answers,$num);
     }
 
     /**
@@ -2983,10 +2980,10 @@ class mcqtests extends controller {
                     case 'mcq':
                     case 'tf':
                         $marked = $this->dbMarked->getMarkedForAttempt($resultId, $line['questionid']);
-                        $data[$key]['studcorrect'] = $marked[0]['correct'];
-                        $data[$key]['studans'] = $marked[0]['answer'];
-                        $data[$key]['studorder'] = $marked[0]['answerorder'];
-                        $data[$key]['studcomment'] = $marked[0]['commenttext'];
+                        $data[$key]['studcorrect'] = $marked[0]['correct'] ?? 0;
+                        $data[$key]['studans'] = $marked[0]['answer'] ?? '';
+                        $data[$key]['studorder'] = $marked[0]['answerorder'] ?? 0;
+                        $data[$key]['studcomment'] = $marked[0]['commenttext'] ?? '';
                         $data[$key]['visible'] = true;
                         break;
                     case 'freeform':
@@ -2997,10 +2994,10 @@ class mcqtests extends controller {
                         $data[$key]['alternativeanswers'] = $this->dbAnswers->getAlternativeAnswers($testId, $line['questionid']);
                         $marked = $this->dbMarked->getMarkedFreeFormForAttempt($resultId, $line['questionid'], $testId);
                         if ($marked !== FALSE) {
-                            $data[$key]['studcorrect'] = $marked[0]['correct'];
-                            $data[$key]['studans'] = $marked[0]['answer'];
-                            $data[$key]['studorder'] = $marked[0]['answerorder'];
-                            $data[$key]['studcomment'] = $marked[0]['commenttext'];
+                            $data[$key]['studcorrect'] = $marked[0]['correct'] ?? 0;
+                            $data[$key]['studans'] = $marked[0]['answer'] ?? '';
+                            $data[$key]['studorder'] = $marked[0]['answerorder'] ?? 0;
+                            $data[$key]['studcomment'] = $marked[0]['commenttext'] ?? '';
                         }
                         $markedAnswer = $this->dbMarked->getMarkedFreeFormAnswerForAttempt($resultId, $line['questionid']);
                         if ($markedAnswer === FALSE) {
@@ -3227,6 +3224,8 @@ class mcqtests extends controller {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests($this->contextCode, $fieldlist, $this->getParam('id'));
+        $attempt=$this->dbResults->getAttempt($resultId,$this->userId,$testId);
+        $this->setVar('attemptRemainingSeconds',max(0,$this->attemptSecondsRemaining($test[0],$attempt)));
         $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
         if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
@@ -3308,6 +3307,8 @@ class mcqtests extends controller {
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests2($this->contextCode, $fieldlist, $this->getParam('id'));
+        $attempt=$this->dbResults->getAttempt($resultId,$this->userId,$testId);
+        $this->setVar('attemptRemainingSeconds',max(0,$this->attemptSecondsRemaining($test[0],$attempt)));
         $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
         // new code for scrambling tests
 
@@ -3570,6 +3571,15 @@ class mcqtests extends controller {
      * @param string $resultId The id of the students result in the results table
      * @return string $resultId The id of the students result in the results table.
      */
+    /** The browser may display a countdown, but cannot extend the persisted deadline. */
+    private function attemptSecondsRemaining(array $test,$attempt) {
+        if (empty($test['timed'])) return PHP_INT_MAX;
+        $clock=$this->getObject('timeanddateservice','timeanddate-service');
+        $started=$clock->parseStorage($attempt['starttime']??null);
+        if (!$started) return -16;
+        return $started->getTimestamp()+max(0,(int)$test['duration'])*60-$clock->nowUtc()->getTimestamp();
+    }
+
     private function boundedAttemptDraft() {
         $draft=array();
         foreach ($_POST as $key=>$value) {
@@ -3704,11 +3714,11 @@ class mcqtests extends controller {
                     }
                     $stringOut = implode(',', $simple);
                 }
-                $data[$key]['studcorrect'] = $marked[0]['correct'];
+                $data[$key]['studcorrect'] = $marked[0]['correct'] ?? 0;
                 $data[$key]['studfreeans'] = $ffmarked[0]['answered'];
-                $data[$key]['studans'] = $marked[0]['answer'];
-                $data[$key]['studorder'] = $marked[0]['answerorder'];
-                $data[$key]['studcomment'] = $marked[0]['commenttext'];
+                $data[$key]['studans'] = $marked[0]['answer'] ?? '';
+                $data[$key]['studorder'] = $marked[0]['answerorder'] ?? 0;
+                $data[$key]['studcomment'] = $marked[0]['commenttext'] ?? '';
                 $data[$key]['studfreecorrect'] = $stringOut;
             }
         }
@@ -3853,6 +3863,113 @@ class mcqtests extends controller {
         return 'banks_tpl.php';
     }
 
+    /** Reject mixed-course IDs and answer IDs from a different question. */
+    private function authorTargetAllowed($action) {
+        $required=array(
+            'delete'=>array('id'),'reopen'=>array('id','studentId'),
+            'deletequestion'=>array('id','questionId'),'deleteanswer'=>array('questionId','answerId'),
+            'questionup'=>array('id','questionId'),'questiondown'=>array('id','questionId'),
+            'applyaddquestion'=>array('testId'),'applyaddanswer'=>array('testId','questionId'),
+            'applyfreeformanswer'=>array('testId','questionId'),'saveanswer'=>array('testId','questionId'),
+            'addmatchingquestion'=>array('id'));
+        foreach ($required[$action]??array() as $key) {
+            $value=$this->getParam($key,'');
+            if (!is_string($value) || !preg_match('/^[A-Za-z0-9_-]{1,128}$/D',$value)) return false;
+        }
+        // Legacy question-bank records belong to a category rather than a test.
+        $categoryActions=array('addcategoryconfirm','deletecat','adddescconfirm','deletedesc','addrandomshortansconfirm','deletersa');
+        if (in_array($action,$categoryActions,true)) {
+            $categoryIds=array();
+            if (in_array($action,array('addcategoryconfirm','deletecat'),true)) {
+                $categoryIds[]=$this->getParam('id','');
+                if ($action==='addcategoryconfirm') $categoryIds[]=$this->getParam('parentId','');
+                if ($action==='deletecat' && !$categoryIds[0]) return false;
+            } elseif (in_array($action,array('adddescconfirm','deletedesc'),true)) {
+                $id=$this->getParam($action==='deletedesc'?'id':'descid','');
+                if ($id) {
+                    $row=$this->dbDescription->getRow('id',$id);
+                    if (!$row) return false;
+                    $categoryIds[]=$row['categoryid'];
+                } elseif ($action==='deletedesc') return false;
+                if ($action==='adddescconfirm') $categoryIds[]=$this->getParam('desccategoryid','');
+            } else {
+                $id=$this->getParam('id','');
+                if ($id) {
+                    $row=$this->dbQuestions->getRow('id',$id);
+                    if (!$row) return false;
+                    $categoryIds[]=$row['categoryid'];
+                } elseif ($action==='deletersa') return false;
+                if ($action==='addrandomshortansconfirm') $categoryIds[]=$this->getParam('categoryid','');
+            }
+            foreach ($categoryIds as $categoryId) {
+                if ($categoryId==='' || $categoryId===null) {
+                    if (!in_array($action,array('addcategoryconfirm'),true)) return false;
+                    continue;
+                }
+                if (!is_scalar($categoryId)) return false;
+                $category=$this->dbCategory->getRow('id',(string)$categoryId);
+                if (!$category || (string)$category['contextcode']!==(string)$this->contextCode) return false;
+            }
+        }
+        $testId=$this->getQuestionMutationTestId($action);
+        if (in_array($action,array('delete','applyaddtest','reopen','addmatchingquestion'),true)) $testId=$this->getParam('id','');
+        if (in_array($action,array('deletescq','addsimplecalculated','addsimplecalculatedunit'),true)) {
+            $testId=$this->getParam('test','');
+            $id=$this->getParam('id','');
+            if ($id) {
+                $question=$this->dbQuestions->getRow('id',$id);
+                if (!$question || (string)$question['testid']!==(string)$testId) return false;
+            } elseif ($action==='deletescq') return false;
+            if (!$testId) return false;
+            if ($action==='addsimplecalculated') {
+                foreach (array('frmunitcount','frmanscount','updateanscount','frmupunitcount','wccount') as $key) {
+                    $count=$this->getParam($key,'');
+                    if ($count!=='' && $count!==null && (filter_var($count,FILTER_VALIDATE_INT)===false || $count<0 || $count>50)) return false;
+                }
+                foreach (array_merge($_GET,$_POST) as $key=>$value) {
+                    $repository=null;
+                    if ($key==='uhid') $repository=$this->objNumericalOptions;
+                    elseif (preg_match('/^(uhid|utid(?:_update_)?)[0-9]+$/D',$key)) $repository=$this->objNumericalUnit;
+                    elseif (preg_match('/^ansid(?:_update_)?[0-9]+$/D',$key)) $repository=$this->objQnAnswers;
+                    elseif (preg_match('/^calcid(?:_update_)?[0-9]+$/D',$key)) $repository=$this->objQuestionCalculated;
+                    if ($repository && $value!=='' && $value!==null) {
+                        if (!is_string($value) || !$id) return false;
+                        $row=$repository->getRow('id',$value);
+                        if (!$row || (string)$row['questionid']!==(string)$id) return false;
+                    }
+                    if (preg_match('/^[ab]_definition_id_[0-9]+$/D',$key) && $value!=='' && $value!==null) {
+                        if (!is_string($value) || !$id) return false;
+                        $definition=$this->objDSDefinitions->getRow('id',$value);
+                        $dataset=$definition?$this->objDBDataset->getRow('id',$definition['datasetid']):false;
+                        if (!$dataset || (string)$dataset['questionid']!==(string)$id) return false;
+                    }
+                }
+            }
+        }
+        if ($testId!==null && $testId!=='') {
+            $test=$this->dbTestadmin->getRow('id',(string)$testId);
+            if (!is_array($test) || !hash_equals((string)$this->contextCode,(string)$test['context'])) return false;
+            if ($action!=='reopen' && $test['status']==='open') return false;
+        }
+        $qid=(string)$this->getParam('questionId','');
+        if ($qid!=='') {
+            $question=$this->dbQuestions->getRow('id',$qid);
+            $owner=is_array($question)?$this->dbTestadmin->getRow('id',$question['testid']):null;
+            if (!$owner || !hash_equals((string)$this->contextCode,(string)$owner['context']) || $owner['status']==='open'
+                || ($testId && !hash_equals((string)$testId,(string)$question['testid']))) return false;
+        }
+        foreach(array('answerId','correctId','firstans') as $key) {
+            $id=(string)$this->getParam($key,'');if($id==='')continue;
+            $answer=$this->dbAnswers->getRow('id',$id);
+            if (!$answer || $qid==='' || !hash_equals($qid,(string)$answer['questionid'])) return false;
+        }
+        if ($action==='saveanswer') {
+            $id=(string)$this->getParam('correctans','');
+            if ($id!=='') {$answer=$this->dbAnswers->getRow('id',$id);if(!$answer || !hash_equals($qid,(string)$answer['questionid']))return false;}
+        }
+        return true;
+    }
+
     /** Resolve the owning test for any question-structure action. */
     private function getQuestionMutationTestId($action) {
         $byId = array('addnewquestion', 'choosequestiontype', 'choosequestiontype2',
@@ -3870,8 +3987,8 @@ class mcqtests extends controller {
         if (in_array($action, $byQuestion, TRUE)) {
             $questionId = $this->getParam('questionId', NULL);
             if (!empty($questionId)) {
-                $question = $this->dbQuestions->getQuestion($questionId);
-                return empty($question) ? NULL : $question[0]['testid'];
+                $question = is_string($questionId)?$this->dbQuestions->getRow('id',$questionId):false;
+                return empty($question) ? NULL : $question['testid'];
             }
         }
         return NULL;
@@ -3917,6 +4034,7 @@ class mcqtests extends controller {
     }
 
     public function getIps($comLab) {
+        if (!is_string($comLab) || !preg_match('/^[A-Za-z0-9_-]{1,100}$/D',$comLab)) return array();
         $contentRoot = $this->objConfig->getcontentBasePath();
         $fileLocation = $contentRoot . '/modules/mcqtests/';
         if (!is_dir($fileLocation)) {
@@ -3937,7 +4055,7 @@ class mcqtests extends controller {
         if (!is_resource($fp)) {
             return $arrIpAddresses;
         }
-        while (($line = fgetcsv($fp, 1024, ",")) !== FALSE) {
+        while (($line = fgetcsv($fp, 1024, ",", '"', "")) !== FALSE) {
             if (isset($line[0]) && $line[0] !== '') {
                 $arrIpAddresses[] = $line[0];
             }
@@ -3998,12 +4116,12 @@ class mcqtests extends controller {
         //insert into questions table
         $questiondata = array();
         $questiondata['testid'] = $this->getParam('id');
-        $questiondata['question'] = $this->getParam('qText');
+        $questiondata['question'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qText', ''));
         $questiondata['name'] = $this->getParam('qName');
         $questiondata['hint'] = $this->getParam('hint');
-        $questiondata['questiontext'] = $this->getParam('qText');
+        $questiondata['questiontext'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('qText', ''));
         $questiondata['mark'] = $this->getParam('qMark');
-        $questiondata['generalfeedback'] = $this->getParam('calcqgenfeedback'); //('generalfeedback');
+        $questiondata['generalfeedback'] = $this->getObject('script','utilities')->removeScript((string)$this->getParam('calcqgenfeedback', '')); //('generalfeedback');
         $questiondata['penalty'] = $this->getParam('qPenalty');
         $questiondata['questiontype'] = $qtype;
 

@@ -10,13 +10,13 @@
 $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 
 // set up html elements
-$objTable = &$this->loadClass('htmltable', 'htmlelements');
-$objForm = &$this->loadClass('form', 'htmlelements');
-$objInput = &$this->loadClass('textinput', 'htmlelements');
-$objText = &$this->loadClass('textarea', 'htmlelements');
-$objButton = &$this->loadClass('button', 'htmlelements');
-$objInput = &$this->loadClass('dropdown', 'htmlelements');
-$objInput = &$this->loadClass('checkbox', 'htmlelements');
+$objTable = $this->loadClass('htmltable', 'htmlelements');
+$objForm = $this->loadClass('form', 'htmlelements');
+$objInput = $this->loadClass('textinput', 'htmlelements');
+$objText = $this->loadClass('textarea', 'htmlelements');
+$objButton = $this->loadClass('button', 'htmlelements');
+$objInput = $this->loadClass('dropdown', 'htmlelements');
+$objInput = $this->loadClass('checkbox', 'htmlelements');
 $objRadio = $this->loadClass('radio', 'htmlelements');
 
 // set up language items
@@ -49,6 +49,7 @@ $objWashout = $this->getObject('washout', 'utilities');
 //print_r($data['count']);
 
 $num = 1;
+echo $this->getObject('contextualhelp','help')->show('mcqtests','authoring');
 // Display test info
 echo '<strong>'.$questionLabel.':</strong>&nbsp;&nbsp;'.$objWashout->parseText($data['question']);
 
@@ -104,7 +105,7 @@ $j = 1;
 		$objTable->addCell($objRadio->show());
 		$objTable->addCell($objText->show() , '', '', '', '', 'colspan="2"');
 		$objTable->endRow();
-		$objInput = new textinput('comment'.$j, $dComment);
+		$objInput = new textinput('comment'.$j, $answers[$i]['commenttext'] ?? $dComment);
 		$objInput->size = 70;
 		$objTable->startRow();
 		$objTable->addCell('<b>'.$commentLabel.':</b>', '7%', 'center', '', '');
@@ -176,6 +177,7 @@ $objTable->endRow();
 
 // Create form and add the table
 $objForm = new form('addanswer', $this->uri(array('action' => 'applyaddanswer')));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 $objForm->addToForm($objTable->show());
 
 echo $objForm->show();

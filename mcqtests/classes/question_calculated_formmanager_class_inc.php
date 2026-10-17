@@ -220,6 +220,7 @@ class question_calculated_formmanager extends ChisimbaObject {
 
         // Create form and add the table
         $objFormEdit = new form('calculatedq', str_replace("amp;", "", $this->uri(array('action' => 'addcalculatedquestion'))));
+$objFormEdit->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         $objFormEdit->addToForm($objGeneralFieldset);
         $objFormEdit->addToForm($objAnswerFieldset);
         $objFormEdit->addToForm("<div align='center'><br />" . $btnSave . " " . $btnCancel . "<br /></div>");
@@ -251,9 +252,11 @@ class question_calculated_formmanager extends ChisimbaObject {
         // Create form and add the table
         if($edit) {
             $objForm = new form('matchingq', str_replace("amp;", "", $this->uri(array('action' => 'addmatchingquestion', 'id' => $testid, 'questionId'=>$questionId, 'edit'=>'true'))));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         }
         else {
             $objForm = new form('matchingq', str_replace("amp;", "", $this->uri(array('action' => 'addmatchingquestion', 'id' => $testid))));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
         }
         $objForm->addToForm($objGeneralFieldset);
         $objForm->addToForm($matchingNote);

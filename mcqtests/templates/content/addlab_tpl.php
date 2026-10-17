@@ -63,6 +63,7 @@ $objForm = new form('addlab', $this->uri(array(
     'id' => $id,
     'mode' => $mode
 )));
+$objForm->addToForm($this->getObject('authoringrequest','mcqtests')->input());
 $objForm->addToForm($labTable."<br />".$submitButton);
 $objForm->addRule('comLab', $requiredLabel, 'required');
 $objForm->extra = "enctype='multipart/form-data'";
