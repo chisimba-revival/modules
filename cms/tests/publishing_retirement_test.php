@@ -16,7 +16,8 @@ class controller {
 }
 $modules=dirname(__DIR__,2);
 foreach(['cms'=>'serverpc','simplegal'=>'metaweblog'] as $name=>$action){
- require $modules.'/'.$name.'/controller.php';
+ $directory = $name === 'simplegal' ? 'simplegal__PAUSED' : $name;
+ require $modules.'/'.$directory.'/controller.php';
  foreach(['GET','POST'] as $method){
   $_SERVER['REQUEST_METHOD']=$method;
   foreach([$action,strtoupper($action)] as $variant){
@@ -25,7 +26,7 @@ foreach(['cms'=>'serverpc','simplegal'=>'metaweblog'] as $name=>$action){
    if($module->dispatch()!=='publishing_retired_tpl.php'||http_response_code()!==410)throw new RuntimeException('Retirement failed');
   }
  }
- $source=file_get_contents($modules.'/'.$name.'/controller.php');
+ $source=file_get_contents($modules.'/'.$directory.'/controller.php');
  if(str_contains($source,'getObject(\'cmsrpcapi\'')||str_contains($source,'getObject(\'simplegalxmlrpcapi\''))throw new RuntimeException('Eager RPC loader returned');
 }
 $gallery=new simplegal();$gallery->objDbGal=new class {
@@ -33,6 +34,7 @@ $gallery=new simplegal();$gallery->objDbGal=new class {
 };
 if($gallery->dispatch()!=='view_tpl.php'||$gallery->vars['data']!==['synthetic gallery row'])throw new RuntimeException('Normal gallery dispatch changed');
 foreach(json_decode(file_get_contents(__DIR__.'/retired-publishing-paths.json'),true) as $path){
+ $path=preg_replace('~^simplegal/~','simplegal__PAUSED/',$path);
  if(file_exists($modules.'/'.$path))throw new RuntimeException('Retired publishing class returned');
 }
 if(class_exists('XML_RPC_Server',false))throw new RuntimeException('RPC loaded');
