@@ -1,4 +1,10 @@
 <?php
+// Temporary compatibility until the deferred IMS import is rebuilt and secured.
+// Only this form opts in; honour explicit page-level suppression.
+if ($this->getVar('SUPPRESS_JQUERY') === null) {
+    $this->setVar('SUPPRESS_JQUERY', false);
+}
+
 $this->loadClass('form', 'htmlelements');
 $this->loadClass('textinput', 'htmlelements');
 $this->loadClass('hiddeninput', 'htmlelements');
