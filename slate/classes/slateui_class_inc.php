@@ -167,9 +167,7 @@ class slateui extends ChisimbaObject
      */
     public function showPages()
     {
-        $this->appendArrayVar('headerParams',
-        $this->getJavaScriptFile('slate.js',
-          'slate'));
+        $canEdit = $this->getObject('slatesecurity','slate')->canEdit();
         $objData = $this->getObject("dbslatepages", "slate");
         $arData = $objData->getPages();
         $this->loadClass('htmltable','htmlelements');
@@ -177,11 +175,7 @@ class slateui extends ChisimbaObject
         //----------$this->loadClass('button','htmlelements');
         // Setup table for display layout.
         $table = $this->newObject('htmltable', 'htmlelements');
-        // Edit & delete icons
-        $edIcon = $this->newObject('geticon', 'htmlelements');
-        $edIcon->setIcon('edit');
-        $delIcon = $this->newObject('geticon', 'htmlelements');
-        $delIcon->setIcon('delete');
+        $table->css_class = 'chisimba-table';
         $d = $this->objLanguage->languageText(
               'mod_slate_defaultpage','slate', "The default slate page, it cannot be deleted.");
         $l = $this->objLanguage->languageText(
@@ -196,7 +190,7 @@ class slateui extends ChisimbaObject
         $table->addCell($al->show());
         $table->addCell($l);
         $table->addCell($d);
-        if ($this->objUser->isAdmin()) {
+        if ($canEdit) {
             $table->addCell("");
             $table->addCell("");
         }
@@ -217,31 +211,35 @@ class slateui extends ChisimbaObject
             $table->addCell($linkPage);
             $table->addCell($description);
             unset($activeLink);
-            if ($this->objUser->isAdmin()) {
+            if ($canEdit) {
                 $edUrl = $this->uri(array(
                     'action' => 'edit',
                     'mode' => 'edit',
                     'id' => $id
                     )
                 );
-                $delUrl = 'javascript:void(0);';
-                $edLink = new link($edUrl);
-                $edLink->link = $edIcon->show();
-                $delLink = new link($delUrl);
-                $delLink->cssId = $id;
-                $delLink->cssClass = "dellink";
-                $delLink->link = $delIcon->show();
-                $table->addCell($edLink->show());
-                $table->addCell('<span data-revision="'.$this->getObject('dbslatepages','slate')->deleteRevision($linkItem).'">'.$delLink->show().'</span>');
+                $table->addCell('<a class="chisimba-icon-button" href="'.htmlspecialchars($edUrl, ENT_QUOTES, 'UTF-8').'" aria-label="'
+                    .htmlspecialchars($this->objLanguage->languageText('word_edit'), ENT_QUOTES, 'UTF-8').'">'
+                    .$this->getObject('iconservice','ui')->render('pencil').'</a>');
+                $table->addCell($this->getObject('rowdelete','ui')->render([
+                    'url'=>$this->uri(['action'=>'delete'],'slate'), 'id'=>$id,
+                    'revision'=>$objData->deleteRevision($linkItem),
+                    'csrf'=>$this->getObject('slatesecurity','slate')->csrf()->issue('slate_edit'),
+                    'label'=>$this->objLanguage->languageText('word_delete'),
+                    'confirm'=>$this->objLanguage->languageText('mod_slate_delete_confirm','slate'),
+                    'failure'=>$this->objLanguage->languageText('mod_slate_delete_failure','slate'),
+                    'success'=>$this->objLanguage->languageText('mod_slate_delete_success','slate')
+                ]));
             }
             $table->endRow();
         }
-        if ($this->objUser->isAdmin()) {
+        if ($canEdit) {
             $ret = '<div class="slate_addlink">' . $this->insertAddIcon('showadd', "Add a page ") . "</div>";
         } else {
             $ret = NULL;
         }
-        return $ret . $table->show() . $ret;
+        return $ret . $this->getObject('contextualhelp','help')->show('slate','editing')
+            . $this->getObject('rowdelete','ui')->wrap($table->show());
     }
 
     /**

@@ -118,12 +118,13 @@ class textblockui extends ChisimbaObject
      */
     public function showAllBlocks($blockType)
     {
-        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) return '';
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->lookupAdmin($this->objUser->userId())) return '';
         //Create an instance of the database class for this module
         $objDb = $this->getObject("dbtextblock");
         if (!in_array($blockType, ['text','widetext'], true)) return '';
         $ar = $objDb->selectPrepared('SELECT * FROM tbl_textblock WHERE blockid LIKE ?', [$blockType.'%']);
         $table = $this->newObject('htmltable', 'htmlelements');
+        $table->css_class = 'chisimba-table';
         $table->cellpadding = 10;
         $icon = $this->getObject('image', 'htmlelements');
         $icon->height="31px";
@@ -132,26 +133,26 @@ class textblockui extends ChisimbaObject
         $iconVw = $icon->show();
         foreach ($ar as $block) {
             $title = htmlspecialchars((string)$block['title'], ENT_QUOTES, 'UTF-8');
-            $blockid = $block['blockid'];
+            $blockid = htmlspecialchars((string)$block['blockid'], ENT_QUOTES, 'UTF-8');
             $id = $block['id'];
             // Make title clickable to show the contents
-            $title = "<a href=\"javascript:void(0);\" class=\"BLOCK_TITLE\" id=\"BLOCK_$id\">$title</a>";
+            $title = "<summary>$title</summary>";
             $content = $block['blocktext'];
             $content = $this->renderContent($content);
             $content = $this->putInDiv($content, $id);
             $table->startRow(NULL, "ROW_" . $id);
             $table->addCell($iconVw, 30);
             $table->addCell($blockid, 60);
-            $table->addCell($title . $content);
+            $table->addCell('<details>'.$title.$content.'</details>');
             $table->addCell(
-              $this->insertEditIcon($id) 
-              . "&nbsp;" 
-              . $this->insertDelIcon($id, $objDb->rowRevision($block)), 60
+              '<div class="chisimba-form-actions">'.$this->insertEditIcon($id)
+              . $this->insertDelIcon($id, $objDb->rowRevision($block)).'</div>'
             );        
             $table->endRow();
         }
-        $ret =  $this->makeHeadingListed($blockType);
-        $ret .= $table->show();
+        $ret = $this->makeHeadingListed($blockType);
+        $ret .= $this->getObject('contextualhelp','help')->show('textblock','editing');
+        $ret .= $this->getObject('rowdelete', 'ui')->wrap($table->show());
         return $ret;
     }
     
@@ -195,7 +196,7 @@ class textblockui extends ChisimbaObject
      */
     public function putInDiv($content, $id)
     {
-        return "<div id='BLCONT_$id' class='BLOCK_CONTENT' style='display: none'>$content</div>";
+        return '<div class="BLOCK_CONTENT">'.$content.'</div>';
     }
     
     /**
@@ -271,14 +272,16 @@ class textblockui extends ChisimbaObject
     public function insertDelIcon($id, $revision = "")
     {
         if ($this->objUser->isAdmin()) {
-            $delIcon = $this->newObject('geticon', 'htmlelements');
-            $delIcon->setIcon('delete');
-            $delUrl = 'javascript:void(0);';
-            $delLink = new link($delUrl);
-            $delLink->cssId = $id;
-            $delLink->cssClass = "dellink";
-            $delLink->link = $delIcon->show();
-            return '<span data-revision="'.htmlspecialchars($revision, ENT_QUOTES, 'UTF-8').'">'.$delLink->show().'</span>';
+            $security = $this->getObject('textblocksecurity','textblock');
+            if (!$this->objUser->lookupAdmin($this->objUser->userId())) return '';
+            return $this->getObject('rowdelete','ui')->render([
+                'url'=>$this->uri(['action'=>'deleteajax'],'textblock'), 'id'=>$id, 'revision'=>$revision,
+                'csrf'=>$security->csrf()->issue('textblock_edit'),
+                'label'=>$this->objLanguage->languageText('word_delete'),
+                'confirm'=>$this->objLanguage->languageText('mod_textblock_delete_confirm','textblock'),
+                'failure'=>$this->objLanguage->languageText('mod_textblock_delete_failure','textblock'),
+                'success'=>$this->objLanguage->languageText('mod_textblock_delete_success','textblock')
+            ]);
         } else {
             return NULL;
         }
@@ -295,8 +298,6 @@ class textblockui extends ChisimbaObject
      */
     public function insertEditIcon($id)
     {
-        $edIcon = $this->newObject('geticon', 'htmlelements');
-        $edIcon->setIcon('edit');
         if ($this->objUser->isAdmin()) {
             $blockType = $this->getParam("action", "text");
             $edUrl = $this->uri(array(
@@ -306,9 +307,9 @@ class textblockui extends ChisimbaObject
                 'id' => $id
                 )
             );
-            $edLink = new link($edUrl);
-            $edLink->link = $edIcon->show();
-            return $edLink->show();
+            return '<a class="chisimba-icon-button" href="'.htmlspecialchars($edUrl, ENT_QUOTES, 'UTF-8').'" aria-label="'
+                .htmlspecialchars($this->objLanguage->languageText('word_edit'), ENT_QUOTES, 'UTF-8').'">'
+                .$this->getObject('iconservice','ui')->render('pencil').'</a>';
         } else {
             return NULL;
         }

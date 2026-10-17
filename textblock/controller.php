@@ -39,10 +39,6 @@ class textblock extends controller
 
         //Create an instance of the language object
         $this->objLanguage = $this->getObject("language", "language");
-        // Load the module helper Javascript
-        $this->appendArrayVar('headerParams',
-        $this->getJavaScriptFile('textblock.js',
-          'textblock'));
         //Get the activity logger class
         $this->objLog=$this->newObject('logactivity', 'logger');
         //Log this module call
@@ -111,6 +107,8 @@ class textblock extends controller
                         header('Content-Type: text/plain; charset=UTF-8');
                         die($this->objLanguage->languageText('mod_textblock_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'), 'textblock'));
                     }
+                    header('Content-Type: text/plain; charset=UTF-8');
+                    header('Cache-Control: no-store');
                     die("RECORD_DELETED");
                 } else {
                     die("ERR_NOPERMISSION");

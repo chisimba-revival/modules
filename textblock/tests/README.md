@@ -43,3 +43,19 @@ already-open admin session and rejected requests leave editor data unchanged.
 See the sibling framework's
 `docs/dependencies/validate-editor-revival-20261015.md` for the full scope,
 migration limitations and remaining activation/release work.
+
+## Native list controls (17 October)
+
+Textblock and Slate now share UI's native `rowdelete` renderer/client. From the
+framework checkout run `node tests/ui/rowdelete_test.js` and
+`php tests/ui/rowdelete_render_test.php` for cancellation, pending duplicate
+prevention, POST/CSRF/revision evidence, response validation, uncertain failures,
+same-origin enforcement, focus and output escaping. Textblock previews use native
+`details`/`summary`. Both old module list scripts have been removed.
+
+The isolated installed no-jQuery rehearsal also exercised actual delete endpoints
+for anonymous/member/revoked-admin, GET, invalid token, stale revision, valid and
+repeat submissions, verifying denied writes preserve data. Browser checks covered
+keyboard disclosure, cancellation, successful removal, stale recovery and Help.
+See `framework/docs/dependencies/native-textblock-slate-lists-20261017.md` for
+scope and layout limitations. The modules remain dormant on the real local site.

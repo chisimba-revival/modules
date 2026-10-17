@@ -231,6 +231,8 @@ class slate extends controller
                     die($this->getObject('language','language')->languageText('mod_slate_'.($error->getMessage() === 'editor_stale' ? 'editor_stale' : 'editor_savefailed'), 'slate'));
                 }
             }
+            header('Content-Type: text/plain; charset=UTF-8');
+            header('Cache-Control: no-store');
             die("RECORD_DELETED");
         } else {
             die("ILLEGAL_DELETE_NOTADMIN");

@@ -12,5 +12,5 @@ if($help->mayViewTopic('editing'))throw new RuntimeException('Anonymous help acc
 ChisimbaObject::$user->logged=true;if($help->mayViewTopic('editing'))throw new RuntimeException('Non-admin help access');
 ChisimbaObject::$user->admin=true;
 if(!$help->mayViewTopic('editing')||$help->mayViewTopic('unknown')||$help->getTopic('unknown')!==null)throw new RuntimeException('Help permission contract');
-$topic=$help->getTopic('editing');if(!$topic['title']||count($topic['steps'])!==4)throw new RuntimeException('Help incomplete');
+$topic=$help->getTopic('editing');if(!$topic['title']||count($topic['steps'])!==5 || !in_array($terms['mod_'.$module.'_help_delete_recovery'], $topic['steps'], true))throw new RuntimeException('Help incomplete');
 echo "PASS $module: admin-only help, complete registered recovery/delete guidance\n";

@@ -14,6 +14,6 @@ class helpcontent extends ChisimbaObject
         if ($topicId !== 'editing') return null;
         $language = $this->getObject('language','language');
         $text = fn($key) => html_entity_decode($language->languageText('mod_slate_help_'.$key, 'slate'), ENT_QUOTES, 'UTF-8');
-        return ['title'=>$text('title'), 'summary'=>$text('summary'), 'steps'=>array_map($text, ['edit','save','recover','delete'])];
+        return ['title'=>$text('title'), 'summary'=>$text('summary'), 'steps'=>array_map($text, ['edit','save','recover','delete','delete_recovery'])];
     }
 }
