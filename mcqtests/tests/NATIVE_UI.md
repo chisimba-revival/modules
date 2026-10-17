@@ -17,7 +17,7 @@ Verified on an isolated local PHP 8.5/PDO clone with automatic jQuery disabled:
 - Native question selection, unit radio controls and contextual Help/Escape.
 
 Run ordinary PHP tests in both modules' `tests` directories, excluding files
-named `*integration_test.php`; run the three MCQ `*.cjs` tests with Node.
+named `*integration_test.php`; run the MCQ `*.cjs` tests with Node.
 The new native integration tests require `CHISIMBA_DISPOSABLE_TEST=1` and
 explicitly refuse any DSN except the isolated editor fixture. Never change
 those guards to run them against a working site. Their synthetic rows are
