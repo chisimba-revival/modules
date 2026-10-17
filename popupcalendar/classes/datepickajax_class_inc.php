@@ -20,12 +20,17 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * The example sets 'showtime' = no, so the time element is not displayed.
 * The example sets 'showmonths' = no, so the month letter element is not displayed.
 * Example:
-* $this->objPopupcal = &$this->getObject('datepickajax', 'popupcalendar');
+* $this->objPopupcal = $this->getObject('datepickajax', 'popupcalendar');
 * $dateField = $this->objPopupcal->show('dateFieldName', 'no', 'no', '');
 * echo $dateField;
 */
 class datepickajax extends ChisimbaObject
 {
+    // State used by the installed rendering and service lifecycle.
+    public $objDate;
+    public $objIcon;
+    public $objLanguage;
+
     /**
     * @var string $str Property to display the calendar on first opening.
     */

@@ -1,6 +1,8 @@
 <?php
 
 class formmanager extends ChisimbaObject {
+    public $objStepMenu;
+
     /** Dependencies and state initialised by this component. */
     public $objNumericalOptions;
     public $objNumericalUnit;
@@ -321,7 +323,8 @@ class formmanager extends ChisimbaObject {
             $objDropNum->setSelected(4);
         }
 
-        $objTableType = new htmltable('tabletype');
+        $objTableType = new htmltable();
+        $objTableType->id = 'tabletype';
         $objTableType->startRow();
         $objTableType->addCell('<b>' . $lbType . '</b>', '20%');
         $objTableType->addCell($objRadioType->show(), '80%');

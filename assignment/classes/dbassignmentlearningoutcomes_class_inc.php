@@ -47,6 +47,8 @@ if (!
  *
  */
 class dbassignmentlearningoutcomes extends dbtable {
+    public $objUser;
+
 
     /**
      * Initialisation.
@@ -79,12 +81,12 @@ class dbassignmentlearningoutcomes extends dbtable {
         $LO = $this->getArray($sql);
         $count=1;
         if (!empty($LO)) {
-           
+
             foreach ($LO as $thisLO) {
                 $str .= $thisLO["learningoutcome"].'<br/>';
                 $count++;
             }
-           
+
         } else {
             $str = " ";
         }

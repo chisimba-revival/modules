@@ -52,6 +52,10 @@ if (!
  *
  */
 class dbassignment extends dbtable {
+    public $objUser;
+    public $objContext;
+    public $objLanguage;
+
 
     /**
      *

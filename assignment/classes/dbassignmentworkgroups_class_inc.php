@@ -47,6 +47,8 @@ if (!
  *
  */
 class dbassignmentworkgroups extends dbtable {
+    public $objUser;
+
 
     /**
      * Initialisation.

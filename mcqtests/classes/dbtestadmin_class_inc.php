@@ -251,9 +251,9 @@ class dbtestadmin extends dbtable {
 
         $start = ($start == null) ? 0 : $start;
         $count = ($limit == null) ? 20 : $limit;
-        $type = str_replace("-", "", $type);
+        $type = str_replace("-", "", (string) $type);
         if (strlen(trim($type)) > 0) {
-            $courses = str_replace("-", "", $courses);
+            $courses = str_replace("-", "", (string) $courses);
             $type = ($type == 'mcq') ? "'mcq' OR B.questiontype ='tf'" : $type;
             if (strlen(trim($courses)) > 0) {
                 //get the data based on page in grid

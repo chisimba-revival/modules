@@ -131,7 +131,7 @@ if (!in_array($currentstep, array('1', '2a', '3a'), true)) {
 }
 
 $objForm = new form('exit', $this->uri(array(
-    'action' => 'savestep' , 'currentstep'=>$currentstep+1
+    'action' => 'savestep' , 'currentstep'=>(int) $currentstep + 1
 )));
 
 //we will try to include a switch condition for step menu:

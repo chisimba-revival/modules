@@ -37,6 +37,23 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Jameel Adam
  */
 class functions_assignment extends ChisimbaObject {
+    // State used by the installed rendering and service lifecycle.
+    public $context;
+    public $contextCode;
+    public $dbAssignment;
+    public $dbSubmit;
+    public $essay;
+    public $objCleaner;
+    public $objContext;
+    public $objDate;
+    public $objIcon;
+    public $objLanguage;
+    public $objUser;
+    public $rubric;
+    public $test;
+    public $userId;
+    public $ws;
+
 
     /**
      * Constructors
@@ -57,7 +74,7 @@ class functions_assignment extends ChisimbaObject {
         $objIcon = $this->getObject('geticon', 'htmlelements');
         $objFileIcon = $this->getObject('fileicons', 'files');
         $this->objIcon = $this->newObject('geticon', 'htmlelements');
-        $objPopup = &$this->loadClass('windowpop', 'htmlelements');
+        $objPopup = $this->loadClass('windowpop', 'htmlelements');
         if ($this->objContext->isInContext()) {
             $this->contextCode = $this->objContext->getContextCode();
             $this->context = $this->objContext->getTitle();

@@ -48,6 +48,8 @@ if (!
  *
  */
 class dbassignmentuploadablefiletypes extends dbtable {
+    public $objUser;
+
     /**
      * Initialisation.
      * @access public

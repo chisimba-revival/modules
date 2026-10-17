@@ -2285,44 +2285,5 @@ if (class_exists('groupops', false)) {
     ) , 'winclassic-tab-style-sheet');
 }
 echo $tabBox->show();
-if ($this->getParam('message') == 'uploadsuccessful') {
-    //$uploadstatus = $this->getParam('status');
-    $alertBox = $this->getObject('alertbox', 'htmlelements');
-    $alertBox->putJs();
-    echo "<script type='text/javascript'>
- var browser=navigator.appName;
- var b_version=parseFloat(b_version);
- if(browser=='Microsoft Internet Explorer'){
-	alert('" . $this->objLanguage->languageText('mod_eportfolio_congratulations', 'eportfolio') . '! ' . $this->objLanguage->languageText('mod_eportfolio_successMessage', 'eportfolio') . "');
- }else{
-	 jQuery.facebox(function() {
-	  jQuery.get('" . str_replace('&amp;', '&', $this->uri(array(
-        'action' => 'uploaddonemessage'
-    ))) . "', function(data) {
-	    jQuery.facebox(data);
-	  })
-	 })
- }
-</script>";
-}
-if ($this->getParam('message') == 'sorryemptypdf') {
-    //$uploadstatus = $this->getParam('status');
-    $alertBox = $this->getObject('alertbox', 'htmlelements');
-    $alertBox->putJs();
-    echo "<script type='text/javascript'>
- var browser=navigator.appName;
- var b_version=parseFloat(b_version);
- if(browser=='Microsoft Internet Explorer'){
-	alert('" . $this->objLanguage->languageText('mod_eportfolio_wordNotice', 'eportfolio') . '! ' . $this->objLanguage->languageText('phrase_eportfolio_emptypdfmessage', 'eportfolio') . "');
- }else{
-	 jQuery.facebox(function() {
-	  jQuery.get('" . str_replace('&amp;', '&', $this->uri(array(
-        'action' => 'emptypdfmessage'
-    ))) . "', function(data) {
-	    jQuery.facebox(data);
-	  })
-	 })
- }
-</script>";
-}
+include __DIR__ . '/import_notice.php';
 ?>

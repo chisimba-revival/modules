@@ -54,6 +54,24 @@ if (!
  *
  */
 class assignment extends controller {
+    // State used by the installed rendering and service lifecycle.
+    public $context;
+    public $courseLauncher;
+    public $eventsEnabled;
+    public $objActivityStreamer;
+    public $objAssignment;
+    public $objAssignmentCoursePolicy;
+    public $objAssignmentFunctions;
+    public $objAssignmentGroups;
+    public $objAssignmentLearningOutcomes;
+    public $objAssignmentSubmit;
+    public $objAssignmentUploadablefiletypes;
+    public $objContextGroups;
+    public $objDate;
+    public $objIcon;
+    public $objLink;
+    public $objModuleCatalogue;
+
 
     /**
      *

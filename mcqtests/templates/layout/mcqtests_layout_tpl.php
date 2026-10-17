@@ -8,9 +8,9 @@
  * @copyright 2026 Derek Keats
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
  */
-$cssLayout = &$this->newObject('csslayout', 'htmlelements');
-$leftMenu = &$this->getObject('contextsidebar', 'context');
-$objHead = &$this->newObject('htmlheading', 'htmlelements');
+$cssLayout = $this->newObject('csslayout', 'htmlelements');
+$leftMenu = $this->getObject('contextsidebar', 'context');
+$objHead = $this->newObject('htmlheading', 'htmlelements');
 if (!isset($heading)) {
     $heading = $objLanguage->languageText('mod_mcqtests_name', 'mcqtests');
 }

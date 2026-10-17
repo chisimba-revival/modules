@@ -21,6 +21,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version 0.1
  */
 class mcqtests extends controller {
+    // State used by the installed rendering and service lifecycle.
+    public $objActivityStreamer;
+    public $objStepMenu;
+
     /** Dependencies and state initialised by this component. */
     public $contextCode;
     public $contextUsers;
@@ -2671,7 +2675,7 @@ class mcqtests extends controller {
         $questions = $this->dbQuestions->getQuestions($this->getParam('id'));
         $this->setVarByRef('data', $data[0]);
         $this->setVarByRef('questions', $questions);
-        $this->setVarByRef('qNum', $this->getParam('qNum'));
+        $this->setVar('qNum', $this->getParam('qNum'));
         return 'viewtest_tpl.php';
     }
 
@@ -2698,7 +2702,7 @@ class mcqtests extends controller {
         $questions = $this->dbQuestions->getQuestions($this->getParam('id'));
         $this->setVarByRef('data', $data[0]);
         $this->setVarByRef('questions', $questions);
-        $this->setVarByRef('qNum', $this->getParam('qNum'));
+        $this->setVar('qNum', $this->getParam('qNum'));
         $this->setVarByRef('test', $this->getParam('test'));
         return 'viewtest2_tpl.php';
     }
