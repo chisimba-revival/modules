@@ -24,11 +24,13 @@ The web form retains submitted text on validation/CSRF/service errors and warns
 before leaving with unsent text. It is not a durable offline draft store: keep a
 copy before signing out or allowing the session to expire.
 
-This slice has no messaging REST routes, mobile history/outbox,
-push notifications, direct messages, moderation UI or image attachments. Ban
-checks are implemented, but ban administration is not yet exposed. Next work is
-the existing REST API/mobile integration, then sightings with shared client image
-preparation and independently validated, protected server storage.
+The existing REST API 1.004 now exposes messaging contexts, bounded history,
+text send receipts and read positions, all through this shared service. The
+mobile app has an account/server/context-isolated draft and send queue and uses
+the home screen's scope. No independent authentication layer was added.
+Push notifications, direct messages, moderation UI and image attachments remain
+future work. Ban checks are implemented, but administration is not exposed yet.
+
 
 ## Installation and legacy preservation
 
@@ -82,4 +84,4 @@ chisimba-reborn skin update in the runtime framework checkout.
 Progressive chat behaviour checks: `node --test tests/chat_client_test.cjs`
 (lost reply, confirmed send and changed scope). Polling is suspended in hidden
 tabs and when viewing earlier history. It currently retrieves a bounded HTML
-page; an incremental REST history endpoint is still future work.
+page; the mobile REST history endpoint retrieves the latest 50 messages.
