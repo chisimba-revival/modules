@@ -77,6 +77,10 @@ class publishingservice extends ChisimbaObject
             $classification=$this->classification();
             $names=array_values(array_filter(array_map('trim',explode(',',$tags)),static fn($tag)=>$tag!==''));
             $classification->tag('simpleblog',$saved,$names);
+        }
+        // Plain-text API callers use the same atomic category assignment as the editor.
+        if (isset($input['blocks']) || array_key_exists('categories',$input)) {
+            $classification=$this->classification();
             $categories=$input['categories']??[];
             if (!is_array($categories)) throw new DomainException('invalid');
             $classification->assign('simpleblog',$saved,'category',$categories);
