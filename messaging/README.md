@@ -1,7 +1,7 @@
 # Context conversations
 
-Version 2.000 is the first local web implementation, tested on 18 October 2026.
-Open `index.php?module=messaging`, choose a context, and select Open. Current
+Version 2.001 is the first local web implementation, tested on 18 October 2026.
+Open `index.php?module=messaging` within your current Chisimba scope. There is no separate context selector; URL parameters cannot override the active scope. Stale forms are rejected if the scope changed while they were open, preserving unsent text. Current
 context staff and administrators can start its discussion; current members can
 read and send plain text. Refresh retrieves replies. Earlier messages retrieves
 older history; marking displayed messages read does not acknowledge newer,
@@ -74,3 +74,7 @@ repeat registration; PHP syntax and announcement regression checks. Browser
 checks covered desktop and 390px layout, compact/full Help and Escape focus
 return. The narrow canvas still has a small existing outer horizontal overflow;
 the conversation controls fit and wrap within their card.
+
+The shared skin now provides chat bubbles, own-message alignment, a bounded
+scrolling transcript and a composer beneath it. This requires the coordinated
+chisimba-reborn skin update in the runtime framework checkout.

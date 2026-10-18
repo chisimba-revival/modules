@@ -9,11 +9,6 @@ class conversationpolicy extends ChisimbaObject
         $this->contexts=$this->getObject('dbcontext','context');
         $this->members=$this->getObject('usercontext','context');
     }
-    public function choices() {
-        if(!$this->user->isLoggedIn())return [];
-        $rows=$this->user->isAdmin()?$this->contexts->getAll():array_map(fn($code)=>$this->contexts->getContextDetails($code),$this->members->getUserContext($this->actor()));
-        return array_values(array_filter($rows,fn($row)=>is_array($row)&&$this->mayRead($row['contextcode'])));
-    }
     public function actor() { return (string)$this->user->userId(); }
     public function mayRead($context) {
         return $this->user->isLoggedIn() && is_string($context) && $context!=='' && strlen($context)<=32

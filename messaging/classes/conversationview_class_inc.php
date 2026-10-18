@@ -8,7 +8,7 @@ class conversationview extends ChisimbaObject
     public function entryLink() {
         if(!$this->getObject('user','security')->isLoggedIn())return '';
         $context=$this->getObject('dbcontext','context')->getContextCode();
-        $url=$this->uri(['action'=>'view','context'=>$context],'messaging');
+        $url=$this->uri(['action'=>'view'],'messaging');
         return '<a class="button" href="'.htmlspecialchars($url,ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('message-circle',['decorative'=>true]).'<span>'.htmlspecialchars($this->text('title'),ENT_QUOTES,'UTF-8').'</span></a>';
     }
     public function announcements($context,$site=false) {

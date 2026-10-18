@@ -1,5 +1,7 @@
 /** Protect unsent web text and prevent repeated clicks; server receipts remain authoritative. */
 (() => {
+  const history = document.querySelector('.chisimba-chat');
+  if (history) history.scrollTop = history.scrollHeight;
   const form = document.querySelector('[data-conversation-compose]');
   if (!form) return;
   const input = form.querySelector('textarea');

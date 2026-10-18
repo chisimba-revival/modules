@@ -11,7 +11,7 @@ class messaging extends controller
     }
     public function requiresLogin($action) {return true;}
     public function dispatch($action) {
-        $action=(string)$action;$context=$this->getParam('context',$this->getObject('dbcontext','context')->getContextCode());
+        $action=(string)$action;$context=$this->getObject('dbcontext','context')->getContextCode();
         $context=is_string($context)?$context:'';$tab=$this->getParam('tab','discussion');
         $error='';$body=$this->getParam('body','');$key=$this->getParam('submission_id',bin2hex(random_bytes(16)));
         $body=is_string($body)?$body:'';$key=is_string($key)?$key:'';
@@ -20,6 +20,7 @@ class messaging extends controller
             if(in_array($action,['create','send','read'],true)) {
                 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){http_response_code(405);throw new DomainException('method');}
                 if(!$this->csrf->consume(self::TOKEN,(is_string($this->getParam('csrf_token',''))?$this->getParam('csrf_token',''):''))){http_response_code(403);throw new DomainException('csrf');}
+                if($this->getParam('conversation_context')!==$context)throw new DomainException('scope_changed');
                 if($action==='create')$this->service->create($context);
                 else {
                     $channel=$this->service->forContext($context);
@@ -27,11 +28,12 @@ class messaging extends controller
                     if($action==='send')$this->service->send($channel['id'],$key,$body);
                     else $this->service->markRead($channel['id'],filter_var($this->getParam('sequence'),FILTER_VALIDATE_INT)===false?-1:(int)$this->getParam('sequence'));
                 }
-                return $this->nextAction('view',['context'=>$context,'tab'=>'discussion']);
+                return $this->nextAction('view',['tab'=>'discussion']);
             }
         }catch(DomainException $e){$error=$e->getMessage();if($error==='unavailable')http_response_code(404);elseif(!in_array($error,['method','csrf'],true))http_response_code(400);}
         catch(Throwable $e){$error='failed';http_response_code(503);error_log('Messaging operation failed; submitted text was retained.');}
-        $data=null;$channel=null;$announcements=[];$allowed=$this->policy->mayRead($context);
+        $data=null;$channel=null;$announcements=[];$allowed=$error!=='scope_changed'&&$this->policy->mayRead($context);
+        $contextTitle=$allowed?(string)($this->getObject('dbcontext','context')->getContextDetails($context)['title']??''):'';
         try {
             if($tab==='site')$announcements=$this->getObject('conversationview')->announcements($context,true);
             elseif($allowed) {
@@ -40,7 +42,7 @@ class messaging extends controller
             }
         }catch(DomainException $e){$error=$e->getMessage();$allowed=false;http_response_code(404);}
         catch(Throwable $e){$error='failed';$allowed=false;http_response_code(503);error_log('Messaging view failed.');}
-        $this->setVar('conversation',compact('context','tab','error','body','key','data','channel','announcements','allowed'));
+        $this->setVar('conversation',compact('context','tab','error','body','key','data','channel','announcements','allowed','contextTitle'));
         $this->setVar('conversationToken',$this->csrf->issue(self::TOKEN));
         return 'conversation_tpl.php';
     }
