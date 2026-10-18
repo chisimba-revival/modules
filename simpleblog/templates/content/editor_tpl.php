@@ -5,7 +5,7 @@ $input=$this->getVar('blogInput') ?: array('featured_image'=>$post['featured_ima
 ?>
 <section class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide"><h1><?php echo $e($r->text($post?'edit':'new')); ?></h1>
 <aside class="chisimba-guidance-card"><p><?php echo $e($r->identity($type,$scope)); ?></p><p><?php echo $e($r->text('author')).': '.$e($this->getObject('user','security')->fullname($post['userid']??$this->getObject('user','security')->userId())); ?></p></aside>
-<?php echo $this->getObject('contextualhelp','help')->show('simpleblog','publishing'); ?>
+<div class="chisimba-form-actions"><?php echo $this->getObject('contextualhelp','help')->show('simpleblog','publishing'); if($post) echo $r->button('delete','trash-2',array('action'=>'confirmdelete','id'=>$post['id'])); ?></div>
 <?php if($this->getVar('blogInput'))echo '<p role="status">'.$e($r->text('unsaved_composition')).'</p>'; ?>
 <?php if($this->getVar('blogError')): ?><p role="alert" data-composition-error><?php echo $e($r->text($this->getVar('blogError'))); ?></p><?php endif; ?>
 <form method="post" class="chisimba-form chisimba-composition-form" data-composition-ajax data-composition-failure="<?php echo $e($r->text('block_update_failed')); ?>" data-composition-pending="<?php echo $e($r->text('block_updating')); ?>" data-composition-updated="<?php echo $e($r->text('unsaved_composition')); ?>" action="<?php echo $e($this->uri(array('action'=>'save'),'simpleblog')); ?>">

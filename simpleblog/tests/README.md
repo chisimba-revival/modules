@@ -8,7 +8,7 @@ Canonical policy permits admins and site Lecturers (the underlying author role) 
 
 Mutations require login, POST and native CSRF. Save validates persisted ownership, explicit immutable scope and status. Rich text passes through the shared utilities richtextsanitizer for both save and read, including legacy content. It preserves basic formatting, safe links and images/alt text; executable markup, arbitrary styles and embedded frames are excluded. Native editor implementation remains behind htmlelements/htmlarea, including file/media integration. No vendor editor is bundled in SimpleBlog.
 
-Save uses an InnoDB row lock and content-version check; stale editors retain their submitted text and must merge with the current saved post. Post dates and original authors are not reassigned by editors. An explicit confirmation disclosure precedes deletion. Unrecognised/legacy mutation actions are unavailable; legacy direct view links with id remain usable.
+Save uses an InnoDB row lock and content-version check; stale editors retain their submitted text and must merge with the current saved post. Post dates and original authors are not reassigned by editors. Visible Delete buttons accompany Edit on authorised listing cards, the editor and article preview. A read-only confirmation page names the post and offers Cancel before the existing protected POST deletion. Unrecognised/legacy mutation actions are unavailable; legacy direct view links with id remain usable.
 
 ## Upgrade
 
@@ -42,3 +42,14 @@ Classification supplies scoped categories and suggested tags. The same registere
 Install classification before SimpleBlog, run core_modules/classification/scripts/configure-service.php, then simpleblog/scripts/configure-permissions.php. For legacy data run simpleblog/scripts/upgrade-composition.php after the normal catalogue upgrade. It is idempotent, retains original content and migrates legacy tags. New tables and columns use normal registered definitions; unique classification identities are completed explicitly by configure-service.php.
 
 Public media roots remain future work; existing file permissions still apply. Clean Slate is not yet converted. Help documents the current authoring workflow. Production release checks and source identities are recorded in the deployment directory.
+
+
+## Deletion visibility — 18 October 2026
+
+Version 0.077 exposes the existing deletion service through visible icon buttons
+and an authorised confirmation page. Register/update the module normally for
+its additional Cancel and deletion Help text. There are no schema changes.
+Local installed checks cover list/editor/preview links, named confirmation,
+cancellation link, GET refusal, invalid CSRF, permission revocation between
+confirmation and submission, anonymous draft privacy, and successful deletion
+of only a disposable private post. Existing policy/service tests also pass.

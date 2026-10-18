@@ -92,6 +92,11 @@ class simpleblog extends controller
             header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: private, no-store');
             echo json_encode(array_slice($suggestions,0,15));exit;
         }
+        if ($action==='confirmdelete') {
+            if (!$post || !$this->policy->canEdit($post)) return $this->unavailable();
+            $this->setVar('blogToken',$this->csrf->issue('simpleblog_publish'));
+            return 'confirmdelete_tpl.php';
+        }
         if ($action==='edit') return $this->editor($post,$type,$scope);
         if ($action==='preview' || $id!=='') {
             if (!in_array($action,array('preview','view','ajaxById'),true)) return $this->unavailable();

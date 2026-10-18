@@ -64,8 +64,10 @@ class publishingrenderer extends ChisimbaObject
             $html.='<div class="chisimba-publication-card__body"><h2 class="chisimba-publication-card__title"><a href="'.self::escape($link).'">'.self::escape($post['post_title']).'</a></h2>';
             $html.=$this->metadata($post);
             $html.='<p>'.self::escape(self::excerpt($post)).'</p>';
-            if ($manage) $html.='<p>'.self::escape($this->text($post['post_status']==='posted'?'published':'draft')).'</p>'.$this->button('edit','pencil',array('action'=>'edit','id'=>$post['id']));
-            if(!$manage)$html.='<div class="chisimba-publication-card__actions chisimba-form-actions">'.$this->button('read_post','arrow-right',array('action'=>'view','id'=>$post['id'])).'</div>';
+            if ($manage) $html.='<p>'.self::escape($this->text($post['post_status']==='posted'?'published':'draft')).'</p>';
+            $actions=$manage?'':$this->button('read_post','arrow-right',array('action'=>'view','id'=>$post['id']));
+            if ($policy->canEdit($post)) $actions.=$this->button('edit','pencil',array('action'=>'edit','id'=>$post['id'])).$this->button('delete','trash-2',array('action'=>'confirmdelete','id'=>$post['id']));
+            $html.='<div class="chisimba-publication-card__actions chisimba-form-actions">'.$actions.'</div>';
             $html.='</div></article>';
         }
         if ($html==='') $html='<p>'.self::escape($this->text('empty')).'</p>';
