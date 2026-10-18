@@ -1,9 +1,9 @@
 # Context conversations
 
-Version 2.001 is the first local web implementation, tested on 18 October 2026.
+Version 2.002 is the first local web implementation, tested on 18 October 2026.
 Open `index.php?module=messaging` within your current Chisimba scope. There is no separate context selector; URL parameters cannot override the active scope. Stale forms are rejected if the scope changed while they were open, preserving unsent text. Current
 context staff and administrators can start its discussion; current members can
-read and send plain text. Refresh retrieves replies. Earlier messages retrieves
+read and send plain text. While the page is visible, updates are checked every five seconds without replacing the composer. Sending confirms in place; a lost response retains both the text and the same retry key. Without JavaScript, the normal form and Refresh link still work. Earlier messages retrieves
 older history; marking displayed messages read does not acknowledge newer,
 unseen messages. Contextual Help explains these steps.
 
@@ -24,7 +24,7 @@ The web form retains submitted text on validation/CSRF/service errors and warns
 before leaving with unsent text. It is not a durable offline draft store: keep a
 copy before signing out or allowing the session to expire.
 
-This slice has no messaging REST routes, mobile history/outbox, automatic polling,
+This slice has no messaging REST routes, mobile history/outbox,
 push notifications, direct messages, moderation UI or image attachments. Ban
 checks are implemented, but ban administration is not yet exposed. Next work is
 the existing REST API/mobile integration, then sightings with shared client image
@@ -78,3 +78,8 @@ the conversation controls fit and wrap within their card.
 The shared skin now provides chat bubbles, own-message alignment, a bounded
 scrolling transcript and a composer beneath it. This requires the coordinated
 chisimba-reborn skin update in the runtime framework checkout.
+
+Progressive chat behaviour checks: `node --test tests/chat_client_test.cjs`
+(lost reply, confirmed send and changed scope). Polling is suspended in hidden
+tabs and when viewing earlier history. It currently retrieves a bounded HTML
+page; an incremental REST history endpoint is still future work.

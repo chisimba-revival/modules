@@ -25,7 +25,7 @@ $hidden=function($name,$value)use($e){echo '<input type="hidden" name="'.$e($nam
 
 <?php endif;else: ?>
 
-<p><?php echo $e($t('unread')).': '.(int)$data['unread']; ?></p>
+<p data-chat-unread><?php echo $e($t('unread')).': '.(int)$data['unread']; ?></p>
 <div class="chisimba-form-actions">
 <a class="button" href="<?php echo $e($url()); ?>"><?php echo $icon->render('refresh-cw',['decorative'=>true]).'<span>'.$e($t('refresh')).'</span>'; ?></a>
 <?php if($data['older']): ?><a class="button" href="<?php echo $e($url(['before'=>$data['older']])); ?>"><?php echo $icon->render('arrow-left',['decorative'=>true]).'<span>'.$e($t('older')).'</span>'; ?></a><?php endif; ?>
@@ -38,6 +38,7 @@ $hidden=function($name,$value)use($e){echo '<input type="hidden" name="'.$e($nam
 <form method="post" action="<?php echo $e($url(['action'=>'read'])); ?>"><?php $hidden('csrf_token',$conversationToken);$hidden('conversation_context',$context);$hidden('channel',$channel['id']);$hidden('sequence',$last['sequence_no']); ?><button class="button" type="submit"><?php echo $icon->render('check',['decorative'=>true]).'<span>'.$e($t('read')).'</span>'; ?></button></form>
 <?php endif; ?>
 
+<p data-chat-status role="status" aria-live="polite" <?php foreach(['connected','offline','sending','sent','retry']as$status): ?>data-<?php echo $status; ?>="<?php echo $e($t('chat_'.$status)); ?>" <?php endforeach; ?>></p>
 <form data-conversation-compose method="post" action="<?php echo $e($url(['action'=>'send'])); ?>">
 <?php $hidden('csrf_token',$conversationToken);$hidden('conversation_context',$context);$hidden('channel',$channel['id']);$hidden('submission_id',$key); ?>
 <div class="chisimba-form-field"><label for="conversation-body"><?php echo $e($t('message')); ?></label><textarea id="conversation-body" name="body" rows="3" maxlength="20000" required aria-describedby="conversation-send-help"><?php echo $e($body); ?></textarea></div>
