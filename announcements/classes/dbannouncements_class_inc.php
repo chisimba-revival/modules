@@ -374,12 +374,14 @@ class dbAnnouncements extends dbTable {
     }
 
     /** Return active site and context announcements visible to this user. */
-    public function getVisibleAnnouncements(array $contexts,array $audiences,$limit,$offset) {
+    public function getVisibleAnnouncements(array $contexts,array $audiences,$limit,$offset,$onlyScope=null) {
         if(!$audiences)return [];
         $scope=["a.contextid='site'"];foreach($contexts as $context)$scope[]='ac.contextid=?';
+        if(!in_array($onlyScope,[null,'site','context'],true))throw new InvalidArgumentException('Invalid announcement scope');
+        $scopeFilter=$onlyScope===null?'':($onlyScope==='site'?" AND a.contextid='site'":" AND a.contextid='context'");
         $params=array_merge(array_values($contexts),array_values($audiences),[$this->now(),$this->now()]);
         $limit=max(1,min(100,(int)$limit));$offset=max(0,(int)$offset);
-        return $this->selectPrepared('SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid=a.id WHERE ('.implode(' OR ',$scope).') AND a.audience IN ('.implode(',',array_fill(0,count($audiences),'?')).') AND (a.publish_at IS NULL OR a.publish_at<=?) AND (a.expires_at IS NULL OR a.expires_at>?) ORDER BY COALESCE(a.publish_at,a.createdon) DESC LIMIT '.$offset.','.$limit,$params);
+        return $this->selectPrepared('SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid=a.id WHERE ('.implode(' OR ',$scope).')'.$scopeFilter.' AND a.audience IN ('.implode(',',array_fill(0,count($audiences),'?')).') AND (a.publish_at IS NULL OR a.publish_at<=?) AND (a.expires_at IS NULL OR a.expires_at>?) ORDER BY COALESCE(a.publish_at,a.createdon) DESC LIMIT '.$offset.','.$limit,$params);
     }
 
     /**

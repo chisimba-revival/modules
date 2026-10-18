@@ -1,0 +1,76 @@
+# Context conversations
+
+Version 2.000 is the first local web implementation, tested on 18 October 2026.
+Open `index.php?module=messaging`, choose a context, and select Open. Current
+context staff and administrators can start its discussion; current members can
+read and send plain text. Refresh retrieves replies. Earlier messages retrieves
+older history; marking displayed messages read does not acknowledge newer,
+unseen messages. Contextual Help explains these steps.
+
+Administrator and context announcements are read-only views of the existing
+Announcements module. Publishing remains in that module and follows its existing
+audience and permission rules. The optional scope filter requires announcements
+0.414; older callers retain the default combined view.
+
+## Boundaries
+
+The shared `conversationpolicy`, `conversationservice` and dbTable-backed
+`conversationstore` are the intended boundary for both web and later REST callers.
+Reads, writes and duplicate receipts recheck current membership and bans. Writes
+use POST/CSRF. Per-channel transactions serialize message ordering; unique
+(channel, sender, submission) keys make identical retries return the same receipt.
+A changed payload with the same key conflicts. Read positions only move forward.
+The web form retains submitted text on validation/CSRF/service errors and warns
+before leaving with unsent text. It is not a durable offline draft store: keep a
+copy before signing out or allowing the session to expire.
+
+This slice has no messaging REST routes, mobile history/outbox, automatic polling,
+push notifications, direct messages, moderation UI or image attachments. Ban
+checks are implemented, but ban administration is not yet exposed. Next work is
+the existing REST API/mobile integration, then sightings with shared client image
+preparation and independently validated, protected server storage.
+
+## Installation and legacy preservation
+
+Install/update messaging and announcements through Module Catalogue. The four
+registered `tbl_messaging_*_v2` tables require InnoDB. No schema is created during
+ordinary requests. Fresh installation and repeat registration were tested locally.
+Inventory old rooms/messages before any future deployment or migration. Legacy
+history has not been mapped into the new discussion tables and is not displayed.
+No legacy database tables are removed by this change.
+
+Original executable chat code is preserved as non-executable text under
+`docs/legacy-v1/`; the old default-data seed is `docs/legacy-defaultdata.xml`.
+Prototype/frame chat routes are closed. Old blocks now link to conversations.
+The tiny `chatdisplay` adapter supports the toolbar's `imParams`/`divShowIM`
+callers; remove it after toolbar and buddies callers move to the conversation
+entry link. It does not restore the old private-chat behaviour. The separate
+paused Jabber `im` module is untouched.
+
+## Local checks
+
+`tests/policy_test.php` is a standalone PHP policy test. `tests/local_fixture.php`
+and `tests/local_http.py` are explicitly for the existing disposable local Docker
+runtime (`chisimba-php85-web`, `https://chisimba.test:8445/ch`). They must never
+be pointed at production. Install the two modules first. Prepare the disposable
+REST test identity using `dev-environment/tests/restapi-local/prepare.php` in the
+container, which writes a private `/tmp/restapi-local-fixture.json`; do not print
+or commit that file. The current REST API and native authentication are required.
+
+Run `local_fixture.php prepare`, then `service`, `rollback`, `announcements`,
+with `MESSAGING_LOCAL_TEST=1`, as www-data inside the container. Run
+`python3 messaging/tests/local_http.py` from this repository on the host.
+The service fixture expects a fresh channel: do not run it twice without cleanup.
+Always run `local_fixture.php cleanup`, deactivate the disposable identity using
+the existing REST fixture permissions helper, then run its cleanup helper,
+including after failures. The HTTP helper restores membership after its negative
+check. None of these helpers send notifications or contact real recipients.
+
+Verified locally: membership/staff/admin boundaries; revoked and banned access;
+CSRF and HTTP method enforcement; escaped text; concurrent duplicate receipts;
+changed-payload conflict; history pagination; monotonic reads; transaction
+rollback; announcement scope/audience/date filtering; normal installation and
+repeat registration; PHP syntax and announcement regression checks. Browser
+checks covered desktop and 390px layout, compact/full Help and Escape focus
+return. The narrow canvas still has a small existing outer horizontal overflow;
+the conversation controls fit and wrap within their card.
