@@ -140,3 +140,30 @@ Version 2.005 places the accessible Reply arrow beside the timestamp, using the
 shared time-and-date service and site timezone. Dates use the registered language
 format. The `presentation` local fixture checks date handling and duplicate course
 plugin rows (requires the coordinated framework context lookup fix).
+
+## Announcement chats — 19 October 2026
+
+Messaging 2.006 uses the same scrolling bubbles, polling and plain-text composer
+for announcement channels. Context staff may send context announcements; site
+administrators may send site announcements. Readers have no composer or Reply.
+Existing announcements retain their title as the first line of the message.
+New messages require no title: the announcements module derives an internal title
+for compatibility with its management screens. No email or external notification
+is sent by this path. Announcement delivery/read ticks are not yet collected.
+
+Announcements 0.415 owns `announcementchat` and its registered receipt table.
+It writes the existing announcement and context tables in a checked transaction,
+under a shared database lock. Idempotency includes actor, channel and submission
+ID; changed retries conflict, and revoked publishers cannot replay old receipts.
+All three tables must be InnoDB. Legacy announcement timestamps came from PHP
+local `dbTable::now()`; the chat adapter normalises these without rewriting them.
+New announcement messages use UTC storage and the site's display timezone.
+
+REST 1.007 adds GET/POST `messaging/announcements`, sharing the same service.
+GET applies the website's audience rules, including roles in the requested context,
+returns the latest 50 messages and `can_send`; POST accepts scope (`context` or
+`site`), context, submission_id and body. Existing discussion endpoints are unchanged.
+Run `local_fixture.php announcement-send` before `mobile_api.py`; checks cover
+repeat sends, conflict, parent rollback, role restrictions and revoked access.
+The compact Help and status text decode language entities once before the view
+escapes them, so apostrophes and ellipses do not appear as entity names.

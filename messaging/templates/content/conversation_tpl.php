@@ -42,10 +42,19 @@ $hidden=function($name,$value)use($e){echo '<input type="hidden" name="'.$e($nam
 <button class="button" type="submit"><?php echo $icon->render('send',['decorative'=>true]).'<span>'.$e($t('send')).'</span>'; ?></button>
 </form>
 <?php endif;else: ?>
-<h2><?php echo $e($t($tab)); ?></h2><p><?php echo $e($t('oneway')); ?></p>
+<h2><?php echo $e($t($tab)); ?></h2>
+<button type="button" class="button" data-chat-new hidden><?php echo $e($t('new_messages')); ?></button>
+<div class="chisimba-chat" tabindex="0" aria-label="<?php echo $e($t($tab)); ?>">
 <?php if(!$announcements): ?><p><?php echo $e($t('no_announcements')); ?></p><?php endif; ?>
-<?php foreach($announcements as $item): ?><article class="chisimba-flow"><h3><?php echo $e($item['title']); ?></h3><p><?php echo nl2br($e(html_entity_decode(strip_tags($item['message']),ENT_QUOTES,'UTF-8')),false); ?></p></article><?php endforeach; ?>
-<a class="button" href="<?php echo $e($this->uri([],'announcements')); ?>"><?php echo $icon->render('megaphone',['decorative'=>true]).'<span>'.$e($t('manage_announcements')).'</span>'; ?></a>
+<?php foreach($announcements as $item): ?><article data-message-id="<?php echo $e($item['id']); ?>" class="chisimba-chat__message<?php if($item['sender_id']===$this->getObject('conversationpolicy')->actor())echo ' chisimba-chat__message--own'; ?>"><header class="chisimba-chat__meta"><strong><?php echo $e($item['sender_name']); ?></strong><time><?php echo $e($v->timestamp($item['created_at'])); ?></time></header><p><?php echo nl2br($e($item['body']),false); ?></p></article><?php endforeach; ?>
+</div>
+<?php if(!$canAnnounce): ?><p><?php echo $e($t('oneway')); ?></p><?php endif; ?>
+<p data-chat-status role="status" aria-live="polite" <?php foreach(['connected','offline','sending','sent','retry']as$status): ?>data-<?php echo $status; ?>="<?php echo $e($t('chat_'.$status)); ?>" <?php endforeach; ?>></p>
+<form data-conversation-compose data-history-url="<?php echo $e($url(['tab'=>$tab])); ?>" method="post" action="<?php echo $e($url(['action'=>'announce','tab'=>$tab])); ?>" <?php if(!$canAnnounce)echo 'hidden'; ?>>
+<?php $hidden('csrf_token',$conversationToken);$hidden('conversation_context',$context);$hidden('channel','announcements:'.($tab==='site'?'site':$context));$hidden('submission_id',$key); ?>
+<div class="chisimba-form-field chisimba-form-field--brief"><label for="conversation-body"><?php echo $e($t('message')); ?></label><textarea id="conversation-body" name="body" rows="2" maxlength="20000" required><?php echo $e($body); ?></textarea></div>
+<button class="button" type="submit"><?php echo $icon->render('send',['decorative'=>true]).'<span>'.$e($t('send')).'</span>'; ?></button>
+</form>
 <?php endif; ?>
 </section>
 

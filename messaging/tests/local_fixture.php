@@ -23,6 +23,19 @@ if($op==='prepare') {
  $store->executePrepared('INSERT INTO tbl_messaging_bans_v2 (id,channel_id,user_id) VALUES (?,?,?)',[bin2hex(random_bytes(16)),$id,$f['userId']]);
  foreach(['history','send']as$method){try{if($method==='history')$service->history($id);else $service->send($id,$key,'First <script>plain text</script>');throw new RuntimeException('Ban ignored');}catch(DomainException $x){check($x->getMessage()==='unavailable','ban blocks '.$method.' including receipt');}}
  $store->executePrepared('DELETE FROM tbl_messaging_bans_v2 WHERE channel_id=? AND user_id=?',[$id,$f['userId']]);
+}elseif($op==='announcement-send') {
+ $chat=$e->getObject('announcementchat','announcements');$key=str_repeat('8',32);
+ foreach(['tbl_announcements','tbl_announcements_context','tbl_announcements_chat_receipts']as$table){$engine=$store->selectPrepared('SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table]);check(strtolower($engine[0]['engine'])==='innodb','announcement transaction engine');}
+ $a=$chat->send($f['conversationContext'],false,$key,'A message <script>literal</script>');
+ $b=$chat->send($f['conversationContext'],false,$key,'A message <script>literal</script>');check($a['id']===$b['id'],'announcement retry uses same receipt');
+ $f['announcementIds'][]=$a['id'];file_put_contents('/tmp/restapi-local-fixture.json',json_encode($f));
+ try{$chat->send($f['conversationContext'],false,$key,'Changed');throw new RuntimeException('Conflict accepted');}catch(DomainException $x){check($x->getMessage()==='conflict','changed announcement retry rejected');}
+ try{$chat->send('',true,$key,'Site');throw new RuntimeException('Site permission bypass');}catch(DomainException $x){check($x->getMessage()==='unavailable','course author cannot publish site announcements');}
+ $before=count($store->selectPrepared('SELECT id FROM tbl_announcements_chat_receipts',[]));
+ try{$store->transactionWithSavepoint(function()use($chat,$f){$chat->send($f['conversationContext'],false,str_repeat('6',32),'Rollback announcement');throw new RuntimeException('injected');});}catch(RuntimeException $x){if($x->getMessage()!=='injected')throw $x;}
+ check(count($store->selectPrepared('SELECT id FROM tbl_announcements_chat_receipts',[]))===$before,'announcement send rolls back with parent transaction');
+ $rows=$chat->messages($e->getObject('conversationview','messaging')->announcements($f['conversationContext']));
+ $match=array_values(array_filter($rows,fn($r)=>$r['id']===$a['id']))[0];check($match['body']==='A message <script>literal</script>'&&$match['submission_id']===$key,'announcement text and own retry receipt preserved');
 }elseif($op==='presentation') {
 $v=$e->getObject('conversationview','messaging');
 check(str_ends_with($v->timestamp('2026-10-18 08:34:00'),'['.$e->getObject('timeanddateservice','timeanddate-service')->siteTimezone().']'),'timestamp uses server timezone');
@@ -72,6 +85,7 @@ try {
  try{$service->markDelivered($id,$seq+100);throw new RuntimeException('Future delivery accepted');}catch(DomainException $x){check($x->getMessage()==='invalid','future delivery rejected');}
  $store->markDelivered($id,'synthetic-other',0);$positions=$store->receiptPositions($id,$actor);check($positions['delivered']===$seq,'delivery cannot regress');
 }elseif($op==='cleanup') {
+ foreach(($f['announcementIds']??[])as$aid){$store->executePrepared('DELETE FROM tbl_announcements_chat_receipts WHERE announcement_id=?',[$aid]);$store->executePrepared('DELETE FROM tbl_announcements_context WHERE announcementid=?',[$aid]);$store->executePrepared('DELETE FROM tbl_announcements WHERE id=?',[$aid]);}
  if(!str_starts_with($f['conversationContext']??'','msgtest'))throw new RuntimeException('Missing fixture scope');
  foreach(['replies','posts','reads','deliveries','bans']as$s)$store->executePrepared('DELETE FROM tbl_messaging_'.$s.'_v2 WHERE channel_id=?',[$f['conversationChannel']]);
  $store->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$f['conversationChannel']]);$contexts->deleteContext($f['conversationContext']);echo "Conversation fixture removed\n";

@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class conversationview extends ChisimbaObject
 {
     public function init() {}
-    public function text($key) {$text=$this->getObject('language','language')->code2Txt('mod_messaging_v2_'.$key,'messaging');return mb_strtoupper(mb_substr($text,0,1)).mb_substr($text,1);}
+    public function text($key) {$text=$this->getObject('language','language')->code2Txt('mod_messaging_v2_'.$key,'messaging');$text=html_entity_decode($text,ENT_QUOTES,'UTF-8');return mb_strtoupper(mb_substr($text,0,1)).mb_substr($text,1);}
     /** Render UTC storage in the configured site timezone, independently of the device. */
     public function timestamp($stored) {
         $clock=$this->getObject('timeanddateservice','timeanddate-service');
@@ -25,8 +25,8 @@ class conversationview extends ChisimbaObject
         if(!$site&&!$this->getObject('conversationpolicy')->mayRead($context))throw new DomainException('unavailable');
         $membership=$this->getObject('usercontext','context');$audiences=['everyone'];
         if($user->isAdmin())$audiences[]='admins';
-        if($membership->getContextWhereLecturer($user->userId()))$audiences[]='authors';
-        if($membership->getContextWhereStudent($user->userId()))$audiences[]='readonlys';
+        if($site?$membership->getContextWhereLecturer($user->userId()):in_array($context,(array)$membership->getContextWhereLecturer($user->userId()),true))$audiences[]='authors';
+        if($site?$membership->getContextWhereStudent($user->userId()):in_array($context,(array)$membership->getContextWhereStudent($user->userId()),true))$audiences[]='readonlys';
         return $this->getObject('dbannouncements','announcements')->getVisibleAnnouncements($site?[]:[$context],$audiences,50,0,$site?'site':'context');
     }
 }

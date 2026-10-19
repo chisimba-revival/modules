@@ -15,6 +15,13 @@ def check(ok,name):assert ok,name;print('PASS',name)
 _,e=req('auth/login',auth=False);e=e['data'];time.sleep(max(1,e['minimum_seconds'])+1)
 code,r=req('auth/login',dict(username=f['username'],password=f['password'],csrf_token=e['csrf_token'],abuse_issued_at=e['issued_at'],abuse_nonce=e['nonce'],abuse_signature=e['signature'],device_id='messaging-api-check'),False);assert code==201;token=r['data']['tokens']['access_token']
 code,r=req('messaging/contexts');check(code==200 and f['conversationContext'] in [c['id'] for c in r['data']['contexts']],'authorised context list')
+code,r=req('messaging/announcements?scope=context&context='+f['conversationContext']);check(code==200 and r['data']['can_send'] and any(a['body']=='A message <script>literal</script>' for a in r['data']['announcements']),'announcement chat reaches mobile API')
+code,r=req('messaging/announcements?scope=context&context=not-authorised');check(code==403,'foreign announcement scope denied')
+code,r=req('messaging/announcements?scope=wrong');check(code==422,'invalid announcement scope rejected')
+announcement=dict(scope='context',context=f['conversationContext'],submission_id='8'*32,body='A message <script>literal</script>')
+code,r=req('messaging/announcements',announcement);check(code==200,'mobile announcement retry confirms existing send')
+code,r=req('messaging/announcements',dict(announcement,body='Changed'));check(code==409,'mobile announcement changed retry rejected')
+code,r=req('messaging/announcements',dict(announcement,scope='site',context=''));check(code==403,'mobile course author cannot send administrator messages')
 p=dict(context=f['conversationContext'],submission_id='d'*32,body='Mobile API synthetic message')
 code,r=req('messaging/messages',p);check(code==200,'mobile send');receipt=r['data']['id']
 code,r=req('messaging/messages',p);check(code==200 and r['data']['id']==receipt,'duplicate retry confirms same message')
@@ -31,5 +38,7 @@ def cli(action):subprocess.check_call(['docker','exec','-u','www-data','-e','MES
 cli('revoke')
 try:
  code,r=req('messaging/history?context='+f['conversationContext']);check(code==403,'revoked bearer cannot read')
+ code,r=req('messaging/announcements?scope=context&context='+f['conversationContext']);check(code==403,'revoked bearer cannot read announcements')
+ code,r=req('messaging/announcements',announcement);check(code==403,'revoked bearer cannot replay announcement receipt')
  code,r=req('messaging/messages',p);check(code==403,'revoked bearer cannot replay receipt')
 finally:cli('restore')
