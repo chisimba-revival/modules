@@ -180,6 +180,24 @@ class dbAnnouncements extends dbTable {
         }
     }
 
+    /** Course removal preserves announcements also assigned to other courses. */
+    public function contextDeletionTables() {
+        return ['tbl_announcements','tbl_announcements_context','tbl_announcements_chat_receipts'];
+    }
+    public function deleteForContext($code) {
+        $documents=[];
+        $rows=$this->selectPrepared('SELECT a.id, a.contextid FROM tbl_announcements a JOIN tbl_announcements_context c ON c.announcementid=a.id WHERE c.contextid=? FOR UPDATE',[$code]);
+        $this->executePrepared('DELETE FROM tbl_announcements_context WHERE contextid=?',[$code]);
+        foreach ($rows as $row) {
+            $documents[]='announcement_entry_'.$code.'_'.$row['id'];
+            if ($row['contextid']!=='context' || $this->selectPrepared('SELECT id FROM tbl_announcements_context WHERE announcementid=?',[$row['id']])) continue;
+            $this->executePrepared('DELETE FROM tbl_announcements_chat_receipts WHERE announcement_id=?',[$row['id']]);
+            $this->executePrepared('DELETE FROM tbl_announcements WHERE id=?',[$row['id']]);
+            $documents[]='announcement_entry_'.$row['id'];
+        }
+        return $documents;
+    }
+
     public function deleteAnnouncement($id) {
         $announcement = $this->getMessage($id);
         if ($announcement == FALSE) {

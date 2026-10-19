@@ -23,6 +23,7 @@ class announcementchat extends dbTable
         $receipt=hash('sha256',json_encode([$actor,$site?'site':'context:'.$context,$key]));
         return $this->withDatabaseLock('ann:'.substr($receipt,0,20),function()use($context,$site,$body,$actor,$receipt,$key){
             return $this->transactionWithSavepoint(function()use($context,$site,$body,$actor,$receipt,$key){
+                if(!$site && !$this->selectPrepared('SELECT contextcode FROM tbl_context WHERE contextcode=? FOR UPDATE',[$context]))throw new DomainException('unavailable');
                 if(!$this->maySend($context,$site))throw new DomainException('unavailable');
                 $old=$this->selectPrepared('SELECT announcement_id,body_hash FROM tbl_announcements_chat_receipts WHERE id=?',[$receipt])[0]??null;
                 if($old){if(!hash_equals($old['body_hash'],hash('sha256',$body)))throw new DomainException('conflict');return ['id'=>$old['announcement_id'],'submission_id'=>$key];}

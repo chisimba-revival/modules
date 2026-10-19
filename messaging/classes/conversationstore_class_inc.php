@@ -4,11 +4,27 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class conversationstore extends dbTable
 {
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorCallback') { parent::init('tbl_messaging_channels_v2',$pearDb,$errorCallback); }
+    /** Tables owned by this participant in atomic course deletion. */
+    public function contextDeletionTables() {
+        return array_map(fn($name)=>'tbl_messaging_'.$name.'_v2', ['channels','posts','replies','reads','deliveries','bans']);
+    }
+    public function deleteForContext($code) {
+        foreach ($this->selectPrepared('SELECT id FROM tbl_messaging_channels_v2 WHERE context_code=? FOR UPDATE',[$code]) as $channel) {
+            foreach (['replies','posts','reads','deliveries','bans'] as $name) {
+                $this->executePrepared('DELETE FROM tbl_messaging_'.$name.'_v2 WHERE channel_id=?',[$channel['id']]);
+            }
+            $this->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$channel['id']]);
+        }
+        return [];
+    }
     public function channel($id) {return $this->selectPrepared('SELECT * FROM tbl_messaging_channels_v2 WHERE id=?',[$id])[0]??null;}
     public function create($context) {
-        $id=substr(hash('sha256','context-discussion:'.$context),0,32);
-        $this->executePrepared('INSERT INTO tbl_messaging_channels_v2 (id,context_code,last_sequence) VALUES (?,?,0) ON DUPLICATE KEY UPDATE id=id',[$id,$context]);
-        return $id;
+        return $this->transactionWithSavepoint(function()use($context){
+            if (!$this->selectPrepared('SELECT contextcode FROM tbl_context WHERE contextcode=? FOR UPDATE',[$context])) throw new DomainException('unavailable');
+            $id=substr(hash('sha256','context-discussion:'.$context),0,32);
+            $this->executePrepared('INSERT INTO tbl_messaging_channels_v2 (id,context_code,last_sequence) VALUES (?,?,0) ON DUPLICATE KEY UPDATE id=id',[$id,$context]);
+            return $id;
+        });
     }
     public function locked($id,callable $operation) {
         return $this->transactionWithSavepoint(function()use($id,$operation){
