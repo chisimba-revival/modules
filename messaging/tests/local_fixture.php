@@ -11,7 +11,7 @@ if($op==='prepare') {
  $f['conversationContext']='msgtest'.bin2hex(random_bytes(5));file_put_contents('/tmp/restapi-local-fixture.json',json_encode($f));
  if(!$contexts->createContext($f['conversationContext'],'Temporary messaging test','Published','Private'))throw new RuntimeException('Context create failed');
  $f['conversationChannel']=$service->create($f['conversationContext']);file_put_contents('/tmp/restapi-local-fixture.json',json_encode($f));
- foreach(['channels','posts','reads','bans']as$s){$table='tbl_messaging_'.$s.'_v2';$row=$store->selectPrepared('SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table]);check(strtolower($row[0]['ENGINE'])==='innodb',$s.' transactional');}
+ foreach(['channels','posts','reads','bans']as$s){$table='tbl_messaging_'.$s.'_v2';$row=$store->selectPrepared('SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table]);check(strtolower($row[0]['engine'])==='innodb',$s.' transactional');}
  echo "Fixture prepared\n";
 }elseif($op==='service') {
  $id=$f['conversationChannel'];$key=str_repeat('a',32);$a=$service->send($id,$key,'First <script>plain text</script>');$b=$service->send($id,$key,'First <script>plain text</script>');check($a['id']===$b['id'],'same submission returns same receipt');
@@ -23,6 +23,15 @@ if($op==='prepare') {
  $store->executePrepared('INSERT INTO tbl_messaging_bans_v2 (id,channel_id,user_id) VALUES (?,?,?)',[bin2hex(random_bytes(16)),$id,$f['userId']]);
  foreach(['history','send']as$method){try{if($method==='history')$service->history($id);else $service->send($id,$key,'First <script>plain text</script>');throw new RuntimeException('Ban ignored');}catch(DomainException $x){check($x->getMessage()==='unavailable','ban blocks '.$method.' including receipt');}}
  $store->executePrepared('DELETE FROM tbl_messaging_bans_v2 WHERE channel_id=? AND user_id=?',[$id,$f['userId']]);
+}elseif($op==='presentation') {
+$v=$e->getObject('conversationview','messaging');
+check(str_ends_with($v->timestamp('2026-10-18 08:34:00'),'['.$e->getObject('timeanddateservice','timeanddate-service')->siteTimezone().']'),'timestamp uses server timezone');
+check($v->timestamp('invalid')==='','invalid timestamp not displayed');
+$plugins=$e->getObject('dbcontextmodules','context');
+try {
+ $plugins->addModule($f['conversationContext'],'messaging');$plugins->addModule($f['conversationContext'],'messaging');
+ check(count(array_filter($plugins->getContextModules($f['conversationContext']),fn($v)=>$v==='messaging'))===1,'duplicate plugins returned once');
+}finally{$plugins->deleteModulesForContext($f['conversationContext']);}
 }elseif($op==='announcements') {
  $ids=[];$ann=$e->getObject('dbannouncements','announcements');
  try {

@@ -135,3 +135,8 @@ adds the Reply control to the server interface; the installed Android UI is unch
 Validated: PHP lint; same-channel/cross-channel and changed-retry checks; canonical
 API quotes; web fallback, escaping and expired-CSRF recovery; eight client tests;
 browser select/cancel/send, retained text, quoted output, Help and 390px overflow.
+
+Version 2.005 places the accessible Reply arrow beside the timestamp, using the
+shared time-and-date service and site timezone. Dates use the registered language
+format. The `presentation` local fixture checks date handling and duplicate course
+plugin rows (requires the coordinated framework context lookup fix).

@@ -5,6 +5,14 @@ class conversationview extends ChisimbaObject
 {
     public function init() {}
     public function text($key) {$text=$this->getObject('language','language')->code2Txt('mod_messaging_v2_'.$key,'messaging');return mb_strtoupper(mb_substr($text,0,1)).mb_substr($text,1);}
+    /** Render UTC storage in the configured site timezone, independently of the device. */
+    public function timestamp($stored) {
+        $clock=$this->getObject('timeanddateservice','timeanddate-service');
+        $local=$clock->inTimezone($stored);
+        if($local===null)return '';
+        $format=$this->getObject('language','language')->languageText('mod_messaging_v2_date_format','messaging');
+        return $local->format($format).' ['.$clock->siteTimezone().']';
+    }
     public function entryLink() {
         if(!$this->getObject('user','security')->isLoggedIn())return '';
         $context=$this->getObject('dbcontext','context')->getContextCode();
