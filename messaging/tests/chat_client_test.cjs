@@ -40,3 +40,9 @@ test('poll follows incoming messages only when already at the bottom',async()=>{
  const f=fixture(async()=>({ok:true,text:async()=>''}));f.history.scrollTop=200;
  await f.poll();assert.equal(f.history.scrollTop,500);assert.equal(f.newer.hidden,true);
 });
+
+test('canonical host aliases cannot move authenticated Ajax to another origin',async()=>{
+ const urls=[];const f=fixture(async url=>{urls.push(url);return {ok:true,text:async()=>''};});
+ await f.handlers.submit({preventDefault(){}});await f.poll();
+ assert.deepEqual(urls,['/send','/chat']);
+});

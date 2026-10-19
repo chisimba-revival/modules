@@ -6,7 +6,7 @@ class messaging extends controller
     private $service; private $policy; private $csrf; private const TOKEN='messaging_conversation_v2';
     public function init() {
         $this->service=$this->getObject('conversationservice');$this->policy=$this->getObject('conversationpolicy');
-        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'?v=2.003'.'"></script>');
+        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'?v=2.003.1'.'"></script>');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
     public function requiresLogin($action) {return true;}
