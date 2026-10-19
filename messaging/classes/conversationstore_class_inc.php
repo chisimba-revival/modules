@@ -10,7 +10,7 @@ class conversationstore extends dbTable
     }
     public function deleteForContext($code) {
         foreach ($this->selectPrepared('SELECT id FROM tbl_messaging_channels_v2 WHERE context_code=? FOR UPDATE',[$code]) as $channel) {
-            foreach($this->selectPrepared('SELECT id FROM tbl_messaging_sightings_v2 WHERE channel_id=?',[$channel['id']]) as $image)
+            foreach($this->selectPrepared('SELECT id FROM tbl_messaging_sightings_v2 WHERE channel_id=? AND width>0',[$channel['id']]) as $image)
                 $this->executePrepared('INSERT INTO tbl_messaging_image_cleanup (id,scope_hash) VALUES (?,?)',[$image['id'],hash('sha256',$code)]);
             foreach (['replies','posts','reads','deliveries','bans','sightings'] as $name) {
                 $this->executePrepared('DELETE FROM tbl_messaging_'.$name.'_v2 WHERE channel_id=?',[$channel['id']]);

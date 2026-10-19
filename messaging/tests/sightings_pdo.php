@@ -18,6 +18,13 @@ try{
  $store->executePrepared('INSERT INTO tbl_messaging_channels_v2 (id,context_code,last_sequence) VALUES (?,?,0)',[$channel,$context]);
  $key=bin2hex(random_bytes(16));$a=$service->send($context,$key,'Synthetic bird',$encoded);$created[]=$a['id'];
  $b=$service->send($context,$key,'Synthetic bird',$encoded);check($a===$b,'retry returns one sighting');
+ $textKey=bin2hex(random_bytes(16));$text=$service->send($context,$textKey,'Same lion yesterday',null,$a['id']);$created[]=$text['id'];
+ check($service->send($context,$textKey,'Same lion yesterday',null,$a['id'])===$text,'text reply repeat-safe');
+ denied(fn()=>$service->send($context,$textKey,'Same lion yesterday',null,''),'conflict');
+ denied(fn()=>$service->send($context,bin2hex(random_bytes(16)),'Wrong target',null,str_repeat('f',32)),'invalid');
+ denied(fn()=>$service->image($context,$text['id']),'unavailable');
+ $history=$service->history($context);$reply=array_values(array_filter($history,fn($r)=>$r['id']===$text['id']))[0];
+ check($reply['has_image']===false&&$reply['reply']['id']===$a['id'],'history includes text and quoted photo');
  $bytes=$service->image($context,$a['id']);check(!str_contains($bytes,'GPS-SYNTHETIC'),'embedded metadata stripped');check(getimagesizefromstring($bytes)[0]===80,'small image not enlarged');
  denied(fn()=>$service->send($context,$key,'Changed',$encoded),'conflict');
  denied(fn()=>$service->send($context,bin2hex(random_bytes(16)),'Bad','invalid'),'invalid');
@@ -56,5 +63,6 @@ try{
  echo "PASS sightings PDO/private image fixture\n";
 }finally{
  foreach($created as $id){$images->remove('messaging',hash('sha256',$context),$id);$store->executePrepared('DELETE FROM tbl_messaging_image_cleanup WHERE id=?',[$id]);}
+ $store->executePrepared('DELETE FROM tbl_messaging_replies_v2 WHERE channel_id=?',[$channel]);
  $store->executePrepared('DELETE FROM tbl_messaging_sightings_v2 WHERE channel_id=?',[$channel]);$store->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$channel]);
 }

@@ -33,6 +33,11 @@ path='messaging/sightingimage?context='+f['context']+'&id='+receipt['id']
 code,result,headers=req(path);check(code==200 and result['data']['mime']=='image/jpeg' and 'no-store' in headers['Cache-Control'],'authorised private image bytes')
 code,_,_=req(path,auth=False);check(code==401,'anonymous image denied even in public course')
 code,result,_=req('messaging/sightings?context='+f['context']);check(code==200 and len(result['data']['sightings'])==1,'one saved sighting')
+text=dict(context=f['context'],submission_id='7'*32,body='Same lion yesterday',reply_to=receipt['id'])
+code,result,_=req('messaging/sightings',text);check(code==200,'text-only reply');text_receipt=result['data']
+code,result,_=req('messaging/sightings',text);check(code==200 and result['data']==text_receipt,'text reply retry')
+code,_,_=req('messaging/sightings',dict(text,reply_to=''));check(code==409,'changed reply conflicts')
+code,result,_=req('messaging/sightings?context='+f['context']);check(code==200 and any(r.get('reply',{}).get('id')==receipt['id'] for r in result['data']['sightings'] if r.get('reply')),'quoted photo in history')
 subprocess.check_call(['docker','exec','--user','www-data','-e','SIGHTINGS_LOCAL_TEST=1','chisimba-php85-web','php','/var/www/html/ch/packages/messaging/tests/sightings_http_fixture.php','revoke'])
 for path,data in [(path,None),('messaging/sightings?context='+f['context'],None),('messaging/sightings',payload)]:
     code,_,_=req(path,data);check(code==403,'revoked membership blocks image, history and receipt replay')
