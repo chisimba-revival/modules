@@ -16,6 +16,8 @@
   if (readForm) readForm.hidden = !olderPage;
   if (manualRefresh) manualRefresh.hidden = !olderPage;
   const atBottom = () => history().scrollHeight-history().scrollTop-history().clientHeight<40;
+  // Sites may render a canonical host alias. Keep Ajax on the authenticated origin.
+  const sameOrigin = target => {const url=new URL(target,location.href);return url.pathname+url.search;};
   const history = () => document.querySelector('.chisimba-chat');
   if (history()) history().scrollTop = history().scrollHeight;
   const say = key => { status.textContent = key === 'connected' ? '' : status.dataset[key] || '';  };
@@ -49,7 +51,7 @@
     polling = true;
     const ticket = revision;
     try {
-      const response = await fetch(form.dataset?.historyUrl || location.href, {credentials:'same-origin',cache:'no-store'});
+      const response = await fetch(sameOrigin(form.dataset?.historyUrl || location.href), {credentials:'same-origin',cache:'no-store'});
       if (!response.ok) throw Error('read');
       const parsed = parse(await response.text());
       if (ticket !== revision || sending) return;
@@ -63,7 +65,7 @@
     if (sending || acknowledging) return;
     sending = true; revision++; button.disabled = true; input.readOnly = true; say('sending');
     try {
-      const response = await fetch(form.action, {method:'POST',credentials:'same-origin',body:new URLSearchParams(new FormData(form)),cache:'no-store'});
+      const response = await fetch(sameOrigin(form.action), {method:'POST',credentials:'same-origin',body:new URLSearchParams(new FormData(form)),cache:'no-store'});
       const html = await response.text();
       const parsed = parse(html);
       refresh(parsed, response.ok);
@@ -90,7 +92,7 @@
     const body=new URLSearchParams(new FormData(readForm));
     const target=markRead?readForm.action:readForm.dataset.deliveredUrl;
     try {
-      const response=await fetch(target,{method:'POST',credentials:'same-origin',body,cache:'no-store'});
+      const response=await fetch(sameOrigin(target),{method:'POST',credentials:'same-origin',body,cache:'no-store'});
       if(!response.ok)throw Error('receipt');
       refresh(parse(await response.text()));
       delivered=Math.max(delivered,sequence);if(markRead)read=Math.max(read,sequence);
