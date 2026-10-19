@@ -19,15 +19,18 @@ class conversationstore extends dbTable
     }
     public function banned($channel,$user) {return (bool)$this->selectPrepared('SELECT id FROM tbl_messaging_bans_v2 WHERE channel_id=? AND user_id=?',[$channel,$user]);}
     public function receipt($channel,$user,$key) {return $this->selectPrepared('SELECT * FROM tbl_messaging_posts_v2 WHERE channel_id=? AND sender_id=? AND submission_id=?',[$channel,$user,$key])[0]??null;}
-    public function append($channel,$actor,$key,$body,$sequence) {
+    public function append($channel,$actor,$key,$body,$sequence,$replyTo='') {
         $row=['id'=>bin2hex(random_bytes(16)),'channel_id'=>$channel,'sender_id'=>$actor,'submission_id'=>$key,'body'=>$body,'sequence_no'=>$sequence,'created_at'=>gmdate('Y-m-d H:i:s')];
         $this->executePrepared('INSERT INTO tbl_messaging_posts_v2 (id,channel_id,sender_id,submission_id,body,sequence_no,created_at) VALUES (?,?,?,?,?,?,?)',array_values($row));
         $this->executePrepared('UPDATE tbl_messaging_channels_v2 SET last_sequence=? WHERE id=?',[$sequence,$channel]);
+        if($replyTo!=='')$this->executePrepared('INSERT INTO tbl_messaging_replies_v2 (id,channel_id,reply_to) VALUES (?,?,?)',[$row['id'],$channel,$replyTo]);
         return $row;
     }
     public function history($channel,$before,$limit) {
-        return array_reverse($this->selectPrepared('SELECT * FROM tbl_messaging_posts_v2 WHERE channel_id=? AND sequence_no<? ORDER BY sequence_no DESC LIMIT '.(int)$limit,[$channel,$before]));
+        return array_reverse($this->selectPrepared('SELECT p.*, t.id AS quoted_id, t.sender_id AS quoted_sender_id, t.body AS quoted_body FROM tbl_messaging_posts_v2 p LEFT JOIN tbl_messaging_replies_v2 r ON r.id=p.id AND r.channel_id=p.channel_id LEFT JOIN tbl_messaging_posts_v2 t ON t.id=r.reply_to AND t.channel_id=p.channel_id WHERE p.channel_id=? AND p.sequence_no<? ORDER BY p.sequence_no DESC LIMIT '.(int)$limit,[$channel,$before]));
     }
+    public function post($channel,$id) {return $this->selectPrepared('SELECT * FROM tbl_messaging_posts_v2 WHERE channel_id=? AND id=?',[$channel,$id])[0]??null;}
+    public function replyTarget($channel,$id) {return (string)($this->selectPrepared('SELECT reply_to FROM tbl_messaging_replies_v2 WHERE channel_id=? AND id=?',[$channel,$id])[0]['reply_to']??'');}
     public function markRead($channel,$actor,$sequence) {
         $this->markPosition('tbl_messaging_reads_v2',$channel,$actor,$sequence);
     }

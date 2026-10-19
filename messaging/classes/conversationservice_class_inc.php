@@ -27,21 +27,36 @@ class conversationservice extends ChisimbaObject
         $positions=$this->store->receiptPositions($id,$this->policy->actor());
         foreach($rows as &$row)if($row['sender_id']===$this->policy->actor())$row['receipt']=$positions['read']>=$row['sequence_no']?'read':($positions['delivered']>=$row['sequence_no']?'delivered':'sent');
         unset($row);
+        foreach($rows as &$row){$row['reply']=!empty($row['quoted_id'])?$this->quoteData(['id'=>$row['quoted_id'],'sender_id'=>$row['quoted_sender_id'],'body'=>$row['quoted_body']]):null;unset($row['quoted_id'],$row['quoted_sender_id'],$row['quoted_body']);}
+        unset($row);
         $older=count($rows)>50;if($older)array_shift($rows);
         return ['channel'=>$channel,'messages'=>$rows,'older'=>$older&&$rows?(int)$rows[0]['sequence_no']:null,
             'unread'=>max(0,(int)$channel['last_sequence']-$this->store->readPosition($id,$this->policy->actor()))];
     }
-    public function send($id,$key,$body) {
+    public function send($id,$key,$body,$replyTo='') {
         if(!is_string($key)||!preg_match('/^[a-f0-9-]{32,36}$/D',$key)||!is_string($body)
             ||!mb_check_encoding($body,'UTF-8')||trim($body)===''||strlen($body)>20000
             ||preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/',$body))throw new DomainException('invalid');
+        if(!is_string($replyTo)||($replyTo!==''&&!preg_match('/^[a-f0-9]{32}$/D',$replyTo)))throw new DomainException('invalid');
         $this->access($this->store->channel($id));
-        return $this->store->locked($id,function($channel)use($id,$key,$body){
+        return $this->store->locked($id,function($channel)use($id,$key,$body,$replyTo){
             $this->access($channel);$actor=$this->policy->actor();
             $old=$this->store->receipt($id,$actor,$key);
-            if($old){if(!hash_equals($old['body'],$body))throw new DomainException('conflict');return $old;}
-            return $this->store->append($id,$actor,$key,$body,(int)$channel['last_sequence']+1);
+            if($old){if(!hash_equals($old['body'],$body)||$this->store->replyTarget($id,$old['id'])!==$replyTo)throw new DomainException('conflict');return $old;}
+            if($replyTo!==''&&!$this->store->post($id,$replyTo))throw new DomainException('invalid');
+            return $this->store->append($id,$actor,$key,$body,(int)$channel['last_sequence']+1,$replyTo);
         });
+    }
+    /** Only quote a canonical message inside an authorised conversation. No client-supplied quote text. */
+    public function quote($id,$target) {
+        $this->access($this->store->channel($id));
+        if(!is_string($target)||!preg_match('/^[a-f0-9]{32}$/D',$target))throw new DomainException('invalid');
+        $post=$this->store->post($id,$target);if(!$post)throw new DomainException('invalid');
+        return $this->quoteData($post);
+    }
+    private function quoteData($post) {
+        return ['id'=>$post['id'],'sender_name'=>$this->getObject('user','security')->fullName($post['sender_id']),
+            'body'=>mb_substr($post['body'],0,300).(mb_strlen($post['body'])>300?'…':'')];
     }
     public function markRead($id,$sequence) {
         return $this->store->locked($id,function($channel)use($id,$sequence){

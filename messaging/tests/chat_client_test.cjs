@@ -4,20 +4,22 @@ const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
 function fixture(response) {
- const handlers={};
+ const handlers={},historyHandlers={};
+ const quoteAuthor={},quoteBody={};const preview={hidden:true,querySelector:s=>s==='[data-reply-author]'?quoteAuthor:quoteBody};
+ const cancel={addEventListener:(e,fn)=>handlers.cancel=fn};
  const input={value:'Keep this message',readOnly:false,focus(){}};
  const button={disabled:false};
- const fields={channel:{value:'channel'},conversation_context:{value:'course'},submission_id:{value:'same-key'},csrf_token:{value:'old-token'}};
+ const fields={reply_to:{value:''},channel:{value:'channel'},conversation_context:{value:'course'},submission_id:{value:'same-key'},csrf_token:{value:'old-token'}};
  const form={elements:fields,action:'https://local/send',querySelector:s=>s==='textarea'?input:button,addEventListener:(e,fn)=>handlers[e]=fn};
- const history={scrollTop:0,scrollHeight:500,clientHeight:300,lastElementChild:{dataset:{messageId:'old'}},replaceChildren(){this.lastElementChild={dataset:{messageId:'new'}};}};
+ const history={addEventListener:(e,fn)=>historyHandlers[e]=fn,scrollTop:0,scrollHeight:500,clientHeight:300,lastElementChild:{dataset:{messageId:'old'}},replaceChildren(){this.lastElementChild={dataset:{messageId:'new'}};}};
  const newer={hidden:true,addEventListener(){}};let poll;
  const status={dataset:{sending:'sending',sent:'sent',retry:'retry',offline:'offline',connected:'connected'}};
  const next={elements:{...fields,submission_id:{value:'new-key'},csrf_token:{value:'fresh-token'}}};
  const page={querySelector:s=>s==='[data-conversation-compose]'?next:s==='.chisimba-chat'?{childNodes:[],lastElementChild:{dataset:{messageId:'new'}}}:null};
- const document={hidden:false,querySelector:s=>s==='[data-conversation-compose]'?form:s==='[data-chat-new]'?newer:s==='[data-chat-status]'?status:s==='.chisimba-chat'?history:null,querySelectorAll:()=>[fields.csrf_token],addEventListener(){}};
+ const document={hidden:false,querySelector:s=>s==='[data-conversation-compose]'?form:s==='[data-reply-preview]'?preview:s==='[data-cancel-reply]'?cancel:s==='[data-chat-new]'?newer:s==='[data-chat-status]'?status:s==='.chisimba-chat'?history:null,querySelectorAll:()=>[fields.csrf_token],addEventListener(){}};
  const context={document,window:{addEventListener(){},setInterval(fn){poll=fn;}},location:{href:'https://local/chat'},URL,URLSearchParams,FormData:class{constructor(){return [['submission_id',fields.submission_id.value]]}},DOMParser:class{parseFromString(){return page;}},fetch:response};
  vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/conversation.js','utf8'),context);
- return {handlers,input,button,fields,status,next,history,newer,poll};
+ return {handlers,input,button,fields,status,next,history,newer,poll,historyHandlers,preview,quoteAuthor,quoteBody};
 }
 test('lost response retains text and same retry key, re-enables composer',async()=>{
  const f=fixture(async()=>{throw Error('offline')});await f.handlers.submit({preventDefault(){}});
@@ -45,4 +47,16 @@ test('canonical host aliases cannot move authenticated Ajax to another origin',a
  const urls=[];const f=fixture(async url=>{urls.push(url);return {ok:true,text:async()=>''};});
  await f.handlers.submit({preventDefault(){}});await f.poll();
  assert.deepEqual(urls,['/send','/chat']);
+});
+
+test('reply selection survives failed send; cancel keeps draft text',async()=>{
+ const f=fixture(async()=>{throw Error('offline');});
+ f.historyHandlers.click({preventDefault(){},target:{closest(){return {dataset:{chatReply:'original-id',replyAuthor:'A person',replyBody:'Original words'}};}}});
+ assert.equal(f.fields.reply_to.value,'original-id');assert.equal(f.preview.hidden,false);assert.equal(f.quoteBody.textContent,'Original words');
+ await f.handlers.submit({preventDefault(){}});assert.equal(f.fields.reply_to.value,'original-id');assert.equal(f.input.value,'Keep this message');
+ f.handlers.cancel({preventDefault(){}});assert.equal(f.fields.reply_to.value,'');assert.equal(f.input.value,'Keep this message');assert.equal(f.preview.hidden,true);
+});
+test('confirmed reply clears quote and draft together',async()=>{
+ const f=fixture(async()=>({ok:true,text:async()=>''}));f.fields.reply_to.value='original-id';f.preview.hidden=false;
+ await f.handlers.submit({preventDefault(){}});assert.equal(f.fields.reply_to.value,'');assert.equal(f.preview.hidden,true);assert.equal(f.input.value,'');
 });

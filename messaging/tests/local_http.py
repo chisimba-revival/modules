@@ -30,6 +30,11 @@ post=dict(conversation_context=f['conversationContext'],channel=f['conversationC
 code,raw=request(route(action='send'),post);check(code==403,'invalid CSRF rejected')
 code,page=request(route());stale=dict(post,csrf_token=token(page),conversation_context='another-context');code,raw=request(route(action='send'),stale);check(code==400 and 'Your scope changed' in raw and 'readonly' in raw,'stale scope retains text without sending')
 code,page=request(route());post['csrf_token']=token(page);code,page=request(route(action='send'),post);check(code==200 and '&lt;script&gt;alert(1)&lt;/script&gt;' in page and '<script>alert(1)</script>' not in page,'sent text is escaped')
+source=re.search(r'data-message-id="([a-f0-9]{32})"',page).group(1)
+code,page=request(route(reply_to=source));check(code==200 and 'data-reply-preview' in page and 'name="reply_to" value="'+source+'"' in page,'GET reply selection uses canonical quote')
+quoted=dict(post,submission_id='9'*32,body='Web quoted reply',reply_to=source,csrf_token='invalid')
+code,page=request(route(action='send'),quoted);check(code==403 and 'Web quoted reply' in page and 'name="reply_to" value="'+source+'"' in page,'expired token retains text and selected quote')
+quoted['csrf_token']=token(page);code,page=request(route(action='send'),quoted);check(code==200 and 'Web quoted reply' in page and 'class="chisimba-chat__quote"' in page,'web quoted reply persisted')
 for tab in ['announcements','site']:
  code,page=request(route(tab=tab));check(code==200 and 'read-only here' in page and 'name="body"' not in page,'one-way '+tab)
 code,page=request(route(action='getchat'));check(code==404,'retired chat handler closed')

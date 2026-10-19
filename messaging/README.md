@@ -112,3 +112,26 @@ checks, existing mobile API regression, five JS send/scroll tests, aggregate rec
 and monotonic duplicate-safe reads. Browser: in-place send, automatic fixture reply,
 blue tick, draft/scroll preservation, New messages, contextual/full Help and Escape,
 390px single-column layout without horizontal overflow. No live test posts needed.
+
+## Quoted replies — 19 October 2026 (2.004)
+
+Each server-chat message has Reply. Selecting it shows a cancellable author/excerpt
+above the composer; cancelling preserves typed text. Confirmed sends clear the
+quote, while failed sends retain it. Saved replies show one compact quote without
+nested indentation. The HTML fallback supports selecting a reply before composing.
+Unchanged transcripts remain mounted between polls so their actions retain focus.
+
+The registered replies table stores only message/channel/target IDs. The shared
+service checks target membership in the same authorised channel, resolves the
+canonical author/body and limits excerpts to 300 characters plus ellipsis. Reply
+references and posts are written under the same checked channel transaction.
+Retry identity includes the reply target as well as text. History joins quotes
+inside the same channel; it never accepts caller-supplied quote content.
+
+REST API 1.006 accepts optional `reply_to` on the existing messaging send endpoint
+and includes `reply` in history. Existing clients remain compatible. This release
+adds the Reply control to the server interface; the installed Android UI is unchanged.
+
+Validated: PHP lint; same-channel/cross-channel and changed-retry checks; canonical
+API quotes; web fallback, escaping and expired-CSRF recovery; eight client tests;
+browser select/cancel/send, retained text, quoted output, Help and 390px overflow.

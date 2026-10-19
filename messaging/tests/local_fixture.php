@@ -42,6 +42,13 @@ if($op==='prepare') {
  $g=$e->getObject('groupservice','groupadmin');$model=$e->getObject('groupadminmodel','groupadmin');$gid=$model->getLeafId([$f['conversationContext'],'Lecturers']);$pid=$e->getObject('identityservice','security')->permissionUserIdForUser($f['userId']);
  if($op==='revoke')$g->removeMembership($gid,$pid);else $g->ensureMembership($gid,$pid);
  echo "Membership $op\n";
+}elseif($op==='replies') {
+ $id=$f['conversationChannel'];$source=$service->send($id,bin2hex(random_bytes(16)),'Original <script>quoted text</script>');$key=bin2hex(random_bytes(16));
+ $reply=$service->send($id,$key,'A reply',$source['id']);$again=$service->send($id,$key,'A reply',$source['id']);check($reply['id']===$again['id'],'reply retry keeps same receipt');
+ $history=$service->history($id);$last=end($history['messages']);check($last['reply']['id']===$source['id']&&$last['reply']['body']===$source['body'],'canonical quote returned');
+ try{$service->send($id,$key,'A reply','');throw new RuntimeException('Changed reply accepted');}catch(DomainException $x){check($x->getMessage()==='conflict','changed reply retry rejected');}
+ $other=bin2hex(random_bytes(16));$foreign=$store->append($other,$f['userId'],bin2hex(random_bytes(16)),'Foreign private text',1);
+ try{try{$service->send($id,bin2hex(random_bytes(16)),'Forbidden quote',$foreign['id']);throw new RuntimeException('Cross-channel quote accepted');}catch(DomainException $x){check($x->getMessage()==='invalid','cross-channel quote rejected');}}finally{$store->executePrepared('DELETE FROM tbl_messaging_posts_v2 WHERE channel_id=?',[$other]);}
 }elseif($op==='browserreply') {
  $channel=$service->forContext($f['conversationContext']);$service->markRead($channel['id'],(int)$channel['last_sequence']);$service->send($channel['id'],bin2hex(random_bytes(16)),'Incoming local browser check');echo "Browser reply added\n";
  }elseif($op==='receipts') {
@@ -57,6 +64,6 @@ if($op==='prepare') {
  $store->markDelivered($id,'synthetic-other',0);$positions=$store->receiptPositions($id,$actor);check($positions['delivered']===$seq,'delivery cannot regress');
 }elseif($op==='cleanup') {
  if(!str_starts_with($f['conversationContext']??'','msgtest'))throw new RuntimeException('Missing fixture scope');
- foreach(['posts','reads','deliveries','bans']as$s)$store->executePrepared('DELETE FROM tbl_messaging_'.$s.'_v2 WHERE channel_id=?',[$f['conversationChannel']]);
+ foreach(['replies','posts','reads','deliveries','bans']as$s)$store->executePrepared('DELETE FROM tbl_messaging_'.$s.'_v2 WHERE channel_id=?',[$f['conversationChannel']]);
  $store->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$f['conversationChannel']]);$contexts->deleteContext($f['conversationContext']);echo "Conversation fixture removed\n";
 }else throw new RuntimeException('Unknown operation');

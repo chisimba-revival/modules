@@ -34,7 +34,8 @@
     const position = old.scrollTop;
     const previous = old.lastElementChild?.dataset.messageId;
     const changed = previous !== fresh.lastElementChild?.dataset.messageId;
-    old.replaceChildren(...fresh.childNodes);
+    // Leave unchanged message actions and text selections mounted between polls.
+    if(typeof old.innerHTML!=='string'||old.innerHTML!==fresh.innerHTML)old.replaceChildren(...fresh.childNodes);
     old.scrollTop = forceBottom || nearBottom ? old.scrollHeight : position;
     if(newer && changed && !nearBottom && !forceBottom)newer.hidden=false;
     if(newer && (nearBottom || forceBottom))newer.hidden=true;
@@ -74,11 +75,27 @@
         return;
       }
       input.value = '';
+      chooseReply('','','');
       form.elements.submission_id.value = parsed.next.elements.submission_id.value;
       say('sent'); input.focus();
     } catch { say('retry'); }
     finally { sending = false; button.disabled = false; input.readOnly = false; }
     void acknowledge();
+  });
+  const replyPreview=document.querySelector('[data-reply-preview]');
+  function chooseReply(id,author,excerpt) {
+    if(!form.elements.reply_to || !replyPreview)return;
+    form.elements.reply_to.value=id;replyPreview.hidden=!id;
+    replyPreview.querySelector('[data-reply-author]').textContent=author;
+    replyPreview.querySelector('[data-reply-excerpt]').textContent=excerpt;
+  }
+  history()?.addEventListener?.('click',event=>{
+    const link=event.target.closest('[data-chat-reply]');if(!link)return;
+    event.preventDefault();if(sending)return;
+    chooseReply(link.dataset.chatReply,link.dataset.replyAuthor,link.dataset.replyBody);input.focus();
+  });
+  document.querySelector('[data-cancel-reply]')?.addEventListener('click',event=>{
+    event.preventDefault();if(sending)return;chooseReply('','','');input.focus();
   });
   // Acknowledgements are explicit POSTs, serialised with sends and token renewal.
   async function acknowledge() {

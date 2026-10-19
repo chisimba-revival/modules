@@ -6,13 +6,14 @@ class messaging extends controller
     private $service; private $policy; private $csrf; private const TOKEN='messaging_conversation_v2';
     public function init() {
         $this->service=$this->getObject('conversationservice');$this->policy=$this->getObject('conversationpolicy');
-        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'?v=2.003.1'.'"></script>');
+        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'?v=2.004'.'"></script>');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
     public function requiresLogin($action) {return true;}
     public function dispatch($action) {
         $action=(string)$action;$context=$this->getObject('dbcontext','context')->getContextCode();
         $context=is_string($context)?$context:'';$tab=$this->getParam('tab','discussion');
+        $replyTo=$this->getParam('reply_to','');$replyTo=is_string($replyTo)?$replyTo:'';$replyQuote=null;
         $error='';$body=$this->getParam('body','');$key=$this->getParam('submission_id',bin2hex(random_bytes(16)));
         $body=is_string($body)?$body:'';$key=is_string($key)?$key:'';
         try {
@@ -25,7 +26,7 @@ class messaging extends controller
                 else {
                     $channel=$this->service->forContext($context);
                     if(!$channel||$this->getParam('channel')!==$channel['id'])throw new DomainException('unavailable');
-                    if($action==='send')$this->service->send($channel['id'],$key,$body);
+                    if($action==='send')$this->service->send($channel['id'],$key,$body,$replyTo);
                     elseif($action==='delivered')$this->service->markDelivered($channel['id'],filter_var($this->getParam('sequence'),FILTER_VALIDATE_INT)===false?-1:(int)$this->getParam('sequence'));
                     else $this->service->markRead($channel['id'],filter_var($this->getParam('sequence'),FILTER_VALIDATE_INT)===false?-1:(int)$this->getParam('sequence'));
                 }
@@ -43,7 +44,8 @@ class messaging extends controller
             }
         }catch(DomainException $e){$error=$e->getMessage();$allowed=false;http_response_code(404);}
         catch(Throwable $e){$error='failed';$allowed=false;http_response_code(503);error_log('Messaging view failed.');}
-        $this->setVar('conversation',compact('context','tab','error','body','key','data','channel','announcements','allowed','contextTitle'));
+        if($replyTo!==''&&$channel&&$allowed){try{$replyQuote=$this->service->quote($channel['id'],$replyTo);}catch(DomainException $e){$error='invalid';}}
+        $this->setVar('conversation',compact('context','tab','error','body','key','data','channel','announcements','allowed','contextTitle','replyTo','replyQuote'));
         $this->setVar('conversationToken',$this->csrf->issue(self::TOKEN));
         return 'conversation_tpl.php';
     }
