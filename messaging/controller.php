@@ -6,7 +6,7 @@ class messaging extends controller
     private $service; private $policy; private $csrf; private const TOKEN='messaging_conversation_v2';
     public function init() {
         $this->service=$this->getObject('conversationservice');$this->policy=$this->getObject('conversationpolicy');
-        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'"></script>');
+        $this->appendArrayVar('headerParams','<script defer src="'.$this->getResourceUri('conversation.js').'?v=2.003'.'"></script>');
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
     public function requiresLogin($action) {return true;}
@@ -16,8 +16,8 @@ class messaging extends controller
         $error='';$body=$this->getParam('body','');$key=$this->getParam('submission_id',bin2hex(random_bytes(16)));
         $body=is_string($body)?$body:'';$key=is_string($key)?$key:'';
         try {
-            if(!in_array($action,['','view','roomlist','im','create','send','read'],true)||!in_array($tab,['discussion','announcements','site'],true))throw new DomainException('unavailable');
-            if(in_array($action,['create','send','read'],true)) {
+            if(!in_array($action,['','view','roomlist','im','create','send','read','delivered'],true)||!in_array($tab,['discussion','announcements','site'],true))throw new DomainException('unavailable');
+            if(in_array($action,['create','send','read','delivered'],true)) {
                 if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST'){http_response_code(405);throw new DomainException('method');}
                 if(!$this->csrf->consume(self::TOKEN,(is_string($this->getParam('csrf_token',''))?$this->getParam('csrf_token',''):''))){http_response_code(403);throw new DomainException('csrf');}
                 if($this->getParam('conversation_context')!==$context)throw new DomainException('scope_changed');
@@ -26,6 +26,7 @@ class messaging extends controller
                     $channel=$this->service->forContext($context);
                     if(!$channel||$this->getParam('channel')!==$channel['id'])throw new DomainException('unavailable');
                     if($action==='send')$this->service->send($channel['id'],$key,$body);
+                    elseif($action==='delivered')$this->service->markDelivered($channel['id'],filter_var($this->getParam('sequence'),FILTER_VALIDATE_INT)===false?-1:(int)$this->getParam('sequence'));
                     else $this->service->markRead($channel['id'],filter_var($this->getParam('sequence'),FILTER_VALIDATE_INT)===false?-1:(int)$this->getParam('sequence'));
                 }
                 return $this->nextAction('view',['tab'=>'discussion']);

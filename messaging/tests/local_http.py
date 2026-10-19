@@ -34,8 +34,12 @@ for tab in ['announcements','site']:
  code,page=request(route(tab=tab));check(code==200 and 'read-only here' in page and 'name="body"' not in page,'one-way '+tab)
 code,page=request(route(action='getchat'));check(code==404,'retired chat handler closed')
 code,page=request(route(),c=anon);check('Concurrent retry' not in page,'anonymous history withheld')
+code,page=request(route());receipt=dict(conversation_context=f['conversationContext'],channel=f['conversationChannel'],sequence=999999,csrf_token=token(page))
+code,page=request(route(action='delivered'),receipt);check(code==400,'future delivered position rejected')
+code,page=request(route(action='delivered'));check(code==405,'GET cannot acknowledge delivery')
 cli('revoke')
 try:
  code,page=request(route());check('Concurrent retry' not in page and 'Your message' not in page,'revoked member cannot read or send')
+ receipt['csrf_token']=token(page);code,page=request(route(action='delivered'),receipt);check(code==404,'revoked member cannot acknowledge delivery')
 finally:cli('restore')
 print('Local messaging HTTP checks passed.')

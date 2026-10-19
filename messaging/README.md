@@ -85,3 +85,30 @@ Progressive chat behaviour checks: `node --test tests/chat_client_test.cjs`
 (lost reply, confirmed send and changed scope). Polling is suspended in hidden
 tabs and when viewing earlier history. It currently retrieves a bounded HTML
 page; the mobile REST history endpoint retrieves the latest 50 messages.
+
+## Server chat refinement — 19 October 2026 (2.003)
+
+The shared publishing layout places conversation and composer beside a narrow
+context/announcement navigation panel. Context labels resolve systext; the module
+name is simply Conversations. Visible latest-history pages poll every three seconds,
+retain drafts and scroll position, and offer New messages when reading further up.
+Earlier-history pages retain explicit navigation/read controls.
+
+Own-message receipts: one grey tick means saved on the server; two grey ticks mean
+acknowledged by another participant's browser; two blue ticks mean another participant
+has marked it viewed. These are aggregate group receipts (at least one other person),
+not proof everyone has read. The existing mobile read endpoint contributes read positions.
+Web acknowledgements are CSRF-protected POSTs under the same scope/access checks as
+sending. Read acknowledgements require a visible tab and the bottom message in view.
+A new registered deliveries table preserves the distinction from read positions.
+
+Legacy catalogue indexes do not enforce unique declarations. Receipt writes therefore
+use the service's channel lock, update existing positions monotonically and insert
+only when absent. Reading uses MAX to tolerate historical duplicate positions without
+removing data. Do not bypass the service lock when writing production receipts.
+
+Validated locally: PHP lint, policy tests, web HTTP access/CSRF/revocation/duplicate
+checks, existing mobile API regression, five JS send/scroll tests, aggregate receipts
+and monotonic duplicate-safe reads. Browser: in-place send, automatic fixture reply,
+blue tick, draft/scroll preservation, New messages, contextual/full Help and Escape,
+390px single-column layout without horizontal overflow. No live test posts needed.

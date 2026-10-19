@@ -42,8 +42,21 @@ if($op==='prepare') {
  $g=$e->getObject('groupservice','groupadmin');$model=$e->getObject('groupadminmodel','groupadmin');$gid=$model->getLeafId([$f['conversationContext'],'Lecturers']);$pid=$e->getObject('identityservice','security')->permissionUserIdForUser($f['userId']);
  if($op==='revoke')$g->removeMembership($gid,$pid);else $g->ensureMembership($gid,$pid);
  echo "Membership $op\n";
+}elseif($op==='browserreply') {
+ $channel=$service->forContext($f['conversationContext']);$service->markRead($channel['id'],(int)$channel['last_sequence']);$service->send($channel['id'],bin2hex(random_bytes(16)),'Incoming local browser check');echo "Browser reply added\n";
+ }elseif($op==='receipts') {
+ $id=$f['conversationChannel'];$actor=$f['userId'];$row=$service->send($id,bin2hex(random_bytes(16)),'Receipt test');$seq=(int)$row['sequence_no'];
+  $countBefore=count($store->selectPrepared('SELECT id FROM tbl_messaging_reads_v2 WHERE channel_id=? AND user_id=?',[$id,$actor]));
+ $service->markDelivered($id,$seq);$service->markRead($id,$seq);$service->markRead($id,$seq);
+ $countAfter=count($store->selectPrepared('SELECT id FROM tbl_messaging_reads_v2 WHERE channel_id=? AND user_id=?',[$id,$actor]));check($countAfter===max(1,$countBefore),'repeat read does not add duplicate positions');
+ check($store->readPosition($id,$actor)===$seq,'furthest read position retained');
+ $history=$service->history($id);$last=end($history['messages']);check($last['receipt']==='sent','own reads do not mark own messages read');
+ $store->markDelivered($id,'synthetic-other',$seq);$history=$service->history($id);$last=end($history['messages']);check($last['receipt']==='delivered','other delivery gives two grey ticks');
+ $store->markRead($id,'synthetic-other',$seq);$history=$service->history($id);$last=end($history['messages']);check($last['receipt']==='read','other read gives blue ticks');
+ try{$service->markDelivered($id,$seq+100);throw new RuntimeException('Future delivery accepted');}catch(DomainException $x){check($x->getMessage()==='invalid','future delivery rejected');}
+ $store->markDelivered($id,'synthetic-other',0);$positions=$store->receiptPositions($id,$actor);check($positions['delivered']===$seq,'delivery cannot regress');
 }elseif($op==='cleanup') {
  if(!str_starts_with($f['conversationContext']??'','msgtest'))throw new RuntimeException('Missing fixture scope');
- foreach(['posts','reads','bans']as$s)$store->executePrepared('DELETE FROM tbl_messaging_'.$s.'_v2 WHERE channel_id=?',[$f['conversationChannel']]);
+ foreach(['posts','reads','deliveries','bans']as$s)$store->executePrepared('DELETE FROM tbl_messaging_'.$s.'_v2 WHERE channel_id=?',[$f['conversationChannel']]);
  $store->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$f['conversationChannel']]);$contexts->deleteContext($f['conversationContext']);echo "Conversation fixture removed\n";
 }else throw new RuntimeException('Unknown operation');

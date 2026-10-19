@@ -23,6 +23,10 @@ class conversationservice extends ChisimbaObject
         $channel=$this->store->channel($id);$this->access($channel);
         if(!is_int($before)||$before<0)throw new DomainException('invalid');
         $rows=$this->store->history($id,$before?:((int)$channel['last_sequence']+1),51);
+        // Only expose aggregate receipt state for the requesting sender's messages.
+        $positions=$this->store->receiptPositions($id,$this->policy->actor());
+        foreach($rows as &$row)if($row['sender_id']===$this->policy->actor())$row['receipt']=$positions['read']>=$row['sequence_no']?'read':($positions['delivered']>=$row['sequence_no']?'delivered':'sent');
+        unset($row);
         $older=count($rows)>50;if($older)array_shift($rows);
         return ['channel'=>$channel,'messages'=>$rows,'older'=>$older&&$rows?(int)$rows[0]['sequence_no']:null,
             'unread'=>max(0,(int)$channel['last_sequence']-$this->store->readPosition($id,$this->policy->actor()))];
@@ -44,6 +48,13 @@ class conversationservice extends ChisimbaObject
             $this->access($channel);
             if(!is_int($sequence)||$sequence<0||$sequence>(int)$channel['last_sequence'])throw new DomainException('invalid');
             $this->store->markRead($id,$this->policy->actor(),$sequence);
+        });
+    }
+    public function markDelivered($id,$sequence) {
+        return $this->store->locked($id,function($channel)use($id,$sequence){
+            $this->access($channel);
+            if(!is_int($sequence)||$sequence<0||$sequence>(int)$channel['last_sequence'])throw new DomainException('invalid');
+            $this->store->markDelivered($id,$this->policy->actor(),$sequence);
         });
     }
 }

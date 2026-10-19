@@ -29,8 +29,25 @@ class conversationstore extends dbTable
         return array_reverse($this->selectPrepared('SELECT * FROM tbl_messaging_posts_v2 WHERE channel_id=? AND sequence_no<? ORDER BY sequence_no DESC LIMIT '.(int)$limit,[$channel,$before]));
     }
     public function markRead($channel,$actor,$sequence) {
-        $id=substr(hash('sha256',$channel.':'.$actor),0,32);
-        $this->executePrepared('INSERT INTO tbl_messaging_reads_v2 (id,channel_id,user_id,sequence_no) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE sequence_no=GREATEST(sequence_no,VALUES(sequence_no))',[$id,$channel,$actor,$sequence]);
+        $this->markPosition('tbl_messaging_reads_v2',$channel,$actor,$sequence);
     }
-    public function readPosition($channel,$actor) {return (int)($this->selectPrepared('SELECT sequence_no FROM tbl_messaging_reads_v2 WHERE channel_id=? AND user_id=?',[$channel,$actor])[0]['sequence_no']??0);}
+    public function readPosition($channel,$actor) {return (int)($this->selectPrepared('SELECT MAX(sequence_no) AS sequence_no FROM tbl_messaging_reads_v2 WHERE channel_id=? AND user_id=?',[$channel,$actor])[0]['sequence_no']??0);}
+    /** Receipt positions are monotonic and never include the sender's own acknowledgement. */
+    public function markDelivered($channel,$actor,$sequence) {
+        $this->markPosition('tbl_messaging_deliveries_v2',$channel,$actor,$sequence);
+    }
+    public function receiptPositions($channel,$actor) {
+        $positions=[];
+        foreach(['delivered'=>'tbl_messaging_deliveries_v2','read'=>'tbl_messaging_reads_v2'] as $kind=>$table)
+            $positions[$kind]=(int)($this->selectPrepared('SELECT MAX(sequence_no) AS position FROM '.$table.' WHERE channel_id=? AND user_id<>?',[$channel,$actor])[0]['position']??0);
+        return $positions;
+    }
+    /** Called under the service's channel lock. Legacy catalogue indexes are not unique.
+     * Update existing positions (including historical duplicates) without losing progress.
+     */
+    private function markPosition($table,$channel,$actor,$sequence) {
+        $exists=$this->selectPrepared('SELECT id FROM '.$table.' WHERE channel_id=? AND user_id=?',[$channel,$actor]);
+        if($exists)$this->executePrepared('UPDATE '.$table.' SET sequence_no=GREATEST(sequence_no,?) WHERE channel_id=? AND user_id=?',[$sequence,$channel,$actor]);
+        else $this->executePrepared('INSERT INTO '.$table.' (id,channel_id,user_id,sequence_no) VALUES (?,?,?,?)',[substr(hash('sha256',$channel.':'.$actor),0,32),$channel,$actor,$sequence]);
+    }
 }
