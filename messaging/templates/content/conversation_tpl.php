@@ -41,7 +41,12 @@ $hidden=function($name,$value)use($e){echo '<input type="hidden" name="'.$e($nam
 <p id="conversation-send-help" class="chisimba-visually-hidden"><?php echo $e($t('send_help')); ?></p>
 <button class="button" type="submit"><?php echo $icon->render('send',['decorative'=>true]).'<span>'.$e($t('send')).'</span>'; ?></button>
 </form>
-<?php endif;else: ?>
+<?php endif;elseif($tab==='sightings'): ?>
+<h2><?php echo $e($t('sightings')); ?></h2><p><?php echo $e($t('sighting_help')); ?></p>
+<div class="chisimba-chat" data-conversation-feed data-scope="<?php echo $e($context); ?>" data-history-url="<?php echo $e($url(['tab'=>'sightings'])); ?>" tabindex="0" aria-label="<?php echo $e($t('sightings')); ?>">
+<?php foreach($announcements as $item): ?><article class="chisimba-chat__message"><header class="chisimba-chat__meta"><strong><?php echo $e($item['sender_name']); ?></strong><time><?php echo $e($v->timestamp($item['created_at'])); ?></time></header><img class="chisimba-chat__photo" loading="lazy" src="<?php echo $e($url(['action'=>'sightingimage','id'=>$item['id']])); ?>" alt="<?php echo $e($item['body']); ?>"><p><?php echo nl2br($e($item['body']),false); ?></p></article><?php endforeach; ?>
+</div>
+<?php else: ?>
 <h2><?php echo $e($t($tab)); ?></h2>
 <button type="button" class="button" data-chat-new hidden><?php echo $e($t('new_messages')); ?></button>
 <div class="chisimba-chat" tabindex="0" aria-label="<?php echo $e($t($tab)); ?>">
@@ -61,7 +66,7 @@ $hidden=function($name,$value)use($e){echo '<input type="hidden" name="'.$e($nam
 <aside class="chisimba-publishing-sidebar"><section class="chisimba-form-card"><h2><?php echo $e($t('context')); ?></h2>
 <?php if($allowed): ?><p><?php echo $e($contextTitle); ?></p><a class="button" href="<?php echo $e($this->uri([],'context')); ?>"><?php echo $icon->render('home',['decorative'=>true]).'<span>'.$e($t('context_home')).'</span>'; ?></a><?php endif; ?>
 <nav class="chisimba-form-actions chisimba-form-actions--equal" aria-label="<?php echo $e($t('channels')); ?>">
-<?php foreach(['discussion'=>'message-circle','announcements'=>'megaphone','site'=>'bell']as$name=>$symbol): ?>
+<?php foreach(['discussion'=>'message-circle','sightings'=>'camera','announcements'=>'megaphone','site'=>'bell']as$name=>$symbol): ?>
 <a class="button" <?php if($tab===$name)echo 'aria-current="page"'; ?> href="<?php echo $e($url(['tab'=>$name])); ?>"><?php echo $icon->render($symbol,['decorative'=>true]).'<span>'.$e($t($name)).'</span>'; ?></a>
 <?php endforeach; ?>
 </nav></section></aside></div>

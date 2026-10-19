@@ -167,3 +167,42 @@ Run `local_fixture.php announcement-send` before `mobile_api.py`; checks cover
 repeat sends, conflict, parent rollback, role restrictions and revoked access.
 The compact Help and status text decode language entities once before the view
 escapes them, so apostrophes and ellipses do not appear as entity names.
+
+## Sightings — 19 October 2026
+
+Messaging 2.008 adds a private sightings channel to an existing context
+conversation. Members send one JPEG and a plain-text caption through the shared
+REST API (1.008). The mobile app prepares JPEG/PNG/WebP inputs, corrects orientation,
+limits the longest edge to 2048 pixels and the upload to 750 KB, and stores an
+account/server/context-isolated IndexedDB outbox. HEIC is explicitly unsupported.
+The original is unchanged. A stable submission ID covers both caption and the
+input-image digest; identical retries return the existing receipt, while changed
+content conflicts. History is bounded to the latest twenty sightings. Web viewing
+uses the current context and refreshes while visible; composing is in the app.
+
+File Manager 1.116 owns immutable private-image storage under SECUREFODLER,
+outside the web root, and independently checks JPEG dimensions/bytes before
+re-encoding without metadata. No public File Manager catalogue URL is created.
+Image bytes, history and receipt replay all recheck messaging membership/bans;
+public course visibility never grants access. REST image responses are no-store.
+The storage primitive is intentionally internal: its caller owns authorisation.
+
+Uploads require their own checked transaction. A failed insert removes the file;
+a lost HTTP response can safely retry. A process crash can leave an inaccessible
+unreferenced file. The explicit CLI maintenance tool defaults to a dry run and
+can remove up to 100 unreferenced images older than 24 hours per run:
+`CHISIMBA_IMAGE_MAINTENANCE=1 php packages/messaging/tools/cleanup-images.php`
+(add `--apply` only after review). It also drains committed deletion cleanup when
+applied. It is not a scheduled job. Context 2.067 invokes the cleanup outbox after
+outermost course-deletion commit; rollback never removes an image. Failed file
+cleanup retains its receipt for retry. New tables require normal catalogue update.
+
+Local checks: actual PDO storage, idempotency/conflict, metadata stripping,
+malformed/oversized image denial, injected insert failure, nested transaction
+refusal, deletion rollback/outbox, orphan dry-run/retention/removal; normal HTTP
+login/upload, anonymous denial in a public course, revoked member history/image/
+receipt denial. Synthetic fixture accounts, content and groups were removed.
+Browser checks covered offline photo/caption persistence across reload, reconnect,
+revoked-history clearing, orientation, narrow layout and Help/Escape. Android
+build passed; native-device photo picker and upload acceptance remain a separate
+verification step. No production deployment is claimed by these local checks.

@@ -27,7 +27,7 @@ try{$store->transaction(function()use($store,$ann,$code,$other,$id,$shared,$only
  check((bool)$store->channel($id),'savepoint restores conversation after failure');
  check(count($store->selectPrepared('SELECT id FROM tbl_announcements_context WHERE contextid=?',[$code]))===2,'savepoint restores announcements after failure');
  $store->deleteForContext($code);$ann->deleteForContext($code);
- foreach($store->contextDeletionTables() as $table){$column=str_ends_with($table,'channels_v2')?'id':'channel_id';check(!$store->selectPrepared('SELECT id FROM '.$table.' WHERE '.$column.'=?',[$id]),$table.' cleaned');}
+ foreach($store->contextDeletionTables() as $table){$column=(str_ends_with($table,'channels_v2')||$table==='tbl_messaging_image_cleanup')?'id':'channel_id';check(!$store->selectPrepared('SELECT id FROM '.$table.' WHERE '.$column.'=?',[$id]),$table.' cleaned');}
  check((bool)$store->selectPrepared('SELECT id FROM tbl_announcements WHERE id=?',[$shared]),'shared announcement preserved');
  check(!$store->selectPrepared('SELECT id FROM tbl_announcements WHERE id=?',[$only]),'course-only announcement removed');
  check(!$store->selectPrepared('SELECT id FROM tbl_announcements_chat_receipts WHERE announcement_id=?',[$only]),'course-only receipt removed');

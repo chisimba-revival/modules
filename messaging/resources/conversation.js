@@ -1,7 +1,27 @@
 /** Progressive chat updates; the canonical controller still owns permissions and receipts. */
 (() => {
   const form = document.querySelector('[data-conversation-compose]');
-  if (!form) return;
+  if (!form) {
+    // Read-only photo channels still update without a full-page refresh.
+    const feed=document.querySelector('[data-conversation-feed]');
+    if(!feed)return;
+    const scope=feed.dataset.scope;let fetching=false;
+    setInterval(async()=>{
+      if(document.hidden||fetching)return;fetching=true;
+      try{
+        const url=new URL(feed.dataset.historyUrl,location.href);
+        const response=await fetch(url.pathname+url.search,{credentials:'same-origin',cache:'no-store'});
+        const page=new DOMParser().parseFromString(await response.text(),'text/html');
+        const next=page.querySelector('[data-conversation-feed]');
+        if(!response.ok||!next||next.dataset.scope!==scope){feed.replaceChildren();return;}
+        const bottom=feed.scrollHeight-feed.scrollTop-feed.clientHeight<40,position=feed.scrollTop;
+        if(feed.innerHTML!==next.innerHTML)feed.replaceChildren(...next.childNodes);
+        feed.scrollTop=bottom?feed.scrollHeight:position;
+      }catch{/* Keep already displayed photographs during a temporary outage. */}
+      finally{fetching=false;}
+    },15000);
+    return;
+  }
   const input = form.querySelector('textarea');
   const button = form.querySelector('button[type="submit"]');
   const status = document.querySelector('[data-chat-status]');

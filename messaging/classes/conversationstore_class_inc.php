@@ -6,16 +6,28 @@ class conversationstore extends dbTable
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorCallback') { parent::init('tbl_messaging_channels_v2',$pearDb,$errorCallback); }
     /** Tables owned by this participant in atomic course deletion. */
     public function contextDeletionTables() {
-        return array_map(fn($name)=>'tbl_messaging_'.$name.'_v2', ['channels','posts','replies','reads','deliveries','bans']);
+        return array_merge(array_map(fn($name)=>'tbl_messaging_'.$name.'_v2', ['channels','posts','replies','reads','deliveries','bans','sightings']),['tbl_messaging_image_cleanup']);
     }
     public function deleteForContext($code) {
         foreach ($this->selectPrepared('SELECT id FROM tbl_messaging_channels_v2 WHERE context_code=? FOR UPDATE',[$code]) as $channel) {
-            foreach (['replies','posts','reads','deliveries','bans'] as $name) {
+            foreach($this->selectPrepared('SELECT id FROM tbl_messaging_sightings_v2 WHERE channel_id=?',[$channel['id']]) as $image)
+                $this->executePrepared('INSERT INTO tbl_messaging_image_cleanup (id,scope_hash) VALUES (?,?)',[$image['id'],hash('sha256',$code)]);
+            foreach (['replies','posts','reads','deliveries','bans','sightings'] as $name) {
                 $this->executePrepared('DELETE FROM tbl_messaging_'.$name.'_v2 WHERE channel_id=?',[$channel['id']]);
             }
             $this->executePrepared('DELETE FROM tbl_messaging_channels_v2 WHERE id=?',[$channel['id']]);
         }
         return [];
+    }
+    /** Run only after the outermost deletion commits; errors retain the cleanup receipt. */
+    public function afterContextDeletion() {
+        if(!empty($this->selectPrepared('SELECT @@in_transaction AS active')[0]['active']))return;
+        return $this->withDatabaseLock('msg:images:cleanup',function(){
+        foreach($this->selectPrepared('SELECT id,scope_hash FROM tbl_messaging_image_cleanup LIMIT 100') as $row){
+            $this->getObject('privateimageasset','filemanager')->remove('messaging',$row['scope_hash'],$row['id']);
+            $this->executePrepared('DELETE FROM tbl_messaging_image_cleanup WHERE id=?',[$row['id']]);
+        }
+        });
     }
     public function channel($id) {return $this->selectPrepared('SELECT * FROM tbl_messaging_channels_v2 WHERE id=?',[$id])[0]??null;}
     public function create($context) {
