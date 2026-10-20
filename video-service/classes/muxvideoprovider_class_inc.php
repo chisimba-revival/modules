@@ -18,7 +18,7 @@ class muxvideoprovider extends ChisimbaObject implements VideoProviderInterface
             CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_CONNECTTIMEOUT=>10,
             CURLOPT_TIMEOUT=>30, CURLOPT_FOLLOWLOCATION=>false, CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS]);
         if ($data !== null) curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data, JSON_THROW_ON_ERROR));
-        $raw = curl_exec($curl); $status = curl_getinfo($curl, CURLINFO_HTTP_CODE); curl_close($curl);
+        $raw = curl_exec($curl); $status = curl_getinfo($curl, CURLINFO_HTTP_CODE); unset($curl);
         if ($method === 'DELETE' && $status === 404) return [];
         if ($status === 404) throw new RuntimeException('provider_not_found');
         if ($raw === false || $status === 0 || $status >= 500) throw new RuntimeException('provider_uncertain');
