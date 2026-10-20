@@ -235,8 +235,23 @@ if ($this->objUser->isLoggedIn() && !$this->isValid('editpage')) {
         . '</button><span class="contextcontent-bookmark-feedback" role="status" aria-live="polite"></span></div>';
 }
 
-if (!empty($isLastPageInChapter) && !empty($chapterStageGate)) {
-    $stageGatePassed = $chapterStageGateBestPercentage !== NULL && $chapterStageGateBestPercentage >= $chapterStageGate['passmark'];
+
+// Attached managed video uses the placement ID, never a provider URL.
+if ($objModule->checkIfRegistered('video-service')) {
+    $videoLink = $this->getObject('videoconsumer', 'contextcontent')->placement($page['id']);
+    if ($videoLink) $content .= $this->getObject('videoplayer', 'video-service')->render($videoLink['video_id'], 'contextcontent', $videoLink['id']);
+    if ($videoLink) $content .= '<p><a href="'.htmlspecialchars($this->uri(['action'=>'viewpage','id'=>$page['id']]),ENT_QUOTES,'UTF-8').'">'.htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_video_refresh','contextcontent'),ENT_QUOTES,'UTF-8').'</a></p>';
+    if ($this->getObject('videoconsumer', 'contextcontent')->mayManage($this->contextCode)) {
+        $content .= '<p><a href="'.htmlspecialchars($this->uri(['scope'=>'contextcontent:'.$this->contextCode], 'video-service'), ENT_QUOTES, 'UTF-8').'">'
+            .htmlspecialchars($this->objLanguage->languageText('mod_contextcontent_video_library','contextcontent'), ENT_QUOTES, 'UTF-8').'</a></p>';
+    }
+}
+
+if (!empty($isLastPageInChapter) && !empty($chapterStageGate) && empty($chapterStageGate['testid'])) {
+    $content .= '<p>'.htmlspecialchars($this->objLanguage->code2Txt('mod_contextcontent_video_gate','contextcontent'),ENT_QUOTES,'UTF-8').'</p>';
+}
+if (!empty($isLastPageInChapter) && !empty($chapterStageGate) && !empty($chapterStageGate['testid'])) {
+    $stageGatePassed = $this->objChapterStageGates->hasPassed($chapterStageGate);
     $stageGateUrl = $this->uri(array('action' => 'startstagegatequiz', 'id' => $chapterStageGate['chapterid']));
     $stageGateTitle = htmlspecialchars($chapterStageGate['testname'], ENT_QUOTES, 'UTF-8');
     $stageGatePassMark = (int) $chapterStageGate['passmark'];
