@@ -236,7 +236,7 @@ class compositionservice extends ChisimbaObject
                     $body=$copy.'<div class="chisimba-video-frame chisimba-video-frame--'.$block['video_orientation'].' chisimba-video-frame--'.$block['video_width'].'">'.($embed ? '<iframe src="'.self::escape($embed).'" title="'.self::escape($block['title']?:$this->text('video')).'" loading="lazy" allowfullscreen></iframe>'
                         :'<video src="'.self::escape($block['url']).'" controls preload="metadata" playsinline></video>').'</div>';
                     if($block['video_transcript']!=='')$body.='<details><summary>'.self::escape($this->text('transcript')).'</summary><p>'.nl2br(self::escape($block['video_transcript'])).'</p></details>';
-                    if($embed)$body.='<p><a href="'.self::escape($block['url']).'" target="_blank" rel="noopener noreferrer">'.self::escape($this->text('open_video')).'</a></p>';
+                    if($embed&&!str_starts_with($embed,'https://www.youtube-nocookie.com/embed/'))$body.='<p><a href="'.self::escape($block['url']).'" target="_blank" rel="noopener noreferrer">'.self::escape($this->text('open_video')).'</a></p>';
                     if($block['caption']!=='')$body.='<p>'.self::escape($block['caption']).'</p>';break;
                 case 'video_gallery': $body=$copy.$this->getObject('videocollection','contentblocks')->render($block);break;
                 case 'slider':
