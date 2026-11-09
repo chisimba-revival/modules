@@ -24,6 +24,8 @@ class audiencecampaigns extends dbTable
   if(mb_strlen($subject)>240||strlen($body)>50000||mb_strlen($greeting)>500||preg_match('/[\r\n]/',$subject))throw new DomainException('invalid');
   $id=$id?:($input['create_id']??'');if(!preg_match('/^[a-f0-9]{32}$/D',$id))throw new DomainException('invalid');
   $payload=['greeting'=>$greeting,'latest_recording'=>($input['latest_recording']??'')==='1','body'=>$body,'upcoming'=>($input['upcoming']??'')==='1','support'=>($input['support']??'')==='1','cursor'=>0];
+  $payload['latest_news']=($input['latest_news']??'')==='1';
+  if($payload['latest_news'])$payload['news']=$this->getObject('audiencenews','audience')->snapshot();
   $payload['preview_html']=$this->composeHtml(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
   $payload['preview']=$this->compose(['payload'=>json_encode($payload,JSON_THROW_ON_ERROR)]);
   if($payload['upcoming'])$payload['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot();
@@ -47,6 +49,7 @@ class audiencecampaigns extends dbTable
   if(!empty($p['latest_recording']))$parts[]=$this->getObject('webinarannouncements','webinar')->latestRecordingText();
   $message=trim($p['body']??'');if($message!=='')$parts[]=$this->messageHeading()."\n\n".$message;$body=implode("\n\n",array_filter($parts,static fn($part)=>$part!==''));
   if(!empty($p['upcoming']))$body.="\n\n".$this->getObject('webinarannouncements','webinar')->upcomingText($p['event_ids']??null);
+  if(!empty($p['latest_news']))$body.="\n\n".$this->getObject('audiencenews','audience')->text($p['news']??[]);
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$body.="\n\n".$this->supportHeading()."\n\n".trim($support);}
   return trim($body);
  }
@@ -68,6 +71,7 @@ class audiencecampaigns extends dbTable
   if(!empty($p['latest_recording']))$html.=$this->getObject('webinarannouncements','webinar')->latestRecordingHtml();
   $body=trim($p['body']??'');if($body!=='')$html.='<h2>'.htmlspecialchars($this->messageHeading(),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</h2><p>'.self::htmlText($body).'</p>';
   if(!empty($p['upcoming']))$html.=$this->getObject('webinarannouncements','webinar')->upcomingHtml($p['event_ids']??null);
+  if(!empty($p['latest_news']))$html.=$this->getObject('audiencenews','audience')->html($p['news']??[]);
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$html.='<h2>'.htmlspecialchars($this->supportHeading(),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</h2><p>'.self::htmlText(trim($support)).'</p>';}
   return '<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;max-width:600px;overflow-wrap:anywhere;word-break:break-word">'.$html.'</div>';
  }
@@ -80,7 +84,7 @@ class audiencecampaigns extends dbTable
    if($input!==null){
     if(trim($input['subject']??'')!==$r['subject'])throw new DomainException('unsaved');
     foreach(['greeting','body'] as $key)if(trim(str_replace("\r\n","\n",$input[$key]??''))!==trim(str_replace("\r\n","\n",$p[$key]??'')))throw new DomainException('unsaved');
-    foreach(['latest_recording','upcoming','support'] as $key)if((($input[$key]??'')==='1')!==!empty($p[$key]))throw new DomainException('unsaved');
+    foreach(['latest_recording','upcoming','support','latest_news'] as $key)if((($input[$key]??'')==='1')!==!empty($p[$key]))throw new DomainException('unsaved');
    }
    if(isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
    $r['payload']=json_encode($p,JSON_THROW_ON_ERROR);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);if($p['rendered']==='')throw new DomainException('invalid');
@@ -94,7 +98,7 @@ class audiencecampaigns extends dbTable
   if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$id=substr(hash('sha256','audience:'.$key),0,32);$s=$this->store();$s->beginTransaction();
   try{if($this->one($id,true)){$s->commitTransaction();return;}
    $r=['id'=>$id,'version'=>1,'state'=>'queued','subject'=>$subject,'created_at'=>gmdate('Y-m-d H:i:s'),'updated_at'=>gmdate('Y-m-d H:i:s')];
-   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>$latestRecording,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot($eventIds);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
+   $p=['greeting'=>$this->getObject('audiencerenderer','audience')->text('greeting_default'),'latest_recording'=>$latestRecording,'schedule_key'=>$key,'body'=>$body,'event_ids'=>$eventIds,'upcoming'=>true,'support'=>true,'cursor'=>0,'expires_at'=>$expiresAt,'event_times'=>$this->getObject('webinarannouncements','webinar')->eventTimes($eventIds)];$p['latest_news']=true;$p['news']=$this->getObject('audiencenews','audience')->snapshot();$r['payload']=json_encode($p);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);$p['upcoming_heading']=$this->getObject('webinarannouncements','webinar')->headingSnapshot($eventIds);$p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$r['payload']=json_encode($p,JSON_THROW_ON_ERROR);
    if($this->insert($r)===false)throw new RuntimeException('storage');$s->commitTransaction();
   }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
  }

@@ -13,7 +13,7 @@ class audience extends controller
   $admin=$this->getObject('audienceadmin','audience');if(!$admin->allowed()){http_response_code(403);return 'denied_tpl.php';}
   $actions=['progress','users','contact','savecontact','campaigns','compose','savecampaign','queue','cancel','restore','settings','savesettings'];
   if(!in_array($action,$actions,true)){http_response_code(404);return 'denied_tpl.php';}
-  $input=[];foreach(['name','email','state','revision','consent','evidence','subject','greeting','latest_recording','body','version','create_id','upcoming','support','support_message','enabled','hour','timezone'] as $key)$input[$key]=$this->param($key);
+  $input=[];foreach(['name','email','state','revision','consent','evidence','subject','greeting','latest_recording','latest_news','body','version','create_id','upcoming','support','support_message','enabled','hour','timezone'] as $key)$input[$key]=$this->param($key);
   $id=$this->param('id');$error='';$record=null;$campaigns=$this->getObject('audiencecampaigns','audience');$write=in_array($action,['savecontact','savecampaign','queue','cancel','restore','savesettings'],true);
   if($action==='progress'){header('Content-Type: application/json; charset=UTF-8');try{echo json_encode($campaigns->progress($id),JSON_THROW_ON_ERROR);}catch(DomainException $e){http_response_code(404);echo '{}';}exit;}
   if($write){

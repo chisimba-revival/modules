@@ -22,6 +22,7 @@ class webinar extends controller
         $action=$this->param('action')?:'upcoming';
         if(in_array($action,['manage','edit','save','preview','tag_suggestions','editor_aux','trash','restore'],true))return $this->editorAction($action);
         if(in_array($action,['dashboard','save_reminders'],true))return $this->dashboard($action);
+        if($action==='speaker_links')return $this->speakerLinks();
         if($action==='booking_status')return $this->bookingStatus();
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
         if($action==='recordings')return $this->recordings();
@@ -37,6 +38,28 @@ class webinar extends controller
         }
         $this->setVar('webinarRecord',$record);$this->setVar('webinarAction',$action);
         return 'archive_tpl.php';
+    }
+    /** Speaker links have their own CSRF scope so biography edits remain untouched. */
+    private function speakerLinks(){
+        header('Cache-Control: private, no-store');header('Content-Type: application/json; charset=UTF-8');
+        $policy=$this->getObject('webinareditpolicy','webinar');
+        if(!$policy->canManage()){http_response_code(403);echo '{}';exit;}
+        $links=$this->getObject('speakerlinks','webinar');$r=$this->getObject('webinarrenderer','webinar');$error='';$rows=[];
+        try{
+            $record=$this->getObject('webinareditstore','webinar')->record($this->param('id'));
+            if(!$record||$record['kind']!=='speaker'||$record['status']==='trashed')throw new DomainException('editor_invalid');
+            if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
+                if(!$this->csrf()->consume('speaker-links',$this->param('csrf_token')))throw new DomainException('session_expired');
+                $input=[];foreach(['links_version','link_id','category','url','label'] as $key)$input[$key]=$this->param($key);
+                $rows=$links->change($record['id'],$this->param('operation'),$input);
+            }elseif(($_SERVER['REQUEST_METHOD']??'GET')==='GET')$rows=$links->listing($record['id']);
+            else throw new DomainException('editor_invalid');
+        }catch(DomainException $e){$error=in_array($e->getMessage(),['editor_invalid','editor_conflict','editor_forbidden','links_invalid','links_limit','session_expired'],true)?$e->getMessage():'editor_save_failed';}
+        catch(Throwable $e){$error='editor_save_failed';}
+        if($error)http_response_code(422);
+        $data=['ok'=>$error==='','csrf'=>$this->csrf()->issue('speaker-links'),'message'=>$r->text($error?:'links_saved')];
+        if(!$error)$data+=['html'=>$this->getObject('speakerlinksrenderer','webinar')->rows($rows),'version'=>speakerlinks::revision($rows)];
+        echo json_encode($data,JSON_THROW_ON_ERROR);exit;
     }
     private function dashboard($action)
     {

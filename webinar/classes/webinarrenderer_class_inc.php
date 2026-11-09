@@ -45,7 +45,7 @@ class webinarrenderer extends ChisimbaObject
     if(isset($seen[$id]))continue;
     $seen[$id]=true;$bio=$this->data($speaker);
     $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$bio['description']??'';
-    $window=$this->newObject('window','ui');$window->setId($id)->setTitle($speaker['title'])->setContent($composition->render([$block]).$this->button('speakerpage','user',['action'=>'view','id'=>$speaker['id']]));
+    $window=$this->newObject('window','ui');$window->setId($id)->setTitle($speaker['title'])->setContent($composition->render([$block]).$this->getObject('speakerlinksrenderer','webinar')->publicLinks($speaker['id']).$this->button('speakerpage','user',['action'=>'view','id'=>$speaker['id']]));
     $dialogs.=$window->show();
    }
    if($names)$html.='<p class="chisimba-publication-card__byline">'.$this->getObject('iconservice','ui')->render('user',['decorative'=>true]).' '.implode(', ',$names).'</p>';
@@ -62,7 +62,7 @@ class webinarrenderer extends ChisimbaObject
   return $html.'</div>'.$dialogs;
  }
  public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
-  $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);
+  $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);if($r['kind']==='speaker')$html.=$this->getObject('speakerlinksrenderer','webinar')->publicLinks($r['id']);
   $html.=$this->getObject('webinarclassificationui','webinar')->detail($r);
   if($this->getObject('webinareditpolicy','webinar')->canManage())$html.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
   $html.=$booking;
