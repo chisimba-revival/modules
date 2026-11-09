@@ -12,4 +12,5 @@ $GLOBALS['audienceadmin']->counts=[['status'=>'sent','n'=>1],['status'=>'queued'
 $GLOBALS['audienceadmin']->counts=[['status'=>'sent','n'=>2]];ensure($c->progress($id)['label']==='mail_sent'&&$c->progress($id)['tone']==='success');
 $GLOBALS['audienceadmin']->counts=[['status'=>'sent','n'=>1],['status'=>'failed','n'=>1]];ensure($c->progress($id)['label']==='mail_attention');
 $GLOBALS['audienceadmin']->counts=[];ensure($c->progress($id)['label']==='mail_attention');
+$c->state='cancelled';ensure($c->progress($id)['canRestore']===true);$GLOBALS['audienceadmin']->counts=[['status'=>'sent','n'=>1]];ensure($c->progress($id)['label']==='cancelled'&&$c->progress($id)['canRestore']===false);
 echo "PASS queued, sending, sent, failed and skipped delivery states.\n";

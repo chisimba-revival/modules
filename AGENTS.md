@@ -216,3 +216,10 @@ Sites share one versioned codebase; site differences belong in configuration,
 branding and content. Audit deployed source drift before release, reconcile
 newer shared fixes into source, and verify a common manifest. Do not preserve
 site-only module variants or overwrite newer deployed fixes blindly.
+
+## GitHub is authoritative
+
+GitHub must contain completed work. Local-only changes are acceptable while the
+work is actively in progress; commit and push scoped, verified changes before
+calling the task complete. A production deployment alone does not complete the
+handoff. Preserve unrelated work, and report any push blocker explicitly.

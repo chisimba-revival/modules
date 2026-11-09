@@ -11,10 +11,10 @@ class audience extends controller
   header('Cache-Control: private, no-store');$action=$this->param('action','users');
   if($action==='unsubscribe')return $this->unsubscribe();
   $admin=$this->getObject('audienceadmin','audience');if(!$admin->allowed()){http_response_code(403);return 'denied_tpl.php';}
-  $actions=['progress','users','contact','savecontact','campaigns','compose','savecampaign','queue','cancel','settings','savesettings'];
+  $actions=['progress','users','contact','savecontact','campaigns','compose','savecampaign','queue','cancel','restore','settings','savesettings'];
   if(!in_array($action,$actions,true)){http_response_code(404);return 'denied_tpl.php';}
   $input=[];foreach(['name','email','state','revision','consent','evidence','subject','greeting','latest_recording','body','version','create_id','upcoming','support','support_message','enabled','hour','timezone'] as $key)$input[$key]=$this->param($key);
-  $id=$this->param('id');$error='';$record=null;$campaigns=$this->getObject('audiencecampaigns','audience');$write=in_array($action,['savecontact','savecampaign','queue','cancel','savesettings'],true);
+  $id=$this->param('id');$error='';$record=null;$campaigns=$this->getObject('audiencecampaigns','audience');$write=in_array($action,['savecontact','savecampaign','queue','cancel','restore','savesettings'],true);
   if($action==='progress'){header('Content-Type: application/json; charset=UTF-8');try{echo json_encode($campaigns->progress($id),JSON_THROW_ON_ERROR);}catch(DomainException $e){http_response_code(404);echo '{}';}exit;}
   if($write){
    if(($_SERVER['REQUEST_METHOD']??'GET')!=='POST')$error='invalid';
@@ -22,10 +22,11 @@ class audience extends controller
    else try{
     if($action==='savecontact')$record=$admin->save($id,$input);
     elseif($action==='savecampaign')$record=$campaigns->save($id,$input);
-    elseif($action==='queue')$record=$campaigns->queue($id,$input['version']);
+    elseif($action==='queue')$record=$campaigns->queue($id,$input['version'],$input);
+    elseif($action==='restore')$record=$campaigns->restore($id,$input['version']);
     elseif($action==='cancel'){$campaigns->cancel($id,$input['version']);$record=$campaigns->one($id);}
     else $this->saveSettings($input);
-   }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','subject_required','conflict','duplicate','consent_required','forbidden'],true)?$e->getMessage():'failed';}
+   }catch(DomainException $e){$error=in_array($e->getMessage(),['invalid','subject_required','conflict','duplicate','consent_required','forbidden','restore_blocked','unsaved'],true)?$e->getMessage():'failed';}
    catch(Throwable $e){$error='failed';}
   }
   $token=$this->csrf()->issue('audience-admin');
@@ -35,7 +36,7 @@ class audience extends controller
    if($record){$data['id']=$record['id'];$data['version']=$record['version']??$record['revision'];$data['state']=$record['state'];$data['stateLabel']=$r->text($record['state']);if(isset($record['subject'])){$p=json_decode($record['payload'],true);$data['preview']=$p['rendered']??$campaigns->compose($record);$data['previewHtml']=$campaigns->composeHtml($record);$data['count']=count($p['recipients']??[]);if($action==='queue'&&$error==='')$data['message']=sprintf($r->text('queued_count'),$data['count']);if($action==='cancel'&&$error==='')$data['message']=$r->text('cancelled');}}
    echo json_encode($data,JSON_THROW_ON_ERROR);exit;
   }
-  $view=['savecontact'=>'contact','savecampaign'=>'compose','queue'=>'compose','cancel'=>'compose','savesettings'=>'settings'][$action]??$action;
+  $view=['savecontact'=>'contact','savecampaign'=>'compose','queue'=>'compose','cancel'=>'compose','restore'=>'compose','savesettings'=>'settings'][$action]??$action;
   if(in_array($view,['contact','compose'],true)&&$id!==''&&!$record)$record=$view==='contact'?$this->getObject('audienceservice','audience')->one($id):$campaigns->one($id);
   if(in_array($view,['contact','compose'],true)&&$id!==''&&!$record){http_response_code(404);return 'denied_tpl.php';}
   $this->setVar('audienceView',$view);$this->setVar('audienceRecord',$record);$this->setVar('audienceInput',$write&&$error!==''?$input:null);$this->setVar('audienceError',$error);$this->setVar('audienceCsrf',$token);

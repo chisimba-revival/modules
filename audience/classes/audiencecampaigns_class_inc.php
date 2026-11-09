@@ -13,9 +13,9 @@ class audiencecampaigns extends dbTable
   $sent=$counts['sent']??0;$pending=$counts['queued']??0;$failed=($counts['failed']??0)+($counts['cancelled']??0);
   $key=$row['state']==='draft'?'draft':($row['state']==='cancelled'?'cancelled':'mail_queued');
   if($row['state']==='dispatched'&&$pending===0)$key=$sent===$total&&$total>0?'mail_sent':'mail_attention';
-  elseif($sent>0)$key='mail_sending';
+  elseif($sent>0&&$row['state']!=='cancelled')$key='mail_sending';
   $r=$this->getObject('audiencerenderer','audience');
-  return ['state'=>$row['state'],'label'=>$r->text($key),'message'=>sprintf($r->text('mail_progress'),$sent,$total,$failed),'tone'=>$key==='mail_sent'?'success':($key==='mail_attention'?'warning':'info'),'complete'=>in_array($key,['draft','cancelled','mail_sent','mail_attention'],true)];
+  return ['state'=>$row['state'],'label'=>$r->text($key),'message'=>sprintf($r->text('mail_progress'),$sent,$total,$failed),'tone'=>$key==='mail_sent'?'success':($key==='mail_attention'?'warning':'info'),'canRestore'=>$row['state']==='cancelled'&&array_sum($counts)===0,'complete'=>in_array($key,['draft','cancelled','mail_sent','mail_attention'],true)];
  }
  public function listing(){$this->store()->guard();return $this->store()->rows('SELECT id,subject,state,updated_at FROM tbl_audience_campaigns ORDER BY updated_at DESC LIMIT 50');}
  public function save($id,array $input){
@@ -71,12 +71,17 @@ class audiencecampaigns extends dbTable
   if(!empty($p['support'])){$support=$this->getObject('dbsysconfig','sysconfig')->getValue('AUDIENCE_SUPPORT_MESSAGE','audience','');if(trim((string)$support)!=='')$html.='<h2>'.htmlspecialchars($this->supportHeading(),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8').'</h2><p>'.self::htmlText(trim($support)).'</p>';}
   return '<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;max-width:600px;overflow-wrap:anywhere;word-break:break-word">'.$html.'</div>';
  }
- public function queue($id,$version){
+ public function queue($id,$version,?array $input=null){
   $this->store()->guard();$s=$this->store();$s->beginTransaction();
   try{$r=$this->one($id,true);if(!$r)throw new DomainException('invalid');
    if($r['state']!=='draft'){$s->commitTransaction();return $r;}
    if((int)$r['version']!==(int)$version)throw new DomainException('conflict');
    $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
+   if($input!==null){
+    if(trim($input['subject']??'')!==$r['subject'])throw new DomainException('unsaved');
+    foreach(['greeting','body'] as $key)if(trim(str_replace("\r\n","\n",$input[$key]??''))!==trim(str_replace("\r\n","\n",$p[$key]??'')))throw new DomainException('unsaved');
+    foreach(['latest_recording','upcoming','support'] as $key)if((($input[$key]??'')==='1')!==!empty($p[$key]))throw new DomainException('unsaved');
+   }
    if(isset($p['upcoming_heading']))$p=$this->getObject('webinarannouncements','webinar')->refreshHeading($p);
    $r['payload']=json_encode($p,JSON_THROW_ON_ERROR);$p['rendered']=$this->compose($r);$p['rendered_html']=$this->composeHtml($r);if($p['rendered']==='')throw new DomainException('invalid');
    $p['recipients']=$s->rows("SELECT id,revision FROM tbl_audience_contacts WHERE state='subscribed' ORDER BY id");$p['cursor']=0;
@@ -94,6 +99,18 @@ class audiencecampaigns extends dbTable
   }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
  }
  public function cancel($id,$version){$this->store()->guard();$s=$this->store();$s->beginTransaction();try{$r=$this->one($id,true);if(!$r||(int)$r['version']!==(int)$version)throw new DomainException('conflict');$this->persist($r,json_decode($r['payload'],true),'cancelled');$s->commitTransaction();}catch(Throwable $e){$s->rollbackTransaction();throw $e;}}
+ /** Only an untouched outbox can return to draft: never revive or duplicate delivery. */
+ public function restore($id,$version){
+  $s=$this->store();$s->guard();$s->beginTransaction();
+  try{
+   $r=$this->one($id,true);
+   if(!$r||$r['state']!=='cancelled'||(int)$r['version']!==(int)$version)throw new DomainException('conflict');
+   if($s->rows('SELECT id FROM tbl_communications_outbox WHERE idempotency_key LIKE ? LIMIT 1',['audience:'.$id.':%']))throw new DomainException('restore_blocked');
+   $p=json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);
+   foreach(['rendered','rendered_html','recipients','schedule_key','expires_at','event_times'] as $key)unset($p[$key]);
+   $p['cursor']=0;$this->persist($r,$p,'draft');$s->commitTransaction();return $this->one($id);
+  }catch(Throwable $e){$s->rollbackTransaction();throw $e;}
+ }
  /** No web request performs delivery. Transactions cover a single recipient and cursor. */
  public function pump($limit=20){
   if(PHP_SAPI!=='cli')throw new DomainException('forbidden');$s=$this->store();$count=0;
