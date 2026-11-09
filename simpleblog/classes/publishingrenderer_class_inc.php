@@ -19,7 +19,13 @@ class publishingrenderer extends ChisimbaObject
             }
             $content=implode(' ',$parts);
         }
-        $plain=trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$content)),ENT_QUOTES|ENT_HTML5,'UTF-8')));
+        $plainText=static fn($content)=>trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$content)),ENT_QUOTES|ENT_HTML5,'UTF-8')));
+        $plain=$plainText($content);
+        // A video-only post still has authored prose in its caption.
+        if($plain===''&&is_array($composition)&&($composition['version']??null)===1&&is_array($composition['blocks']??null)){
+            $captions=[];foreach($composition['blocks'] as $block)if(($block['type']??'')==='video'&&is_string($block['caption']??null))$captions[]=$block['caption'];
+            $plain=$plainText(implode(' ',$captions));
+        }
         if(mb_strlen($plain)<=240)return $plain;
         $short=mb_substr($plain,0,240);
         $boundary=preg_replace('/\s+\S*$/u','',$short);
