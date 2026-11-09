@@ -18,6 +18,6 @@ $registration=file_get_contents(__DIR__.'/../register.conf');
 foreach(['videoorientation','landscape','portrait','video_display_width','video_width_normal','video_width_wide','videotranscript','transcript','video_controls_help'] as $key)check(str_contains($registration,'TEXT: mod_contentblocks_comp_'.$key.'|'),'Registered composition label: '.$key);
 echo "PASS all video controls and Help use registered composition language keys.\n";
 $v=$s->emptyBlock('video');$v['url']='https://youtu.be/dQw4w9WgXcQ';
-check(!str_contains($s->render([$v]),'mod_contentblocks_comp_open_video'),'YouTube already supplies its own source link');
-$v['url']='https://vimeo.com/123456789';check(str_contains($s->render([$v]),'mod_contentblocks_comp_open_video'),'Other embed providers retain source fallback');
+check(!str_contains($s->render([$v]),'Mod_contentblocks_comp_open_video'),'YouTube already supplies its own source link');
+$v['url']='https://vimeo.com/123456789';check(str_contains($s->render([$v]),'Mod_contentblocks_comp_open_video'),'Other embed providers retain source fallback');
 echo "PASS YouTube source-link suppression and other-provider fallback.\n";
