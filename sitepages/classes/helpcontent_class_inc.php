@@ -17,6 +17,7 @@ class helpcontent extends ChisimbaObject
                 ['heading'=>$text('settings'),'body'=>$text('recovery')],
                 ['heading'=>$text('imported_title'),'body'=>$text('imported')],
                 ['heading'=>$blocks->text('audio'),'body'=>$blocks->text('audio_help')],
+                ['heading'=>$blocks->text('video'),'body'=>$blocks->text('video_controls_help')],
                 ['heading'=>$blocks->text('video_gallery'),'body'=>$blocks->text('gallery_help')],
             ]];
     }
