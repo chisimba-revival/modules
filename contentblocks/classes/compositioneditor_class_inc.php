@@ -86,12 +86,14 @@ class compositioneditor extends ChisimbaObject
                 $html.='</select></div><p>'.$s::escape($s->text('button_help')).'</p>';
             }
             if($type==='video'){
+                $html.='<div class="chisimba-form-grid">';
                 foreach(['video_orientation'=>['landscape','portrait'],'video_width'=>['normal','wide']] as $key=>$options){
                     $selectId='comp_'.$key.'_'.$id;$selected=$block[$key]??($key==='video_width'?'wide':(str_contains($block['url'],'tiktok.com/')?'portrait':'landscape'));
                     $html.='<div class="chisimba-form-field"><label for="'.$selectId.'">'.$s::escape($s->text($key==='video_orientation'?'videoorientation':'video_display_width')).'</label><select id="'.$selectId.'" name="'.$prefix.'['.$key.']">';
                     foreach($options as $option)$html.='<option value="'.$option.'"'.($selected===$option?' selected':'').'>'.$s::escape($s->text($key==='video_width'?'video_width_'.$option:$option)).'</option>';
                     $html.='</select></div>';
                 }
+                $html.='</div>';
                 $html.='<div class="chisimba-form-field"><label for="comp_transcript_'.$id.'">'.$s::escape($s->text('videotranscript')).'</label><textarea id="comp_transcript_'.$id.'" name="'.$prefix.'[video_transcript]" rows="4">'.$s::escape($block['video_transcript']??'').'</textarea></div><p>'.$s::escape($s->text('video_controls_help')).'</p>';
             }
             if($type==='audio')$html.='<p class="chisimba-help-text">'.$s::escape($s->text('audio_help')).'</p>';
