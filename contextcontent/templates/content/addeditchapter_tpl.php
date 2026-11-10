@@ -23,6 +23,11 @@ $cancelUrl=$this->uri(array('action'=>$isEdit?'viewchapter':'showcontextchapters
 <p class="contextcontent-form-eyebrow"><?php echo $e($this->objContext->getTitle()); ?></p>
 <h1 id="contextcontent-chapter-form-title"><?php echo $e(ucfirst($pageTitle)); ?></h1>
 <p><?php echo $e($c('mod_contextcontent_chapterformhelp','Set the title, availability and introduction for this [-chapter-].')); ?></p>
+<?php if (!empty($sectionsEnabled)): ?>
+<div class="chisimba-form-actions">
+<a class="button" href="<?php echo $e($this->uri(array('action'=>'managesections'))); ?>"><?php echo $icons->render('layers',array('decorative'=>TRUE)); ?> <?php echo $e($c('mod_contextcontent_organisesections','Organise [-sections-] and [-chapters-]')); ?></a>
+</div>
+<?php endif; ?>
 </header>
 <?php if($this->getParam('stage_gate_saved','')==='1'): ?>
 <div class="confirmation contextcontent-stage-gate-confirmation"><?php echo $e($t('mod_contextcontent_stage_gate_saved','Stage gate saved.')); ?></div>
