@@ -223,3 +223,13 @@ GitHub must contain completed work. Local-only changes are acceptable while the
 work is actively in progress; commit and push scoped, verified changes before
 calling the task complete. A production deployment alone does not complete the
 handoff. Preserve unrelated work, and report any push blocker explicitly.
+
+## Common development deployments
+
+Merge completed work into and push `release/consolidation-20260930` before it is
+deployed. This is active development, not a stable-release freeze. Use the
+framework's `tools/deployment` complete-source manifest workflow for all sites;
+do not deploy feature branches or retain per-site copies of module code.
+Configuration, content and explicitly inventoried MyHairPlanner private business
+code are separate from the shared source. Detect and reconcile drift before the
+next deployment, rather than silently adopting it as a new baseline.
