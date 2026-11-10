@@ -43,7 +43,7 @@ class compositionservice extends ChisimbaObject
     public function emptyBlock($type)
     {
         if (!isset($this->types()[$type])) throw new DomainException('invalid');
-        return ['id'=>bin2hex(random_bytes(12)),'type'=>$type,'title'=>'','text'=>'','url'=>'','alt'=>'','caption'=>'','button_label'=>'','button_url'=>'','button_position'=>'text','slides'=>[]]+($type==='video'?['video_orientation'=>'landscape','video_width'=>'normal','video_transcript'=>'']:[]);
+        return ['id'=>bin2hex(random_bytes(12)),'type'=>$type,'title'=>'','text'=>'','url'=>'','alt'=>'','caption'=>'','button_label'=>'','button_url'=>'','button_position'=>'text','slides'=>[]];
     }
 
     /** Legacy HTML remains one editable text block until explicitly saved as a composition. */
@@ -97,12 +97,6 @@ class compositionservice extends ChisimbaObject
                 'button_url'=>$this->url($this->field($input,'button_url',2048),true),'slides'=>[]];
             $block['image_size']=$this->field($input,'image_size',20)?:'full';
             if(!in_array($block['image_size'],['full','portrait'],true))throw new DomainException('invalid');
-            if($type==='video'){
-                $block['video_orientation']=$this->field($input,'video_orientation',16)?: (str_contains($block['url'],'tiktok.com/')?'portrait':'landscape');
-                $block['video_width']=$this->field($input,'video_width',16)?:'wide';
-                $block['video_transcript']=$this->field($input,'video_transcript',50000);
-                if(!in_array($block['video_orientation'],['portrait','landscape'],true)||!in_array($block['video_width'],['normal','wide'],true))throw new DomainException('invalid');
-            }
             $block['button_position']=$this->field($input,'button_position',30)?:'text';
             if(!in_array($block['button_position'],['text','top-left','top-right','bottom-left','bottom-right'],true))throw new DomainException('invalid');
             if($type==='video_gallery'){
@@ -235,10 +229,9 @@ class compositionservice extends ChisimbaObject
                 case 'video':
                     if($block['url']==='')break;
                     $embed=$this->getObject('contentmediaservice','contentblocks')->videoEmbed($block['url']);
-                    $body=$copy.'<div class="chisimba-video-frame chisimba-video-frame--'.$block['video_orientation'].' chisimba-video-frame--'.$block['video_width'].'">'.($embed ? '<iframe src="'.self::escape($embed).'" title="'.self::escape($block['title']?:$this->text('video')).'" loading="lazy" allowfullscreen></iframe>'
-                        :'<video src="'.self::escape($block['url']).'" controls preload="metadata" playsinline></video>').'</div>';
-                    if($block['video_transcript']!=='')$body.='<details><summary>'.self::escape($this->text('transcript')).'</summary><p>'.nl2br(self::escape($block['video_transcript'])).'</p></details>';
-                    if($embed&&!str_starts_with($embed,'https://www.youtube-nocookie.com/embed/'))$body.='<p><a href="'.self::escape($block['url']).'" target="_blank" rel="noopener noreferrer">'.self::escape($this->text('open_video')).'</a></p>';
+                    $body=$copy.($embed ? '<iframe src="'.self::escape($embed).'" title="'.self::escape($block['title']?:$this->text('video')).'" loading="lazy" allowfullscreen></iframe>'
+                        :'<video src="'.self::escape($block['url']).'" controls preload="metadata" playsinline></video>');
+                    if($embed)$body.='<p><a href="'.self::escape($block['url']).'" target="_blank" rel="noopener noreferrer">'.self::escape($this->text('open_video')).'</a></p>';
                     if($block['caption']!=='')$body.='<p>'.self::escape($block['caption']).'</p>';break;
                 case 'video_gallery': $body=$copy.$this->getObject('videocollection','contentblocks')->render($block);break;
                 case 'slider':

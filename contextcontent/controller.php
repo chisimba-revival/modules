@@ -1519,7 +1519,7 @@ class contextcontent extends controller {
         $chapterStageGateBest = $chapterStageGate === FALSE ? NULL
             : $this->objChapterStageGates->bestPercentage($chapterStageGate['testid'], $chapterStageGate['totalmark']);
         if ($isLastPageInChapter && $chapterStageGate!==FALSE
-            && !$this->objChapterStageGates->hasPassed($chapterStageGate)) {
+            && ($chapterStageGateBest===NULL || $chapterStageGateBest<$chapterStageGate['passmark'])) {
             $nextPage='';
         }
         $this->setVar('nextPage', $nextPage);
@@ -1863,7 +1863,6 @@ class contextcontent extends controller {
     protected function showStageGateLocked($gate) {
         $this->setLayoutTemplate('layout_firstpage_tpl.php');
         $this->setVar('stageGateLocked', $gate);
-        if (!empty($gate['video']['required']) && !$gate['video']['complete']) { return 'videogatelocked_tpl.php'; }
         $this->setVar('stageGateLockedBestPercentage', $this->objChapterStageGates->bestPercentage($gate['testid'], $gate['totalmark']));
         return 'stagegatelocked_tpl.php';
     }

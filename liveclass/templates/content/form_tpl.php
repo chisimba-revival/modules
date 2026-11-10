@@ -5,7 +5,7 @@
 <input type="hidden" name="csrf_token" value="<?php echo $e($this->getVar('liveclassCsrf')); ?>">
 <input type="hidden" name="flow_chapter" value="<?php echo $e($this->getVar('liveclassFlowChapter','')); ?>"><input type="hidden" name="flow_parent" value="<?php echo $e($this->getVar('liveclassFlowParent','')); ?>">
 <div class="liveclass-field"><label><?php echo $e($l['session_type']); ?></label><strong><?php echo $e($l[$this->getVar('liveclassType')==='webinar'?'webinar_type':'context_type']); ?></strong></div>
-<label><?php echo $e($l['session_name']); ?><input name="name" maxlength="255" required></label>
+<label><?php echo $e($l['name']); ?><input name="name" maxlength="255" required></label>
 <label><?php echo $e($l['description_field']); ?><textarea name="description" rows="5"></textarea></label>
 <label><?php echo $e($l['feature_image']); ?><input type="url" name="image_url" inputmode="url" placeholder="https://"><small class="chisimba-field-help"><?php echo $e($l['feature_image_help']); ?></small></label>
 <div class="liveclass-form-row liveclass-schedule-row"><label><?php echo $e($l['start_date']); ?><input type="text" name="start_date" required autocomplete="off"><small class="chisimba-field-help"><?php echo $e(strtr($l['date_format_help'],array('{example}'=>$this->getVar('liveclassDateExample')))); ?></small></label><label><?php echo $e($l['start_time']); ?><input type="time" name="start_time" required></label><label><?php echo $e($l['duration']); ?><input type="number" name="duration_minutes" min="5" max="1440" value="60" required></label></div>
