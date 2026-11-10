@@ -180,24 +180,6 @@ class dbAnnouncements extends dbTable {
         }
     }
 
-    /** Course removal preserves announcements also assigned to other courses. */
-    public function contextDeletionTables() {
-        return ['tbl_announcements','tbl_announcements_context','tbl_announcements_chat_receipts'];
-    }
-    public function deleteForContext($code) {
-        $documents=[];
-        $rows=$this->selectPrepared('SELECT a.id, a.contextid FROM tbl_announcements a JOIN tbl_announcements_context c ON c.announcementid=a.id WHERE c.contextid=? FOR UPDATE',[$code]);
-        $this->executePrepared('DELETE FROM tbl_announcements_context WHERE contextid=?',[$code]);
-        foreach ($rows as $row) {
-            $documents[]='announcement_entry_'.$code.'_'.$row['id'];
-            if ($row['contextid']!=='context' || $this->selectPrepared('SELECT id FROM tbl_announcements_context WHERE announcementid=?',[$row['id']])) continue;
-            $this->executePrepared('DELETE FROM tbl_announcements_chat_receipts WHERE announcement_id=?',[$row['id']]);
-            $this->executePrepared('DELETE FROM tbl_announcements WHERE id=?',[$row['id']]);
-            $documents[]='announcement_entry_'.$row['id'];
-        }
-        return $documents;
-    }
-
     public function deleteAnnouncement($id) {
         $announcement = $this->getMessage($id);
         if ($announcement == FALSE) {
@@ -392,14 +374,12 @@ class dbAnnouncements extends dbTable {
     }
 
     /** Return active site and context announcements visible to this user. */
-    public function getVisibleAnnouncements(array $contexts,array $audiences,$limit,$offset,$onlyScope=null) {
+    public function getVisibleAnnouncements(array $contexts,array $audiences,$limit,$offset) {
         if(!$audiences)return [];
         $scope=["a.contextid='site'"];foreach($contexts as $context)$scope[]='ac.contextid=?';
-        if(!in_array($onlyScope,[null,'site','context'],true))throw new InvalidArgumentException('Invalid announcement scope');
-        $scopeFilter=$onlyScope===null?'':($onlyScope==='site'?" AND a.contextid='site'":" AND a.contextid='context'");
         $params=array_merge(array_values($contexts),array_values($audiences),[$this->now(),$this->now()]);
         $limit=max(1,min(100,(int)$limit));$offset=max(0,(int)$offset);
-        return $this->selectPrepared('SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid=a.id WHERE ('.implode(' OR ',$scope).')'.$scopeFilter.' AND a.audience IN ('.implode(',',array_fill(0,count($audiences),'?')).') AND (a.publish_at IS NULL OR a.publish_at<=?) AND (a.expires_at IS NULL OR a.expires_at>?) ORDER BY COALESCE(a.publish_at,a.createdon) DESC LIMIT '.$offset.','.$limit,$params);
+        return $this->selectPrepared('SELECT DISTINCT a.* FROM tbl_announcements a LEFT JOIN tbl_announcements_context ac ON ac.announcementid=a.id WHERE ('.implode(' OR ',$scope).') AND a.audience IN ('.implode(',',array_fill(0,count($audiences),'?')).') AND (a.publish_at IS NULL OR a.publish_at<=?) AND (a.expires_at IS NULL OR a.expires_at>?) ORDER BY COALESCE(a.publish_at,a.createdon) DESC LIMIT '.$offset.','.$limit,$params);
     }
 
     /**

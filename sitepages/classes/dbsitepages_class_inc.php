@@ -31,15 +31,6 @@ class dbsitepages extends dbTable
         // Preserve the earlier deployed preference until the next normal page save.
         return ($composition['hide_title'] ?? false) !== true;
     }
-    /** Display choices apply only to the public page; legacy pages keep the site chrome. */
-    public static function showRegion(array $row, string $region): bool
-    {
-        if (!in_array($region, ['header','footer'], true)) throw new InvalidArgumentException('Unknown page region');
-        $key='show_'.$region;
-        if (array_key_exists($key,$row)) return (bool)$row[$key];
-        $composition=json_decode($row['composition_json']??'',true);
-        return ($composition[$key]??true)!==false;
-    }
     public static function version(array $row)
     {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}
     public function savePage(array $data,$userId,$id='') {
