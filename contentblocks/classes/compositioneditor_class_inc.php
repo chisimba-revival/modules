@@ -15,12 +15,6 @@ class compositioneditor extends ChisimbaObject
         $s=$this->getObject('compositionservice','contentblocks');$id='comp_'.preg_replace('/[^a-zA-Z0-9_]/','_',$prefix.'_'.$name);
         $html='<div class="chisimba-form-field"><label for="'.$id.'">'.$s::escape($s->text($label)).'</label><input type="'.'text'.'" id="'.$id.'" name="'.$s::escape($prefix.'['.$name.']').'" value="'.$s::escape($value).'"></div>';
         if($media)$html.='<button type="button" class="button chisimba-button-secondary" data-composition-media="'.$id.'">'.$this->getObject('iconservice','ui')->render('folder-open',['decorative'=>true]).'<span>'.$s::escape($s->text('choose_media')).'</span></button>';
-        if ($media && in_array($label, ['image_url','gallery_thumbnail'], true)) {
-            $safe = is_string($value) && preg_match('~^(?:/(?!/)|https?://)~i', $value);
-            $html .= '<figure class="chisimba-media-preview" data-composition-image-preview="'.$id.'"'.(!$safe?' hidden':'').'>'
-                .'<img class="chisimba-media-preview__media chisimba-media-preview__image"'.($safe?' src="'.$s::escape($value).'"':'').' alt="'.$s::escape($s->text('current_image')).'">'
-                .'<figcaption>'.$s::escape($s->text('image_edit_help')).'</figcaption></figure>';
-        }
         return $html;
     }
     private function hiddenFields($prefix,array $values)
@@ -82,12 +76,6 @@ class compositioneditor extends ChisimbaObject
                 $html.=$this->field($prefix,'url',$block['url'],$type==='video'?'video_url':($type==='audio'?'audio_url':'image_url'),true);
                 if(!in_array($type,['video','audio'],true))$html.=$this->field($prefix,'alt',$block['alt'],'alt');
                 $html.=$this->field($prefix,'caption',$block['caption'],'caption');
-            }
-            if(in_array($type,['hero','reverse_hero','image_left','image_right'],true)){
-                $sizeId='comp_image_size_'.$id;
-                $html.='<div class="chisimba-form-field"><label for="'.$sizeId.'">'.$s::escape($s->text('image_size')).'</label><select id="'.$sizeId.'" name="'.$prefix.'[image_size]">';
-                foreach(['full','portrait'] as $size)$html.='<option value="'.$size.'"'.(($block['image_size']??'full')===$size?' selected':'').'>'.$s::escape($s->text('image_size_'.$size)).'</option>';
-                $html.='</select><small>'.$s::escape($s->text('image_size_help')).'</small></div>';
             }
             if(in_array($type,['hero','reverse_hero'],true)){
                 $html.=$this->field($prefix,'button_label',$block['button_label']??'','button_label');

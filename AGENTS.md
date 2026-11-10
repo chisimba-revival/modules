@@ -71,9 +71,9 @@ modules, including new repositories, background jobs and installation hooks.
 - If the abstraction lacks a needed capability, extend the shared framework
   boundary with appropriate tests instead of bypassing it in a module.
 - Review new and changed persistence for direct driver calls. Existing legacy
-  callers are migration debt, not examples or exceptions for new code. PDO MySQL
-  is the sole supported backend. Verify changed persistence with
-  disposable PDO fixtures, including failure and rollback behaviour.
+  callers are migration debt, not examples or exceptions for new code. During
+  the MDB2-to-PDO transition, verify changed persistence against both supported
+  drivers with disposable fixtures, including failure and rollback behaviour.
 
 ## Skin primitives and consistent interaction
 
@@ -216,10 +216,3 @@ Sites share one versioned codebase; site differences belong in configuration,
 branding and content. Audit deployed source drift before release, reconcile
 newer shared fixes into source, and verify a common manifest. Do not preserve
 site-only module variants or overwrite newer deployed fixes blindly.
-
-## GitHub is authoritative
-
-GitHub must contain completed work. Local-only changes are acceptable while the
-work is actively in progress; commit and push scoped, verified changes before
-calling the task complete. A production deployment alone does not complete the
-handoff. Preserve unrelated work, and report any push blocker explicitly.

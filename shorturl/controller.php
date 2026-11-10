@@ -23,13 +23,10 @@ class shorturl extends controller
             if ($action==='redirect') {
                 $root=$this->getObject('altconfig','config')->getItem('KEWL_SITE_ROOT');
                 $path=(string)(parse_url($root,PHP_URL_PATH)??'/');
-                $request=(string)(parse_url($_SERVER['REQUEST_URI']??'',PHP_URL_PATH)??'');
+                $request=$_SERVER['REQUEST_URI']??'';
                 $relative=str_starts_with($request,$path)?substr($request,strlen($path)):$request;
-                $target=$this->repository->getTarget($relative);
-                if ($target===null && preg_match('~^(?:go/)?[a-z0-9]+(?:-[a-z0-9]+)*/?$~D',$relative)) $target=$this->repository->getTarget(str_ends_with($relative,'/')?rtrim($relative,'/'):$relative.'/');
-                if ($target===null) { http_response_code(404); header('Content-Type: text/plain; charset=UTF-8'); echo $this->text('request_missing'); return null; }
+                $target=$this->repository->getTarget($relative)??$root;
                 if (!dbmap::safeTarget($target) || str_contains($target,'module=shorturl&action=redirect')) throw new DomainException('invalid');
-                header('Cache-Control: no-store');
                 header('Location: '.$target, true, 302);
                 return null;
             }

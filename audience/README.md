@@ -40,16 +40,3 @@ Audience 0.006 supports {FIRSTNAME} in newsletter text. Each recipient's queued
 copy replaces it with the first part of their stored full name, or “there” for
 missing/blank/email-like names. New greetings default to Hello {FIRSTNAME},.
 The saved preview retains the placeholder; existing drafts are not rewritten.
-
-Audience 0.018: edits display an unsaved-changes warning and disable Send until
-Save and preview succeeds. The queue endpoint also rejects unsaved form content.
-Cancelled newsletters offer **Return to draft** only while their outbox is empty;
-this preserves saved content and clears the delivery snapshot without sending.
-Once any outbox entry exists, restoration is refused to prevent reviving old mail
-or duplicating delivery. Cancellation remains visible even after partial delivery.
-
-Audience 0.019 adds an optional, initially selected News and Stories section before
-Support. Save and preview snapshots the latest two published, unrestricted site
-posts, ordered by publication date. Draft, future, personal, course and
-membership-only posts are excluded. Images and titles link to the post; the text
-alternative contains titles and URLs. Queued previews remain unchanged.

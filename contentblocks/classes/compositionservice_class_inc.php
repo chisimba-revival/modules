@@ -95,8 +95,6 @@ class compositionservice extends ChisimbaObject
                 'caption'=>$this->field($input,'caption',2000),
                 'button_label'=>$this->field($input,'button_label',200),
                 'button_url'=>$this->url($this->field($input,'button_url',2048),true),'slides'=>[]];
-            $block['image_size']=$this->field($input,'image_size',20)?:'full';
-            if(!in_array($block['image_size'],['full','portrait'],true))throw new DomainException('invalid');
             if($type==='video'){
                 $block['video_orientation']=$this->field($input,'video_orientation',16)?: (str_contains($block['url'],'tiktok.com/')?'portrait':'landscape');
                 $block['video_width']=$this->field($input,'video_width',16)?:'wide';
@@ -172,7 +170,7 @@ class compositionservice extends ChisimbaObject
     private function figure(array $block, array $badges = [])
     {
         if($block['url']==='')return '';
-        return '<figure'.(($block['image_size']??'full')==='portrait'?' class="chisimba-content-portrait"':'').'>'.($badges ? '<div class="chisimba-media-badged">' : '').'<img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy">'
+        return '<figure>'.($badges ? '<div class="chisimba-media-badged">' : '').'<img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy">'
             .($badges ? '<span class="chisimba-media-badged__labels">'.implode('', array_map(fn($label) => '<span class="chisimba-status-badge">'.self::escape($label).'</span>', $badges)).'</span></div>' : '')
             .($block['caption']!==''?'<figcaption>'.self::escape($block['caption']).'</figcaption>':'').'</figure>';
     }
@@ -218,7 +216,7 @@ class compositionservice extends ChisimbaObject
                 $button='<a class="button chisimba-button-primary" href="'.self::escape($block['button_url']).'">'.self::escape($block['button_label']).'</a>';
                 if($block['button_position']==='text'||$block['url']==='')$copy.='<div class="chisimba-form-actions">'.$button.'</div>';
                 else {
-                    $image='<figure'.(($block['image_size']??'full')==='portrait'?' class="chisimba-content-portrait"':'').'><div class="chisimba-hero-image"><img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy"><div class="chisimba-hero-image__action chisimba-hero-image__action--'.$block['button_position'].'">'.$button.'</div></div>'
+                    $image='<figure><div class="chisimba-hero-image"><img src="'.self::escape($block['url']).'" alt="'.self::escape($block['alt']).'" loading="lazy"><div class="chisimba-hero-image__action chisimba-hero-image__action--'.$block['button_position'].'">'.$button.'</div></div>'
                         .($block['caption']!==''?'<figcaption>'.self::escape($block['caption']).'</figcaption>':'').'</figure>';
                 }
             }
