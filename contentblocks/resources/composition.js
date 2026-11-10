@@ -119,17 +119,6 @@
             else window.addEventListener('load',function(){requestAnimationFrame(restore);},{once:true});
         }
     }
-    document.addEventListener('change', function(event) {
-        var field=event.target;
-        if(!field.id || !field.id.startsWith('comp_'))return;
-        document.querySelectorAll('[data-composition-image-preview]').forEach(function(preview){
-            if(preview.dataset.compositionImagePreview!==field.id)return;
-            var value=field.value.trim(), safe=/^(?:\/(?!\/)|https?:\/\/)/i.test(value);
-            preview.hidden=!safe;
-            var image=preview.querySelector('img');
-            if(safe)image.src=value;else image.removeAttribute('src');
-        });
-    });
     var previous = window.ChisimbaFilePickerReceive;
     window.ChisimbaFilePickerReceive = function (target, file) {
         var field = document.getElementById(target);

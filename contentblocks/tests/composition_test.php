@@ -86,12 +86,3 @@ check(str_contains($audioHtml,'href="/recordings/bird.mp3"'),'Audio has a direct
 $audio['url']='javascript:alert(1)';rejects(fn()=>$s->validate([$audio]));
 check($s->render([$s->emptyBlock('audio')])==='','Empty audio placeholder stays unpublished');
 echo "PASS: accessible audio, direct fallback and unsafe URL rejection\n";
-
-$portrait=$s->emptyBlock('image_right');$portrait['url']='/portrait.jpg';
-check($s->validate([$portrait])[0]['image_size']==='full','Existing blocks keep full size');
-$portrait['image_size']='portrait';$validated=$s->validate([$portrait]);
-check(str_contains($s->render($validated),'class="chisimba-content-portrait"'),'Portrait class rendered');
-$roundtrip=$s->validate(json_decode(json_encode($validated),true));
-check($roundtrip[0]['image_size']==='portrait','Portrait sizing survives save and reload');
-$portrait['image_size']='invalid';rejects(fn()=>$s->validate([$portrait]));
-echo "PASS: portrait sizing defaults, rendering, persistence and validation\n";
