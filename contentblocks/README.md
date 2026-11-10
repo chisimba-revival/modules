@@ -38,3 +38,12 @@ repository; use `CHISIMBA_FRAMEWORK_ROOT` if the framework is not its sibling.
 ## Audio recordings
 
 The Audio block accepts a managed recording URL or an explicit HTTP(S) URL, plus a title, caption and optional explanatory text. It renders native keyboard-accessible controls with `preload="none"`, no autoplay, and an ordinary recording link as a fallback. Credit recordings in the caption or accompanying text. Only use media intended for the publication’s audience. The shared page Help includes the audio workflow. Existing compositions and media addresses remain unchanged.
+
+## Image-only compositions
+
+Pages and posts share the Image block: a managed or permitted web image, separate
+alternative text, an optional visible caption and the existing full/portrait size
+control. It renders a semantic figure/figcaption without a heading, text column
+or action button. Caption text is escaped; empty image placeholders do not render.
+Existing Hero and split-layout blocks are not converted. Saving, access and file
+permissions remain owned by the host page/post and the shared media service.

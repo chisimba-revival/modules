@@ -27,7 +27,7 @@ class compositionservice extends ChisimbaObject
     /** The existing content-block vocabulary, extended with compositional layouts. */
     public function types()
     {
-        return ['text'=>'file-text','image_left'=>'panel-left','image_right'=>'panel-right',
+        return ['text'=>'file-text','image'=>'image','image_left'=>'panel-left','image_right'=>'panel-right',
             'hero'=>'image','reverse_hero'=>'image-up','video'=>'video','audio'=>'volume-2','video_gallery'=>'gallery-vertical','slider'=>'gallery-horizontal']+array_map(static fn($extension)=>$extension['icon'],$this->extensions);
     }
 
@@ -225,6 +225,7 @@ class compositionservice extends ChisimbaObject
             if($provider=$this->provider($block['type'])) { $html.=$provider->renderBlock($block['data']);continue; }
             switch($block['type']) {
                 case 'text': $body=$copy;break;
+                case 'image': $body=$image;break;
                 case 'hero': case 'image_left': $body=$image.'<div>'.$copy.'</div>';break;
                 case 'reverse_hero': case 'image_right': $body='<div>'.$copy.'</div>'.$image;break;
                 case 'audio':
