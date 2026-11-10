@@ -36,23 +36,14 @@ class chapterstagegateservice extends controller
 
     public function chapterGate($contextCode, $chapterId)
     {
-        $chapter = $this->objContextChapters->getChapter($chapterId, $contextCode);
-        $video = $this->getObject('videoconsumer', 'contextcontent')->chapterRequirement($contextCode, $chapterId);
+        $chapter = $this->objContextChapters->getChapter($chapterId);
         if ($chapter === FALSE || $chapter['contextcode'] !== $contextCode
             || empty($chapter['stage_gate_enabled']) || empty($chapter['stage_gate_testid'])) {
-            if ($chapter && $chapter['contextcode'] === $contextCode && $video['required']) {
-                return ['chapterid'=>$chapterId, 'chaptertitle'=>$chapter['chaptertitle'], 'contextcode'=>$contextCode,
-                    'testid'=>'', 'testname'=>'', 'testtype'=>'', 'teststatus'=>'', 'inprogress'=>false, 'totalmark'=>0, 'passmark'=>100, 'entryavailable'=>false, 'video'=>$video];
-            }
             return FALSE;
         }
         $test = $this->testInContext($contextCode, $chapter['stage_gate_testid']);
         if ($test === FALSE) {
-            // A missing configured assessment must not silently bypass required viewing.
-            return ['chapterid'=>$chapterId, 'chaptertitle'=>$chapter['chaptertitle'], 'contextcode'=>$contextCode,
-                'testid'=>$chapter['stage_gate_testid'], 'testname'=>$chapter['chaptertitle'], 'testtype'=>'',
-                'teststatus'=>'unavailable', 'inprogress'=>false, 'totalmark'=>0, 'passmark'=>100,
-                'entryavailable'=>false, 'video'=>$video];
+            return FALSE;
         }
         $inProgressAttempt = $this->incompleteAttempt($test['id']);
         $inProgress = $inProgressAttempt !== FALSE;
@@ -60,8 +51,6 @@ class chapterstagegateservice extends controller
 
         return array(
             'chapterid' => $chapter['chapterid'],
-            'contextcode' => $contextCode,
-            'video' => $video,
             'chaptertitle' => $chapter['chaptertitle'],
             'testid' => $test['id'],
             'testname' => $test['name'],
@@ -99,8 +88,7 @@ class chapterstagegateservice extends controller
 
     public function hasPassed($gate)
     {
-        return (empty($gate['testid']) || $this->bestPercentage($gate['testid'], $gate['totalmark']) >= $gate['passmark'])
-            && (!isset($gate['video']) || $gate['video']['complete']);
+        return $this->bestPercentage($gate['testid'], $gate['totalmark']) >= $gate['passmark'];
     }
 
     public function bestPercentage($testId, $totalMark)
@@ -151,8 +139,8 @@ class chapterstagegateservice extends controller
                 continue;
             }
             $hasGate = TRUE;
-            $best = empty($gate['testid']) ? $gate['video']['percent'] : $this->bestPercentage($gate['testid'], $gate['totalmark']);
-            if (!$this->hasPassed($gate)) {
+            $best = $this->bestPercentage($gate['testid'], $gate['totalmark']);
+            if ($best === NULL || $best < $gate['passmark']) {
                 $complete = FALSE;
             }
             $summary[] = array(

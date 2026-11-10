@@ -40,7 +40,7 @@
                 else{form.elements.speaker_name.value='';form.elements.speaker_bio.value='';}
                 dirty=true;
             }else{
-                form.elements.id.value=data.id;document.dispatchEvent(new CustomEvent('webinar:saved',{detail:{id:data.id}}));form.elements.version.value=data.version;
+                form.elements.id.value=data.id;form.elements.version.value=data.version;
                 if(button?.name==='publish_action')form.elements.status.value=button.value;
                 history.replaceState(null,'',data.edit);preview.href=data.preview;preview.hidden=false;dirty=revision!==submittedRevision;
             }

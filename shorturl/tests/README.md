@@ -26,4 +26,6 @@ The shared page shell retains the previously noted small horizontal overflow.
 
 The native editor replaces ShortURL's Boxy forms and jqGrid callback; the shared
 libraries remain for CMS/CMS Admin and Forms. Existing dynamic mappings/key rows
-remain read-only, never executed. That October validation did not authorise production deployment. On 7 November, Derek requested reusable page links and approved /go/name/ for new links. ShortURL1.013 was explicitly deployed to KengaPub with a persistent route, normal catalogue installation, public URL checks and browser verification. Other sites remain outside that rollout.
+remain read-only, never executed. Keep ShortURL unregistered on working sites
+until the CMS revival and explicit deployment review. No production deployment
+is included in this change.

@@ -19,12 +19,3 @@ Audience subscriptions, optional accounts, supporter tiers and operational remin
 ## Validation
 
 `php tests/archive_contract_test.php` covers repeat import, source conflicts, draft exclusion, invalid IDs, output escaping and uncropped image rendering. Staging verification additionally checks actual media delivery, all three webinar and seven speaker pages, and desktop/mobile presentation. No tests create WordPress records or send email.
-
-Webinar 0.028 adds up to four categorised speaker links in the related
-`tbl_webinar_speaker_links` table. A parent row lock serialises edits and enforces
-the limit; list revisions prevent concurrent changes being overwritten. Manage
-permission and a separate CSRF scope protect each Ajax mutation. Save a new
-speaker before adding links. Link saves do not save or reload the biography.
-Links appear after the bio on the speaker detail page and in speaker dialogs.
-Categories use bundled icons and optional custom labels; HTTPS URLs are validated
-through the shared biography URL validator. No outgoing URL is fetched.
