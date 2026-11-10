@@ -28,7 +28,7 @@ class sitepages extends controller
         return match($action){'manage'=>$this->manage(),'save'=>$this->save(),'archive'=>$this->archive(),default=>$this->view()};
     }
     private function canManage(){return $this->getObject('pagepolicy','sitepages')->canManage();}
-    private function text($key){return $this->getObject('language','language')->languageText('mod_sitepages_'.$key,'sitepages');}
+    private function text($key){return html_entity_decode($this->getObject('language','language')->languageText('mod_sitepages_'.$key,'sitepages'),ENT_QUOTES|ENT_HTML5,'UTF-8');}
     private function token()
     {
         $token=(string)$this->getSession('sitepages_csrf');
@@ -43,7 +43,7 @@ class sitepages extends controller
     private function flash($message){$this->setSession('sitepages_flash',$message);}
     private function labels()
     {
-        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive','allpages','editing','settings','editorhint','viewpage','showtitle','showtitlehelp') as $key)$labels[$key]=$this->text($key);return $labels;
+        $labels=array();foreach(array('title','intro','new','edit','archive','preview','save','cancel','pagetitle','slug','slughelp','content','status','draft','published','empty','forbidden','confirmarchive','allpages','editing','settings','editorhint','viewpage','showtitle','showtitlehelp','showheader','showfooter','chromehelp','reusablelink','reusablehelp') as $key)$labels[$key]=$this->text($key);return $labels;
     }
     private function manage()
     {
@@ -54,6 +54,7 @@ class sitepages extends controller
         $editing=$id!==''||$this->getParam('new','')==='1';
         $this->setVar('sitepagesEditing',$editing);
         $this->setVar('sitepagesBlocks',$this->getObject('compositionservice','contentblocks')->fromPost(['composition_json'=>$edit['composition_json']??'','post_content'=>$edit['body_html']??'']));
+        $this->setVar('sitepagesCanLink',$this->user->isAdmin() && $this->getObject('modules','modulecatalogue')->checkIfRegistered('shorturl'));
         $this->setVar('sitepagesLabels',$this->labels());$this->setVar('sitepagesRows',$this->canManage()&&!$editing?$this->db->activeRows():array());$this->setVar('sitepagesEdit',$edit);$this->setVar('sitepagesCsrf',$this->token());$this->setVar('sitepagesFlash',(string)$this->getSession('sitepages_flash'));$this->setSession('sitepages_flash','');return 'manage_tpl.php';
     }
     private function recover(array $input,$message)
@@ -69,7 +70,7 @@ class sitepages extends controller
     }
     private function save()
     {
-        $input=['id'=>(string)$this->getParam('id',''),'slug'=>strtolower(trim((string)$this->getParam('slug',''))),'title'=>trim((string)$this->getParam('title','')),'body_html'=>(string)$this->getParam('body_html',''),'status'=>$this->getParam('status','draft')==='published'?'published':'draft','show_title'=>$this->getParam('show_title','1')==='1','blocks'=>$this->getParam('content_blocks',[]),'version'=>(string)$this->getParam('version','')];
+        $input=['id'=>(string)$this->getParam('id',''),'slug'=>strtolower(trim((string)$this->getParam('slug',''))),'title'=>trim((string)$this->getParam('title','')),'body_html'=>(string)$this->getParam('body_html',''),'status'=>$this->getParam('status','draft')==='published'?'published':'draft','show_title'=>$this->getParam('show_title','1')==='1','show_header'=>$this->getParam('show_header','1')==='1','show_footer'=>$this->getParam('show_footer','1')==='1','blocks'=>$this->getParam('content_blocks',[]),'version'=>(string)$this->getParam('version','')];
         if(!$this->canManage()){http_response_code(403);return $this->manage();}
         if(!$this->validPost()){http_response_code(403);return $this->recover($input,'expired');}
         try {
@@ -86,7 +87,7 @@ class sitepages extends controller
             $body=$builder->render($input['blocks']);$collision=$this->db->findBySlug($input['slug']);
             if($input['title']===''||mb_strlen($input['title'])>250||($body===''&&!array_filter($input['blocks'],static fn($block)=>$block['type']==='shop_sale'))||!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug'])||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
             if ($body === '') $body = '<!-- Live sale promotion -->';
-            $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'show_title'=>$input['show_title'],'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
+            $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'show_title'=>$input['show_title'],'show_header'=>$input['show_header'],'show_footer'=>$input['show_footer'],'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
             if(!$saved)throw new RuntimeException('failed');
             if($this->getParam('composition_save_ajax')==='1'){
                 $input['id']=$saved['id'];$input['version']=dbsitepages::version($saved);
@@ -105,7 +106,11 @@ class sitepages extends controller
     private function view()
     {
         $this->setVar('sitepagesCanEdit', $this->canManage());
-        $page=$this->db->findBySlug((string)$this->getParam('slug','home'),!$this->canManage());if(!$page||(!$this->canManage()&&($page['status']??'')!=='published')){http_response_code(404);$this->setVar('sitepagesMissing',$this->text('notfound'));}else {if(!empty($page['composition_json']))$page['body_html']=$this->getObject('compositionservice','contentblocks')->renderCards($this->getObject('compositionservice','contentblocks')->fromPost($page));else $page['body_html']=$this->cleaner->cleanHtml($page['body_html']);$this->setVar('sitepagesPage',$page);}return 'view_tpl.php';
+        $id=$this->getParam('id','');
+        $page=is_string($id)&&$id!==''?$this->db->find($id):$this->db->findBySlug((string)$this->getParam('slug','home'),!$this->canManage());if(!$page||(!$this->canManage()&&($page['status']??'')!=='published')){http_response_code(404);$this->setVar('sitepagesMissing',$this->text('notfound'));}else {if(!empty($page['composition_json']))$page['body_html']=$this->getObject('compositionservice','contentblocks')->renderCards($this->getObject('compositionservice','contentblocks')->fromPost($page));else $page['body_html']=$this->cleaner->cleanHtml($page['body_html']);$this->setVar('sitepagesPage',$page);
+            $preferences=json_decode($page['composition_json']??'',true);
+            if(($preferences['show_header']??true)===false){$this->setVar('pageSuppressBanner',true);$this->setVar('pageSuppressToolbar',true);}
+            if(($preferences['show_footer']??true)===false)$this->setVar('suppressFooter',true);}return 'view_tpl.php';
     }
 }
 ?>

@@ -101,6 +101,15 @@ class publishingrenderer extends ChisimbaObject
     /** Shared author/date line for cards and full posts. Stored publishing times are UTC. */
     public static function authorCredit(array $post,$accountName)
     { return trim((string)($post['author_credit']??''))?:$accountName; }
+    /** Exact publication date for editing; drafts without publication history have no date. */
+    public function editorPublicationDate(array $post)
+    {
+        $raw = $post['published_at'] ?? '';
+        if ($raw === '' && ($post['post_status'] ?? '') === 'posted') $raw = $post['datecreated'] ?? '';
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', (string)$raw, new DateTimeZone('UTC'));
+        if (!$date || $date->format('Y-m-d H:i:s') !== $raw) return '';
+        return '<p class="chisimba-publication-meta">'.self::escape($this->text('published')).': <time datetime="'.self::escape($date->format('c')).'">'.self::escape($date->format('j F Y, H:i').' UTC').'</time></p>';
+    }
     public function metadata(array $post)
     {
         $icons=$this->getObject('iconservice','ui');

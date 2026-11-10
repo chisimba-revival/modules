@@ -14,6 +14,7 @@ class helpcontent extends ChisimbaObject
         return ['title'=>$text('title'),'summary'=>$text('summary'),
             'steps'=>[$text('steps'),$text('edit'),$text('save')],
             'sections'=>[
+                ['heading'=>$text('links_title'),'body'=>$text('links')],
                 ['heading'=>$text('settings'),'body'=>$text('recovery')],
                 ['heading'=>$text('imported_title'),'body'=>$text('imported')],
                 ['heading'=>$blocks->text('audio'),'body'=>$blocks->text('audio_help')],

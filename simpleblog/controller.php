@@ -15,12 +15,19 @@ class simpleblog extends controller
         $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];
     }
     public function requiresLogin($action=null)
-    { return !in_array($this->getParam('action','view'),array('view','ajaxById','ajaxByTag','getfeed'),true); }
+    { return !in_array($this->requestedAction(),array('view','ajaxById','ajaxByTag','getfeed'),true); }
+    /** Missing and explicitly empty actions both mean the public listing. */
+    private function requestedAction()
+    {
+        $action=$this->getParam('action','view');
+        if (!is_string($action)) return '__invalid_action__';
+        return trim($action)===''?'view':trim($action);
+    }
     private function param($name,$default='')
     { $value=$this->getParam($name,$default); return is_string($value)?trim($value):''; }
     public function dispatch($action=null)
     {
-        $action=$this->param('action','view');
+        $action=$this->requestedAction();
         header('Cache-Control: private, no-store');
         $id=$this->param('id',$this->param('postid'));
         $type=$this->param('scope','site'); $scope=$this->param('blogid','site');
