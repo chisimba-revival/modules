@@ -3,7 +3,6 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class publishingstore extends dbTable
 {
-    public const PAGE_SIZE = 9;
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler')
     { parent::init('tbl_simpleblog_posts',$pearDb,$errorCallback); }
     public function post($id) { $row=$this->getRow('id',(string)$id); return is_array($row)?$row:null; }
@@ -23,7 +22,7 @@ class publishingstore extends dbTable
         if($tag!=='')$sql.=$this->classificationFilter($type,$scope,'tag',$tag,$params);
         if(is_string($category)&&$category!=='')$sql.=$this->classificationFilter($type,$scope,'category',$category,$params);
         if($year>=1800&&$year<=9999&&$month>=1&&$month<=12){$sql.=' AND YEAR(COALESCE(published_at,datecreated))=? AND MONTH(COALESCE(published_at,datecreated))=?';array_push($params,(int)$year,(int)$month);}
-        $sql.=' ORDER BY COALESCE(published_at,datecreated) DESC,id DESC LIMIT '.(self::PAGE_SIZE+1).' OFFSET '.((max(1,min(10000,(int)$page))-1)*self::PAGE_SIZE);
+        $sql.=' ORDER BY COALESCE(published_at,datecreated) DESC,id DESC LIMIT 11 OFFSET '.((max(1,min(10000,(int)$page))-1)*10);
         return $this->selectPrepared($sql,$params);
     }
     private function classificationFilter($type,$scope,$kind,$term,array &$params) {
