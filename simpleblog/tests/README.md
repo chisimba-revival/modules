@@ -53,7 +53,3 @@ Local installed checks cover list/editor/preview links, named confirmation,
 cancellation link, GET refusal, invalid CSRF, permission revocation between
 confirmation and submission, anonymous draft privacy, and successful deletion
 of only a disposable private post. Existing policy/service tests also pass.
-
-## Editor publication date — 7 November 2026
-
-The editor shows the original publication timestamp in full (UTC), above the title. Published legacy records fall back to their creation date; never-published drafts have no publication date. `php tests/editor_publication_date_test.php` checks original dates, legacy fallback, draft publication history and invalid timestamps. The shared File Manager chooser now uses protected server-generated thumbnail previews.

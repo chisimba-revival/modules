@@ -19,13 +19,7 @@ class publishingrenderer extends ChisimbaObject
             }
             $content=implode(' ',$parts);
         }
-        $plainText=static fn($content)=>trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$content)),ENT_QUOTES|ENT_HTML5,'UTF-8')));
-        $plain=$plainText($content);
-        // A video-only post still has authored prose in its caption.
-        if($plain===''&&is_array($composition)&&($composition['version']??null)===1&&is_array($composition['blocks']??null)){
-            $captions=[];foreach($composition['blocks'] as $block)if(($block['type']??'')==='video'&&is_string($block['caption']??null))$captions[]=$block['caption'];
-            $plain=$plainText(implode(' ',$captions));
-        }
+        $plain=trim(preg_replace('/\s+/u',' ',html_entity_decode(strip_tags(preg_replace('~</(?:p|h[1-6]|li|section|div)>~i','$0 ',$content)),ENT_QUOTES|ENT_HTML5,'UTF-8')));
         if(mb_strlen($plain)<=240)return $plain;
         $short=mb_substr($plain,0,240);
         $boundary=preg_replace('/\s+\S*$/u','',$short);
@@ -59,7 +53,7 @@ class publishingrenderer extends ChisimbaObject
         $policy=$this->getObject('publishingpolicy');
         if (!$policy->validScope($type,$scope) || ($manage && !$policy->canCreate($type,$scope))) return '';
         $rows=$this->getObject('publishingstore')->listing($type,$scope,$manage?$status:'posted',$page,$search,$tag,$year,$month,$manage&&!$policy->managesScope($type,$scope)?(string)$this->getObject('user','security')->userId():null,$category,!$manage);
-        $more=!$single && count($rows)>publishingstore::PAGE_SIZE; $rows=array_slice($rows,0,$single?1:publishingstore::PAGE_SIZE); $html='';
+        $more=!$single && count($rows)>10; $rows=array_slice($rows,0,$single?1:10); $html='';
         foreach ($rows as $post) {
             if (!($manage?$policy->canEdit($post):$policy->canDiscover($post))) continue;
             if (!$manage) $post=$this->getObject('accesspreview')->project($post);

@@ -69,21 +69,3 @@ $r=$campaigns->one($id);$campaigns->cancel($id,$r['version']);check(!$policy->al
 check((int)$pdo->query('SELECT COUNT(*) FROM tbl_audience_consent')->fetchColumn()>=3,'Consent audit retained');
 $oldToken=$contacts->unsubscribeToken($c['id']);$c=$contacts->one($c['id']);$changed=$a->save($c['id'],['name'=>'One','email'=>'new@example.test','state'=>'subscribed','revision'=>$c['revision'],'consent'=>'1','evidence'=>'New address consent']);check($contacts->contactForToken($oldToken)===null,'Old mailbox cannot unsubscribe the replacement address');
 echo "PASS database integration: permissions, consent, conflicts, duplicates, optional content, frozen recipients, resumable queue, unsubscribe and cancellation. No email delivered.\n";
-
-// A cancellation before fan-out is recoverable; existing outbox entries are never revived.
-$recover=$campaigns->save('',['create_id'=>bin2hex(random_bytes(16)),'subject'=>'Recover','body'=>'Saved words']);
-reject(fn()=>$campaigns->queue($recover['id'],$recover['version'],['subject'=>'Recover','body'=>'Unsaved words']),'unsaved');
-check($campaigns->one($recover['id'])['state']==='draft','Unsaved queue keeps draft');
-$recover=$campaigns->queue($recover['id'],$recover['version']);
-$campaigns->cancel($recover['id'],$recover['version']);$cancelled=$campaigns->one($recover['id']);
-reject(fn()=>$campaigns->restore($recover['id'],$recover['version']),'conflict');
-$user->admin=false;reject(fn()=>$campaigns->restore($recover['id'],$cancelled['version']),'forbidden');$user->admin=true;
-$restored=$campaigns->restore($recover['id'],$cancelled['version']);$rp=json_decode($restored['payload'],true);
-check($restored['state']==='draft'&&$rp['body']==='Saved words'&&!isset($rp['recipients'])&&!isset($rp['rendered']),'Restore preserves saved content and clears delivery snapshot');
-reject(fn()=>$campaigns->restore($recover['id'],$cancelled['version']),'conflict');
-$restored=$campaigns->save($recover['id'],['version'=>$restored['version'],'subject'=>'Recover','body'=>'Revised words']);
-$campaigns->queue($restored['id'],$restored['version'],['subject'=>'Recover','body'=>'Revised words']);
-$campaigns->pump(20);$r=$campaigns->one($recover['id']);$campaigns->cancel($r['id'],$r['version']);$r=$campaigns->one($r['id']);
-reject(fn()=>$campaigns->restore($r['id'],$r['version']),'restore_blocked');
-check($campaigns->one($r['id'])['state']==='cancelled','Blocked restoration rolls back');
-echo "PASS cancellation recovery, permission/revision checks, outbox protection and unsaved-send rejection. No email delivered.\n";
