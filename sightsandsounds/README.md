@@ -83,3 +83,23 @@ existing items, activities and runs intact. Requires coordinated framework REST 
 filemanager 1.118 changes. Test `completion_database_test.php` only with
 `SS_DATABASE_TEST=1` on the local `chisimba.test` runtime; it deletes only its random
 synthetic scope. The older `database_test.php` is for an empty disposable database.
+
+## Formative assignments (0.003)
+
+See [the assignment lifecycle design](docs/assignment-lifecycle.md). Publishing now
+sets practice/formative mode, retries (zero by default), and optional opening/due
+dates in the site timezone. Existing activities remain practice. Rules are immutable
+in `tbl_ss_assignment_rules`; individual extra attempts are audited in
+`tbl_ss_attempt_grants` with actor, reason, time and deduplication ID.
+
+Formative downloads reserve an attempt; interrupted downloads and fresh requests
+resume the same unfinished run. Saves reveal no correctness. Protocol 2 packages
+exclude answer keys, feedback and correctness fields. The server marks the final
+submission; latest completed percentage feeds Gradebook. Overall scores are shown
+after submission; formative answer keys are not released in this increment.
+
+No new starts occur outside assignment dates. Existing attempts may submit late,
+flagged by original server receipt time without automatic penalty. Current course
+lecturers and site administrators can view results and grant an individual extra
+attempt with a reason. Members access only their own attempts/results. Custom role
+delegation and summative assessment remain deferred.

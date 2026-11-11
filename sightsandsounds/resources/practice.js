@@ -5,6 +5,7 @@
     document.addEventListener('input', event => { if(event.target.closest('[data-ss-player]')) dirty=true; });
     document.addEventListener('submit', async event => {
       const form=event.target;
+      if(event.submitter?.hasAttribute('formaction')&&form.dataset.ssConfirm&&!window.confirm(form.dataset.ssConfirm)){event.preventDefault();dirty=true;return;}
       if(!form.matches('[data-ss-answer]')||event.submitter?.hasAttribute('formaction')){dirty=false;return;}
       event.preventDefault();
       const root=form.closest('[data-ss-player]'), button=form.querySelector('button');

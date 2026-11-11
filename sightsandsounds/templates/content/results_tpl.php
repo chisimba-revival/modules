@@ -13,7 +13,7 @@ $draft=$this->getVar('ssGrantDraft',[]);
 <?php if($this->getParam('saved')==='1'): ?><p role="status"><?= $e($t('saved')) ?></p><?php endif ?>
 <p><?= $e($t('permissions_note')) ?></p>
 <table><thead><tr><?php foreach(['member','started','received','progress'] as $key): ?><th scope="col"><?= $e($t($key)) ?></th><?php endforeach ?></tr></thead><tbody>
-<?php foreach($rulesService->results($ssScope,$ssActivity['id']) as $row): ?><tr><td><?= $e($names[$row['userid']]??$row['userid']) ?></td><td><?= $e($rulesService->time()->formatDateTime($row['started'])) ?></td><td><?= $row['received']?$e($rulesService->time()->formatDateTime($row['received'])):'—' ?> <?= $row['received']&&$rulesService->late($ssScope,$ssActivity['id'],$row['received'])?$e($t('late')):'' ?></td><td><?= $row['received']?(int)$row['correct'].' / '.(int)$row['total']:$e($t('in_progress')) ?></td></tr><?php endforeach ?>
+<?php foreach($rulesService->results($ssScope,$ssActivity['id']) as $row): ?><tr><td><?= $e($names[$row['userid']]??$row['userid']) ?></td><td><?= $e($rulesService->time()->formatDateTime(substr($row['started'],0,19))) ?></td><td><?= $row['received']?$e($rulesService->time()->formatDateTime(substr($row['received'],0,19))):'—' ?> <?= $row['received']&&$rulesService->late($ssScope,$ssActivity['id'],$row['received'])?$e($t('late')):'' ?></td><td><?= $row['received']?(int)$row['correct'].' / '.(int)$row['total']:$e($t('in_progress')) ?></td></tr><?php endforeach ?>
 </tbody></table>
 <?php if($rules['mode']==='formative'): ?>
 <form method="post" action="<?= $e($url(['action'=>'grant'])) ?>" class="chisimba-form-card">

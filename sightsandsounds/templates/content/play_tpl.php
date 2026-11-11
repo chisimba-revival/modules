@@ -15,13 +15,13 @@ $correct=count(array_filter($state,fn($s)=>$s['correct']));
 <?= $this->getObject('contextualhelp','help')->show('sightsandsounds','practice') ?></div>
 <?php if ($this->getVar('ssError')): ?><p role="alert"><?= $e($this->getVar('ssError')) ?></p><?php endif ?>
 <?php if ($correct===count($ids)): ?><p role="status"><?= $e($t('mastered')) ?></p><?php endif ?>
-<?php if ($receipt): ?><section class="chisimba-form-card"><h2><?= $e($t('completed')) ?></h2><p><?= (int)$receipt['correct'] ?>/<?= (int)$receipt['total'] ?> · <?= round(100*$receipt['correct']/$receipt['total']) ?>%</p><p><?= $e($t($graded?'formative_receipt':'receipt_note')) ?></p><?php if($rulesService->late($ssScope,$activity['id'],$receipt['createdat'])): ?><p><?= $e($t('late')) ?></p><?php endif ?></section><?php else: ?>
+<?php if ($receipt): ?><section class="chisimba-form-card"><h2><?= $e($t($graded?'assessment_completed':'completed')) ?></h2><p><?= (int)$receipt['correct'] ?>/<?= (int)$receipt['total'] ?> · <?= round(100*$receipt['correct']/$receipt['total']) ?>%</p><p><?= $e($t($graded?'formative_receipt':'receipt_note')) ?></p><?php if($rulesService->late($ssScope,$activity['id'],$receipt['createdat'])): ?><p><?= $e($t('late')) ?></p><?php endif ?></section><?php else: ?>
 <section class="chisimba-form-card chisimba-form-card--wide">
 <h2><?= $e($t('question')) ?> <?= $position+1 ?>/<?= count($ids) ?></h2>
 <?php if ($item['kind']==='image'): ?>
 <a href="<?= $e($url(['action'=>'media','id'=>$selected])) ?>" target="_blank" rel="noopener" aria-label="<?= $e($t('open_image')) ?>"><img src="<?= $e($url(['action'=>'media','id'=>$selected])) ?>" alt="<?= $e($t('identify_image')) ?>" width="640"></a>
 <?php else: ?><span class="chisimba-content-block"><audio controls preload="metadata" aria-label="<?= $e($t('identify_audio')) ?>" src="<?= $e($url(['action'=>'media','id'=>$selected])) ?>"></audio></span><?php endif ?>
-<form method="post" action="<?= $e($url(['action'=>'check'])) ?>" data-ss-answer>
+<form method="post" action="<?= $e($url(['action'=>'check'])) ?>" data-ss-answer data-ss-confirm="<?= $graded?$e($t('submit_confirm')):'' ?>">
 <?= $this->access->tokenField() ?><input type="hidden" name="id" value="<?= $e($ssRun['id']) ?>"><input type="hidden" name="itemid" value="<?= $e($selected) ?>"><input type="hidden" name="revision" value="<?= (int)$ssRun['revision'] ?>">
 <div class="chisimba-form-field"><label for="ss-answer"><?= $e($t('identify')) ?></label><input id="ss-answer" name="answer" type="text" maxlength="160" autocomplete="off" required value="<?= $e($this->getVar('ssDraft',$entry['answer'])) ?>"></div>
 <div class="chisimba-form-actions"><button type="submit"><?= $e($t($graded?'save_answer':'check')) ?></button><?php if($graded): ?><button type="submit" formaction="<?= $e($url(['action'=>'finish'])) ?>" formnovalidate><?= $e($t('submit_assignment')) ?></button><?php endif ?></div>
