@@ -2,6 +2,28 @@
 (() => {
   function setup() {
     let dirty = false;
+    document.addEventListener('input', event => { if(event.target.closest('[data-ss-player]')) dirty=true; });
+    document.addEventListener('submit', async event => {
+      const form=event.target;
+      if(!form.matches('[data-ss-answer]'))return;
+      event.preventDefault();
+      const root=form.closest('[data-ss-player]'), button=form.querySelector('button');
+      if(button.disabled)return;
+      const body=new FormData(form);button.disabled=true;
+      try {
+        const response=await fetch(form.action,{method:'POST',body,credentials:'same-origin'});
+        const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+        const replacement=doc.querySelector('[data-ss-player]');
+        if(!replacement)throw Error('Unavailable');
+        root.replaceWith(replacement);dirty=!response.ok;
+        replacement.querySelector(response.ok?'[role="status"]':'[role="alert"]')?.setAttribute('tabindex','-1');
+        replacement.querySelector(response.ok?'[role="status"]':'[role="alert"]')?.focus();
+      } catch {
+        dirty=true;let error=root.querySelector('[data-ss-error]');
+        if(!error){error=document.createElement('p');error.dataset.ssError='';error.setAttribute('role','alert');form.append(error);}
+        error.textContent=root.dataset.error;
+      } finally {button.disabled=false;}
+    });
     for (const form of document.querySelectorAll('form')) {
       form.addEventListener('input', () => { dirty = true; });
       form.addEventListener('submit', () => { dirty = false; });

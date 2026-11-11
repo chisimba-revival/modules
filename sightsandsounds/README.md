@@ -55,3 +55,31 @@ sign-in. Quick/full Help and Escape focus return passed. Media controls fit a
 390px viewport; the existing global navigation shell has a small unrelated
 horizontal overflow. Fixture course, content and media were removed; test accounts
 were deactivated through the canonical user service.
+
+## Activity instances, completion and mobile practice (0.002)
+
+The bank belongs to a context. Each published activity captures the bank's current
+question IDs and its own title, instructions and random question count. Multiple
+activities reuse those questions without sharing runs or results. Add each activity
+through Gradebook's assessment-plan provider picker; leave practice weighting at
+zero. The provider exposes the latest **completed** practice percentage.
+
+The web player checks answers incrementally and Finish practice creates an immutable
+receipt. The same services back the authenticated REST catalogue, package, media and
+submit endpoints. Packages explicitly identify `mode: practice`; accepted answers
+are included for offline feedback and must never be reused for secure graded exams.
+Every media response rechecks persisted membership and run ownership. Downloads
+are limited to 50 questions, 10 MiB per file and 100 MiB per package.
+
+The Android app commits a download only after all media hashes have verified.
+Answer drafts and checked answers persist in IndexedDB, partitioned by server and
+account. Finish freezes the submitted checked answers. Send results retries the
+same payload; the server recomputes the percentage and returns the same receipt.
+A changed payload, stale revision or concurrent browser edit produces a conflict,
+never a silent overwrite. There is no automatic background send.
+
+Upgrade through Module Catalogue; the additional `tbl_ss_completions` table leaves
+existing items, activities and runs intact. Requires coordinated framework REST and
+filemanager 1.118 changes. Test `completion_database_test.php` only with
+`SS_DATABASE_TEST=1` on the local `chisimba.test` runtime; it deletes only its random
+synthetic scope. The older `database_test.php` is for an empty disposable database.

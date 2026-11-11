@@ -5,8 +5,11 @@ class practiceaccess extends ChisimbaObject
 {
     public function scope(): string
     {
+        return $this->scopeFor((string)$this->getObject('dbcontext','context')->getContextCode());
+    }
+    public function scopeFor(string $code): string
+    {
         $user=$this->getObject('user','security');
-        $code=(string)$this->getObject('dbcontext','context')->getContextCode();
         if (!$user->isLoggedIn() || $code==='' || $code==='root'
             || !$this->getObject('dbcontext','context')->getContext($code)
             || (!$user->lookupAdmin($user->userId()) && !$this->getObject('usercontext','context')->isContextMember($user->userId(),$code))) throw new DomainException('denied');
@@ -22,11 +25,12 @@ class practiceaccess extends ChisimbaObject
     public function mayDownloadFile($file,$resource)
     {
         try {
-            $scope=$this->scope();
-            $item=$this->getObject('practicebank','sightsandsounds')->item($scope,(string)$resource);
+            $scope=is_array($resource)?$this->scopeFor($resource['context']):$this->scope();
+            $itemId=is_array($resource)?$resource['id']:(string)$resource;
+            $item=$this->getObject('practicebank','sightsandsounds')->item($scope,$itemId);
             return $item && $item['fileid']===($file['id']??'')
                 && ($file['filefolder']??'')==='moduleassets/sightsandsounds'
-                && ($this->manager() || $this->getObject('practicebank','sightsandsounds')->itemInPublishedActivity($scope,$item['id']));
+                && ((!is_array($resource) && $this->manager()) || $this->getObject('practicebank','sightsandsounds')->itemInPublishedActivity($scope,$item['id']));
         } catch (DomainException $e) { return false; }
     }
     public function csrf() { return $this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }

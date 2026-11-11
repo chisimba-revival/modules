@@ -6,13 +6,15 @@ $state=json_decode($ssRun['state'],true,512,JSON_THROW_ON_ERROR); $ids=array_key
 $selected=$this->getParam('itemid',''); if (!is_string($selected) || !isset($state[$selected])) $selected=$ids[0];
 $position=array_search($selected,$ids,true); $entry=$state[$selected];
 $item=$this->bank->item($ssScope,$selected); $activity=$this->bank->activity($ssScope,$ssRun['activityid']);
+$receipt=$this->getObject('practicecompletions','sightsandsounds')->forRun($ssRun['id']);
 $correct=count(array_filter($state,fn($s)=>$s['correct']));
 ?>
-<h1><?= $e($activity['title']) ?></h1><p><?= $e($t('ungraded')) ?> · <?= $e($t('progress')) ?> <?= $correct ?>/<?= count($ids) ?> (<?= round(100*$correct/count($ids)) ?>%)</p>
+<div data-ss-player data-error="<?= $e($t('error_failed')) ?>"><h1><?= $e($activity['title']) ?></h1><p><?= $e($t('ungraded')) ?> · <?= $e($t('progress')) ?> <?= $correct ?>/<?= count($ids) ?> (<?= round(100*$correct/count($ids)) ?>%)</p>
 <div class="chisimba-form-actions chisimba-form-actions--equal"><a class="button" href="<?= $e($url(['action'=>'home'])) ?>"><?= $e($t('activities')) ?></a>
 <?= $this->getObject('contextualhelp','help')->show('sightsandsounds','practice') ?></div>
 <?php if ($this->getVar('ssError')): ?><p role="alert"><?= $e($this->getVar('ssError')) ?></p><?php endif ?>
 <?php if ($correct===count($ids)): ?><p role="status"><?= $e($t('mastered')) ?></p><?php endif ?>
+<?php if ($receipt): ?><section class="chisimba-form-card"><h2><?= $e($t('completed')) ?></h2><p><?= (int)$receipt['correct'] ?>/<?= (int)$receipt['total'] ?> · <?= round(100*$receipt['correct']/$receipt['total']) ?>%</p><p><?= $e($t('receipt_note')) ?></p></section><?php else: ?>
 <section class="chisimba-form-card chisimba-form-card--wide">
 <h2><?= $e($t('question')) ?> <?= $position+1 ?>/<?= count($ids) ?></h2>
 <?php if ($item['kind']==='image'): ?>
@@ -29,11 +31,16 @@ $correct=count(array_filter($state,fn($s)=>$s['correct']));
 <?php if ($position>0): ?><a class="button" href="<?= $e($url(['action'=>'play','id'=>$ssRun['id'],'itemid'=>$ids[$position-1]])) ?>"><?= $e($t('previous')) ?></a><?php endif ?>
 <?php if ($position<count($ids)-1): ?><a class="button" href="<?= $e($url(['action'=>'play','id'=>$ssRun['id'],'itemid'=>$ids[$position+1]])) ?>"><?= $e($t('next')) ?></a><?php endif ?>
 </div></section>
-<nav aria-label="<?= $e($t('questions')) ?>"><ol>
+<details><summary><?= $e($t('review_questions')) ?></summary><nav aria-label="<?= $e($t('questions')) ?>"><ol>
 <?php foreach ($ids as $n=>$qid): ?><li><a href="<?= $e($url(['action'=>'play','id'=>$ssRun['id'],'itemid'=>$qid])) ?>" <?= $qid===$selected?'aria-current="step"':'' ?>><?= $e($t('question')) ?> <?= $n+1 ?> — <?= $e($t($state[$qid]['correct']?'correct':($state[$qid]['checks']?'retry':'unanswered'))) ?></a></li><?php endforeach ?>
-</ol></nav>
-<form method="post" action="<?= $e($url(['action'=>'start'])) ?>" class="chisimba-form-card">
+</ol></nav></details>
+<form method="post" action="<?= $e($url(['action'=>'finish'])) ?>" class="chisimba-form-actions">
+<?= $this->access->tokenField() ?><input type="hidden" name="id" value="<?= $e($ssRun['id']) ?>"><input type="hidden" name="revision" value="<?= (int)$ssRun['revision'] ?>">
+<button type="submit"><?= $e($t('finish')) ?></button><span><?= $e($t('finish_note')) ?></span>
+</form><?php endif ?>
+<details><summary><?= $e($t('new_set')) ?></summary><form method="post" action="<?= $e($url(['action'=>'start'])) ?>" class="chisimba-form-card">
 <?= $this->access->tokenField() ?><input type="hidden" name="id" value="<?= $e($activity['id']) ?>"><input type="hidden" name="fresh" value="1">
 <p><?= $e($t('new_set_note')) ?></p><label><input type="checkbox" required> <?= $e($t('new_set_confirm')) ?></label>
 <div class="chisimba-form-actions"><button type="submit"><?= $e($t('new_set')) ?></button></div>
 </form>
+</details></div>

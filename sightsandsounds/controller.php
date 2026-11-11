@@ -27,12 +27,12 @@ class sightsandsounds extends controller
             $scope=$this->access->scope();
             $uid=(string)$this->getObject('user','security')->userId();
             $action=$this->input('action',30) ?: 'home';
-            if (!in_array($action,['home','bank','add','publish','start','play','check','media'],true)) throw new DomainException('invalid');
-            if (in_array($action,['bank','add','publish'],true)) $this->access->requireManager();
+            if (!in_array($action,['home','activity','create','bank','add','publish','start','play','check','finish','media'],true)) throw new DomainException('invalid');
+            if (in_array($action,['bank','create','add','publish'],true)) $this->access->requireManager();
             $id=$this->input('id',32);
             $input=['answer'=>$this->input('answer'),'alternatives'=>$this->input('alternatives',4800),'feedback'=>$this->input('feedback',2000),
                 'credit'=>$this->input('credit',500),'title'=>$this->input('title',200),'instructions'=>$this->input('instructions',2000),'questioncount'=>$this->input('questioncount',3)];
-            if (in_array($action,['add','publish','start','check'],true)) $this->access->mutation($_SERVER['REQUEST_METHOD']??'', $this->input('csrf_token',256));
+            if (in_array($action,['add','publish','start','check','finish'],true)) $this->access->mutation($_SERVER['REQUEST_METHOD']??'', $this->input('csrf_token',256));
             if ($action==='add') {
                 if (trim($input['answer'])==='') throw new DomainException('invalid');
                 practicerules::aliases($input['answer'],$input['alternatives']);
@@ -60,6 +60,17 @@ class sightsandsounds extends controller
                 $this->runs->checkAnswer($scope,$uid,$id,$this->input('itemid',32),$input['answer'],(int)$revision);
                 return $this->nextAction('play',['id'=>$id,'itemid'=>$this->input('itemid',32)]);
             }
+            if ($action==='finish') {
+                $revision=$this->input('revision',10);
+                if (!ctype_digit($revision)) throw new DomainException('invalid');
+                $this->getObject('practicecompletions','sightsandsounds')->finish($scope,$uid,$id,(int)$revision);
+                return $this->nextAction('play',['id'=>$id]);
+            }
+            if ($action==='activity') {
+                $activity=$this->bank->activity($scope,$id);
+                if (!$activity) throw new DomainException('missing');
+                $this->setVar('ssActivity',$activity);
+            }
             if ($action==='media') {
                 $item=$this->bank->item($scope,$id);
                 if (!$item) throw new DomainException('missing');
@@ -74,8 +85,8 @@ class sightsandsounds extends controller
             $this->setVar('ssError',$this->text('error_'.$key));
             // Failed authoring retains text; no private listing on an access failure.
             if ($scope==='' || in_array($key,['denied','method','missing'],true)) return 'error_tpl.php';
-            if (in_array($action,['add','publish'],true)) $action='bank';
-            elseif ($action==='check' && isset($id,$uid)) {
+            if (in_array($action,['add','publish'],true)) $action=$action==='publish'?'create':'bank';
+            elseif (in_array($action,['check','finish'],true) && isset($id,$uid)) {
                 $this->setVar('ssDraft',$input['answer']??'');
                 $this->setVar('ssRun',$this->runs->owned($scope,$uid,$id)); $action='play';
             } else return 'error_tpl.php';
@@ -84,8 +95,8 @@ class sightsandsounds extends controller
         $this->setVar('ssInput',$input);
         $this->setVar('ssManager',$this->access->manager());
         $this->setVar('ssActivities',$this->bank->activities($scope));
-        if ($action==='bank') $this->setVar('ssItems',$this->bank->items($scope));
+        if (in_array($action,['bank','create'],true)) $this->setVar('ssItems',$this->bank->items($scope));
         $this->appendArrayVar('headerParams',$this->getJavaScriptFile('practice.js','sightsandsounds'));
-        return $action==='play'?'play_tpl.php':($action==='bank'?'bank_tpl.php':'home_tpl.php');
+        return match($action) {'play'=>'play_tpl.php','bank'=>'bank_tpl.php','create'=>'create_tpl.php','activity'=>'activity_tpl.php',default=>'home_tpl.php'};
     }
 }

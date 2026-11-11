@@ -19,16 +19,6 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <?php endforeach ?>
 <div class="chisimba-form-actions"><button type="submit"><?= $e($t('save_question')) ?></button></div>
 </form>
-<form method="post" action="<?= $e($url(['action'=>'publish'])) ?>" class="chisimba-form-card chisimba-form-card--wide">
-<h2><?= $e($t('publish')) ?></h2><p><?= $e($t('publish_note')) ?></p><?= $this->access->tokenField() ?>
-<?php foreach (['title'=>200,'instructions'=>2000] as $name=>$max): ?>
-<div class="chisimba-form-field chisimba-form-field--brief"><label for="ss-<?= $e($name) ?>"><?= $e($t('field_'.$name)) ?></label>
-<textarea id="ss-<?= $e($name) ?>" name="<?= $e($name) ?>" maxlength="<?= $max ?>" rows="2" <?= $name==='title'?'required':'' ?>><?= $e($ssInput[$name]??'') ?></textarea></div>
-<?php endforeach ?>
-<div class="chisimba-form-field"><label for="ss-count"><?= $e($t('count')) ?></label><input type="number" id="ss-count" name="questioncount" min="1" max="<?= max(1,min(50,count($ssItems))) ?>" value="<?= $e(($ssInput['questioncount']??'')?:min(10,max(1,count($ssItems)))) ?>" required></div>
-<p><?= count($ssItems) ?> <?= $e($t('bank_count')) ?></p>
-<div class="chisimba-form-actions"><button type="submit" <?= !$ssItems?'disabled':'' ?>><?= $e($t('publish')) ?></button></div>
-</form>
 <h2><?= $e($t('bank')) ?></h2>
 <?php foreach ($ssItems as $item): ?>
 <details class="chisimba-form-card"><summary><?= $e($item['answer']) ?> · <?= $e($t($item['kind'])) ?></summary>

@@ -6,7 +6,7 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <h1><?= $e($t('title')) ?></h1>
 <p><?= $e($t('intro')) ?></p>
 <div class="chisimba-form-actions chisimba-form-actions--equal">
-<?php if ($ssManager): ?><a class="button" href="<?= $e($url(['action'=>'bank'])) ?>"><?= $e($t('manage')) ?></a><?php endif ?>
+<?php if ($ssManager): ?><a class="button" href="<?= $e($url(['action'=>'create'])) ?>"><?= $e($t('publish')) ?></a><a class="button" href="<?= $e($url(['action'=>'bank'])) ?>"><?= $e($t('manage')) ?></a><?php endif ?>
 <?= $this->getObject('contextualhelp','help')->show('sightsandsounds','practice') ?>
 </div>
 <?php if ($this->getParam('saved')==='1'): ?><p role="status"><?= $e($t('saved')) ?></p><?php endif ?>
@@ -15,8 +15,5 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <section class="chisimba-form-card"><h2><?= $e($activity['title']) ?></h2>
 <p><?= nl2br($e($activity['instructions'])) ?></p>
 <p><?= (int)$activity['questioncount'] ?> <?= $e($t('questions')) ?> · <?= $e($t('ungraded')) ?></p>
-<form method="post" action="<?= $e($url(['action'=>'start'])) ?>" class="chisimba-form-actions">
-<?= $this->access->tokenField() ?><input type="hidden" name="id" value="<?= $e($activity['id']) ?>">
-<button type="submit"><?= $e($t('start_resume')) ?></button>
-</form></section>
+<a class="button" href="<?= $e($url(['action'=>'activity','id'=>$activity['id']])) ?>"><?= $e($t('open_activity')) ?></a></section>
 <?php endforeach ?>

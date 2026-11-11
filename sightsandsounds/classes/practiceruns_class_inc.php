@@ -18,7 +18,7 @@ class practiceruns extends dbTable
     {
         return $this->withDatabaseLock('ss-new-'.substr(hash('sha256',json_encode([$scope,$uid,$activity['id']])),0,16),function() use($scope,$uid,$activity,$fresh) {
             $old=$this->latest($scope,$uid,$activity['id']);
-            if ($old && !$fresh) return $old['id'];
+            if ($old && !$fresh && !$this->getObject('practicecompletions','sightsandsounds')->forRun($old['id'])) return $old['id'];
             $ids=practicerules::select(json_decode($activity['itemids'],true,512,JSON_THROW_ON_ERROR),(int)$activity['questioncount']);
             $state=[];
             foreach($ids as $id) $state[$id]=['answer'=>'','checks'=>0,'firstCorrect'=>null,'correct'=>false];
@@ -32,7 +32,7 @@ class practiceruns extends dbTable
         $this->withDatabaseLock('ss-run-'.substr(hash('sha256',$id),0,16),function() use($scope,$uid,$id,$itemId,$answer,$revision) {
             $this->transactionWithSavepoint(function() use($scope,$uid,$id,$itemId,$answer,$revision) {
                 $row=$this->owned($scope,$uid,$id);
-                if ((int)$row['revision']!==$revision) throw new DomainException('stale');
+                if ($this->getObject('practicecompletions','sightsandsounds')->forRun($id) || (int)$row['revision']!==$revision) throw new DomainException('stale');
                 $state=json_decode($row['state'],true,512,JSON_THROW_ON_ERROR);
                 if (!isset($state[$itemId]) || mb_strlen($answer)>160 || trim($answer)==='') throw new DomainException('invalid');
                 $item=$this->getObject('practicebank','sightsandsounds')->item($scope,$itemId);
