@@ -75,7 +75,7 @@ class sightsandsounds extends controller
             // Failed authoring retains text; no private listing on an access failure.
             if ($scope==='' || in_array($key,['denied','method','missing'],true)) return 'error_tpl.php';
             if (in_array($action,['add','publish'],true)) $action='bank';
-            elseif ($action==='check') {
+            elseif ($action==='check' && isset($id,$uid)) {
                 $this->setVar('ssDraft',$input['answer']??'');
                 $this->setVar('ssRun',$this->runs->owned($scope,$uid,$id)); $action='play';
             } else return 'error_tpl.php';

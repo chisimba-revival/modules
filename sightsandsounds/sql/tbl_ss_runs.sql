@@ -1,7 +1,7 @@
 <?php
 /** Sights & Sounds practice records. @author Derek Keats */
 $tablename = 'tbl_ss_runs';
-$options = ['comment'=>'Sights & Sounds practice', 'collate'=>'utf8_general_ci', 'character_set'=>'utf8'];
+$options = ['comment'=>'Sights & Sounds practice', 'collate'=>'utf8mb4_unicode_ci', 'character_set'=>'utf8mb4'];
 $fields = [
     'id' => ['type'=>'text', 'length'=>32],
     'contextcode' => ['type'=>'text', 'length'=>255],

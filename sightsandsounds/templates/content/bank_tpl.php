@@ -8,7 +8,7 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <?= $this->getObject('contextualhelp','help')->show('sightsandsounds','authoring') ?></div>
 <?php if ($this->getVar('ssError')): ?><p role="alert"><?= $e($this->getVar('ssError')) ?></p><?php endif ?>
 <?php if ($this->getParam('saved')==='1'): ?><p role="status"><?= $e($t('saved')) ?></p><?php endif ?>
-<form method="post" enctype="multipart/form-data" action="<?= $e($url(['action'=>'add'])) ?>" class="chisimba-form-card chisimba-form-card--wide" data-ss-upload>
+<form method="post" enctype="multipart/form-data" action="<?= $e($url(['action'=>'add'])) ?>" class="chisimba-form-card chisimba-form-card--wide" data-ss-upload data-size-error="<?= $e($t('error_media')) ?>">
 <h2><?= $e($t('add_question')) ?></h2><?= $this->access->tokenField() ?>
 <div class="chisimba-form-field"><label for="ss-media"><?= $e($t('media')) ?></label>
 <input type="file" id="ss-media" name="media" accept="image/jpeg,image/png,image/webp,audio/mpeg" required aria-describedby="ss-media-note"><p id="ss-media-note"><?= $e($t('media_note')) ?></p></div>

@@ -19,7 +19,13 @@
       audio.pause(); audio.removeAttribute('src'); img.removeAttribute('src');
       img.hidden = audio.hidden = preview.hidden = true;
       const file = form.elements.media.files[0];
+      form.elements.media.setCustomValidity('');
       if (!file) return;
+      if (file.size > 10485760) {
+        form.elements.media.setCustomValidity(form.dataset.sizeError);
+        form.elements.media.reportValidity();
+        return;
+      }
       objectUrl = URL.createObjectURL(file);
       const target = file.type.startsWith('image/') ? img : audio;
       target.src = objectUrl; target.hidden = preview.hidden = false;
