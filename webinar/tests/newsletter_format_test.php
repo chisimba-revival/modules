@@ -29,6 +29,7 @@ $resize=new imageresize();$resize->objFileParts=$parts;
 // Explicit inherited state declaration avoids a legacy dynamic-property warning in this harness.
 $thumbnailService=new emailthumbnail();
 $GLOBALS['services']=['altconfig'=>$config,'dbfile'=>$files,'filereadpolicy'=>$policy,'mkdir'=>$mkdir,'imageresize'=>$resize,'fileparts'=>$parts,'cleanurl'=>$clean,'emailthumbnail'=>$thumbnailService];
+$GLOBALS['services']['contentpaths']=new class{function url($module,$id,$fallback){return $fallback;}};
 $record=['id'=>str_repeat('a',32),'kind'=>'webinar','status'=>'published','title'=>'Birds &amp; islands <script>alert(1)</script>','presented_at'=>'2099-10-15 19:00:00','payload'=>json_encode(['timezone'=>'Africa/Johannesburg','registration_open'=>true,'image_file_id'=>'fixture-banner','speakers'=>[]])];
 $imageService=new webinaremailimage();$GLOBALS['services']['webinaremailimage']=$imageService;
 $thumb=$imageService->thumbnail($record);check($thumb&&$thumb['width']===600&&$thumb['height']===200,'Real thumbnail resized to 600 pixels without cropping');

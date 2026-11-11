@@ -9,7 +9,7 @@ class webinarannouncements extends ChisimbaObject
   $items=[];$root=rtrim($this->getObject('altconfig','config')->getSiteRoot(),'/');
   foreach(webinarschedule::catalogue($this->getObject('webinarstore','webinar')->published('webinar'),false) as $record){
    if(!webinarschedule::canRegister($record)||($ids!==null&&!in_array($record['id'],$ids,true)))continue;
-   $items[]=['record'=>$record,'title'=>html_entity_decode($record['title'],ENT_QUOTES|ENT_HTML5,'UTF-8'),'date'=>webinarschedule::start($record)->format('j F Y, H:i T'),'url'=>$root.'/index.php?module=webinar&action=view&id='.rawurlencode($record['id'])];
+   $items[]=['record'=>$record,'title'=>html_entity_decode($record['title'],ENT_QUOTES|ENT_HTML5,'UTF-8'),'date'=>webinarschedule::start($record)->format('j F Y, H:i T'),'url'=>$this->getObject('contentpaths','shorturl')->url('webinar',$record['id'],$root.'/index.php?module=webinar&action=view&id='.rawurlencode($record['id']))];
   }return $items;
  }
  /** Calendar weeks run Monday to Sunday in the webinar's time zone. */

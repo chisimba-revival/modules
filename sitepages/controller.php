@@ -51,6 +51,7 @@ class sitepages extends controller
         if(!$this->canManage())$this->setVar('sitepagesDenied',true);
         $edit=false;$id=(string)$this->getParam('id','');if($id!==''&&$this->canManage())$edit=$this->db->find($id);
         if($id!==''&&$this->canManage()&&!$edit){http_response_code(404);$this->setVar('sitepagesDenied',true);$this->setVar('sitepagesMissingEdit',true);}
+        if($edit && ($path=$this->getObject('contentpaths','shorturl')->current('sitepages',$id))!==''){$edit['version']=dbsitepages::version($edit);$edit['slug']=$path;}
         $editing=$id!==''||$this->getParam('new','')==='1';
         $this->setVar('sitepagesEditing',$editing);
         $this->setVar('sitepagesBlocks',$this->getObject('compositionservice','contentblocks')->fromPost(['composition_json'=>$edit['composition_json']??'','post_content'=>$edit['body_html']??'']));
@@ -84,19 +85,21 @@ class sitepages extends controller
                 foreach($input['blocks'] as $block)if(!in_array($block['id'],$before,true))$active=$block['id'];
                 $this->setVar('sitepagesActive',$active);return $result;
             }
-            $body=$builder->render($input['blocks']);$collision=$this->db->findBySlug($input['slug']);
-            if($input['title']===''||mb_strlen($input['title'])>250||($body===''&&!array_filter($input['blocks'],static fn($block)=>$block['type']==='shop_sale'))||!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug'])||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
+            $body=$builder->render($input['blocks']);
+            if($input['slug']==='') $input['slug']=$this->getObject('contentpaths','shorturl')->enabled() ? '' : $this->getObject('contentpaths','shorturl')::slug($input['title']);
+            $collision=$this->db->findBySlug($input['slug']);
+            if($input['title']===''||mb_strlen($input['title'])>250||($body===''&&!array_filter($input['blocks'],static fn($block)=>$block['type']==='shop_sale'))||($input['slug']!==''&&!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/',$input['slug']))||($collision&&(string)$collision['id']!==$input['id']))throw new DomainException('invalid');
             if ($body === '') $body = '<!-- Live sale promotion -->';
             $saved=$this->db->savePage(['slug'=>$input['slug'],'title'=>$input['title'],'body_html'=>$body,'status'=>$input['status'],'composition_json'=>json_encode(['version'=>1,'show_title'=>$input['show_title'],'show_header'=>$input['show_header'],'show_footer'=>$input['show_footer'],'blocks'=>$input['blocks']],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),'_expected_version'=>$input['version']],$this->user->userId(),$input['id']);
             if(!$saved)throw new RuntimeException('failed');
             if($this->getParam('composition_save_ajax')==='1'){
-                $input['id']=$saved['id'];$input['version']=dbsitepages::version($saved);
+                $input['id']=$saved['id'];$input['slug']=$saved['slug'];$input['version']=dbsitepages::version($saved);
                 $result=$this->recover($input,'unsaved');
                 $this->setVar('sitepagesSaved',true);$this->setVar('sitepagesFlash',$this->text('saved'));
                 return $result;
             }
             $this->flash($this->text('saved'));return $this->nextAction('manage',['id'=>$saved['id']]);
-        }catch(DomainException $error){return $this->recover($input,$error->getMessage()==='conflict'?'conflict':'invalid');}
+        }catch(DomainException $error){return $this->recover($input,in_array($error->getMessage(),['conflict','slug_taken','slug_invalid'],true)?$error->getMessage():'invalid');}
         catch(Throwable $error){return $this->recover($input,'failed');}
     }
     private function archive()

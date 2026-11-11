@@ -14,7 +14,7 @@ class webinar extends controller
     private function redirectBooking($message,$id)
     {
         $_SESSION['webinar_booking_notice'][$id]=$message;
-        header('Location: '.html_entity_decode($this->uri(['action'=>'view','id'=>$id],'webinar'),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;
+        header('Location: '.html_entity_decode($this->getObject('webinarrenderer','webinar')->publicUrl(['action'=>'view','id'=>$id]),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;
     }
     public function dispatch($action=null)
     {
@@ -119,7 +119,7 @@ class webinar extends controller
         }
         $error='';$aux=null;$saved=null;
         if(in_array($action,['save','editor_aux'],true)){
-            $input=[];foreach(['title','description','image','image_alt','status','starts_at','ends_at','duration_minutes','timezone','recording','joining_url','tags','version','create_id','registration_open','cancelled','registration_limit'] as $key)$input[$key]=$this->param($key);
+            $input=[];foreach(['title','description','image','image_alt','status','starts_at','ends_at','duration_minutes','timezone','recording','joining_url','tags','version','create_id','registration_open','cancelled','registration_limit','slug','slug_revision'] as $key)$input[$key]=$this->param($key);
             $input['status']=$this->param('publish_action')?:$input['status'];
             $input['categories']=$this->getParam('categories',[]);$input['speakers']=$this->getParam('speakers',[]);
             $this->setVar('webinarEditInput',$input);
@@ -139,7 +139,7 @@ class webinar extends controller
             }catch(DomainException $e){$error=$e->getMessage();}
             catch(Throwable $e){$error='editor_save_failed';}
         }
-        $allowed=['editor_invalid','editor_forbidden','editor_conflict','editor_date','editor_duration','editor_registration_limit','editor_end','editor_url','editor_recording','editor_speaker','editor_description','editor_save_failed','session_expired'];
+        $allowed=['slug_invalid','slug_taken','editor_invalid','editor_forbidden','editor_conflict','editor_date','editor_duration','editor_registration_limit','editor_end','editor_url','editor_recording','editor_speaker','editor_description','editor_save_failed','session_expired'];
         if($error!==''&&!in_array($error,$allowed,true))$error=str_starts_with($error,'classification_')?'editor_classification':'editor_invalid';
         $csrf=$this->csrf()->issue('webinar-editor');$this->setVar('webinarEditCsrf',$csrf);$this->setVar('webinarEditError',$error);
         if($this->param('ajax')==='1'&&in_array($action,['save','editor_aux'],true)){
@@ -147,6 +147,10 @@ class webinar extends controller
             if($error!=='')http_response_code($error==='editor_conflict'?409:422);
             $result=['ok'=>$error==='','csrf'=>$csrf,'message'=>$r->text($error?:($aux?'editor_added':($saved&&$saved['status']==='draft'?'editor_draft_saved':'editor_saved'))),'aux'=>$aux];
             if($saved)$result+=['id'=>$saved['id'],'version'=>webinareditservice::version($saved),'edit'=>html_entity_decode($this->uri(['action'=>'edit','id'=>$saved['id']],'webinar'),ENT_QUOTES,'UTF-8'),'preview'=>html_entity_decode($this->uri(['action'=>'preview','id'=>$saved['id']],'webinar'),ENT_QUOTES,'UTF-8')];
+            if($saved && $kind==='webinar' && $this->getObject('contentpaths','shorturl')->enabled()) {
+                $paths=$this->getObject('contentpaths','shorturl');$slug=$paths->current('webinar',$saved['id']);
+                $result+=['slug'=>$slug,'slug_revision'=>hash('sha256',$slug),'public_url'=>$paths->url('webinar',$saved['id'],'')];
+            }
             echo json_encode($result,JSON_THROW_ON_ERROR);exit;
         }
         if($saved)return $this->nextAction('edit',['id'=>$saved['id'],'saved'=>'1']);
@@ -215,7 +219,7 @@ class webinar extends controller
         $this->setVar('webinarInput',$input);
         $this->setVar('webinarCheckToken',$this->csrf()->issue('webinar-booking-check'));
         if($action==='register'&&$record){
-            if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$this->param('action')==='register'){header('Location: '.html_entity_decode($this->uri(['action'=>'view','id'=>$record['id']],'webinar'),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;}
+            if(($_SERVER['REQUEST_METHOD']??'GET')==='GET'&&$this->param('action')==='register'){header('Location: '.html_entity_decode($this->getObject('webinarrenderer','webinar')->publicUrl(['action'=>'view','id'=>$record['id']]),ENT_QUOTES,'UTF-8').'#booking',true,303);exit;}
             $notice=$_SESSION['webinar_booking_notice'][$record['id']]??'';unset($_SESSION['webinar_booking_notice'][$record['id']]);
             $this->setVar('webinarBookingNotice',in_array($notice,['pending','confirmed','already_registered'],true)?$notice:'');
             $this->setVar('webinarInlineBooking',true);$this->setVar('webinarAction','view');return 'archive_tpl.php';

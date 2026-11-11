@@ -38,7 +38,9 @@ class dbmap extends dbTable
             || !preg_match('/^[0-9]{1,9}$/D', $input['ordering'] ?? '0')) throw new DomainException('invalid');
         return $this->withDatabaseLock('shorturl-edit', function () use ($input,$id,$match,$target) {
             return $this->transactionWithSavepoint(function () use ($input,$id,$match,$target) {
-                if ($id !== '') $this->editable($id, $input['revision'] ?? '');
+                $previous=$id!==''?$this->editable($id,$input['revision']??''):null;
+                $rootPath=strtolower(trim($match,'/'));
+                if((!$previous || $previous['match_url']!==$match) && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/D',$rootPath) && $this->getObject('contentpathstore','shorturl')->path($rootPath))throw new DomainException('duplicate');
                 if ($this->selectPrepared('SELECT id FROM tbl_shorturl_map WHERE BINARY match_url = BINARY ?'.($id !== '' ? ' AND id <> ?' : ''), $id !== '' ? [$match,$id] : [$match])) throw new DomainException('duplicate');
                 $values=['match_url'=>$match,'target_url'=>$target,'ordering'=>(int)($input['ordering']??0),'datestamp'=>$this->now()];
                 if ($id !== '') {

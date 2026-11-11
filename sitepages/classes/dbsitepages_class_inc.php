@@ -16,7 +16,14 @@ class dbsitepages extends dbTable
         $where = "WHERE slug='" . addslashes((string)$slug) . "'";
         if ($publishedOnly) $where .= " AND status='published'";
         $rows = $this->getAll($where);
-        return $rows ? $rows[0] : false;
+        if($rows)return $rows[0];
+        $paths=$this->getObject('contentpaths','shorturl');
+        $alias=$paths->enabled()?$paths->store()->path((string)$slug):null;
+        if($alias && $alias['module_id']==='sitepages') {
+            $page=$this->find($alias['content_id']);
+            if($page && (!$publishedOnly || $page['status']==='published'))return $page;
+        }
+        return false;
     }
     public function activeRows()
     {
@@ -44,10 +51,23 @@ class dbsitepages extends dbTable
     {return hash('sha256',json_encode(array_intersect_key($row,array_flip(['title','slug','status','body_html','composition_json']))));}
     public function savePage(array $data,$userId,$id='') {
         $expected=$data['_expected_version']??null;unset($data['_expected_version']);
-        return $this->transaction(function()use($data,$userId,$id,$expected){
+        $paths=$this->getObject('contentpaths','shorturl');
+        return $paths->locked(fn()=> $this->transaction(function()use($data,$userId,$id,$expected,$paths){
             if($id!==''&&$expected!==null){$rows=$this->selectPrepared('SELECT * FROM tbl_sitepages WHERE id=? FOR UPDATE',[$id]);if(!$rows||!hash_equals(self::version($rows[0]),$expected))throw new DomainException('conflict');}
-            $row=$this->persistPage($data,$userId,$id);if(!$row)throw new RuntimeException('failed');return $row;
-        });
+            if($paths->enabled() && $id!=='') {
+                $previous=$this->find($id);
+                if($previous && $paths->current('sitepages',$id)==='') {
+                    $paths->store()->retainPageAlias($id,$previous['slug']);
+                    // Imported page names can already belong to QR redirects.
+                    // Preserve that name for query links, choose a free root path.
+                    if(($data['slug']??'')===$previous['slug'] && (!$paths::valid($previous['slug']) || $paths->store()->legacyPathExists($previous['slug']))) $data['slug']='';
+                }
+            }
+            if($paths->enabled()) $data['slug']=$paths->choose('sitepages',$id,$data['title'],$data['slug']??'');
+            $row=$this->persistPage($data,$userId,$id);if(!$row)throw new RuntimeException('failed');
+            $paths->save('sitepages',$row['id'],$row['title'],$row['slug']);
+            return $row;
+        }));
     }
     private function persistPage(array $data, $userId, $id = '')
     {

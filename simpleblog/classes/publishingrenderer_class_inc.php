@@ -33,8 +33,14 @@ class publishingrenderer extends ChisimbaObject
     }
     public function button($label,$icon,$params,$primary=false)
     {
-        return '<a class="button '.($primary?'chisimba-button-primary':'chisimba-button-secondary').'" href="'.self::escape($this->uri($params,'simpleblog')).'">'
+        return '<a class="button '.($primary?'chisimba-button-primary':'chisimba-button-secondary').'" href="'.self::escape($this->publicUrl($params)).'">'
             .$this->getObject('iconservice','ui')->render($icon,array('decorative'=>true)).'<span>'.self::escape($this->text($label)).'</span></a>';
+    }
+    public function publicUrl(array $params): string
+    {
+        $fallback=$this->uri($params,'simpleblog');
+        return ($params['action']??'')==='view' && !empty($params['id'])
+            ? $this->getObject('contentpaths','shorturl')->url('simpleblog',(string)$params['id'],$fallback) : $fallback;
     }
     public function identity($type,$scope)
     {
@@ -63,7 +69,7 @@ class publishingrenderer extends ChisimbaObject
         foreach ($rows as $post) {
             if (!($manage?$policy->canEdit($post):$policy->canDiscover($post))) continue;
             if (!$manage) $post=$this->getObject('accesspreview')->project($post);
-            $link=$this->uri(array('action'=>$manage?'preview':'view','id'=>$post['id']),'simpleblog');
+            $link=$this->publicUrl(array('action'=>$manage?'preview':'view','id'=>$post['id']));
             $html.='<article class="chisimba-publication-card" role="listitem">';
             if(!empty($post['featured_image']))$html.='<div class="chisimba-publication-card__media"><img class="chisimba-publication-card__image" src="'.self::escape($post['featured_image']).'" alt="'.self::escape($post['featured_alt']??'').'" loading="lazy"></div>';
             else $html.='<div class="chisimba-publication-card__media" aria-hidden="true"></div>';
@@ -151,7 +157,7 @@ class publishingrenderer extends ChisimbaObject
         foreach ($this->getObject('publishingstore')->listing($type,$scope) as $post) {
             if (!$this->getObject('publishingpolicy')->canDiscover($post)) continue;
             $post=$this->getObject('accesspreview')->project($post);
-            $url=$this->absolute($this->uri(array('id'=>$post['id']),'simpleblog'));
+            $url=$this->absolute($this->publicUrl(['action'=>'view','id'=>$post['id']]));
             $published=strtotime(($post['published_at']??$post['datecreated']).' UTC');
             $xml.='<item><pubDate>'.gmdate(DATE_RSS,$published).'</pubDate><title>'.$e($post['post_title']).'</title><link>'.$e($url).'</link><guid isPermaLink="false">'.$e($post['id']).'</guid><description>'.$e(strip_tags($post['post_content'])).'</description></item>';
         }

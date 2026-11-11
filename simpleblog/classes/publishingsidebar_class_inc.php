@@ -15,7 +15,7 @@ class publishingsidebar extends ChisimbaObject
                 $post=$this->getObject('publishingstore','simpleblog')->post($exclude);
                 if(!$post || !$policy->canRead($post))return '';
             }
-            $url=html_entity_decode($this->uri($exclude!==''?['id'=>$exclude]:$params,'simpleblog'),ENT_QUOTES,'UTF-8');
+            $url=html_entity_decode($r->publicUrl($exclude!==''?['action'=>'view','id'=>$exclude]:$params),ENT_QUOTES,'UTF-8');
             $this->appendArrayVar('headerParams','<script defer src="'.$e($this->getResourceUri('sharing.js','simpleblog')).'"></script>');
             return '<div class="chisimba-form-actions"><button type="button" class="button" data-blog-share="'.$e($url).'">'.$this->getObject('iconservice','ui')->render('share-2',['decorative'=>true]).'<span>'.$e($r->text('share')).'</span></button><button type="button" class="button" data-blog-copy="'.$e($url).'" data-copied="'.$e($r->text('copied')).'">'.$this->getObject('iconservice','ui')->render('copy',['decorative'=>true]).'<span>'.$e($r->text('copy_link')).'</span></button></div><p role="status" data-share-status></p><a href="'.$e($url).'">'.$e($r->text('permalink')).'</a>';
         }
@@ -26,7 +26,7 @@ class publishingsidebar extends ChisimbaObject
             $html='<ul>';$count=0;
             foreach($this->getObject('publishingstore','simpleblog')->listing($type,$scope) as $post){
                 if($post['id']===$exclude || !$policy->canDiscover($post))continue;
-                $html.='<li><a href="'.$e($this->uri(['id'=>$post['id']],'simpleblog')).'">'.$e($post['post_title']).'</a></li>';
+                $html.='<li><a href="'.$e($r->publicUrl(['action'=>'view','id'=>$post['id']])).'">'.$e($post['post_title']).'</a></li>';
                 if(++$count===5)break;
             }
             return $count?$html.'</ul>':'<p>'.$e($r->text('empty')).'</p>';

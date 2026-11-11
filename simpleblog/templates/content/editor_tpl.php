@@ -18,6 +18,16 @@ $input=$this->getVar('blogInput') ?: array('featured_image'=>$post['featured_ima
 </main><aside class="chisimba-publishing-sidebar">
 <?php
 echo $this->getObject('compositioneditor','contentblocks')->palette();
+$paths=$this->getObject('contentpaths','shorturl');
+if($type==='site' && $paths->enabled()) {
+ $currentSlug=$paths->current('simpleblog',(string)($post['id']??''));
+ $slug=$input['slug']??$currentSlug;
+ echo '<input type="hidden" name="slug_revision" value="'.$e($input['slug_revision']??hash('sha256',$currentSlug)).'">';
+ echo '<fieldset class="chisimba-editor-section"><legend>'.$e($r->text('web_address')).'</legend><div class="chisimba-form-field"><label for="post-slug">'.$e($r->text('slug')).'</label><input id="post-slug" name="slug" type="text" maxlength="190" pattern="[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*" value="'.$e($slug).'"><p class="chisimba-field-help">'.$e($r->text('slug_help')).'</p></div>';
+ if($post && $paths->current('simpleblog',$post['id'])!=='') { $share=$paths->url('simpleblog',$post['id'],''); echo '<a href="'.$e($share).'">'.$e($share).'</a>'; }
+ echo '</fieldset>';
+}
+
 echo '<fieldset class="chisimba-editor-section"><legend>'.$e($r->text('featured_image')).'</legend>';
 echo '<img class="chisimba-featured-image-preview" data-featured-preview hidden alt="'.$e($input['featured_alt']??'').'">';
 echo '<p>'.$e($r->text('featured_help')).'</p><div class="chisimba-form-field"><label for="comp_featured_image">'.$e($r->text('featured_url')).'</label><input id="comp_featured_image" name="featured_image" type="text" value="'.$e($input['featured_image']??'').'"></div>';

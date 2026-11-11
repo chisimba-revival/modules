@@ -41,6 +41,12 @@
                 dirty=true;
             }else{
                 form.elements.id.value=data.id;document.dispatchEvent(new CustomEvent('webinar:saved',{detail:{id:data.id}}));form.elements.version.value=data.version;
+                if(typeof data.slug==='string' && form.elements.slug){
+                    if(form.elements.slug.value===body.get('slug'))form.elements.slug.value=data.slug;
+                    form.elements.slug_revision.value=data.slug_revision;
+                    const link=form.querySelector('[data-webinar-public]');
+                    if(link){link.href=data.public_url;link.textContent=data.public_url;link.hidden=false;}
+                }
                 if(button?.name==='publish_action')form.elements.status.value=button.value;
                 history.replaceState(null,'',data.edit);preview.href=data.preview;preview.hidden=false;dirty=revision!==submittedRevision;
             }

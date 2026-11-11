@@ -7,6 +7,7 @@ require dirname(__DIR__).'/classes/publishingservice_class_inc.php';
 $user=new class {public $logged=false,$admin=false,$author=false,$id='author1';public function isLoggedIn(){return $this->logged;}public function isAdmin(){return $this->admin;}public function isLecturer(){return $this->author;}public function userId(){return $this->id;}public function isContextLecturer($id,$code){return $code==='allowed'&&$this->author;}public function isCourseAdmin($code){return false;}};
 $perms=new class {public $grants=[];public function areaIdForName($a,$b){return 1;}public function rightIdForArea($a,$r){return $r;}public function isGranted($u,$r){return in_array($r,$this->grants,true);}};
 $GLOBALS['objects']=array('user'=>$user,'permissionservice'=>$perms,'membershipservice'=>new class{public function tiers($enabledOnly=false){return ['free'=>['code'=>'free','rank'=>0,'enabled'=>true,'label'=>'Free'],'tier_1'=>['code'=>'tier_1','rank'=>1,'enabled'=>true,'label'=>'Tier 1']];}public $held='free';public function effectiveTier($user){return $this->held;}public function tierIncludes($held,$required){return $held===$required;}},'dbcontext'=>new class{public function getContextDetails($c){return in_array($c,['allowed','other'])?['title'=>$c]:false;}},'usercontext'=>new class{public function isContextMember($u,$c){return $c==='allowed';}});
+$GLOBALS['objects']['contentpaths']=new class {function locked($fn){return $fn();}function save(...$args){return '';}};
 $policy=new publishingpolicy();$policy->init();$GLOBALS['objects']['publishingpolicy']=$policy;
 $post=['id'=>'one','userid'=>'author1','post_type'=>'personal','blogid'=>'author1','post_status'=>'draft','datecreated'=>'2009-01-01'];
 check(!$policy->canCreate('personal','author1'),'Anonymous cannot publish');
@@ -17,7 +18,7 @@ check(!$policy->canRead($post),'Draft not public');$post['post_status']='posted'
 $user->logged=false;check(!$policy->canRead(['post_type'=>'context','blogid'=>'allowed','post_status'=>'posted']),'Anonymous cannot read course content');$user->logged=true;check(!$policy->canRead(['post_type'=>'context','blogid'=>'other','post_status'=>'posted']),'Unrelated course content denied');
 $user->author=false;$perms->grants=['personal_publish'];check($policy->canCreate('personal','author1'),'Explicit assistant');$perms->grants=['site_publish'];check($policy->canCreate('site','site'),'Site publisher');
 $user->author=true;
-$store=new class {public $post,$saved;public function begin(){}public function commit(){}public function rollback(){}public function lockPost($id){return $this->post;}public function post($id){return $this->post;}public function persist($id,$values){$this->saved=$values;return $id?:'new';}public function remove($id){return true;}};$store->post=$post;
+$store=new class {public $post,$saved,$snapshot;public function begin(){$this->snapshot=$this->saved;}public function commit(){}public function rollback(){$this->saved=$this->snapshot;}public function lockPost($id){return $this->post;}public function post($id){return $this->post;}public function persist($id,$values){$this->saved=$values;return $id?:'new';}public function remove($id){return true;}};$store->post=$post;
 $GLOBALS['objects']['publishingstore']=$store;$GLOBALS['objects']['richtextsanitizer']=new class{public function cleanHtml($html){return $html;}};
 $service=new publishingservice();$service->init();$input=['title'=>'A title','content'=>'<p>A body</p>','tags'=>'nature','status'=>'draft'];
 $input['version']=publishingservice::version($post);
@@ -55,3 +56,17 @@ $service->save('one','personal','author1',$input+['required_tier_code'=>'']);
 check($store->saved['required_tier_code']===null,'Explicit public stores null');
 try{$service->save('one','personal','author1',$input+['required_tier_code'=>'disabled']);throw new RuntimeException('Disabled tier accepted');}catch(DomainException $e){check($e->getMessage()==='invalid_access','Invalid requirement rejected');}
 echo "PASS: publishing roles, scope, draft visibility, immutable author/date and mutations\n";
+
+$user->admin=true;$store->post=array_merge($post,['post_type'=>'site','blogid'=>'site']);
+$GLOBALS['objects']['contentpaths']=new class {
+ public $fail=true;function locked($fn){return $fn();}function enabled(){return true;}
+ function current($module,$id){return 'assigned-address';}
+ function save(...$args){if($this->fail)throw new DomainException('slug_taken');return 'assigned-address';}
+};
+$pathInput=$input;$pathInput['version']=publishingservice::version($store->post);$pathInput['slug']='replacement-address';$pathInput['slug_revision']=hash('sha256','assigned-address');
+$before=$store->saved;
+try{$service->save('one','site','site',$pathInput);throw new RuntimeException('Collision accepted');}catch(DomainException $e){check($e->getMessage()==='slug_taken','Address collision reported');}
+check($store->saved===$before,'Address collision rolls content back');
+$GLOBALS['objects']['contentpaths']->fail=false;$pathInput['slug_revision']=hash('sha256','stale-address');
+try{$service->save('one','site','site',$pathInput);throw new RuntimeException('Stale address accepted');}catch(DomainException $e){check($e->getMessage()==='conflict','Stale address reported');}
+echo "PASS publishing address rollback and stale address protection.\n";

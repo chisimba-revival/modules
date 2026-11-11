@@ -105,6 +105,11 @@ class webinareditservice extends ChisimbaObject
     }
     public function save($id,$kind,array $input)
     {
+        $this->requireEditor();
+        return $this->getObject('contentpaths','shorturl')->locked(fn()=> $this->saveContent($id,$kind,$input));
+    }
+    private function saveContent($id,$kind,array $input)
+    {
         $this->requireEditor();$this->store->begin();
         try{
             $old=$id!==''?$this->store->record($id,true):null;
@@ -112,6 +117,8 @@ class webinareditservice extends ChisimbaObject
             if($id!==''&&(!$old||$old['kind']!==$kind))throw new DomainException('editor_forbidden');
             if($old&&$old['status']==='trashed')throw new DomainException('editor_forbidden');
             if($old&&(!is_string($input['version']??null)||!hash_equals(self::version($old),$input['version'])))throw new DomainException('editor_conflict');
+            $paths=$this->getObject('contentpaths','shorturl');
+            if($old && $kind==='webinar' && array_key_exists('slug',$input) && $paths->enabled() && !hash_equals(hash('sha256',$paths->current('webinar',$id)),(string)($input['slug_revision']??'')))throw new DomainException('editor_conflict');
             $row=$this->values($kind,$input,$old);
             // Prepare the protected email copy when a published featured image is saved.
             if($kind==='webinar'&&$row['status']==='published')$this->getObject('webinaremailimage','webinar')->thumbnail($row);
@@ -122,6 +129,7 @@ class webinareditservice extends ChisimbaObject
                 $c->tag('webinar',$row['id'],array_values(array_filter(array_map('trim',explode(',',$input['tags'])),fn($x)=>$x!=='')));
             }
             $saved=$this->store->record($row['id']);if(!$saved||!hash_equals(self::version($row),self::version($saved)))throw new RuntimeException('webinar_storage_failed');
+            if($kind==='webinar')$paths->save('webinar',$saved['id'],$saved['title'],$input['slug']??'');
             $this->store->commit();return $saved;
         }catch(Throwable $e){$this->store->rollback();throw $e;}
     }

@@ -28,11 +28,19 @@ class publishingservice extends ChisimbaObject
     }
     public function save($id,$type,$scope,array $input)
     {
+        return $this->getObject('contentpaths','shorturl')->locked(fn()=> $this->saveContent($id,$type,$scope,$input));
+    }
+    private function saveContent($id,$type,$scope,array $input)
+    {
         $this->store->begin();
         try {
         $old=$id ? $this->store->lockPost($id) : null;
         if ($id && (!$old || !$this->policy->canEdit($old))) throw new DomainException('forbidden');
         if ($old && (!isset($input['version']) || !hash_equals(self::version($old),(string)$input['version']))) throw new DomainException('conflict');
+        if ($old && $type==='site' && array_key_exists('slug',$input) && $this->getObject('contentpaths','shorturl')->enabled()) {
+            $slugRevision=hash('sha256',$this->getObject('contentpaths','shorturl')->current('simpleblog',$id));
+            if(!hash_equals($slugRevision,(string)($input['slug_revision']??'')))throw new DomainException('conflict');
+        }
         if ($old && ($type!==$old['post_type'] || $scope!==$old['blogid'])) throw new DomainException('scope_changed');
         if (!$this->policy->canCreate($type,$scope)) throw new DomainException('forbidden');
         foreach (array('title','content','tags','status') as $field)
@@ -85,6 +93,7 @@ class publishingservice extends ChisimbaObject
             if (!is_array($categories)) throw new DomainException('invalid');
             $classification->assign('simpleblog',$saved,'category',$categories);
         }
+        if ($type==='site') $this->getObject('contentpaths','shorturl')->save('simpleblog',$saved,$title,$input['slug']??'');
         $this->store->commit(); return $saved;
         } catch (Throwable $e) { $this->store->rollback(); throw $e; }
     }

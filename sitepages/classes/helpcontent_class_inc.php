@@ -12,7 +12,7 @@ class helpcontent extends ChisimbaObject
         $language=$this->getObject('language','language');
         $text=fn($key)=>$language->languageText('mod_sitepages_help_'.$key,'sitepages');
         return ['title'=>$text('title'),'summary'=>$text('summary'),
-            'steps'=>[$text('steps'),$text('edit'),$text('save')],
+            'steps'=>[$text('steps'),$text('edit'),$language->languageText('mod_sitepages_slughelp','sitepages'),$text('save')],
             'sections'=>[
                 ['heading'=>$blocks->text('image'),'body'=>$blocks->text('image_help')],
                 ['heading'=>$text('links_title'),'body'=>$text('links')],

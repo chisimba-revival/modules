@@ -14,6 +14,7 @@ $store=new class{public $rows=[],$snapshot=[];function begin(){$this->snapshot=$
 $classification=new class{function registerProvider($m,$p){}function assign($m,$id,$k,$ids){if($ids!==[]&&$ids!==['category'])throw new DomainException('classification_unknown_term');}function tag($m,$id,$names){foreach($names as $name)if(str_contains($name,'<'))throw new DomainException('classification_invalid_term');}};
 $policy=new webinareditpolicy();$GLOBALS['services']=['user'=>$user,'permissionservice'=>$permissions,'webinareditpolicy'=>$policy,'webinareditstore'=>$store,'classificationservice'=>$classification,'compositionservice'=>new compositionservice(),'contentmediaservice'=>new contentmediaservice(),'richtextsanitizer'=>new richtextsanitizer()];
 $GLOBALS['services']['webinaremailimage']=new class{public $calls=0;function thumbnail($row){$this->calls++;return null;}};
+$GLOBALS['services']['contentpaths']=new class{function locked($fn){return $fn();}function save(...$args){return '';}function enabled(){return false;}};
 $service=new webinareditservice();$service->init();
 check($policy->canManage(),'Admin');$user->admin=false;check(!$policy->canManage(),'Ordinary member denied');$permissions->granted=true;check($policy->canManage(),'Explicit manager');$user->logged=false;check(!$policy->canManage(),'Anonymous denied despite stale grant');rejects(fn()=>$service->save('','speaker',[]),'editor_forbidden');$user->logged=true;$user->admin=true;
 $speaker=$service->save('','speaker',['title'=>'Test speaker','description'=>'<p>A biography</p>','image'=>'','image_alt'=>'','status'=>'published']);
@@ -47,3 +48,21 @@ check(json_decode($service->values('webinar',$input)['payload'],true)['registrat
 $capInput=$input;$capInput['registration_limit']='25';check(json_decode($service->values('webinar',$capInput)['payload'],true)['registration_limit']===25,'Custom limit');
 foreach(['0','-1','1.5','abc','',[],100001] as $bad){$capInput['registration_limit']=$bad;rejects(fn()=>$service->values('webinar',$capInput),'editor_registration_limit');}
 echo "PASS registration limit default, custom value and invalid values.\n";
+
+// Address changes participate in the same editor transaction and stale protection.
+$GLOBALS['services']['contentpaths']=new class {
+ public $fail=false;
+ function locked($fn){return $fn();}function enabled(){return true;}
+ function current($module,$id){return 'assigned-address';}
+ function save(...$args){if($this->fail)throw new DomainException('slug_taken');return 'assigned-address';}
+};
+$pathInput=$input;$pathInput['create_id']=bin2hex(random_bytes(16));$pathInput['status']='draft';$pathInput['categories']=[];
+$pathRecord=$service->save('','webinar',$pathInput);
+$pathInput['version']=webinareditservice::version($pathRecord);$pathInput['slug']='replacement-address';$pathInput['slug_revision']=hash('sha256','assigned-address');
+$GLOBALS['services']['contentpaths']->fail=true;
+rejects(fn()=>$service->save($pathRecord['id'],'webinar',$pathInput),'slug_taken');
+check($store->record($pathRecord['id'])===$pathRecord,'Slug collision rolls webinar changes back');
+$GLOBALS['services']['contentpaths']->fail=false;$pathInput['slug_revision']=hash('sha256','stale-address');
+rejects(fn()=>$service->save($pathRecord['id'],'webinar',$pathInput),'editor_conflict');
+check($store->record($pathRecord['id'])===$pathRecord,'Stale slug edit preserves webinar');
+echo "PASS webinar address collision rollback and stale address protection.\n";

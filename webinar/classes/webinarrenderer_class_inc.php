@@ -6,7 +6,11 @@ class webinarrenderer extends ChisimbaObject
  public function init(){$this->loadClass('webinarschedule','webinar');}
  public static function escape($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
  public function text($key){return ucfirst($this->getObject('language','language')->code2Txt('mod_webinar_'.$key,'webinar'));}
- public function button($label,$icon,$params){return '<a class="button" href="'.self::escape($this->uri($params,'webinar')).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($label)).'</span></a>';}
+ public function button($label,$icon,$params){return '<a class="button" href="'.self::escape($this->publicUrl($params)).'">'.$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.self::escape($this->text($label)).'</span></a>';}
+ public function publicUrl(array $params): string {
+  $fallback=html_entity_decode($this->uri($params,'webinar'),ENT_QUOTES,'UTF-8');
+  return ($params['action']??'')==='view' && !empty($params['id']) ? $this->getObject('contentpaths','shorturl')->url('webinar',$params['id'],$fallback) : $fallback;
+ }
  public function data($r){return json_decode($r['payload'],true,512,JSON_THROW_ON_ERROR);}
  public function image($url,$alt){return $url?'<img src="'.self::escape($url).'" alt="'.self::escape($alt).'" style="display:block;width:100%;height:auto;object-fit:contain" loading="lazy">':'';}
  /** Distinguish event scheduling from whether registration is enabled. */
@@ -28,7 +32,7 @@ class webinarrenderer extends ChisimbaObject
   $html='<div class="chisimba-publication-card-grid">';$dialogs='';$seen=[];$canEdit=$this->getObject('webinareditpolicy','webinar')->canManage();
   foreach($rows as $r){
    $r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');
-   $d=$this->data($r);$url=self::escape($this->uri(['action'=>'view','id'=>$r['id']],'webinar'));
+   $d=$this->data($r);$url=self::escape($this->publicUrl(['action'=>'view','id'=>$r['id']]));
    $html.='<article class="chisimba-publication-card"><a class="chisimba-publication-card__media chisimba-publication-card__media--natural" href="'.$url.'">'.$this->image($d['image']??'',$r['title']);
    $date=webinarschedule::start($r);
    if($r['kind']==='webinar'&&$date){
