@@ -22,6 +22,7 @@ class webinar extends controller
         $action=$this->param('action')?:'upcoming';
         if(in_array($action,['manage','edit','save','preview','tag_suggestions','editor_aux','trash','restore'],true))return $this->editorAction($action);
         if(in_array($action,['dashboard','save_reminders'],true))return $this->dashboard($action);
+        if($action==='attendees')return $this->attendees();
         if($action==='speaker_links')return $this->speakerLinks();
         if($action==='booking_status')return $this->bookingStatus();
         if(in_array($action,['register','confirm','unsubscribe'],true))return $this->formAction($action);
@@ -60,6 +61,16 @@ class webinar extends controller
         $data=['ok'=>$error==='','csrf'=>$this->csrf()->issue('speaker-links'),'message'=>$r->text($error?:'links_saved')];
         if(!$error)$data+=['html'=>$this->getObject('speakerlinksrenderer','webinar')->rows($rows),'version'=>speakerlinks::revision($rows)];
         echo json_encode($data,JSON_THROW_ON_ERROR);exit;
+    }
+    private function attendees()
+    {
+        header('Cache-Control: private, no-store');
+        if(!in_array($_SERVER['REQUEST_METHOD']??'GET',['GET','HEAD'],true)){
+            http_response_code(405);header('Allow: GET, HEAD');$this->setVar('webinarMissing',true);return 'archive_tpl.php';
+        }
+        try{$data=$this->getObject('webinarattendees','webinar')->listing($this->param('id'),$this->param('page'));}
+        catch(DomainException $error){http_response_code(404);$this->setVar('webinarMissing',true);return 'archive_tpl.php';}
+        $this->setVar('webinarAttendees',$data);return 'attendees_tpl.php';
     }
     private function dashboard($action)
     {

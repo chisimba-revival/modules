@@ -48,3 +48,20 @@ queues due work; the bounded Communications worker performs delivery. Enabling
 an overdue send does not catch up historical announcements. Sent means transport
 acceptance, not inbox delivery. Disabled controls and consent/event changes are
 rechecked immediately before delivery. Already accepted messages cannot be recalled.
+
+## Private attendee inspection
+
+`attendees_test.php` uses temporary tables in an explicitly isolated database
+named `webinar_attendees_test`. Set `ATTENDEE_TEST_DSN`, `ATTENDEE_TEST_USER`,
+`ATTENDEE_TEST_PASSWORD`, and `ATTENDEE_FRAMEWORK` (the framework **app** directory).
+It covers 170 eligible attendees, pagination, duplicate/pending/unsubscribed/stale
+exclusions, conservative review hints, and administrator/creator/outsider/revoked/
+anonymous access. No mail is sent and the temporary tables disappear on exit.
+
+The management count pill opens `action=attendees&id=...`; this GET/HEAD-only
+route requires both webinar-management permission and the existing
+administrator/original-creator count policy. It uses private/no-store caching.
+Only names, email addresses and confirmation dates are selected; no tokens or
+credentials are returned. The first release is read-only and has no schema change.
+Review flags reuse the shared generated-name heuristic and basic email-format
+validation; they are not email deliverability or identity verification.
