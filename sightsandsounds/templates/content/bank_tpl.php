@@ -12,7 +12,7 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <h2><?= $e($t('add_question')) ?></h2><?= $this->access->tokenField() ?>
 <div class="chisimba-form-field"><label for="ss-media"><?= $e($t('media')) ?></label>
 <input type="file" id="ss-media" name="media" accept="image/jpeg,image/png,image/webp,audio/mpeg" required aria-describedby="ss-media-note"><p id="ss-media-note"><?= $e($t('media_note')) ?></p></div>
-<div data-ss-preview hidden><img alt="<?= $e($t('preview')) ?>" width="480" hidden><audio controls preload="metadata" hidden></audio></div>
+<div data-ss-preview hidden><img alt="<?= $e($t('preview')) ?>" width="480" hidden><span class="chisimba-content-block"><audio controls preload="metadata" hidden></audio></span></div>
 <?php foreach (['answer'=>160,'alternatives'=>4800,'feedback'=>2000,'credit'=>500] as $name=>$max): ?>
 <div class="chisimba-form-field chisimba-form-field--brief"><label for="ss-<?= $e($name) ?>"><?= $e($t($name)) ?></label>
 <textarea id="ss-<?= $e($name) ?>" name="<?= $e($name) ?>" maxlength="<?= $max ?>" rows="<?= $name==='alternatives'?3:2 ?>" <?= $name==='answer'?'required':'' ?>><?= $e($ssInput[$name]??'') ?></textarea></div>
@@ -33,6 +33,6 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <?php foreach ($ssItems as $item): ?>
 <details class="chisimba-form-card"><summary><?= $e($item['answer']) ?> · <?= $e($t($item['kind'])) ?></summary>
 <?php if ($item['kind']==='image'): ?><img src="<?= $e($url(['action'=>'media','id'=>$item['id']])) ?>" alt="<?= $e($item['answer']) ?>" width="480" loading="lazy">
-<?php else: ?><audio controls preload="none" src="<?= $e($url(['action'=>'media','id'=>$item['id']])) ?>"></audio><?php endif ?>
+<?php else: ?><span class="chisimba-content-block"><audio controls preload="none" src="<?= $e($url(['action'=>'media','id'=>$item['id']])) ?>"></audio></span><?php endif ?>
 <p><?= $e(implode('; ',json_decode($item['aliases'],true))) ?></p><p><?= $e($item['feedback']) ?></p><p><?= $e($item['credit']) ?></p></details>
 <?php endforeach ?>

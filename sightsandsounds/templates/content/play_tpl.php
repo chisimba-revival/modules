@@ -17,7 +17,7 @@ $correct=count(array_filter($state,fn($s)=>$s['correct']));
 <h2><?= $e($t('question')) ?> <?= $position+1 ?>/<?= count($ids) ?></h2>
 <?php if ($item['kind']==='image'): ?>
 <a href="<?= $e($url(['action'=>'media','id'=>$selected])) ?>" target="_blank" rel="noopener" aria-label="<?= $e($t('open_image')) ?>"><img src="<?= $e($url(['action'=>'media','id'=>$selected])) ?>" alt="<?= $e($t('identify_image')) ?>" width="640"></a>
-<?php else: ?><audio controls preload="metadata" aria-label="<?= $e($t('identify_audio')) ?>" src="<?= $e($url(['action'=>'media','id'=>$selected])) ?>"></audio><?php endif ?>
+<?php else: ?><span class="chisimba-content-block"><audio controls preload="metadata" aria-label="<?= $e($t('identify_audio')) ?>" src="<?= $e($url(['action'=>'media','id'=>$selected])) ?>"></audio></span><?php endif ?>
 <form method="post" action="<?= $e($url(['action'=>'check'])) ?>" data-ss-answer>
 <?= $this->access->tokenField() ?><input type="hidden" name="id" value="<?= $e($ssRun['id']) ?>"><input type="hidden" name="itemid" value="<?= $e($selected) ?>"><input type="hidden" name="revision" value="<?= (int)$ssRun['revision'] ?>">
 <div class="chisimba-form-field"><label for="ss-answer"><?= $e($t('identify')) ?></label><input id="ss-answer" name="answer" type="text" maxlength="160" autocomplete="off" required value="<?= $e($this->getVar('ssDraft',$entry['answer'])) ?>"></div>
