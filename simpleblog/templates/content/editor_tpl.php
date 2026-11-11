@@ -24,7 +24,7 @@ if($type==='site' && $paths->enabled()) {
  $slug=$input['slug']??$currentSlug;
  echo '<input type="hidden" name="slug_revision" value="'.$e($input['slug_revision']??hash('sha256',$currentSlug)).'">';
  echo '<fieldset class="chisimba-editor-section"><legend>'.$e($r->text('web_address')).'</legend><div class="chisimba-form-field"><label for="post-slug">'.$e($r->text('slug')).'</label><input id="post-slug" name="slug" type="text" maxlength="190" pattern="[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*" value="'.$e($slug).'"><p class="chisimba-field-help">'.$e($r->text('slug_help')).'</p></div>';
- if($post && $paths->current('simpleblog',$post['id'])!=='') { $share=$paths->url('simpleblog',$post['id'],''); echo '<a href="'.$e($share).'">'.$e($share).'</a>'; }
+ if($post && $paths->current('simpleblog',$post['id'])!=='') { $share=$paths->url('simpleblog',$post['id'],''); echo $this->getObject('contentpathrenderer','shorturl')->show($share); }
  echo '</fieldset>';
 }
 

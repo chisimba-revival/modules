@@ -45,7 +45,7 @@
                     if(form.elements.slug.value===body.get('slug'))form.elements.slug.value=data.slug;
                     form.elements.slug_revision.value=data.slug_revision;
                     const link=form.querySelector('[data-webinar-public]');
-                    if(link){link.href=data.public_url;link.textContent=data.public_url;link.hidden=false;}
+                    if(link){link.href=data.public_url;link.textContent=data.public_url;link.hidden=false;link.closest('[data-content-address]').hidden=!data.public_url;}
                 }
                 if(button?.name==='publish_action')form.elements.status.value=button.value;
                 history.replaceState(null,'',data.edit);preview.href=data.preview;preview.hidden=false;dirty=revision!==submittedRevision;
