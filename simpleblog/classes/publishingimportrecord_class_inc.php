@@ -9,6 +9,7 @@ class publishingimportrecord
     public static function compare($old,array $new,$refreshReviewedConversion=false)
     {
         if(!$old)return 'created';
+        if(!empty($old['author_kind']) || !empty($old['author_id']))throw new RuntimeException('Imported article attribution edited; review '.$new['source_key']);
         if($refreshReviewedConversion && hash_equals((string)$old['source_hash'],$new['source_hash']) && hash_equals((string)$old['import_hash'],self::fingerprint($old)) && !hash_equals((string)$old['import_hash'],self::fingerprint($new)))return 'updated';
         if(!hash_equals((string)$old['source_hash'],$new['source_hash'])||!hash_equals((string)$old['import_hash'],self::fingerprint($old))||!hash_equals((string)$old['import_hash'],self::fingerprint($new)))throw new RuntimeException('Imported article changed; review '.$new['source_key']);
         return 'unchanged';

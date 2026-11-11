@@ -36,4 +36,5 @@
         <description>Reconcile imported provenance and membership access without replacing content</description>
         <SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN IF NOT EXISTS author_credit VARCHAR(250) NULL, ADD COLUMN IF NOT EXISTS source_key VARCHAR(191) NULL, ADD COLUMN IF NOT EXISTS source_url LONGTEXT NULL, ADD COLUMN IF NOT EXISTS source_hash VARCHAR(64) NULL, ADD COLUMN IF NOT EXISTS import_hash VARCHAR(64) NULL, ADD COLUMN IF NOT EXISTS required_tier_code VARCHAR(32) NULL, ADD UNIQUE KEY IF NOT EXISTS simpleblog_source_unique (source_key);</SQL>
     </update>
+    <update><table>tbl_simpleblog_posts</table><version>0.084</version><description>Optional editorial author biography reference, separate from account ownership</description><SQL>ALTER TABLE tbl_simpleblog_posts ADD COLUMN IF NOT EXISTS author_kind VARCHAR(16) NULL, ADD COLUMN IF NOT EXISTS author_id VARCHAR(32) NULL;</SQL></update>
 </updates>

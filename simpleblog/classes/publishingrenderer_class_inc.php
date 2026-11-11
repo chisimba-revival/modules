@@ -120,6 +120,8 @@ class publishingrenderer extends ChisimbaObject
     {
         $icons=$this->getObject('iconservice','ui');
         $author=self::escape(self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid'])));
+        $authorUrl=$this->getObject('publishingauthorservice','simpleblog')->link($post);
+        if($authorUrl!=='')$author='<a href="'.self::escape($authorUrl).'">'.$author.'</a>';
         $raw=$post['published_at']??$post['datecreated']??'';
         $date=DateTimeImmutable::createFromFormat('!Y-m-d H:i:s',(string)$raw,new DateTimeZone('UTC'));
         $html='<p class="chisimba-publication-meta"><span>'.$icons->render('user',['decorative'=>true]).$author.'</span>';
@@ -141,7 +143,7 @@ class publishingrenderer extends ChisimbaObject
         if (!$editorPreview) $html.=$this->getObject('accesspreview')->cta($post);
         if (trim($post['post_tags']??'')!=='') $html.='<p>'.$e($this->text('tags')).': '.$e($post['post_tags']).'</p>';
         $bio=$this->getObject('authorbiographyservice','userdetails')->forUser($post['userid']);
-        if (self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid']))===$this->getObject('user','security')->fullname($post['userid']) && trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
+        if (empty($post['author_kind']) && trim($post['author_credit']??'')==='' && self::authorCredit($post,$this->getObject('user','security')->fullname($post['userid']))===$this->getObject('user','security')->fullname($post['userid']) && trim($bio['biography'])!=='') $html.=$this->getObject('authorbiographyrenderer','userdetails')->person(array_merge($bio,array('userid'=>$post['userid'],'name'=>$this->getObject('user','security')->fullname($post['userid']))));
         return $html.'</article>';
     }
     private function absolute($url)

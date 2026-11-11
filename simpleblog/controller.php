@@ -90,6 +90,12 @@ class simpleblog extends controller
                 $this->setVar('blogInput',$this->input());return $this->editor($post,$type,$scope);
             }
         }
+        if ($action==='author_suggestions') {
+            if ($post ? !$this->policy->canEdit($post) : !$this->policy->canCreate($type,$scope)) return $this->unavailable();
+            if (($_SERVER['REQUEST_METHOD']??'')!=='GET') { http_response_code(405); return null; }
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($this->getObject('publishingauthorservice','simpleblog')->suggestions($this->param('query')),JSON_THROW_ON_ERROR);exit;
+        }
         if ($action==='tag_suggestions') {
             if (!$this->policy->canCreate($type,$scope)) return $this->unavailable();
             $terms=$this->service->classification()->creationChoices('simpleblog',$type,$scope,'tag');
@@ -125,7 +131,7 @@ class simpleblog extends controller
         return 'posts_tpl.php';
     }
     private function input()
-    { return array('slug'=>$this->param('slug'),'slug_revision'=>$this->param('slug_revision'),'title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version'),'required_tier_code'=>$this->param('required_tier_code'),'blocks'=>$this->getParam('content_blocks',[]),'categories'=>$this->getParam('categories',[]),'undo'=>$this->param('composition_undo'),'active'=>$this->param('composition_active'),'featured_image'=>$this->param('featured_image'),'featured_alt'=>$this->param('featured_alt')); }
+    { return array('author_credit'=>$this->getParam('author_credit',''),'author_kind'=>$this->param('author_plain')==='1'?'':$this->getParam('author_kind',''),'author_id'=>$this->param('author_plain')==='1'?'':$this->getParam('author_id',''),'slug'=>$this->param('slug'),'slug_revision'=>$this->param('slug_revision'),'title'=>$this->param('title'),'content'=>$this->param('content'),'tags'=>$this->param('tags'),'status'=>$this->param('status'),'version'=>$this->param('version'),'required_tier_code'=>$this->param('required_tier_code'),'blocks'=>$this->getParam('content_blocks',[]),'categories'=>$this->getParam('categories',[]),'undo'=>$this->param('composition_undo'),'active'=>$this->param('composition_active'),'featured_image'=>$this->param('featured_image'),'featured_alt'=>$this->param('featured_alt')); }
     private function editor($post,$type,$scope)
     {
         if ($post ? !$this->policy->canEdit($post) : !$this->policy->canCreate($type,$scope)) return $this->unavailable();

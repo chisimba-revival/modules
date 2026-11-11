@@ -14,6 +14,8 @@ $options = array(
 
 // Fields
 $fields = array(
+    'author_kind'=>array('type'=>'text','length'=>16),
+    'author_id'=>array('type'=>'text','length'=>32),
     'author_credit'=>array('type'=>'text','length'=>250),
     'source_key'=>array('type'=>'text','length'=>191),
     'source_url'=>array('type'=>'clob'),

@@ -67,6 +67,7 @@ class publishingservice extends ChisimbaObject
         if($tier!=='' && $tier!==($old['required_tier_code']??'') && !isset($this->memberships->tiers(true)[$tier])) throw new DomainException('invalid_access');
         $values=array('post_title'=>$title,'post_content'=>$content,'post_tags'=>$tags,'post_status'=>$input['status'],'required_tier_code'=>$tier===''?null:$tier,
             'modifierid'=>(string)$this->user->userId(),'datemodified'=>gmdate('Y-m-d H:i:s'));
+        if(array_key_exists('author_credit',$input)) $values+=$this->getObject('publishingauthorservice','simpleblog')->values($input,$old);
         if(array_key_exists('featured_image',$input)) {
             if(!is_string($input['featured_image'])||!is_string($input['featured_alt']??''))throw new DomainException('invalid');
             $builder=$this->getObject('compositionservice','contentblocks');$image=$builder->emptyBlock('hero');
@@ -98,7 +99,7 @@ class publishingservice extends ChisimbaObject
         } catch (Throwable $e) { $this->store->rollback(); throw $e; }
     }
     public static function version(array $post)
-    { return hash('sha256',json_encode(array_intersect_key($post,array_flip(array('id','userid','blogid','post_type','post_title','post_content','post_tags','post_status','required_tier_code','datemodified','composition_json','published_at','featured_image','featured_alt'))))); }
+    { return hash('sha256',json_encode(array_intersect_key($post,array_flip(array('id','userid','blogid','post_type','post_title','post_content','post_tags','post_status','required_tier_code','datemodified','composition_json','published_at','featured_image','featured_alt','author_credit','author_kind','author_id'))))); }
     public function delete($id)
     {
         $this->store->begin();

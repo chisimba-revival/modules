@@ -8,3 +8,7 @@ if(publishingimportrecord::compare(null,$r)!=='created'||publishingimportrecord:
 foreach(['post_title','post_status','published_at','author_credit','source_hash'] as $key){$changed=$r;$changed[$key]='edited';try{publishingimportrecord::compare($changed,$r);throw new LogicException('Overwrite accepted');}catch(RuntimeException $expected){}}
 if(publishingrenderer::authorCredit($r,'Editor')!=='Original author'||publishingrenderer::authorCredit([],'Editor')!=='Editor')throw new RuntimeException('Wrong attribution');
 echo "PASS: repeated imports, editorial/source conflict protection, historical dates and independent author credit\n";
+
+$linked=$r+['author_kind'=>'speaker','author_id'=>'speaker'];
+try { publishingimportrecord::compare($linked,$r,true);throw new LogicException('Reviewed conversion discarded edited biography'); } catch (RuntimeException $expected) {}
+echo "PASS repeated import preserves explicitly linked author identity\n";

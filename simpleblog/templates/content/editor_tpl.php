@@ -4,7 +4,7 @@ $post=$this->getVar('blogPost');$type=$this->getVar('blogType');$scope=$this->ge
 $input=$this->getVar('blogInput') ?: array('featured_image'=>$post['featured_image']??'','featured_alt'=>$post['featured_alt']??'','title'=>$post['post_title']??'','content'=>$post['post_content']??'','tags'=>$post['post_tags']??'','status'=>$post['post_status']??'draft','blocks'=>$this->getObject('compositionservice','contentblocks')->fromPost($post?:[]));
 ?>
 <section class="chisimba-form-page"><div class="chisimba-editor-surface"><h1><?php echo $e($r->text($post?'edit':'new')); ?></h1>
-<aside class="chisimba-editor-meta"><p><?php echo $e($r->identity($type,$scope)); ?></p><p><?php echo $e($r->text('author')).': '.$e($this->getObject('user','security')->fullname($post['userid']??$this->getObject('user','security')->userId())); ?></p></aside>
+<aside class="chisimba-editor-meta"><p><?php echo $e($r->identity($type,$scope)); ?></p><p><?php echo $e($r->text('owner')).': '.$e($this->getObject('user','security')->fullname($post['userid']??$this->getObject('user','security')->userId())); ?></p></aside>
 <?php if ($post) echo $r->editorPublicationDate($post); ?>
 <div class="chisimba-form-actions"><?php echo $this->getObject('contextualhelp','help')->show('simpleblog','publishing'); if($post) echo $r->button('delete','trash-2',array('action'=>'confirmdelete','id'=>$post['id'])); ?></div>
 <?php if($this->getVar('blogInput'))echo '<p role="status">'.$e($r->text('unsaved_composition')).'</p>'; ?>
@@ -12,6 +12,22 @@ $input=$this->getVar('blogInput') ?: array('featured_image'=>$post['featured_ima
 <form method="post" class="chisimba-form chisimba-composition-form" data-composition-ajax data-composition-failure="<?php echo $e($r->text('block_update_failed')); ?>" data-composition-pending="<?php echo $e($r->text('block_updating')); ?>" data-composition-updated="<?php echo $e($r->text('unsaved_composition')); ?>" action="<?php echo $e($this->uri(array('action'=>'save'),'simpleblog')); ?>">
 <input type="hidden" name="version" value="<?php echo $e($this->getVar('blogInput')['version']??($post?publishingservice::version($post):'')); ?>"><input type="hidden" name="csrf_token" value="<?php echo $e($this->getVar('blogToken')); ?>"><input type="hidden" name="id" value="<?php echo $e($post['id']??''); ?>"><input type="hidden" name="scope" value="<?php echo $e($type); ?>"><input type="hidden" name="blogid" value="<?php echo $e($scope); ?>">
 <div class="chisimba-form-field chisimba-title-field"><label for="blog-title"><?php echo $e($r->text('title')); ?></label><textarea id="blog-title" name="title" rows="1" required maxlength="250" data-auto-expand><?php echo $e($input['title']); ?></textarea></div>
+<?php
+$credit=$input['author_credit']??($post['author_credit']??'');
+$creditKind=$input['author_kind']??($post['author_kind']??'');
+$creditId=$input['author_id']??($post['author_id']??'');
+$authorSearch=$this->uri(['action'=>'author_suggestions','id'=>$post['id']??'','scope'=>$type,'blogid'=>$scope],'simpleblog');
+?>
+<fieldset class="chisimba-editor-section" data-author-picker data-endpoint="<?= $e(html_entity_decode($authorSearch,ENT_QUOTES,'UTF-8')) ?>"<?php foreach(['user','speaker','linked','plain','default','searching','no_matches','search_failed'] as $key)echo ' data-'.$key.'="'.$e($r->text('author_'.$key)).'"'; ?>>
+<legend><?= $e($r->text('author_credit')) ?></legend>
+<div class="chisimba-form-field"><label for="post-author-credit"><?= $e($r->text('author_name')) ?></label><input id="post-author-credit" name="author_credit" value="<?= $e(is_string($credit)?$credit:'') ?>" maxlength="250" autocomplete="off" aria-describedby="author-credit-help author-credit-status"><p id="author-credit-help" class="chisimba-field-help"><?= $e($r->text('author_credit_help')) ?></p></div>
+<input type="hidden" name="author_kind" value="<?= $e(is_string($creditKind)?$creditKind:'') ?>"><input type="hidden" name="author_id" value="<?= $e(is_string($creditId)?$creditId:'') ?>">
+<p id="author-credit-status" role="status" aria-live="polite"><?= $e($r->text($creditKind!==''?'author_linked':($credit!==''?'author_plain':'author_default'))) ?></p>
+<div data-author-results hidden><p><?= $e($r->text('author_matches')) ?></p><ul class="chisimba-stack" data-author-options></ul></div>
+<button type="button" class="button chisimba-button-secondary" data-author-unlink hidden><?= $e($r->text('author_unlink')) ?></button>
+<noscript><label><input type="checkbox" name="author_plain" value="1"> <?= $e($r->text('author_unlink')) ?></label></noscript>
+</fieldset>
+<?php $this->appendArrayVar('headerParams','<script defer src="'.$e($this->getResourceUri('author-credit.js','simpleblog')).'"></script>'); ?>
 <p role="status" data-composition-status></p><div data-composition-history><input type="hidden" name="content" value=""><input type="hidden" name="composition_undo" value="<?php echo $e($input['undo']??''); ?>">
 <?php if(!empty($input['undo']))echo '<button class="button" type="submit" name="compose_command" value="undo_blocks" formnovalidate>'.$this->getObject('iconservice','ui')->render('undo-2',['decorative'=>true]).'<span>'.$e($r->text('undo_blocks')).'</span></button>'; ?></div><div class="chisimba-publishing-layout chisimba-composition-workspace"><main>
 <?php echo $this->getObject('compositioneditor','contentblocks')->show(is_array($input['blocks']??null)?$input['blocks']:[],false,$input['active']??'',empty($this->getVar('blogError'))&&!empty($input['resume'])); ?>

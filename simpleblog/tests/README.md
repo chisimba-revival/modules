@@ -57,3 +57,14 @@ of only a disposable private post. Existing policy/service tests also pass.
 ## Editor publication date — 7 November 2026
 
 The editor shows the original publication timestamp in full (UTC), above the title. Published legacy records fall back to their creation date; never-published drafts have no publication date. `php tests/editor_publication_date_test.php` checks original dates, legacy fallback, draft publication history and invalid timestamps. The shared File Manager chooser now uses protected server-generated thumbnail previews.
+
+## Author credits
+
+`php simpleblog/tests/author_credit_test.php` covers plain text, explicit user/speaker
+selection, duplicate names, optional Webinar installation, unavailable biographies
+and stale edit protection. Run the framework's `author_credit_contract_test.php`
+with the disposable PDO runner for the additive migration, transaction rollback
+and bounded public-name queries. The editor's Ajax lookup requires publishing
+permission and never exposes account contact details. Type a name and select a
+suggestion to link it; changing the text clears the selected identity. Clearing
+the field restores the owning account. Credit does not transfer ownership.

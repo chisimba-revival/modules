@@ -11,7 +11,7 @@ class simpleblog_installscripts extends dbTable
         // Legacy patch::applyUpdates reads <data>, not raw <SQL>. Execute only
         // this reviewed forward union; never replay historical migrations.
         $xml = simplexml_load_file(dirname(__DIR__).'/sql/sql_updates.xml', 'SimpleXMLElement', LIBXML_NONET);
-        $statements = $xml ? $xml->xpath('/updates/update[version="0.075"]/SQL') : false;
+        $statements = $xml ? $xml->xpath('/updates/update[version="0.075" or version="0.084"]/SQL') : false;
         if (!$statements) throw new RuntimeException('Publishing reconciliation migration missing');
         foreach ($statements as $statement) {
             $result = $this->getObject('modulesadmin','modulecatalogue')->executeSchemaStatement((string)$statement);
