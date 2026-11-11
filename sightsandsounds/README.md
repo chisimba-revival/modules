@@ -42,3 +42,16 @@ offline downloads. It must not be used for summative assessment.
 Browser acceptance: author upload/preview for both kinds; publish a mixed set;
 member start, wrong answer, correction and resume; outsider and anonymous media
 rejection; audio range requests; narrow layout; keyboard and contextual Help.
+
+## Local acceptance — 11 November 2026
+
+Installed through Module Catalogue on the existing PHP 8.5.12 development site;
+repeat registration preserved records. A browser author uploaded PNG and MP3
+fixtures and published a ten-question mixed practice activity. A student completed
+it to 100%, corrected a wrong answer, matched an alternative name and resumed the
+same persisted run. Native audio playback and protected range delivery worked.
+Student authoring and outsider media reads were denied; anonymous reads required
+sign-in. Quick/full Help and Escape focus return passed. Media controls fit a
+390px viewport; the existing global navigation shell has a small unrelated
+horizontal overflow. Fixture course, content and media were removed; test accounts
+were deactivated through the canonical user service.
