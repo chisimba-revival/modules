@@ -70,7 +70,7 @@ class webinarrenderer extends ChisimbaObject
   $data=$this->data($record);
   $composition=$this->getObject('compositionservice','contentblocks');
   $block=$composition->emptyBlock('text');$block['text']=$data['description']??'';
-  $copy=$composition->render([$block]);$media='';$seen=[];
+  $copy='<div class="chisimba-biography-prose">'.$composition->render([$block]).'</div>';$media='';$seen=[];
   foreach(['image','banner'] as $key){
    $url=html_entity_decode((string)($data[$key]??''),ENT_QUOTES|ENT_HTML5,'UTF-8');
    if($url===''||isset($seen[$url]))continue;
