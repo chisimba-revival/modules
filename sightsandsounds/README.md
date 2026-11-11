@@ -1,4 +1,10 @@
-# Sights & Sounds browser practice
+# Sights & Sounds assessments
+
+Current version 0.003 supports browser and offline-app practice and formative
+assignments, server marking, attempt limits and audited additional attempts.
+See the formative section and lifecycle design below.
+
+## Original practice prototype (0.001)
 
 Version 0.001 provides a course-scoped question bank, image/MP3 upload and preview,
 accepted identification aliases, immutable published activities, random practice

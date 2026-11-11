@@ -97,7 +97,7 @@ class sightsandsounds extends controller
             $this->setVar('ssError',$this->text('error_'.$key));
             // Failed authoring retains text; no private listing on an access failure.
             if ($scope==='' || in_array($key,['denied','method','missing'],true)) return 'error_tpl.php';
-            if($action==='grant') { $this->setVar('ssGrantDraft',['userid'=>$this->input('userid',32),'reason'=>$this->input('reason',1000),'requestid'=>$this->input('requestid',32)]); $this->setVar('ssActivity',$this->bank->activity($scope,$id)); $action='results'; }
+            if($action==='grant') { if(!$this->bank->activity($scope,$id))return 'error_tpl.php'; $this->setVar('ssGrantDraft',['userid'=>$this->input('userid',32),'reason'=>$this->input('reason',1000),'requestid'=>$this->input('requestid',32)]); $this->setVar('ssActivity',$this->bank->activity($scope,$id)); $action='results'; }
             elseif (in_array($action,['add','publish'],true)) $action=$action==='publish'?'create':'bank';
             elseif (in_array($action,['check','finish'],true) && isset($id,$uid)) {
                 $this->setVar('ssDraft',$input['answer']??'');
