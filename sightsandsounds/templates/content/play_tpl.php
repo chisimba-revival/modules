@@ -27,7 +27,7 @@ $correct=count(array_filter($state,fn($s)=>$s['correct']));
 <div class="chisimba-form-actions"><button type="submit"><?= $e($t($graded?'save_answer':'check')) ?></button><?php if($graded): ?><button type="submit" formaction="<?= $e($url(['action'=>'finish'])) ?>" formnovalidate><?= $e($t('submit_assignment')) ?></button><?php endif ?></div>
 </form>
 <?php if($graded&&$entry['checks']>0): ?><p role="status"><?= $e($t('answer_saved')) ?></p><?php endif ?>
-<?php if (!$graded && $entry['checks']>0): ?><div role="status"><p><strong><?= $e($t($entry['correct']?'correct':'try_again')) ?></strong> <?= $e($item['answer']) ?></p><p><?= nl2br($e($item['feedback'])) ?></p><p><?= $e($t('checked_saved')) ?></p></div><?php endif ?>
+<?php if (!$graded && $entry['checks']>0): ?><div role="status"><p><strong><?= $e($t($entry['correct']?'correct':'try_again')) ?></strong></p><p><?= $e($t('checked_saved')) ?></p></div><?php endif ?>
 <p><?= $e($item['credit']) ?></p>
 <div class="chisimba-form-actions">
 <?php if ($position>0): ?><a class="button" href="<?= $e($url(['action'=>'play','id'=>$ssRun['id'],'itemid'=>$ids[$position-1]])) ?>"><?= $e($t('previous')) ?></a><?php endif ?>
