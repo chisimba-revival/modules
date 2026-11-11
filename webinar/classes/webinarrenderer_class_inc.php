@@ -68,13 +68,17 @@ class webinarrenderer extends ChisimbaObject
  public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
   $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);if($r['kind']==='speaker')$html.=$this->getObject('speakerlinksrenderer','webinar')->publicLinks($r['id']);
   $html.=$this->getObject('webinarclassificationui','webinar')->detail($r);
-  if($this->getObject('webinareditpolicy','webinar')->canManage())$html.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
-  $html.=$booking;
+  $actions='';$recordingNotice='';
+  if($this->getObject('webinareditpolicy','webinar')->canManage())$actions.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
   $store=$this->getObject('webinarstore');
   if($r['kind']==='webinar'){
    $url=$d['recording']??'';
-   if($url&&$this->getObject('contentmediaservice','contentblocks')->videoEmbed($url))$html.='<p><a class="button chisimba-button-primary" target="_blank" rel="noopener noreferrer" title="'.self::escape($this->text('newtab')).'" href="'.self::escape($url).'">'.$this->getObject('iconservice','ui')->render('play',['decorative'=>true]).'<span>'.self::escape($this->text('watch')).'</span></a></p>';
-   elseif(($start=webinarschedule::start($r))&&$start->getTimestamp()<=time())$html.='<p>'.self::escape($this->text('missing')).'</p>';
+   if($url&&$this->getObject('contentmediaservice','contentblocks')->videoEmbed($url))$actions.='<a class="button chisimba-button-primary" target="_blank" rel="noopener noreferrer" title="'.self::escape($this->text('newtab')).'" href="'.self::escape($url).'">'.$this->getObject('iconservice','ui')->render('play',['decorative'=>true]).'<span>'.self::escape($this->text('watch')).'</span></a>';
+   elseif(($start=webinarschedule::start($r))&&$start->getTimestamp()<=time())$recordingNotice='<p>'.self::escape($this->text('missing')).'</p>';
+  }
+  if($actions!=='')$html.='<div class="chisimba-cluster">'.$actions.'</div>';
+  $html.=$booking.$recordingNotice;
+  if($r['kind']==='webinar'){
    $speakers=[];foreach($d['speakers'] as $id){$s=$store->one($id);if($s&&$s['kind']==='speaker')$speakers[]=$s;}
    $html.='<section class="chisimba-form-section"><h2>'.self::escape($this->text('speakers')).'</h2>'.$this->cards($speakers).'</section>';
   }else{
