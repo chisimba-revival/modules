@@ -15,12 +15,19 @@ class practiceaccess extends ChisimbaObject
             || (!$user->lookupAdmin($user->userId()) && !$this->getObject('usercontext','context')->isContextMember($user->userId(),$code))) throw new DomainException('denied');
         return $code;
     }
-    public function manager(): bool
+    public function allows(string $capability,string $scope,?string $owner=null): bool
     {
-        $code=$this->scope(); $user=$this->getObject('user','security');
-        return $user->lookupAdmin($user->userId()) || $user->isContextLecturer($user->userId(),$code);
+        $this->scopeFor($scope);$user=$this->getObject('user','security');
+        $manager=$user->lookupAdmin($user->userId())||$user->isContextLecturer($user->userId(),$scope);
+        return match($capability) {
+            'manage_bank','publish','view_results','grant_attempts'=>$manager,
+            'take','view_own_result'=>$owner===null||$owner===(string)$user->userId(),
+            default=>false,
+        };
     }
-    public function requireManager(): void { if (!$this->manager()) throw new DomainException('denied'); }
+    public function requireCapability(string $capability,string $scope,?string $owner=null): void { if(!$this->allows($capability,$scope,$owner))throw new DomainException('denied'); }
+    public function manager(): bool { return $this->allows('manage_bank',$this->scope()); }
+    public function requireManager(): void { $this->requireCapability('manage_bank',$this->scope()); }
     public function mayStoreFiles() { try { return $this->manager(); } catch (DomainException $e) { return false; } }
     public function mayDownloadFile($file,$resource)
     {

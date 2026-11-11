@@ -14,6 +14,6 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <?php foreach ($ssActivities as $activity): ?>
 <section class="chisimba-form-card"><h2><?= $e($activity['title']) ?></h2>
 <p><?= nl2br($e($activity['instructions'])) ?></p>
-<p><?= (int)$activity['questioncount'] ?> <?= $e($t('questions')) ?> · <?= $e($t('ungraded')) ?></p>
+<p><?= (int)$activity['questioncount'] ?> <?= $e($t('questions')) ?> · <?= $e($t($this->getObject('assignmentrules','sightsandsounds')->forActivity($ssScope,$activity['id'])['mode'])) ?></p>
 <a class="button" href="<?= $e($url(['action'=>'activity','id'=>$activity['id']])) ?>"><?= $e($t('open_activity')) ?></a></section>
 <?php endforeach ?>

@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class sightsandsoundsassessmentprovider extends ChisimbaObject
 {
     public function listActivities($contextCode) {
-        return array_map(fn($a)=>['id'=>$a['id'],'name'=>$a['title'],'classification'=>'practice','total_mark'=>100,'closing_date'=>null],
+        return array_map(fn($a)=>['id'=>$a['id'],'name'=>$a['title'],'classification'=>$this->getObject('assignmentrules','sightsandsounds')->forActivity($contextCode,$a['id'])['mode'],'total_mark'=>100,'closing_date'=>$this->getObject('assignmentrules','sightsandsounds')->forActivity($contextCode,$a['id'])['due']],
             $this->getObject('practicebank','sightsandsounds')->activities($contextCode));
     }
     public function getActivity($contextCode,$activityId) {

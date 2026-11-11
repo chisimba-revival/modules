@@ -33,11 +33,12 @@ class practicecompletions extends dbTable
                     return $old;
                 }
                 if ((int)$run['revision']!==$revision) throw new DomainException('stale');
+                $graded=$this->getObject('assignmentrules','sightsandsounds')->forActivity($scope,$run['activityid'])['mode']==='formative';
                 $correct=0;
                 foreach($normal as $qid=>$value) {
                     $item=$this->getObject('practicebank','sightsandsounds')->item($scope,$qid);
                     if (!$item) throw new DomainException('missing');
-                    $matched=$value['checks']>0 && practicerules::matches($value['answer'],json_decode($item['aliases'],true,512,JSON_THROW_ON_ERROR));
+                    $matched=($graded || $value['checks']>0) && practicerules::matches($value['answer'],json_decode($item['aliases'],true,512,JSON_THROW_ON_ERROR));
                     $correct+=(int)$matched;
                     $state[$qid]=array_merge($state[$qid],$value,['correct'=>$matched]);
                 }

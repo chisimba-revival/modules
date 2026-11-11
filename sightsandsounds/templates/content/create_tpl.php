@@ -15,6 +15,10 @@ $url=fn($p)=>html_entity_decode($this->uri($p,'sightsandsounds'),ENT_QUOTES,'UTF
 <textarea id="ss-<?= $e($name) ?>" name="<?= $e($name) ?>" maxlength="<?= $max ?>" rows="2" <?= $name==='title'?'required':'' ?>><?= $e($ssInput[$name]??'') ?></textarea></div>
 <?php endforeach ?>
 <div class="chisimba-form-field"><label for="ss-count"><?= $e($t('count')) ?></label><input type="number" id="ss-count" name="questioncount" min="1" max="<?= max(1,min(50,count($ssItems))) ?>" value="<?= $e(($ssInput['questioncount']??'')?:min(10,max(1,count($ssItems)))) ?>" required></div>
+<div class="chisimba-form-field"><label for="ss-mode"><?= $e($t('mode')) ?></label><select id="ss-mode" name="mode"><?php foreach(['practice','formative'] as $mode): ?><option value="<?= $mode ?>" <?= ($ssInput['mode']??'practice')===$mode?'selected':'' ?>><?= $e($t($mode)) ?></option><?php endforeach ?></select></div>
+<div class="chisimba-form-field"><label for="ss-retries"><?= $e($t('retries')) ?></label><input id="ss-retries" name="retries" type="number" min="0" max="20" value="<?= $e($ssInput['retries']??'0') ?>"></div>
+<p><?= $e($t('rules_note')) ?></p><p><?= $e($this->getObject('assignmentrules','sightsandsounds')->time()->siteTimezone()) ?></p>
+<?php foreach(['opens','due'] as $field): ?><div class="chisimba-form-field"><label for="ss-<?= $field ?>"><?= $e($t($field)) ?></label><input id="ss-<?= $field ?>" type="datetime-local" name="<?= $field ?>" value="<?= $e($ssInput[$field]??'') ?>"></div><?php endforeach ?>
 <p><?= count($ssItems) ?> <?= $e($t('bank_count')) ?></p>
 <div class="chisimba-form-actions"><button type="submit" <?= !$ssItems?'disabled':'' ?>><?= $e($t('publish')) ?></button></div>
 </form>

@@ -18,7 +18,10 @@ class practiceruns extends dbTable
     {
         return $this->withDatabaseLock('ss-new-'.substr(hash('sha256',json_encode([$scope,$uid,$activity['id']])),0,16),function() use($scope,$uid,$activity,$fresh) {
             $old=$this->latest($scope,$uid,$activity['id']);
-            if ($old && !$fresh && !$this->getObject('practicecompletions','sightsandsounds')->forRun($old['id'])) return $old['id'];
+            $rules=$this->getObject('assignmentrules','sightsandsounds');
+            $graded=$rules->forActivity($scope,$activity['id'])['mode']==='formative';
+            if ($old && (!$fresh || $graded) && !$this->getObject('practicecompletions','sightsandsounds')->forRun($old['id'])) return $old['id'];
+            $rules->allowNew($scope,$activity['id'],$uid);
             $ids=practicerules::select(json_decode($activity['itemids'],true,512,JSON_THROW_ON_ERROR),(int)$activity['questioncount']);
             $state=[];
             foreach($ids as $id) $state[$id]=['answer'=>'','checks'=>0,'firstCorrect'=>null,'correct'=>false];
@@ -37,9 +40,10 @@ class practiceruns extends dbTable
                 if (!isset($state[$itemId]) || mb_strlen($answer)>160 || trim($answer)==='') throw new DomainException('invalid');
                 $item=$this->getObject('practicebank','sightsandsounds')->item($scope,$itemId);
                 if (!$item) throw new DomainException('missing');
-                $correct=practicerules::matches($answer,json_decode($item['aliases'],true,512,JSON_THROW_ON_ERROR));
+                $graded=$this->getObject('assignmentrules','sightsandsounds')->forActivity($scope,$row['activityid'])['mode']==='formative';
+                $correct=!$graded && practicerules::matches($answer,json_decode($item['aliases'],true,512,JSON_THROW_ON_ERROR));
                 $entry=&$state[$itemId];
-                if ($entry['checks']===0) $entry['firstCorrect']=$correct;
+                if (!$graded && $entry['checks']===0) $entry['firstCorrect']=$correct;
                 $entry['answer']=$answer; ++$entry['checks']; $entry['correct']=$correct;
                 if ($this->update('id',$id,['state'=>json_encode($state,JSON_THROW_ON_ERROR),'revision'=>$revision+1])===false) throw new RuntimeException('Answer save failed');
             });

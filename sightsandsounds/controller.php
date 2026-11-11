@@ -27,12 +27,14 @@ class sightsandsounds extends controller
             $scope=$this->access->scope();
             $uid=(string)$this->getObject('user','security')->userId();
             $action=$this->input('action',30) ?: 'home';
-            if (!in_array($action,['home','activity','create','bank','add','publish','start','play','check','finish','media'],true)) throw new DomainException('invalid');
-            if (in_array($action,['bank','create','add','publish'],true)) $this->access->requireManager();
+            if (!in_array($action,['home','activity','create','bank','add','publish','start','play','check','finish','results','grant','media'],true)) throw new DomainException('invalid');
+            if (in_array($action,['bank','add'],true)) $this->access->requireCapability('manage_bank',$scope);
+            if (in_array($action,['create','publish'],true)) $this->access->requireCapability('publish',$scope);
+            if (in_array($action,['results','grant'],true)) $this->access->requireCapability($action==='grant'?'grant_attempts':'view_results',$scope);
             $id=$this->input('id',32);
             $input=['answer'=>$this->input('answer'),'alternatives'=>$this->input('alternatives',4800),'feedback'=>$this->input('feedback',2000),
-                'credit'=>$this->input('credit',500),'title'=>$this->input('title',200),'instructions'=>$this->input('instructions',2000),'questioncount'=>$this->input('questioncount',3)];
-            if (in_array($action,['add','publish','start','check','finish'],true)) $this->access->mutation($_SERVER['REQUEST_METHOD']??'', $this->input('csrf_token',256));
+                'credit'=>$this->input('credit',500),'title'=>$this->input('title',200),'instructions'=>$this->input('instructions',2000),'questioncount'=>$this->input('questioncount',3),'mode'=>$this->input('mode',20)?:'practice','retries'=>$this->input('retries',2)?:'0','opens'=>$this->input('opens',16),'due'=>$this->input('due',16)];
+            if (in_array($action,['add','publish','start','check','finish','grant'],true)) $this->access->mutation($_SERVER['REQUEST_METHOD']??'', $this->input('csrf_token',256));
             if ($action==='add') {
                 if (trim($input['answer'])==='') throw new DomainException('invalid');
                 practicerules::aliases($input['answer'],$input['alternatives']);
@@ -48,6 +50,10 @@ class sightsandsounds extends controller
                 return $this->nextAction('bank',['saved'=>'1']);
             }
             if ($action==='publish') { $this->bank->publish($scope,$uid,$input); return $this->nextAction('home',['saved'=>'1']); }
+            if ($action==='grant') {
+                $this->getObject('assignmentrules','sightsandsounds')->grant($scope,$id,$this->input('userid',32),$this->input('reason',1000),$this->input('requestid',32));
+                return $this->nextAction('results',['id'=>$id,'saved'=>'1']);
+            }
             if ($action==='start') {
                 $activity=$this->bank->activity($scope,$id);
                 if (!$activity) throw new DomainException('missing');
@@ -63,10 +69,16 @@ class sightsandsounds extends controller
             if ($action==='finish') {
                 $revision=$this->input('revision',10);
                 if (!ctype_digit($revision)) throw new DomainException('invalid');
-                $this->getObject('practicecompletions','sightsandsounds')->finish($scope,$uid,$id,(int)$revision);
+                $run=$this->runs->owned($scope,$uid,$id);$answers=null;
+                if($this->getObject('assignmentrules','sightsandsounds')->forActivity($scope,$run['activityid'])['mode']==='formative' && $this->input('itemid',32)!==''){
+                    $answers=array_map(fn($v)=>['answer'=>$v['answer'],'checks'=>$v['checks']],json_decode($run['state'],true,512,JSON_THROW_ON_ERROR));
+                    $qid=$this->input('itemid',32);if(!isset($answers[$qid]))throw new DomainException('invalid');
+                    $answers[$qid]=['answer'=>$input['answer'],'checks'=>1];
+                }
+                $this->getObject('practicecompletions','sightsandsounds')->finish($scope,$uid,$id,(int)$revision,$answers);
                 return $this->nextAction('play',['id'=>$id]);
             }
-            if ($action==='activity') {
+            if (in_array($action,['activity','results'],true)) {
                 $activity=$this->bank->activity($scope,$id);
                 if (!$activity) throw new DomainException('missing');
                 $this->setVar('ssActivity',$activity);
@@ -80,12 +92,13 @@ class sightsandsounds extends controller
             if ($action==='play') $this->setVar('ssRun',$this->runs->owned($scope,$uid,$id));
         } catch (Throwable $e) {
             $key=$e instanceof DomainException?$e->getMessage():'failed';
-            if (!in_array($key,['denied','invalid','method','csrf','coverage','missing','stale','media'],true)) $key='failed';
+            if (!in_array($key,['denied','invalid','method','csrf','coverage','missing','stale','media','attemptlimit','notopen','closed','upgrade'],true)) $key='failed';
             http_response_code(match($key){'denied','csrf'=>403,'method'=>405,'missing'=>404,'stale'=>409,default=>422});
             $this->setVar('ssError',$this->text('error_'.$key));
             // Failed authoring retains text; no private listing on an access failure.
             if ($scope==='' || in_array($key,['denied','method','missing'],true)) return 'error_tpl.php';
-            if (in_array($action,['add','publish'],true)) $action=$action==='publish'?'create':'bank';
+            if($action==='grant') { $this->setVar('ssGrantDraft',['userid'=>$this->input('userid',32),'reason'=>$this->input('reason',1000),'requestid'=>$this->input('requestid',32)]); $this->setVar('ssActivity',$this->bank->activity($scope,$id)); $action='results'; }
+            elseif (in_array($action,['add','publish'],true)) $action=$action==='publish'?'create':'bank';
             elseif (in_array($action,['check','finish'],true) && isset($id,$uid)) {
                 $this->setVar('ssDraft',$input['answer']??'');
                 $this->setVar('ssRun',$this->runs->owned($scope,$uid,$id)); $action='play';
@@ -97,6 +110,6 @@ class sightsandsounds extends controller
         $this->setVar('ssActivities',$this->bank->activities($scope));
         if (in_array($action,['bank','create'],true)) $this->setVar('ssItems',$this->bank->items($scope));
         $this->appendArrayVar('headerParams',$this->getJavaScriptFile('practice.js','sightsandsounds'));
-        return match($action) {'play'=>'play_tpl.php','bank'=>'bank_tpl.php','create'=>'create_tpl.php','activity'=>'activity_tpl.php',default=>'home_tpl.php'};
+        return match($action) {'play'=>'play_tpl.php','bank'=>'bank_tpl.php','create'=>'create_tpl.php','activity'=>'activity_tpl.php','results'=>'results_tpl.php',default=>'home_tpl.php'};
     }
 }

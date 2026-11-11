@@ -28,9 +28,13 @@ class practicebank extends dbTable
         $count=filter_var($input['questioncount'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>50]]);
         if (!$count || $count>count($items)) throw new DomainException('coverage');
         if (trim($input['title'])==='') throw new DomainException('invalid');
+        $rules=$this->getObject('assignmentrules','sightsandsounds');$settings=$rules->fromInput($input);
+        return $this->transactionWithSavepoint(function()use($scope,$uid,$input,$items,$count,$rules,$settings){
         $id=bin2hex(random_bytes(16));
         if ($this->executePrepared('INSERT INTO tbl_ss_activities (id, contextcode, title, instructions, questioncount, itemids, createdby, createdat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [$id,$scope,trim($input['title']),$input['instructions'],$count,json_encode(array_column($items,'id'),JSON_THROW_ON_ERROR),$uid,gmdate('c')])===false) throw new RuntimeException('Activity save failed');
+        $rules->savePublished($scope,$id,$settings);
         return $id;
+        });
     }
 }
