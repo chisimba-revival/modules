@@ -47,9 +47,8 @@ class webinarrenderer extends ChisimbaObject
     $id='webinar-speaker-'.$speaker['id'];
     $names[]='<a href="'.self::escape($this->uri(['action'=>'view','id'=>$speaker['id']],'webinar')).'" data-ui-open="'.$id.'" aria-haspopup="dialog">'.self::escape($speaker['title']).'</a>';
     if(isset($seen[$id]))continue;
-    $seen[$id]=true;$bio=$this->data($speaker);
-    $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$bio['description']??'';
-    $window=$this->newObject('window','ui');$window->setId($id)->setTitle($speaker['title'])->setContent($composition->render([$block]).$this->getObject('speakerlinksrenderer','webinar')->publicLinks($speaker['id']).$this->button('speakerpage','user',['action'=>'view','id'=>$speaker['id']]));
+    $seen[$id]=true;
+    $window=$this->newObject('window','ui');$window->setId($id)->setTitle($speaker['title'])->setContent($this->speakerBiography($speaker).$this->button('speakerpage','user',['action'=>'view','id'=>$speaker['id']]));
     $dialogs.=$window->show();
    }
    if($names)$html.='<p class="chisimba-publication-card__byline">'.$this->getObject('iconservice','ui')->render('user',['decorative'=>true]).' '.implode(', ',$names).'</p>';
@@ -65,8 +64,26 @@ class webinarrenderer extends ChisimbaObject
   }
   return $html.'</div>'.$dialogs;
  }
- public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title']).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
-  $composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);if($r['kind']==='speaker')$html.=$this->getObject('speakerlinksrenderer','webinar')->publicLinks($r['id']);
+ /** Separate profile media from rich text; never move images out of the author's prose. */
+ public function speakerBiography(array $record): string
+ {
+  $data=$this->data($record);
+  $composition=$this->getObject('compositionservice','contentblocks');
+  $block=$composition->emptyBlock('text');$block['text']=$data['description']??'';
+  $copy=$composition->render([$block]);$media='';$seen=[];
+  foreach(['image','banner'] as $key){
+   $url=html_entity_decode((string)($data[$key]??''),ENT_QUOTES|ENT_HTML5,'UTF-8');
+   if($url===''||isset($seen[$url]))continue;
+   $seen[$url]=true;
+   $media.='<img src="'.self::escape($url).'" alt="'.self::escape($data['image_alt']??$record['title']).'" loading="lazy">';
+  }
+  $links=$this->getObject('speakerlinksrenderer','webinar')->publicLinks($record['id']);
+  if($media===''&&$links==='')return $copy;
+  return '<div class="chisimba-biography-layout"><div>'.$copy.'</div><aside class="chisimba-biography-media" aria-label="'.self::escape($this->text('profile_media')).'">'.$media.$links.'</aside></div>';
+ }
+ public function detail($r,$booking=''){$r['title']=html_entity_decode($r['title'],ENT_QUOTES|ENT_HTML5,'UTF-8');$d=$this->data($r);$html='<article class="chisimba-form-section">'.($r['kind']==='speaker'?'':$this->image($d['banner']??$d['image']??'',$d['image_alt']??$r['title'])).'<h1>'.self::escape($r['title']).'</h1>'.$this->date($r);
+  if($r['kind']==='speaker')$html.=$this->speakerBiography($r);
+  else{$composition=$this->getObject('compositionservice','contentblocks');$block=$composition->emptyBlock('text');$block['text']=$d['description'];$html.=$composition->render([$block]);}
   $html.=$this->getObject('webinarclassificationui','webinar')->detail($r);
   $actions='';$recordingNotice='';
   if($this->getObject('webinareditpolicy','webinar')->canManage())$actions.=$this->button($r['kind']==='speaker'?'edit_speaker':'edit','pencil',['action'=>'edit','id'=>$r['id']]);
