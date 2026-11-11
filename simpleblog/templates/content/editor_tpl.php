@@ -20,7 +20,7 @@ $authorSearch=$this->uri(['action'=>'author_suggestions','id'=>$post['id']??'','
 ?>
 <fieldset class="chisimba-editor-section" data-author-picker data-endpoint="<?= $e(html_entity_decode($authorSearch,ENT_QUOTES,'UTF-8')) ?>"<?php foreach(['user','speaker','linked','plain','default','searching','no_matches','search_failed'] as $key)echo ' data-'.$key.'="'.$e($r->text('author_'.$key)).'"'; ?>>
 <legend><?= $e($r->text('author_credit')) ?></legend>
-<div class="chisimba-form-field"><label for="post-author-credit"><?= $e($r->text('author_name')) ?></label><input id="post-author-credit" name="author_credit" value="<?= $e(is_string($credit)?$credit:'') ?>" maxlength="250" autocomplete="off" aria-describedby="author-credit-help author-credit-status"><p id="author-credit-help" class="chisimba-field-help"><?= $e($r->text('author_credit_help')) ?></p></div>
+<div class="chisimba-form-field"><label for="post-author-credit"><?= $e($r->text('author_name')) ?></label><input id="post-author-credit" type="text" name="author_credit" value="<?= $e(is_string($credit)?$credit:'') ?>" maxlength="250" autocomplete="off" aria-describedby="author-credit-help author-credit-status"><p id="author-credit-help" class="chisimba-field-help"><?= $e($r->text('author_credit_help')) ?></p></div>
 <input type="hidden" name="author_kind" value="<?= $e(is_string($creditKind)?$creditKind:'') ?>"><input type="hidden" name="author_id" value="<?= $e(is_string($creditId)?$creditId:'') ?>">
 <p id="author-credit-status" role="status" aria-live="polite"><?= $e($r->text($creditKind!==''?'author_linked':($credit!==''?'author_plain':'author_default'))) ?></p>
 <div data-author-results hidden><p><?= $e($r->text('author_matches')) ?></p><ul class="chisimba-stack" data-author-options></ul></div>
