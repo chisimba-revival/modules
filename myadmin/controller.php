@@ -24,6 +24,16 @@ class myadmin extends controller
             return null;
         }
         if(!$this->blockEditor->canEdit())return 'noaccess_tpl.php';
+        header('Cache-Control: private, no-store');
+        if ($action === 'maillog') {
+            if (!$this->user->isAdmin()) { http_response_code(403); return 'noaccess_tpl.php'; }
+            if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET','HEAD'], true)) { http_response_code(405); header('Allow: GET, HEAD'); return 'noaccess_tpl.php'; }
+            $input=[];
+            foreach (['date','search','status','page'] as $key) $input[$key]=$this->getParam($key, $key==='date'?date('Y-m-d'):'');
+            $this->setVar('mailReport',$this->getObject('maildeliveryreport')->report($input));
+            return 'maillog_tpl.php';
+        }
+
         $notice='';
         $registrationNotice='';
         if($action==='runmailqueue')$notice=$this->runMailQueue();
