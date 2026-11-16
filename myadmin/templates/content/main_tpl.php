@@ -1,5 +1,6 @@
 <?php
 $language = $this->getObject('language', 'language');
+echo '<div class="chisimba-form-actions"><a class="button" href="' . htmlspecialchars($this->uri(null, 'toolbar'), ENT_QUOTES, 'UTF-8') . '">' . $this->getObject('iconservice', 'ui')->render('settings', ['decorative'=>true]) . ' ' . htmlspecialchars($language->code2Txt('mod_myadmin_tools_link', 'myadmin'), ENT_QUOTES, 'UTF-8') . '</a>' . $this->getObject('contextualhelp', 'help')->show('toolbar', 'administration', true) . '</div>';
 $managementNotice = !empty($managingDashboard)
     ? '<section class="chisimba-notice chisimba-notice--info"><strong>Managing the My Administration page</strong><p>Changes to dashboard blocks affect the shared administration dashboard. The operational summary below reflects the current site.</p></section>'
     : '';
