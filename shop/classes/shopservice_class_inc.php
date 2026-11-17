@@ -32,7 +32,7 @@ class shopservice extends ChisimbaObject
     {
         $row = $this->store->one('settings', 'shop');
         if (!$row) throw new RuntimeException('Shop needs Module Catalogue installation');
-        return json_decode($row['settings_json'], true, 512, JSON_THROW_ON_ERROR) + ['revision' => (int)$row['revision'], 'buy_now' => false];
+        return json_decode($row['settings_json'], true, 512, JSON_THROW_ON_ERROR) + ['revision' => (int)$row['revision'], 'buy_now' => false, 'paid_notification_recipients' => []];
     }
     public function saveSettings(array $input)
     {
@@ -52,10 +52,26 @@ class shopservice extends ChisimbaObject
             $enabled = ($input['enabled'] ?? '') === '1';
             if ($enabled && ($terms === '' || !$this->payments->providerAvailable('paystack'))) throw new DomainException('checkout_unavailable');
             $settings = ['enabled' => $enabled, 'buy_now' => ($input['buy_now'] ?? '') === '1', 'terms' => $terms,
+                'paid_notification_recipients' => $this->notificationRecipients($input['paid_notification_recipients'] ?? ''),
                 'zones' => ['ZA' => ['enabled' => (bool)$bands, 'max_quantity' => $max, 'bands' => $bands]]];
             $this->store->save('settings', 'shop', ['settings_json' => json_encode($settings, JSON_THROW_ON_ERROR), 'revision' => $old['revision'] + 1]);
             return $this->settings();
         });
+    }
+    /** Store plain addresses only; recipients do not need Chisimba accounts. */
+    private function notificationRecipients($input): array
+    {
+        if (!is_string($input) || strlen($input) > 6000) throw new DomainException('invalid_notification_recipients');
+        $addresses = preg_split('/[\r\n,;]+/', $input, -1, PREG_SPLIT_NO_EMPTY);
+        $recipients = [];
+        foreach ($addresses as $address) {
+            $address = strtolower(trim($address));
+            if ($address === '') continue;
+            if (strlen($address) > 254 || !filter_var($address, FILTER_VALIDATE_EMAIL)) throw new DomainException('invalid_notification_recipients');
+            $recipients[$address] = $address;
+        }
+        if (count($recipients) > 20) throw new DomainException('invalid_notification_recipients');
+        return array_values($recipients);
     }
     public function sale()
     {
@@ -424,7 +440,9 @@ class shopservice extends ChisimbaObject
                 $book = $this->store->one('books', $line['book_id']);
                 $this->store->save('books', $book['id'], ['stock' => (int)$book['stock'] - $line['quantity'], 'revision' => (int)$book['revision'] + 1]);
             }
-            $changes = ['payment_state' => 'paid', 'fulfilment_state' => $available ? ($quote['quantity'] ? 'packing' : 'complete') : 'review',
+            // Capture recipients once, alongside payment truth. Old orders never acquire new recipients on retry.
+            $quote['paid_notification_recipients'] = $this->settings()['paid_notification_recipients'];
+            $changes = ['snapshot' => json_encode($quote, JSON_THROW_ON_ERROR), 'payment_state' => 'paid', 'fulfilment_state' => $available ? ($quote['quantity'] ? 'packing' : 'complete') : 'review',
                 'stock_applied' => $available && $quote['quantity'] ? 1 : 0, 'revision' => (int)$order['revision'] + 1, 'updated_at' => time()];
             $this->store->save('orders', $order['id'], $changes); $this->history($order['id'], $available ? 'paid' : 'paid_review');
             return array_merge($order, $changes);
@@ -537,6 +555,30 @@ class shopservice extends ChisimbaObject
             'subject' => $this->text('email_' . $kind . '_subject'), 'text' => $body,
             'idempotencyKey' => 'shop:' . $order['id'] . ':' . $kind, 'metadata' => ['purpose' => 'shop_order', 'orderId' => $order['id']]]);
         if (empty($result['ok'])) throw new RuntimeException('Shop notice could not be queued');
+        if ($kind === 'paid') $this->notifyPaidOrderRecipients($order, $quote);
+    }
+    private function notifyPaidOrderRecipients(array $order, array $quote): void
+    {
+        $recipients = $quote['paid_notification_recipients'] ?? [];
+        if (!$recipients) return;
+        $body = strtr($this->text('email_merchant_paid'), ['{site}' => $this->getObject('altconfig', 'config')->getSiteName()]);
+        $body .= "\n\n" . $this->text('reference') . ': ' . $order['id'] . "\n";
+        foreach ($quote['lines'] as $line) {
+            $body .= $line['quantity'] . ' × ' . $line['title'] . ' — ' . $this->money($line['total_minor']) . "\n";
+            foreach ($line['components'] ?? [] as $child) $body .= '  ' . ($line['quantity'] * $child['quantity']) . ' × ' . $child['title'] . "\n";
+        }
+        $body .= $this->text('shipping') . ': ' . $this->money($quote['shipping_minor']) . "\n";
+        $body .= $this->text('total') . ': ' . $this->money($quote['amount_minor']) . "\n\n";
+        $body .= $this->text($order['fulfilment_state'] === 'review' ? 'paid_review' : 'email_merchant_check_order') . "\n";
+        // The manager route requires permission; never share the customer's private order token.
+        $body .= html_entity_decode($this->url('operation', ['id' => $order['id']]), ENT_QUOTES, 'UTF-8');
+        foreach ($recipients as $recipient) {
+            $result = $this->getObject('communicationservice', 'communications')->queueEmail([
+                'to' => $recipient, 'subject' => $this->text('email_merchant_paid_subject') . ' — ' . $order['id'], 'text' => $body,
+                'idempotencyKey' => 'shop:' . $order['id'] . ':merchant-paid:' . hash('sha256', $recipient),
+                'metadata' => ['purpose' => 'shop_order', 'orderId' => $order['id'], 'notice' => 'merchant_paid']]);
+            if (empty($result['ok'])) throw new RuntimeException('Shop notice could not be queued');
+        }
     }
     /** Virtual fulfilment metadata is immutable in each order snapshot. */
     private function virtualProduct(array $row, array $input): array

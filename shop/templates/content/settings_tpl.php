@@ -8,6 +8,10 @@
 <?php endfor; ?>
 </div><div class="chisimba-form-actions chisimba-form-actions--equal"><button class="button chisimba-button-secondary" type="button" data-shop-add-band hidden><?=$actionIcon('add_band')?> <?=$t('add_band')?></button></div><noscript><p><?=$t('bands_without_js')?></p></noscript>
 <?php $field('max_quantity',$draft['max_quantity']??($zone['max_quantity']??100),'number'); $field('terms',$draft['terms']??$shopSettings['terms'],'textarea',false); ?>
+<fieldset class="chisimba-stack"><legend><?=$t('paid_notifications')?></legend>
+<div class="chisimba-form-field"><label for="paid-notification-recipients"><?=$t('paid_notification_recipients')?></label>
+<textarea id="paid-notification-recipients" name="paid_notification_recipients" rows="4" maxlength="6000" aria-describedby="paid-notification-help"><?=$esc($draft['paid_notification_recipients']??implode("\n",$shopSettings['paid_notification_recipients']??[]))?></textarea>
+<p id="paid-notification-help"><?=$t('paid_notifications_help')?></p></div></fieldset>
 <p><label><input type="checkbox" name="buy_now" value="1"<?=($draft?($draft['buy_now']??'')==='1':!empty($shopSettings['buy_now']))?' checked':''?>> <?=$t('buy_now_enabled')?></label></p><p><?=$t('buy_now_help')?></p>
 <p><label><input type="checkbox" name="enabled" value="1"<?=($draft?($draft['enabled']??'')==='1':!empty($shopSettings['enabled']))?' checked':''?>> <?=$t('enabled')?></label></p><p><?=$t('enable_help')?></p>
 <div class="chisimba-form-actions chisimba-form-actions--equal"><button class="button" type="submit"><?=$actionIcon('save')?> <?=$t('save')?></button><a class="button chisimba-button-secondary" href="<?=$url('manage')?>"><?=$actionIcon('cancel')?> <?=$t('cancel')?></a></div></form></main>

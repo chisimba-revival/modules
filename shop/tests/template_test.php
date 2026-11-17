@@ -99,3 +99,9 @@ if(!str_contains($html,'customer+&lt;tag&gt;@example.invalid')||str_contains($ht
 $data['shopOrder']['snapshot']=json_encode($quote);$html=$host->render('order_tpl.php',$data);
 if(!str_contains($html,'Stock is held for'))throw new RuntimeException('Physical stock guidance missing');
 echo "PASS: escaped order email, virtual guidance and physical reservation wording.\n";
+$data['shopSettings']['paid_notification_recipients']=['owner@example.invalid','books@example.invalid'];
+$data['shopDraft']=[];$html=$host->render('settings_tpl.php',$data);
+if(!str_contains($html,"owner@example.invalid\nbooks@example.invalid")||!str_contains($html,'Paid-order notifications')||!str_contains($html,'aria-describedby="paid-notification-help"'))throw new RuntimeException('Notification settings or accessible guidance missing');
+$data['shopDraft']=['paid_notification_recipients'=>'<script>invalid</script>'];$html=$host->render('settings_tpl.php',$data);
+if(str_contains($html,'<script>invalid</script>')||!str_contains($html,'&lt;script&gt;invalid&lt;/script&gt;'))throw new RuntimeException('Notification draft must be retained and escaped');
+echo "PASS: notification recipients, guidance and escaped validation draft\n";
