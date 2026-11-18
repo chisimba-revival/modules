@@ -34,10 +34,12 @@ class contentauthoringservice extends ChisimbaObject
                 $data['providermodule'],
                 $data['provideritemid']
             );
-            $this->pages->createNativeBody($titleId, $data['title'], $data['body'], $data['language']);
+            if (!$titleId || !$this->pages->createNativeBody($titleId, $data['title'], $data['body'], $data['language'])) {
+                throw new RuntimeException('Could not create content body');
+            }
             $placementId = $this->order->addPageToContext(
                 $titleId, $data['parentid'], $data['contextcode'], $data['chapterid'], '', '',
-                $data['insert_after']
+                $data['insert_after'], !empty($input['defer_effects'])
             );
             if (!$placementId) { throw new RuntimeException('Could not create content placement'); }
             if ($manageTransaction) { $this->titles->commitTransaction(); }

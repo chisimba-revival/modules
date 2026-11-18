@@ -41,7 +41,7 @@ class knowledgemapgraphservice extends controller
     private function identifier($value){$value=trim((string)$value);return preg_match('/^[A-Za-z0-9._:-]{1,64}$/',$value)?$value:'';}
 
     /** Normalise a supported node type. */
-    private function nodeType($value){$value=strtolower($this->identifier($value));return in_array($value,array('standard','folder','reference'),true)?$value:'standard';}
+    private function nodeType($value){$value=strtolower($this->identifier($value));return in_array($value,array('standard','folder','reference','course','section','chapter','page','quiz','description','content'),true)?$value:'standard';}
 
     /** Keep persisted ordering inside the portable signed 32-bit schema range. */
     private function sortOrder($value,$fallback){return is_numeric($value)&&(float)$value>=0&&(float)$value<=2147483647?(int)$value:(int)$fallback;}

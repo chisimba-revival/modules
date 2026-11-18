@@ -154,3 +154,10 @@ for(const viewport of [[900,600],[1300,400],[600,800]]) {
 assert.equal(JSON.stringify(m.graph),savedGraph);assert.equal(m.root.style.height,'634px');
 context.document.fullscreenElement=m.root;m.sizeViewport();assert.equal(m.root.style.height,'650px');
 console.log('PASS: complete bounds centred across viewport sizes, repeated fits stable, graph unchanged, available height respected');
+
+m=fixture();m.editable=true;m.nodes.get('a').presentation.icon='lucide:leaf';
+m.setSemanticRole('a','quiz');assert.equal(m.nodes.get('a').type,'quiz');assert.equal(m.nodes.get('a').presentation.icon,'lucide:leaf');
+m.setSemanticRole('a','unsupported');assert.equal(m.nodes.get('a').type,'quiz');
+m.setSemanticRole('a','standard');assert.equal(m.nodes.get('a').type,'standard');
+m.editable=false;m.setSemanticRole('a','course');assert.equal(m.nodes.get('a').type,'standard');
+console.log('PASS: explicit semantic roles, independent decorative icons, removal, invalid-role and read-only guards');

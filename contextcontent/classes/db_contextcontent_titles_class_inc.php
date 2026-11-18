@@ -103,6 +103,8 @@ class db_contextcontent_titles extends dbtable
     public function createTypedTitle($contentType, $providerModule = null, $providerItemId = null)
     {
         return $this->insert(array(
+            // Bulk outline creation needs collision-resistant identities within one second.
+            'id' => bin2hex(random_bytes(16)),
             'contenttype' => $contentType,
             'providermodule' => $providerModule,
             'provideritemid' => $providerItemId,

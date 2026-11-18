@@ -119,6 +119,8 @@ class db_contextcontent_pages extends dbtable
             throw new LogicException('A body already exists for this language');
         }
         return $this->insert(array(
+            // Bulk outline creation needs collision-resistant identities within one second.
+            'id' => bin2hex(random_bytes(16)),
             'titleid' => $titleId,
             'menutitle' => $menuTitle,
             'pagecontent' => $content,

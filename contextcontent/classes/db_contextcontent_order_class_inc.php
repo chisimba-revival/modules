@@ -470,10 +470,11 @@ class db_contextcontent_order extends dbtable {
      * @param string $chapter Chapter the Page is In
      * @param string $bookmark ??
      * @param string $isBookmark ??
+     * @param bool $deferEffects Skip file/search side effects for unpublished atomic outline creation.
      * @return Record Id
      * @access private
      */
-    public function addPageToContext($titleId, $parentId, $context, $chapter='', $bookmark='', $isBookmark='', $insertAfterId='') {
+    public function addPageToContext($titleId, $parentId, $context, $chapter='', $bookmark='', $isBookmark='', $insertAfterId='', $deferEffects=false) {
         $isRoot = ($parentId === '' || $parentId === 'root');
         $storedParentId = $isRoot ? 'root' : $parentId;
 
@@ -503,11 +504,11 @@ class db_contextcontent_order extends dbtable {
             $pageOrder = $this->getLastOrder($chapter, $parentId) + 1;
         }
 
-        $this->clearChapterPDF($chapter, $context);
+        if (!$deferEffects) $this->clearChapterPDF($chapter, $context);
         $result = $this->insertTitle($context, $chapter, $titleId, $storedParentId,
-            $leftPointer, $rightPointer, $pageOrder, 'Y', $bookmark, $isBookmark);
+            $leftPointer, $rightPointer, $pageOrder, 'Y', $bookmark, $isBookmark, $deferEffects);
 
-        if ($result != FALSE) {
+        if ($result != FALSE && !$deferEffects) {
             $page = $this->getPage($result, $context);
             if ($page != FALSE) { $this->indexData($context, $page); }
         }
@@ -528,8 +529,10 @@ class db_contextcontent_order extends dbtable {
      * @param string $isBookmark  ??
      *
      */
-    private function insertTitle($context, $chapter, $titleId, $parentId, $left, $right, $pageOrder=1, $visibility='Y', $bookmark='', $isBookmark='N') {
+    private function insertTitle($context, $chapter, $titleId, $parentId, $left, $right, $pageOrder=1, $visibility='Y', $bookmark='', $isBookmark='N', $deferEffects=false) {
         $lastId = $this->insert(array(
+            // Bulk outline creation needs collision-resistant identities within one second.
+            'id' => bin2hex(random_bytes(16)),
                     'contextcode' => $context,
                     'titleid' => $titleId,
                     'parentid' => $parentId,
@@ -548,7 +551,7 @@ class db_contextcontent_order extends dbtable {
         }
 
         // Delete existing PDF version
-        $this->clearChapterPDF($chapter, $context);
+        if (!$deferEffects) $this->clearChapterPDF($chapter, $context);
 
         return $lastId;
     }
