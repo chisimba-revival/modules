@@ -70,7 +70,7 @@
         if (branchColourButton) branchColourButton.addEventListener('click', function () { self.applyBranchColour(self.selectedId); });
         root.querySelectorAll('[data-knowmap-action="fullscreen"]').forEach(function (button) { button.addEventListener('click', function () { self.toggleFullscreen(); }); });
         document.addEventListener('fullscreenchange', function () { if (document.fullscreenElement === root || !document.fullscreenElement) window.setTimeout(function () { self.fit(); }, 80); });
-        this.layout(); this.render(); this.bind(); this.bindCanvas(); this.bindNodeReparentDrop(); this.bindColourControls(); this.bindStyleControls(); this.bindIconControls(); this.bindSemanticRoles(); this.bindCourseBlueprint(); this.select(this.nodes.get(this.selectedId), this.nodeLayer.querySelector('[data-node-id="' + cssEscape(this.selectedId) + '"]')); this.renderRecentColours(); this.fit();
+        this.layout(); this.render(); this.bind(); this.bindCanvas(); this.bindNodeReparentDrop(); this.bindColourControls(); this.bindStyleControls(); this.bindIconControls(); this.bindSemanticRoles(); this.bindCommandMenus(); this.bindCourseBlueprint(); this.select(this.nodes.get(this.selectedId), this.nodeLayer.querySelector('[data-node-id="' + cssEscape(this.selectedId) + '"]')); this.renderRecentColours(); this.fit();
     }
     ReadOnlyKnowledgeMap.prototype.reindex = function () { this.nodes.forEach(function (node) { if (!node.presentation || Array.isArray(node.presentation)) node.presentation = {}; }); this.children = new Map(); (this.graph.relationships || []).filter(function (relationship) { return relationship.type === 'contains' && relationship.to; }).sort(function (a, b) { return (a.order || 0) - (b.order || 0); }).forEach(function (relationship) { var list = this.children.get(relationship.from) || []; list.push(relationship.to); this.children.set(relationship.from, list); }, this); };
     // Freeze legacy automatic sides before insertions or ordering changes.
@@ -334,6 +334,25 @@
         var form = this.root.querySelector('[data-knowmap-node-form]');
         if(form && form.elements.quizBankCount) ['quizBankCount','quizDrawCount','quizSelection'].forEach(function(key){form.elements[key].addEventListener('change',function(){var node=self.nodes.get(self.selectedId);if(!node||node.type!=='quiz')return;form.elements.quizDrawCount.max=form.elements.quizBankCount.value;if(!form.elements.quizBankCount.checkValidity()||!form.elements.quizDrawCount.reportValidity())return;node.presentation=node.presentation||{};node.presentation.quizSettings={bankCount:Number(form.elements.quizBankCount.value),drawCount:Number(form.elements.quizDrawCount.value),selection:form.elements.quizSelection.value};self.dirty();});});
         if (form && form.elements.semanticRole) form.elements.semanticRole.addEventListener('change', function () { self.setSemanticRole(self.selectedId, this.value); });
+    };
+    // Native popovers provide outside-click/Escape dismissal without shifting the canvas.
+    ReadOnlyKnowledgeMap.prototype.bindCommandMenus = function () {
+        var self=this;
+        this.root.querySelectorAll('[data-knowmap-command-menu]').forEach(function(panel){
+            var trigger=self.root.querySelector('[popovertarget="'+panel.id+'"]');
+            function position(){
+                var rect=trigger.getBoundingClientRect(), gap=8;
+                panel.style.left=Math.max(gap,Math.min(rect.left,window.innerWidth-panel.offsetWidth-gap))+'px';
+                panel.style.top=Math.max(gap,Math.min(rect.bottom+gap,window.innerHeight-panel.offsetHeight-gap))+'px';
+            }
+            panel.addEventListener('toggle',function(){
+                var open=panel.matches(':popover-open');trigger.setAttribute('aria-expanded',String(open));
+                if(open){position();var first=panel.querySelector('button:not(:disabled)');if(first)first.focus();}
+            });
+            panel.addEventListener('click',function(event){if(event.target.closest('[data-knowmap-action]')){panel.hidePopover();trigger.focus();}});
+            window.addEventListener('resize',function(){if(panel.matches(':popover-open'))position();});
+            document.addEventListener('scroll',function(){if(panel.matches(':popover-open'))position();},true);
+        });
     };
     ReadOnlyKnowledgeMap.prototype.bindCourseBlueprint = function () {
         var panel = this.root.querySelector('[data-knowmap-course]'); if (!panel) return;

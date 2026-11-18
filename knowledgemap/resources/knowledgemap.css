@@ -128,3 +128,9 @@ body.knowmap-banner-hidden #navigation { display: none; }
 
 /* Semantic palette gestures share node dragging; native buttons retain keyboard activation. */
 [data-knowmap-role] { touch-action: none; }
+
+/* Layout only; shared popover and button primitives own appearance. */
+.knowmap-command-popover { position: fixed; inset: auto; margin: 0; width: min(22rem, calc(100vw - 1rem)); max-height: calc(100dvh - 1rem); overflow: auto; }
+.knowmap-command-popover:not(:popover-open) { display: none; }
+.knowmap-command-popover .chisimba-stack > button { justify-content: flex-start; text-align: start; white-space: normal; }
+.knowmap-view [data-knowmap-role-status]:empty { display: none; }
