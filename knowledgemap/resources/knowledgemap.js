@@ -248,7 +248,11 @@
     ReadOnlyKnowledgeMap.prototype.setSemanticRole = function (nodeId, role) {
         if (!this.editable || (role !== 'standard' && !semanticIcons[role])) return;
         var node = this.nodes.get(nodeId); if (!node || node.type === role) return;
+        // A role change redraws the inspector; retain pending edits until Apply.
+        var form = this.root && nodeId === this.selectedId ? this.root.querySelector('[data-knowmap-node-form]') : null, pending = {};
+        if (form) ['title','description','link','color','side','mediaIntent'].forEach(function (key) { if (form.elements[key]) pending[key] = form.elements[key].value; });
         node.type = role; this.layout(); this.render(); this.select(node, this.nodeLayer.querySelector('[data-node-id="' + cssEscape(nodeId) + '"]')); this.dirty();
+        if (form) Object.keys(pending).forEach(function (key) { form.elements[key].value = pending[key]; });
     };
     ReadOnlyKnowledgeMap.prototype.bindSemanticRoles = function () {
         if (!this.editable) return;

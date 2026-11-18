@@ -161,3 +161,10 @@ m.setSemanticRole('a','unsupported');assert.equal(m.nodes.get('a').type,'quiz');
 m.setSemanticRole('a','standard');assert.equal(m.nodes.get('a').type,'standard');
 m.editable=false;m.setSemanticRole('a','course');assert.equal(m.nodes.get('a').type,'standard');
 console.log('PASS: explicit semantic roles, independent decorative icons, removal, invalid-role and read-only guards');
+
+m=fixture();m.editable=true;m.selectedId='a';
+const draftForm={elements:{title:{value:'Forest layers'},description:{value:'Pending note'},link:{value:'https://example.invalid/'}}};
+m.root={querySelector(){return draftForm}};
+m.select=n=>{m.selectedId=n.id;draftForm.elements.title.value=n.title;draftForm.elements.description.value=n.description||'';draftForm.elements.link.value='';};
+m.setSemanticRole('a','page');assert.equal(draftForm.elements.title.value,'Forest layers');assert.equal(draftForm.elements.description.value,'Pending note');assert.equal(draftForm.elements.link.value,'https://example.invalid/');assert.equal(m.nodes.get('a').type,'page');
+console.log('PASS: semantic role changes preserve unapplied title, note and link edits');
