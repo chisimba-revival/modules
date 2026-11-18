@@ -199,3 +199,17 @@ console.log('PASS: semantic role changes preserve unapplied title, note and link
  selection='';const branch=event(target());handlers.copy(branch);handlers.paste(branch);assert(branch.prevented);assert.equal(copied,1);assert.equal(pasted,1);
  console.log('PASS: copying selected preview text stays native; dialogs ignore graph shortcuts; branch copy/paste still works');
 }
+
+// PHP encodes empty presentation maps as []; named array properties disappear in JSON.
+{
+ const map=fixture();map.nodes.get('a').presentation=[];map.reindex();map.selectedId='a';map.nodes.get('a').type='quiz';map.editable=true;
+ const handlers={}, elements={};
+ for(const [key,value] of Object.entries({quizBankCount:'20',quizDrawCount:'8',quizSelection:'fixed'}))elements[key]={value,checkValidity(){return true},reportValidity(){return true},addEventListener(name,handler){handlers[key]=handler}};
+ map.root={querySelector(selector){return selector==='[data-knowmap-node-form]'?{elements}:null},querySelectorAll(){return []}};
+ map.bindSemanticRoles();handlers.quizSelection();
+ const persisted=JSON.parse(JSON.stringify(map.graph)).nodes.find(n=>n.id==='a');
+ assert.deepEqual(persisted.presentation.quizSettings,{bankCount:20,drawCount:8,selection:'fixed'});
+ assert(!Array.isArray(persisted.presentation));
+ elements.quizSelection.value='per_attempt';handlers.quizSelection();assert.equal(JSON.parse(JSON.stringify(map.graph)).nodes.find(n=>n.id==='a').presentation.quizSettings.selection,'per_attempt');
+ console.log('PASS: empty PHP presentation arrays retain both quiz modes and requested counts across browser JSON saves');
+}
