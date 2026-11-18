@@ -127,7 +127,7 @@ class dbquestions extends dbtable {
      * @param string $saveAsNew Flag indicating whether question should be saved as new qn
      * @return string $id The id of the inserted or updated question.
      */
-    public function addQuestion($fields, $id = NULL, $saveAsNew = Null) {
+    public function addQuestion($fields, $id = NULL, $saveAsNew = Null, $actorUserId = null) {
         $fields['updated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
         $inserting = 0;
         if ($saveAsNew == 1) {
@@ -153,7 +153,7 @@ class dbquestions extends dbtable {
             $arrData['content'] = $id;
             $arrData['blockname'] = $fields['questiontype']; //qtype
             $arrData['blockmodule'] = "mcqtests";
-            $this->dbBlocks->insertBlock($arrData);
+            if (!$this->dbBlocks->insertBlock($arrData, $actorUserId)) throw new RuntimeException('Question block insertion failed');
         }
         return $qnid;
     }

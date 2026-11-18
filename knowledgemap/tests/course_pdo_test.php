@@ -25,7 +25,7 @@ function verify($ok,$message) { if (!$ok) throw new RuntimeException($message); 
 function rejects($fn,$code) { try { $fn(); } catch (DomainException $e) { verify($e->getMessage()===$code,'Expected '.$code.', got '.$e->getMessage());return; } throw new RuntimeException('Expected rejection '.$code); }
 $table=bindTable('dbTable','fixture_groups'); $schema=new ChisimbaDatabaseSchema($table);
 $defs=array_merge(glob('/modules/knowledgemap/sql/*.sql'),array_map(fn($name)=>'/modules/contextcontent/sql/tbl_contextcontent_'.$name.'.sql',['sections','chapters','chaptercontext','chaptercontent','titles','pages','order']),[
- '/modules/mcqtests/sql/tbl_tests.sql','/modules/mcqtests/sql/tbl_test_questions.sql',
+ '/modules/mcqtests/sql/tbl_mcq_quiz_input_jobs.sql','/modules/mcqtests/sql/tbl_tests.sql','/modules/mcqtests/sql/tbl_test_questions.sql',
  '/framework/app/core_modules/context/sql/tbl_context.sql','/framework/app/core_modules/context/sql/tbl_contextmodules.sql',
  '/framework/app/core_modules/context/sql/tbl_context_blocks.sql']);
 foreach ($defs as $definition) { $fields=$options=$tableIndexes=[];include $definition;$schema->createTable($tablename,$fields,$options);foreach ($tableIndexes as $name=>$index)$schema->createIndex($tablename,$name,$index); }
@@ -38,7 +38,7 @@ $user=new class { public function userId(){return 'author';} public function isL
 $GLOBALS['objects']['user']=$user;
 $GLOBALS['objects']['language']=new class { public function languageText(...$args){return $args[0];} };
 $GLOBALS['objects']['managegroups']=new class { public function createGroups($code,$title){return $GLOBALS['objects']['dbTable']->insert(['code'=>$code])!==false;} };
-$authors=new class { public $create=true,$manage=true;public function canCreateContext($id){return $this->create;}public function canManageContext($code,$id){return $this->manage;} };
+$authors=new class { public $create=true,$manage=true;public function canCreateContext($id){return $this->create;}public function canManageContext($code,$id){return $this->manage;}public function isAuthor($code,$id){return $this->manage;} };
 $GLOBALS['objects']['contextauthorservice']=$authors;
 $auth=new class { public $manage=true;public function allows($map,$permission){return $this->manage;} };
 $GLOBALS['objects']['knowledgemapauthorizationservice']=$auth;
@@ -60,11 +60,11 @@ $service=$GLOBALS['objects']['knowledgemapcourseservice'];$mapService=$GLOBALS['
 function newMap($withContent=false) {
     global $maps,$nodes,$edges;
     $id=$maps->createMap(['title'=>'Ecology','ownerid'=>'author','scopetype'=>'personal','scopeid'=>'author','rootnodeid'=>'root']);
-    $rows=[['root','course','Ecology'],['page','page','Forest layers'],['quiz','quiz','Check your knowledge']];
+    $rows=[['root','course','Ecology'],['outlinechapter','chapter','Review'],['page','page','Forest layers'],['quiz','quiz','Check your knowledge']];
     if ($withContent) $rows[]=['text','content','<script>plain text</script>'];
     foreach ($rows as $i=>[$nodeId,$role,$title]) $nodes->addNode($id,['id'=>$id.$nodeId,'type'=>$role,'title'=>$title,'description'=>'','presentation'=>[],'order'=>$i]);
     $maps->updateMap($id,['rootnodeid'=>$id.'root']);
-    foreach (array_slice($rows,1) as $i=>$row) $edges->addRelationship($id,['id'=>$id.'rel'.$i,'type'=>'contains','from'=>$id.($row[0]==='text'?'page':'root'),'to'=>$id.$row[0],'externalTarget'=>'','properties'=>[],'order'=>$i]);
+    foreach (array_slice($rows,1) as $i=>$row) $edges->addRelationship($id,['id'=>$id.'rel'.$i,'type'=>'contains','from'=>$id.($row[0]==='text'?'page':($row[0]==='outlinechapter'?'root':'outlinechapter')),'to'=>$id.$row[0],'externalTarget'=>'','properties'=>[],'order'=>$i]);
     return $id;
 }
 $id=newMap();
@@ -92,14 +92,14 @@ verify(str_contains(json_encode($state['pages']),'&lt;script&gt;'),'Tagged conte
 $quizId=newMap();$service->generate($quizId,1,'quizguard');$qs=$quizzes->snapshot('quizguard');
 $table->insert(['testid'=>$qs['tests'][0]['id'],'name'=>'Question','question'=>'Why?'],'tbl_test_questions');rejects(fn()=>$service->generate($quizId,1,'quizguard'),'locked');
 $sectionMap=newMap();$doc=$mapService->document($sectionMap,'manage');
-foreach ([['section','section','Ecosystems'],['chapter','chapter','Forests'],['description','description','Introduction <b>plain</b>']] as [$suffix,$role,$title])
+foreach ([['section','section','Ecosystems'],['description','description','Introduction <b>plain</b>']] as [$suffix,$role,$title])
     $doc['nodes'][]=['id'=>$sectionMap.$suffix,'type'=>$role,'title'=>$title,'description'=>'','presentation'=>[],'order'=>count($doc['nodes'])];
-foreach ($doc['relationships'] as &$edge) $edge['from']=$sectionMap.'chapter';unset($edge);
-foreach ([['root','section'],['section','chapter'],['section','description']] as $i=>[$from,$to])
+foreach ($doc['relationships'] as &$edge) if($edge['to']===$sectionMap.'outlinechapter') $edge['from']=$sectionMap.'section';unset($edge);
+foreach ([['root','section'],['section','description']] as $i=>[$from,$to])
     $doc['relationships'][]=['id'=>$sectionMap.'s'.$i,'type'=>'contains','from'=>$sectionMap.$from,'to'=>$sectionMap.$to,'order'=>$i];
 $mapService->saveDocument($sectionMap,1,$doc);$service->generate($sectionMap,2,'sections');
 $state=$outline->snapshot('sections');verify(count($state['sections'])===1 && $contexts->getContext('sections')['use_sections']==='1','Section layout enabled');
-verify($state['placements'][0]['sectionid']===$state['sections'][0]['id'],'Chapter belongs to section');
+verify(in_array($state['sections'][0]['id'],array_column($state['placements'],'sectionid'),true),'Chapter belongs to section');
 verify(str_contains($state['sections'][0]['introduction'],'&lt;b&gt;'),'Explicit section description is escaped');
 rejects(fn()=>$service->generate($sectionMap,2,'sections'),'locked');
 $failId=newMap();$failing=new class extends contentauthoringservice { public function createNativePage(array $input){throw new RuntimeException('Injected page write failure');} };
@@ -113,3 +113,25 @@ $before=$outline->snapshot('rollback');inject($service,'pages',$failing);
 try{$service->generate($failId,1,'rollback');}catch(RuntimeException $e){verify($e->getMessage()==='Injected page write failure','Expected replacement failure');}
 verify($before===$outline->snapshot('rollback'),'Failed regeneration preserves existing empty outline');
 echo "PASS: real PDO course/page/quiz creation, safe defaults, empty regeneration, duplicate requests, explicit content escaping, permission failures, stale revision, quiz/page protection, deletion reset, atomic rollback and unchanged editor session\n";
+
+// Durable queue tests use real database transactions and a deterministic AI boundary.
+require '/modules/mcqtests/classes/quizinputplan_class_inc.php';require '/modules/mcqtests/classes/quizinputjobs_class_inc.php';
+$GLOBALS['objects']['quizinputplan']=new quizinputplan();$jobs=bindTable('quizinputjobs','tbl_mcq_quiz_input_jobs');
+$GLOBALS['objects']['timeanddateservice']=new class {function nowStorage(){return gmdate('Y-m-d H:i:s');}function toStorage($date){return $date->format('Y-m-d H:i:s');}};
+$GLOBALS['objects']['userservice']=new class {function findByUserId($id){return ['isactive'=>1];}};
+$ai=new class {public $calls=0,$sources=[],$fail=false,$insertFail=false,$during=null;
+ function generate($source,$count,$tokens=null,$existing=[]){$this->calls++;$this->sources[]=$source;if($this->during){($this->during)();$this->during=null;}if($this->fail)return ['ok'=>false,'error'=>'ai_unavailable'];$rows=[];for($i=0;$i<$count;$i++)$rows[]=['stem'=>'Question '.$this->calls.' '.$i,'options'=>['One','Two','Three','Four'],'correctIndex'=>0,'sourceBasis'=>'Grasses'];return ['ok'=>true,'questions'=>$rows];}
+ function insertQuestions($id,$questions){foreach($questions as $q){$GLOBALS['objects']['dbTable']->insert(['id'=>bin2hex(random_bytes(16)),'testid'=>$id,'question'=>$q['stem']],'tbl_test_questions');if($this->insertFail)throw new RuntimeException('Injected question failure');}return ['ok'=>true];}
+};$GLOBALS['objects']['mcqaigenerator']=$ai;inject($service,'pages',$pageService);
+function inputMap($text){global $mapService; $id=newMap();$doc=$mapService->document($id,'manage');$doc['nodes'][]=['id'=>$id.'input','type'=>'quiz_input','title'=>'Source','description'=>$text,'presentation'=>[],'order'=>99];$doc['relationships'][]=['id'=>$id.'inputedge','type'=>'contains','from'=>$id.'quiz','to'=>$id.'input','order'=>99];$mapService->saveDocument($id,1,$doc);return $id;}
+$text=str_repeat('Grasses have jointed stems and narrow leaves. ',700);$id=inputMap($text);$service->generate($id,2,'inputqueue');$job=$jobs->forContext('inputqueue')[0];verify($ai->calls===0,'HTTP only enqueues');rejects(fn()=>$service->generate($id,2,'inputqueue'),'locked');verify(count($jobs->forContext('inputqueue'))===1,'No duplicate enqueue');
+$jobs->runOne();verify($jobs->forContext('inputqueue')[0]['progress_completed']==='1','Part durably saved');verify(!$quizzes->snapshot('inputqueue')['questions'],'No partial visible quiz');
+while($jobs->forContext('inputqueue')[0]['status']==='queued')$jobs->runOne();verify($jobs->forContext('inputqueue')[0]['status']==='review','Ready for review');verify(count($quizzes->snapshot('inputqueue')['questions'])===10,'All questions committed once');verify(trim(implode('',$ai->sources))===trim($text),'No text lost between bounded requests');verify($jobs->runOne()['selected']===0,'Completed job is not repeated');
+$id=inputMap(str_repeat('Grasses are plants. ',10));$service->generate($id,2,'inputretry');$ai->fail=true;$jobs->runOne();$job=$jobs->forContext('inputretry')[0];verify($job['status']==='failed','Known failure persisted');$authors->manage=false;rejects(fn()=>$jobs->retry($job['id'],'inputretry'),'forbidden');$authors->manage=true;$ai->fail=false;verify($jobs->retry($job['id'],'inputretry'),'Explicit retry');$jobs->runOne();verify($jobs->forContext('inputretry')[0]['status']==='review','Retry completes');
+$id=inputMap(str_repeat('Grasses are plants. ',10));$service->generate($id,2,'inputchanged');$job=$jobs->forContext('inputchanged')[0];$ai->during=fn()=>$table->update('id',$job['testid'],['name'=>'Edited by author'],'tbl_tests');$jobs->runOne();verify($jobs->forContext('inputchanged')[0]['status']==='cancelled'&&!$quizzes->snapshot('inputchanged')['questions'],'Concurrent author edit preserved');
+$id=inputMap(str_repeat('Grasses are plants. ',10));$service->generate($id,2,'inputstale');$job=$jobs->forContext('inputstale')[0];$jobs->update('id',$job['id'],['status'=>'running','claimtoken'=>'old','date_updated'=>'2000-01-01 00:00:00']);$calls=$ai->calls;$jobs->runOne();verify($jobs->forContext('inputstale')[0]['status']==='uncertain'&&$ai->calls===$calls,'No automatic paid retry after interruption');
+verify($jobs->retry($job['id'],'inputstale'),'Interrupted explicit retry');$ai->during=fn()=>$jobs->update('id',$job['id'],['status'=>'uncertain','claimtoken'=>null]);$jobs->runOne();verify(!$quizzes->snapshot('inputstale')['questions'],'Late worker result discarded');
+$id=inputMap(str_repeat('Grasses are plants. ',10));$service->generate($id,2,'inputrollback');$ai->insertFail=true;try{$jobs->runOne();throw new LogicException('Expected insert failure');}catch(RuntimeException $e){verify($e->getMessage()==='Injected question failure','Insert failure injected');}verify(!$quizzes->snapshot('inputrollback')['questions'],'Partial question inserts rolled back');$ai->insertFail=false;
+require '/modules/knowledgemap/classes/knowledgemapsnapshot_class_inc.php';$snapshots=bindTable('knowledgemapsnapshot','tbl_knowledgemap_maps');
+putenv('CHISIMBA_MAP_MAINTENANCE=1');$restoreId=newMap();$before=$snapshots->capture($restoreId);$maps->updateMap($restoreId,['title'=>'Changed']);$snapshots->restore($before,$restoreId);$after=$snapshots->capture($restoreId);verify($before['tables']===$after['tables']&&$after['map']['title']===$before['map']['title']&&(int)$after['map']['revision']>(int)$before['map']['revision'],'Lossless restore and stale-editor protection');
+echo "PASS: real PDO quiz queue, lossless chunks, no HTTP provider call, atomic insertion, explicit retry, authorization, author edits, uncertain/late results, rollback and snapshot restore\n";

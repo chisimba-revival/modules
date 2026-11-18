@@ -15,7 +15,7 @@ class knowledgemapgraphservice extends controller
     /** Validate and normalise a graph document without mutating persistence. */
     public function normalise(array $document){
         $errors=array();$warnings=array();$nodes=array();$seenNodes=array();
-        foreach((array)($document['nodes']??array()) as $index=>$node){$id=$this->identifier($node['id']??'');if($id===''||isset($seenNodes[$id])){$errors[]='Node '.($index+1).' has a missing or duplicate identifier.';continue;}$seenNodes[$id]=true;$nodes[]=array('id'=>$id,'type'=>$this->nodeType($node['type']??'standard'),'title'=>$this->text($node['title']??'Untitled',255),'description'=>$this->text($node['description']??'',100000),'presentation'=>$this->presentation($node),'order'=>$this->sortOrder($node['order']??$index,$index));}
+        foreach((array)($document['nodes']??array()) as $index=>$node){$id=$this->identifier($node['id']??'');if($id===''||isset($seenNodes[$id])){$errors[]='Node '.($index+1).' has a missing or duplicate identifier.';continue;}$seenNodes[$id]=true;if(mb_strlen((string)($node['description']??''))>300000){$errors[]='Node note exceeds 300000 characters.';continue;}$nodes[]=array('id'=>$id,'type'=>$this->nodeType($node['type']??'standard'),'title'=>$this->text($node['title']??'Untitled',255),'description'=>$this->text($node['description']??'',300000),'presentation'=>$this->presentation($node),'order'=>$this->sortOrder($node['order']??$index,$index));}
         if(!$nodes)$errors[]='The map contains no nodes.';
         $rootId=$this->identifier($document['rootId']??'');if($rootId===''||!isset($seenNodes[$rootId]))$errors[]='The root node does not exist.';
         $relationships=array();$seenRelationships=array();$containsParent=array();
@@ -41,7 +41,7 @@ class knowledgemapgraphservice extends controller
     private function identifier($value){$value=trim((string)$value);return preg_match('/^[A-Za-z0-9._:-]{1,64}$/',$value)?$value:'';}
 
     /** Normalise a supported node type. */
-    private function nodeType($value){$value=strtolower($this->identifier($value));return in_array($value,array('standard','folder','reference','course','section','chapter','page','quiz','description','content'),true)?$value:'standard';}
+    private function nodeType($value){$value=strtolower($this->identifier($value));return in_array($value,array('standard','folder','reference','course','section','chapter','page','quiz','description','content','quiz_input'),true)?$value:'standard';}
 
     /** Keep persisted ordering inside the portable signed 32-bit schema range. */
     private function sortOrder($value,$fallback){return is_numeric($value)&&(float)$value>=0&&(float)$value<=2147483647?(int)$value:(int)$fallback;}

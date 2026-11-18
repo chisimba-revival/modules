@@ -171,13 +171,14 @@ class dbBlocks extends dbTable {
      * @return TRUE|error
      * @access public
      */
-    public function insertBlock($arrayData) {
+    public function insertBlock($arrayData, $actorUserId = null) {
         try {
             $arrData = array();
+            $arrData['id'] = bin2hex(random_bytes(16));
             $arrData['categoryid'] = $arrayData['categoryid'];
             $arrData['visible'] = $this->TRUE;
             $arrData['datelastupdated'] = $this->getObject('timeanddateservice', 'timeanddate-service')->nowStorage();
-            $arrData['updatedby'] = $this->objUser->userId();
+            $arrData['updatedby'] = ($actorUserId ?? $this->objUser->userId());
             $arrData['title'] = $arrayData['title'];
             $arrData['side'] = $arrayData['side'];
             $arrData['isblock'] = $arrayData['isblock'];
@@ -185,7 +186,7 @@ class dbBlocks extends dbTable {
             $arrData['content'] = $arrayData['content'];
             $arrData['blockmodule'] = $arrayData['blockmodule'];
             $arrData['position'] = $this->getNextPos($arrayData['side'],$arrayData['categoryid']);
-            $arrData['userid'] = $this->objUser->userId();
+            $arrData['userid'] = ($actorUserId ?? $this->objUser->userId());
             //var_dump($arrData);
             return $this->insert($arrData);
         } catch (customException $e) {

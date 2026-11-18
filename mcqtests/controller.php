@@ -234,6 +234,7 @@ class mcqtests extends controller {
      * @return
      */
     public function dispatch($action) {
+        if (in_array($action,['quizinputjobs','retryquizinput'],true)) return $this->quizInputProgress($action);
         // Banks have their own lifetime and permissions, including outside a course.
         if ($action === 'banks') return $this->bankPage();
         if (!$this->courseLauncher->mayUseActiveCourse($this->userId, 'mcqtests')) {
@@ -2522,6 +2523,20 @@ class mcqtests extends controller {
         }
         echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
+    }
+
+    /** Status and explicit recovery for background quiz-input generation. */
+    private function quizInputProgress($action)
+    {
+        $code=(string)$this->getParam('contextcode',$this->contextCode);
+        if(!$this->getObject('contextauthorservice','contextadmin')->canManageContext($code,$this->userId))return 'noaccess_tpl.php';
+        $jobs=$this->getObject('quizinputjobs','mcqtests');$csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$error=false;
+        if($action==='retryquizinput') {
+            $error=strtoupper((string)($_SERVER['REQUEST_METHOD']??''))!=='POST'||!$csrf->consume('mcq_input_retry',(string)$this->getParam('csrf_token',''));
+            if(!$error)$error=!$jobs->retry((string)$this->getParam('id',''),$code);
+        }
+        $this->setVar('inputJobs',$jobs->forContext($code));$this->setVar('inputJobContext',$code);$this->setVar('inputJobError',$error);$this->setVar('inputJobToken',$csrf->issue('mcq_input_retry'));
+        return 'quiz_input_progress_tpl.php';
     }
 
     private function chapterQuizSetup()

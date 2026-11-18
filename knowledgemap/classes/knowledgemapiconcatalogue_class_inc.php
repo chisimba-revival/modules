@@ -53,7 +53,7 @@ class knowledgemapiconcatalogue extends controller
     }
 
     /** Semantic badges are available in every projection without altering decoration. */
-    public function roleIcons(){return ['course'=>'graduation-cap','section'=>'folders','chapter'=>'book-open','page'=>'file-text','quiz'=>'clipboard-check','description'=>'text','content'=>'align-left'];}
+    public function roleIcons(){return ['course'=>'graduation-cap','section'=>'folders','chapter'=>'book-open','page'=>'file-text','quiz'=>'clipboard-check','description'=>'text','content'=>'align-left','quiz_input'=>'notebook-pen'];}
     public function roleLabels(){
         $labels=[]; $language=$this->getObject('language','language');
         foreach($this->roleIcons() as $role=>$icon)$labels[$role]=ucfirst($language->code2Txt('mod_knowledgemap_course_'.$role,'knowledgemap'));

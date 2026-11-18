@@ -121,7 +121,7 @@ class mcqaigenerator extends ChisimbaObject
         return array('ok' => true, 'questions' => $questions);
     }
 
-    public function insertQuestions($testId, array $questions)
+    public function insertQuestions($testId, array $questions, $actorUserId = null)
     {
         $testId = trim((string) $testId);
         if ($testId === '' || count($questions) < 1 || count($questions) > 30) {
@@ -143,6 +143,7 @@ class mcqaigenerator extends ChisimbaObject
             $order++;
             $stem = trim((string) $question['stem']);
             $questionId = $this->dbQuestions->addQuestion(array(
+                'id' => bin2hex(random_bytes(16)),
                 'testid' => $testId,
                 'question' => $stem,
                 'questiontext' => mb_substr(strip_tags($stem), 0, 255, 'UTF-8'),
@@ -152,7 +153,7 @@ class mcqaigenerator extends ChisimbaObject
                 'questiontype' => 'mcq',
                 'qtype' => 'mcq'
                 ,'needsreview' => !empty($question['needsCorrection']) ? 1 : 0
-            ));
+            ), null, null, $actorUserId);
 
             if (empty($questionId)) {
                 return array('ok' => false, 'error' => 'question_insert_failed');
@@ -160,6 +161,7 @@ class mcqaigenerator extends ChisimbaObject
 
             foreach ($question['options'] as $index => $answer) {
                 $answerId = $this->dbAnswers->addAnswers(array(
+                    'id' => bin2hex(random_bytes(16)),
                     'testid' => $testId,
                     'questionid' => $questionId,
                     'answer' => trim((string) $answer),

@@ -1,6 +1,6 @@
 # Semantic course blueprints
 
-Assign Course, Section, Chapter, Page, Quiz, Description or Content using the
+Assign Course, Section, Chapter, Page, Quiz, Quiz input, Description or Content using the
 semantic palette (drag or click), or the selected node's Semantic role menu.
 Roles are stored as node types; decorative icons and media purposes stay separate.
 The central node must be Course. Save the map, preview the complete outline,
@@ -13,7 +13,7 @@ Ordinary notes, URLs and attachments never become course content implicitly.
 Quiz nodes create inactive, empty formative MCQ quizzes and provider-backed page
 placements. Their titles must fit the existing 60-character quiz title field.
 
-Consecutive pages/quizzes directly under a course or section get an explicit
+Consecutive pages directly under a course or section get an explicit
 container chapter, displayed in the preview. Branch relationship order determines
 the generated order. Untagged nodes are listed as excluded; a tagged descendant
 under an untagged parent is an error, not silently promoted or lost. Unsupported
@@ -24,7 +24,7 @@ creation permissions, and locks the saved map revision. A linked course also
 requires canonical management permission. The resulting course is private and
 unpublished. Its content modules and home blocks are provisioned in the same
 checked transaction as identity, canonical groups, sections, chapters, pages,
-quizzes and server-owned provenance. No schema change is required.
+quizzes, queued quiz-input snapshots and server-owned provenance. MCQ Tests adds the registered `tbl_mcq_quiz_input_jobs` table.
 
 Provenance lives in the map's existing `sourcemetadata.courseBlueprint` namespace;
 map save/import payloads cannot write it. Explicit content locks generation from
@@ -47,8 +47,8 @@ because bulk creation can insert many records within one second.
 ## Coordinated update
 
 Install the matching framework context change (`createContext`'s optional final
-`switchContext` argument; context version 2.069), plus modules knowledgemap 0.94,
-contextcontent 2.108 and mcqtests 4.190. Use the normal Module Catalogue update
+`switchContext` argument; context version 2.069), plus modules knowledgemap 0.95,
+contextcontent 2.108 and mcqtests 4.191. Use the normal Module Catalogue update
 for dependency/language registration. No production deployment is implied by
 these source changes. The template ZIP exporter is outside this step.
 
@@ -74,3 +74,42 @@ Browser verification uses the real template, assets and shared skin with synthet
 HTTP responses: pointer drag, menu selection, autosave, preview, confirmation,
 Help, Escape/focus return, and desktop/390px layouts. It does not establish a
 live-site deployment or full installed identity-service integration.
+
+## Quiz input and the worker
+
+Every Quiz must be an explicit child of a Chapter. It is placed after that
+chapter's pages. Use a final chapter for section/course review quizzes; direct
+Course/Section quiz branches are validation errors. A Quiz input child supplies
+its note, or its title when no note is present. Multiple inputs concatenate in
+branch order. Input must total 100–300000 characters; overlong notes are rejected,
+never silently truncated. Input remains distinct from page content.
+
+Creating the outline atomically snapshots the input and queues the existing
+inactive quiz. No AI call runs in the HTTP request. The existing
+`mcqtests/scripts/run_chapter_quiz_worker.php` drains this queue as well as the
+older chapter-preview queue. Each step processes one part of about 12000 characters,
+without discarding source text. It requests ten questions overall, increasing to
+at least one per part for long input (maximum thirty). Preview shows the count.
+Questions are inserted together only after all parts validate, and remain inactive
+for human review. The shared AI service owns configuration/provider requests;
+there is no separate credential or provider stack.
+
+The map links to private generation status after creation and on later visits.
+Completed parts survive failed requests. Interrupted jobs require explicit retry,
+with a possible duplicate-charge warning. Claims are atomic, late results are
+discarded, and quiz edits/deletion or revoked author access cancel generation.
+A source snapshot is immutable: editing the map cannot change a queued request.
+Tests use a deterministic AI boundary and never make paid provider requests.
+
+## Repeatable map maintenance
+
+`knowledgemap/scripts/map_snapshot.php` is CLI-only and requires
+`CHISIMBA_MAP_MAINTENANCE=1`. Arguments are `backup|restore MAP_ID ABSOLUTE_JSON_PATH`.
+Backup is exclusive (never overwrites a previous archive), mode 0600, with a SHA-256
+sidecar. It includes map metadata, all nodes/notes, relationships and access grants.
+Files linked by URL remain at their existing locations; these are map snapshots,
+not independent file-manager backups. Keep snapshots private: they can contain
+private notes and public-link tokens. Restore checks the checksum and map owner,
+restores in one transaction and increases the revision to reject stale editor saves.
+Delete the generated test course before resetting a linked map. Restore does not
+delete courses, send AI requests or modify any other map.

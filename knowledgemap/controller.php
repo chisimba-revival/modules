@@ -25,7 +25,7 @@ class knowledgemap extends controller
     private $csrf;
 
     /** Initialise application services. */
-    public function init(){$this->user=$this->getObject('user','security');$this->maps=$this->getObject('dbknowledgemaps');$this->nodes=$this->getObject('dbknowledgemapnodes');$this->relationships=$this->getObject('dbknowledgemaprelationships');$this->access=$this->getObject('dbknowledgemapaccess');$this->scope=$this->getObject('knowledgemapscopeservice');$this->authorization=$this->getObject('knowledgemapauthorizationservice');$this->service=$this->getObject('knowledgemapservice');$this->importer=$this->getObject('knowledgemapimportservice');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" type="text/css" href="'.$this->getResourceUri('knowledgemap.css').'?v=34" />');$this->appendArrayVar('headerParams','<script defer type="text/javascript" src="'.$this->getResourceUri('knowledgemap.js').'?v=34"></script>');}
+    public function init(){$this->user=$this->getObject('user','security');$this->maps=$this->getObject('dbknowledgemaps');$this->nodes=$this->getObject('dbknowledgemapnodes');$this->relationships=$this->getObject('dbknowledgemaprelationships');$this->access=$this->getObject('dbknowledgemapaccess');$this->scope=$this->getObject('knowledgemapscopeservice');$this->authorization=$this->getObject('knowledgemapauthorizationservice');$this->service=$this->getObject('knowledgemapservice');$this->importer=$this->getObject('knowledgemapimportservice');$this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf'];$this->appendArrayVar('headerParams','<link rel="stylesheet" type="text/css" href="'.$this->getResourceUri('knowledgemap.css').'?v=35" />');$this->appendArrayVar('headerParams','<script defer type="text/javascript" src="'.$this->getResourceUri('knowledgemap.js').'?v=35"></script>');}
 
     /** Course actions have their own token so autosave cannot invalidate a preview. */
     private function courseAction($action)
@@ -43,6 +43,7 @@ class knowledgemap extends controller
             } else {
                 $data=$service->generate($id,$revision,$this->param('contextcode'));
                 $data['url']=html_entity_decode($this->uri(['action'=>'edit','contextcode'=>$data['contextCode']],'contextadmin'),ENT_QUOTES,'UTF-8');
+                $data['quizJobsUrl']=html_entity_decode($this->uri(['action'=>'quizinputjobs','contextcode'=>$data['contextCode']],'mcqtests'),ENT_QUOTES,'UTF-8');
                 $key='created'; $ok=true;
             }
         } catch (DomainException $error) {

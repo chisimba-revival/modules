@@ -3,7 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class knowledgemapblueprint extends ChisimbaObject
 {
-    const ROLES = ['course','section','chapter','page','quiz','description','content'];
+    const ROLES = ['course','section','chapter','page','quiz','description','content','quiz_input'];
 
     /** No ordinary notes, links or attachments become course content implicitly. */
     public function build(array $graph)
@@ -17,8 +17,8 @@ class knowledgemapblueprint extends ChisimbaObject
         }
         $root = $nodes[$graph['rootId']];
         if ($root['type'] !== 'course' || isset($parents[$root['id']])) $errors[] = ['root', $root['title']];
-        $allowed = ['course'=>['section','chapter','page','quiz','description'], 'section'=>['chapter','page','quiz','description'],
-            'chapter'=>['page','quiz','description'], 'page'=>['content'], 'quiz'=>[], 'description'=>[], 'content'=>[]];
+        $allowed = ['course'=>['section','chapter','page','description'], 'section'=>['chapter','page','description'],
+            'chapter'=>['page','quiz','description'], 'page'=>['content'], 'quiz'=>['quiz_input'], 'description'=>[], 'content'=>[], 'quiz_input'=>[]];
         foreach ($nodes as $node) {
             if (!in_array($node['type'], self::ROLES, true)) { $excluded[] = $node['title']; continue; }
             if ($node['type'] === 'quiz' && mb_strlen($node['title']) > 60) $errors[] = ['quiz_title', $node['title']];
@@ -33,14 +33,14 @@ class knowledgemapblueprint extends ChisimbaObject
         $hasContent = false;
         $convert = function ($id) use (&$convert, &$hasContent, &$errors, $nodes, $children) {
             $node = $nodes[$id];
-            $item = ['sourceId'=>$id,'role'=>$node['type'],'title'=>$node['title'],'description'=>'','body'=>'','children'=>[], 'generated'=>false];
+            $item = ['sourceId'=>$id,'role'=>$node['type'],'title'=>$node['title'],'description'=>'','body'=>'','quizInput'=>'','children'=>[], 'generated'=>false];
             foreach ($children[$id] ?? [] as $childId) {
                 $child = $nodes[$childId];
                 if (!in_array($child['type'], self::ROLES, true)) continue;
-                if (in_array($child['type'], ['description','content'], true)) {
+                if (in_array($child['type'], ['description','content','quiz_input'], true)) {
                     // A tagged node's title is its text; an explicit note can hold longer text.
                     $text = trim($child['description']) !== '' ? $child['description'] : $child['title'];
-                    $field = $child['type'] === 'description' ? 'description' : 'body';
+                    $field = ($child['type'] === 'description' ? 'description' : ($child['type']==='quiz_input'?'quizInput':'body'));
                     if ($field === 'description' && $item[$field] !== '') $errors[] = ['description', $node['title']];
                     $item[$field] .= ($item[$field] === '' ? '' : "\n\n") . $text;
                     $hasContent = $hasContent || trim($text) !== '';
@@ -50,16 +50,23 @@ class knowledgemapblueprint extends ChisimbaObject
                 // Consecutive direct pages get a container, preserving their position among chapters.
                 $grouped = []; $container = null; $number = 0;
                 foreach ($item['children'] as $child) {
-                    if (in_array($child['role'], ['page','quiz'], true)) {
+                    if (in_array($child['role'], ['page'], true)) {
                         if ($container === null) {
                             $container = count($grouped); ++$number;
                             $grouped[] = ['sourceId'=>$id.':container:'.$number,'role'=>'chapter','title'=>$item['title'],
-                                'description'=>'','body'=>'','children'=>[], 'generated'=>true];
+                                'description'=>'','body'=>'','quizInput'=>'','children'=>[], 'generated'=>true];
                         }
                         $grouped[$container]['children'][] = $child;
                     } else { $container = null; $grouped[] = $child; }
                 }
                 $item['children'] = $grouped;
+            }
+            if ($item['role']==='chapter') {
+                $item['children']=array_merge(array_values(array_filter($item['children'],fn($child)=>$child['role']!=='quiz')),array_values(array_filter($item['children'],fn($child)=>$child['role']==='quiz')));
+            }
+            if ($item['role']==='quiz' && trim($item['quizInput'])!=='') {
+                try { $plan=$this->getObject('quizinputplan','mcqtests')->build($item['quizInput']);$item['quizQuestionCount']=$plan['count']; }
+                catch (InvalidArgumentException $error) { $errors[]=['quiz_input',$node['title']]; }
             }
             return $item;
         };
