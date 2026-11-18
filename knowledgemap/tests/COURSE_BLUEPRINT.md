@@ -34,7 +34,9 @@ quiz records/questions, enabled modules or home blocks blocks replacement and
 records a permanent lock. This intentionally also protects manual structural
 edits. Visiting the course alone does not change its fingerprint. Deleting the
 linked course permits a new generation. Existing unrelated course codes are
-never targets. Map changes never synchronise to a course automatically.
+never targets. Codes use at most 32 characters, matching canonical deletion.
+If legacy deletion retained module rows, choose a new unused code; generation
+will never silently revive those rows. Map changes never synchronise to a course automatically.
 
 Failed creation and regeneration roll back all database writes. Creation does
 not switch the editor's active course or index unpublished material. Native page
@@ -45,7 +47,7 @@ because bulk creation can insert many records within one second.
 ## Coordinated update
 
 Install the matching framework context change (`createContext`'s optional final
-`switchContext` argument; context version 2.069), plus modules knowledgemap 0.92,
+`switchContext` argument; context version 2.069), plus modules knowledgemap 0.93,
 contextcontent 2.108 and mcqtests 4.190. Use the normal Module Catalogue update
 for dependency/language registration. No production deployment is implied by
 these source changes. The template ZIP exporter is outside this step.

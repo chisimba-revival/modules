@@ -41,7 +41,7 @@ class knowledgemapcourseservice extends ChisimbaObject
         if (!$preview['valid']) throw new DomainException('invalid');
         $code=strtolower(trim($requestedCode));
         // dbcontext strips punctuation; accept its canonical alphabet to avoid aliases.
-        if (!preg_match('/^[a-z0-9]{1,64}$/D',$code) || $code==='root') throw new DomainException('code');
+        if (!preg_match('/^[a-z0-9]{1,32}$/D',$code) || $code==='root') throw new DomainException('code');
         $result=$this->maps->transaction(function () use ($id,$revision,$code,$preview) {
             $map=$this->maps->lockAtRevision($id,$revision);
             if (!$map) throw new DomainException('stale');
@@ -68,6 +68,9 @@ class knowledgemapcourseservice extends ChisimbaObject
                     'use_sections'=>$this->hasSections($preview['outline'])?1:0])===false) throw new RuntimeException('Context update failed');
             } else {
                 if ($this->outline->contextSnapshot($code,true)) throw new DomainException('exists');
+                // Legacy deletion can leave module-owned rows. Never revive or adopt them.
+                $unused=$this->snapshot($code,true);
+                foreach(array_merge($unused['outline'],$unused['quizzes']) as $rows) if($rows) throw new DomainException('exists');
                 if (!$this->contexts->createContext($code,$preview['outline']['title'],'Unpublished','Private',
                     $this->outline->plainHtml($preview['outline']['description']),false,0,'0','','standard','free',false,
                     'private',null,$this->hasSections($preview['outline']),false)) throw new RuntimeException('Context creation failed');

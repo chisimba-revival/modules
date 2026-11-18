@@ -70,7 +70,7 @@ function newMap($withContent=false) {
 $id=newMap();
 $authors->create=false;rejects(fn()=>$service->generate($id,1,'ecology'),'forbidden');$authors->create=true;
 $auth->manage=false;rejects(fn()=>$service->preview($id,1),'forbidden');$auth->manage=true;
-rejects(fn()=>$service->generate($id,2,'ecology'),'stale');rejects(fn()=>$service->generate($id,1,'eco-logy'),'code');
+rejects(fn()=>$service->generate($id,2,'ecology'),'stale');rejects(fn()=>$service->generate($id,1,'eco-logy'),'code');rejects(fn()=>$service->generate($id,1,str_repeat('a',33)),'code');
 verify(!$contexts->getContext('ecology'),'Rejected requests wrote no course');
 $result=$service->generate($id,1,'ecology');verify($result['contextCode']==='ecology','Course generated');
 $context=$contexts->getContext('ecology');verify($context['status']==='Unpublished' && $context['access']==='Private','Safe defaults');
@@ -86,7 +86,7 @@ $pages->update('id',$state['pages'][0]['id'],['pagecontent'=>'<p>Authored conten
 rejects(fn()=>$service->generate($id,1,'ecology'),'locked');
 verify(str_contains((string)$pages->getRow('id',$state['pages'][0]['id'])['pagecontent'],'Authored'),'Authored content preserved');
 $pages->update('id',$state['pages'][0]['id'],['pagecontent'=>'']);rejects(fn()=>$service->generate($id,1,'ecology'),'locked');
-$contexts->delete('contextcode','ecology');$service->generate($id,1,'replacement');verify((bool)$contexts->getContext('replacement'),'Deleted course permits replacement');
+$contexts->delete('contextcode','ecology');rejects(fn()=>$service->generate($id,1,'ecology'),'exists');$service->generate($id,1,'replacement');verify((bool)$contexts->getContext('replacement'),'Deleted course permits replacement');
 $contentId=newMap(true);$service->generate($contentId,1,'withcontent');$state=$outline->snapshot('withcontent');
 verify(str_contains(json_encode($state['pages']),'&lt;script&gt;'),'Tagged content escaped');rejects(fn()=>$service->generate($contentId,1,'withcontent'),'locked');
 $quizId=newMap();$service->generate($quizId,1,'quizguard');$qs=$quizzes->snapshot('quizguard');
