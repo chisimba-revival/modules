@@ -1,6 +1,6 @@
 # Semantic course blueprints
 
-Assign Course, Section, Chapter, Page, Quiz, Quiz input, Description or Content using the
+Assign Course, Section, Chapter, Page, Quiz, Description or Content using the
 semantic palette (drag or click), or the selected node's Semantic role menu.
 Roles are stored as node types; decorative icons and media purposes stay separate.
 The central node must be Course. Save the map, preview the complete outline,
@@ -79,9 +79,10 @@ live-site deployment or full installed identity-service integration.
 
 Every Quiz must be an explicit child of a Chapter. It is placed after that
 chapter's pages. Use a final chapter for section/course review quizzes; direct
-Course/Section quiz branches are validation errors. A Quiz input child supplies
-its note, or its title when no note is present. Multiple inputs concatenate in
-branch order. Input must total 100–300000 characters; overlong notes are rejected,
+Course/Section quiz branches are validation errors. Paste source text directly into
+the Quiz node's Note. An empty Note creates an empty quiz. Older Quiz input
+children remain readable (note, or title when empty), following the Quiz Note in
+branch order, but the editor no longer offers them for new assignments. Input must total 100–300000 characters; overlong notes are rejected,
 never silently truncated. Input remains distinct from page content.
 
 Creating the outline atomically snapshots the input and queues the existing

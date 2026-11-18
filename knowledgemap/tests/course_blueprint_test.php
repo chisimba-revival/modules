@@ -51,3 +51,12 @@ $rows[3][4]='too short';check(!build($rows)['valid'],'Short quiz input rejected'
 echo "PASS: chapter-only quizzes, long lossless quiz input, bounded request plan, end-of-chapter order and input validation\n";
 
 $unusual=str_repeat(str_repeat('x',6000).' ',49);$plan=(new quizinputplan())->build($unusual);check(count($plan['requests'])<=30&&implode('',array_column($plan['requests'],'source'))===trim($unusual),'Long words still fit bounded requests without truncation');
+
+$direct=[['root','course',null,'Course'],['c','chapter','root','Review'],['q','quiz','c','Quiz',$source]];
+$result=build($direct);$quiz=$result['outline']['children'][0]['children'][0];
+check($result['valid']&&$result['hasContent']&&$quiz['quizInput']===trim($source),'Quiz Note alone is lossless source and protects generation');
+check($quiz['quizQuestionCount']===(new quizinputplan())->build($source)['count'],'Quiz Note plans bounded requests');
+$direct[2][4]='';$result=build($direct);check($result['valid']&&!$result['hasContent']&&$result['outline']['children'][0]['children'][0]['quizInput']==='','Blank Quiz Note remains empty');
+$direct[2][4]='short';check(!build($direct)['valid'],'Short direct Quiz Note is validated');
+$direct[2][4]=str_repeat('a',160000);$direct[]=['legacy','quiz_input','q','Source',str_repeat('b',150000)];check(!build($direct)['valid'],'Combined legacy and direct source respects aggregate limit');
+echo "PASS: direct Quiz Note sources generation, preserves empty quizzes, validates bounds and protects existing courses\n";

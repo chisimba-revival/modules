@@ -5,7 +5,7 @@ class knowledgemapblueprint extends ChisimbaObject
 {
     const ROLES = ['course','section','chapter','page','quiz','description','content','quiz_input'];
 
-    /** No ordinary notes, links or attachments become course content implicitly. */
+    /** Only explicit content roles and Quiz notes become generated content. */
     public function build(array $graph)
     {
         $nodes = array_column($graph['nodes'], null, 'id');
@@ -34,6 +34,10 @@ class knowledgemapblueprint extends ChisimbaObject
         $convert = function ($id) use (&$convert, &$hasContent, &$errors, $nodes, $children) {
             $node = $nodes[$id];
             $item = ['sourceId'=>$id,'role'=>$node['type'],'title'=>$node['title'],'description'=>'','body'=>'','quizInput'=>'','children'=>[], 'generated'=>false];
+            // A Quiz's own Note is its source; legacy input children remain readable.
+            if ($node['type']==='quiz' && trim($node['description'])!=='') {
+                $item['quizInput']=$node['description']; $hasContent=true;
+            }
             foreach ($children[$id] ?? [] as $childId) {
                 $child = $nodes[$childId];
                 if (!in_array($child['type'], self::ROLES, true)) continue;
