@@ -184,3 +184,18 @@ console.log('PASS: semantic role changes preserve unapplied title, note and link
  map.editable=false;map.nodes.get('b').type='standard';map.assignChapterPages();assert.equal(map.nodes.get('b').type,'standard');
  console.log('PASS: nested courses blocked in both directions and on branch moves; bulk tags only unassigned chapter children, preserves notes/manual roles, saves once and is idempotent');
 }
+
+// The browser owns selected text and dialog/form interaction, including copy/paste.
+{
+ const map=fixture();map.editable=true;let handlers={},copied=0,pasted=0,deleted=0;
+ context.document.addEventListener=(name,fn)=>handlers[name]=fn;
+ map.root={contains(){return true},querySelector(){return null},querySelectorAll(){return []}};
+ map.copyBranch=()=>copied++;map.pasteBranch=()=>pasted++;map.deleteSelected=()=>deleted++;map.branchClipboard={};map.bind();
+ let selection='';context.window.getSelection=()=>selection;
+ function target(native=false){return {closest(){return native?{}:null},isContentEditable:false}}
+ function event(t){return {target:t,clipboardData:{setData(){},getData(){return 'Chisimba Knowledge Map branch'}},preventDefault(){this.prevented=true},key:'Delete'}}
+ const dialog=event(target(true));handlers.copy(dialog);handlers.paste(dialog);handlers.keydown(dialog);assert(!dialog.prevented);assert.equal(copied+pasted+deleted,0);
+ selection='This semantic role is not allowed beneath its parent.';const selected=event(target());handlers.copy(selected);handlers.keydown(selected);assert(!selected.prevented);assert.equal(copied+deleted,0);
+ selection='';const branch=event(target());handlers.copy(branch);handlers.paste(branch);assert(branch.prevented);assert.equal(copied,1);assert.equal(pasted,1);
+ console.log('PASS: copying selected preview text stays native; dialogs ignore graph shortcuts; branch copy/paste still works');
+}
