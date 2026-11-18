@@ -48,7 +48,7 @@ because bulk creation can insert many records within one second.
 
 Install the matching framework context change (`createContext`'s optional final
 `switchContext` argument; context version 2.069), plus modules knowledgemap 0.95,
-contextcontent 2.108 and mcqtests 4.191. Use the normal Module Catalogue update
+contextcontent 2.108 and mcqtests 4.192. Use the normal Module Catalogue update
 for dependency/language registration. No production deployment is implied by
 these source changes. The template ZIP exporter is outside this step.
 

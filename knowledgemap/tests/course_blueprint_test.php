@@ -49,3 +49,5 @@ $result=build($rows);check($result['valid']&&$result['hasContent'],'Quiz input p
 foreach([['q','quiz','root','Quiz'],['q','quiz','s','Quiz']] as $bad)check(!build([['root','course',null,'Course'],['s','section','root','Section'],$bad])['valid'],'Quiz needs explicit chapter');
 $rows[3][4]='too short';check(!build($rows)['valid'],'Short quiz input rejected');
 echo "PASS: chapter-only quizzes, long lossless quiz input, bounded request plan, end-of-chapter order and input validation\n";
+
+$unusual=str_repeat(str_repeat('x',6000).' ',49);$plan=(new quizinputplan())->build($unusual);check(count($plan['requests'])<=30&&implode('',array_column($plan['requests'],'source'))===trim($unusual),'Long words still fit bounded requests without truncation');

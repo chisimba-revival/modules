@@ -10,7 +10,7 @@ class quizinputplan extends ChisimbaObject
         $chunks=[];
         while(mb_strlen($source,'UTF-8')>12000){
             $piece=mb_substr($source,0,12000,'UTF-8');
-            $cut=mb_strrpos($piece,' ',0,'UTF-8');if($cut===false||$cut<6000)$cut=12000;
+            $cut=mb_strrpos($piece,' ',0,'UTF-8');if($cut===false||$cut<10000)$cut=12000;
             $chunks[]=mb_substr($source,0,$cut,'UTF-8');$source=mb_substr($source,$cut,null,'UTF-8');
         }
         if(mb_strlen(trim($source),'UTF-8')<100&&$chunks)$chunks[count($chunks)-1].=$source;else $chunks[]=$source;

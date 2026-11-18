@@ -2338,6 +2338,10 @@ class mcqtests extends controller {
      * @return boolean
      */
     public function isValid($action, $default = true) {
+        if (in_array((string)$action,['quizinputjobs','retryquizinput'],true)) {
+            return $this->objUser->isLoggedIn() && $this->getObject('contextauthorservice','contextadmin')->canManageContext(
+                (string)$this->getParam('contextcode',$this->contextCode),$this->objUser->userId());
+        }
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
         }
