@@ -20,7 +20,7 @@ $u=fn($p)=>html_entity_decode($this->uri($p,'mcqtests'),ENT_QUOTES,'UTF-8');
 <input type="hidden" name="csrf_token" value="<?php echo $e($inputJobToken); ?>"/><input type="hidden" name="id" value="<?php echo $e($job['id']); ?>"/>
 <button class="button" type="submit"><?php echo $e($t('retry')); ?></button></form>
 <?php endif; ?>
-<?php if($job['name']): $review=html_entity_decode($this->uri(['action'=>'launchcourseactivity','coursecode'=>$inputJobContext,'targetmodule'=>'mcqtests','targetaction'=>'view','targetparams'=>base64_encode(json_encode(['id'=>$job['testid']]))],'context'),ENT_QUOTES,'UTF-8'); ?>
+<?php if($job['name']): $target=$this->getObject('courseawarelaunchservice','context')->target($inputJobContext,'mcqtests',['action'=>'view','id'=>$job['testid']]); $review=html_entity_decode($this->uri($target['params'],$target['module']),ENT_QUOTES,'UTF-8'); ?>
 <a class="button chisimba-button-secondary" href="<?php echo $e($review); ?>"><?php echo $e($t('review_link')); ?></a>
 <?php endif; ?></article>
 <?php endforeach; ?></section></main>
