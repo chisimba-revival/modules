@@ -168,3 +168,19 @@ m.root={querySelector(){return draftForm}};
 m.select=n=>{m.selectedId=n.id;draftForm.elements.title.value=n.title;draftForm.elements.description.value=n.description||'';draftForm.elements.link.value='';};
 m.setSemanticRole('a','page');assert.equal(draftForm.elements.title.value,'Forest layers');assert.equal(draftForm.elements.description.value,'Pending note');assert.equal(draftForm.elements.link.value,'https://example.invalid/');assert.equal(m.nodes.get('a').type,'page');
 console.log('PASS: semantic role changes preserve unapplied title, note and link edits');
+
+// Semantic containment and bulk tagging must preserve manual work and notes.
+{
+ const map=fixture();map.editable=true;map.selectedId='b';map.root={querySelector(){return null}};
+ let saves=0;map.dirty=()=>saves++;
+ map.nodes.get('root').type='course';map.nodes.get('a').type='chapter';
+ map.graph.relationships.find(r=>r.to==='b').from='a';map.graph.relationships.find(r=>r.to==='c').from='a';map.graph.relationships.find(r=>r.to==='d').from='b';map.reindex();
+ map.nodes.get('b').description='Unchanged note';map.nodes.get('c').type='quiz';
+ map.setSemanticRole('b','course');assert.notEqual(map.nodes.get('b').type,'course');assert.equal(saves,0);
+ map.assignChapterPages();assert.equal(map.nodes.get('b').type,'page');assert.equal(map.nodes.get('c').type,'quiz');assert.notEqual(map.nodes.get('d').type,'page');assert.equal(map.nodes.get('b').description,'Unchanged note');assert.equal(saves,1);
+ map.assignChapterPages();assert.equal(saves,1);map.setSemanticRole('b','quiz');assert.equal(map.nodes.get('b').type,'quiz');
+ map.nodes.get('root').type='standard';map.nodes.get('b').type='course';map.setSemanticRole('root','course');assert.equal(map.nodes.get('root').type,'standard');
+ map.nodes.get('c').type='course';map.reparent('a','c');assert.equal(map.parentOf('a'),'root');
+ map.editable=false;map.nodes.get('b').type='standard';map.assignChapterPages();assert.equal(map.nodes.get('b').type,'standard');
+ console.log('PASS: nested courses blocked in both directions and on branch moves; bulk tags only unassigned chapter children, preserves notes/manual roles, saves once and is idempotent');
+}

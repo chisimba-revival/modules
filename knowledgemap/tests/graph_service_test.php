@@ -58,3 +58,8 @@ if($spaced['nodes'][1]['presentation']['branchGap']!=160)throw new Exception('Br
 $document['nodes'][1]['presentation']['branchGap']=9000;
 if($service->normalise($document)['document']['nodes'][1]['presentation']['branchGap']!=2000)throw new Exception('Branch spacing not bounded');
 echo "PASS: branch spacing persistence and bounds\n";
+
+$nested=['rootId'=>'a','nodes'=>[['id'=>'a','type'=>'course'],['id'=>'b','type'=>'standard'],['id'=>'c','type'=>'course']], 'relationships'=>[['type'=>'contains','from'=>'a','to'=>'b'],['type'=>'contains','from'=>'b','to'=>'c']]];
+if($service->normalise($nested)['valid'])throw new RuntimeException('Nested courses accepted through an untagged intermediary');
+$nested['nodes'][2]['type']='chapter';if(!$service->normalise($nested)['valid'])throw new RuntimeException('Valid chapter rejected');
+echo "PASS: save/import validation rejects indirect nested courses and accepts course chapters\n";

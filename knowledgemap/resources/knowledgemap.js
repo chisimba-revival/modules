@@ -245,18 +245,56 @@
     ReadOnlyKnowledgeMap.prototype.bindStyleControls = function () { var self = this, button = this.root.querySelector('[data-knowmap-action="style"]'), popover = this.root.querySelector('[data-knowmap-style-popover]'); if (!button || !popover) return; function sync() { var node = self.nodes.get(self.selectedId), style = node && node.presentation || {}; popover.querySelector('[data-knowmap-style="fontFamily"]').value = style.fontFamily || 'Inter'; popover.querySelector('[data-knowmap-style="fontSize"]').value = String(style.fontSize || 14); popover.querySelector('[data-knowmap-style="fontColor"]').value = /^#[0-9a-f]{6}$/i.test(style.fontColor || '') ? style.fontColor : '#172033'; } button.addEventListener('click', function () { var opening = popover.hidden; popover.hidden = !opening; button.setAttribute('aria-expanded', opening ? 'true' : 'false'); if (opening) sync(); }); popover.querySelectorAll('[data-knowmap-style]').forEach(function (control) { control.addEventListener('change', function () { var node = self.nodes.get(self.selectedId); if (!node) return; node.presentation = node.presentation || {}; node.presentation[control.dataset.knowmapStyle] = control.dataset.knowmapStyle === 'fontSize' ? Number(control.value) : control.value; self.render(); self.select(node, self.nodeLayer.querySelector('[data-node-id="' + cssEscape(node.id) + '"]')); self.dirty(); }); }); document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !popover.hidden) { popover.hidden = true; button.setAttribute('aria-expanded', 'false'); button.focus(); } }); };
     // Semantic roles belong to nodes; decorative icons remain independent.
     var semanticIcons = {course:'graduation-cap',section:'folders',chapter:'book-open',page:'file-text',quiz:'clipboard-check',description:'text',content:'align-left',quiz_input:'notebook-pen'};
+    ReadOnlyKnowledgeMap.prototype.hasCourseAncestor = function (id) {
+        var seen = new Set();
+        while ((id = this.parentOf(id)) && !seen.has(id)) {
+            seen.add(id); if ((this.nodes.get(id) || {}).type === 'course') return true;
+        }
+        return false;
+    };
+    ReadOnlyKnowledgeMap.prototype.canAssignCourse = function (id) {
+        var self = this;
+        return !this.hasCourseAncestor(id) && !this.descendants(id).some(function (child) { return self.nodes.get(child).type === 'course'; });
+    };
+    ReadOnlyKnowledgeMap.prototype.roleMessage = function (key, count) {
+        var status = this.root && this.root.querySelector('[data-knowmap-role-status]');
+        if (status) status.textContent = String((this.roleLabels || {})[key] || '').replace('{count}', count === undefined ? '' : count);
+    };
+    // Change a batch with one redraw/save, retaining unsaved inspector fields.
+    ReadOnlyKnowledgeMap.prototype.applySemanticRoles = function (ids, role) {
+        var nodeId = this.selectedId, node = this.nodes.get(nodeId), form = this.root && this.root.querySelector('[data-knowmap-node-form]'), pending = {}, self = this;
+        if (form) ['title','description','link','color','side','mediaIntent'].forEach(function (key) { if (form.elements[key]) pending[key] = form.elements[key].value; });
+        ids.forEach(function (id) { self.nodes.get(id).type = role; });
+        this.layout(); this.render();
+        if (node) this.select(node, this.nodeLayer.querySelector('[data-node-id="' + cssEscape(nodeId) + '"]'));
+        this.dirty();
+        if (form) Object.keys(pending).forEach(function (key) { form.elements[key].value = pending[key]; });
+    };
+    ReadOnlyKnowledgeMap.prototype.assignChapterPages = function () {
+        if (!this.editable) return;
+        var self = this, ids = [];
+        this.nodes.forEach(function (node) {
+            if (!semanticIcons[node.type] && (self.nodes.get(self.parentOf(node.id)) || {}).type === 'chapter') ids.push(node.id);
+        });
+        if (ids.length) this.applySemanticRoles(ids, 'page');
+        this.roleMessage(ids.length ? 'pages_assigned' : 'pages_none', ids.length);
+    };
     ReadOnlyKnowledgeMap.prototype.setSemanticRole = function (nodeId, role) {
         if (!this.editable || (role !== 'standard' && !semanticIcons[role])) return;
         var node = this.nodes.get(nodeId); if (!node || node.type === role) return;
-        // A role change redraws the inspector; retain pending edits until Apply.
-        var form = this.root && nodeId === this.selectedId ? this.root.querySelector('[data-knowmap-node-form]') : null, pending = {};
-        if (form) ['title','description','link','color','side','mediaIntent'].forEach(function (key) { if (form.elements[key]) pending[key] = form.elements[key].value; });
-        node.type = role; this.layout(); this.render(); this.select(node, this.nodeLayer.querySelector('[data-node-id="' + cssEscape(nodeId) + '"]')); this.dirty();
-        if (form) Object.keys(pending).forEach(function (key) { form.elements[key].value = pending[key]; });
+        if (role === 'course' && !this.canAssignCourse(nodeId)) {
+            this.roleMessage('nested_course');
+            var form = this.root && this.root.querySelector('[data-knowmap-node-form]');
+            if (form && nodeId === this.selectedId && form.elements.semanticRole) form.elements.semanticRole.value = semanticIcons[node.type] ? node.type : 'standard';
+            return;
+        }
+        this.applySemanticRoles([nodeId], role);
+        this.roleMessage('');
     };
     ReadOnlyKnowledgeMap.prototype.bindSemanticRoles = function () {
         if (!this.editable) return;
-        var self = this;
+        var self = this, bulk = this.root.querySelector('[data-knowmap-assign-pages]');
+        if (bulk) bulk.addEventListener('click', function () { self.assignChapterPages(); });
         this.root.querySelectorAll('[data-knowmap-role]').forEach(function (button) {
             var drag = null, suppressClick = false;
             button.draggable = false;
@@ -424,8 +462,12 @@
     ReadOnlyKnowledgeMap.prototype.addChild = function (parentId, afterId) { if (!this.nodes.has(parentId)) return; var id = 'node-' + uniqueId(), parent = this.nodes.get(parentId), node = {id: id, type: 'standard', title: 'New idea', description: '', presentation: {color: (parent.presentation || {}).color || '#f3f8ef'}, order: this.graph.relationships.length}; this.graph.nodes.push(node); this.nodes.set(id, node); this.graph.relationships.push({id: 'rel-' + uniqueId(), type: 'contains', from: parentId, to: id, externalTarget: '', properties: {}, order: this.graph.relationships.length}); var ids = (this.children.get(parentId) || []).slice(); ids.splice(afterId && ids.includes(afterId) ? ids.indexOf(afterId) + 1 : ids.length, 0, id); if (parentId === this.graph.rootId) node.presentation.side = afterId ? this.nodes.get(afterId).presentation.side : (ids.length % 2 ? 'right' : 'left'); parent.presentation = parent.presentation || {}; parent.presentation.collapsed = false; this.selectedId = id; this.orderChildren(parentId, ids); this.layout(); this.render(); this.select(node, this.nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]')); var added = this.nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]'); if (added) added.focus(); this.dirty(); };
     ReadOnlyKnowledgeMap.prototype.addSibling = function (id) { var parent = this.parentOf(id); if (parent) this.addChild(parent, id); };
     ReadOnlyKnowledgeMap.prototype.deleteSelected = function () { var id = this.selectedId; if (!id || id === this.graph.rootId) return; var node = this.nodes.get(id), removed = new Set([id].concat(this.descendants(id))); if (!window.confirm('Delete “' + (node.title || 'this node') + '” and its contained nodes?')) return; this.graph.nodes = this.graph.nodes.filter(function (item) { return !removed.has(item.id); }); this.graph.relationships = this.graph.relationships.filter(function (item) { return !removed.has(item.from) && !removed.has(item.to); }); removed.forEach(function (removedId) { this.nodes.delete(removedId); }, this); this.selectedId = this.graph.rootId; this.reindex(); this.layout(); this.render(); this.select(this.nodes.get(this.selectedId), this.nodeLayer.querySelector('[data-node-id="' + cssEscape(this.selectedId) + '"]')); this.dirty(); };
-    ReadOnlyKnowledgeMap.prototype.canReparent = function (targetId) { return this.draggedId && targetId !== this.draggedId && !this.descendants(this.draggedId).includes(targetId); };
-    ReadOnlyKnowledgeMap.prototype.reparent = function (id, parentId) { if (!id || id === this.graph.rootId || !this.nodes.has(id) || !this.nodes.has(parentId) || id === parentId || this.descendants(id).includes(parentId) || this.parentOf(id) === parentId) return; var ids = (this.children.get(parentId) || []).concat(id), target = this.nodes.get(parentId), moved = this.nodes.get(id); target.presentation = target.presentation || {}; target.presentation.collapsed = false; moved.presentation = moved.presentation || {}; delete moved.presentation.offsetX; delete moved.presentation.offsetY; this.graph.relationships = this.graph.relationships.filter(function (item) { return !(item.type === 'contains' && item.to === id); }); this.graph.relationships.push({id: 'rel-' + uniqueId(), type: 'contains', from: parentId, to: id, externalTarget: '', properties: {}, order: ids.length - 1}); this.orderChildren(parentId, ids); this.pinBranchSides(); this.layout(); this.render(); this.select(this.nodes.get(id), this.nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]')); this.dirty(); };
+    ReadOnlyKnowledgeMap.prototype.wouldNestCourse = function (id, parentId) {
+        var self = this, carriesCourse = [id].concat(this.descendants(id)).some(function (child) { return (self.nodes.get(child) || {}).type === 'course'; });
+        return carriesCourse && ((this.nodes.get(parentId) || {}).type === 'course' || this.hasCourseAncestor(parentId));
+    };
+    ReadOnlyKnowledgeMap.prototype.canReparent = function (targetId) { return this.draggedId && targetId !== this.draggedId && !this.descendants(this.draggedId).includes(targetId) && !this.wouldNestCourse(this.draggedId, targetId); };
+    ReadOnlyKnowledgeMap.prototype.reparent = function (id, parentId) { if (!id || id === this.graph.rootId || !this.nodes.has(id) || !this.nodes.has(parentId) || id === parentId || this.descendants(id).includes(parentId) || this.parentOf(id) === parentId) return; if (this.wouldNestCourse(id, parentId)) { this.roleMessage('nested_course'); return; } var ids = (this.children.get(parentId) || []).concat(id), target = this.nodes.get(parentId), moved = this.nodes.get(id); target.presentation = target.presentation || {}; target.presentation.collapsed = false; moved.presentation = moved.presentation || {}; delete moved.presentation.offsetX; delete moved.presentation.offsetY; this.graph.relationships = this.graph.relationships.filter(function (item) { return !(item.type === 'contains' && item.to === id); }); this.graph.relationships.push({id: 'rel-' + uniqueId(), type: 'contains', from: parentId, to: id, externalTarget: '', properties: {}, order: ids.length - 1}); this.orderChildren(parentId, ids); this.pinBranchSides(); this.layout(); this.render(); this.select(this.nodes.get(id), this.nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]')); this.dirty(); };
     ReadOnlyKnowledgeMap.prototype.setSaveState = function (state, message) { var button = this.root.querySelector('[data-knowmap-action="save"]'), status = this.root.querySelector('[data-knowmap-save-status]'); if (status) status.textContent = message; if (!button) return; button.classList.toggle('is-unsaved', state === 'unsaved' || state === 'error'); button.classList.toggle('is-saving', state === 'saving'); button.setAttribute('aria-label', state === 'saved' ? 'Save map; no unsaved changes' : message); button.title = message; };
     // Persist shortly after every edit. A single in-flight save is retained and
     // a later edit schedules the next revision once it completes.
