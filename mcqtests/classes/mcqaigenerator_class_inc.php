@@ -133,6 +133,8 @@ class mcqaigenerator extends ChisimbaObject
             return array('ok' => false, 'error' => 'invalid_test');
         }
 
+        $textAdapter = $this->getObject('bankquestion','mcqtests');
+        $plainText = fn($text) => $textAdapter->testText(htmlspecialchars((string)$text,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'));
         $order = (int) $this->dbQuestions->getMaxOrder($testId);
         $inserted = 0;
         foreach ($questions as $question) {
@@ -145,8 +147,8 @@ class mcqaigenerator extends ChisimbaObject
             $questionId = $this->dbQuestions->addQuestion(array(
                 'id' => bin2hex(random_bytes(16)),
                 'testid' => $testId,
-                'question' => $stem,
-                'questiontext' => mb_substr(strip_tags($stem), 0, 255, 'UTF-8'),
+                'question' => $plainText($stem),
+                'questiontext' => mb_substr($plainText(strip_tags($stem)), 0, 255, 'UTF-8'),
                 'hint' => '',
                 'mark' => 1,
                 'questionorder' => $order,
@@ -164,7 +166,7 @@ class mcqaigenerator extends ChisimbaObject
                     'id' => bin2hex(random_bytes(16)),
                     'testid' => $testId,
                     'questionid' => $questionId,
-                    'answer' => trim((string) $answer),
+                    'answer' => $plainText(trim((string) $answer)),
                     'commenttext' => '',
                     'answerorder' => $index + 1,
                     'correct' => ((int) $question['correctIndex'] === $index) ? 1 : 0
