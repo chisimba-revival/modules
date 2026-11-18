@@ -42,7 +42,7 @@ class knowledgemap extends controller
                 $key=$data['preview']['valid']?'ready':'invalid'; $ok=true;
             } else {
                 $data=$service->generate($id,$revision,$this->param('contextcode'));
-                $data['url']=html_entity_decode($this->uri(['action'=>'step2','contextcode'=>$data['contextCode']],'contextadmin'),ENT_QUOTES,'UTF-8');
+                $data['url']=html_entity_decode($this->uri(['action'=>'edit','contextcode'=>$data['contextCode']],'contextadmin'),ENT_QUOTES,'UTF-8');
                 $key='created'; $ok=true;
             }
         } catch (DomainException $error) {
