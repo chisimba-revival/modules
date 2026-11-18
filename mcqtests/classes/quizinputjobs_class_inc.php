@@ -6,11 +6,13 @@ class quizinputjobs extends dbTable
     public function init($tableName=null,$pearDb=null,$errorCallback='globalPearErrorHandler')
     { parent::init('tbl_mcq_quiz_input_jobs',$pearDb,$errorCallback); }
 
-    public function enqueue($code,$testId,$source)
+    public function enqueue($code,$testId,$source,$settings=null)
     {
         $user=$this->getObject('user','security');$uid=$user->userId();
         if(!$user->isLoggedIn()||!$this->getObject('contextauthorservice','contextadmin')->canManageContext($code,$uid))throw new DomainException('forbidden');
-        $plan=$this->getObject('quizinputplan','mcqtests')->build($source);
+        $planner=$this->getObject('quizinputplan','mcqtests');
+        $settings=$planner->settings($settings??[]);
+        $plan=$planner->build($source,$settings['bankCount']);$plan['bankSettings']=$settings;
         return $this->transactionWithSavepoint(function()use($code,$testId,$uid,$plan){
             $test=$this->target($testId,true);
             if(!$test||$test['context']!==$code||$test['status']!=='inactive'||$this->hasQuestions($testId))throw new DomainException('quiz_changed');
@@ -26,7 +28,7 @@ class quizinputjobs extends dbTable
     public function forContext($code)
     {
         if(!$this->getObject('contextauthorservice','contextadmin')->canManageContext($code,$this->getObject('user','security')->userId()))throw new DomainException('forbidden');
-        return $this->selectPrepared('SELECT j.id,j.testid,j.status,j.progress_completed,j.progress_total,j.errorcode,t.name FROM tbl_mcq_quiz_input_jobs j LEFT JOIN tbl_tests t ON t.id=j.testid WHERE j.contextcode=? ORDER BY j.date_created,j.id',[$code]);
+        return $this->selectPrepared('SELECT j.id,j.testid,j.status,j.progress_completed,j.progress_total,j.errorcode,t.name,b.bankid,b.bank_count,b.draw_count,b.selection FROM tbl_mcq_quiz_input_jobs j LEFT JOIN tbl_tests t ON t.id=j.testid LEFT JOIN tbl_mcq_quiz_banks b ON b.id=j.testid WHERE j.contextcode=? ORDER BY j.date_created,j.id',[$code]);
     }
 
     /** Explicit retries may incur another provider charge; never retry a live request. */
@@ -69,7 +71,8 @@ class quizinputjobs extends dbTable
                 if(count($stems)!==count(array_unique($stems)))$changes+=['status'=>'failed','errorcode'=>'duplicate_questions'];
                 else {
                     $done=(int)$job['progress_completed']+1;$complete=$done>=count($plan['requests']);
-                    if($complete){$insert=$this->getObject('mcqaigenerator','mcqtests')->insertQuestions($job['testid'],$combined,$job['userid']);if(empty($insert['ok']))throw new RuntimeException('Quiz question insertion failed');}
+                    if($complete && isset($plan['bankSettings'])){$this->getObject('quizbankpool','mcqtests')->publish($job,$combined,$plan['bankSettings']);}
+                    elseif($complete){$insert=$this->getObject('mcqaigenerator','mcqtests')->insertQuestions($job['testid'],$combined,$job['userid']);if(empty($insert['ok']))throw new RuntimeException('Quiz question insertion failed');}
                     $changes+=['status'=>$complete?'review':'queued','result_json'=>json_encode($combined,JSON_THROW_ON_ERROR),'progress_completed'=>$done,'errorcode'=>null];
                 }
             }

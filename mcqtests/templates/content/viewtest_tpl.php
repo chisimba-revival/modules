@@ -11,6 +11,13 @@ $this->setLayoutTemplate('mcqtests_layout_tpl.php');
 echo '<nav class="chisimba-form-actions chisimba-form-actions--equal">';
 foreach (['add_all'=>['source'=>$data['id']],'browse'=>['target'=>$data['id']]] as $key=>$params) echo '<a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(['action'=>'banks']+$params),ENT_QUOTES,'UTF-8').'">'.$this->getObject('iconservice','ui')->render('library',['decorative'=>true]).'<span>'.$this->objLanguage->languageText('mod_mcqtests_bank_'.$key,'mcqtests').'</span></a>';
 echo '</nav>';
+$pool=$this->getObject('quizbankpool','mcqtests')->config($data['id']);
+if($pool){
+    $pt=fn($key)=>$this->objLanguage->code2Txt('mod_mcqtests_input_'.$key,'mcqtests');
+    echo '<p>'.htmlspecialchars(sprintf($pt('bank_summary'),$pool['bank_count'],$pool['draw_count']).' '.$pt($pool['selection']),ENT_QUOTES,'UTF-8').'</p>';
+    echo '<a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(['action'=>'banks','bank'=>$pool['bankid']]),ENT_QUOTES,'UTF-8').'">'.htmlspecialchars($pt('bank_link'),ENT_QUOTES,'UTF-8').'</a>';
+    echo $this->getObject('contextualhelp','help')->show('mcqtests','quizinput',true);
+}
 // Classes used in this module
 $objHeading = $this->loadClass('htmlheading', 'htmlelements');
 $objTable = $this->loadClass('htmltable', 'htmlelements');

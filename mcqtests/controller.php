@@ -2493,6 +2493,7 @@ class mcqtests extends controller {
 
     private function setOverviewMarks($testId, $target)
     {
+        if($this->getObject('quizbankpool','mcqtests')->config($testId))return false;
         $target = filter_var($target, FILTER_VALIDATE_INT, array(
             'options' => array('min_range' => 1, 'max_range' => 10000),
         ));
@@ -2948,7 +2949,7 @@ class mcqtests extends controller {
      */
     private function showTest() {
         $testId = $this->getParam('id');
-        $studentId = $this->getParam('studentId');
+        $studentId = $this->getParam('studentId',$this->userId);
         $result = $this->dbResults->getResult($studentId, $testId);
         $latestAttempt = $this->dbResults->getLatestAttempt($studentId, $testId);
         $requestedResultId = $this->getParam('resultId', NULL);
@@ -3031,6 +3032,9 @@ class mcqtests extends controller {
                 }
             }
         }
+
+        $pool=$this->getObject('quizbankpool','mcqtests');$paper=$pool->paper($resultId,$studentId,$testId);
+        if($paper){$data=$pool->review($paper,$resultId,$qNum);$totalmark=$paper['totalmark'];$result['totalmark']=$totalmark;}
 
         $stageGateReturnChapter = trim((string) $this->getParam('stage_gate_return_chapter', ''));
         $stageGateReturnSection = trim((string) $this->getParam('stage_gate_return_section', ''));
@@ -3246,8 +3250,13 @@ class mcqtests extends controller {
         $attempt=$this->dbResults->getAttempt($resultId,$this->userId,$testId);
         $this->setVar('attemptRemainingSeconds',max(0,$this->attemptSecondsRemaining($test[0],$attempt)));
         $results = $this->dbMarked->getSelectedAnswersForAttempt($resultId);
-        // new code for scrambling tests
-        if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
+        // Pool selections survive refresh, pagination and another browser session.
+        $pool=$this->getObject('quizbankpool','mcqtests');
+        if($pool->config($testId)){
+            $paper=$pool->ensurePaper($resultId,$this->userId,$testId);
+            $data=$pool->page($paper,$resultId,$num,$this->questionsPerPage);
+            $test[0]['totalmark']=$paper['totalmark'];
+        } elseif ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, $this->questionsPerPage); //=10
@@ -3323,6 +3332,7 @@ class mcqtests extends controller {
      * @return The template displaying the test.
      */
     private function setTest2($testId, $num = 0, $resultId = NULL) {
+        if($this->getObject('quizbankpool','mcqtests')->config($testId))return $this->setTest($testId,$num,$resultId);
         $data = array();
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests2($this->contextCode, $fieldlist, $this->getParam('id'));
@@ -3423,8 +3433,14 @@ class mcqtests extends controller {
         $allowScrambledQuestions = strtoupper($this->objSysConfig->getValue('PREVIEW_SCRAMBLED_QUESTIONS', 'mcqtests', 'TRUE'))==='TRUE';
         $allowScrambledAnswers = strtoupper($this->objSysConfig->getValue('PREVIEW_SCRAMBLED_ANSWERS', 'mcqtests', 'TRUE'))==='TRUE';
         //
-        // new code for scrambling tests
-        if (
+        // Pool selections survive refresh, pagination and another browser session.
+        $pool=$this->getObject('quizbankpool','mcqtests');
+        if($pool->config($testId)){
+            $paper=$this->getSession('mcq_pool_preview_'.$testId);
+            if(!$paper||(int)$num===0){$paper=$pool->previewPaper($testId);$this->setSession('mcq_pool_preview_'.$testId,$paper);}
+            $data=array_slice($paper['questions'],max(0,(int)$num),$this->questionsPerPage);if($data)$data[0]['qnum']=$num;
+            $test[0]['totalmark']=$paper['totalmark'];
+        } elseif (
             $test[0]['qsequence'] == 'Scrambled' && $allowScrambledQuestions
             || $test[0]['asequence'] == 'Scrambled' && $allowScrambledAnswers
         ) {
@@ -3508,8 +3524,14 @@ class mcqtests extends controller {
         $fieldlist = 'id,name,totalmark,timed,duration,description,testtype,qsequence,asequence';
         $test = $this->dbTestadmin->getTests2($this->contextCode, $fieldlist, $this->getParam('id'));
         $results = FALSE; // Preview is not a learner attempt.
-        // new code for scrambling tests
-        if ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
+        // Pool selections survive refresh, pagination and another browser session.
+        $pool=$this->getObject('quizbankpool','mcqtests');
+        if($pool->config($testId)){
+            $paper=$this->getSession('mcq_pool_preview_'.$testId);
+            if(!$paper||(int)$num===0){$paper=$pool->previewPaper($testId);$this->setSession('mcq_pool_preview_'.$testId,$paper);}
+            $data=array_slice($paper['questions'],max(0,(int)$num),$this->questionsPerPage);if($data)$data[0]['qnum']=$num;
+            $test[0]['totalmark']=$paper['totalmark'];
+        } elseif ($test[0]['qsequence'] == 'Scrambled' || $test[0]['asequence'] == 'Scrambled') {
             $qData = $this->getSession('qData');
             if (isset($qData) && !empty($qData)) {
                 $data = array_slice($qData, $num, 10);
@@ -3615,6 +3637,8 @@ class mcqtests extends controller {
         if ($attempt === FALSE || (int) $attempt['mark'] !== -1) {
             return FALSE;
         }
+        $pool=$this->getObject('quizbankpool','mcqtests');$paper=$pool->paper($resultId,$this->userId,$testId);
+        if($pool->config($testId) && !$paper)return false;
         $postCount = $this->getParam('count', NULL);
         if ($postCount) {
             for ($i = max(0, (int)$this->getParam('first', 0)); $i <= min(1000, (int)$postCount); $i++) {
@@ -3624,11 +3648,11 @@ class mcqtests extends controller {
                 $testId = $this->getParam('id');
                 $questType = $this->getParam('qtype' . $i);
                 $questId = $this->getParam('questionId' . $i);
-                $question=$this->dbQuestions->getRow('id',(string)$questId);
+                $question=$paper?$pool->question($paper,(string)$questId):$this->dbQuestions->getRow('id',(string)$questId);
                 if (!is_array($question) || !hash_equals((string)$testId,(string)$question['testid'])) continue;
                 $questType=$question['questiontype'];
                 if ($questType !== 'freeform') {
-                    $answer=$this->dbAnswers->getRow('id',(string)$this->getParam('ans'.$i,''));
+                    $answer=$paper?(array_column($question['answers'],null,'id')[(string)$this->getParam('ans'.$i,'')]??null):$this->dbAnswers->getRow('id',(string)$this->getParam('ans'.$i,''));
                     if (!is_array($answer) || !hash_equals((string)$questId,(string)$answer['questionid']) || !hash_equals((string)$testId,(string)$answer['testid'])) continue;
                 }
                 if (!empty($testId) && !empty($questId)) {
@@ -3668,6 +3692,9 @@ class mcqtests extends controller {
         if ($attempt === FALSE || (int) $attempt['mark'] !== -1) {
             return FALSE;
         }
+        $pool=$this->getObject('quizbankpool','mcqtests');$paper=$pool->paper($resultId,$this->userId,$testId);
+        if($paper){$this->dbResults->addMark($resultId,$pool->grade($paper,$resultId));return;}
+        if($pool->config($testId))return false;
         //$j = $this->getParam('first', 0);
         // $questType = $this->getParam('qtype'.$j,'');
         if (!empty($testId)) {
@@ -3709,6 +3736,7 @@ class mcqtests extends controller {
      * @return
      */
     private function showStudentTest() {
+        if($this->getObject('quizbankpool','mcqtests')->config($this->getParam('id')))return $this->showTest();
         $testId = $this->getParam('id');
         $result = $this->dbResults->getResult($this->userId, $testId);
         $resultId = ($result !== FALSE && !empty($result)) ? $result[0]['id'] : NULL;

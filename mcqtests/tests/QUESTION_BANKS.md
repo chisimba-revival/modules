@@ -84,3 +84,27 @@ The installed legacy runtime emits existing PHP deprecations from contextcontent
 workgroup, search and dynamic blocks during fixture creation/deletion. These were
 observed, not hidden by the tests. No paid AI calls or production updates were made.
 Concurrent load and course-file retention were not tested.
+
+## Knowledge Map chapter banks
+
+MCQ Tests 4.195 and Knowledge Map 1.01 add generated chapter bank links and
+immutable attempt papers through two registered tables. On a Quiz node, choose
+10–100 bank questions, a quiz size up to that count, and either a fixed random
+draw or a new random draw for each attempt (default: 30 / 10 / per attempt).
+Generation stays queued and inactive for review. Existing jobs and tests retain
+their original behaviour; existing bank copies remain independent.
+
+The fixed mode copies one draw; per-attempt mode copies the pool and saves the
+selected question text, answers, key and ordering with the owned result ID.
+Resume and grading read that paper without redrawing. Questions carry one mark
+each; aggregate marks editing is unavailable for these pools. Author edits to
+bank items do not silently change test copies or saved attempts. Review links
+expose the full bank and explain the test's selection mode.
+
+`php mcqtests/tests/quiz_pool_controller_test.php` checks the real submission
+boundary against forged question/answer IDs and missing/foreign papers.
+`quiz_pool_engine_test.php` is included by the isolated full-engine rehearsal,
+with a deterministic provider, generated fixture maps and canonical identities;
+it covers bank linkage, both modes, durable resume, pagination, snapshot grading,
+unselected questions, metadata and transactional publication rollback. It refuses
+non-clone databases. No external AI request is needed.

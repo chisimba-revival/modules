@@ -27,6 +27,8 @@ class dbquestions extends dbtable {
             || !is_finite((float)$fields['mark']) || (float)$fields['mark']<0 || (float)$fields['mark']>99999
             || !is_string($fields['question']??null) || trim(strip_tags($fields['question']))===''
             || strlen($fields['question'])>100000 || !is_string($fields['hint']??null)) throw new DomainException('invalid');
+        $pool=$this->getObject('quizbankpool','mcqtests')->config($testId);
+        if($pool && ((float)$fields['mark']!==1.0 || !in_array($fields['questiontype'],['mcq','tf'],true)))throw new DomainException('invalid');
         $clean=$this->getObject('script','utilities');
         $fields['question']=$clean->removeScript($fields['question']);
         $fields['hint']=mb_substr(strip_tags($fields['hint']),0,120);
@@ -44,7 +46,7 @@ class dbquestions extends dbtable {
                 $questionId=$this->insert($fields);
                 if (!$questionId) throw new RuntimeException('Question not saved');
             }
-            $this->executePrepared('UPDATE tbl_tests SET totalmark=(SELECT COALESCE(SUM(mark),0) FROM tbl_test_questions WHERE testid=?) WHERE id=?',array($testId,$testId));
+            $this->getObject('dbtestadmin','mcqtests')->setTotal($testId,$this->getTotalMarks($testId));
             return $questionId;
         });
     }
@@ -313,6 +315,7 @@ class dbquestions extends dbtable {
      * @return int $tmark The total mark for the test.
      */
     public function sumTotalmark($testId) {
+        $pool=$this->getObject('quizbankpool','mcqtests')->config($testId);if($pool)return (int)$pool['draw_count'];
         $sql = "SELECT sum(mark) AS totalmark FROM " . $this->table . " WHERE testid='$testId'";
         $data = $this->getArray($sql);
         if (!empty($data)) {
@@ -367,6 +370,7 @@ class dbquestions extends dbtable {
     }
 
     public function getTotalMarks($testId) {
+        $pool=$this->getObject('quizbankpool','mcqtests')->config($testId);if($pool)return (int)$pool['draw_count'];
         $mark = 0;
         $questions = $this->getQuestions($testId);
 

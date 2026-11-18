@@ -107,7 +107,7 @@ class knowledgemapcourseservice extends ChisimbaObject
                 $this->writeChildren($code,$item['children'],$item['role']==='section'?$id:$section,$item['role']==='chapter'?$id:'',$position);
             } else {
                 $quiz=$item['role']==='quiz'?$this->quizzes->createEmpty($code,$chapter,$item['title'],$this->user->userId()):'';
-                if ($quiz!=='' && trim($item['quizInput']??'')!=='') $this->getObject('quizinputjobs','mcqtests')->enqueue($code,$quiz,$item['quizInput']);
+                if ($quiz!=='' && trim($item['quizInput']??'')!=='') $this->getObject('quizinputjobs','mcqtests')->enqueue($code,$quiz,$item['quizInput'],$item['quizSettings']??null);
                 $this->pages->createNativePage(['contextcode'=>$code,'chapterid'=>$chapter,'parentid'=>'root',
                     'title'=>$item['title'],'body'=>$this->outline->plainHtml($item['body']),
                     'contenttype'=>$quiz!==''?'assessment_activity':'rich_text','providermodule'=>$quiz!==''?'mcqtests':'',

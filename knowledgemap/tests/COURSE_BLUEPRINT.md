@@ -90,8 +90,11 @@ Creating the outline atomically snapshots the input and queues the existing
 inactive quiz. No AI call runs in the HTTP request. The existing
 `mcqtests/scripts/run_chapter_quiz_worker.php` drains this queue as well as the
 older chapter-preview queue. Each step processes one part of about 12000 characters,
-without discarding source text. It requests ten questions overall, increasing to
-at least one per part for long input (maximum thirty). Preview shows the count.
+without discarding source text. The Quiz inspector requests 10–100 bank questions (default 30), with a separate
+quiz size (default 10) and fixed/per-attempt selection. Each worker call requests
+at most ten questions; completed stems are passed to later calls to avoid duplicates.
+Preview shows both counts and the mode. Very long input requires at least one
+question per source chunk.
 Questions are inserted together only after all parts validate, and remain inactive
 for human review. The shared AI service owns configuration/provider requests;
 there is no separate credential or provider stack.
@@ -115,3 +118,9 @@ private notes and public-link tokens. Restore checks the checksum and map owner,
 restores in one transaction and increases the revision to reject stale editor saves.
 Delete the generated test course before resetting a linked map. Restore does not
 delete courses, send AI requests or modify any other map.
+
+Generated banks retain chapter tags and source provenance. Fixed mode copies one
+random draw into the test; per-attempt mode copies the pool and freezes each
+learner draw, answer key and order in a durable paper. Questions carry one mark
+each. Bank edits do not rewrite copies or attempts. Existing jobs retain their
+original plans and existing quizzes are not migrated automatically.

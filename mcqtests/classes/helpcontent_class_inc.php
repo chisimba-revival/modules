@@ -9,7 +9,7 @@ class helpcontent extends ChisimbaObject
         if (!$this->mayViewTopic($topic)) return null;
         if ($topic === 'quizinput') {
             $t=fn($key)=>$this->getObject('language','language')->code2Txt('mod_mcqtests_input_'.$key,'mcqtests');
-            return ['title'=>$t('heading'),'summary'=>$t('help'),'steps'=>[$t('retry_help')]];
+            return ['title'=>$t('heading'),'summary'=>$t('help'),'steps'=>[$t('bank_help'),$t('retry_help')]];
         }
         if ($topic === 'authoring') {
             $t=fn($key)=>$this->getObject('language','language')->languageText('mod_mcqtests_author_'.$key,'mcqtests');

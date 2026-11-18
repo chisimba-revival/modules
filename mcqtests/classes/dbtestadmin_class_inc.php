@@ -213,6 +213,7 @@ class dbtestadmin extends dbtable {
      * @return
      */
     public function setTotal($id, $total) {
+        $pool=$this->getObject('quizbankpool','mcqtests')->config($id);if($pool)$total=(int)$pool['draw_count'];
         return $this->update('id', $id, array('totalmark' => $total));
     }
 

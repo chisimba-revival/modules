@@ -80,8 +80,8 @@ class knowledgemapblueprint extends ChisimbaObject
                 $item['children']=array_merge(array_values(array_filter($item['children'],fn($child)=>$child['role']!=='quiz')),array_values(array_filter($item['children'],fn($child)=>$child['role']==='quiz')));
             }
             if ($item['role']==='quiz' && trim($item['quizInput'])!=='') {
-                try { $plan=$this->getObject('quizinputplan','mcqtests')->build($item['quizInput']);$item['quizQuestionCount']=$plan['count']; }
-                catch (InvalidArgumentException $error) { $errors[]=['quiz_input',$node['title']]; }
+                try { $planner=$this->getObject('quizinputplan','mcqtests');$item['quizSettings']=$planner->settings($node['presentation']['quizSettings']??[]);$plan=$planner->build($item['quizInput'],$item['quizSettings']['bankCount']);$item['quizQuestionCount']=$plan['count'];$item['quizDrawCount']=$item['quizSettings']['drawCount'];$item['quizSelection']=$item['quizSettings']['selection']; }
+                catch (InvalidArgumentException $error) { $errors[]=[in_array($error->getMessage(),['quiz_settings','quiz_count'],true)?'quiz_settings':'quiz_input',$node['title']]; }
             }
             return $item;
         };

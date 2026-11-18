@@ -20,6 +20,10 @@ $u=fn($p)=>html_entity_decode($this->uri($p,'mcqtests'),ENT_QUOTES,'UTF-8');
 <input type="hidden" name="csrf_token" value="<?php echo $e($inputJobToken); ?>"/><input type="hidden" name="id" value="<?php echo $e($job['id']); ?>"/>
 <button class="button" type="submit"><?php echo $e($t('retry')); ?></button></form>
 <?php endif; ?>
+<?php if(!empty($job['bankid'])): $bankTarget=$this->getObject('courseawarelaunchservice','context')->target($inputJobContext,'mcqtests',['action'=>'banks','bank'=>$job['bankid']]); ?>
+<p><?php echo $e(sprintf($t('bank_summary'),$job['bank_count'],$job['draw_count']).' '.$t($job['selection'])); ?></p>
+<a class="button chisimba-button-secondary" href="<?php echo $e(html_entity_decode($this->uri($bankTarget['params'],$bankTarget['module']),ENT_QUOTES,'UTF-8')); ?>"><?php echo $e($t('bank_link')); ?></a>
+<?php endif; ?>
 <?php if($job['name']): $target=$this->getObject('courseawarelaunchservice','context')->target($inputJobContext,'mcqtests',['action'=>'view','id'=>$job['testid']]); $review=html_entity_decode($this->uri($target['params'],$target['module']),ENT_QUOTES,'UTF-8'); ?>
 <a class="button chisimba-button-secondary" href="<?php echo $e($review); ?>"><?php echo $e($t('review_link')); ?></a>
 <?php endif; ?></article>
