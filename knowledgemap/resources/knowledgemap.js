@@ -56,6 +56,7 @@
         this.nodes = new Map((graph.nodes || []).map(function (node) { return [node.id, node]; }));
         try { this.mediaLabels = JSON.parse(root.dataset.knowmapMediaLabels || '{}'); } catch (error) { this.mediaLabels = {}; }
         try { this.labels = JSON.parse(root.dataset.knowmapLabels || '{}'); } catch (error) { this.labels = {}; }
+        try { this.roleMessages = JSON.parse(root.dataset.knowmapRoleMessages || '{}'); } catch (error) { this.roleMessages = {}; }
         try { this.roleLabels = JSON.parse(root.dataset.knowmapRoleLabels || '{}'); } catch (error) { this.roleLabels = {}; }
         this.reindex(); this.pinBranchSides();
         this.dimensions = new Map(); this.positions = new Map(); this.lines = viewport.querySelector('.knowmap-lines'); this.nodeLayer = viewport.querySelector('.knowmap-nodes');
@@ -258,7 +259,7 @@
     };
     ReadOnlyKnowledgeMap.prototype.roleMessage = function (key, count) {
         var status = this.root && this.root.querySelector('[data-knowmap-role-status]');
-        if (status) status.textContent = String((this.roleLabels || {})[key] || '').replace('{count}', count === undefined ? '' : count);
+        if (status) status.textContent = String((this.roleMessages || {})[key] || '').replace('{count}', count === undefined ? '' : count);
     };
     // Change a batch with one redraw/save, retaining unsaved inspector fields.
     ReadOnlyKnowledgeMap.prototype.applySemanticRoles = function (ids, role) {
