@@ -16,6 +16,17 @@ class knowledgemapblueprint extends ChisimbaObject
             $children[$edge['from']][] = $edge['to']; $parents[$edge['to']] = $edge['from'];
         }
         $root = $nodes[$graph['rootId']];
+        // Match the editor's two-sided layout: clockwise from the upper right.
+        // Keep each branch's own page/content order independent of its map side.
+        $sides=['right'=>[], 'left'=>[]];
+        foreach($children[$root['id']]??[] as $index=>$id){
+            $style=$nodes[$id]['presentation']??[];
+            $side=$style['side']??'';
+            if(!in_array($side,['left','right'],true))$side=in_array($style['dir']??'',['left','right'],true)?$style['dir']:($index%2?'left':'right');
+            $sides[$side][]=$id;
+        }
+        $children[$root['id']]=array_merge($sides['right'],array_reverse($sides['left']));
+
         if ($root['type'] !== 'course' || isset($parents[$root['id']])) $errors[] = ['root', $root['title']];
         $allowed = ['course'=>['section','chapter','page','description'], 'section'=>['chapter','page','description'],
             'chapter'=>['page','quiz','description'], 'page'=>['content'], 'quiz'=>['quiz_input'], 'description'=>[], 'content'=>[], 'quiz_input'=>[]];

@@ -14,8 +14,9 @@ Quiz nodes create inactive, empty formative MCQ quizzes and provider-backed page
 placements. Their titles must fit the existing 60-character quiz title field.
 
 Consecutive pages directly under a course or section get an explicit
-container chapter, displayed in the preview. Branch relationship order determines
-the generated order. Untagged nodes are listed as excluded; a tagged descendant
+container chapter, displayed in the preview. Top-level branches generate clockwise from the upper right: right-side branches
+top to bottom, then left-side branches bottom to top. Within each chapter, saved
+branch order determines page order. Untagged nodes are listed as excluded; a tagged descendant
 under an untagged parent is an error, not silently promoted or lost. Unsupported
 nesting and multiple descriptions are validation errors.
 

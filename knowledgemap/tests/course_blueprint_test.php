@@ -11,7 +11,7 @@ function document(array $rows) {
     $nodes=[]; $edges=[];
     foreach ($rows as $i=>$row) {
         [$id,$role,$parent,$title]=$row;
-        $nodes[]=['id'=>$id,'type'=>$role,'title'=>$title,'description'=>$row[4]??''];
+        $nodes[]=['id'=>$id,'type'=>$role,'title'=>$title,'description'=>$row[4]??'','presentation'=>['side'=>'right']];
         if ($parent) $edges[]=['id'=>'rel-'.$id,'type'=>'contains','from'=>$parent,'to'=>$id,'order'=>$i];
     }
     return ['rootId'=>'root','nodes'=>$nodes,'relationships'=>$edges];
@@ -60,3 +60,16 @@ $direct[2][4]='';$result=build($direct);check($result['valid']&&!$result['hasCon
 $direct[2][4]='short';check(!build($direct)['valid'],'Short direct Quiz Note is validated');
 $direct[2][4]=str_repeat('a',160000);$direct[]=['legacy','quiz_input','q','Source',str_repeat('b',150000)];check(!build($direct)['valid'],'Combined legacy and direct source respects aggregate limit');
 echo "PASS: direct Quiz Note sources generation, preserves empty quizzes, validates bounds and protects existing courses\n";
+
+// Imported/root relationship order may interleave both visual sides.
+$clock=document([['root','course',null,'Course'],['l1','chapter','root','Left top'],['r1','chapter','root','Right top'],['l2','chapter','root','Left bottom'],['r2','chapter','root','Right bottom'],['p1','page','l1','First page'],['p2','page','l1','Second page']]);
+foreach($clock['nodes'] as &$n)if(in_array($n['id'],['l1','l2'],true))$n['presentation']['side']='left';unset($n);
+$clockBefore=$clock;$result=$builder->build($graph->normalise($clock)['document']);
+check(array_column($result['outline']['children'],'sourceId')===['r1','r2','l2','l1'],'Clockwise root branch order');
+check(array_column($result['outline']['children'][3]['children'],'sourceId')===['p1','p2'],'Left-side chapter pages keep their order');
+check($clock===$clockBefore,'Preview does not mutate the map');
+foreach($clock['nodes'] as &$n)unset($n['presentation']);unset($n);
+$result=$builder->build($graph->normalise($clock)['document']);check(array_column($result['outline']['children'],'sourceId')===['l1','l2','r2','r1'],'Legacy automatic sides match editor alternation');
+foreach($clock['nodes'] as &$n)$n['presentation']=['dir'=>'left'];unset($n);
+$result=$builder->build($graph->normalise($clock)['document']);check(array_column($result['outline']['children'],'sourceId')===['r2','l2','r1','l1'],'Legacy direction and left-only clockwise order');
+echo "PASS: clockwise top-level branches, preserved page order, legacy sides, and read-only preview\n";
