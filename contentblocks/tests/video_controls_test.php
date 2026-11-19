@@ -21,3 +21,8 @@ $v=$s->emptyBlock('video');$v['url']='https://youtu.be/dQw4w9WgXcQ';
 check(!str_contains($s->render([$v]),'Mod_contentblocks_comp_open_video'),'YouTube already supplies its own source link');
 $v['url']='https://vimeo.com/123456789';check(str_contains($s->render([$v]),'Mod_contentblocks_comp_open_video'),'Other embed providers retain source fallback');
 echo "PASS YouTube source-link suppression and other-provider fallback.\n";
+$v=$s->emptyBlock('video');$v['url']='https://youtu.be/dQw4w9WgXcQ';$v['caption']="Birdwatching notes\n\n#birds <script>literal</script>";
+$saved=$s->validate([$v])[0];
+check($saved['caption']===$v['caption'],'Caption newlines survive validation');
+check(str_contains($s->render([$saved]),"Birdwatching notes<br />\n<br />\n#birds &lt;script&gt;literal&lt;/script&gt;"),'Caption renders line breaks and escapes HTML');
+echo "PASS multiline video captions survive validation and render safely.\n";

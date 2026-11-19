@@ -10,10 +10,14 @@ class compositioneditor extends ChisimbaObject
         return '<button type="submit" name="compose_command" value="'.$s::escape($command).'" class="button chisimba-button-secondary" formnovalidate>'
             .$this->getObject('iconservice','ui')->render($icon,['decorative'=>true]).'<span>'.$s::escape($s->text($label)).'</span></button>';
     }
-    private function field($prefix,$name,$value,$label,$media=false)
+    private function field($prefix,$name,$value,$label,$media=false,$multiline=false)
     {
         $s=$this->getObject('compositionservice','contentblocks');$id='comp_'.preg_replace('/[^a-zA-Z0-9_]/','_',$prefix.'_'.$name);
-        $html='<div class="chisimba-form-field"><label for="'.$id.'">'.$s::escape($s->text($label)).'</label><input type="'.'text'.'" id="'.$id.'" name="'.$s::escape($prefix.'['.$name.']').'" value="'.$s::escape($value).'"></div>';
+        $html='<div class="chisimba-form-field"><label for="'.$id.'">'.$s::escape($s->text($label)).'</label>';
+        $html.=$multiline
+            ? '<textarea id="'.$id.'" name="'.$s::escape($prefix.'['.$name.']').'" rows="4" maxlength="2000">'.$s::escape($value).'</textarea>'
+            : '<input type="text" id="'.$id.'" name="'.$s::escape($prefix.'['.$name.']').'" value="'.$s::escape($value).'">';
+        $html.='</div>';
         if($media)$html.='<button type="button" class="button chisimba-button-secondary" data-composition-media="'.$id.'">'.$this->getObject('iconservice','ui')->render('folder-open',['decorative'=>true]).'<span>'.$s::escape($s->text('choose_media')).'</span></button>';
         if ($media && in_array($label, ['image_url','gallery_thumbnail'], true)) {
             $safe = is_string($value) && preg_match('~^(?:/(?!/)|https?://)~i', $value);
@@ -81,7 +85,7 @@ class compositioneditor extends ChisimbaObject
             if(in_array($type,['image','hero','reverse_hero','image_left','image_right','video','audio'],true)){
                 $html.=$this->field($prefix,'url',$block['url'],$type==='video'?'video_url':($type==='audio'?'audio_url':'image_url'),true);
                 if(!in_array($type,['video','audio'],true))$html.=$this->field($prefix,'alt',$block['alt'],'alt');
-                $html.=$this->field($prefix,'caption',$block['caption'],'caption');
+                $html.=$this->field($prefix,'caption',$block['caption'],'caption',false,$type==='video');
             }
             if(in_array($type,['image','hero','reverse_hero','image_left','image_right'],true)){
                 $sizeId='comp_image_size_'.$id;
