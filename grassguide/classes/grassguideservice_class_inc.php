@@ -1,5 +1,5 @@
 <?php
-/** Administrator-owned catalogue. No public publishing or upstream fetching. */
+/** Administrator-owned catalogue. Background enrichment with administrator maintenance. */
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguideservice extends ChisimbaObject
 {
@@ -25,6 +25,11 @@ class grassguideservice extends ChisimbaObject
         $revision=$this->identity($id,$input['revision'] ?? '');
         $data=grassguideinput::species($input);
         $old=$this->one($id);
+        if ($old) {
+            // Metadata is server-owned. Explicit human edits, including clearing a field, win.
+            foreach (['_field_sources','_imported_values','_manual_fields'] as $key) $data[$key]=$old[$key] ?? [];
+            foreach ($data as $key=>$value) if ($key[0]!=='_' && $value!==($old[$key] ?? null)) $data['_manual_fields'][$key]=true;
+        }
         if ($old && ($old['genus'] !== $data['genus'] || $old['epithet'] !== $data['epithet'])) {
             $synonyms=array_filter(array_map('trim',explode("\n",$data['synonyms'])));
             $synonyms[]=$old['genus'].' '.$old['epithet'];
@@ -60,4 +65,7 @@ class grassguideservice extends ChisimbaObject
         foreach ($species as &$row) $row['media']=$this->mediaFor($row['id']);
         return ['format'=>'grassguide-editorial','version'=>1,'title'=>'Grasses of the Lowveld and Kruger','exported_at'=>gmdate('c'),'species'=>$species];
     }
+    public function queueEnrichment(): int { $this->guard(); $this->getObject('grassguideproviders','grassguide'); return $this->store()->queueEnrichment(); }
+    public function enrichmentJobs(?string $species=null): array { $this->guard(); return $this->store()->enrichmentJobs($species); }
+    public function enrichmentErrors(): array { $this->guard(); return $this->store()->enrichmentErrors(); }
 }

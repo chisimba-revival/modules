@@ -32,9 +32,21 @@ if ($grassView==='index') {
     echo '<section class="chisimba-form-card"><h2>'.$t('setup').'</h2><p>'.sprintf($t('seed_summary'),$preview['total'],count($preview['missing'])).'</p><p>'.$t('seed_notice').'</p>';
     echo '<details><summary>'.$t('preview_names').'</summary><ul>'; foreach ($preview['missing'] as $name) echo '<li>'.$e($name).'</li>'; echo '</ul></details>';
     echo $start('import','',0).$hidden('seed_hash',$preview['sha256']).$r->button('import','download').'</form></section>';
+    echo '<section class="chisimba-form-card chisimba-flow"><h2>'.$t('enrichment').'</h2><p>'.$t('enrichment_help').'</p>';
+    echo $start('enrich','',0).$r->button('enrich','download').'</form>';
+    echo '<table><caption>'.$t('enrichment_progress').'</caption><thead><tr><th>'.$t('provider').'</th><th>'.$t('state').'</th><th>'.$t('jobs').'</th></tr></thead><tbody>';
+    foreach($s->enrichmentJobs() as $job) echo '<tr><td>'.$e($job['provider']).'</td><td>'.$t('job_'.$job['status']).'</td><td>'.$e($job['total']).'</td></tr>';
+    echo '</tbody></table>';
+    foreach($s->enrichmentErrors() as $problem)echo '<p role="status">'.$e($problem['provider']).': '.$e($problem['last_error']).' ('.$e($problem['total']).') — '.$t('next_attempt').' '.$e($problem['next_attempt']).' UTC</p>';
+    echo $r->link('refresh_status','refresh-cw',['action'=>'setup']).'</section>';
     echo '<section class="chisimba-form-card"><h2>'.$t('readiness').'</h2><ul><li>'.sprintf($t('pending_taxonomy'),$pending).'</li><li>'.sprintf($t('missing_traits'),$traits).'</li><li>'.sprintf($t('reviewed_count'),$reviewed).'</li></ul><p>'.$t('setup_scope').'</p>'.$r->link('export','download',['action'=>'export']).'<p>'.$t('export_notice').'</p></section>';
 } elseif ($grassView==='edit') {
     $d=array_merge(['state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending','heads'=>[]],$d);
+    if($grassRecord) {
+        echo '<details><summary>'.$t('enrichment_progress').'</summary><ul>';
+        foreach($s->enrichmentJobs($grassId) as $job)echo '<li>'.$e($job['provider']).' — '.$t('job_'.$job['status']).' · '.$e($job['updated_at']).' UTC'.($job['last_error']!==''?' · '.$e($job['last_error']):'').'</li>';
+        echo '</ul><p>'.$t('enrichment_help').'</p></details>';
+    }
     echo '<h2>'.$t($grassRecord?'edit':'new_species').'</h2>'.$start('save',$grassId,$d['revision'] ?? 0);
     echo '<div class="chisimba-publishing-layout"><div class="chisimba-flow"><fieldset class="chisimba-form-card"><legend>'.$t('identity').'</legend><div class="chisimba-form-grid">';
     foreach (['genus'=>100,'epithet'=>100,'authority'=>250,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,$key!=='authority');
@@ -49,7 +61,7 @@ if ($grassView==='index') {
     echo '<aside class="chisimba-form-card chisimba-flow"><h2>'.$t('review').'</h2>'.$r->select('state',$d,['draft','reviewed','archived'],false).$r->field('editor_notes',$d,6000,false,true).'<p>'.$t('review_help').'</p><div class="chisimba-form-actions">'.$r->button('save','save').'</div></aside></div></form>';
     if ($grassRecord) {
         echo '<section class="chisimba-form-card chisimba-flow"><h2>'.$t('media').'</h2>'.$r->link('add_media','plus',['action'=>'media','species_id'=>$grassId]).'<p>'.$t('media_intro').'</p><div class="chisimba-story-grid">';
-        foreach ($s->mediaFor($grassId) as $media) echo '<article class="chisimba-form-card"><h3>'.$t($media['role']).'</h3><p>'.$e($media['caption']).'</p><p>'.$e($media['creator']).' · '.$e($media['licence']).' · '.$t($media['state']).'</p>'.$r->link('edit','pencil',['action'=>'media','id'=>$media['id']]).'</article>';
+        foreach ($s->mediaFor($grassId) as $media) echo '<article class="chisimba-form-card">'.($media['kind']==='image'?'<img src="'.$e($media['image_url']).'" alt="'.$e($media['alt_text']).'" width="320" loading="lazy" referrerpolicy="no-referrer">':'').'<h3>'.$t($media['role']).'</h3><p>'.$e($media['caption']).'</p><p>'.$e($media['creator']).' · '.$e($media['licence']).' · '.$t($media['state']).'</p>'.$r->link('edit','pencil',['action'=>'media','id'=>$media['id']]).'</article>';
         echo '</div></section><details><summary>'.$t('history').'</summary><ul>';
         foreach ($s->history($grassId) as $event) echo '<li>'.$e($event['created_at']).' UTC · '.$t($event['action']).' · '.$e($event['actor']).'</li>';
         echo '</ul></details>';

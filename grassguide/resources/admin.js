@@ -32,7 +32,7 @@
                     // Reload only after a confirmed save, including new record links/preview.
                     const destination = new URL(form.action);
                     const action = destination.searchParams.get('action');
-                    destination.searchParams.set('action', action === 'import' ? 'setup' : action === 'savemedia' ? 'media' : 'edit');
+                    destination.searchParams.set('action', ['import', 'enrich'].includes(action) ? 'setup' : action === 'savemedia' ? 'media' : 'edit');
                     if (data.record) destination.searchParams.set('id', data.record.id);
                     destination.searchParams.set('saved', '1');
                     window.location.assign(destination.href);

@@ -62,3 +62,5 @@ $user->admin=false; http_response_code(200); $c=new grassguide(); ggCheck($c->di
 ggCheck($GLOBALS['objects']['helpcontent']->getTopic('administration')===null,'Help permission enforced');
 $user->admin=true;
 echo "PASS: 179-species import/replay, permissions, exact Unicode, stale saves, rename, review evidence, media ownership/licences/archive, transaction rollback, export, HTTP method/CSRF, escaping and Help.\n";
+
+require __DIR__.'/enrichment.php';

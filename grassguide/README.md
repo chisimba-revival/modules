@@ -1,6 +1,6 @@
 # Grasses of the Lowveld and Kruger
 
-`grassguide` 0.001 is a site-administrator editorial module. It prepares the
+`grassguide` 0.004 is a site-administrator editorial module. It prepares the
 179-species Lowveld / Greater Kruger collection for a future field-guide app.
 No account other than a signed-in site administrator can read the workspace,
 export its data, or change its content. There is no public reading endpoint yet.
@@ -47,8 +47,7 @@ Species, media and audit repositories use real `dbTable` checked prepared calls.
 Each save and its audit are transactional. Revisions reject stale saves and
 replayed creates; uncertain network writes are not automatically retried.
 POST and the canonical session-bound CSRF service protect mutations. HTML is
-escaped at rendering; editable prose is plain text. No remote URL is fetched
-server-side. Existing Chisimba skin, icon and contextual Help services are used.
+escaped at rendering; editable prose is plain text. Only the background provider workers fetch allowlisted public API URLs server-side. Existing Chisimba skin, icon and contextual Help services are used.
 
 The PHP/JavaScript module code follows this repository's GPL terms (`../COPYING`).
 Media retains its own licence; the code licence grants no rights over photographs
@@ -84,13 +83,67 @@ method/CSRF enforcement, HTML escaping and Help permission checks. Browser
 verification covers search, saved content, validation preserving entries, Help
 Escape/focus return and a 390px editor without horizontal overflow.
 
-This is a tested source module, not an installed production release. Full Module
-Catalogue installation in the intended deployment and its surrounding site shell
-remain release checks. There are no framework changes in this implementation.
+## Automatic enrichment
 
-## Next integrations
+The module is installed for local development at `https://chisimba.test:8445/ch/`.
+Setup → Fetch available data creates durable per-species jobs for Kew's documented
+species data portal, GBIF, Wikipedia and iNaturalist. The local worker also queues
+new species and refreshes results older than 30 days. No external request runs in
+a page load. Edit is maintenance: imported data is immediately available in the
+editorial export without requiring a human review marker.
 
-Automatic iNaturalist selection/import, GrassBase enrichment, scheduled POWO
-diff/review jobs, local file-manager uploads, regional expansion, public/mobile
-API and versioned offline packages are subsequent work. No worker or schedule
-is silently enabled by installing or importing this module.
+Kew exact accepted species matches supply identifiers, authorities and synonyms.
+GBIF supplies exact-match licensed English descriptions where present. Wikipedia
+supplies attributed, revision-linked description and habitat sections. Only
+explicit, unambiguous inflorescence phrases become filters; unknown traits remain
+empty. iNaturalist supplies up to six community-selected taxon photographs with
+photographer credit, source and licence. Noncommercial licences are allowed;
+unlicensed and NoDerivatives photographs are excluded. Photographs are remote
+references, not bundled image files. Views are marked unclassified until evidence
+or an editor identifies the diagnostic part. Code and third-party content retain
+separate licences, including attribution/share-alike/noncommercial conditions.
+
+Field sources, fetched timestamps and last imported values are stored with each
+species. Refreshes update only unchanged fields previously owned by that source
+or vacant fields. Saving a human change locks that field, including deliberate
+clearing. Renaming never happens automatically. Jobs store their mapped responses
+as a cache; audit and content writes commit atomically. Duplicate jobs/images are
+idempotent. Provider workers use database-scoped locks, bounded HTTPS GETs, a
+1.1-second delay before every request, and provider-wide Retry-After cooldowns.
+Timeouts/5xx retry with exponential backoff; 401/403 pause the provider for a day.
+After four failures a job stays failed for operator investigation. No-match results
+are visible and cached rather than guessed. Missing similar-species advice, videos
+and private notes do not prevent a useful profile.
+
+From an installed application root:
+
+```sh
+php packages/grassguide/scripts/run_enrichment_worker.php queue
+php packages/grassguide/scripts/run_enrichment_worker.php kew 20
+php packages/grassguide/scripts/run_enrichment_worker.php gbif 20
+php packages/grassguide/scripts/run_enrichment_worker.php wikipedia 20
+php packages/grassguide/scripts/run_enrichment_worker.php inaturalist 20
+```
+
+Run one loop per provider through the site's service manager, or invoke bounded
+batches periodically. Different providers may run concurrently. Same-provider
+concurrency is rejected by the shared database lock. Interrupted jobs resume on
+the next invocation. The local Docker worker polls every 60 seconds, using the
+same published read-only source bundle as the web container. It requires no API
+keys. Keep this process in deployment stop/start and source-verification checks.
+
+Upstream schemas and content coverage vary. Kew POWO's old undocumented endpoint
+returned HTTP 403 during implementation; it is not scraped or bypassed. Its working
+documented species portal currently supplies taxonomy but no botanical prose.
+The app does not claim API coverage for every optional editor field, or substitute
+unverified genus-level information for a species profile.
+
+Provider documentation: [Kew](https://species-ws.data.kew.org/openapi),
+[GBIF](https://techdocs.gbif.org/en/openapi/),
+[iNaturalist](https://www.inaturalist.org/pages/api+recommended+practices),
+[MediaWiki extracts](https://www.mediawiki.org/wiki/Extension:TextExtracts).
+
+Additional integration tests cover queue deduplication, interrupted recovery,
+Retry-After propagation, exact-match rejection, provenance, manual overrides,
+licensed-photo filtering/replay, and rollback. Public/mobile API, offline packages,
+local uploads, optional video discovery and regional expansion remain later work.
