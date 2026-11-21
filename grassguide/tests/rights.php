@@ -31,3 +31,19 @@ foreach(['rights','rightstask'] as $action){$_GET=['action'=>$action,'target'=>$
 $before=$store->rightsOne($target);$store->executeExactPrepared("CREATE TRIGGER grassguide_fail_rights_audit BEFORE INSERT ON tbl_grassguide_audit FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture'");
 $failed=false;try{$rights->saveTask($target,array_merge($task,['task_status'=>'planned']));}catch(Throwable $ex){$failed=true;}$store->executeExactPrepared('DROP TRIGGER grassguide_fail_rights_audit');ggCheck($failed&&$before===$store->rightsOne($target),'Rights audit failure rolls back');
 echo "PASS rights: NC default, policy/preview, private export, permissions, stale content, concurrency, rollback, CSRF, admin-only access and templates.\n";
+
+$user->admin=false;
+ggCheck($rights->publicResponse('GET')['status']===404,'Public catalogue disabled by default');
+ggCheck($rights->publicResponse('POST')['status']===405,'Public catalogue read only');
+$user->admin=true;$p=$rights->policy();$rights->savePolicy(['revision'=>$p['revision'],'mode'=>'noncommercial','app_updates'=>'1']);$user->admin=false;
+$r=$rights->publicResponse('GET');ggCheck($r['status']===200,'Anonymous filtered catalogue available');
+ggCheck(!str_contains($r['body'],'PRIVATE')&&!str_contains($r['body'],'Fixture owner'),'No private rights evidence in public feed');
+ggCheck($rights->publicResponse('GET',$r['headers']['ETag'])['status']===304,'Stable content ETag');
+ggCheck($rights->publicResponse('HEAD')['body']===''&&$rights->publicResponse('OPTIONS')['status']===204,'HEAD and CORS preflight');
+ggReject(fn()=>$rights->inventory(),'forbidden');ggReject(fn()=>$rights->policy(),'forbidden');
+$user->admin=true;$p=$rights->policy();$rights->savePolicy(['revision'=>$p['revision'],'mode'=>'commercial','app_updates'=>'1']);$user->admin=false;
+$paid=$rights->publicResponse('GET',$r['headers']['ETag']);ggCheck($paid['status']===200&&!str_contains($paid['body'],'CC-BY-NC'),'Policy change invalidates ETag and removes NC');
+$c=new grassguide();ggCheck(!$c->requiresLogin('catalogue')&&$c->requiresLogin('rights')&&$c->requiresLogin('appexport'),'Only catalogue is anonymous');
+$user->admin=true;$p=$rights->policy();$rights->savePolicy(['revision'=>$p['revision'],'mode'=>'noncommercial']);
+ggCheck($rights->publicResponse('GET',$paid['headers']['ETag'])['status']===404,'Unpublishing overrides cached ETag');
+echo "PASS public catalogue: opt-in, methods, CORS, ETag, filtering, private data and restored guards.\n";

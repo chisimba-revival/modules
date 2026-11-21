@@ -4,11 +4,16 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguide extends controller
 {
     public function init() {}
-    public function requiresLogin($action = null) { return true; }
+    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue'; }
     private function param(string $key, string $default = ''): string { $v=$this->getParam($key,$default); return is_string($v) ? $v : $default; }
     private function csrf() { return $this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }
     public function dispatch($action = null)
     {
+        if($this->param('action','index')==='catalogue') {
+            try { $response=$this->getObject('grassguiderights','grassguide')->publicResponse($_SERVER['REQUEST_METHOD']??'',$_SERVER['HTTP_IF_NONE_MATCH']??''); }
+            catch(Throwable $e) { error_log('Grass catalogue unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}']; }
+            http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
+        }
         header('Cache-Control: private, no-store');
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
