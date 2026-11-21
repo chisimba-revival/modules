@@ -1,6 +1,6 @@
 # Grasses of the Lowveld and Kruger
 
-`grassguide` 0.005 is a site-administrator editorial module. It prepares the
+`grassguide` 0.006 is a site-administrator editorial module. It prepares the
 179-species Lowveld / Greater Kruger collection for a future field-guide app.
 No account other than a signed-in site administrator can read the workspace,
 export its data, or change its content. There is no public reading endpoint yet.

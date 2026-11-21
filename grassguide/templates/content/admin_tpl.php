@@ -34,6 +34,7 @@ if ($grassView==='index') {
     echo $start('import','',0).$hidden('seed_hash',$preview['sha256']).$r->button('import','download').'</form></section>';
     echo '<section class="chisimba-form-card chisimba-flow"><h2>'.$t('enrichment').'</h2><p>'.$t('enrichment_help').'</p>';
     echo $start('enrich','',0).$r->button('enrich','download').'</form>';
+    echo '<p>'.sprintf($t('source_coverage'),...array_map(fn($key)=>count(array_filter($all,fn($row)=>!empty($row[$key]))),['description','diagnostic','habitat','powo_id'])).'</p>';
     echo '<table><caption>'.$t('enrichment_progress').'</caption><thead><tr><th>'.$t('provider').'</th><th>'.$t('state').'</th><th>'.$t('jobs').'</th></tr></thead><tbody>';
     foreach($s->enrichmentJobs() as $job) echo '<tr><td>'.$e($job['provider']).'</td><td>'.$t('job_'.$job['status']).'</td><td>'.$e($job['total']).'</td></tr>';
     echo '</tbody></table>';
