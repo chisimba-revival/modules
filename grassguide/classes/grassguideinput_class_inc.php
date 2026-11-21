@@ -6,7 +6,7 @@ class grassguideinput extends ChisimbaObject
     public const ECOLOGY = ['Decreaser', 'Increaser I', 'Increaser II', 'Increaser III', 'Invader'];
     public const LIFE = ['Annual', 'Perennial', 'Annual / Perennial'];
     public const GRAZING = ['Low', 'Average', 'High'];
-    public const HEADS = ['open_panicle', 'contracted_panicle', 'digitate', 'racemes_axis', 'single_raceme'];
+    public const HEADS = ['open_panicle', 'contracted_panicle', 'digitate', 'racemes_axis', 'single_raceme', 'paired_racemes', 'compound', 'capitate'];
     public const ROLES = ['habit', 'inflorescence', 'spikelet', 'leaf', 'ligule', 'other'];
     public const LICENCES = ['CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-NC-SA-4.0', 'CC-BY-3.0', 'CC-BY-SA-3.0', 'CC-BY-NC-3.0', 'CC-BY-NC-SA-3.0', 'permission', 'YouTube'];
     public function init() {}

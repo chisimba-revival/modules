@@ -125,7 +125,9 @@ class grassguidestore extends dbTable
                     $owner=$data['_field_sources'][$key]['provider'] ?? null;
                     $previous=$data['_imported_values'][$key] ?? null;
                     $empty=($data[$key] ?? '')==='' || ($data[$key] ?? [])===[];
-                    if(!$empty && !($owner===$provider && ($data[$key] ?? null)===$previous))continue;
+                    $ownedUnchanged=$owner!==null && ($data[$key] ?? null)===$previous;
+                    $preferred=$provider==='grassbase' && in_array($owner,['wikipedia','gbif'],true) && in_array($key,['description','diagnostic','heads','awns','trait_source'],true);
+                    if(!$empty && !($ownedUnchanged && ($owner===$provider || $preferred)))continue;
                     $data[$key]=$value;$data['_imported_values'][$key]=$value;$data['_field_sources'][$key]=$result['sources'][$key];
                 }
                 // Validate provider content through the same input contract as manual edits.

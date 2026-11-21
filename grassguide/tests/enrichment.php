@@ -7,7 +7,7 @@ $apis=new class extends grassguideproviders {
 $GLOBALS['objects']['grassguideproviders']=$apis;
 $GLOBALS['objects']['grassguideworker']=$worker=new grassguideworker();
 $user->admin=false;ggReject(fn()=>$service->queueEnrichment(),'forbidden');$user->admin=true;
-ggCheck($service->queueEnrichment()===716,'All species/provider jobs queued');
+ggCheck($service->queueEnrichment()===895,'All species/provider jobs queued');
 ggCheck($service->queueEnrichment()===0,'Enqueue replay deduplicates');
 $job=$store->nextEnrichment('wikipedia');$species=grassguideservice::unpack($store->one($job['species_id']));
 $name=$species['scientific_name'];
@@ -16,10 +16,13 @@ $result=$apis->fetch('wikipedia',$species);
 ggCheck($result['fields']['heads']===['open_panicle'] && $result['fields']['habitat']==='Grassland.','Explicit sourced sections and traits');
 $store->applyEnrichment($job,$result);$first=$service->one($species['id']);
 ggCheck($first['description']!=='' && isset($first['_field_sources']['description']),'Fetched data and attribution persisted atomically');
+$priority=$result;$priority['fields']=['description'=>'Botanical source description'];$priority['sources']=['description'=>array_merge($result['sources']['description'],['provider'=>'grassbase'])];
+$grassJob=$job;$grassJob['provider']='grassbase';$store->applyEnrichment($grassJob,$priority);$first=$service->one($species['id']);
+ggCheck($first['description']==='Botanical source description','Botanical source supersedes unchanged general-source text');
 $manual=$first;$manual['description']='My correction';$manual['diagnostic']='';$service->save($manual['id'],$manual);
-$store->applyEnrichment($job,$result);$next=$service->one($manual['id']);
+$store->applyEnrichment($job,$result);$store->applyEnrichment($grassJob,$priority);$next=$service->one($manual['id']);
 ggCheck($next['description']==='My correction' && $next['diagnostic']==='' && $next['_manual_fields']['diagnostic'],'Human corrections and intentional blank protected');
-ggCheck($store->enrichmentJobs($manual['id'])[3]['status']==='done','Result cached');
+ggCheck(array_values(array_filter($store->enrichmentJobs($manual['id']),fn($j)=>$j['provider']==='wikipedia'))[0]['status']==='done','Result cached');
 $apis->responses=[['query'=>['pages'=>['1'=>['pageid'=>1,'title'=>$species['genus'],'extract'=>'Genus overview']]]]];
 ggCheck(!$apis->fetch('wikipedia',$species)['matched'],'Genus redirect rejected');
 $apis->responses=[['results'=>[['id'=>1,'name'=>$name,'rank'=>'species','is_active'=>true,'ancestor_ids'=>[47434]]]],['results'=>[['id'=>1,'name'=>$name,'is_active'=>true,'taxon_photos'=>[
@@ -43,3 +46,11 @@ ggCheck($failed && $service->one($row['id'])===$before,'Failed atomic enrichment
 $store->executeExactPrepared('UPDATE tbl_grassguide_jobs SET status=\'running\',due_at=? WHERE id=?',[gmdate('Y-m-d H:i:s'),$job['id']]);
 ggCheck($store->nextEnrichment('kew')['id']===$job['id'],'Interrupted job can resume');
 echo "PASS enrichment: durable deduplicated jobs, exact matches, sourced sections, licensed images, replay, manual overrides, shared cooldown and rollback.\n";
+
+$grass=$apis->fetch('grassbase',['scientific_name'=>'Themeda triandra']);
+ggCheck($grass['matched'] && $grass['fields']['awns']==='present' && in_array('compound',$grass['fields']['heads'],true),'GrassBase structured traits');
+ggCheck(str_contains($grass['fields']['description'],'FLORETS') && count($grass['sources'])===count($grass['fields']),'Botanical text and provenance');
+ggCheck(!$apis->fetch('grassbase',['scientific_name'=>'Testus fixture'])['matched'],'No guessed GrassBase match');
+$leersia=$apis->fetch('grassbase',['scientific_name'=>'Leersia hexandra']);
+ggCheck($leersia['fields']['awns']==='absent' && in_array('open_panicle',$leersia['fields']['heads'],true),'Implicit awn state and open panicle mapped');
+echo "PASS GrassBase pinned cache, sourced botanical descriptions, explicit trait mapping and unknown names.\n";

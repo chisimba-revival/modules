@@ -1,6 +1,6 @@
 # Grasses of the Lowveld and Kruger
 
-`grassguide` 0.006 is a site-administrator editorial module. It prepares the
+`grassguide` 0.007 is a site-administrator editorial module. It prepares the
 179-species Lowveld / Greater Kruger collection for a future field-guide app.
 No account other than a signed-in site administrator can read the workspace,
 export its data, or change its content. There is no public reading endpoint yet.
@@ -87,7 +87,7 @@ Escape/focus return and a 390px editor without horizontal overflow.
 
 The module is installed for local development at `https://chisimba.test:8445/ch/`.
 Setup → Fetch available data creates durable per-species jobs for Kew's documented
-species data portal, GBIF, Wikipedia and iNaturalist. The local worker also queues
+species data portal, GBIF, Wikipedia, iNaturalist and the cached GrassBase release. The local worker also queues
 new species and refreshes results older than 30 days. No external request runs in
 a page load. Edit is maintenance: imported data is immediately available in the
 editorial export without requiring a human review marker.
@@ -147,3 +147,35 @@ Additional integration tests cover queue deduplication, interrupted recovery,
 Retry-After propagation, exact-match rejection, provenance, manual overrides,
 licensed-photo filtering/replay, and rollback. Public/mobile API, offline packages,
 local uploads, optional video discovery and regional expansion remain later work.
+
+## GrassBase regional cache
+
+The freely licensed dataset [Vorontsova et al. (2026), GrassBase](https://doi.org/10.5281/zenodo.22302582)
+(CC BY 4.0) supplies botanical descriptions and structured morphology. Original
+2016 description authors: W. D. Clayton, M. Vorontsova, K. T. Harman and H. Williamson.
+The module ships a regional subset, with dataset DOI, original/accepted source
+names, archive paths, character values, input file checksums and SHA-256 hashes.
+It contains 165 unambiguous matches to the 179-entry catalogue; unmatched names
+are explicit. A source taxonomic concept may use a different accepted name:
+match type and both names are retained, without renaming the local catalogue.
+No fuzzy matches or older synonym-lumping assumptions are used.
+
+Rebuild from the public Zenodo records API (large inputs stay outside the repo):
+
+```sh
+python3 grassguide/scripts/build_grassbase.py --cache /path/to/grassbase-cache
+```
+
+The worker imports this cache without repeating bulk downloads. A new dataset
+version requires rebuilding and reviewing the versioned cache; the 30-day queue
+refresh does not imply that the pinned GrassBase release is newer. The complete
+source table has an unlabelled row-name column, checked explicitly by the builder.
+Alternative DELTA states (`/` and `&`) are retained as multiple filter values.
+Character 260 maps panicle forms, 315 maps raceme disposition, and 213 marks
+compound spathe-bearing inflorescences. Character 870 describes fertile-lemma
+awns; mucros and pungent tips are not silently turned into awns. Implicit/default
+states in the source are preserved and identified in the reference text.
+GrassBase takes priority over unchanged imported Wikipedia/GBIF botanical prose;
+manually maintained fields always win. Broad filter categories are identification
+aids, not a definitive species key. Habitat and similar-species text remain unknown
+where no suitable source provides them.
