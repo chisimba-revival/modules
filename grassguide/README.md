@@ -225,3 +225,10 @@ content ETags, no-store responses and credential-free CORS for Capacitor/browser
 clients. GET/HEAD/OPTIONS only; private admin exports and all mutations retain
 login, persisted administrator and CSRF checks. Disabling updates returns 404 even
 for a matching ETag. Downloaded offline copies cannot be remotely recalled.
+
+Version 0.010 keeps image audit and replacement work in the private administrator
+workspace. Shared post-login administration navigation occupies the right sidebar;
+form cards fill the main column. The rights page shows image thumbnails, active
+photo task counts and filters for priority/no alternative, planned and resolved
+work. Resolution never grants reuse rights. No task/audit data is added to the
+public app feed. The mistakenly added mobile audit was removed in app 1.3.

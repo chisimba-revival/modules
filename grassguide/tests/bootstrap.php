@@ -50,7 +50,7 @@ $backend=new class {
     public function unsetSession($key){unset($_SESSION[$key]);}
 };
 $csrf=new CsrfTokenService($backend,900,null,fn()=>$user->logged?'fixture-session':null);
-$GLOBALS['objects']=['user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
+$GLOBALS['objects']=['postloginmenu'=>new class { public function show(){return '<nav>Administration fixture menu</nav>';} },'user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
     public function __construct(private $csrf){}
     public function build(){return ['csrf'=>$this->csrf];}
 }];
