@@ -1,0 +1,12 @@
+<?php
+$tablename='tbl_grassguide_rights';
+$options=['type'=>'InnoDB','charset'=>'utf8mb4','collate'=>'utf8mb4_unicode_ci'];
+$fields=[
+ 'id'=>['type'=>'text','length'=>32,'notnull'=>true],
+ 'target'=>['type'=>'text','length'=>100,'notnull'=>true],
+ 'payload'=>['type'=>'clob','notnull'=>true],
+ 'revision'=>['type'=>'integer','notnull'=>true,'default'=>1],
+ 'updated_at'=>['type'=>'timestamp','notnull'=>true],
+ 'updated_by'=>['type'=>'text','length'=>100,'notnull'=>true],
+];
+$tableIndexes=['grassguide_rights_id'=>['fields'=>['id'=>[]],'unique'=>true],'grassguide_rights_target'=>['fields'=>['target'=>[]],'unique'=>true]];

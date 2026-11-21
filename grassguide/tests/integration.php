@@ -1,5 +1,6 @@
 <?php
 if (PHP_SAPI!=='cli') exit(64);
+ob_start();
 require __DIR__.'/bootstrap.php';
 $schema=new ChisimbaDatabaseSchema($store);
 foreach (glob(dirname(__DIR__).'/sql/*.sql') as $file) {
@@ -64,3 +65,7 @@ $user->admin=true;
 echo "PASS: 179-species import/replay, permissions, exact Unicode, stale saves, rename, review evidence, media ownership/licences/archive, transaction rollback, export, HTTP method/CSRF, escaping and Help.\n";
 
 require __DIR__.'/enrichment.php';
+
+require __DIR__."/rights.php";
+
+ob_end_flush();
