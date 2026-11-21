@@ -2,7 +2,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguideworker extends ChisimbaObject
 {
-    public function init() {}
+    public function init() { $this->getObject('grassguideservice','grassguide'); }
     public function runOne(string $provider): array
     {
         if(PHP_SAPI!=='cli')throw new DomainException('CLI only');
