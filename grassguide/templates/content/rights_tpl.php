@@ -33,11 +33,11 @@ if($grassView==='rightstask') {
     echo '<form class="chisimba-form chisimba-form-actions" method="get" action="'.$e($this->uri([],'grassguide')).'">'.$hidden('module','grassguide').$hidden('action','rights').$r->field('q',['q'=>$query],200).$r->select('rights_filter',['rights_filter'=>$filter],['nc','priority_1','planned','resolved','rights_unknown','commercial_ok','overdue','all'],false).$r->button('search','search').'</form>';
     echo '<p>'.sprintf($t('rights_page'),$page,$pages,count($matches)).'</p><div class="chisimba-story-grid">';
     foreach(array_slice($matches,($page-1)*30,30) as $i) {
-        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h3><i>'.$e($i['name']).'</i></h3><p>'.$t($i['kind']==='media'?'media':$i['field']).' · '.$e($i['licence']?:$r->text('rights_unknown')).'</p><p>'.$t($i['priority']).' · '.$t($i['task']['task_status']).'</p>';
+        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-form-card--anchored chisimba-flow"><h3><i>'.$e($i['name']).'</i></h3><p>'.$t($i['kind']==='media'?'media':$i['field']).' · '.$e($i['licence']?:$r->text('rights_unknown')).'</p><p>'.$t($i['priority']).' · '.$t($i['task']['task_status']).'</p>';
         if($i['kind']==='media'&&$i['content']['kind']==='image')echo '<figure><img src="'.$e($i['content']['image_url']).'" alt="'.$e($i['content']['alt_text']).'" width="240" loading="lazy" referrerpolicy="no-referrer"></figure>';
         if($i['task']['assignee']!==''||$i['task']['due_date']!=='')echo '<p>'.$e($i['task']['assignee']).' · '.$e($i['task']['due_date']).'</p>';
         if($i['stale'])echo '<p>'.$t('permission_stale').'</p>';
-        echo '<p>'.$e($i['creator']).'</p>'.$r->link('rights_task','pencil',['action'=>'rightstask','target'=>$i['target']]).'</article>';
+        echo '<p>'.$e($i['creator']).'</p><footer class="chisimba-form-card__footer">'.$r->link('rights_task','pencil',['action'=>'rightstask','target'=>$i['target']]).'</footer></article>';
     }
     echo '</div><nav class="chisimba-form-actions" aria-label="'.$t('rights_pages').'">';
     foreach(['previous'=>$page-1,'next'=>$page+1] as $label=>$number)if($number>=1&&$number<=$pages)echo $r->link($label,$label==='previous'?'arrow-left':'arrow-right',['action'=>'rights','q'=>$query,'rights_filter'=>$filter,'page'=>$number]);
