@@ -3,7 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguideproviders extends ChisimbaObject
 {
-    public const HOSTS=['kew'=>'species-ws.data.kew.org','gbif'=>'api.gbif.org','wikipedia'=>'en.wikipedia.org','inaturalist'=>'api.inaturalist.org'];
+    public const HOSTS=['grassbase'=>'zenodo.org','kew'=>'species-ws.data.kew.org','gbif'=>'api.gbif.org','wikipedia'=>'en.wikipedia.org','inaturalist'=>'api.inaturalist.org'];
     public function init() {}
     protected function request(string $provider,string $path,array $query=[]): array
     {
@@ -28,6 +28,18 @@ class grassguideproviders extends ChisimbaObject
         if (!isset(self::HOSTS[$provider])) throw new InvalidArgumentException('Unknown provider');
         $result=['name'=>$species['scientific_name'],'fields'=>[],'sources'=>[],'media'=>[],'matched'=>false];
         return $this->$provider($species,$result);
+    }
+    private function grassbase(array $s,array $r): array
+    {
+        // Versioned, checksum-verified subset fetched through the Zenodo records API.
+        // Bulk data is cached with the module rather than downloaded per species.
+        static $cache=null;
+        $cache ??= json_decode(file_get_contents(dirname(__DIR__).'/data/grassbase-lowveld.json'),true,64,JSON_THROW_ON_ERROR);
+        $record=$cache['species'][$s['scientific_name']] ?? null;if(!$record)return $r;
+        $r['matched']=true;$r['identifier']=$record['original_name'];$r['match']=$record['match'];$r['characters']=$record['characters'];
+        $src=$this->source('grassbase','https://doi.org/'.$cache['doi'],$cache['licence'],$record['citation'].' Imported from the versioned local dataset cache.');
+        foreach($record['fields'] as $key=>$value)$this->field($r,$key,$value,$src);
+        return $r;
     }
     private function kew(array $s,array $r): array
     {
