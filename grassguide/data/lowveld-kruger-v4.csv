@@ -1,0 +1,180 @@
+Accepted_Genus,Accepted_Species,Authority,Taxonomic_Status,Main_Common_Name,Other_Common_Name_1,Other_Common_Name_2,Other_Common_Name_3,Synonyms,Ecological_Status,Succession_Stage,Life_Cycle,Grazing_Value
+Andropogon,appendiculatus,Nees,Accepted,Vlei bluestem,Bluestem,Vleiblougras,,,Decreaser,Climax,Perennial,High
+Andropogon,chinensis,(Nees) Merr.,Accepted,Hairy bluestem,Bluegrass,Blougras,,,Increaser I,Climax,Perennial,Average
+Andropogon,eucomus,Nees,Accepted,Snowflake grass,Old man's beard,Kapokgras,Veergras,,Increaser II,Subclimax,Perennial,Low
+Andropogon,fastigiatus,Sw.,Accepted,Annual bluestem,Slender bluestem,Eenjarige blougras,,,Increaser II,Pioneer,Annual,Low
+Andropogon,gayanus,Kunth,Accepted,Gamba grass,Rhodesian blue grass,Bloubuffelsgras,Grootblougras,,Decreaser,Climax,Perennial,High
+Andropogon,schirensis,Hochst. ex A.Rich.,Accepted,Stab grass,Broad-leaved bluestem,Tweevingergras,Breeblaarblougras,,Increaser I,Climax,Perennial,Average
+Anthephora,pubescens,Nees,Accepted,Wool grass,Bottle-brush grass,Borseltjiegras,Krulblaargras,,Decreaser,Climax,Perennial,High
+Aristida,adscensionis,L.,Accepted,Annual three-awn,Six-weeks three-awn,Eenjarige steekgras,Lossteekgras,,Increaser II,Pioneer,Annual,Low
+Aristida,bipartita,(Nees) Trin. & Rupr.,Accepted,Rolling grass,Three-awn rolling grass,Krulsteekgras,Rolgras,,Increaser II,Pioneer / Subclimax,Perennial,Low
+Aristida,canescens,Henrard,Accepted,Pale three-awn,Vaal three-awn,Vaalsteekgras,,,Increaser II,Subclimax,Perennial,Low
+Aristida,congesta,Roem. & Schult.,Accepted,Tassel three-awn,Spreading three-awn,Aapstertsteekgras,Katstertsteekgras,,Increaser II,Pioneer,Annual / Perennial,Low
+Aristida,diffusa,Trin.,Accepted,Iron grass,Copper wire grass,Ystergras,Koperdraadgras,,Increaser III,Subclimax,Perennial,Low
+Aristida,junciformis,Trin. & Rupr.,Accepted,Ngongoni three-awn,Bristle three-awn,Ngongonisteekgras,Draadgras,,Increaser III,Subclimax / Climax,Perennial,Low
+Aristida,rhiniochloa,Hochst.,Accepted,Large-seeded three-awn,Rough three-awn,Grootsaadsteekgras,,,Increaser II,Pioneer,Annual,Low
+Aristida,scabrivalvis,Hack.,Accepted,Purple three-awn,Rough-glumed three-awn,Perssteekgras,,,Increaser II,Pioneer,Annual,Low
+Aristida,stipitata,Hack.,Accepted,Long-awned grass,Sandveld three-awn,Langnaaldsteekgras,Steekriet,,Increaser II,Subclimax,Perennial,Low
+Bewsia,biflora,(Hack. ex Schinz) Gooss.,Accepted,False love grass,Two-flowered grass,Baster-eragrostis,,,Increaser I,Subclimax / Climax,Perennial,Low
+Bothriochloa,bladhii,(Retz.) S.T.Blake,Accepted,Purple plume grass,Australian bluestem,Perspluimgras,,Bothriochloa intermedia|Andropogon bladhii,Increaser I,Climax,Perennial,Average
+Bothriochloa,insculpta,(Hochst. ex A.Rich.) A.Camus,Accepted,Pinhole grass,Sweet pitted grass,Stippelgras,Lidjiesgras,,Increaser II,Subclimax,Perennial,Average
+Bothriochloa,radicans,(Lehm.) A.Camus,Accepted,Stinking grass,Aromatic signal grass,Stinkgras,Vleiberggras,,Increaser II,Subclimax,Perennial,Low
+Cenchrus,ciliaris,L.,Accepted,Blue buffalo grass,Foxtail buffalo grass,Bloubuffelsgras,Buffelsgras,Pennisetum ciliare|Pennisetum cenchroides,Decreaser,Climax,Perennial,High
+Cenchrus,macrourus,(Trin.) Morrone,Accepted,Bedding grass,African feather grass,Beddinggras,Rietgras,Pennisetum macrourum,Increaser I,Climax,Perennial,Low
+Cenchrus,setaceus,(Forssk.) Morrone,Accepted,Fountain grass,Crimson fountain grass,Pronkgras,,Pennisetum setaceum|Phalaris setacea,Invader,Pioneer / Subclimax,Perennial,Low
+Cenchrus,setigerus,Vahl,Accepted,Birdwood grass,Black buffalo grass,Swartbuffelsgras,,,Decreaser,Subclimax / Climax,Perennial,High
+Chloris,gayana,Kunth,Accepted,Rhodes grass,Red Rhodes grass,Rhodesgras,,,Increaser II,Subclimax,Perennial,High
+Chloris,mossambicensis,K.Schum.,Accepted,Mozambique chloris,Lowveld chloris,Laeveldchloris,,,Increaser II,Subclimax,Perennial,Average
+Chloris,pycnothrix,Trin.,Accepted,Spiderweb chloris,False windmill grass,Spinnekopgras,,,Increaser II,Pioneer,Annual,Low
+Chloris,virgata,Sw.,Accepted,Feathered chloris,Sweet grass,Klossiegras,Witpluimchloris,,Increaser II,Pioneer,Annual,Average
+Chrysopogon,serrulatus,Trin.,Accepted,Golden beard grass,Bushveld beard grass,Goudbaardgras,,,Decreaser,Climax,Perennial,High
+Cymbopogon,caesius,(Hook. & Arn.) Stapf,Accepted,Broad-leaved turpentine grass,Giant turpentine grass,Breëblaarterpentyngras,Lemoengras,Cymbopogon excavatus|Andropogon excavatus,Increaser I,Climax,Perennial,Low
+Cymbopogon,pospischilii,(K.Schum.) C.E.Hubb.,Accepted,Narrow-leaved turpentine grass,Common turpentine grass,Smalblaarterpentyngras,Terpentyngras,,Increaser I,Climax,Perennial,Low
+Cynodon,dactylon,(L.) Pers.,Accepted,Couch grass,Bermuda grass,Kweekgras,Fynkweek,,Increaser II,Pioneer / Subclimax,Perennial,High
+Cynodon,nlemfuensis,Vanderyst,Accepted,East African couch grass,Star grass,Oos-Afrikaanse kweek,Stergras,,Increaser II,Subclimax,Perennial,High
+Dactyloctenium,aegyptium,(L.) Willd.,Accepted,Crowfoot,Egyptian crowfoot,Hoenderspoor,Kraaivoet,,Increaser II,Pioneer,Annual,Average
+Dactyloctenium,australe,Steud.,Accepted,Durban grass,Sweet smother grass,Durbangras,Natalkweek,,Increaser II,Subclimax,Perennial,Average
+Dactyloctenium,geminatum,Hack.,Accepted,Coastal crowfoot,LM grass,Kus-hoenderspoor,Berea grass,,Increaser II,Subclimax,Perennial,Average
+Dactyloctenium,giganteum,Fisher & Schweick.,Accepted,Giant crowfoot,Large crowfoot,Reusehoenderspoor,,,Increaser II,Pioneer,Annual,Average
+Dichanthium,annulatum,(Forssk.) Stapf,Accepted,Vlei finger grass,Marvel grass,Vleivingergras,,Andropogon annulatus|Dichanthium papillosum,Decreaser,Climax,Perennial,High
+Digitaria,didactyla,Willd.,Accepted,Swaziland finger grass,Creeping finger grass,Swazilandvingergras,,Digitaria swazilandensis,Increaser II,Subclimax,Perennial,Average
+Digitaria,eriantha,Steud.,Accepted,Common finger grass,Smuts finger grass,Gewone vingergras,Smutsvingergras,Digitaria smutsii|Digitaria pentzii|Digitaria decumbens,Decreaser,Climax,Perennial,High
+Digitaria,longiflora,(Retz.) Pers.,Accepted,False couch finger grass,Creeping finger grass,Basterkweekvingergras,,,Increaser II,Pioneer / Subclimax,Annual / Perennial,Average
+Digitaria,milanjiana,(Rendle) Stapf,Accepted,Mulanje finger grass,Tropical finger grass,Tropiese vingergras,,,Decreaser,Climax,Perennial,High
+Digitaria,monodactyla,(Nees) Stapf,Accepted,One-finger grass,Single-finger grass,Eenvingergras,,,Increaser I,Climax,Perennial,Low
+Digitaria,ternata,(A.Rich.) Stapf,Accepted,Black-seed finger grass,Three-finger grass,Swartsaadvingergras,,,Increaser II,Pioneer,Annual,Average
+Digitaria,velutina,(Forssk.) P.Beauv.,Accepted,Fluffy finger grass,Velvet finger grass,Fluweelvingergras,,,Increaser II,Pioneer,Annual,Average
+Diheteropogon,amplectens,(Nees) Clayton,Accepted,Broad-leaved bluestem,Clasping bluestem,Breëblaarblougras,,,Decreaser,Climax,Perennial,High
+Dinebra,retroflexa,(Vahl) Panz.,Accepted,Catstail grass,Reflexed dinebra,Katstertgras,,,Increaser II,Pioneer,Annual,Average
+Echinochloa,colona,(L.) Link,Accepted,Jungle rice,Marsh grass,Moerasgras,Kleinkoringgras,,Increaser II,Pioneer,Annual,Average
+Echinochloa,pyramidalis,(Lam.) Hitchc. & Chase,Accepted,Kalahari water grass,Vlei grass,Kalahariwatergras,Vleigras,Echinochloa holubii|Panicum holubii,Decreaser,Climax,Perennial,High
+Eleusine,coracana,(L.) Gaertn.,Accepted,Goose grass,African finger millet,Osgras,Jongosgras,,Increaser II,Pioneer,Annual,Average
+Elionurus,muticus,(Spreng.) Kuntze,Accepted,Wire grass,Lemon-scented grass,Koperdraadgras,Suurpol,,Increaser III,Climax,Perennial,Low
+Enneapogon,cenchroides,(Licht. ex Roem. & Schult.) C.E.Hubb.,Accepted,Soft nine-awn,Nine-awned grass,Sagte negenaaldgras,Negenaaldgras,,Increaser II,Pioneer,Annual / Perennial,Average
+Enneapogon,desvauxii,P.Beauv.,Accepted,Eight-day grass,Wonder grass,Agtdaggras,Wondergras,,Increaser II,Pioneer,Annual / Perennial,Average
+Enneapogon,scoparius,Stapf,Accepted,Bottlebrush grass,Rock nine-awn,Borseltjiegras,Klipnegenaaldgras,,Increaser II,Subclimax,Perennial,Low
+Enteropogon,macrostachyus,(Hochst. ex A.Rich.) Munro ex Benth.,Accepted,Mopane grass,Bush rye,Mopaniegras,Bosroggras,,Decreaser,Climax,Perennial,High
+Enteropogon,monostachyus,(Vahl) K.Schum.,Accepted,Single-spiked bush rye,Slender bush rye,Eenjarige bosroggras,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,aspera,(Jacq.) Nees,Accepted,Rough love grass,Annual love grass,Ruwe eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eragrostis,biflora,Hack. ex Schinz,Accepted,Shade love grass,Two-flowered love grass,Skadu-eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eragrostis,cilianensis,(All.) Vignolo ex Janch.,Accepted,Stink love grass,Gray love grass,Stink-eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eragrostis,ciliaris,(L.) R.Br.,Accepted,Woolly love grass,Gopher-tail love grass,Wollerige eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eragrostis,curvula,(Schrad.) Nees,Accepted,Weeping love grass,Oulandsgras,Bergsoetgras,Blousaadgras,,Increaser II,Subclimax,Perennial,High
+Eragrostis,cylindriflora,Hochst.,Accepted,Gummy love grass,Cylindrical love grass,Gom-eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eragrostis,gummiflua,Nees,Accepted,Gum grass,Sticky love grass,Gomgras,,,Increaser II,Subclimax,Perennial,Low
+Eragrostis,heteromera,Stapf,Accepted,Bronze love grass,Tall love grass,Brons-eragrostis,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,heterostachya,Clayton,Accepted,Lowveld love grass,Slender love grass,Laeveld-eragrostis,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,inamoena,K.Schum.,Accepted,Vlei love grass,Unpleasant love grass,Vlei-eragrostis,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,lappula,Nees,Accepted,Burs love grass,Hairy love grass,Klitseragrostis,,,Increaser II,Subclimax,Perennial,Low
+Eragrostis,nindensis,Ficalho & Hiern,Accepted,Wether love grass,Resurrection grass,Hamelsgras,Opstandingsgras,,Decreaser,Subclimax / Climax,Perennial,Average
+Eragrostis,racemosa,(Thunb.) Steud.,Accepted,Narrow heart love grass,Racemose love grass,Smalhartjiesgras,,,Increaser II,Subclimax,Perennial,Low
+Eragrostis,rigidior,Pilg.,Accepted,Curly-leaved love grass,Broad-leaved curly leaf,Krulblaar-eragrostis,Grootblousaadgras,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,rotifer,Rendle,Accepted,Vlei love grass,Wheel love grass,Vlei-eragrostis,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,sarmentosa,(Thunb.) Trin.,Accepted,Creeping love grass,Vlei love grass,Kruiperagrostis,,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,superba,Peyr.,Accepted,Saw-tooth love grass,Heart-seed grass,Weeluisgras,Platsaadgras,,Increaser II,Subclimax,Perennial,Average
+Eragrostis,trichophora,Coss. & Durieu,Accepted,Hairy love grass,Small blue-seed grass,Harige eragrostis,Blousaadgras,Eragrostis atherstonei,Increaser II,Subclimax,Perennial,Average
+Eragrostis,viscosa,(Retz.) Trin.,Accepted,Sticky love grass,Viscid love grass,Taai-eragrostis,,,Increaser II,Pioneer,Annual,Low
+Eustachys,paspaloides,(Vahl) Lanza & Mattei,Accepted,Red Rhodes grass,Brown Rhodes grass,Bruinvingergras,Rooi-Rhodesgras,Chloris petraea|Eustachys mutica,Decreaser,Climax,Perennial,High
+Hemarthria,altissima,(Poir.) Stapf & C.E.Hubb.,Accepted,Swamp couch,Batavian quick grass,Rooikweek,Perdekweek,,Decreaser,Climax,Perennial,High
+Heteropogon,contortus,(L.) P.Beauv. ex Roem. & Schult.,Accepted,Spear grass,Tanglehead,Assegaaigras,Pylgras,Andropogon contortus,Increaser II,Subclimax / Climax,Perennial,Average
+Hyparrhenia,anamesa,Clayton,Accepted,Fine thatching grass,Common thatching grass,Fyntamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,cymbaria,(L.) Stapf,Accepted,Boat thatching grass,Coloured thatching grass,Bootjietamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,dichroa,(Steud.) Stapf,Accepted,Giant thatching grass,Tall thatching grass,Groot-tamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,filipendula,(Hochst.) Stapf,Accepted,Fine thatching grass,Hairy thatching grass,Fyntamboekiegras,Bloutamboekiegras,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,gazensis,(Rendle) Stapf,Accepted,Hairy thatching grass,Gaza thatching grass,Harige tamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,hirta,(L.) Stapf,Accepted,Common thatching grass,Blue thatching grass,Dekgras,Bloutamboekiegras,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,rufa,(Nees) Stapf,Accepted,Yellow-spike thatching grass,Jaragua grass,Geelaartamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyparrhenia,tamba,(Hochst. ex Steud.) Anderss. ex Stapf,Accepted,Blue thatching grass,Tall blue thatching grass,Bloutamboekiegras,,,Increaser I,Climax,Perennial,Low
+Hyperthelia,dissoluta,(Nees ex Steud.) Clayton,Accepted,Yellow thatching grass,Giant yellow thatching grass,Geeltamboekiegras,Tamboekiegras,Hyparrhenia dissoluta|Anthistiria dissoluta,Increaser I,Climax,Perennial,Low
+Imperata,cylindrica,(L.) Raeusch.,Accepted,Cottonwool grass,Silver spike,Donsgras,Beddinggras,,Increaser I,Subclimax / Climax,Perennial,Low
+Ischaemum,afrum,(J.F.Gmel.) Dandy,Accepted,Turf grass,Black-turf grass,Turfgras,Swartturfgras,,Increaser I,Climax,Perennial,Average
+Ischaemum,fasciculatum,Brongn.,Accepted,Red vlei grass,Hippo grass,Rooivleigras,Seekoeigras,,Increaser I,Climax,Perennial,Average
+Leersia,hexandra,Sw.,Accepted,Rice grass,Swamp cut grass,Rysgras,Wilderysgras,,Decreaser,Climax,Perennial,High
+Leptocarydion,vulpiastrum,(De Not.) Stapf,Accepted,Foxtail grass,Red-plumed grass,Jakkalsstertgras,,,Increaser II,Pioneer,Annual,Low
+Leptochloa,fusca,(L.) Kunth,Accepted,Swamp grass,Brown beetle grass,Kuilgras,Brakvleigras,Diplachne fusca|Festuca fusca,Decreaser,Subclimax / Climax,Perennial,High
+Lintonia,nutans,Stapf,Accepted,Nodding grass,Basalt turf grass,Knikgras,Turfgras,,Decreaser,Climax,Perennial,High
+Loudetia,flavida,(Stapf) C.E.Hubb.,Accepted,Russet grass,Yellow russet grass,Geelbesemgras,,,Increaser I,Climax,Perennial,Low
+Loudetia,simplex,(Nees) C.E.Hubb.,Accepted,Common russet grass,Russet grass,Besemgras,Stingelgras,,Increaser I,Climax,Perennial,Low
+Megaloprotachne,albescens,C.E.Hubb.,Accepted,White buffalo grass,Hairy bushveld grass,Witbuffelsgras,,,Increaser II,Pioneer,Annual,Low
+Megathyrsus,maximus,(Jacq.) B.K.Simon & S.W.L.Jacobs,Accepted,Guinea grass,Common buffalo grass,Gewone buffelsgras,Blousaadbuffelsgras,Panicum maximum|Urochloa maxima,Decreaser,Climax,Perennial,High
+Melinis,minutiflora,P.Beauv.,Accepted,Molasses grass,Stink grass,Heuninggras,Stinkgras,,Increaser II,Subclimax,Perennial,Average
+Melinis,nerviglumis,(Franch.) Zizka,Accepted,Bristle-leaved red top,Mountain red top,Steekblaarblinkblaar,Bergrooigras,Rhynchelytrum nerviglume|Rhynchelytrum setifolium,Increaser II,Subclimax,Perennial,Low
+Melinis,repens,(Willd.) Zizka,Accepted,Natal red top,Rose Natal grass,Natalse rooipluim,Blinkblaar,Rhynchelytrum repens|Rhynchelytrum roseum,Increaser II,Pioneer / Subclimax,Annual / Perennial,Low
+Microchloa,caffra,Nees,Accepted,Pincushion grass,Els grass,Elsgras,Kussinggras,,Increaser II,Pioneer / Subclimax,Perennial,Low
+Miscanthus,junceus,(Stapf) Pilg.,Accepted,Wireleaf daba grass,Vlei rush grass,Ruigtegras,Dabagras,,Increaser I,Climax,Perennial,Low
+Monocymbium,ceresiiforme,(Nees) Stapf,Accepted,Boat grass,Oat grass,Bootjiegras,Hawergras,,Decreaser,Climax,Perennial,Average
+Moorochloa,eruciformis,(Sm.) Veldkamp,Accepted,Sweet signal grass,Litjies grass,Litjiesinjaalgras,Soetsinjaalgras,Brachiaria eruciformis|Panicum eruciforme|Urochloa eruciformis,Increaser II,Pioneer,Annual,Average
+Oplismenus,hirtellus,(L.) P.Beauv.,Accepted,Forest basket grass,Basket grass,Bosmandjiegras,Mandjiegras,,Decreaser,Climax,Perennial,Average
+Oropetium,capense,Stapf,Accepted,Dwarf grass,Resurrection grass,Dwerggras,Haasgras,,Increaser II,Pioneer,Perennial,Low
+Panicum,coloratum,L.,Accepted,White buffalo grass,Small buffalo grass,Kleinbuffelsgras,Witbuffelsgras,,Decreaser,Climax,Perennial,High
+Panicum,curviflorum,Hornem.,Accepted,Annual buffalo grass,Lowveld annual panicum,Eenjarige buffelsgras,,,Increaser II,Pioneer,Annual,Average
+Panicum,deustum,Thunb.,Accepted,Broad-leaved panicum,Reed buffalo grass,Breeblaarbuffelsgras,Rietbuffelsgras,,Decreaser,Climax,Perennial,High
+Panicum,heterostachyum,Hack.,Accepted,Shade panicum,Forest buffalo grass,Skadubuffelsgras,,,Increaser II,Pioneer,Annual,Average
+Panicum,natalense,Hochst.,Accepted,Natal panicum,Mountain guinea grass,Natalse buffelsgras,Suurbuffelsgras,,Decreaser,Climax,Perennial,Average
+Panicum,repens,L.,Accepted,Couch panicum,Torpedo grass,Kruipbuffelsgras,Kweekbuffelsgras,,Increaser II,Subclimax,Perennial,High
+Panicum,schinzii,Hack.,Accepted,Sweet buffalo grass,Vlei panicum,Soetbuffelsgras,Vleibuffelsgras,,Increaser II,Pioneer,Annual,High
+Paspalum,dilatatum,Poir.,Accepted,Dallis grass,Common paspalum,Gewone paspalum,Watergras,,Invader,Subclimax,Perennial,High
+Paspalum,scrobiculatum,L.,Accepted,Vlei paspalum,Ditch millet,Vleipaspalum,Dronkgras,,Increaser II,Subclimax,Perennial,Average
+Paspalum,urvillei,Steud.,Accepted,Giant paspalum,Vasey grass,Reusepaspalum,Langbeenpaspalum,,Invader,Subclimax,Perennial,Average
+Perotis,patens,Gand.,Accepted,Cat's tail,Purple spike,Katstertgras,,,Increaser II,Pioneer,Annual / Perennial,Low
+Phragmites,australis,(Cav.) Trin. ex Steud.,Accepted,Common reed,Fluitjies reed,Fluitjiesriet,Vleiriet,,Increaser I,Climax,Perennial,Low
+Phragmites,mauritianus,Kunth,Accepted,Lowveld reed,River reed,Laeveldriet,Dekriet,,Increaser I,Climax,Perennial,Low
+Pogonarthria,fleckii,(Hack.) Hack.,Accepted,Annual herringbone grass,One-sided grass,Eenjarige sekelgras,,,Increaser II,Pioneer,Annual,Low
+Pogonarthria,squarrosa,(Roem. & Schult.) Pilg.,Accepted,Herringbone grass,Cross grass,Sekelgras,Kruisgras,,Increaser II,Subclimax,Perennial,Low
+Rottboellia,cochinchinensis,(Lour.) Clayton,Accepted,Itch grass,Guinea-fowl grass,Tarentaalgras,Jeukgras,,Increaser II,Pioneer,Annual,Average
+Sacciolepis,curvata,(L.) Chase,Accepted,Forest hood grass,Curved hood grass,Boskappiegras,,,Decreaser,Climax,Perennial,Average
+Schizachyrium,exile,(Hochst.) Pilg.,Accepted,Red annual autumn grass,Slender autumn grass,Rooi-eenjarige herfsgras,,,Increaser II,Pioneer,Annual,Low
+Schizachyrium,jeffreysii,(Hack.) Stapf,Accepted,Silky autumn grass,Bushveld red autumn grass,Harige herfsgras,,,Increaser I,Climax,Perennial,Low
+Schizachyrium,sanguineum,(Retz.) Alston,Accepted,Red autumn grass,Crimson bluestem,Rooiherfsgras,Rooigras,,Increaser I,Climax,Perennial,Low
+Schmidtia,pappophoroides,Steud. ex J.A.Schmidt,Accepted,Sand quick,Kalahari sand quick,Krulblaar,Sandkweek,,Decreaser,Climax,Perennial,High
+Sehima,galpinii,Stent,Accepted,Galpin's sehima,Springbok plains grass,Galpinse sehima,,,Decreaser,Climax,Perennial,High
+Setaria,incrassata,(Hochst.) Hack.,Accepted,Black-turf bristle grass,Basalt bristle grass,Turfborseltjiegras,Vlei bristle grass,Setaria holstii|Setaria mombassana|Setaria pabularis,Decreaser,Climax,Perennial,High
+Setaria,lindenbergiana,(Nees) Stapf,Accepted,Mountain bristle grass,Shade bristle grass,Bergborseltjiegras,Skaduborseltjiegras,,Decreaser,Climax,Perennial,High
+Setaria,megaphylla,(Steud.) T.Durand & Schinz,Accepted,Ribbon bristle grass,Broad-leaved bristle grass,Breëblaarborseltjiegras,Bosbuffelsgras,,Decreaser,Climax,Perennial,High
+Setaria,nigrirostris,(Nees) T.Durand & Schinz,Accepted,Black-seed bristle grass,Perennial bristle grass,Swartsaadmanna,,,Decreaser,Climax,Perennial,High
+Setaria,pumila,(Poir.) Roem. & Schult.,Accepted,Yellow bristle grass,Horse bristle grass,Geelborseltjiegras,Perdeborseltjiegras,,Increaser II,Pioneer,Annual,Average
+Setaria,sagittifolia,(A.Rich.) Walp.,Accepted,Arrow-leaved bristle grass,Forest bristle grass,Pylblaarborseltjiegras,,,Increaser II,Pioneer,Annual,Average
+Setaria,sphacelata,(Schumach.) Stapf & C.E.Hubb. ex Moss,Accepted,Common bristle grass,Golden bristle grass,Gewone manna,Kruipmanna,,Decreaser,Climax,Perennial,High
+Setaria,ustilata,de Wit,Accepted,Spiny bristle grass,Annual bristle grass,Steekborseltjiegras,,,Increaser II,Pioneer,Annual,Average
+Setaria,verticillata,(L.) P.Beauv.,Accepted,Bur bristle grass,Sticky bristle grass,Klitsborseltjiegras,Klitssetaria,,Increaser II,Pioneer,Annual,Average
+Setaria,woodii,Hack.,Accepted,Wood's bristle grass,Black-turf manna,Woodse manna,Turfmanna,,Decreaser,Climax,Perennial,High
+Sorghum,bicolor,(L.) Moench,Accepted,Wild grain sorghum,Forage sorghum,Wilde graansorghum,Soetriet,,Increaser II,Pioneer,Annual,High
+Sorghum,versicolor,Andersson,Accepted,Black seed sorghum,Sweet sorghum,Swartsaadsorghum,Soetgras,,Increaser II,Pioneer,Annual,Average
+Sporobolus,africanus,(Poir.) Robyns & Tournay,Accepted,Ratstail dropseed,Tough dropseed,Rotstertfynssaadgras,Taaipol,,Increaser III,Subclimax,Perennial,Low
+Sporobolus,consimilis,Fresen.,Accepted,Tall vlei dropseed,Saltpan dropseed,Grootvleifynssaadgras,,,Increaser I,Climax,Perennial,Low
+Sporobolus,festivus,Hochst. ex A.Rich.,Accepted,Red dropseed,Copper dropseed,Rooifynsaadgras,,,Increaser II,Pioneer / Subclimax,Perennial,Low
+Sporobolus,fimbriatus,(Trin.) Nees,Accepted,Dropseed grass,Bushveld dropseed,Fynssaadgras,Blousaadgras,Vilfa fimbriata|Sporobolus marlothii,Decreaser,Climax,Perennial,High
+Sporobolus,ioclados,(Nees ex Trin.) Nees,Accepted,Pan dropseed,Brackish dropseed,Panfynssaadgras,Brakfynssaadgras,,Decreaser,Subclimax / Climax,Perennial,High
+Sporobolus,nitens,Stent,Accepted,Curly-leaved dropseed,Shiny dropseed,Krulblaarfynssaadgras,Blinkfynssaadgras,,Increaser II,Pioneer / Subclimax,Perennial,Average
+Sporobolus,panicoides,A.Rich.,Accepted,Famine grass,Panic dropseed,Hongersnoodgras,,,Increaser II,Pioneer,Annual,Low
+Sporobolus,pyramidalis,P.Beauv.,Accepted,Catstail dropseed,Giant ratstail grass,Katstertfynssaadgras,Reuse-rotstertgras,Sporobolus jacquemontii,Increaser III,Subclimax,Perennial,Low
+Sporobolus,smutsii,Stent,Accepted,Smuts' dropseed,Mat dropseed,Smutsfynssaadgras,,,Increaser II,Subclimax,Perennial,High
+Stenotaphrum,secundatum,(Walter) Kuntze,Accepted,Buffalo lawn grass,St. Augustine grass,Augustinusgras,Strandkweek,,Increaser II,Subclimax,Perennial,Average
+Tetrapogon,roxburghianus,(Schult.) P.M.Peterson,Accepted,Horsetail grass,Plume chloris,Perdestertgras,,Chloris roxburghiana|Chloris myriostachya,Increaser II,Subclimax,Perennial,Average
+Themeda,triandra,Forssk.,Accepted,Red grass,Kangaroo grass,Rooigras,Platblaar,,Decreaser,Climax,Perennial,High
+Trachypogon,spicatus,(L.f.) Kuntze,Accepted,Giant spear grass,Grey beard grass,Reuse-assegaaigras,Vaalbaardgras,,Increaser I,Climax,Perennial,Low
+Tragus,berteronianus,Schult.,Accepted,Small carrot-seed grass,Common carrot-seed grass,Kleinwortelsaadgras,Kousgras,,Increaser II,Pioneer,Annual,Low
+Tragus,koelerioides,Asch.,Accepted,Creeping carrot-seed grass,Perennial carrot-seed grass,Kruipwortelsaadgras,Kopseergras,,Increaser II,Subclimax,Perennial,Low
+Tragus,racemosus,(L.) All.,Accepted,Large carrot-seed grass,Stalked carrot-seed grass,Grootwortelsaadgras,,,Increaser II,Pioneer,Annual,Low
+Tricholaena,monachne,(Trin.) Stapf & C.E.Hubb.,Accepted,Blue-seed grass,Delicate grass,Blousaadgras,Fynblousaadgras,,Increaser II,Subclimax,Perennial,Average
+Trichoneura,grandiglumis,(Nees) Ekman,Accepted,Rolling grass,Small rolling grass,Rolgras,Kleinrolgras,,Increaser II,Subclimax,Perennial,Low
+Tripogon,minimus,(A.Rich.) Hochst. ex Steud.,Accepted,Dwarf grass,Tiny grass,Dwerggras,,,Increaser II,Pioneer,Perennial,Low
+Triraphis,andropogonoides,(Steud.) E.Phillips,Accepted,Broom needle grass,Perennial needle grass,Besemnaaldgras,Perdegras,,Increaser I,Climax,Perennial,Low
+Triraphis,purpurea,Hack.,Accepted,Purple needle grass,Red needle grass,Persnaaldgras,Rooinaaldgras,,Increaser II,Pioneer,Annual,Low
+Triraphis,schinzii,Hack.,Accepted,Sandveld needle grass,Long-awned needle grass,Sandveldnaaldgras,Geelnaaldgras,,Increaser I,Climax,Perennial,Low
+Urelytrum,agropyroides,(Hack.) Hack.,Accepted,Quinine grass,Centipede grass,Kinagras,Varkstertgras,,Increaser I,Climax,Perennial,Low
+Urochloa,bolbodes,(Steud.) Stapf,Accepted,Bulbous signal grass,Perennial signal grass,Bolbeesgras,,Helopus bolbodes|Panicum bolbodes,Decreaser,Climax,Perennial,High
+Urochloa,brachyura,(Hack.) Stapf,Accepted,Annual signal grass,Hairy signal grass,Eenjarige beesgras,,,Increaser II,Pioneer,Annual,Average
+Urochloa,brizantha,(Hochst. ex A.Rich.) R.D.Webster,Accepted,Common signal grass,Bread grass,Broodsinjaalgras,Grootsinjaalgras,Brachiaria brizantha|Panicum brizanthum,Decreaser,Climax,Perennial,High
+Urochloa,deflexa,(Schumach.) H.Scholz,Accepted,False signal grass,Annual signal grass,Bastersinjaalgras,,Brachiaria deflexa|Panicum deflexum|Pseudobrachiaria deflexa,Increaser II,Pioneer,Annual,Average
+Urochloa,humidicola,(Rendle) Morrone & Zuloaga,Accepted,Creeping signal grass,Koronivia grass,Kruipsinjaalgras,,Brachiaria humidicola|Panicum humidicola,Increaser II,Subclimax,Perennial,High
+Urochloa,meyeriana,(Nees) Tomas.,Accepted,Black-footed signal grass,Swamp cup grass,Swartvoetgras,Moerasbekergras,Eriochloa meyeriana|Panicum meyerianum,Decreaser,Climax,Perennial,High
+Urochloa,mosambicensis,(Hack.) Dandy,Accepted,Bushveld signal grass,Gonya grass,Bosveldbeesgras,Kruipbeesgras,,Increaser II,Subclimax,Perennial,High
+Urochloa,nigropedata,(Munro ex Ficalho & Hiern) Tomas.,Accepted,Black-footed signal grass,Spotted signal grass,Swartvoetsinjaalgras,Krulblaarsinjaalgras,Brachiaria nigropedata|Panicum nigropedatum,Decreaser,Climax,Perennial,High
+Urochloa,oligostachya,(Munro ex Benth.) Henrard,Accepted,Few-spiked signal grass,Lesser signal grass,Kleinbeesgras,,,Increaser II,Subclimax,Perennial,Average
+Urochloa,panicoides,P.Beauv.,Accepted,Garden urochloa,Herringbone grass,Tuinbeesgras,Beesgras,,Increaser II,Pioneer,Annual,Average
+Urochloa,serrata,(Thunb.) Sosef,Accepted,Velvet signal grass,Red-topped signal grass,Fluweelsinjaalgras,Rooikopsinjaalgras,Brachiaria serrata|Holcus serratus|Panicum serratum,Decreaser,Climax,Perennial,Average
+Urochloa,stapfiana,(Hack.) Tomas.,Accepted,Stapf's cup grass,Lowveld cup grass,Laeveldbekergras,,Eriochloa stapfiana,Decreaser,Climax,Perennial,High
+Urochloa,trichopus,(Hochst.) Stapf,Accepted,Hairy-footed signal grass,Gonya grass,Harige beesgras,,Panicum trichopus|Urochloa pullulans,Increaser II,Pioneer,Annual,Average
+Urochloa,xantholeuca,(Hack.) H.Scholz,Accepted,Hairy signal grass,Yellow-white signal grass,Harige sinjaalgras,,Brachiaria xantholeuca|Panicum xantholeucum,Increaser II,Pioneer,Annual,Average
+Vossia,cuspidata,(Roxb.) Griff.,Accepted,Hippo grass,Floating grass,Seekoeigras,,,Decreaser,Climax,Perennial,High
