@@ -232,3 +232,22 @@ form cards fill the main column. The rights page shows image thumbnails, active
 photo task counts and filters for priority/no alternative, planned and resolved
 work. Resolution never grants reuse rights. No task/audit data is added to the
 public app feed. The mistakenly added mobile audit was removed in app 1.3.
+
+## Field profiles (0.011)
+
+GrassBase workers cache four concise highlights for each of the 165 matched
+species. Explicit character states and original numeric ranges are retained;
+implicit, missing and qualified states are not turned into confident summaries.
+Selection compares known characters among regional genus peers, or similar
+head forms where no genus peers exist. These highlights are not diagnostic keys.
+Administrators can edit Key features (one feature per line); manual edits and
+deliberate clearing survive refresh. Existing completed GrassBase jobs without
+highlights are queued once, preserving provider cooldowns.
+
+The public bundle includes an allowlisted GBIF taxon identifier only from an
+exact current-name successful cached match; provider responses remain private.
+The phone uses this for online occurrence maps. The iNaturalist taxon-photo
+API does not supply descriptive captions: observation descriptions are not
+substituted for photo captions. Existing editorial captions remain supported.
+
+Checks: `python3 tests/key_features_test.py` and the isolated PDO suite.

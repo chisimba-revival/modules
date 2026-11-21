@@ -91,13 +91,21 @@ class grassguidestore extends dbTable
                     $old=$this->selectExactPrepared('SELECT * FROM tbl_grassguide_jobs WHERE id=?',[$id])[0] ?? null;
                     if(!$old) {
                         $count+=$this->executeExactPrepared('INSERT IGNORE INTO tbl_grassguide_jobs (id,species_id,provider,status,due_at,updated_at,attempts,result_json,last_error) VALUES (?,?,?,\'queued\',?,?,0,\'{}\',\'\')',[$id,$row['id'],$provider,$now,$now]);
-                    } elseif(in_array($old['status'],['done','unmatched'],true) && $old['updated_at']<$stale) {
+                    } elseif(in_array($old['status'],['done','unmatched'],true) && ($old['updated_at']<$stale || ($provider==='grassbase' && !array_key_exists('key_features',json_decode($old['result_json'],true)['fields']??[]) && $old['status']==='done'))) {
                         $count+=$this->executeExactPrepared('UPDATE tbl_grassguide_jobs SET status=\'queued\',due_at=?,attempts=0,last_error=\'\' WHERE id=? AND status=? AND updated_at=?',[$now,$id,$old['status'],$old['updated_at']]);
                     }
                 }
             }
             return $count;
         });
+    }
+    /** Only the exact current-name GBIF match identifier may enter the public bundle. */
+    public function matchedGbifKey(string $species,string $name): string
+    {
+        $row=$this->selectExactPrepared('SELECT result_json FROM tbl_grassguide_jobs WHERE species_id=? AND provider=? AND status=?',[$species,'gbif','done'])[0]??null;
+        $r=$row?json_decode($row['result_json'],true):null;
+        $key=(string)($r['identifier']??'');
+        return !empty($r['matched'])&&($r['name']??'')===$name&&preg_match('/^[1-9][0-9]{0,12}$/D',$key)?$key:'';
     }
     public function enrichmentJobs(?string $species=null): array
     {

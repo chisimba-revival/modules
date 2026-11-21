@@ -4,6 +4,7 @@ Never changes the catalogue names. Downloads are checksum verified; no fuzzy mat
 """
 import argparse,csv,hashlib,html,json,pathlib,re,urllib.request,zipfile
 from html.parser import HTMLParser
+from key_features import highlights
 RECORD='22302582'
 FILES=['grassbase_species.tsv','grassbase_complete.tsv','grassbase_html_descriptions.zip','grassbase_character_states.tsv']
 class Paragraphs(HTMLParser):
@@ -66,6 +67,9 @@ def build(cache,seed,record):
         evidence={k:row[k] for k in ['synflorescence_typeOfInflorescenceAggregation','inflorescence_type','panicle_type','racemes_disposition','lemmaApex_presenceOfAwn']}
         field['trait_source']=citation+' Structured characters 213, 229, 260, 315 and 870. Awns refer to the fertile lemma. Source implicit/default states are retained; unrepresented character states remain unknown. https://doi.org/10.5281/zenodo.22302582'
         result[name]={'fields':field,'citation':citation,'original_name':original,'accepted_name':taxon['scientificName'],'worldfloraonline_id':taxon['worldFloraOnlineID'],'characters':evidence,'archive_path':path,'match':'original' if original==name else 'supplied_synonym' if original in aliases else 'dataset_accepted_name'}
+    regional={name:traits[value['original_name']] for name,value in result.items()}
+    for name,value in result.items():
+        value['fields']['key_features']=highlights(name,regional)
     return {'format':1,'doi':'10.5281/zenodo.22302582','licence':'CC-BY-4.0','publication_date':record['metadata']['publication_date'],'files':{f['key']:{'checksum':f['checksum'],'sha256':hashlib.sha256((cache/f['key']).read_bytes()).hexdigest()} for f in record['files'] if f['key'] in FILES},'species':result,'unmatched':unmatched}
 
 def main():

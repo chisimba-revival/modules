@@ -54,7 +54,7 @@ if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights
     foreach (['genus'=>100,'epithet'=>100,'authority'=>250,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,$key!=='authority');
     echo '</div>'.$r->field('other_names',$d,1500,false,true).$r->field('synonyms',$d,3000,false,true).'<p>'.$t('names_help').'</p></fieldset>';
     echo '<fieldset class="chisimba-form-card chisimba-form-card--wide"><legend>'.$t('identification').'</legend>';
-    foreach (['diagnostic'=>12000,'description'=>12000,'similar'=>6000,'habitat'=>6000] as $key=>$max) echo $r->field($key,$d,$max,false,true);
+    foreach (['key_features'=>2000,'diagnostic'=>12000,'description'=>12000,'similar'=>6000,'habitat'=>6000] as $key=>$max) echo $r->field($key,$d,$max,false,true);
     echo '<fieldset><legend>'.$t('heads').'</legend>';
     foreach (grassguideinput::HEADS as $value) echo '<label class="chisimba-choice"><input type="checkbox" name="heads[]" value="'.$value.'"'.(is_array($d['heads'] ?? null) && in_array($value,$d['heads'],true)?' checked':'').'> '.$t($value).'</label>';
     echo '</fieldset>'.$r->select('awns',$d,['present','absent','variable']).$r->field('trait_source',$d,3000,false,true).'<p>'.$t('traits_help').'</p></fieldset>';

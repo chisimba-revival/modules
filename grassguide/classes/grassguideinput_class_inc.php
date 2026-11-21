@@ -39,7 +39,7 @@ class grassguideinput extends ChisimbaObject
     public static function species(array $input): array
     {
         $data = [];
-        foreach (['genus'=>100, 'epithet'=>100, 'authority'=>250, 'common_name'=>200, 'other_names'=>1500, 'synonyms'=>3000, 'description'=>12000, 'diagnostic'=>12000, 'similar'=>6000, 'habitat'=>6000, 'succession'=>120, 'ecology_source'=>3000, 'trait_source'=>3000, 'editor_notes'=>6000, 'powo_id'=>200, 'taxonomy_source'=>3000] as $key=>$limit) {
+        foreach (['genus'=>100, 'epithet'=>100, 'authority'=>250, 'common_name'=>200, 'other_names'=>1500, 'synonyms'=>3000, 'description'=>12000, 'diagnostic'=>12000, 'key_features'=>2000, 'similar'=>6000, 'habitat'=>6000, 'succession'=>120, 'ecology_source'=>3000, 'trait_source'=>3000, 'editor_notes'=>6000, 'powo_id'=>200, 'taxonomy_source'=>3000] as $key=>$limit) {
             $data[$key] = self::text($input, $key, $limit, in_array($key, ['genus','epithet','common_name'], true));
         }
         if (!preg_match('/^[A-Z][a-z]+$/D', $data['genus']) || !preg_match('/^[a-z][a-z-]+$/D', $data['epithet'])) throw new DomainException('invalid_name');

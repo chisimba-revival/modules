@@ -33,7 +33,7 @@ class grassguiderights extends ChisimbaObject
         if($etag===$headers['ETag'])return ['status'=>304,'headers'=>$headers,'body'=>''];
         return ['status'=>200,'headers'=>$headers,'body'=>$method==='HEAD'?'':json_encode($bundle,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)];
     }
-    public const FIELDS=['authority','common_name','other_names','synonyms','description','diagnostic','similar','habitat','ecological_status','succession','life_cycle','grazing_value','heads','awns','powo_id'];
+    public const FIELDS=['authority','common_name','other_names','synonyms','description','diagnostic','key_features','similar','habitat','ecological_status','succession','life_cycle','grazing_value','heads','awns','powo_id'];
     public function init() { $this->getObject('grassguideservice','grassguide'); }
     private function service() { return $this->getObject('grassguideservice','grassguide'); }
     private function store() { return $this->getObject('grassguidestore','grassguide'); }
@@ -144,6 +144,7 @@ class grassguiderights extends ChisimbaObject
                 if($source)$out['sources'][$field]=array_intersect_key($source,array_flip(['provider','url','licence','citation','retrieved_at']));
             }
             $out['ecology_review']=$s['ecology_review'];
+            $out['gbif_taxon_key']=$this->store()->matchedGbifKey($s['id'],$s['scientific_name']);
             foreach($inventory['media'][$s['id']] as $m){$item=$map['media:'.$m['id']];if(!self::eligible($item,$mode)){$omitted['media']++;continue;}
                 $data=$item['content'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}$out['media'][]=$data;
             }
