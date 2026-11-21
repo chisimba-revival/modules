@@ -47,3 +47,8 @@ $c=new grassguide();ggCheck(!$c->requiresLogin('catalogue')&&$c->requiresLogin('
 $user->admin=true;$p=$rights->policy();$rights->savePolicy(['revision'=>$p['revision'],'mode'=>'noncommercial']);
 ggCheck($rights->publicResponse('GET',$paid['headers']['ETag'])['status']===404,'Unpublishing overrides cached ETag');
 echo "PASS public catalogue: opt-in, methods, CORS, ETag, filtering, private data and restored guards.\n";
+
+$user->admin=true;$_GET=['action'=>'rights'];$_POST=[];$_SERVER['REQUEST_METHOD']='GET';$c=new grassguide();$template=$c->dispatch();ob_start();$c->render($template);$html=ob_get_clean();
+ggCheck(str_contains($html,'Administration fixture menu')&&str_contains($html,'Image replacement work')&&str_contains($html,'chisimba-form-card--wide'),'Private admin layout and progress');
+foreach(['priority_1','planned','resolved'] as $filter){$_GET=['action'=>'rights','rights_filter'=>$filter];$c=new grassguide();$template=$c->dispatch();ob_start();$c->render($template);$html=ob_get_clean();ggCheck(str_contains($html,'value="'.$filter.'" selected'),'Replacement filter '.$filter);}
+echo "PASS private image audit layout and task filters.\n";
