@@ -8,11 +8,12 @@ $start=function($action,$id,$revision) use($hidden,$grassCsrf,$e) {
     return '<form class="chisimba-form chisimba-flow" method="post" data-grass-form action="'.$e($this->uri(['action'=>$action],'grassguide')).'">'.$hidden('id',$id).$hidden('revision',$revision).$hidden('csrf_token',$grassCsrf).'<p data-save-status role="status" aria-live="polite"></p>';
 };
 echo '<main class="chisimba-flow"><header><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions chisimba-form-actions--equal" aria-label="'.$t('navigation').'">';
-echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings',['action'=>'setup']).$r->link('new_species','plus',['action'=>'edit']);
+echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings',['action'=>'setup']).$r->link('rights','shield',['action'=>'rights']).$r->link('new_species','plus',['action'=>'edit']);
 echo $this->getObject('contextualhelp','help')->show('grassguide','administration',true).'</nav></header>';
 if ($grassError!=='') echo '<p role="alert">'.$t($grassError).'</p>';
 if ($grassSaved) echo '<p role="status" data-grass-notice>'.$t('saved').'</p>';
-if ($grassView==='index') {
+if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
+} elseif ($grassView==='index') {
     $all=$s->all(); $query=$this->getParam('q',''); $query=is_string($query)?mb_substr(trim($query),0,200):'';
     $filter=$this->getParam('state',''); $filter=is_string($filter)?$filter:'';
     $rows=array_filter($all,fn($row)=>($filter==='' || $row['state']===$filter) && ($query==='' || mb_stripos(implode(' ',[$row['scientific_name'],$row['common_name'],$row['other_names'],$row['synonyms']]),$query)!==false));
@@ -62,7 +63,7 @@ if ($grassView==='index') {
     echo '<aside class="chisimba-form-card chisimba-flow"><h2>'.$t('review').'</h2>'.$r->select('state',$d,['draft','reviewed','archived'],false).$r->field('editor_notes',$d,6000,false,true).'<p>'.$t('review_help').'</p><div class="chisimba-form-actions">'.$r->button('save','save').'</div></aside></div></form>';
     if ($grassRecord) {
         echo '<section class="chisimba-form-card chisimba-flow"><h2>'.$t('media').'</h2>'.$r->link('add_media','plus',['action'=>'media','species_id'=>$grassId]).'<p>'.$t('media_intro').'</p><div class="chisimba-story-grid">';
-        foreach ($s->mediaFor($grassId) as $media) echo '<article class="chisimba-form-card">'.($media['kind']==='image'?'<img src="'.$e($media['image_url']).'" alt="'.$e($media['alt_text']).'" width="320" loading="lazy" referrerpolicy="no-referrer">':'').'<h3>'.$t($media['role']).'</h3><p>'.$e($media['caption']).'</p><p>'.$e($media['creator']).' · '.$e($media['licence']).' · '.$t($media['state']).'</p>'.$r->link('edit','pencil',['action'=>'media','id'=>$media['id']]).'</article>';
+        foreach ($s->mediaFor($grassId) as $media) echo '<article class="chisimba-form-card">'.($media['kind']==='image'?'<img src="'.$e($media['image_url']).'" alt="'.$e($media['alt_text']).'" width="320" loading="lazy" referrerpolicy="no-referrer">':'').'<h3>'.$t($media['role']).'</h3><p>'.$e($media['caption']).'</p><p>'.$e($media['creator']).' · '.$e($media['licence']).' · '.$t($media['state']).'</p>'.$r->link('edit','pencil',['action'=>'media','id'=>$media['id']]).$r->link('rights','shield',['action'=>'rightstask','target'=>'media:'.$media['id']]).'</article>';
         echo '</div></section><details><summary>'.$t('history').'</summary><ul>';
         foreach ($s->history($grassId) as $event) echo '<li>'.$e($event['created_at']).' UTC · '.$t($event['action']).' · '.$e($event['actor']).'</li>';
         echo '</ul></details>';

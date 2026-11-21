@@ -179,3 +179,41 @@ GrassBase takes priority over unchanged imported Wikipedia/GBIF botanical prose;
 manually maintained fields always win. Broad filter categories are identification
 aids, not a definitive species key. Habitat and similar-species text remain unknown
 where no suitable source provides them.
+
+## Rights audit and publication (0.008)
+
+Rights and publication is administrator-only, as are every task, setting and
+catalogue download. The default noncommercial policy keeps licensed NC images
+available for the free edition. No public feed or payment service is installed.
+The audit derives current images and source-backed fields without API calls or
+queue writes, shows commercial alternatives, and prioritises NC-only species.
+Tasks record assignee, target date, progress, replacement URL and private notes.
+Overdue tasks can be filtered; no email or scheduled notification is sent.
+
+The normal catalogue installer creates `tbl_grassguide_rights`. Settings and
+per-content tasks use dbTable, revision checks, checked transactions and audit
+records. An exclusion always wins. Progress is not a rights grant. Explicit
+commercial permission requires private evidence and a public credit, and is bound
+to a hash of the content and its source. Refresh timestamps alone do not invalidate
+it; changed images, text, creator, licence or source do. Worker imports never edit
+these decisions. Archived content does not appear in active tasks or app exports.
+
+Download app catalogue uses the saved policy; Preview commercial catalogue is
+read-only. Commercial mode removes NC and unresolved media/fields unless current
+commercial permission is documented. This conservative check leaves taxon names
+and stable IDs, but may leave other fields blank. It is recorded-licence triage,
+not a legal certification. Noncommercial mode retains current seed/prose fields
+with incomplete rights metadata for review, but does not grant unknown images
+publication permission. Permission-only/YouTube references require an explicit
+clearance; source links and private editorial records remain available to admins.
+
+App JSON uses the existing `lowveld-field-guide` v1 shape, with publication mode
+and omission counts. Private notes, assignment details, evidence, jobs and audit
+identities are excluded. Public permission statements accompany cleared content;
+they do not relicense the original work. The private editorial export is unchanged
+and is never a public app release. No endpoint allows anonymous or learner access.
+
+Trusted operators can run `php packages/grassguide/scripts/export_app_catalogue.php`
+from an installed site; this CLI-only path uses the same saved policy. App build
+scripts must delegate to it instead of copying the editorial data directly.
+Changes reach a phone only through a later bundle/update process.

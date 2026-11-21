@@ -4,6 +4,21 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguidestore extends dbTable
 {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') { parent::init('tbl_grassguide_species', $pearDb, $errorCallback); }
+    public function rightsAll(): array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights ORDER BY target'); }
+    public function rightsOne(string $target): ?array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights WHERE target=?',[$target])[0] ?? null; }
+    public function writeRights(string $target,int $revision,array $data,string $actor,string $species): array
+    {
+        return $this->transactionWithSavepoint(function() use($target,$revision,$data,$actor,$species) {
+            $old=$this->rightsOne($target);
+            if (($old && (int)$old['revision']!==$revision) || (!$old && $revision!==0)) throw new DomainException('conflict');
+            $json=json_encode($data,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE); $now=gmdate('Y-m-d H:i:s');
+            if($old) {
+                if($this->executeExactPrepared('UPDATE tbl_grassguide_rights SET payload=?,revision=revision+1,updated_at=?,updated_by=? WHERE target=? AND revision=?',[$json,$now,$actor,$target,$revision])!==1)throw new DomainException('conflict');
+            } else $this->executeExactPrepared('INSERT INTO tbl_grassguide_rights (id,target,payload,revision,updated_at,updated_by) VALUES (?,?,?,1,?,?)',[md5($target),$target,$json,$now,$actor]);
+            $this->audit($species,$actor,$target==='publication'?'publication_saved':'rights_saved',['target'=>$target,'rights'=>$data]);
+            return $this->rightsOne($target);
+        });
+    }
     public function all(): array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_species ORDER BY scientific_name'); }
     public function one(string $id): ?array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_species WHERE id=?', [$id])[0] ?? null; }
     public function mediaFor(string $id): array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_media WHERE species_id=? ORDER BY created_at,id', [$id]); }
