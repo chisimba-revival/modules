@@ -217,3 +217,11 @@ Trusted operators can run `php packages/grassguide/scripts/export_app_catalogue.
 from an installed site; this CLI-only path uses the same saved policy. App build
 scripts must delegate to it instead of copying the editorial data directly.
 Changes reach a phone only through a later bundle/update process.
+
+Version 0.009 adds opt-in public updates at `action=catalogue`. The existing
+administrator publication form enables them explicitly; new/existing sites stay
+disabled until saved. Only the saved-policy app projection is exposed, with stable
+content ETags, no-store responses and credential-free CORS for Capacitor/browser
+clients. GET/HEAD/OPTIONS only; private admin exports and all mutations retain
+login, persisted administrator and CSRF checks. Disabling updates returns 404 even
+for a matching ETag. Downloaded offline copies cannot be remotely recalled.

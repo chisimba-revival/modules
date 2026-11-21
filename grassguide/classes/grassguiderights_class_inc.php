@@ -10,6 +10,29 @@ class grassguiderights extends ChisimbaObject
         if(PHP_SAPI!=='cli')throw new DomainException('forbidden');
         $this->operatorRead=true;try { return $this->appExport($previewMode); } finally { $this->operatorRead=false; }
     }
+    /** Only the filtered app projection is public; scope is always restored. */
+    public function publicExport(): array
+    {
+        $this->operatorRead=true;
+        try {
+            if(empty($this->policy()['app_updates']))throw new DomainException('unpublished');
+            return $this->appExport();
+        } finally { $this->operatorRead=false; }
+    }
+    /** Read-only HTTP contract; no caller can select a different publication mode. */
+    public function publicResponse(string $method, string $etag=''): array
+    {
+        $headers=['Content-Type'=>'application/json; charset=UTF-8','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*','Access-Control-Expose-Headers'=>'ETag','X-Content-Type-Options'=>'nosniff'];
+        if($method==='OPTIONS')return ['status'=>204,'headers'=>$headers+['Access-Control-Allow-Methods'=>'GET, HEAD, OPTIONS','Access-Control-Allow-Headers'=>'If-None-Match'],'body'=>''];
+        if(!in_array($method,['GET','HEAD'],true))return ['status'=>405,'headers'=>$headers+['Allow'=>'GET, HEAD, OPTIONS'],'body'=>'{"error":"method"}'];
+        try { $bundle=$this->publicExport(); }
+        catch(DomainException $e) { if($e->getMessage()!=='unpublished')throw $e;return ['status'=>404,'headers'=>$headers,'body'=>'{"error":"unavailable"}']; }
+        $content=$bundle;unset($content['generated_at']);
+        $revision=hash('sha256',json_encode($content,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        $headers['ETag']='"'.$revision.'"';$bundle['revision']=$revision;
+        if($etag===$headers['ETag'])return ['status'=>304,'headers'=>$headers,'body'=>''];
+        return ['status'=>200,'headers'=>$headers,'body'=>$method==='HEAD'?'':json_encode($bundle,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)];
+    }
     public const FIELDS=['authority','common_name','other_names','synonyms','description','diagnostic','similar','habitat','ecological_status','succession','life_cycle','grazing_value','heads','awns','powo_id'];
     public function init() { $this->getObject('grassguideservice','grassguide'); }
     private function service() { return $this->getObject('grassguideservice','grassguide'); }
@@ -34,7 +57,7 @@ class grassguiderights extends ChisimbaObject
     {
         $this->service()->guard();
         $mode=grassguideinput::choice($input,'mode',['noncommercial','commercial'],false);
-        return grassguideservice::unpack($this->store()->writeRights('publication',$this->revision($input),['mode'=>$mode],$this->service()->actor(),str_repeat('0',32)));
+        return grassguideservice::unpack($this->store()->writeRights('publication',$this->revision($input),['mode'=>$mode,'app_updates'=>($input['app_updates']??'')==='1'],$this->service()->actor(),str_repeat('0',32)));
     }
     private function revision(array $input): int
     {
