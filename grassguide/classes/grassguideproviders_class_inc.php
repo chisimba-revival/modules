@@ -38,7 +38,7 @@ class grassguideproviders extends ChisimbaObject
         $record=$cache['species'][$s['scientific_name']] ?? null;if(!$record)return $r;
         $r['matched']=true;$r['identifier']=$record['original_name'];$r['match']=$record['match'];$r['characters']=$record['characters'];
         $src=$this->source('grassbase','https://doi.org/'.$cache['doi'],$cache['licence'],$record['citation'].' Imported from the versioned local dataset cache.');
-        foreach($record['fields'] as $key=>$value)$this->field($r,$key,$value,$src);
+        foreach($record['fields'] as $key=>$value){$fieldSource=$src;if($key==='key_features')$fieldSource['citation'].=' Field highlights translated and selected from explicit structured characters against regional peers; not a definitive identification key.';$this->field($r,$key,$value,$fieldSource);}
         return $r;
     }
     private function kew(array $s,array $r): array

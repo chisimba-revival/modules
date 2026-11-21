@@ -54,3 +54,18 @@ ggCheck(!$apis->fetch('grassbase',['scientific_name'=>'Testus fixture'])['matche
 $leersia=$apis->fetch('grassbase',['scientific_name'=>'Leersia hexandra']);
 ggCheck($leersia['fields']['awns']==='absent' && in_array('open_panicle',$leersia['fields']['heads'],true),'Implicit awn state and open panicle mapped');
 echo "PASS GrassBase pinned cache, sourced botanical descriptions, explicit trait mapping and unknown names.\n";
+$profileSpecies=array_values(array_filter($service->all(),fn($s)=>$s['scientific_name']==='Themeda triandra'))[0];
+$profileJob=['id'=>md5($profileSpecies['id'].':grassbase'),'species_id'=>$profileSpecies['id'],'provider'=>'grassbase'];
+$store->applyEnrichment($profileJob,$grass);
+$profileSpecies=$service->one($profileSpecies['id']);
+ggCheck(count(explode("\n",$profileSpecies['key_features']))===4,'Four cached source-backed highlights');
+$profileSpecies['key_features']='Editorial field distinction.';$profileSpecies=$service->save($profileSpecies['id'],$profileSpecies);
+$store->applyEnrichment($profileJob,$grass);
+ggCheck($service->one($profileSpecies['id'])['key_features']==='Editorial field distinction.','Manual highlights survive worker refresh');
+$gbifJob=md5($profileSpecies['id'].':gbif');
+$store->executeExactPrepared('UPDATE tbl_grassguide_jobs SET status=?,result_json=? WHERE id=?',['done',json_encode(['matched'=>true,'name'=>'Themeda triandra','identifier'=>123]),$gbifJob]);
+ggCheck($store->matchedGbifKey($profileSpecies['id'],'Themeda triandra')==='123','Exact cached map match');
+ggCheck($store->matchedGbifKey($profileSpecies['id'],'Themeda renamed')==='','Renamed taxon cannot reuse old map');
+$store->executeExactPrepared('UPDATE tbl_grassguide_jobs SET result_json=? WHERE id=?',[json_encode(['matched'=>true,'name'=>'Themeda triandra','identifier'=>'123&taxonKey=6']),$gbifJob]);
+ggCheck($store->matchedGbifKey($profileSpecies['id'],'Themeda triandra')==='','Unsafe map identifier rejected');
+echo "PASS profile highlights: cached generation, manual override and exact-name map identifiers.\n";
