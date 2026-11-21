@@ -18,7 +18,7 @@ class grassguideworker extends ChisimbaObject
                 $store->applyEnrichment($job,$result);
                 return ['selected'=>true,'provider'=>$provider,'species'=>$species['scientific_name'],'matched'=>$result['matched'],'fields'=>count($result['fields']),'media'=>count($result['media'])];
             } catch(GrassguideProviderException $e) { $store->failEnrichment($job,$e->status,$e->retryAfter); return ['selected'=>true,'provider'=>$provider,'error'=>'HTTP '.$e->status]; }
-            catch(Throwable $e) { $store->failEnrichment($job,0,0,'Import failed: '.get_class($e));error_log('Grass enrichment: '.get_class($e));return ['selected'=>true,'provider'=>$provider,'error'=>'Import failed']; }
+            catch(Throwable $e) { $store->failEnrichment($job,0,0,'Import failed: '.get_class($e));error_log('Grass enrichment: '.get_class($e));if($e instanceof Error)throw $e;return ['selected'=>true,'provider'=>$provider,'error'=>'Import failed']; }
         },0);
     }
 }
