@@ -18,7 +18,7 @@ class grassguide extends controller
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
         $action=$this->param('action','index');
-        if (!in_array($action,['index','setup','edit','media','save','savemedia','import','enrich','export','rights','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if (!in_array($action,['index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
         if (in_array($action,['appexport','commercialpreview'],true)) {
             $bundle=$this->getObject('grassguiderights','grassguide')->appExport($action==='commercialpreview'?'commercial':null);
             header('Content-Type: application/json; charset=UTF-8');
@@ -31,7 +31,7 @@ class grassguide extends controller
             echo json_encode($service->export(),JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); exit;
         }
         $id=$this->param('id'); $species=$this->param('species_id'); $record=null; $input=null; $error=''; $message='';
-        $write=in_array($action,['save','savemedia','import','enrich','saverights','savepolicy'],true);
+        $write=in_array($action,['setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
         if ($write) {
             $input=$_POST;
             try {
@@ -39,6 +39,7 @@ class grassguide extends controller
                 if (!$this->csrf()->consume('grassguide-admin',$this->param('csrf_token'))) { http_response_code(403); throw new DomainException('expired'); }
                 if ($action==='savepolicy') $record=$this->getObject('grassguiderights','grassguide')->savePolicy($input);
                 elseif ($action==='saverights') $record=$this->getObject('grassguiderights','grassguide')->saveTask($this->param('target'),$input);
+                elseif ($action==='setmembership') $record=$service->setMembership($id,$input);
                 elseif ($action==='save') $record=$service->save($id,$input);
                 elseif ($action==='savemedia') $record=$service->saveMedia($species,$id,$input);
                 elseif ($action==='enrich') $message=(string)$service->queueEnrichment();
@@ -52,11 +53,12 @@ class grassguide extends controller
             }
             if ($error==='') {
                 if(in_array($action,['saverights','savepolicy'],true))return $this->nextAction($action==='saverights'?'rightstask':'rights',['target'=>$this->param('target'),'saved'=>'1']);
-                return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':($action==='save'?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
+                return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
             }
         }
-        $view=['save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
-        if ($view==='edit' && $id!=='') $record=$service->one($id);
+        $view=['setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
+        if (in_array($view,['edit','membership'],true) && $id!=='') $record=$service->one($id);
+        if ($view==='membership' && !$record) { http_response_code(404); return 'denied_tpl.php'; }
         if ($view==='media') {
             if ($id!=='') $record=$service->mediaOne($id);
             if ($record) $species=$record['species_id'];

@@ -40,6 +40,21 @@ class grassguideservice extends ChisimbaObject
         }
         return self::unpack($this->store()->writeSpecies($id,$revision,$data,$this->actor()));
     }
+    /** Change catalogue membership without resubmitting or overwriting editorial fields. */
+    public function setMembership(string $id, array $input): array
+    {
+        $this->guard();
+        $revision=$this->identity($id,$input['revision'] ?? '');
+        $operation=grassguideinput::choice($input,'operation',['remove','restore'],false);
+        $row=$this->store()->one($id);
+        if (!$row) throw new DomainException('missing');
+        if ((int)$row['revision']!==$revision) throw new DomainException('conflict');
+        $data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+        if (($operation==='remove')===($data['state']==='archived')) throw new DomainException('conflict');
+        // Restore as a draft: membership does not grant editorial review.
+        $data['state']=$operation==='remove'?'archived':'draft';
+        return self::unpack($this->store()->writeSpecies($id,$revision,$data,$this->actor()));
+    }
     public function saveMedia(string $species, string $id, array $input): array
     {
         $this->guard(); $revision=$this->identity($id,$input['revision'] ?? '');
