@@ -4,6 +4,15 @@
     const labels = document.getElementById('grassguide-labels');
     if (!labels) return;
     const dirty = new Set();
+    document.querySelectorAll('[data-standard-request]').forEach(button => {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+            const field = button.form.elements.request_body;
+            field.value = button.dataset.standardRequest;
+            field.dispatchEvent(new Event('input', {bubbles: true}));
+            field.focus();
+        });
+    });
     document.querySelectorAll('[data-grass-dialog]').forEach(button => {
         const dialog = document.getElementById(button.dataset.grassDialog);
         if (!dialog || typeof dialog.showModal !== 'function') return;

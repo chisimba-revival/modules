@@ -16,7 +16,7 @@ class grassguidecontacts extends ChisimbaObject
             $d=grassguideservice::unpack($row);$id=$d['contributor_id'];
             if(!isset($groups[$id]))$groups[$id]=['id'=>$id,'creator'=>$d['creator'],'items'=>[],'species'=>[],'photos'=>[],'needs_permission'=>0];
         }
-        $groups=array_values($groups);usort($groups,fn($a,$b)=>strnatcasecmp($a['creator'],$b['creator']));return $groups;
+        $groups=array_values($groups);usort($groups,fn($a,$b)=>(count($b['items'])<=>count($a['items']))?:strnatcasecmp($a['creator'],$b['creator']));return $groups;
     }
     public function group(string $id): array
     {

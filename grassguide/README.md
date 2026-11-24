@@ -293,3 +293,10 @@ idempotent, and another pending request prevents a new queue entry. History read
 status from the shared outbox API. Provider acceptance is not inbox delivery or
 permission. Replies are handled outside the app and permission evidence remains
 per image. No contact details or correspondence enter the public feed or CSV.
+
+Version 0.015 orders contributors by active NC image-entry count descending, with
+alphabetical ties and retained zero-count contacts last. The default request adds
+the approved sharing paragraph and simpler permission wording. Saved drafts and
+queued snapshots are preserved; Use updated standard request replaces only the
+draft body, retaining the email, personal opening and signature, and requires Save
+before queueing.
