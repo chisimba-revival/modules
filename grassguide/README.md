@@ -251,3 +251,18 @@ API does not supply descriptive captions: observation descriptions are not
 substituted for photo captions. Existing editorial captions remain supported.
 
 Checks: `python3 tests/key_features_test.py` and the isolated PDO suite.
+
+## Catalogue membership (0.012)
+
+Add species opens a short form requiring genus and epithet only. Common name is
+optional; the running worker discovers new records and fetches available data.
+The pinned regional GrassBase cache still covers its documented seed subset;
+new names outside it may receive descriptions and photographs from other sources.
+No missing traits or key features are invented.
+
+The catalogue defaults to active entries. Remove from catalogue opens a named
+confirmation, then archives the species through a revision-checked, CSRF-protected
+POST. Archived entries remain searchable with their media and history intact.
+Restore to catalogue returns the same ID as a draft. Seed import does not undo
+removal. The public feed excludes archived entries; existing phones receive
+changes on their next successful catalogue update without reinstalling.

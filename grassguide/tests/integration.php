@@ -68,4 +68,6 @@ require __DIR__.'/enrichment.php';
 
 require __DIR__."/rights.php";
 
+require __DIR__.'/membership.php';
+
 ob_end_flush();

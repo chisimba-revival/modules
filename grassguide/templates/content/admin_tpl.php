@@ -15,14 +15,14 @@ if ($grassSaved) echo '<p role="status" data-grass-notice>'.$t('saved').'</p>';
 if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
 } elseif ($grassView==='index') {
     $all=$s->all(); $query=$this->getParam('q',''); $query=is_string($query)?mb_substr(trim($query),0,200):'';
-    $filter=$this->getParam('state',''); $filter=is_string($filter)?$filter:'';
-    $rows=array_filter($all,fn($row)=>($filter==='' || $row['state']===$filter) && ($query==='' || mb_stripos(implode(' ',[$row['scientific_name'],$row['common_name'],$row['other_names'],$row['synonyms']]),$query)!==false));
-    echo '<form class="chisimba-form chisimba-form-actions" method="get" action="'.$e($this->uri([],'grassguide')).'">'.$hidden('module','grassguide').$r->field('q',['q'=>$query],200).$r->select('state',['state'=>$filter],['draft','reviewed','archived'],true,false,'all_states').$r->button('search','search').'</form>';
+    $filter=$this->getParam('state','active'); $filter=is_string($filter)?$filter:'';
+    $rows=array_filter($all,fn($row)=>($filter==='' || ($filter==='active'?$row['state']!=='archived':$row['state']===$filter)) && ($query==='' || mb_stripos(implode(' ',[$row['scientific_name'],$row['common_name'],$row['other_names'],$row['synonyms']]),$query)!==false));
+    echo '<form class="chisimba-form chisimba-form-actions" method="get" action="'.$e($this->uri([],'grassguide')).'">'.$hidden('module','grassguide').$r->field('q',['q'=>$query],200).$r->select('state',['state'=>$filter],['active','draft','reviewed','archived'],true,false,'all_states').$r->button('search','search').'</form>';
     echo '<p>'.sprintf($t('count'),count($rows),count($all)).'</p>';
     if (!$all) echo '<p>'.$t('empty').'</p>';
     echo '<div class="chisimba-story-grid">';
     foreach ($rows as $row) {
-        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2><i>'.$e($row['scientific_name']).'</i></h2><p>'.$e($row['common_name']).'</p><p>'.$t($row['state']).' · '.$e($row['ecological_status']).'</p><div class="chisimba-cluster">'.$r->link('edit','pencil',['action'=>'edit','id'=>$row['id']]).'</div></article>';
+        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2><i>'.$e($row['scientific_name']).'</i></h2><p>'.$e($row['common_name']).'</p><p>'.$t($row['state']).' · '.$e($row['ecological_status']).'</p><div class="chisimba-cluster">'.$r->link('edit','pencil',['action'=>'edit','id'=>$row['id']]).$r->link($row['state']==='archived'?'restore_species':'remove_species',$row['state']==='archived'?'rotate-ccw':'archive',['action'=>'membership','id'=>$row['id']]).'</div></article>';
     }
     echo '</div>';
 } elseif ($grassView==='setup') {
@@ -42,6 +42,17 @@ if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights
     foreach($s->enrichmentErrors() as $problem)echo '<p role="status">'.$e($problem['provider']).': '.$e($problem['last_error']).' ('.$e($problem['total']).') — '.$t('next_attempt').' '.$e($problem['next_attempt']).' UTC</p>';
     echo $r->link('refresh_status','refresh-cw',['action'=>'setup']).'</section>';
     echo '<section class="chisimba-form-card chisimba-form-card--wide"><h2>'.$t('readiness').'</h2><ul><li>'.sprintf($t('pending_taxonomy'),$pending).'</li><li>'.sprintf($t('missing_traits'),$traits).'</li><li>'.sprintf($t('reviewed_count'),$reviewed).'</li></ul><p>'.$t('setup_scope').'</p>'.$r->link('export','download',['action'=>'export']).'<p>'.$t('export_notice').'</p></section>';
+} elseif ($grassView==='membership') {
+    $removing=$grassRecord['state']!=='archived';
+    echo '<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2>'.$t($removing?'remove_species':'restore_species').' — <i>'.$e($grassRecord['scientific_name']).'</i></h2><p>'.$t($removing?'remove_help':'restore_help').'</p>';
+    // Keep the submitted revision on errors; a stale confirmation must be reopened.
+    echo $start('setmembership',$grassId,$grassInput['revision'] ?? $grassRecord['revision']).$hidden('operation',$grassInput['operation'] ?? ($removing?'remove':'restore')).'<div class="chisimba-form-actions">'.$r->button($removing?'confirm_remove':'confirm_restore',$removing?'archive':'rotate-ccw').$r->link('cancel','arrow-left',['action'=>'index']).'</div></form></section>';
+} elseif ($grassView==='edit' && !$grassRecord) {
+    echo '<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2>'.$t('new_species').'</h2><p>'.$t('add_help').'</p>'.$start('save',$grassId,0);
+    foreach (['state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending'] as $key=>$value) echo $hidden($key,$value);
+    echo '<div class="chisimba-form-grid">';
+    foreach (['genus'=>100,'epithet'=>100,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,in_array($key,['genus','epithet'],true));
+    echo '</div><div class="chisimba-form-actions">'.$r->button('add_species','plus').$r->link('cancel','arrow-left',['action'=>'index']).'</div></form></section>';
 } elseif ($grassView==='edit') {
     $d=array_merge(['state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending','heads'=>[]],$d);
     if($grassRecord) {
@@ -51,7 +62,7 @@ if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights
     }
     echo '<h2>'.$t($grassRecord?'edit':'new_species').'</h2>'.$start('save',$grassId,$d['revision'] ?? 0);
     echo '<div class="chisimba-publishing-layout"><div class="chisimba-flow"><fieldset class="chisimba-form-card chisimba-form-card--wide"><legend>'.$t('identity').'</legend><div class="chisimba-form-grid">';
-    foreach (['genus'=>100,'epithet'=>100,'authority'=>250,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,$key!=='authority');
+    foreach (['genus'=>100,'epithet'=>100,'authority'=>250,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,in_array($key,['genus','epithet'],true));
     echo '</div>'.$r->field('other_names',$d,1500,false,true).$r->field('synonyms',$d,3000,false,true).'<p>'.$t('names_help').'</p></fieldset>';
     echo '<fieldset class="chisimba-form-card chisimba-form-card--wide"><legend>'.$t('identification').'</legend>';
     foreach (['key_features'=>2000,'diagnostic'=>12000,'description'=>12000,'similar'=>6000,'habitat'=>6000] as $key=>$max) echo $r->field($key,$d,$max,false,true);
@@ -62,6 +73,7 @@ if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights
     echo '<fieldset class="chisimba-form-card chisimba-form-card--wide"><legend>'.$t('taxonomy').'</legend>'.$r->field('powo_id',$d,200).$r->field('taxonomy_checked',$d,10).$r->field('taxonomy_source',$d,3000,false,true).$r->select('taxonomy_review',$d,['reported','pending','reviewed'],false).'<p>'.$t('taxonomy_help').'</p></fieldset></div>';
     echo '<aside class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2>'.$t('review').'</h2>'.$r->select('state',$d,['draft','reviewed','archived'],false).$r->field('editor_notes',$d,6000,false,true).'<p>'.$t('review_help').'</p><div class="chisimba-form-actions">'.$r->button('save','save').'</div></aside></div></form>';
     if ($grassRecord) {
+        echo '<p>'.$t($grassRecord['state']==='archived'?'removed_notice':'membership_help').'</p><div class="chisimba-form-actions">'.$r->link($grassRecord['state']==='archived'?'restore_species':'remove_species',$grassRecord['state']==='archived'?'rotate-ccw':'archive',['action'=>'membership','id'=>$grassId]).'</div>';
         echo '<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h2>'.$t('media').'</h2>'.$r->link('add_media','plus',['action'=>'media','species_id'=>$grassId]).'<p>'.$t('media_intro').'</p><div class="chisimba-story-grid">';
         foreach ($s->mediaFor($grassId) as $media) echo '<article class="chisimba-form-card chisimba-form-card--wide">'.($media['kind']==='image'?'<img src="'.$e($media['image_url']).'" alt="'.$e($media['alt_text']).'" width="320" loading="lazy" referrerpolicy="no-referrer">':'').'<h3>'.$t($media['role']).'</h3><p>'.$e($media['caption']).'</p><p>'.$e($media['creator']).' · '.$e($media['licence']).' · '.$t($media['state']).'</p>'.$r->link('edit','pencil',['action'=>'media','id'=>$media['id']]).$r->link('rights','shield',['action'=>'rightstask','target'=>'media:'.$media['id']]).'</article>';
         echo '</div></section><details><summary>'.$t('history').'</summary><ul>';
