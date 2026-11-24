@@ -110,7 +110,7 @@ class grassguiderights extends ChisimbaObject
             if(!self::eligible($item,'commercial'))$groups[$key]['needs_permission']++;
         }
         $groups=array_values($groups);
-        usort($groups,fn($a,$b)=>strnatcasecmp($a['creator'],$b['creator']));
+        usort($groups,fn($a,$b)=>(count($b['items'])<=>count($a['items']))?:strnatcasecmp($a['creator'],$b['creator']));
         return $groups;
     }
     /** Prevent spreadsheet formula interpretation of untrusted credits and captions. */
