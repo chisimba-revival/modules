@@ -14,7 +14,7 @@ foreach(['=HYPERLINK("https://example.org")','+formula','-formula','@formula',"\
 ggCheck(grassguiderights::csvCell('Derek Keats')==='Derek Keats','Normal CSV names preserved');
 foreach(['contributors','contributorsexport'] as $action){$user->admin=false;$_GET=['action'=>$action];$_POST=[];http_response_code(200);$c=new grassguide();ggCheck($c->dispatch()==='denied_tpl.php'&&http_response_code()===403,'Contributor admin boundary');}
 ggReject(fn()=>$rights->ncContributors(),'forbidden');$user->admin=true;
-$_GET=['action'=>'contributors'];$_POST=[];$_SERVER['REQUEST_METHOD']='GET';http_response_code(200);$c=new grassguide();$template=$c->dispatch();ob_start();$c->render($template);$html=ob_get_clean();
+$_GET=['action'=>'contributors','contributor'=>$find()['id']];$_POST=[];$_SERVER['REQUEST_METHOD']='GET';http_response_code(200);$c=new grassguide();$template=$c->dispatch();ob_start();$c->render($template);$html=ob_get_clean();
 ggCheck(str_contains($html,'Contact fixture &lt;script&gt;')&&!str_contains($html,'PRIVATE CONTACT EVIDENCE')&&!preg_match('/mod_grassguide_[a-z_]+/',$html),'Contributor view escapes credits and excludes private evidence');
 $service->setMembership($species['id'],['revision'=>$species['revision'],'operation'=>'remove']);ggCheck($find()===null,'Archived species excluded from contributors');
 echo "PASS NC contributors: exact credit grouping, active image scope, original NC permission status, formula protection, private evidence exclusion and administrator boundary.\n";

@@ -21,6 +21,8 @@ require_once $app.'/classes/core/dbtable_class_inc.php';
 require_once $app.'/classes/core/chisimbadatabaseschema.php';
 require_once $app.'/core_modules/security/classes/nativeauth/csrftokenservice.php';
 require_once $app.'/core_modules/ui/classes/iconservice_class_inc.php';
+require_once $app.'/core_modules/communications/classes/communicationservice_class_inc.php';
+require_once $app.'/core_modules/communications/classes/communicationdeliverygate_class_inc.php';
 require_once $app.'/core_modules/help/classes/contextualhelp_class_inc.php';
 foreach (glob(dirname(__DIR__).'/classes/*.php') as $file) require_once $file;
 require_once dirname(__DIR__).'/controller.php';
@@ -35,6 +37,7 @@ $user=new class {
     public function isLoggedIn(){return $this->logged;}
     public function isAdmin(){return $this->admin;}
     public function userId(){return 'fixture-admin';}
+    public function fullname(){return 'Fixture Administrator';}
 };
 $language=new class {
     public array $strings=[];
@@ -50,10 +53,14 @@ $backend=new class {
     public function unsetSession($key){unset($_SESSION[$key]);}
 };
 $csrf=new CsrfTokenService($backend,900,null,fn()=>$user->logged?'fixture-session':null);
-$GLOBALS['objects']=['postloginmenu'=>new class { public function show(){return '<nav>Administration fixture menu</nav>';} },'user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
+$GLOBALS['objects']=['grassguidecontacts'=>new grassguidecontacts(),'dbsysconfig'=>new class { public function getValue($key,$module,$default=''){ return ['COMMUNICATION_FROM_EMAIL'=>'sender@example.test','COMMUNICATION_FROM_NAME'=>'Fixture sender','COMMUNICATION_TRANSPORT'=>'sendgrid','COMMUNICATION_ALLOWED_RECIPIENTS'=>'photographer@example.test'][$key]??$default; } },'altconfig'=>new class { public function getSiteName(){return 'Fixture site';} },'communicationdeliverygate'=>new communicationdeliverygate(),'postloginmenu'=>new class { public function show(){return '<nav>Administration fixture menu</nav>';} },'user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
     public function __construct(private $csrf){}
     public function build(){return ['csrf'=>$this->csrf];}
 }];
+$communication=new communicationservice();
+(new ReflectionProperty(dbTable::class,'_db'))->setValue($communication,$db);
+$communication->dbLayer='PDO';$communication->dbType='mysqli';$communication->_tableName='tbl_communications_outbox';$communication->_serverName='fixture';$communication->objConfig=$GLOBALS['objects']['dbsysconfig'];
+$GLOBALS['objects']['communicationservice']=$communication;
 $GLOBALS['objects']['contextualhelp']->init();
 $service=$GLOBALS['objects']['grassguideservice']; $service->init();
 function ggCheck($ok,$message){if(!$ok)throw new RuntimeException($message);}

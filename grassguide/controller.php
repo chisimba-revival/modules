@@ -18,7 +18,7 @@ class grassguide extends controller
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
         $action=$this->param('action','index');
-        if (!in_array($action,['index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if (!in_array($action,['index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','savecontact','queuepermission','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
         if ($action==='contributorsexport') {
             if (!in_array($_SERVER['REQUEST_METHOD']??'',['GET','HEAD'],true)) { http_response_code(405); header('Allow: GET, HEAD'); return 'denied_tpl.php'; }
             $groups=$this->getObject('grassguiderights','grassguide')->ncContributors();
@@ -47,13 +47,15 @@ class grassguide extends controller
             echo json_encode($service->export(),JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); exit;
         }
         $id=$this->param('id'); $species=$this->param('species_id'); $record=null; $input=null; $error=''; $message='';
-        $write=in_array($action,['setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
+        $write=in_array($action,['savecontact','queuepermission','setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
         if ($write) {
             $input=$_POST;
             try {
                 if (($_SERVER['REQUEST_METHOD'] ?? '')!=='POST') { http_response_code(405); header('Allow: POST'); throw new DomainException('method'); }
                 if (!$this->csrf()->consume('grassguide-admin',$this->param('csrf_token'))) { http_response_code(403); throw new DomainException('expired'); }
-                if ($action==='savepolicy') $record=$this->getObject('grassguiderights','grassguide')->savePolicy($input);
+                if ($action==='savecontact') $record=$this->getObject('grassguidecontacts','grassguide')->save($id,$input);
+                elseif ($action==='queuepermission') $record=$this->getObject('grassguidecontacts','grassguide')->queue($id,$input);
+                elseif ($action==='savepolicy') $record=$this->getObject('grassguiderights','grassguide')->savePolicy($input);
                 elseif ($action==='saverights') $record=$this->getObject('grassguiderights','grassguide')->saveTask($this->param('target'),$input);
                 elseif ($action==='setmembership') $record=$service->setMembership($id,$input);
                 elseif ($action==='save') $record=$service->save($id,$input);
@@ -68,11 +70,12 @@ class grassguide extends controller
                 echo json_encode(['ok'=>$error==='','message'=>$error!==''?$r->text($error):(in_array($action,['import','enrich'],true)?sprintf($r->text($action==='enrich'?'enqueued':'imported'),$message):$r->text('saved')),'csrf'=>$this->csrf()->issueForSession('grassguide-admin'),'record'=>$record],JSON_THROW_ON_ERROR); exit;
             }
             if ($error==='') {
+                if(in_array($action,['savecontact','queuepermission'],true))return $this->nextAction('contributors',['contributor'=>$id,($action==='queuepermission'?'queued':'saved')=>'1']);
                 if(in_array($action,['saverights','savepolicy'],true))return $this->nextAction($action==='saverights'?'rightstask':'rights',['target'=>$this->param('target'),'saved'=>'1']);
                 return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
             }
         }
-        $view=['setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
+        $view=['savecontact'=>'contributors','queuepermission'=>'contributors','setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
         if (in_array($view,['edit','membership'],true) && $id!=='') $record=$service->one($id);
         if ($view==='membership' && !$record) { http_response_code(404); return 'denied_tpl.php'; }
         if ($view==='media') {
@@ -87,8 +90,11 @@ class grassguide extends controller
         }
         // On a failed new save keep the submitted stable ID and entered values.
         if (in_array($view,['edit','media'],true) && $id!=='' && !$record && !($write && $input && ($input['revision'] ?? '')==='0')) { http_response_code(404); return 'denied_tpl.php'; }
+        $this->setVar('grassContributor',in_array($action,['savecontact','queuepermission'],true)?$id:$this->param('contributor'));
+        $this->setVar('grassContactInput',$action==='savecontact'&&$error!==''?$input:null);
         $this->setVar('grassView',$view); $this->setVar('grassRecord',$record); $this->setVar('grassInput',$error!==''?$input:null);
         $this->setVar('grassId',$id ?: bin2hex(random_bytes(16))); $this->setVar('grassSpecies',$species);
+        $this->setVar('grassQueued',$this->param('queued')==='1');
         $this->setVar('grassError',$error); $this->setVar('grassSaved',$this->param('saved')==='1');
         $this->setVar('grassCsrf',$this->csrf()->issueForSession('grassguide-admin'));
         return 'admin_tpl.php';
