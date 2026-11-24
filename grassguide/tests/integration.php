@@ -70,4 +70,6 @@ require __DIR__."/rights.php";
 
 require __DIR__.'/membership.php';
 
+require __DIR__.'/contributors.php';
+
 ob_end_flush();

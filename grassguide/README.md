@@ -266,3 +266,15 @@ POST. Archived entries remain searchable with their media and history intact.
 Restore to catalogue returns the same ID as a draft. Seed import does not undo
 removal. The public feed excludes archived entries; existing phones receive
 changes on their next successful catalogue update without reinstalling.
+
+## NC contributor contact leads (0.013)
+
+Rights and publication → NC image contributors groups active NC image entries by
+exact credited name, with source pages, species, original licences and current
+commercial-clearance counts. Names are contact leads, not verified owner identities.
+Archived species/media are excluded; NC originals with recorded permission remain
+visible. CSV exports one row per image entry, not per unique person or image URL,
+and guards spreadsheet formulas. Both page and export require an administrator;
+private task notes/evidence and contact details are not exported. No contact
+lookup, API calls or messages are performed. Existing per-image permission records
+remain the place to record permission scope, evidence and public credit.
