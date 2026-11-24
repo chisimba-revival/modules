@@ -10,6 +10,8 @@ foreach (glob(dirname(__DIR__).'/sql/*.sql') as $file) {
 }
 $tableIndexes=[];include '/framework/app/core_modules/communications/sql/tbl_communications_outbox.sql';
 $schema->createTable($tablename,$fields,$options);foreach($tableIndexes as $name=>$index)$schema->createIndex($tablename,$name,$index);
+$tableIndexes=[];include '/framework/app/core_modules/filemanager/sql/tbl_files.sql';
+$schema->createTable($tablename,$fields,$options);foreach($tableIndexes as $name=>$index)$schema->createIndex($tablename,$name,$index);
 $preview=$service->seedPreview(); ggCheck($preview['total']===179 && count($preview['missing'])===179,'Seed counts');
 $user->admin=false;
 foreach ([fn()=>$service->all(),fn()=>$service->import($preview['sha256']),fn()=>$service->export(),fn()=>$service->save(str_repeat('a',32),[]),fn()=>$service->saveMedia('x','y',[])] as $call) ggReject($call,'forbidden');
@@ -75,5 +77,7 @@ require __DIR__.'/membership.php';
 require __DIR__.'/contributors.php';
 
 require __DIR__.'/contacts.php';
+
+require __DIR__.'/photos.php';
 
 ob_end_flush();

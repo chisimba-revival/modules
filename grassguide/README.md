@@ -300,3 +300,36 @@ the approved sharing paragraph and simpler permission wording. Saved drafts and
 queued snapshots are preserved; Use updated standard request replaces only the
 draft body, retaining the email, personal opening and signature, and requires Save
 before queueing.
+
+### Species photo batches (0.016)
+
+From a saved species, choose **Upload photos**. Select 1–10 JPEG/PNG/WebP images
+(up to 10 MiB each, 40 MiB total, 24 megapixels and 8192 pixels per side), then
+supply a comma-separated caption for each in the numbered preview order. Quote
+captions containing commas. Credit and CC BY / CC0 / CC BY-SA apply to the batch.
+Images retain their original bytes, including any embedded metadata; prepare
+web-sized photographs before uploading when appropriate.
+
+The optional **Replace all NC images and stop importing NC images for this
+species** choice archives active NC images in the same transaction as the batch
+and sets a persistent species import block. Other images and videos are retained.
+Provider results check the latest block under the species row lock, including
+results fetched before replacement began. Editing the species and later additive
+uploads preserve the setting. **Allow future NC imports again** reverses the block;
+archived images are restored only through an explicit media edit.
+
+File Manager owns storage/catalogue registration. Files are privately stored and
+served through grassguide's guarded photo action: administrators can inspect
+archives; anonymous requests require inclusion in the current published app
+projection. Generic file routes cannot expose module assets. Existing apps accept
+these HTTPS image URLs; no rebuild is required. Public projection omits storage IDs
+and import settings. Batch failures compensate unlinked File Manager files and
+roll back media, archives and species state. Optimistic revisions reject stale
+retries rather than creating duplicate batches. After an uncertain network result,
+reload and check the species before retrying.
+
+Run `GRASSGUIDE_FRAMEWORK=/path/to/current/framework python3 grassguide/tests/run.py`
+against a framework with File Manager's `modulefilestore::storeMedia` contract.
+The isolated suite covers real stored bytes, rollback/cleanup, permissions, CSV
+mapping, archive/block/resume and worker merging. With `--preview` running, use
+`python3 grassguide/tests/http_photos.py` for the HTTP byte delivery contract.
