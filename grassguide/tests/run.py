@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """Isolated real-PDO fixture; --preview serves synthetic data on loopback until interrupted."""
 import pathlib
+import os
 import secrets
 import subprocess
 import sys
 import time
+import tempfile
 
 root = pathlib.Path(__file__).resolve().parents[2]
-framework = root.parent / 'framework'
+framework = pathlib.Path(os.environ.get('GRASSGUIDE_FRAMEWORK', root.parent / 'framework')).resolve()
 module = root / 'grassguide'
 name = 'chisimba-grassguide-' + secrets.token_hex(5)
 password = secrets.token_hex(24)
 preview = '--preview' in sys.argv
+photo_store = tempfile.TemporaryDirectory(prefix='grassguide-photos-')
 def run(args, **kwargs):
     result = subprocess.run(args, **kwargs)
     if result.returncode:
@@ -28,10 +31,10 @@ try:
         time.sleep(1)
     else:
         raise RuntimeError('Disposable database did not start')
-    common = ['--network',name,'-e','GRASSGUIDE_TEST=1','-e','GRASSGUIDE_TEST_PASSWORD='+password,'-v',str(framework)+':/framework:ro','-v',str(module)+':/module:ro','--entrypoint','php']
+    common = ['-v',photo_store.name+':/photo-store','--network',name,'-e','GRASSGUIDE_TEST=1','-e','GRASSGUIDE_TEST_PASSWORD='+password,'-v',str(framework)+':/framework:ro','-v',str(module)+':/module:ro','--entrypoint','php']
     run(['docker','run','--rm',*common,'chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','/module/tests/integration.php'])
     if preview:
-        run(['docker','run','--rm','-d','--name',name+'-web','-p','127.0.0.1:8768:8080',*common,'chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','-S','0.0.0.0:8080','/module/tests/preview.php'],stdout=subprocess.DEVNULL)
+        run(['docker','run','--rm','-d','--name',name+'-web','-p','127.0.0.1:8768:8080',*common,'chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','-d','upload_max_filesize=10M','-d','post_max_size=48M','-S','0.0.0.0:8080','/module/tests/preview.php'],stdout=subprocess.DEVNULL)
         run(['docker','network','connect','bridge',name+'-web'])
         print('Isolated preview: http://127.0.0.1:8768/ (Ctrl-C removes all fixtures)',flush=True)
         while True:
@@ -40,3 +43,5 @@ finally:
     for suffix in ('-web','-db'):
         subprocess.run(['docker','rm','-f',name+suffix],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     subprocess.run(['docker','network','rm',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+
+    photo_store.cleanup()

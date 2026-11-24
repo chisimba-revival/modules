@@ -4,6 +4,28 @@
     const labels = document.getElementById('grassguide-labels');
     if (!labels) return;
     const dirty = new Set();
+    document.querySelectorAll('[data-photo-files]').forEach(input => {
+        const previews = input.form.querySelector('[data-photo-previews]');
+        let urls = [];
+        input.addEventListener('change', () => {
+            urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
+            previews.replaceChildren();
+            [...input.files].forEach((file, index) => {
+                const item = document.createElement('article');
+                item.className = 'chisimba-form-card chisimba-form-card--wide';
+                const label = document.createElement('p');
+                label.textContent = `${index + 1}. ${file.name}`;
+                item.append(label);
+                if (['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                    const image = document.createElement('img');
+                    const url = URL.createObjectURL(file); urls.push(url);
+                    image.src = url; image.alt = file.name; image.width = 240;
+                    item.append(image);
+                }
+                previews.append(item);
+            });
+        });
+    });
     document.querySelectorAll('[data-standard-request]').forEach(button => {
         button.hidden = false;
         button.addEventListener('click', () => {
@@ -61,6 +83,8 @@
                     if (['savecontact', 'queuepermission'].includes(action)) {
                         destination.searchParams.set('action', 'contributors');
                         destination.searchParams.set('contributor', body.get('id'));
+                    } else if (['uploadphotos', 'resumenc'].includes(action)) {
+                        destination.searchParams.set('action', 'photos');
                     } else if (['saverights', 'savepolicy'].includes(action)) {
                         destination.searchParams.set('action', action === 'saverights' ? 'rightstask' : 'rights');
                         if (body.has('target')) destination.searchParams.set('target', body.get('target'));

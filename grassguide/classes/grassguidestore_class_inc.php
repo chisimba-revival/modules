@@ -79,6 +79,28 @@ class grassguidestore extends dbTable
             return $this->mediaOne($id);
         });
     }
+    /** Species row lock serialises replacement with in-flight provider imports. */
+    public function writePhotoBatch(string $species,int $revision,array $media,string $mode,string $actor): array
+    {
+        $this->getObject('grassguiderights','grassguide');
+        return $this->transactionWithSavepoint(function() use($species,$revision,$media,$mode,$actor) {
+            $row=$this->selectExactPrepared('SELECT * FROM tbl_grassguide_species WHERE id=? FOR UPDATE',[$species])[0]??null;
+            if(!$row)throw new DomainException('missing');
+            if((int)$row['revision']!==$revision)throw new DomainException('conflict');
+            $data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+            if($data['state']==='archived')throw new DomainException('missing');
+            foreach($media as $id=>$image)$this->writeMedia($species,$id,0,$image,$actor);
+            if($mode==='replace_nc') {
+                foreach($this->mediaFor($species) as $old){
+                    $m=json_decode($old['payload'],true,32,JSON_THROW_ON_ERROR);
+                    if($m['kind']!=='image'||$m['state']!=='active'||grassguiderights::licence($m['licence'])!=='nc')continue;
+                    $m['state']='archived';$this->writeMedia($species,$old['id'],(int)$old['revision'],$m,$actor);
+                }
+                $data['_block_nc_images']=true;
+            } elseif($mode==='resume')$data['_block_nc_images']=false;
+            return $this->writeSpecies($species,$revision,$data,$actor);
+        });
+    }
     public function queueEnrichment(): int
     {
         return $this->transaction(function () {
@@ -135,6 +157,7 @@ class grassguidestore extends dbTable
     }
     public function applyEnrichment(array $job,array $result): void
     {
+        $this->getObject('grassguiderights','grassguide');
         $this->transaction(function() use($job,$result) {
             // Cross-provider workers serialize content merging, while HTTP runs outside transactions.
             $row=$this->selectExactPrepared('SELECT * FROM tbl_grassguide_species WHERE id=? FOR UPDATE',[$job['species_id']])[0] ?? null;
@@ -158,6 +181,7 @@ class grassguidestore extends dbTable
                 $data=array_merge($data,$validated);
                 if($data!==$before)$this->writeSpecies($row['id'],(int)$row['revision'],$data,'grassguide-worker');
                 foreach($result['media'] as $media) {
+                    if(!empty($data['_block_nc_images'])&&grassguiderights::licence($media['licence']??'')==='nc')continue;
                     $id=md5($row['id'].':'.$media['external_id']);
                     // Idempotent creates; archived or edited imported photographs stay untouched.
                     if($this->mediaOne($id))continue;

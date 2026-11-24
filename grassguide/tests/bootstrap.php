@@ -7,7 +7,7 @@ class ChisimbaObject
 {
     public function getObject($class,$module=null) { return $GLOBALS['objects'][$class]; }
     public function getParam($key,$default=null) { return $_POST[$key] ?? $_GET[$key] ?? $default; }
-    public function uri($params=[],$module='grassguide') { return '/?'.http_build_query(['module'=>$module]+$params); }
+    public function uri($params=[],$module='grassguide') { return (($params['action']??'')==='photo'?'https://example.test':'').'/?'.http_build_query(['module'=>$module]+$params); }
     public function getJavaScriptFile($file,$module) { return '<script src="/assets/'.$module.'/'.$file.'" defer></script>'; }
 }
 class controller extends ChisimbaObject
@@ -24,6 +24,8 @@ require_once $app.'/core_modules/ui/classes/iconservice_class_inc.php';
 require_once $app.'/core_modules/communications/classes/communicationservice_class_inc.php';
 require_once $app.'/core_modules/communications/classes/communicationdeliverygate_class_inc.php';
 require_once $app.'/core_modules/help/classes/contextualhelp_class_inc.php';
+require_once $app.'/core_modules/filemanager/classes/modulefilestore_class_inc.php';
+require_once $app.'/core_modules/filemanager/classes/filedelivery_class_inc.php';
 foreach (glob(dirname(__DIR__).'/classes/*.php') as $file) require_once $file;
 require_once dirname(__DIR__).'/controller.php';
 $db=ChisimbaDatabaseConnection::fromLegacyDsn(['phptype'=>'mysqli','hostspec'=>'grassguide-db:3306','username'=>'root','password'=>getenv('GRASSGUIDE_TEST_PASSWORD'),'database'=>'grassguide_test']);
@@ -53,7 +55,7 @@ $backend=new class {
     public function unsetSession($key){unset($_SESSION[$key]);}
 };
 $csrf=new CsrfTokenService($backend,900,null,fn()=>$user->logged?'fixture-session':null);
-$GLOBALS['objects']=['grassguidecontacts'=>new grassguidecontacts(),'dbsysconfig'=>new class { public function getValue($key,$module,$default=''){ return ['COMMUNICATION_FROM_EMAIL'=>'sender@example.test','COMMUNICATION_FROM_NAME'=>'Fixture sender','COMMUNICATION_TRANSPORT'=>'sendgrid','COMMUNICATION_ALLOWED_RECIPIENTS'=>'photographer@example.test'][$key]??$default; } },'altconfig'=>new class { public function getSiteName(){return 'Fixture site';} },'communicationdeliverygate'=>new communicationdeliverygate(),'postloginmenu'=>new class { public function show(){return '<nav>Administration fixture menu</nav>';} },'user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
+$GLOBALS['objects']=['grassguidecontacts'=>new grassguidecontacts(),'dbsysconfig'=>new class { public function getValue($key,$module,$default=''){ return ['SECUREFODLER'=>'/photo-store','COMMUNICATION_FROM_EMAIL'=>'sender@example.test','COMMUNICATION_FROM_NAME'=>'Fixture sender','COMMUNICATION_TRANSPORT'=>'sendgrid','COMMUNICATION_ALLOWED_RECIPIENTS'=>'photographer@example.test'][$key]??$default; } },'altconfig'=>new class { public function getcontentBasePath(){return '/module';} public function getSiteName(){return 'Fixture site';} },'communicationdeliverygate'=>new communicationdeliverygate(),'postloginmenu'=>new class { public function show(){return '<nav>Administration fixture menu</nav>';} },'user'=>$user,'language'=>$language,'grassguiderights'=>new grassguiderights(),'grassguidestore'=>$store,'grassguideproviders'=>new grassguideproviders(),'grassguideinput'=>new grassguideinput(),'grassguideservice'=>new grassguideservice(),'grassguiderenderer'=>new grassguiderenderer(),'iconservice'=>new iconservice(),'helpcontent'=>new helpcontent(),'contextualhelp'=>new contextualhelp(),'nativeauthwebcomposition'=>new class($csrf) {
     public function __construct(private $csrf){}
     public function build(){return ['csrf'=>$this->csrf];}
 }];
@@ -65,3 +67,10 @@ $GLOBALS['objects']['contextualhelp']->init();
 $service=$GLOBALS['objects']['grassguideservice']; $service->init();
 function ggCheck($ok,$message){if(!$ok)throw new RuntimeException($message);}
 function ggReject($operation,$expected){try{$operation();}catch(DomainException $e){ggCheck($e->getMessage()===$expected,'Unexpected error: '.$e->getMessage());return;}throw new RuntimeException('Accepted invalid operation: '.$expected);}
+
+$photoFiles=new modulefilestore();
+(new ReflectionProperty(dbTable::class,'_db'))->setValue($photoFiles,$db);
+$photoFiles->dbLayer='PDO';$photoFiles->dbType='mysqli';$photoFiles->_tableName='tbl_files';$photoFiles->_serverName='fixture';
+$GLOBALS['objects']['modulefilestore']=$photoFiles;
+$GLOBALS['objects']['filedelivery']=new filedelivery();
+$GLOBALS['objects']['grassguidephotos']=new grassguidephotos();

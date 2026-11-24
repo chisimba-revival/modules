@@ -27,7 +27,7 @@ class grassguideservice extends ChisimbaObject
         $old=$this->one($id);
         if ($old) {
             // Metadata is server-owned. Explicit human edits, including clearing a field, win.
-            foreach (['_field_sources','_imported_values','_manual_fields'] as $key) $data[$key]=$old[$key] ?? [];
+            foreach (['_field_sources','_imported_values','_manual_fields','_block_nc_images'] as $key) $data[$key]=$old[$key] ?? [];
             foreach ($data as $key=>$value) if ($key[0]!=='_' && $value!==($old[$key] ?? null)) $data['_manual_fields'][$key]=true;
         }
         if ($old && ($old['genus'] !== $data['genus'] || $old['epithet'] !== $data['epithet'])) {
@@ -58,7 +58,9 @@ class grassguideservice extends ChisimbaObject
     public function saveMedia(string $species, string $id, array $input): array
     {
         $this->guard(); $revision=$this->identity($id,$input['revision'] ?? '');
-        return self::unpack($this->store()->writeMedia($species,$id,$revision,grassguideinput::media($input),$this->actor()));
+        $data=grassguideinput::media($input);$old=$this->mediaOne($id);
+        if($old&&!empty($old['_file_id'])&&$old['image_url']===$data['image_url'])$data['_file_id']=$old['_file_id'];
+        return self::unpack($this->store()->writeMedia($species,$id,$revision,$data,$this->actor()));
     }
     public function seedPreview(): array
     {
