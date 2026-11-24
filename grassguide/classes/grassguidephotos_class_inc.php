@@ -60,7 +60,8 @@ class grassguidephotos extends ChisimbaObject
         $mode=grassguideinput::choice($input,'photo_mode',['add','replace_nc'],false);
         $files=$this->getObject('modulefilestore','filemanager');$total=0;
         foreach($photos as $bytes){
-            try{$type=$files::mediaType($bytes);}catch(InvalidArgumentException $e){throw new DomainException('photo_files');}
+            set_error_handler(static function($severity,$message){throw new DomainException('photo_files');});
+            try{$type=$files::mediaType($bytes);}catch(InvalidArgumentException $e){throw new DomainException('photo_files');}finally{restore_error_handler();}
             $total+=strlen($bytes);if($type['category']!=='images'||$total>41943040)throw new DomainException('photo_files');
         }
         $created=[];$media=[];
