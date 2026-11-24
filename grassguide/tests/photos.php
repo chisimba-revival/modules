@@ -11,6 +11,7 @@ ggCheck(grassguidephotos::captions($in['captions'],2)===['Whole plant','Head, cl
 ggReject(fn()=>grassguidephotos::captions('One',2),'caption_count');
 $user->admin=false;ggReject(fn()=>$photos->saveBatch($id,$in,[$png,$png]),'forbidden');$user->admin=true;
 ggReject(fn()=>$photos->saveBatch($id,$in,[$png,'<svg>bad</svg>']),'photo_files');
+ggReject(fn()=>$photos->saveBatch($id,$in,[$png,"\xff\xd8\xff\xe0".str_repeat('x',50)]),'photo_files');
 ggCheck($service->mediaOne($nc['id'])['state']==='active','Invalid batch does not archive');
 // Fail after files are stored and after the first media mutation. Rollback includes archival and policy.
 $store->executeExactPrepared("CREATE TRIGGER grassguide_fail_photo BEFORE INSERT ON tbl_grassguide_audit FOR EACH ROW BEGIN IF NEW.action='species_saved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture'; END IF; END");
