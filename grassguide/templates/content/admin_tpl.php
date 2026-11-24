@@ -11,6 +11,7 @@ echo '<div class="chisimba-publishing-layout"><main class="chisimba-flow"><heade
 echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings',['action'=>'setup']).$r->link('rights','shield',['action'=>'rights']).$r->link('new_species','plus',['action'=>'edit']);
 echo $this->getObject('contextualhelp','help')->show('grassguide','administration',true).'</nav></header>';
 if ($grassError!=='') echo '<p role="alert">'.$t($grassError).'</p>';
+if ($grassQueued) echo '<p role="status" data-grass-notice>'.$t('permission_queued').'</p>';
 if ($grassSaved) echo '<p role="status" data-grass-notice>'.$t('saved').'</p>';
 if(in_array($grassView,['rights','contributors','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
 } elseif ($grassView==='index') {
@@ -92,5 +93,5 @@ if(in_array($grassView,['rights','contributors','rightstask'],true)) { include _
     if ($grassRecord) echo '<p><a target="_blank" rel="noopener noreferrer" href="'.$e($grassRecord['source_url']).'">'.$t('open_source').'</a></p>';
     if ($grassRecord && $grassRecord['kind']==='youtube') echo '<p><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/watch?v='.$e($grassRecord['youtube_id']).'">'.$t('watch_video').'</a></p>';
 }
-echo '</main><aside class="chisimba-structural-sidebar chisimba-publishing-sidebar" aria-label="'.$t('admin_navigation').'">'.$this->getObject('postloginmenu','toolbar')->show().'</aside></div><div id="grassguide-labels" hidden data-saving="'.$t('saving').'" data-failed="'.$t('network_failed').'" data-saved="'.$t('saved').'"></div>';
+echo '</main><aside class="chisimba-structural-sidebar chisimba-publishing-sidebar" aria-label="'.$t('admin_navigation').'">'.$this->getObject('postloginmenu','toolbar')->show().'</aside></div><div id="grassguide-labels" hidden data-save-contact-first="'.$t('preview_saved_notice').'" data-saving="'.$t('saving').'" data-failed="'.$t('network_failed').'" data-saved="'.$t('saved').'"></div>';
 echo $this->getJavaScriptFile('admin.js','grassguide');

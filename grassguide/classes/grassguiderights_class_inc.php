@@ -103,7 +103,7 @@ class grassguiderights extends ChisimbaObject
             $name=trim($item['creator']);
             // Group exact credits only. Unknown credits must not imply one shared owner.
             $key=$name!==''?'credit:'.$name:'unknown:'.$item['target'];
-            if(!isset($groups[$key]))$groups[$key]=['creator'=>$name,'items'=>[],'species'=>[],'photos'=>[],'needs_permission'=>0];
+            if(!isset($groups[$key]))$groups[$key]=['id'=>hash('sha256',$key),'creator'=>$name,'items'=>[],'species'=>[],'photos'=>[],'needs_permission'=>0];
             $groups[$key]['items'][]=$item;
             $groups[$key]['species'][$item['species_id']]=$item['name'];
             $groups[$key]['photos'][$item['content']['image_url']]=true;

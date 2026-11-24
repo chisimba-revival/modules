@@ -278,3 +278,18 @@ and guards spreadsheet formulas. Both page and export require an administrator;
 private task notes/evidence and contact details are not exported. No contact
 lookup, API calls or messages are performed. Existing per-image permission records
 remain the place to record permission scope, evidence and public credit.
+
+## Contributor permission requests (0.014)
+
+The private directory adds a contributor/count selector, image popup and saved
+email drafts. Contacts and immutable request snapshots use the existing versioned
+rights repository; no new table is required. Saved drafts include a personalised
+opening and editable standard request. Preview enumerates current NC image entries
+without recorded commercial clearance. An explicit POST queues the exact saved
+snapshot through the shared communications service and configured verified sender.
+A revision write, outbox insert and request audit share one database transaction.
+Fingerprint checks reject changed drafts/images; request IDs make repeats
+idempotent, and another pending request prevents a new queue entry. History reads
+status from the shared outbox API. Provider acceptance is not inbox delivery or
+permission. Replies are handled outside the app and permission evidence remains
+per image. No contact details or correspondence enter the public feed or CSV.
