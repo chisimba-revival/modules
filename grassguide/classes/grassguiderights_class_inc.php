@@ -93,6 +93,31 @@ class grassguiderights extends ChisimbaObject
         foreach($items as &$item)$item['priority']=$item['kind']==='media'&&$item['classification']==='nc'?(empty($commercial[$item['species_id']])?'priority_1':'priority_2'):'priority_review';unset($item);
         return ['items'=>$items,'species'=>$species,'media'=>$media,'commercial_images'=>$commercial];
     }
+    /** Credited names are leads for permission enquiries, not verified owner identities. */
+    public function ncContributors(): array
+    {
+        $this->service()->guard();
+        $groups=[];
+        foreach($this->inventory()['items'] as $item) {
+            if($item['kind']!=='media'||$item['content']['kind']!=='image'||$item['classification']!=='nc')continue;
+            $name=trim($item['creator']);
+            // Group exact credits only. Unknown credits must not imply one shared owner.
+            $key=$name!==''?'credit:'.$name:'unknown:'.$item['target'];
+            if(!isset($groups[$key]))$groups[$key]=['creator'=>$name,'items'=>[],'species'=>[],'photos'=>[],'needs_permission'=>0];
+            $groups[$key]['items'][]=$item;
+            $groups[$key]['species'][$item['species_id']]=$item['name'];
+            $groups[$key]['photos'][$item['content']['image_url']]=true;
+            if(!self::eligible($item,'commercial'))$groups[$key]['needs_permission']++;
+        }
+        $groups=array_values($groups);
+        usort($groups,fn($a,$b)=>strnatcasecmp($a['creator'],$b['creator']));
+        return $groups;
+    }
+    /** Prevent spreadsheet formula interpretation of untrusted credits and captions. */
+    public static function csvCell(string $value): string
+    {
+        return preg_match('/^[\s\x00-\x20]*[=+@-]|^[\t\r\n]/u',$value)?"'".$value:$value;
+    }
     private function item(string $target,array $s,string $kind,string $field,string $licence,string $url,string $creator,array $content,array $tracking): array
     {
         $fingerprint=self::fingerprint($content);$task=$tracking[$target]??['revision'=>0,'task_status'=>'todo','assignee'=>'','due_date'=>'','replacement_url'=>'','permission_evidence'=>'','public_credit'=>'','decision'=>'inherit','task_notes'=>''];

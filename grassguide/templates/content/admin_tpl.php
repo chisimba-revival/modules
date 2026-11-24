@@ -12,7 +12,7 @@ echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings
 echo $this->getObject('contextualhelp','help')->show('grassguide','administration',true).'</nav></header>';
 if ($grassError!=='') echo '<p role="alert">'.$t($grassError).'</p>';
 if ($grassSaved) echo '<p role="status" data-grass-notice>'.$t('saved').'</p>';
-if(in_array($grassView,['rights','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
+if(in_array($grassView,['rights','contributors','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
 } elseif ($grassView==='index') {
     $all=$s->all(); $query=$this->getParam('q',''); $query=is_string($query)?mb_substr(trim($query),0,200):'';
     $filter=$this->getParam('state','active'); $filter=is_string($filter)?$filter:'';

@@ -18,7 +18,23 @@ class grassguide extends controller
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
         $action=$this->param('action','index');
-        if (!in_array($action,['index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if (!in_array($action,['index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if ($action==='contributorsexport') {
+            if (!in_array($_SERVER['REQUEST_METHOD']??'',['GET','HEAD'],true)) { http_response_code(405); header('Allow: GET, HEAD'); return 'denied_tpl.php'; }
+            $groups=$this->getObject('grassguiderights','grassguide')->ncContributors();
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="lowveld-kruger-nc-contributors.csv"');
+            header('X-Content-Type-Options: nosniff');
+            if (($_SERVER['REQUEST_METHOD']??'')==='HEAD')exit;
+            $stream=fopen('php://output','wb');fwrite($stream,"\xEF\xBB\xBF");
+            $renderer=$this->getObject('grassguiderenderer','grassguide');
+            fputcsv($stream,array_map(fn($key)=>$renderer->text('csv_'.$key),['creator','species','licence','source','image','clearance','status','review']),',','"','');
+            foreach($groups as $group)foreach($group['items'] as $item) {
+                $cells=[$group['creator'],$item['name'],$item['licence'],$item['source_url'],$item['content']['image_url'],grassguiderights::eligible($item,'commercial')?'Yes':'No',$item['task']['task_status'],$this->uri(['action'=>'rightstask','target'=>$item['target']],'grassguide')];
+                fputcsv($stream,array_map([grassguiderights::class,'csvCell'],$cells),',','"','');
+            }
+            fclose($stream);exit;
+        }
         if (in_array($action,['appexport','commercialpreview'],true)) {
             $bundle=$this->getObject('grassguiderights','grassguide')->appExport($action==='commercialpreview'?'commercial':null);
             header('Content-Type: application/json; charset=UTF-8');

@@ -1,7 +1,20 @@
 <?php
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 $rights=$this->getObject('grassguiderights','grassguide');
-if($grassView==='rightstask') {
+if($grassView==='contributors') {
+    $groups=$rights->ncContributors();
+    echo '<h2>'.$t('contributors').'</h2><p>'.$t('contributors_help').'</p><div class="chisimba-form-actions">'.$r->link('contributors_export','download',['action'=>'contributorsexport']).$r->link('rights','arrow-left',['action'=>'rights']).'</div>';
+    echo '<p>'.sprintf($t('contributors_count'),count($groups),array_sum(array_map(fn($g)=>count($g['items']),$groups))).'</p>';
+    foreach($groups as $group) {
+        echo '<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h3>'.$e($group['creator']?:$r->text('unknown_contributor')).'</h3><p>'.sprintf($t('contributor_counts'),count($group['photos']),count($group['species']),$group['needs_permission']).'</p><details><summary>'.$t('contributor_images').'</summary><ul>';
+        foreach($group['items'] as $item) {
+            echo '<li><i>'.$e($item['name']).'</i> · '.$e($item['licence']).' · '.$t(grassguiderights::eligible($item,'commercial')?'clearance_recorded':'clearance_needed').'<div class="chisimba-form-actions">';
+            if($item['source_url']!=='')echo '<a class="button" href="'.$e($item['source_url']).'" target="_blank" rel="noopener noreferrer">'.$t('open_source').'</a>';
+            echo $r->link('rights_task','pencil',['action'=>'rightstask','target'=>$item['target']]).'</div></li>';
+        }
+        echo '</ul></details></section>';
+    }
+} elseif($grassView==='rightstask') {
     $item=$grassRightsItem;$d=$grassInput??$item['task'];
     echo '<h2>'.$t('rights_task').' — '.$e($item['name']).'</h2><p>'.$t($item['kind']==='media'?'media':$item['field']).' · '.$e($item['licence']?:$r->text('rights_unknown')).' · '.$t($item['classification']).'</p>';
     if($item['stale'])echo '<p role="alert">'.$t('permission_stale').'</p>';
@@ -19,6 +32,7 @@ if($grassView==='rightstask') {
     $allowed=array_filter($images,fn($i)=>grassguiderights::eligible($i,'commercial'));
     $first=array_unique(array_column(array_filter($nc,fn($i)=>$i['priority']==='priority_1'),'species_id'));
     echo '<h2>'.$t('rights').'</h2><p>'.$t('rights_intro').'</p><p>'.sprintf($t('rights_counts'),count($images),count($nc),count($allowed),count($first)).'</p>';
+    echo '<div class="chisimba-form-actions">'.$r->link('contributors','users',['action'=>'contributors']).'</div>';
     $progress=['todo'=>0,'planned'=>0,'resolved'=>0];
     foreach($images as $image)$progress[$image['task']['task_status']]++;
     echo '<section class="chisimba-form-card chisimba-form-card--wide chisimba-flow"><h3>'.$t('replacement_progress').'</h3><div class="chisimba-form-grid">';
