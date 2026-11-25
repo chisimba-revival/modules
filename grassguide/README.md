@@ -333,3 +333,23 @@ against a framework with File Manager's `modulefilestore::storeMedia` contract.
 The isolated suite covers real stored bytes, rollback/cleanup, permissions, CSV
 mapping, archive/block/resume and worker merging. With `--preview` running, use
 `python3 grassguide/tests/http_photos.py` for the HTTP byte delivery contract.
+
+### Premium checklist (0.017)
+
+The public catalogue is unchanged. Admin → Grass app premium creates/revokes
+per-device scoped Security API keys only when the account has an active
+Entitlement Service grant (`premium`, `app`, `lowveld-grasses`). Admin status
+alone grants no premium. `scripts/grant_premium.php --username=… --reason=…`
+creates an idempotent lifetime founder grant through the canonical service.
+Codes are shown once; never place them in URLs, logs or public builds.
+
+`premiumstatus` verifies a scoped key and returns a maximum 30-day offline lease.
+`checklistsync` accepts authenticated JSON POSTs; ownership comes only from the
+credential. A per-account transaction merges operations and per-device sequence
+numbers suppress lost-response retries. Last synced change wins for the same
+species; different species merge. New registered checklist storage is private
+and excluded from the public catalogue. No payment/signup flow is enabled.
+
+Run the isolated test harness with `GRASSGUIDE_FRAMEWORK` pointing at the shared
+framework and `GRASSGUIDE_SHARED_MODULES` at a checkout containing entitlement
+and account-event services. Tests never send email or touch live grants.

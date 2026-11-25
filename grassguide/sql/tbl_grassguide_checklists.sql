@@ -1,0 +1,9 @@
+<?php
+$tablename='tbl_grassguide_checklists';
+$options=['type'=>'InnoDB','charset'=>'utf8mb4','collate'=>'utf8mb4_unicode_ci'];
+$fields=[
+ 'user_id'=>['type'=>'text','length'=>25,'notnull'=>true],
+ 'payload'=>['type'=>'clob','notnull'=>true],
+ 'updated_at'=>['type'=>'timestamp','notnull'=>true],
+];
+$tableIndexes=['grassguide_checklist_owner'=>['fields'=>['user_id'=>[]],'unique'=>true]];

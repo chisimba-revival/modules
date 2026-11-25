@@ -11,6 +11,7 @@ import tempfile
 root = pathlib.Path(__file__).resolve().parents[2]
 framework = pathlib.Path(os.environ.get('GRASSGUIDE_FRAMEWORK', root.parent / 'framework')).resolve()
 module = root / 'grassguide'
+shared_modules = pathlib.Path(os.environ.get('GRASSGUIDE_SHARED_MODULES', root)).resolve()
 name = 'chisimba-grassguide-' + secrets.token_hex(5)
 password = secrets.token_hex(24)
 preview = '--preview' in sys.argv
@@ -31,7 +32,7 @@ try:
         time.sleep(1)
     else:
         raise RuntimeError('Disposable database did not start')
-    common = ['--user',str(os.getuid())+':'+str(os.getgid()),'-v',photo_store.name+':/photo-store','--network',name,'-e','GRASSGUIDE_TEST=1','-e','GRASSGUIDE_TEST_PASSWORD='+password,'-v',str(framework)+':/framework:ro','-v',str(module)+':/module:ro','--entrypoint','php']
+    common = ['-v',str(shared_modules)+':/shared-modules:ro','--user',str(os.getuid())+':'+str(os.getgid()),'-v',photo_store.name+':/photo-store','--network',name,'-e','GRASSGUIDE_TEST=1','-e','GRASSGUIDE_TEST_PASSWORD='+password,'-v',str(framework)+':/framework:ro','-v',str(module)+':/module:ro','--entrypoint','php']
     run(['docker','run','--rm',*common,'chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','/module/tests/integration.php'])
     if preview:
         run(['docker','run','--rm','-d','--name',name+'-web','-p','127.0.0.1:8768:8080',*common,'chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','-d','upload_max_filesize=10M','-d','post_max_size=48M','-S','0.0.0.0:8080','/module/tests/preview.php'],stdout=subprocess.DEVNULL)

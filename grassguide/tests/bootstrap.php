@@ -74,3 +74,20 @@ $photoFiles->dbLayer='PDO';$photoFiles->dbType='mysqli';$photoFiles->_tableName=
 $GLOBALS['objects']['modulefilestore']=$photoFiles;
 $GLOBALS['objects']['filedelivery']=new filedelivery();
 $GLOBALS['objects']['grassguidephotos']=new grassguidephotos();
+
+require_once '/framework/app/core_modules/security/classes/tokenauthservice_class_inc.php';
+require_once '/shared-modules/entitlement-service/classes/entitlementservice_class_inc.php';
+require_once '/shared-modules/account-event-service/classes/accounteventservice_class_inc.php';
+foreach(['tokenauthservice'=>new TokenAuthService(),'entitlementservice'=>new entitlementservice(),'accounteventservice'=>new accounteventservice()] as $name=>$object){
+    (new ReflectionProperty(dbTable::class,'_db'))->setValue($object,$db);
+    $object->dbLayer='PDO';$object->dbType='mysqli';$object->_serverName='fixture';
+    $object->_tableName=['tokenauthservice'=>'tbl_rest_api_keys','entitlementservice'=>'tbl_entitlement_service_grants','accounteventservice'=>'tbl_account_event_service_events'][$name];
+    $GLOBALS['objects'][$name]=$object;
+}
+$GLOBALS['objects']['userservice']=new class {
+    public bool $active=true;
+    public function findByUserId($id){return in_array($id,['fixture-admin','fixture-other'],true)?['userid'=>$id,'username'=>$id,'isactive'=>$this->active?'1':'0']:null;}
+};
+$GLOBALS['objects']['entitlementservice']->objUsers=$GLOBALS['objects']['userservice'];
+$GLOBALS['objects']['entitlementservice']->objEvents=$GLOBALS['objects']['accounteventservice'];
+$GLOBALS['objects']['grassguidepremium']=new grassguidepremium();

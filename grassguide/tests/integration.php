@@ -80,4 +80,6 @@ require __DIR__.'/contacts.php';
 
 require __DIR__.'/photos.php';
 
+require __DIR__.'/premium.php';
+
 ob_end_flush();

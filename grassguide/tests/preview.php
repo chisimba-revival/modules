@@ -8,7 +8,7 @@ foreach($roots as $prefix=>$root)if(str_starts_with($path,$prefix)){
     if(!$real||!str_starts_with($real,realpath($root).'/')||!in_array(pathinfo($real,PATHINFO_EXTENSION),['css','js','png','woff2','svg'],true)){http_response_code(404);exit;}
     header('Content-Type: '.match(pathinfo($real,PATHINFO_EXTENSION)){'css'=>'text/css','js'=>'text/javascript','png'=>'image/png','svg'=>'image/svg+xml',default=>'font/woff2'});readfile($real);exit;
 }
-session_start(); require __DIR__.'/bootstrap.php';
+session_save_path(sys_get_temp_dir()); session_start(); require __DIR__.'/bootstrap.php';
 if(($_SERVER['HTTP_X_FIXTURE_ROLE']??'')==='outsider')$user->admin=false;
 if(($_SERVER['HTTP_X_FIXTURE_ROLE']??'')==='anonymous')$user->logged=false;
 $c=new grassguide(); $template=$c->dispatch();
