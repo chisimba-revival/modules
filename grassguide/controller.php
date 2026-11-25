@@ -39,7 +39,7 @@ class grassguide extends controller
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
         $action=$this->param('action','index');
-        if (!in_array($action,['premium','createpremiumkey','revokepremiumkey','photos','uploadphotos','resumenc','index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','savecontact','queuepermission','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if (!in_array($action,['removemediabatch','premium','createpremiumkey','revokepremiumkey','photos','uploadphotos','resumenc','index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','savecontact','queuepermission','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
         if ($action==='contributorsexport') {
             if (!in_array($_SERVER['REQUEST_METHOD']??'',['GET','HEAD'],true)) { http_response_code(405); header('Allow: GET, HEAD'); return 'denied_tpl.php'; }
             $groups=$this->getObject('grassguiderights','grassguide')->ncContributors();
@@ -68,7 +68,7 @@ class grassguide extends controller
             echo json_encode($service->export(),JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); exit;
         }
         $id=$this->param('id'); $species=$this->param('species_id'); $record=null; $input=null; $error=''; $message='';
-        $write=in_array($action,['createpremiumkey','revokepremiumkey','uploadphotos','resumenc','savecontact','queuepermission','setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
+        $write=in_array($action,['removemediabatch','createpremiumkey','revokepremiumkey','uploadphotos','resumenc','savecontact','queuepermission','setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
         if ($write) {
             $input=$_POST;
             try {
@@ -84,6 +84,7 @@ class grassguide extends controller
                 elseif ($action==='saverights') $record=$this->getObject('grassguiderights','grassguide')->saveTask($this->param('target'),$input);
                 elseif ($action==='setmembership') $record=$service->setMembership($id,$input);
                 elseif ($action==='save') $record=$service->save($id,$input);
+                elseif ($action==='removemediabatch') $record=$service->removeMediaBatch($id,$input);
                 elseif ($action==='savemedia') $record=$service->saveMedia($species,$id,$input);
                 elseif ($action==='enrich') $message=(string)$service->queueEnrichment();
                 else $message=(string)$service->import($this->param('seed_hash'));
@@ -99,10 +100,10 @@ class grassguide extends controller
                 if(in_array($action,['uploadphotos','resumenc'],true))return $this->nextAction('photos',['id'=>$id,'saved'=>'1']);
                 if(in_array($action,['savecontact','queuepermission'],true))return $this->nextAction('contributors',['contributor'=>$id,($action==='queuepermission'?'queued':'saved')=>'1']);
                 if(in_array($action,['saverights','savepolicy'],true))return $this->nextAction($action==='saverights'?'rightstask':'rights',['target'=>$this->param('target'),'saved'=>'1']);
-                return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
+                return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership','removemediabatch'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
             }
         }
-        $view=['createpremiumkey'=>'premium','revokepremiumkey'=>'premium','uploadphotos'=>'photos','resumenc'=>'photos','savecontact'=>'contributors','queuepermission'=>'contributors','setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
+        $view=['removemediabatch'=>'edit','createpremiumkey'=>'premium','revokepremiumkey'=>'premium','uploadphotos'=>'photos','resumenc'=>'photos','savecontact'=>'contributors','queuepermission'=>'contributors','setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
         if (in_array($view,['photos','edit','membership'],true) && $id!=='') $record=$service->one($id);
         if (in_array($view,['photos','membership'],true) && !$record) { http_response_code(404); return 'denied_tpl.php'; }
         if ($view==='media') {
@@ -119,7 +120,7 @@ class grassguide extends controller
         if (in_array($view,['edit','media'],true) && $id!=='' && !$record && !($write && $input && ($input['revision'] ?? '')==='0')) { http_response_code(404); return 'denied_tpl.php'; }
         $this->setVar('grassContributor',in_array($action,['savecontact','queuepermission'],true)?$id:$this->param('contributor'));
         $this->setVar('grassContactInput',$action==='savecontact'&&$error!==''?$input:null);
-        $this->setVar('grassView',$view); $this->setVar('grassRecord',$record); $this->setVar('grassInput',$error!==''?$input:null);
+        $this->setVar('grassView',$view); $this->setVar('grassRecord',$record); $this->setVar('grassInput',$error!==''&&$action!=='removemediabatch'?$input:null); $this->setVar('grassBatchInput',$action==='removemediabatch'?$input:[]);
         $this->setVar('grassId',$id ?: bin2hex(random_bytes(16))); $this->setVar('grassSpecies',$species);
         $this->setVar('grassQueued',$this->param('queued')==='1');
         $this->setVar('grassError',$error); $this->setVar('grassSaved',$this->param('saved')==='1');

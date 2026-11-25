@@ -55,6 +55,19 @@ class grassguideservice extends ChisimbaObject
         $data['state']=$operation==='remove'?'archived':'draft';
         return self::unpack($this->store()->writeSpecies($id,$revision,$data,$this->actor()));
     }
+    public function removeMediaBatch(string $species, array $input): array
+    {
+        $this->guard(); $this->identity($species,0);
+        $selected=$input['selected']??null;
+        if(!is_array($selected)||!count($selected)||count($selected)>200)throw new DomainException('invalid');
+        $revisions=[];
+        foreach($selected as $value){
+            if(!is_string($value)||!preg_match('/^([a-f0-9]{32}):([1-9][0-9]{0,8})$/D',$value,$match)||isset($revisions[$match[1]]))throw new DomainException('invalid');
+            $revisions[$match[1]]=(int)$match[2];
+        }
+        $this->store()->excludeMediaBatch($species,$revisions,$this->actor());
+        return $this->one($species);
+    }
     public function saveMedia(string $species, string $id, array $input): array
     {
         $this->guard(); $revision=$this->identity($id,$input['revision'] ?? '');

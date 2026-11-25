@@ -372,3 +372,5 @@ or invalidating rights permissions. Source observation IDs/grades and retrieval
 time are retained; no observation location, user details or comments are stored.
 A newly installed version queues missing grade lookups through the normal setup
 action and worker. API errors retain previous data and use existing retries.
+
+Species editors can select multiple images and use **Remove and do not reload**. This retains exclusion records to block provider re-import, preserves credits and provenance, and does not require replacements. Own-photo uploads remain independent; individual Edit can restore a removed image. Batch writes are atomic and check every selected image revision.
