@@ -171,7 +171,7 @@ class grassguiderights extends ChisimbaObject
             $out['ecology_review']=$s['ecology_review'];
             $out['gbif_taxon_key']=$this->store()->matchedGbifKey($s['id'],$s['scientific_name']);
             foreach($inventory['media'][$s['id']] as $m){$item=$map['media:'.$m['id']];if(!self::eligible($item,$mode)){$omitted['media']++;continue;}
-                $data=$item['content'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}$out['media'][]=$data;
+                $data=$item['content'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];$out['media'][]=$data;
             }
             $result[]=$out;
         }

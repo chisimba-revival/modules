@@ -353,3 +353,22 @@ and excluded from the public catalogue. No payment/signup flow is enabled.
 Run the isolated test harness with `GRASSGUIDE_FRAMEWORK` pointing at the shared
 framework and `GRASSGUIDE_SHARED_MODULES` at a checkout containing entitlement
 and account-event services. Tests never send email or touch live grants.
+
+### Image review and observation grades (0.018)
+
+Flag incorrect image opens the media editor with the excluded state selected.
+A private reason is required. The record stays as a per-species/photo tombstone,
+blocking future imports even across image-size URL changes. Active restores it.
+Media writes and worker merges share the species lock; manual edits preserve
+provider/grade provenance. Exclusions are absent from public/commercial exports.
+Older apps pick up removals through catalogue refresh; offline copies cannot be
+remotely removed before reconnecting.
+
+The paced iNaturalist worker matches exact photo IDs against up to 100 most-liked
+observations (four pages of 25, including all quality grades). This is a bounded
+lookup, not an exhaustive photo index: unmatched or ambiguous photos show Grade
+unavailable. It refreshes grade metadata without replacing editorial captions
+or invalidating rights permissions. Source observation IDs/grades and retrieval
+time are retained; no observation location, user details or comments are stored.
+A newly installed version queues missing grade lookups through the normal setup
+action and worker. API errors retain previous data and use existing retries.

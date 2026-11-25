@@ -87,7 +87,7 @@ class grassguidestore extends dbTable
     public function writeMedia(string $species, string $id, int $revision, array $data, string $actor): array
     {
         return $this->transactionWithSavepoint(function () use ($species,$id,$revision,$data,$actor) {
-            if (!$this->one($species)) throw new DomainException('missing');
+            if (!$this->selectExactPrepared('SELECT id FROM tbl_grassguide_species WHERE id=? FOR UPDATE',[$species])) throw new DomainException('missing');
             $current = $this->mediaOne($id);
             if (($current && ($current['species_id'] !== $species || (int)$current['revision'] !== $revision)) || (!$current && $revision !== 0)) throw new DomainException('conflict');
             $payload = json_encode($data,JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
@@ -135,7 +135,7 @@ class grassguidestore extends dbTable
                     $old=$this->selectExactPrepared('SELECT * FROM tbl_grassguide_jobs WHERE id=?',[$id])[0] ?? null;
                     if(!$old) {
                         $count+=$this->executeExactPrepared('INSERT IGNORE INTO tbl_grassguide_jobs (id,species_id,provider,status,due_at,updated_at,attempts,result_json,last_error) VALUES (?,?,?,\'queued\',?,?,0,\'{}\',\'\')',[$id,$row['id'],$provider,$now,$now]);
-                    } elseif(in_array($old['status'],['done','unmatched'],true) && ($old['updated_at']<$stale || ($provider==='grassbase' && !array_key_exists('key_features',json_decode($old['result_json'],true)['fields']??[]) && $old['status']==='done'))) {
+                    } elseif(in_array($old['status'],['done','unmatched'],true) && ($old['updated_at']<$stale || ($provider==='inaturalist' && $old['status']==='done' && !isset(json_decode($old['result_json'],true)['photo_grades'])) || ($provider==='grassbase' && !array_key_exists('key_features',json_decode($old['result_json'],true)['fields']??[]) && $old['status']==='done'))) {
                         $count+=$this->executeExactPrepared('UPDATE tbl_grassguide_jobs SET status=\'queued\',due_at=?,attempts=0,last_error=\'\' WHERE id=? AND status=? AND updated_at=?',[$now,$id,$old['status'],$old['updated_at']]);
                     }
                 }
@@ -205,10 +205,18 @@ class grassguidestore extends dbTable
                 foreach($result['media'] as $media) {
                     if(!empty($data['_block_nc_images'])&&grassguiderights::licence($media['licence']??'')==='nc')continue;
                     $id=md5($row['id'].':'.$media['external_id']);
-                    // Idempotent creates; archived or edited imported photographs stay untouched.
-                    if($this->mediaOne($id))continue;
+                    // A retained exclusion is a tombstone for this species/photo, even if URLs change size.
+                    $blocked=false;foreach($this->mediaFor($row['id']) as $existing){$m=json_decode($existing['payload'],true);if(($m['state']??'')==='excluded' && (grassguideproviders::samePhoto($m,$media))){$blocked=true;break;}}
+                    if($blocked||$this->mediaOne($id))continue;
                     $this->writeMedia($row['id'],$id,0,grassguideinput::media($media)+['_provider'=>$provider,'_external_id'=>$media['external_id']],'grassguide-worker');
                 }
+            }
+            if($job['provider']==='inaturalist'&&$data['state']!=='archived')foreach($this->mediaFor($row['id']) as $existing){
+                $m=json_decode($existing['payload'],true);$photo=grassguideproviders::photoId($m);
+                if(($m['state']??'')!=='active'||!isset($result['photo_grades'][$photo]))continue;
+                $metadata=$result['photo_grades'][$photo];
+                if(($m['_inat']??null)===$metadata)continue;
+                $m['_inat']=$metadata;$this->writeMedia($row['id'],$existing['id'],(int)$existing['revision'],$m,'grassguide-worker');
             }
             $this->executeExactPrepared('UPDATE tbl_grassguide_jobs SET status=?,result_json=?,last_error=\'\',updated_at=? WHERE id=?',[$result['matched']?'done':'unmatched',json_encode($result,JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE),gmdate('Y-m-d H:i:s'),$job['id']]);
         });

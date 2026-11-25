@@ -59,6 +59,7 @@ class grassguideservice extends ChisimbaObject
     {
         $this->guard(); $revision=$this->identity($id,$input['revision'] ?? '');
         $data=grassguideinput::media($input);$old=$this->mediaOne($id);
+        if($old && grassguideproviders::photoId($old)===grassguideproviders::photoId($data) && grassguideproviders::photoId($data)!=='')foreach(['_provider','_external_id','_inat'] as $key)if(isset($old[$key]))$data[$key]=$old[$key];
         if($old&&!empty($old['_file_id'])&&$old['image_url']===$data['image_url'])$data['_file_id']=$old['_file_id'];
         return self::unpack($this->store()->writeMedia($species,$id,$revision,$data,$this->actor()));
     }
