@@ -8,12 +8,13 @@ $start=function($action,$id,$revision) use($hidden,$grassCsrf,$e) {
     return '<form class="chisimba-form chisimba-flow" method="post" enctype="multipart/form-data" data-grass-form action="'.$e($this->uri(['action'=>$action],'grassguide')).'">'.$hidden('id',$id).$hidden('revision',$revision).$hidden('csrf_token',$grassCsrf).'<p data-save-status role="status" aria-live="polite"></p>';
 };
 echo '<div class="chisimba-publishing-layout"><main class="chisimba-flow"><header><h1>'.$t('title').'</h1><p>'.$t('intro').'</p><nav class="chisimba-form-actions chisimba-form-actions--equal" aria-label="'.$t('navigation').'">';
-echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings',['action'=>'setup']).$r->link('rights','shield',['action'=>'rights']).$r->link('new_species','plus',['action'=>'edit']);
+echo $r->link('catalogue','list',['action'=>'index']).$r->link('setup','settings',['action'=>'setup']).$r->link('rights','shield',['action'=>'rights']).$r->link('new_species','plus',['action'=>'edit']).$r->link('premium_access','check',['action'=>'premium']);
 echo $this->getObject('contextualhelp','help')->show('grassguide','administration',true).'</nav></header>';
 if ($grassError!=='') echo '<p role="alert">'.$t($grassError).'</p>';
 if ($grassQueued) echo '<p role="status" data-grass-notice>'.$t('permission_queued').'</p>';
 if ($grassSaved) echo '<p role="status" data-grass-notice>'.$t('saved').'</p>';
 if(in_array($grassView,['rights','contributors','rightstask'],true)) { include __DIR__.'/rights_tpl.php';
+} elseif ($grassView==='premium') { include __DIR__.'/premium_tpl.php';
 } elseif ($grassView==='photos') { include __DIR__.'/photos_tpl.php';
 } elseif ($grassView==='index') {
     $all=$s->all(); $query=$this->getParam('q',''); $query=is_string($query)?mb_substr(trim($query),0,200):'';

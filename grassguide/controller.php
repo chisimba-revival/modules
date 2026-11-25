@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguide extends controller
 {
     public function init() {}
-    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!== 'catalogue' && ($action ?? $this->param('action','index'))!=='photo'; }
+    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue' && !in_array(($action ?? $this->param('action','index')),['photo','premiumstatus','checklistsync'],true); }
     private function param(string $key, string $default = ''): string { $v=$this->getParam($key,$default); return is_string($v) ? $v : $default; }
     private function csrf() { return $this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }
     public function dispatch($action = null)
@@ -12,6 +12,16 @@ class grassguide extends controller
         if($this->param('action','index')==='catalogue') {
             try { $response=$this->getObject('grassguiderights','grassguide')->publicResponse($_SERVER['REQUEST_METHOD']??'',$_SERVER['HTTP_IF_NONE_MATCH']??''); }
             catch(Throwable $e) { error_log('Grass catalogue unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}']; }
+            http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
+        }
+        if($this->param('action','index')==='checklistsync') {
+            try{$response=$this->getObject('grassguidepremium','grassguide')->checklistResponse($_SERVER['REQUEST_METHOD']??'',is_string($_SERVER['HTTP_X_API_KEY']??null)?$_SERVER['HTTP_X_API_KEY']:'',file_get_contents('php://input',false,null,0,32769));}
+            catch(Throwable $e){error_log('Grass checklist unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}'];}
+            http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
+        }
+        if($this->param('action','index')==='premiumstatus') {
+            try{$response=$this->getObject('grassguidepremium','grassguide')->response($_SERVER['REQUEST_METHOD']??'',is_string($_SERVER['HTTP_X_API_KEY']??null)?$_SERVER['HTTP_X_API_KEY']:'');}
+            catch(Throwable $e){error_log('Grass premium unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}'];}
             http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
         }
         if($this->param('action','index')==='photo') {
@@ -29,7 +39,7 @@ class grassguide extends controller
         $service=$this->getObject('grassguideservice','grassguide');
         if (!$service->allowed()) { http_response_code(403); return 'denied_tpl.php'; }
         $action=$this->param('action','index');
-        if (!in_array($action,['photos','uploadphotos','resumenc','index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','savecontact','queuepermission','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
+        if (!in_array($action,['premium','createpremiumkey','revokepremiumkey','photos','uploadphotos','resumenc','index','setup','edit','membership','setmembership','media','save','savemedia','import','enrich','export','rights','contributors','savecontact','queuepermission','contributorsexport','rightstask','saverights','savepolicy','appexport','commercialpreview'],true)) { http_response_code(404); return 'denied_tpl.php'; }
         if ($action==='contributorsexport') {
             if (!in_array($_SERVER['REQUEST_METHOD']??'',['GET','HEAD'],true)) { http_response_code(405); header('Allow: GET, HEAD'); return 'denied_tpl.php'; }
             $groups=$this->getObject('grassguiderights','grassguide')->ncContributors();
@@ -58,13 +68,15 @@ class grassguide extends controller
             echo json_encode($service->export(),JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); exit;
         }
         $id=$this->param('id'); $species=$this->param('species_id'); $record=null; $input=null; $error=''; $message='';
-        $write=in_array($action,['uploadphotos','resumenc','savecontact','queuepermission','setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
+        $write=in_array($action,['createpremiumkey','revokepremiumkey','uploadphotos','resumenc','savecontact','queuepermission','setmembership','save','savemedia','import','enrich','saverights','savepolicy'],true);
         if ($write) {
             $input=$_POST;
             try {
                 if (($_SERVER['REQUEST_METHOD'] ?? '')!=='POST') { http_response_code(405); header('Allow: POST'); throw new DomainException('method'); }
                 if (!$this->csrf()->consume('grassguide-admin',$this->param('csrf_token'))) { http_response_code(403); throw new DomainException('expired'); }
-                if ($action==='uploadphotos') $record=$this->getObject('grassguidephotos','grassguide')->upload($id,$input,$_FILES['photos']??[]);
+                if ($action==='createpremiumkey') $record=$this->getObject('grassguidepremium','grassguide')->create($input);
+                elseif ($action==='revokepremiumkey') $this->getObject('grassguidepremium','grassguide')->revoke($input);
+                elseif ($action==='uploadphotos') $record=$this->getObject('grassguidephotos','grassguide')->upload($id,$input,$_FILES['photos']??[]);
                 elseif ($action==='resumenc') $record=$this->getObject('grassguidephotos','grassguide')->resume($id,$input);
                 elseif ($action==='savecontact') $record=$this->getObject('grassguidecontacts','grassguide')->save($id,$input);
                 elseif ($action==='queuepermission') $record=$this->getObject('grassguidecontacts','grassguide')->queue($id,$input);
@@ -82,14 +94,15 @@ class grassguide extends controller
                 header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode(['ok'=>$error==='','message'=>$error!==''?$r->text($error):(in_array($action,['import','enrich'],true)?sprintf($r->text($action==='enrich'?'enqueued':'imported'),$message):$r->text('saved')),'csrf'=>$this->csrf()->issueForSession('grassguide-admin'),'record'=>$record],JSON_THROW_ON_ERROR); exit;
             }
-            if ($error==='') {
+            if ($error==='' && $action!=='createpremiumkey') {
+                if($action==='revokepremiumkey')return $this->nextAction('premium',['saved'=>'1']);
                 if(in_array($action,['uploadphotos','resumenc'],true))return $this->nextAction('photos',['id'=>$id,'saved'=>'1']);
                 if(in_array($action,['savecontact','queuepermission'],true))return $this->nextAction('contributors',['contributor'=>$id,($action==='queuepermission'?'queued':'saved')=>'1']);
                 if(in_array($action,['saverights','savepolicy'],true))return $this->nextAction($action==='saverights'?'rightstask':'rights',['target'=>$this->param('target'),'saved'=>'1']);
                 return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
             }
         }
-        $view=['uploadphotos'=>'photos','resumenc'=>'photos','savecontact'=>'contributors','queuepermission'=>'contributors','setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
+        $view=['createpremiumkey'=>'premium','revokepremiumkey'=>'premium','uploadphotos'=>'photos','resumenc'=>'photos','savecontact'=>'contributors','queuepermission'=>'contributors','setmembership'=>'membership','save'=>'edit','savemedia'=>'media','import'=>'setup','enrich'=>'setup','savepolicy'=>'rights','saverights'=>'rightstask'][$action] ?? $action;
         if (in_array($view,['photos','edit','membership'],true) && $id!=='') $record=$service->one($id);
         if (in_array($view,['photos','membership'],true) && !$record) { http_response_code(404); return 'denied_tpl.php'; }
         if ($view==='media') {

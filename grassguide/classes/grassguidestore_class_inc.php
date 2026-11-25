@@ -4,6 +4,28 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguidestore extends dbTable
 {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') { parent::init('tbl_grassguide_species', $pearDb, $errorCallback); }
+    /** Serialise per account; device sequence numbers make lost-response retries harmless. */
+    public function syncChecklist(string $userId,string $device,array $operations): array
+    {
+        return $this->transactionWithSavepoint(function() use($userId,$device,$operations) {
+            $this->executeExactPrepared('INSERT INTO tbl_grassguide_checklists (user_id,payload,updated_at) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user_id=user_id',[$userId,'{"ids":[],"devices":{}}',gmdate('Y-m-d H:i:s')]);
+            $row=$this->selectExactPrepared('SELECT payload FROM tbl_grassguide_checklists WHERE user_id=? FOR UPDATE',[$userId])[0];
+            $data=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);
+            $last=$data['devices'][$device]??0;
+            if(!isset($data['devices'][$device])&&count($data['devices'])>=128)throw new DomainException('device_limit');
+            foreach($operations as $op){
+                if($op['seq']<=$last)continue;
+                if($op['seq']!==$last+1)throw new DomainException('sequence');
+                if($op['checked']&&!$this->one($op['id']))throw new DomainException('species');
+                $data['ids']=array_values(array_diff($data['ids'],[$op['id']]));
+                if($op['checked'])$data['ids'][]=$op['id'];
+                $last=$op['seq'];
+            }
+            $data['devices'][$device]=$last;sort($data['ids']);
+            $this->executeExactPrepared('UPDATE tbl_grassguide_checklists SET payload=?,updated_at=? WHERE user_id=?',[json_encode($data,JSON_THROW_ON_ERROR),gmdate('Y-m-d H:i:s'),$userId]);
+            return ['user_id'=>$userId,'ids'=>$data['ids'],'acknowledged'=>$last];
+        });
+    }
     public function rightsAll(): array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights ORDER BY target'); }
     public function rightsOne(string $target): ?array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights WHERE target=?',[$target])[0] ?? null; }
     public function writeRights(string $target,int $revision,array $data,string $actor,string $species): array
