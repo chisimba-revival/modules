@@ -82,4 +82,6 @@ require __DIR__.'/photos.php';
 
 require __DIR__.'/premium.php';
 
+require __DIR__.'/image_review.php';
+
 ob_end_flush();

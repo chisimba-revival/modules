@@ -103,6 +103,38 @@ class grassguideproviders extends ChisimbaObject
         if($heads)$this->field($r,'trait_source','Automatically extracted explicit inflorescence wording. '.$src['citation'].' '.$src['url'],$src);
         return $r;
     }
+    /** Canonical iNaturalist photo identity; never infer it from an arbitrary numeric URL. */
+    public static function photoId(array $media): string
+    {
+        if(preg_match('~^https://(?:www\.)?inaturalist\.org/photos/([1-9][0-9]{0,12})(?:[/?#].*)?$~D',$media['source_url']??'',$m))return $m[1];
+        return '';
+    }
+    public static function samePhoto(array $a,array $b): bool
+    {
+        $id=self::photoId($a);return $id!==''?$id===self::photoId($b):(($a['image_url']??'')!==''&&$a['image_url']===($b['image_url']??''));
+    }
+    /** Exact photo membership only: an observation grade is not a taxon-wide confidence score. */
+    private function photoGrades(array $media,int $taxon): array
+    {
+        $grades=[];$checked=gmdate('c');
+        foreach($media as $m){$id=self::photoId($m);if($id!==''&&($m['state']??'')==='active')$grades[$id]=['photo_id'=>$id,'quality_grade'=>'unavailable','observations'=>[],'checked_at'=>$checked];}
+        if(!$grades)return [];
+        // Bounded lookup of the most-favourited observations; unmatched gallery photos stay unknown.
+        $observations=[];
+        for($page=1;$page<=4;$page++){
+            $x=$this->request('inaturalist','/v1/observations',['taxon_id'=>$taxon,'photos'=>'true','per_page'=>25,'page'=>$page,'order_by'=>'votes','order'=>'desc','verifiable'=>'any']);
+            $batch=$x['results']??[];$observations=array_merge($observations,$batch);if(count($batch)<25)break;
+        }
+        foreach($observations as $observation){
+            $oid=(string)($observation['id']??'');$grade=$observation['quality_grade']??'';
+            if(!preg_match('/^[1-9][0-9]{0,12}$/D',$oid)||!in_array($grade,['casual','needs_id','research'],true))continue;
+            foreach($observation['photos']??[] as $photo){$id=(string)($photo['id']??'');if(!isset($grades[$id]))continue;
+                $grades[$id]['observations'][$oid]=['id'=>$oid,'quality_grade'=>$grade];
+            }
+        }
+        foreach($grades as &$value){$value['observations']=array_values($value['observations']);if(count($value['observations'])===1)$value['quality_grade']=$value['observations'][0]['quality_grade'];}
+        return $grades;
+    }
     private function inaturalist(array $s,array $r): array
     {
         $x=$this->request('inaturalist','/v1/taxa',['q'=>$s['scientific_name'],'rank'=>'species','is_active'=>'true','per_page'=>30]);
@@ -119,6 +151,7 @@ class grassguideproviders extends ChisimbaObject
             $r['media'][]=['external_id'=>'inaturalist:'.$photo,'kind'=>'image','role'=>'other','state'=>'active','source_url'=>'https://www.inaturalist.org/photos/'.$photo,'image_url'=>$url,'youtube_id'=>'','caption'=>$s['scientific_name'].' — iNaturalist taxon photograph','alt_text'=>$s['scientific_name'].' (community-selected taxon photograph)','creator'=>self::plain($p['attribution_name'],300),'licence'=>$licence==='cc0'?'CC0-1.0':strtoupper($licence).'-4.0','rights_note'=>self::plain($p['attribution'] ?? '',1000).'\nRetrieved '.gmdate('c').'; taxon https://www.inaturalist.org/taxa/'.$id.'. Diagnostic view has not been classified.'];
             if(count($r['media'])>=6)break;
         }
+        $r['photo_grades']=$this->photoGrades(array_merge($s['_existing_media']??[],$r['media']),$id);
         return $r;
     }
 }

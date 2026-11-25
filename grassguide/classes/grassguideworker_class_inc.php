@@ -14,6 +14,7 @@ class grassguideworker extends ChisimbaObject
             try {
                 $row=$store->one($job['species_id']);if(!$row)throw new DomainException('missing');
                 $species=grassguideservice::unpack($row);
+                if($provider==='inaturalist')$species['_existing_media']=array_map([grassguideservice::class,'unpack'],$store->mediaFor($row['id']));
                 $result=$species['state']==='archived'?['name'=>$species['scientific_name'],'fields'=>[],'sources'=>[],'media'=>[],'matched'=>false]:$apis->fetch($provider,$species);
                 $store->applyEnrichment($job,$result);
                 return ['selected'=>true,'provider'=>$provider,'species'=>$species['scientific_name'],'matched'=>$result['matched'],'fields'=>count($result['fields']),'media'=>count($result['media'])];

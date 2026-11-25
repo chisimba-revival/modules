@@ -70,8 +70,9 @@ class grassguideinput extends ChisimbaObject
         $data = [];
         $data['kind'] = self::choice($input, 'kind', ['image','youtube'], false);
         $data['role'] = self::choice($input, 'role', self::ROLES, false);
-        $data['state'] = self::choice($input, 'state', ['active','archived'], false);
+        $data['state'] = self::choice($input, 'state', ['active','archived','excluded'], false);
         foreach (['caption'=>1000, 'alt_text'=>1000, 'creator'=>300, 'rights_note'=>3000] as $key=>$limit) $data[$key] = self::text($input, $key, $limit, $key === 'creator' || ($key === 'alt_text' && $data['kind'] === 'image'));
+        $data['exclusion_reason']=self::text($input,'exclusion_reason',1000,$data['state']==='excluded');
         $data['source_url'] = self::url($input, 'source_url', true);
         $data['licence'] = self::choice($input, 'licence', self::LICENCES, false);
         $data['image_url'] = $data['kind'] === 'image' ? self::url($input, 'image_url', true) : '';
