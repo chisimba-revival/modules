@@ -84,6 +84,22 @@ class grassguidestore extends dbTable
             return $count;
         });
     }
+    /** Retain tombstones so provider imports cannot restore removed photographs. */
+    public function excludeMediaBatch(string $species, array $revisions, string $actor): void
+    {
+        $this->transactionWithSavepoint(function() use($species,$revisions,$actor){
+            if(!$this->selectExactPrepared('SELECT id FROM tbl_grassguide_species WHERE id=? FOR UPDATE',[$species]))throw new DomainException('missing');
+            foreach($revisions as $id=>$revision){
+                $row=$this->mediaOne($id);
+                if(!$row||$row['species_id']!==$species||(int)$row['revision']!==$revision)throw new DomainException('conflict');
+                $data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+                if($data['kind']!=='image'||$data['state']==='excluded')throw new DomainException('invalid');
+                $data['state']='excluded';
+                $data['exclusion_reason']='Removed in a batch by the administrator; do not reload for this species.';
+                $this->writeMedia($species,$id,$revision,$data,$actor);
+            }
+        });
+    }
     public function writeMedia(string $species, string $id, int $revision, array $data, string $actor): array
     {
         return $this->transactionWithSavepoint(function () use ($species,$id,$revision,$data,$actor) {

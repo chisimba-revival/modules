@@ -4,6 +4,15 @@
     const labels = document.getElementById('grassguide-labels');
     if (!labels) return;
     const dirty = new Set();
+    document.querySelectorAll('[data-media-all], [data-media-none]').forEach(button => {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+            button.form.querySelectorAll('input[name="selected[]"]').forEach(input => {
+                input.checked = button.hasAttribute('data-media-all');
+                input.dispatchEvent(new Event('change', {bubbles: true}));
+            });
+        });
+    });
     document.querySelectorAll('[data-photo-files]').forEach(input => {
         const previews = input.form.querySelector('[data-photo-previews]');
         let urls = [];
