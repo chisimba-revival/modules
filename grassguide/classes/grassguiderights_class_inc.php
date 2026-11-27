@@ -180,7 +180,7 @@ class grassguiderights extends ChisimbaObject
             $out['ecology_review']=$s['ecology_review'];
             $out['gbif_taxon_key']=$this->store()->matchedGbifKey($s['id'],$s['scientific_name']);
             foreach($inventory['media'][$s['id']] as $m){if(!$premium&&(($m['audience']??'everyone')==='premium'||$m['kind']==='youtube'))continue;$item=$map['media:'.$m['id']];if(!($premium&&$m['kind']==='youtube'&&$item['task']['decision']!=='exclude')&&!self::eligible($item,$mode)){$omitted['media']++;continue;}
-                $data=$item['content'];$data['audience']=$m['kind']==='youtube'?'premium':($m['audience']??'everyone');if(!empty($m['_file_id'])&&$data['audience']==='premium')$data['premium_media_id']=$m['id'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];$out['media'][]=$data;
+                $data=$item['content'];$data['audience']=$m['kind']==='youtube'?'premium':($m['audience']??'everyone');if(!empty($m['_file_id'])&&$data['audience']==='premium')$data['premium_media_id']=$m['id'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];if($m['id']===($s['representative_image']??'')&&$m['kind']==='image')array_unshift($out['media'],$data);else $out['media'][]=$data;
             }
             $result[]=$out;
         }

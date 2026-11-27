@@ -26,6 +26,11 @@
         const update=()=>{const state=section.closest('form').elements.state;const enabled=select.value==='copyright'&&(!state||state.value==='active');section.hidden=!enabled;section.querySelector('[name="copyright_confirm"]').required=enabled;section.querySelector('[name="copyright_evidence"]').required=enabled;};
         select.addEventListener('change',update);section.closest('form').elements.state?.addEventListener('change',update);update();
     });
+    document.querySelectorAll('[data-representative-image]').forEach(select=>{
+        const image=select.parentElement.querySelector('[data-representative-preview]');
+        const update=()=>{const url=select.selectedOptions[0]?.dataset.imageUrl;image.hidden=!url;if(url)image.src=url;else image.removeAttribute('src');};
+        select.addEventListener('change',update);update();
+    });
     const dirty = new Set();
     document.querySelectorAll('[data-media-all], [data-media-none]').forEach(button => {
         button.hidden = false;
