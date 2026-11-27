@@ -58,6 +58,8 @@ if(in_array($grassView,['rights','contributors','rightstask'],true)) { include _
     echo '</div><div class="chisimba-form-actions">'.$r->button('add_species','plus').$r->link('cancel','arrow-left',['action'=>'index']).'</div></form></section>';
 } elseif ($grassView==='edit') {
     $d=array_merge(['state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending','heads'=>[]],$d);
+    if(!empty($d['_merged_into']))echo '<p class="chisimba-notice">'.$t('merged_name').' '.$r->link('edit','pencil',['action'=>'edit','id'=>$d['_merged_into']]).'</p>';
+    elseif(($d['_taxonomy']['status']??'unresolved')!=='accepted')echo '<p class="chisimba-notice">'.$t('unresolved_name').'</p>';
     if($grassRecord) {
         echo '<details><summary>'.$t('enrichment_progress').'</summary><ul>';
         foreach($s->enrichmentJobs($grassId) as $job)echo '<li>'.$e($job['provider']).' — '.$t('job_'.$job['status']).' · '.$e($job['updated_at']).' UTC'.($job['last_error']!==''?' · '.$e($job['last_error']):'').'</li>';

@@ -4,6 +4,71 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguidestore extends dbTable
 {
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') { parent::init('tbl_grassguide_species', $pearDb, $errorCallback); }
+    /** Historical IDs remain valid for offline clients and immutable sighting records. */
+    public function speciesAliases(): array
+    {
+        $aliases=[];
+        foreach($this->all() as $row){$data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);if(!empty($data['_merged_into']))$aliases[$row['id']]=$data['_merged_into'];}
+        return $aliases;
+    }
+    public function canonicalIds(array $ids): array
+    {
+        $aliases=$this->speciesAliases();
+        return array_values(array_unique(array_map(fn($id)=>$aliases[$id]??$id,$ids)));
+    }
+    /** Apply a reviewed, versioned plan atomically; retain source records as redirect archives. */
+    public function reconcileTaxonomy(array $plan,string $actor,bool $apply=false): array
+    {
+        return $this->transactionWithSavepoint(function() use($plan,$actor,$apply){
+            $rows=$this->selectExactPrepared('SELECT * FROM tbl_grassguide_species ORDER BY id FOR UPDATE');
+            $byName=[];foreach($rows as $row)$byName[$row['scientific_name']]=$row;
+            $report=['updated'=>0,'merged'=>0,'unresolved'=>0,'already_applied'=>0,'absent'=>0];$pending=[];
+            foreach($plan['entries'] as $entry){
+                $row=$byName[$entry['original_name']]??null;
+                // Renamed records retain their seed key; manually added records retain the audit marker.
+                if(!$row)foreach($rows as $candidate){$d=json_decode($candidate['payload'],true);if(($d['_taxonomy']['original_name']??'')===$entry['original_name']){$row=$candidate;break;}}
+                if(!$row){$report['absent']++;continue;}
+                $data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
+                if(($data['_taxonomy']['version']??'')===$plan['version']){$report['already_applied']++;continue;}
+                if($row['scientific_name']!==$entry['original_name']||$data['authority']!==$entry['original_authority'])throw new DomainException('taxonomy_changed: '.$entry['original_name']);
+                $target=$byName[$entry['name']]??null;
+                $pending[]=[$row,$entry,$target&&$target['id']!==$row['id']?$target['id']:null];
+            }
+            // Resolve canonical records before folding synonyms into them.
+            usort($pending,fn($a,$b)=>(bool)$a[2]<=>(bool)$b[2]);
+            foreach($pending as [$row,$entry,$targetId]){
+                $data=json_decode(($this->one($row['id']))['payload'],true,32,JSON_THROW_ON_ERROR);
+                $data['_taxonomy']=['version'=>$plan['version'],'original_name'=>$entry['original_name'],'status'=>$entry['status'],'accepted_name'=>$entry['name'],'powo_id'=>$entry['powo_id']];
+                if($targetId){
+                    $report['merged']++;
+                    if(!$apply)continue;
+                    $target=$this->one($targetId);$td=json_decode($target['payload'],true,32,JSON_THROW_ON_ERROR);
+                    $td['synonyms']=implode("\n",array_unique(array_filter(array_merge(explode("\n",$td['synonyms']),explode("\n",$data['synonyms']),[$entry['original_name']]))));
+                    $td['_manual_fields']['synonyms']=true;
+                    if(!empty($data['_block_nc_images']))$td['_block_nc_images']=true;
+                    if(empty($td['representative_image'])&&!empty($data['representative_image']))$td['representative_image']=$data['representative_image'];
+                    $this->writeSpecies($targetId,(int)$target['revision'],$td,$actor);
+                    // Media IDs and content do not change: rights fingerprints and stored-file links survive.
+                    $this->executeExactPrepared('UPDATE tbl_grassguide_media SET species_id=?,revision=revision+1,updated_at=? WHERE species_id=?',[$targetId,gmdate('Y-m-d H:i:s'),$row['id']]);
+                    $data['_merged_into']=$targetId;$data['state']='archived';
+                    $this->audit($targetId,$actor,'taxonomy_merged',['source_id'=>$row['id'],'source'=>$data]);
+                }else{
+                    $report['updated']++;if($entry['status']==='unresolved')$report['unresolved']++;
+                    if(!$apply)continue;
+                    if($entry['name']!==$row['scientific_name'])$data['synonyms']=implode("\n",array_unique(array_filter(array_merge(explode("\n",$data['synonyms']),[$row['scientific_name']]))));
+                    [$data['genus'],$data['epithet']]=explode(' ',$entry['name'],2);
+                    $data['authority']=$entry['authority'];$data['powo_id']=$entry['powo_id'];
+                    if($entry['status']==='accepted')foreach(['authority','powo_id'] as $field)$data['_field_sources'][$field]=['provider'=>'kew','url'=>'https://powo.science.kew.org/taxon/'.$entry['powo_id'],'licence'=>'CC-BY','citation'=>$plan['source'].'. Reviewed name reconciliation.','retrieved_at'=>$plan['version']];
+                    elseif($data['state']==='reviewed')$data['state']='draft';
+                    $data['taxonomy_checked']=$plan['version'];$data['taxonomy_review']=$entry['status']==='accepted'?'reviewed':'pending';
+                    $data['taxonomy_source']=$plan['source'].'. Checked '.$plan['version'].($entry['status']==='unresolved'?'; unresolved name — retained for review.':'; https://powo.science.kew.org/taxon/'.$entry['powo_id']);
+                    foreach(['authority','powo_id','synonyms','taxonomy_checked','taxonomy_review','taxonomy_source'] as $key)$data['_manual_fields'][$key]=true;
+                }
+                $current=$this->one($row['id']);$this->writeSpecies($row['id'],(int)$current['revision'],$data,$actor);
+            }
+            return $report;
+        });
+    }
     /** Serialise per account; device sequence numbers make lost-response retries harmless. */
     public function syncChecklist(string $userId,string $device,array $operations): array
     {
@@ -11,11 +76,13 @@ class grassguidestore extends dbTable
             $this->executeExactPrepared('INSERT INTO tbl_grassguide_checklists (user_id,payload,updated_at) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user_id=user_id',[$userId,'{"ids":[],"devices":{}}',gmdate('Y-m-d H:i:s')]);
             $row=$this->selectExactPrepared('SELECT payload FROM tbl_grassguide_checklists WHERE user_id=? FOR UPDATE',[$userId])[0];
             $data=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);
+            $data['ids']=$this->canonicalIds($data['ids']);$aliases=$this->speciesAliases();
             $last=$data['devices'][$device]??0;
             if(!isset($data['devices'][$device])&&count($data['devices'])>=128)throw new DomainException('device_limit');
             foreach($operations as $op){
                 if($op['seq']<=$last)continue;
                 if($op['seq']!==$last+1)throw new DomainException('sequence');
+                $op['id']=$aliases[$op['id']]??$op['id'];
                 if($op['checked']&&!$this->one($op['id']))throw new DomainException('species');
                 $data['ids']=array_values(array_diff($data['ids'],[$op['id']]));
                 if($op['checked'])$data['ids'][]=$op['id'];
@@ -39,7 +106,7 @@ class grassguidestore extends dbTable
                 if(count($data['sightings'])>=10000||!$this->one($record['species_id']))throw new DomainException('invalid');
                 $data['sightings'][$id]=$record;$data['ids'][]=$record['species_id'];
             }
-            $data['ids']=array_values(array_unique($data['ids']));sort($data['ids']);
+            $data['ids']=$this->canonicalIds($data['ids']);sort($data['ids']);
             $this->executeExactPrepared('UPDATE tbl_grassguide_checklists SET payload=?,updated_at=? WHERE user_id=?',[json_encode($data,JSON_THROW_ON_ERROR),gmdate('Y-m-d H:i:s'),$userId]);
             return ['user_id'=>$userId,'sightings'=>array_values($data['sightings']),'ids'=>$data['ids']];
         });
@@ -90,14 +157,20 @@ class grassguidestore extends dbTable
     public function importSeed(array $rows, string $actor, string $hash): int
     {
         return $this->transaction(function () use ($rows,$actor,$hash) {
-            $count = 0;
+            $count = 0;$imported=[];
             foreach ($rows as $name=>$data) {
                 $key = 'lowveld-v4:'.$name;
                 if ($this->selectExactPrepared('SELECT id FROM tbl_grassguide_species WHERE source_key=? OR scientific_name=?', [$key,$name])) continue;
                 $id = substr(hash('sha256', $key), 0, 32);
                 $this->executeExactPrepared('INSERT INTO tbl_grassguide_species (id,scientific_name,source_key,payload,revision,updated_at,updated_by) VALUES (?,?,?,?,1,?,?)', [$id,$name,$key,json_encode($data,JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),gmdate('Y-m-d H:i:s'),$actor]);
                 $this->audit($id,$actor,'seed_imported',['sha256'=>$hash,'original'=>$data]);
+                $imported[]=$name;
                 $count++;
+            }
+            if($imported){
+                $plan=json_decode(file_get_contents(dirname(__DIR__).'/data/powo-reconciliation-20261127.json'),true,64,JSON_THROW_ON_ERROR);
+                $plan['entries']=array_values(array_filter($plan['entries'],fn($entry)=>in_array($entry['original_name'],$imported,true)));
+                $this->reconcileTaxonomy($plan,$actor,true);
             }
             return $count;
         });
@@ -222,6 +295,7 @@ class grassguidestore extends dbTable
             if($row['scientific_name']!==$result['name'])throw new DomainException('renamed_during_fetch');
             if($data['state']!=='archived') {
                 $provider=$job['provider'];$before=$data;
+                if($provider==='kew'&&isset($result['taxonomy']))$data['_taxonomy']=array_replace($data['_taxonomy']??[],$result['taxonomy']);
                 foreach($result['fields'] as $key=>$value) {
                     if(!empty($data['_manual_fields'][$key]))continue;
                     $owner=$data['_field_sources'][$key]['provider'] ?? null;
@@ -239,8 +313,8 @@ class grassguidestore extends dbTable
                 foreach($result['media'] as $media) {
                     if(!empty($data['_block_nc_images'])&&grassguiderights::licence($media['licence']??'')==='nc')continue;
                     $id=md5($row['id'].':'.$media['external_id']);
-                    // A retained exclusion is a tombstone for this species/photo, even if URLs change size.
-                    $blocked=false;foreach($this->mediaFor($row['id']) as $existing){$m=json_decode($existing['payload'],true);if(($m['state']??'')==='excluded' && (grassguideproviders::samePhoto($m,$media))){$blocked=true;break;}}
+                    // Match moved photos and exclusion tombstones even when provider IDs or URL sizes differ.
+                    $blocked=false;foreach($this->mediaFor($row['id']) as $existing){$m=json_decode($existing['payload'],true);if((($m['state']??'')==='excluded'||(!empty($m['_external_id'])&&$existing['id']!==md5($row['id'].':'.$m['_external_id'])))&&grassguideproviders::samePhoto($m,$media)){$blocked=true;break;}}
                     if($blocked||$this->mediaOne($id))continue;
                     $this->writeMedia($row['id'],$id,0,grassguideinput::media($media)+['_provider'=>$provider,'_external_id'=>$media['external_id']],'grassguide-worker');
                 }

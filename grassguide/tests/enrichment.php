@@ -7,7 +7,7 @@ $apis=new class extends grassguideproviders {
 $GLOBALS['objects']['grassguideproviders']=$apis;
 $GLOBALS['objects']['grassguideworker']=$worker=new grassguideworker();
 $user->admin=false;ggReject(fn()=>$service->queueEnrichment(),'forbidden');$user->admin=true;
-ggCheck($service->queueEnrichment()===895,'All species/provider jobs queued');
+ggCheck($service->queueEnrichment()===865,'All species/provider jobs queued');
 ggCheck($service->queueEnrichment()===0,'Enqueue replay deduplicates');
 $job=$store->nextEnrichment('wikipedia');$species=grassguideservice::unpack($store->one($job['species_id']));
 $name=$species['scientific_name'];

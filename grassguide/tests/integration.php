@@ -19,6 +19,7 @@ $user->admin=true; $user->logged=false; ggReject(fn()=>$service->all(),'forbidde
 ggReject(fn()=>$service->import('bad'),'seed_changed');
 ggCheck($service->import($preview['sha256'])===179,'Initial import');
 ggCheck($service->import($preview['sha256'])===0,'Repeat import');
+ggCheck(count(array_filter($service->all(),fn($s)=>$s['state']!=='archived'))===173,'Fresh import applies reviewed taxonomy');
 $row=$service->all()[0]; $row['diagnostic']="Leaf edge 'quoted' <script>alert(1)</script> é 🌿";
 $saved=$service->save($row['id'],$row); ggCheck($saved['diagnostic']===$row['diagnostic'],'Exact Unicode content');
 ggReject(fn()=>$service->save($row['id'],$row),'conflict');
@@ -91,3 +92,5 @@ require __DIR__.'/copyright.php';
 require __DIR__.'/representative.php';
 
 ob_end_flush();
+
+require __DIR__.'/taxonomy.php';
