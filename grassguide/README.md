@@ -417,3 +417,14 @@ and private permission note as batch uploads. Media and its current permission
 are saved atomically, retaining copyright and respecting the selected audience.
 Archiving or excluding an image does not require a new grant. The PDO fixture
 checks missing confirmation, private evidence, both publication profiles and rollback.
+
+### Representative species photo (0.029)
+
+The species editor's Default species photo selector previews active photos and
+saves the chosen media ID with the species revision. Automatic clears the choice.
+App feeds put the chosen photo first only after applying rights, audience and
+active-state filters, so the existing app displays it after a content update.
+Unavailable selections fall back without disclosing restricted images. Ordinary
+edits and worker enrichment retain the choice. No schema or phone update needed.
+The isolated PDO tests cover selection, stale saves, administrator permissions,
+cross-species rejection, resets and licence/audience/archive fallbacks.

@@ -1,0 +1,25 @@
+<?php
+$user->admin=true;
+$species=$service->save(md5('representative-species'),['revision'=>'0','genus'=>'Representativeus','epithet'=>'fixture','state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending']);$id=$species['id'];
+$base=['revision'=>'0','kind'=>'image','role'=>'habit','state'=>'active','creator'=>'Fixture','alt_text'=>'Fixture','source_url'=>'https://example.org/photo','image_url'=>'https://example.org/first.jpg','licence'=>'CC-BY-4.0'];
+$first=$service->saveMedia($id,md5('representative-first'),$base);
+$chosen=$service->saveMedia($id,md5('representative-chosen'),array_replace($base,['image_url'=>'https://example.org/chosen.jpg','caption'=>'Representative photo']));
+$input=array_replace($species,['representative_image'=>$chosen['id']]);
+$user->admin=false;ggReject(fn()=>$service->save($id,$input),'forbidden');$user->admin=true;
+ggReject(fn()=>$service->save($id,array_replace($input,['representative_image'=>md5('missing-image')])),'invalid_representative');
+$species=$service->save($id,$input);
+ggReject(fn()=>$service->save($id,$input),'conflict');
+$find=function($mode)use($rights,$id){foreach($rights->operatorExport($mode)['species'] as $row)if($row['id']===$id)return $row['media'];};
+foreach(['commercial','noncommercial'] as $mode)ggCheck($find($mode)[0]['image_url']===$chosen['image_url'],'Chosen photo leads eligible feed');
+$chosen=$service->saveMedia($id,$chosen['id'],array_replace($chosen,['licence'=>'CC-BY-NC-4.0']));
+ggCheck($find('noncommercial')[0]['image_url']===$chosen['image_url']&&$find('commercial')[0]['image_url']===$first['image_url'],'NC choice falls back in commercial edition');
+$chosen=$service->saveMedia($id,$chosen['id'],array_replace($chosen,['licence'=>'CC-BY-4.0','audience'=>'premium']));
+ggCheck($find('noncommercial')[0]['image_url']===$first['image_url'],'Premium-only selection stays private');
+$chosen=$service->saveMedia($id,$chosen['id'],array_replace($chosen,['state'=>'archived']));
+ggCheck($find('commercial')[0]['image_url']===$first['image_url'],'Archived selection falls back');
+$species=$service->save($id,$species);ggCheck($species['representative_image']===$chosen['id'],'Ordinary species edits retain selection');
+$species=$service->save($id,array_replace($species,['representative_image'=>'']));ggCheck($species['representative_image']==='','Automatic selection can be restored');
+ggReject(fn()=>$service->save($id,array_replace($species,['representative_image'=>$chosen['id']])),'invalid_representative');
+$other=$service->save(md5('representative-other'),['revision'=>'0','genus'=>'Representativeus','epithet'=>'other','state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending']);
+ggReject(fn()=>$service->save($other['id'],array_replace($other,['representative_image'=>$first['id']])),'invalid_representative');
+echo "PASS representative image: selection, permissions, stale saves, cross-species rejection, rights/audience/archive fallback and reset.\n";

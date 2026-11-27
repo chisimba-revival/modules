@@ -25,6 +25,13 @@ class grassguideservice extends ChisimbaObject
         $revision=$this->identity($id,$input['revision'] ?? '');
         $data=grassguideinput::species($input);
         $old=$this->one($id);
+        $cover=grassguideinput::text($input+['representative_image'=>$old['representative_image']??''],'representative_image',32);
+        if($cover!==''&&$cover!==($old['representative_image']??'')){
+            if(!preg_match('/^[a-f0-9]{32}$/D',$cover))throw new DomainException('invalid_representative');
+            $photo=$this->mediaOne($cover);
+            if(!$photo||$photo['species_id']!==$id||$photo['kind']!=='image'||$photo['state']!=='active')throw new DomainException('invalid_representative');
+        }
+        $data['representative_image']=$cover;
         if ($old) {
             // Metadata is server-owned. Explicit human edits, including clearing a field, win.
             foreach (['_field_sources','_imported_values','_manual_fields','_block_nc_images'] as $key) $data[$key]=$old[$key] ?? [];
