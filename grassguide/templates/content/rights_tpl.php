@@ -5,11 +5,11 @@ if($grassView==='contributors') {
     include __DIR__.'/contributors_tpl.php';
 } elseif($grassView==='rightstask') {
     $item=$grassRightsItem;$d=$grassInput??$item['task'];
-    echo '<h2>'.$t('rights_task').' — '.$e($item['name']).'</h2><p>'.$t($item['kind']==='media'?'media':$item['field']).' · '.$e($item['licence']?:$r->text('rights_unknown')).' · '.$t($item['classification']).'</p>';
+    echo '<h2>'.$t('rights_task').' — '.$r->botanical($item['name']).'</h2><p>'.$t($item['kind']==='media'?'media':$item['field']).' · '.$e($item['licence']?:$r->text('rights_unknown')).' · '.$t($item['classification']).'</p>';
     if($item['stale'])echo '<p role="alert">'.$t('permission_stale').'</p>';
     if($item['source_url']!=='')echo '<p><a href="'.$e($item['source_url']).'" target="_blank" rel="noopener noreferrer">'.$t('open_source').'</a> — '.$e($item['creator']).'</p>';
     if($item['kind']==='media'&&$item['content']['kind']==='image')echo '<img src="'.$e($item['content']['image_url']).'" alt="'.$e($item['content']['alt_text']).'" width="320" referrerpolicy="no-referrer">';
-    if($item['kind']==='field')echo '<details><summary>'.$t('current_content').'</summary><p>'.$e(is_array($item['content']['value'])?implode(', ',$item['content']['value']):$item['content']['value']).'</p></details>';
+    if($item['kind']==='field')echo '<details><summary>'.$t('current_content').'</summary><p>'.$r->botanical(is_array($item['content']['value'])?implode(', ',$item['content']['value']):$item['content']['value']).'</p></details>';
     echo $start('saverights','',$d['revision']??0).$hidden('target',$item['target']).$hidden('fingerprint',$grassInput['fingerprint']??$item['fingerprint']);
     echo '<div class="chisimba-publishing-layout"><fieldset class="chisimba-form-card"><legend>'.$t('replacement_tracking').'</legend>'.$r->select('task_status',$d,['todo','planned','resolved'],false).$r->field('assignee',$d,200).$r->field('due_date',$d,10).$r->field('replacement_url',$d,1500).$r->field('task_notes',$d,4000,false,true).'<p>'.$t('tracking_notice').'</p></fieldset>';
     echo '<fieldset class="chisimba-form-card"><legend>'.$t('publication_decision').'</legend>'.$r->select('decision',$d,['inherit','exclude','commercial_permission'],false).$r->field('permission_evidence',$d,4000,false,true).$r->field('public_credit',$d,1500,false,true).'<p>'.$t('permission_notice').'</p></fieldset></div>';
@@ -36,7 +36,7 @@ if($grassView==='contributors') {
     echo '<form class="chisimba-form chisimba-form-actions" method="get" action="'.$e($this->uri([],'grassguide')).'">'.$hidden('module','grassguide').$hidden('action','rights').$r->field('q',['q'=>$query],200).$r->select('rights_filter',['rights_filter'=>$filter],['nc','priority_1','planned','resolved','rights_unknown','commercial_ok','overdue','all'],false).$r->button('search','search').'</form>';
     echo '<p>'.sprintf($t('rights_page'),$page,$pages,count($matches)).'</p><div class="chisimba-story-grid">';
     foreach(array_slice($matches,($page-1)*30,30) as $i) {
-        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-form-card--anchored chisimba-flow"><h3><i>'.$e($i['name']).'</i></h3><p>'.$t($i['kind']==='media'?'media':$i['field']).' · '.$e($i['licence']?:$r->text('rights_unknown')).'</p><p>'.$t($i['priority']).' · '.$t($i['task']['task_status']).'</p>';
+        echo '<article class="chisimba-form-card chisimba-form-card--wide chisimba-form-card--anchored chisimba-flow"><h3>'.$r->botanical($i['name']).'</h3><p>'.$t($i['kind']==='media'?'media':$i['field']).' · '.$e($i['licence']?:$r->text('rights_unknown')).'</p><p>'.$t($i['priority']).' · '.$t($i['task']['task_status']).'</p>';
         if($i['kind']==='media'&&$i['content']['kind']==='image')echo '<figure><img src="'.$e($i['content']['image_url']).'" alt="'.$e($i['content']['alt_text']).'" width="240" loading="lazy" referrerpolicy="no-referrer"></figure>';
         if($i['task']['assignee']!==''||$i['task']['due_date']!=='')echo '<p>'.$e($i['task']['assignee']).' · '.$e($i['task']['due_date']).'</p>';
         if($i['stale'])echo '<p>'.$t('permission_stale').'</p>';

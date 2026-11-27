@@ -64,7 +64,8 @@ class grassguidephotos extends ChisimbaObject
         if(count($photos)<1||count($photos)>10)throw new DomainException('photo_files');
         $captions=self::captions(grassguideinput::text($input,'captions',12000,true),count($photos));
         $creator=grassguideinput::text($input,'creator',300,true);
-        $licence=grassguideinput::choice($input,'licence',['CC-BY-4.0','CC0-1.0','CC-BY-SA-4.0'],false);
+        $licence=grassguideinput::choice($input,'licence',['CC-BY-4.0','CC0-1.0','CC-BY-SA-4.0','copyright'],false);
+        $evidence='';if($licence==='copyright'){if(($input['copyright_confirm']??'')!=='1')throw new DomainException('copyright_required');$evidence=grassguideinput::text($input,'copyright_evidence',4000,true);}
         $mode=grassguideinput::choice($input,'photo_mode',['add','replace_nc'],false);
         $files=$this->getObject('modulefilestore','filemanager');$total=0;
         foreach($photos as $bytes){
@@ -81,7 +82,14 @@ class grassguidephotos extends ChisimbaObject
                 $url=grassguideinput::url(['url'=>$url],'url',true);
                 $media[$id]=grassguideinput::media(['kind'=>'image','role'=>'other','state'=>'active','source_url'=>$url,'image_url'=>$url,'caption'=>$captions[$i],'alt_text'=>$captions[$i],'creator'=>$creator,'licence'=>$licence,'rights_note'=>'','audience'=>$input['audience']??'everyone'])+['_file_id'=>$file];
             }
-            return grassguideservice::unpack($this->store()->writePhotoBatch($species,(int)$current['revision'],$media,$mode,$this->service()->actor()));
+            return $this->store()->transactionWithSavepoint(function()use($species,$current,$media,$mode,$licence,$evidence,$creator){
+                $saved=grassguideservice::unpack($this->store()->writePhotoBatch($species,(int)$current['revision'],$media,$mode,$this->service()->actor()));
+                if($licence==='copyright'){
+                    $rights=$this->getObject('grassguiderights','grassguide');
+                    foreach(array_keys($media) as $id){$target='media:'.$id;$item=$rights->target($target);$rights->saveTask($target,['revision'=>'0','fingerprint'=>$item['fingerprint'],'decision'=>'commercial_permission','task_status'=>'resolved','permission_evidence'=>$evidence,'public_credit'=>'© '.$creator.' — Used with permission. All rights reserved.']);}
+                }
+                return $saved;
+            });
         } catch(Throwable $e) {
             foreach($created as $id)try{$files->discard('grassguide','grassguidephotos',$id);}catch(Throwable $cleanup){error_log('Grass guide unlinked photo cleanup failed.');}
             throw $e;
