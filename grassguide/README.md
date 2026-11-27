@@ -389,3 +389,22 @@ the entire batch. The server returns only that credential owner's records.
 Coordinates never enter public exports or worker/catalogue records. Free,
 revoked and wrong-scope keys cannot read or write sightings. No schema upgrade.
 The app provides contextual Help; first-version records are append-only.
+
+### Botanical typography and copyright uploads (0.023)
+
+Similar species, Habitat and Ecological references have an Italicise selection
+button and live preview. Single asterisks mark explicit italics in otherwise plain
+stored text. Catalogue scientific names, genera and abbreviated binomials are
+formatted automatically in displayed prose, captions and scientific-name labels.
+Authors remain upright; subsp./ssp./var./f. rank abbreviations remain upright even
+inside explicit italics. HTML input is escaped. Native input/select values and
+plain-text exports remain text; no stored species/content migration is performed.
+
+Photo uploads support © All rights reserved. The administrator must confirm
+ownership or permission covering the free and paid app and supply a private
+permission note. The batch stores the original copyright designation plus a
+fingerprint-bound rights permission and © photographer credit through the existing
+Rights and publication service, in the same transaction as the upload. A failed
+permission write rolls back the batch and removes new files. Copyright without
+recorded permission remains unpublished; later content changes invalidate the
+permission as before. Permission evidence is never exported to public clients.

@@ -3,6 +3,29 @@
     'use strict';
     const labels = document.getElementById('grassguide-labels');
     if (!labels) return;
+    // Escaped text and generated <i> elements only; editorial text is never HTML.
+    const escapeBotanical = text => text.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const italic = text => '<i>'+escapeBotanical(text).replace(/\b(subsp\.|ssp\.|var\.|f\.) /gu,'</i>$1 <i>')+'</i>';
+    document.querySelectorAll('[data-botanical-editor]').forEach(editor => {
+        const button=editor.querySelector('[data-italic-target]'),field=document.getElementById(button.dataset.italicTarget),preview=editor.querySelector('[data-botanical-preview]');
+        const names=JSON.parse(editor.dataset.botanicalNames).sort((a,b)=>b.length-a.length);
+        const pattern=new RegExp('(?<![\\p{L}-])('+names.map(n=>n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')(?![\\p{L}-])','gu');
+        const refresh=()=>{preview.innerHTML=field.value.split(/\*([^*\r\n]+)\*/gu).map((part,i)=>i%2?italic(part):part.split(pattern).map((text,j)=>j%2?italic(text):escapeBotanical(text)).join('')).join('').replace(/\n/g,'<br>');};
+        button.hidden=false;field.addEventListener('input',refresh);
+        button.addEventListener('click',()=>{
+            const start=field.selectionStart,end=field.selectionEnd;
+            field.focus();if(start===end)return;
+            const text=field.value.slice(start,end),already=text.startsWith('*')&&text.endsWith('*');
+            const replacement=already?text.slice(1,-1):'*'+text+'*';
+            if(field.value.length+replacement.length-text.length>field.maxLength)return;
+            field.setRangeText(replacement,start,end,'select');field.dispatchEvent(new Event('input',{bubbles:true}));
+        });
+    });
+    document.querySelectorAll('[data-copyright-permission]').forEach(section=>{
+        const select=section.closest('form').elements.licence;
+        const update=()=>{const enabled=select.value==='copyright';section.hidden=!enabled;section.querySelector('[name="copyright_confirm"]').required=enabled;section.querySelector('[name="copyright_evidence"]').required=enabled;};
+        select.addEventListener('change',update);update();
+    });
     const dirty = new Set();
     document.querySelectorAll('[data-media-all], [data-media-none]').forEach(button => {
         button.hidden = false;
