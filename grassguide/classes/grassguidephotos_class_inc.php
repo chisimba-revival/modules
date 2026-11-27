@@ -3,6 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguidephotos extends ChisimbaObject
 {
+    public function init() { $this->service(); }
     private ?string $premiumMedia=null;
     private function service() { return $this->getObject('grassguideservice','grassguide'); }
     private function store() { return $this->getObject('grassguidestore','grassguide'); }

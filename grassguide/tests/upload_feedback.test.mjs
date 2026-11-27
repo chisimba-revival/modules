@@ -21,6 +21,7 @@ function fixture() {
     };
     class FormData {
         constructor(){submittedBeforeDisabled=!field.disabled;}
+        *[Symbol.iterator](){yield ['captions',field.value];}
         set(){} get(){return 'species';} has(){return false;}
     }
     runInNewContext(source, {
@@ -39,7 +40,7 @@ function fixture() {
         state:()=>({reset,destination,submittedBeforeDisabled})};
 }
 test('pending upload shows busy feedback, protects work, then clears it only on success',async()=>{
-    const f=fixture();f.handlers.change();assert.equal(f.dirty(),true);
+    const f=fixture();f.field.value='Edited caption';f.handlers.change();assert.equal(f.dirty(),true);
     const request=f.submit();
     assert.equal(f.state().submittedBeforeDisabled,true);
     assert.equal(f.field.disabled,true);assert.equal(f.button.disabled,true);
@@ -54,11 +55,17 @@ test('pending upload shows busy feedback, protects work, then clears it only on 
     assert.equal(f.button.disabled,true); // Cannot resubmit while navigation is pending.
 });
 test('rejected upload restores controls and preserves unsaved work with visible errors',async()=>{
-    const f=fixture();f.handlers.input();const request=f.submit();f.respond(false);await request;
+    const f=fixture();f.field.value='Edited caption';f.handlers.input();const request=f.submit();f.respond(false);await request;
     assert.equal(f.field.disabled,false);assert.equal(f.disabled.disabled,true);
     assert.equal(f.button.disabled,false);assert.equal(f.progress.hidden,true);
     assert.equal(f.form.elements.csrf_token.value,'renewed');
     assert.equal(f.state().reset,false);assert.equal(f.state().destination,undefined);
     assert.equal(f.dirty(),true);assert.deepEqual(f.statuses.map(s=>s.textContent),['Caption mismatch','Caption mismatch']);
     f.handlers.invalid();assert.equal(f.statuses[1].textContent,'Check fields');
+});
+
+test('undoing upload edits clears the warning without losing remaining changes',()=>{
+    const f=fixture(), original=f.field.value;
+    f.field.value='Edited caption';f.handlers.change();assert.equal(f.dirty(),true);
+    f.field.value=original;f.handlers.change();assert.equal(f.dirty(),false);
 });
