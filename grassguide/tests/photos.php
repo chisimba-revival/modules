@@ -6,9 +6,13 @@ $base=['kind'=>'image','role'=>'other','state'=>'active','source_url'=>'https://
 $nc=$service->saveMedia($id,bin2hex(random_bytes(16)),['revision'=>'0']+$base);
 $cc=$service->saveMedia($id,bin2hex(random_bytes(16)),array_merge($base,['revision'=>'0','licence'=>'CC-BY-4.0']));
 $png=base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aV1EAAAAASUVORK5CYII=');
-$in=['revision'=>(string)$species['revision'],'captions'=>'Whole plant, "Head, close up"','creator'=>'Fixture Photographer','licence'=>'CC-BY-4.0','photo_mode'=>'replace_nc'];
-ggCheck(grassguidephotos::captions($in['captions'],2)===['Whole plant','Head, close up'],'CSV quoted caption');
+$in=['revision'=>(string)$species['revision'],'captions'=>"Whole plant\nHead, close up",'creator'=>'Fixture Photographer','licence'=>'CC-BY-4.0','photo_mode'=>'replace_nc'];
+ggCheck(grassguidephotos::captions($in['captions'],2)===['Whole plant','Head, close up'],'Line captions preserve commas');
 ggReject(fn()=>grassguidephotos::captions('One',2),'caption_count');
+ggCheck(grassguidephotos::captions("*Themeda triandra*, flower head\r\nLigule | detail\r\n",2)===['*Themeda triandra*, flower head','Ligule | detail'],'Windows lines, trailing newline and formatting preserved');
+ggCheck(grassguidephotos::captions('Head, "close up"',1)===['Head, "close up"'],'Single caption punctuation preserved');
+ggReject(fn()=>grassguidephotos::captions("One\n\nTwo",3),'caption_count');
+ggReject(fn()=>grassguidephotos::captions('One, Two',2),'caption_count');
 $user->admin=false;ggReject(fn()=>$photos->saveBatch($id,$in,[$png,$png]),'forbidden');$user->admin=true;
 ggReject(fn()=>$photos->saveBatch($id,$in,[$png,'<svg>bad</svg>']),'photo_files');
 ggReject(fn()=>$photos->saveBatch($id,$in,[$png,"\xff\xd8\xff\xe0".str_repeat('x',50)]),'photo_files');
@@ -40,4 +44,4 @@ foreach(['uploadphotos','resumenc'] as $action){
  $_SERVER['REQUEST_METHOD']='POST';http_response_code(200);$c=new grassguide();$c->dispatch();ggCheck(http_response_code()===403,'Photo writes require CSRF');
 }
 $_GET=[];$_POST=[];$_SERVER['REQUEST_METHOD']='GET';http_response_code(200);
-echo "PASS photo batches: quoted captions, File Manager bytes, upload validation, transactional replacement, file cleanup, stale retry, retained bindings, worker block/resume, publication access, method and CSRF.\n";
+echo "PASS photo batches: line captions, File Manager bytes, upload validation, transactional replacement, file cleanup, stale retry, retained bindings, worker block/resume, publication access, method and CSRF.\n";
