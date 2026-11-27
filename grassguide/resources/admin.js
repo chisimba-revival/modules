@@ -39,9 +39,17 @@
     document.querySelectorAll('[data-photo-files]').forEach(input => {
         const previews = input.form.querySelector('[data-photo-previews]');
         let urls = [];
+        const clear = input.form.querySelector('[data-clear-photos]');
+        clear.hidden = false; clear.disabled = !input.files.length;
+        clear.addEventListener('click', () => {
+            input.value = '';
+            input.dispatchEvent(new Event('change', {bubbles:true}));
+            input.focus();
+        });
         input.addEventListener('change', () => {
             urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
             previews.replaceChildren();
+            clear.disabled = !input.files.length;
             input.form.querySelector('[data-photo-selection-status]').textContent = input.files.length ? labels.dataset.photoSelected.replace('%s', input.files.length) : '';
             [...input.files].forEach((file, index) => {
                 const item = document.createElement('article');
@@ -79,12 +87,17 @@
     });
     document.querySelectorAll('[data-grass-form]').forEach(form => {
         const isUpload = new URL(form.action).searchParams.get('action') === 'uploadphotos';
+        // File selection can be undone without discarding captions or other edits.
+        const uploadState = () => JSON.stringify([...new FormData(form)].filter(([key]) => key !== 'csrf_token').map(([key,value]) =>
+            [key, typeof value === 'string' ? value : value.name ? [value.name,value.size,value.lastModified] : null]));
+        const originalUpload = isUpload ? uploadState() : null;
         const setStatus = message => form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = message; });
         if (isUpload) form.addEventListener('invalid', () => setStatus(labels.dataset.uploadInvalid), true);
         const changed = () => {
             if (form.dataset.busy === '1') return;
-            dirty.add(form);
-            form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = labels.dataset.unsaved; });
+            if (isUpload && uploadState() === originalUpload) dirty.delete(form);
+            else dirty.add(form);
+            setStatus(dirty.has(form) ? labels.dataset.unsaved : '');
             if (new URL(form.action).searchParams.get('action') === 'savecontact') {
                 document.querySelectorAll('[data-grass-form]').forEach(other => {
                     if (new URL(other.action).searchParams.get('action') !== 'queuepermission') return;
