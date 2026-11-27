@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguide extends controller
 {
     public function init() {}
-    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue' && !in_array(($action ?? $this->param('action','index')),['photo','premiumphoto','premiumcatalogue','premiumstatus','checklistsync'],true); }
+    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue' && !in_array(($action ?? $this->param('action','index')),['photo','premiumphoto','premiumcatalogue','premiumstatus','checklistsync','sightingssync'],true); }
     private function param(string $key, string $default = ''): string { $v=$this->getParam($key,$default); return is_string($v) ? $v : $default; }
     private function csrf() { return $this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }
     public function dispatch($action = null)
@@ -21,6 +21,11 @@ class grassguide extends controller
             catch(DomainException $e){http_response_code(403);echo '{"error":"premium_required"}';}
             catch(Throwable $e){http_response_code(503);echo '{"error":"unavailable"}';}
             exit;
+        }
+        if($this->param('action','index')==='sightingssync') {
+            try{$response=$this->getObject('grassguidepremium','grassguide')->sightingsResponse($_SERVER['REQUEST_METHOD']??'',is_string($_SERVER['HTTP_X_API_KEY']??null)?$_SERVER['HTTP_X_API_KEY']:'',file_get_contents('php://input',false,null,0,65537));}
+            catch(Throwable $e){error_log('Grass sightings unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}'];}
+            http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
         }
         if($this->param('action','index')==='checklistsync') {
             try{$response=$this->getObject('grassguidepremium','grassguide')->checklistResponse($_SERVER['REQUEST_METHOD']??'',is_string($_SERVER['HTTP_X_API_KEY']??null)?$_SERVER['HTTP_X_API_KEY']:'',file_get_contents('php://input',false,null,0,32769));}

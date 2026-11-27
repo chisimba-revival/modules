@@ -26,6 +26,24 @@ class grassguidestore extends dbTable
             return ['user_id'=>$userId,'ids'=>$data['ids'],'acknowledged'=>$last];
         });
     }
+    /** Immutable sighting IDs make offline retries safe; coordinates remain account-private. */
+    public function syncSightings(string $userId,array $records): array
+    {
+        return $this->transactionWithSavepoint(function() use($userId,$records){
+            $this->executeExactPrepared('INSERT INTO tbl_grassguide_checklists (user_id,payload,updated_at) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user_id=user_id',[$userId,'{"ids":[],"devices":{}}',gmdate('Y-m-d H:i:s')]);
+            $row=$this->selectExactPrepared('SELECT payload FROM tbl_grassguide_checklists WHERE user_id=? FOR UPDATE',[$userId])[0];
+            $data=json_decode($row['payload'],true,512,JSON_THROW_ON_ERROR);$data['sightings']=$data['sightings']??[];
+            foreach($records as $record){
+                $id=$record['id'];
+                if(isset($data['sightings'][$id])){if($data['sightings'][$id]!=$record)throw new DomainException('conflict');continue;}
+                if(count($data['sightings'])>=10000||!$this->one($record['species_id']))throw new DomainException('invalid');
+                $data['sightings'][$id]=$record;$data['ids'][]=$record['species_id'];
+            }
+            $data['ids']=array_values(array_unique($data['ids']));sort($data['ids']);
+            $this->executeExactPrepared('UPDATE tbl_grassguide_checklists SET payload=?,updated_at=? WHERE user_id=?',[json_encode($data,JSON_THROW_ON_ERROR),gmdate('Y-m-d H:i:s'),$userId]);
+            return ['user_id'=>$userId,'sightings'=>array_values($data['sightings']),'ids'=>$data['ids']];
+        });
+    }
     public function rightsAll(): array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights ORDER BY target'); }
     public function rightsOne(string $target): ?array { return $this->selectExactPrepared('SELECT * FROM tbl_grassguide_rights WHERE target=?',[$target])[0] ?? null; }
     public function writeRights(string $target,int $revision,array $data,string $actor,string $species): array
