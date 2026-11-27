@@ -68,6 +68,7 @@ class grassguideinput extends ChisimbaObject
     public static function media(array $input): array
     {
         $data = [];
+        $data['audience']=self::choice($input+['audience'=>'everyone'],'audience',['everyone','premium'],false);
         $data['kind'] = self::choice($input, 'kind', ['image','youtube'], false);
         $data['role'] = self::choice($input, 'role', self::ROLES, false);
         $data['state'] = self::choice($input, 'state', ['active','archived','excluded'], false);
