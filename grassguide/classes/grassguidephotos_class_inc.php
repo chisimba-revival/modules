@@ -33,11 +33,10 @@ class grassguidephotos extends ChisimbaObject
         if(!$allowed)throw new DomainException('missing');
         $this->premiumMedia=$id;try{return $this->read($id);}finally{$this->premiumMedia=null;}
     }
-    public static function captions(string $csv,int $count): array
+    public static function captions(string $text,int $count): array
     {
-        $stream=fopen('php://temp','w+');fwrite($stream,$csv);rewind($stream);
-        try{$values=fgetcsv($stream,0,',','"','');$extra=fgetcsv($stream,0,',','"','');}finally{fclose($stream);}
-        if(!is_array($values)||count($values)!==$count||$extra!==false)throw new DomainException('caption_count');
+        $values=preg_split('/\r\n|\r|\n/',trim($text));
+        if(count($values)!==$count || in_array('',array_map('trim',$values),true))throw new DomainException('caption_count');
         return array_map(fn($v)=>grassguideinput::text(['caption'=>$v],'caption',1000,true),$values);
     }
     public function upload(string $species,array $input,array $files): array

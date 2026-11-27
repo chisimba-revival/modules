@@ -305,8 +305,9 @@ before queueing.
 
 From a saved species, choose **Upload photos**. Select 1–10 JPEG/PNG/WebP images
 (up to 10 MiB each, 40 MiB total, 24 megapixels and 8192 pixels per side), then
-supply a comma-separated caption for each in the numbered preview order. Quote
-captions containing commas. Credit and CC BY / CC0 / CC BY-SA apply to the batch.
+supply one caption per line in the numbered preview order. Commas, pipes and
+quotation marks are ordinary caption text. Caption fields support Italicise
+selection and a preview; single asterisks mark explicit italics. Credit and CC BY / CC0 / CC BY-SA apply to the batch.
 Images retain their original bytes, including any embedded metadata; prepare
 web-sized photographs before uploading when appropriate.
 
@@ -330,7 +331,7 @@ reload and check the species before retrying.
 
 Run `GRASSGUIDE_FRAMEWORK=/path/to/current/framework python3 grassguide/tests/run.py`
 against a framework with File Manager's `modulefilestore::storeMedia` contract.
-The isolated suite covers real stored bytes, rollback/cleanup, permissions, CSV
+The isolated suite covers real stored bytes, rollback/cleanup, permissions, line-caption
 mapping, archive/block/resume and worker merging. With `--preview` running, use
 `python3 grassguide/tests/http_photos.py` for the HTTP byte delivery contract.
 

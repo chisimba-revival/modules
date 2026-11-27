@@ -42,7 +42,7 @@ class grassguiderenderer extends ChisimbaObject
         $e=[self::class,'escape']; $attributes=' id="gg-'.$key.'" name="'.$key.'" maxlength="'.$max.'"'.($required?' required':'');
         $control=$multiline?'<textarea'.$attributes.' rows="4">'.$e($data[$key] ?? '').'</textarea>':'<input type="text"'.$attributes.' value="'.$e($data[$key] ?? '').'">';
         $format='';
-        if(in_array($key,['similar','habitat','ecology_source'],true)){
+        if(in_array($key,['similar','habitat','ecology_source','caption','captions'],true)){
             $format='<div class="chisimba-stack" data-botanical-editor data-botanical-names="'.$e(json_encode($this->names(),JSON_THROW_ON_ERROR)).'"><div class="chisimba-form-actions"><button type="button" class="button" hidden data-italic-target="gg-'.$key.'">'.$this->getObject('iconservice','ui')->render('pencil',['decorative'=>true]).'<span>'.$e($this->text('italic_selection')).'</span></button></div><p class="chisimba-help-text">'.$e($this->text('italic_help')).'</p><div class="chisimba-prose" data-botanical-preview aria-label="'.$e($this->text('format_preview')).'">'.nl2br($this->botanical($data[$key]??'')).'</div></div>';
         }
         return '<div class="chisimba-form-field"><label for="gg-'.$key.'">'.$e($this->text($key)).($required?' *':'').'</label>'.$control.$format.$this->provenance($key,$data).'</div>';
