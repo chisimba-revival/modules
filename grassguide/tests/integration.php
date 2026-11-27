@@ -85,5 +85,6 @@ require __DIR__.'/premium.php';
 require __DIR__.'/image_review.php';
 require __DIR__.'/batch_removal.php';
 require __DIR__.'/premium_content.php';
+require __DIR__.'/sightings.php';
 
 ob_end_flush();
