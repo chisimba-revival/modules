@@ -42,6 +42,7 @@
         input.addEventListener('change', () => {
             urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
             previews.replaceChildren();
+            input.form.querySelector('[data-photo-selection-status]').textContent = input.files.length ? labels.dataset.photoSelected.replace('%s', input.files.length) : '';
             [...input.files].forEach((file, index) => {
                 const item = document.createElement('article');
                 item.className = 'chisimba-form-card chisimba-form-card--wide';
@@ -77,7 +78,11 @@
         dialog.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
     });
     document.querySelectorAll('[data-grass-form]').forEach(form => {
+        const isUpload = new URL(form.action).searchParams.get('action') === 'uploadphotos';
+        const setStatus = message => form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = message; });
+        if (isUpload) form.addEventListener('invalid', () => setStatus(labels.dataset.uploadInvalid), true);
         const changed = () => {
+            if (form.dataset.busy === '1') return;
             dirty.add(form);
             form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = labels.dataset.unsaved; });
             if (new URL(form.action).searchParams.get('action') === 'savecontact') {
@@ -96,12 +101,18 @@
             event.preventDefault();
             if (form.dataset.busy === '1' || form.dataset.draftDirty === '1') return;
             form.dataset.busy = '1';
-            const setStatus = message => form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = message; });
             const buttons = [...form.querySelectorAll('button[type="submit"]')];
             const body = new FormData(form);
             body.set('ajax', '1');
-            buttons.forEach(button => { button.disabled = true; });
-            setStatus(labels.dataset.saving);
+            const controls = isUpload ? [...form.elements].filter(control => !control.disabled) : buttons;
+            const progress = form.querySelector('[data-upload-progress]');
+            const buttonLabels = buttons.map(button => button.innerHTML);
+            let saved = false;
+            controls.forEach(control => { control.disabled = true; });
+            form.setAttribute('aria-busy', 'true');
+            if (progress) progress.hidden = false;
+            if (isUpload) buttons.forEach(button => { button.textContent = labels.dataset.uploadBusy; });
+            setStatus(isUpload ? labels.dataset.uploadBusy : labels.dataset.saving);
             try {
                 const response = await fetch(form.action, {method: 'POST', body, credentials: 'same-origin', headers: {'Accept': 'application/json'}});
                 const data = await response.json();
@@ -109,7 +120,9 @@
                 if (typeof data.message !== 'string' || typeof data.ok !== 'boolean') throw new Error('Unexpected response');
                 setStatus(data.message);
                 if (data.ok && response.ok) {
+                    saved = true;
                     dirty.delete(form);
+                    if (isUpload) form.reset();
                     // Reload only after a confirmed save, including new record links/preview.
                     const destination = new URL(form.action);
                     const action = destination.searchParams.get('action');
@@ -117,7 +130,7 @@
                         destination.searchParams.set('action', 'contributors');
                         destination.searchParams.set('contributor', body.get('id'));
                     } else if (['uploadphotos', 'resumenc'].includes(action)) {
-                        destination.searchParams.set('action', 'photos');
+                        destination.searchParams.set('action', action === 'uploadphotos' ? 'edit' : 'photos');
                     } else if (['saverights', 'savepolicy'].includes(action)) {
                         destination.searchParams.set('action', action === 'saverights' ? 'rightstask' : 'rights');
                         if (body.has('target')) destination.searchParams.set('target', body.get('target'));
@@ -129,8 +142,13 @@
             } catch (_) {
                 setStatus(labels.dataset.failed);
             } finally {
-                buttons.forEach(button => { button.disabled = false; });
-                form.dataset.busy = '0';
+                if (!saved) {
+                    controls.forEach(control => { control.disabled = false; });
+                    buttons.forEach((button, index) => { button.innerHTML = buttonLabels[index]; });
+                    form.dataset.busy = '0';
+                    form.removeAttribute('aria-busy');
+                    if (progress) progress.hidden = true;
+                }
             }
         });
     });

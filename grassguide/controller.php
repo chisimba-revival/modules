@@ -110,7 +110,7 @@ class grassguide extends controller
             }
             if ($error==='' && $action!=='createpremiumkey') {
                 if($action==='revokepremiumkey')return $this->nextAction('premium',['saved'=>'1']);
-                if(in_array($action,['uploadphotos','resumenc'],true))return $this->nextAction('photos',['id'=>$id,'saved'=>'1']);
+                if(in_array($action,['uploadphotos','resumenc'],true))return $this->nextAction($action==='uploadphotos'?'edit':'photos',['id'=>$id,'saved'=>'1']);
                 if(in_array($action,['savecontact','queuepermission'],true))return $this->nextAction('contributors',['contributor'=>$id,($action==='queuepermission'?'queued':'saved')=>'1']);
                 if(in_array($action,['saverights','savepolicy'],true))return $this->nextAction($action==='saverights'?'rightstask':'rights',['target'=>$this->param('target'),'saved'=>'1']);
                 return $this->nextAction(in_array($action,['import','enrich'],true)?'setup':(in_array($action,['save','setmembership','removemediabatch'],true)?'edit':'media'),['id'=>$id,'species_id'=>$species,'saved'=>'1']);
