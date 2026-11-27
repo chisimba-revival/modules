@@ -35,7 +35,9 @@ class grassguideproviders extends ChisimbaObject
         // Bulk data is cached with the module rather than downloaded per species.
         static $cache=null;
         $cache ??= json_decode(file_get_contents(dirname(__DIR__).'/data/grassbase-lowveld.json'),true,64,JSON_THROW_ON_ERROR);
-        $record=$cache['species'][$s['scientific_name']] ?? null;if(!$record)return $r;
+        $record=$cache['species'][$s['scientific_name']] ?? null;
+        if(!$record&&($s['_taxonomy']['status']??'')==='accepted')$record=$cache['species'][$s['_taxonomy']['original_name']??'']??null;
+        if(!$record)return $r;
         $r['matched']=true;$r['identifier']=$record['original_name'];$r['match']=$record['match'];$r['characters']=$record['characters'];
         $src=$this->source('grassbase','https://doi.org/'.$cache['doi'],$cache['licence'],$record['citation'].' Imported from the versioned local dataset cache.');
         foreach($record['fields'] as $key=>$value){$fieldSource=$src;if($key==='key_features')$fieldSource['citation'].=' Field highlights translated and selected from explicit structured characters against regional peers; not a definitive identification key.';$this->field($r,$key,$value,$fieldSource);}
@@ -43,10 +45,22 @@ class grassguideproviders extends ChisimbaObject
     }
     private function kew(array $s,array $r): array
     {
-        $x=$this->request('kew','/search',['q'=>$s['scientific_name'],'pageSize'=>20]);
-        $hits=array_values(array_filter($x['searchResults']['results'] ?? [],fn($v)=>($v['scientificName'] ?? '')===$s['scientific_name'] && ($v['rank'] ?? '')==='species' && ($v['taxonomicStatus'] ?? '')==='Accepted'));
+        $r['taxonomy']=['status'=>'unresolved','checked_at'=>gmdate('Y-m-d')];
+        $x=$this->request('kew','/search',['q'=>$s['scientific_name'],'pageSize'=>100]);
+        $hits=array_values(array_filter($x['searchResults']['results'] ?? [],fn($v)=>($v['scientificName'] ?? '')===$s['scientific_name'] && ($v['rank'] ?? '')==='species'));
+        if(count($hits)>1)$hits=array_values(array_filter($hits,fn($v)=>($v['author']??'')===($s['authority']??'')));
         if(count($hits)!==1)return $r;
-        $id=$hits[0]['guid'] ?? ''; if(!preg_match('/^urn:lsid:ipni\.org:names:[0-9]+-[0-9]+$/D',$id))return $r;
+        $hit=$hits[0];$accepted=($hit['taxonomicStatus']??'')==='Accepted';
+        // A synonym is a real match needing reconciliation, not a failed lookup. Never guess a homonym.
+        if(!$accepted&&($hit['author']??'')!==($s['authority']??''))return $r;
+        $id=($accepted?$hit['guid']:($hit['acceptedConceptID']??''))??'';
+        if(!preg_match('/^urn:lsid:ipni\.org:names:[0-9]+-[0-9]+$/D',$id))return $r;
+        if(!$accepted){
+            $detail=$this->request('kew','/species/'.rawurlencode($id));$concept=$detail['taxonConcept']??[];
+            if(($concept['taxonomicStatus']??'')==='Accepted')$r['taxonomy']+=['accepted_name'=>$concept['nameString'],'powo_id'=>$id];
+            return $r;
+        }
+        $r['taxonomy']+=['accepted_name'=>$s['scientific_name'],'powo_id'=>$id];$r['taxonomy']['status']='accepted';
         $r['matched']=true; $r['identifier']=$id;
         $src=$this->source('kew','https://species-ws.data.kew.org/species/'.rawurlencode($id),'CC-BY','Royal Botanic Gardens, Kew: species data portal (IPNI/WCVP taxonomy).');
         $this->field($r,'powo_id',$id,$src); $this->field($r,'authority',self::plain($hits[0]['author'] ?? '',250),$src);

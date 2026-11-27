@@ -178,12 +178,14 @@ class grassguiderights extends ChisimbaObject
                 if($source)$out['sources'][$field]=array_intersect_key($source,array_flip(['provider','url','licence','citation','retrieved_at']));
             }
             $out['ecology_review']=$s['ecology_review'];
+            $out['taxonomy_status']=$s['_taxonomy']['status']??'unresolved';
             $out['gbif_taxon_key']=$this->store()->matchedGbifKey($s['id'],$s['scientific_name']);
             foreach($inventory['media'][$s['id']] as $m){if(!$premium&&(($m['audience']??'everyone')==='premium'||$m['kind']==='youtube'))continue;$item=$map['media:'.$m['id']];if(!($premium&&$m['kind']==='youtube'&&$item['task']['decision']!=='exclude')&&!self::eligible($item,$mode)){$omitted['media']++;continue;}
                 $data=$item['content'];$data['audience']=$m['kind']==='youtube'?'premium':($m['audience']??'everyone');if(!empty($m['_file_id'])&&$data['audience']==='premium')$data['premium_media_id']=$m['id'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];if($m['id']===($s['representative_image']??'')&&$m['kind']==='image')array_unshift($out['media'],$data);else $out['media'][]=$data;
             }
             $result[]=$out;
         }
-        return ['format'=>'lowveld-field-guide','version'=>1,'generated_at'=>gmdate('c'),'publication_mode'=>$mode,'omitted'=>$omitted,'species'=>$result];
+        $visible=array_column($result,'id');$aliases=array_filter($this->store()->speciesAliases(),fn($id)=>in_array($id,$visible,true));
+        return ['species_aliases'=>(object)$aliases,'taxonomy_basis'=>'Names follow Kew Plants of the World Online (WCVP) where resolved. Unresolved names are marked; former names remain searchable.','format'=>'lowveld-field-guide','version'=>1,'generated_at'=>gmdate('c'),'publication_mode'=>$mode,'omitted'=>$omitted,'species'=>$result];
     }
 }

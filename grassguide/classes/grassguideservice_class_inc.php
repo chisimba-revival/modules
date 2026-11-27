@@ -25,6 +25,7 @@ class grassguideservice extends ChisimbaObject
         $revision=$this->identity($id,$input['revision'] ?? '');
         $data=grassguideinput::species($input);
         $old=$this->one($id);
+        if(!empty($old['_merged_into']))throw new DomainException('conflict');
         $cover=grassguideinput::text($input+['representative_image'=>$old['representative_image']??''],'representative_image',32);
         if($cover!==''&&$cover!==($old['representative_image']??'')){
             if(!preg_match('/^[a-f0-9]{32}$/D',$cover))throw new DomainException('invalid_representative');
@@ -34,7 +35,7 @@ class grassguideservice extends ChisimbaObject
         $data['representative_image']=$cover;
         if ($old) {
             // Metadata is server-owned. Explicit human edits, including clearing a field, win.
-            foreach (['_field_sources','_imported_values','_manual_fields','_block_nc_images'] as $key) $data[$key]=$old[$key] ?? [];
+            foreach (['_field_sources','_imported_values','_manual_fields','_block_nc_images','_taxonomy','_merged_into'] as $key) $data[$key]=$old[$key] ?? [];
             foreach ($data as $key=>$value) if ($key[0]!=='_' && $value!==($old[$key] ?? null)) $data['_manual_fields'][$key]=true;
         }
         if ($old && ($old['genus'] !== $data['genus'] || $old['epithet'] !== $data['epithet'])) {
@@ -43,6 +44,7 @@ class grassguideservice extends ChisimbaObject
             $data['synonyms']=implode("\n",array_unique($synonyms));
             // A renamed taxon needs its external mapping reviewed again.
             $data['taxonomy_review']='pending'; $data['taxonomy_checked']='';
+            $data['_taxonomy']=['status'=>'unresolved'];
             if ($data['state']==='reviewed') $data['state']='draft';
         }
         return self::unpack($this->store()->writeSpecies($id,$revision,$data,$this->actor()));
@@ -58,6 +60,7 @@ class grassguideservice extends ChisimbaObject
         if ((int)$row['revision']!==$revision) throw new DomainException('conflict');
         $data=json_decode($row['payload'],true,32,JSON_THROW_ON_ERROR);
         if (($operation==='remove')===($data['state']==='archived')) throw new DomainException('conflict');
+        if(!empty($data['_merged_into']))throw new DomainException('conflict');
         // Restore as a draft: membership does not grant editorial review.
         $data['state']=$operation==='remove'?'archived':'draft';
         return self::unpack($this->store()->writeSpecies($id,$revision,$data,$this->actor()));

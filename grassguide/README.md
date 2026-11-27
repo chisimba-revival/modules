@@ -428,3 +428,30 @@ Unavailable selections fall back without disclosing restricted images. Ordinary
 edits and worker enrichment retain the choice. No schema or phone update needed.
 The isolated PDO tests cover selection, stale saves, administrator permissions,
 cross-species rejection, resets and licence/audience/archive fallbacks.
+
+### POWO reconciliation (0.030)
+
+The dated `data/powo-reconciliation-20261127.json` plan resolves the original
+179 rows to 173 visible entries: 168 accepted names and five unresolved names.
+It includes 21 confirmed synonyms, two spelling corrections, and the abbreviated
+Urochloa bolbodes authority correction. Unresolved: Eragrostis heterostachya,
+Microchloa caffra, Urochloa meyeriana, Urochloa oligostachya, Urochloa stapfiana.
+Their identity is not inferred from a similar spelling or conflicting author.
+
+Fresh seed imports apply the plan only to newly inserted records. Existing sites
+use `php packages/grassguide/scripts/reconcile_taxonomy.php` for a dry run, then
+`--apply` after backup and clone rehearsal. The operation checks original name and
+authority under row locks, commits atomically, and is repeatable. The original CSV
+remains unchanged as import provenance. Editorial content is retained; the six
+merged records remain archived with `_merged_into` links. Media IDs, bytes,
+rights payloads, exclusion tombstones and representative choices are retained.
+Canonical records keep their own descriptions; former editorial records remain
+available in the archive rather than mixing potentially conflicting descriptions.
+
+Feeds include `species_aliases` and `taxonomy_status`. Compatible apps resolve
+old saved/checklist/trip IDs, show unresolved warnings, and explain POWO use in
+Help. Checklist sync accepts historical IDs; original sighting payloads remain
+immutable, including lost-response retries. A phone update is needed for alias
+navigation and warning display. Kew enrichment now reports exact-author synonyms
+for review rather than treating them as absent; it never guesses a new identity.
+Real-PDO tests cover import, rollback, retry, media preservation and offline IDs.
