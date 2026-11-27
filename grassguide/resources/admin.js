@@ -23,8 +23,8 @@
     });
     document.querySelectorAll('[data-copyright-permission]').forEach(section=>{
         const select=section.closest('form').elements.licence;
-        const update=()=>{const enabled=select.value==='copyright';section.hidden=!enabled;section.querySelector('[name="copyright_confirm"]').required=enabled;section.querySelector('[name="copyright_evidence"]').required=enabled;};
-        select.addEventListener('change',update);update();
+        const update=()=>{const state=section.closest('form').elements.state;const enabled=select.value==='copyright'&&(!state||state.value==='active');section.hidden=!enabled;section.querySelector('[name="copyright_confirm"]').required=enabled;section.querySelector('[name="copyright_evidence"]').required=enabled;};
+        select.addEventListener('change',update);section.closest('form').elements.state?.addEventListener('change',update);update();
     });
     const dirty = new Set();
     document.querySelectorAll('[data-media-all], [data-media-none]').forEach(button => {

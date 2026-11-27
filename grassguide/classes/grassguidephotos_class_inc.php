@@ -95,6 +95,19 @@ class grassguidephotos extends ChisimbaObject
             throw $e;
         }
     }
+    /** Save an active copyright image and its explicit app permission atomically. */
+    public function saveCopyrightMedia(string $species,string $id,array $input): array
+    {
+        $this->service()->guard();
+        if(($input['copyright_confirm']??'')!=='1')throw new DomainException('copyright_required');
+        $evidence=grassguideinput::text($input,'copyright_evidence',4000,true);
+        return $this->store()->transactionWithSavepoint(function()use($species,$id,$input,$evidence){
+            $saved=$this->service()->saveMedia($species,$id,$input);
+            $rights=$this->getObject('grassguiderights','grassguide');$target='media:'.$saved['id'];$item=$rights->target($target);
+            $rights->saveTask($target,array_replace($item['task'],['revision'=>(string)$item['task']['revision'],'fingerprint'=>$item['fingerprint'],'decision'=>'commercial_permission','task_status'=>'resolved','permission_evidence'=>$evidence,'public_credit'=>'© '.$saved['creator'].' — Used with permission. All rights reserved.']));
+            return $saved;
+        });
+    }
     public function resume(string $species,array $input): array
     {
         $this->service()->guard();$current=$this->service()->one($species);

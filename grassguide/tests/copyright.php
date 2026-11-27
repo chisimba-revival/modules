@@ -15,4 +15,16 @@ ggCheck($image['licence']==='copyright'&&$item['task']['decision']==='commercial
 foreach(['noncommercial','commercial'] as $mode){$export=$rights->operatorExport($mode);$record=array_values(array_filter($export['species'],fn($s)=>$s['id']===$id))[0];$media=$record['media'][0];ggCheck($media['licence']==='permission'&&$media['original_licence']==='copyright'&&str_contains($media['permission_credit'],'© Fixture Owner'),'Copyright credit exported through recorded permission');ggCheck(!str_contains(json_encode($export),'PRIVATE permission fixture'),'Permission evidence stays private');}
 $uncleared=$item;$uncleared['task']['decision']='inherit';ggCheck(!grassguiderights::eligible($uncleared,'commercial')&&!grassguiderights::eligible($uncleared,'noncommercial'),'Copyright alone is not publication permission');
 $edited=$service->saveMedia($id,$image['id'],array_replace($image,['caption'=>'Changed work']));ggCheck(!grassguiderights::eligible($rights->target('media:'.$image['id']),'commercial'),'Changed copyrighted work invalidates old permission');
-echo "PASS copyright upload: explicit permission, private evidence, publication credits, atomic rollback and stale permission checks.\n";
+$editInput=array_replace($edited,['caption'=>'Confirmed edited work']);
+ggReject(fn()=>$photos->saveCopyrightMedia($id,$image['id'],$editInput),'copyright_required');
+ggReject(fn()=>$photos->saveCopyrightMedia($id,$image['id'],$editInput+['copyright_confirm'=>'1']),'invalid');
+$editInput+=['copyright_confirm'=>'1','copyright_evidence'=>'PRIVATE edited permission fixture'];
+$store->executeExactPrepared("CREATE TRIGGER grassguide_fail_copyright BEFORE INSERT ON tbl_grassguide_audit FOR EACH ROW BEGIN IF NEW.action='rights_saved' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='fixture'; END IF; END");
+$failed=false;try{$photos->saveCopyrightMedia($id,$image['id'],$editInput);}catch(Throwable $e){$failed=true;}
+$store->executeExactPrepared('DROP TRIGGER grassguide_fail_copyright');
+ggCheck($failed&&$service->mediaFor($id)[0]['revision']===$edited['revision'],'Copyright edit permission failure rolls back media revision');
+$photos->saveCopyrightMedia($id,$image['id'],$editInput);
+$item=$rights->target('media:'.$image['id']);
+ggCheck(grassguiderights::eligible($item,'commercial')&&grassguiderights::eligible($item,'noncommercial'),'Copyright editor records permission for both editions');
+ggCheck($item['task']['permission_evidence']===$editInput['copyright_evidence'],'Copyright editor retains private evidence');
+echo "PASS copyright upload and edit: explicit permission, private evidence, publication credits, atomic rollback and stale permission checks.\n";

@@ -409,3 +409,11 @@ Rights and publication service, in the same transaction as the upload. A failed
 permission write rolls back the batch and removes new files. Copyright without
 recorded permission remains unpublished; later content changes invalidate the
 permission as before. Permission evidence is never exported to public clients.
+
+### Copyright edits (0.028)
+
+Saving an active image as Copyright now requests the same ownership confirmation
+and private permission note as batch uploads. Media and its current permission
+are saved atomically, retaining copyright and respecting the selected audience.
+Archiving or excluding an image does not require a new grant. The PDO fixture
+checks missing confirmation, private evidence, both publication profiles and rollback.
