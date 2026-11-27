@@ -19,6 +19,15 @@ class grassguiderights extends ChisimbaObject
             return $this->appExport();
         } finally { $this->operatorRead=false; }
     }
+    /** Authenticated premium projection: the caller must establish a current entitlement. */
+    public function premiumExport(string $key): array
+    {
+        $auth=$this->getObject('grassguidepremium','grassguide')->response('GET',$key);
+        if($auth['status']!==200||!json_decode($auth['body'],true)['premium'])throw new DomainException('forbidden');
+        $this->operatorRead=true;
+        try { if(empty($this->policy()['app_updates']))throw new DomainException('unpublished');return $this->appExport('commercial',true); }
+        finally {$this->operatorRead=false;}
+    }
     /** Read-only HTTP contract; no caller can select a different publication mode. */
     public function publicResponse(string $method, string $etag=''): array
     {
@@ -152,7 +161,7 @@ class grassguiderights extends ChisimbaObject
         return $result;
     }
     /** Administrator-only app bundle; permission evidence/tasks never leave this boundary. */
-    public function appExport(?string $previewMode=null): array
+    public function appExport(?string $previewMode=null,bool $premium=false): array
     {
         $this->readGuard();$mode=$previewMode??$this->policy()['mode'];
         if(!in_array($mode,['noncommercial','commercial'],true))throw new DomainException('invalid');
@@ -170,8 +179,8 @@ class grassguiderights extends ChisimbaObject
             }
             $out['ecology_review']=$s['ecology_review'];
             $out['gbif_taxon_key']=$this->store()->matchedGbifKey($s['id'],$s['scientific_name']);
-            foreach($inventory['media'][$s['id']] as $m){$item=$map['media:'.$m['id']];if(!self::eligible($item,$mode)){$omitted['media']++;continue;}
-                $data=$item['content'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];$out['media'][]=$data;
+            foreach($inventory['media'][$s['id']] as $m){if(!$premium&&(($m['audience']??'everyone')==='premium'||$m['kind']==='youtube'))continue;$item=$map['media:'.$m['id']];if(!($premium&&$m['kind']==='youtube'&&$item['task']['decision']!=='exclude')&&!self::eligible($item,$mode)){$omitted['media']++;continue;}
+                $data=$item['content'];$data['audience']=$m['kind']==='youtube'?'premium':($m['audience']??'everyone');if(!empty($m['_file_id'])&&$data['audience']==='premium')$data['premium_media_id']=$m['id'];if($item['task']['decision']==='commercial_permission'&&!$item['stale']){$data['original_licence']=$data['licence'];$data['licence']='permission';$data['permission_credit']=$item['task']['public_credit'];}if(isset($m['_inat']))$data['identification']=$m['_inat'];$out['media'][]=$data;
             }
             $result[]=$out;
         }

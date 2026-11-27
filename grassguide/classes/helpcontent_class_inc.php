@@ -8,6 +8,6 @@ class helpcontent extends ChisimbaObject
     {
         if (!$this->mayViewTopic($id)) return null;
         $r=$this->getObject('grassguiderenderer','grassguide');
-        return ['title'=>$r->text('title'),'summary'=>$r->text('help_summary'),'steps'=>array_map(fn($key)=>$r->text($key),['help_setup','help_membership','help_species','help_media','help_image_review','batch_remove_help','help_photos','help_recovery','help_export','help_rights','help_contributors','help_contact_mail','help_premium'])];
+        return ['title'=>$r->text('title'),'summary'=>$r->text('help_summary'),'steps'=>array_map(fn($key)=>$r->text($key),['help_setup','help_membership','help_species','help_media','audience_help','help_image_review','batch_remove_help','help_photos','help_recovery','help_export','help_rights','help_contributors','help_contact_mail','help_premium'])];
     }
 }

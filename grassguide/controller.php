@@ -4,7 +4,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguide extends controller
 {
     public function init() {}
-    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue' && !in_array(($action ?? $this->param('action','index')),['photo','premiumstatus','checklistsync'],true); }
+    public function requiresLogin($action = null) { return ($action ?? $this->param('action','index'))!=='catalogue' && !in_array(($action ?? $this->param('action','index')),['photo','premiumphoto','premiumcatalogue','premiumstatus','checklistsync'],true); }
     private function param(string $key, string $default = ''): string { $v=$this->getParam($key,$default); return is_string($v) ? $v : $default; }
     private function csrf() { return $this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }
     public function dispatch($action = null)
@@ -13,6 +13,14 @@ class grassguide extends controller
             try { $response=$this->getObject('grassguiderights','grassguide')->publicResponse($_SERVER['REQUEST_METHOD']??'',$_SERVER['HTTP_IF_NONE_MATCH']??''); }
             catch(Throwable $e) { error_log('Grass catalogue unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}']; }
             http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
+        }
+        if($this->param('action','index')==='premiumcatalogue') {
+            header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: no-store');header('Access-Control-Allow-Origin: *');header('Access-Control-Allow-Headers: X-API-Key');header('Access-Control-Allow-Methods: GET, OPTIONS');header('X-Content-Type-Options: nosniff');
+            $method=$_SERVER['REQUEST_METHOD']??'';if($method==='OPTIONS'){http_response_code(204);exit;}if($method!=='GET'){http_response_code(405);exit;}
+            try{echo json_encode($this->getObject('grassguiderights','grassguide')->premiumExport($_SERVER['HTTP_X_API_KEY']??''),JSON_THROW_ON_ERROR);}
+            catch(DomainException $e){http_response_code(403);echo '{"error":"premium_required"}';}
+            catch(Throwable $e){http_response_code(503);echo '{"error":"unavailable"}';}
+            exit;
         }
         if($this->param('action','index')==='checklistsync') {
             try{$response=$this->getObject('grassguidepremium','grassguide')->checklistResponse($_SERVER['REQUEST_METHOD']??'',is_string($_SERVER['HTTP_X_API_KEY']??null)?$_SERVER['HTTP_X_API_KEY']:'',file_get_contents('php://input',false,null,0,32769));}
@@ -24,12 +32,12 @@ class grassguide extends controller
             catch(Throwable $e){error_log('Grass premium unavailable ('.get_class($e).').');$response=['status'=>503,'headers'=>['Content-Type'=>'application/json','Cache-Control'=>'no-store','Access-Control-Allow-Origin'=>'*'],'body'=>'{"error":"unavailable"}'];}
             http_response_code($response['status']);foreach($response['headers'] as $name=>$value)header($name.': '.$value);echo $response['body'];exit;
         }
-        if($this->param('action','index')==='photo') {
+        if(in_array($this->param('action','index'),['photo','premiumphoto'],true)) {
             header('Cache-Control: private, no-store');header('Access-Control-Allow-Origin: *');header('X-Content-Type-Options: nosniff');
             $method=$_SERVER['REQUEST_METHOD']??'';
-            if($method==='OPTIONS'){header('Access-Control-Allow-Methods: GET, HEAD, OPTIONS');http_response_code(204);exit;}
+            if($method==='OPTIONS'){header('Access-Control-Allow-Methods: GET, HEAD, OPTIONS');header('Access-Control-Allow-Headers: X-API-Key');http_response_code(204);exit;}
             if(!in_array($method,['GET','HEAD'],true)){header('Allow: GET, HEAD, OPTIONS');http_response_code(405);exit;}
-            try{$bytes=$this->getObject('grassguidephotos','grassguide')->read($this->param('id'));}
+            try{$photos=$this->getObject('grassguidephotos','grassguide');$bytes=$this->param('action')==='premiumphoto'?$photos->readPremium($this->param('id'),$_SERVER['HTTP_X_API_KEY']??''):$photos->read($this->param('id'));}
             catch(DomainException $e){http_response_code(404);exit;}
             catch(Throwable $e){error_log('Grass photo unavailable ('.get_class($e).').');http_response_code(503);exit;}
             header('Content-Type: '.(new finfo(FILEINFO_MIME_TYPE))->buffer($bytes));header('Content-Length: '.strlen($bytes));

@@ -3,6 +3,7 @@
 if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 class grassguidephotos extends ChisimbaObject
 {
+    private ?string $premiumMedia=null;
     private function service() { return $this->getObject('grassguideservice','grassguide'); }
     private function store() { return $this->getObject('grassguidestore','grassguide'); }
     public function mayStoreFiles(): bool { return $this->service()->allowed(); }
@@ -12,7 +13,7 @@ class grassguidephotos extends ChisimbaObject
         if(!$row)return false;
         $m=grassguideservice::unpack($row);
         if(($m['_file_id']??'')!==$file['id'])return false;
-        if($this->service()->allowed())return true;
+        if($this->service()->allowed()||$this->premiumMedia===$row['id'])return true;
         if($m['state']!=='active')return false;
         try { $bundle=$this->getObject('grassguiderights','grassguide')->publicExport(); }
         catch(DomainException $e) { return false; }
@@ -24,6 +25,13 @@ class grassguidephotos extends ChisimbaObject
         $row=$this->store()->mediaOne($id);$m=$row?grassguideservice::unpack($row):[];
         if(empty($m['_file_id']))throw new DomainException('missing');
         return $this->getObject('modulefilestore','filemanager')->readMedia('grassguide','grassguidephotos',$id,$m['_file_id']);
+    }
+    public function readPremium(string $id,string $key): string
+    {
+        $bundle=$this->getObject('grassguiderights','grassguide')->premiumExport($key);
+        $allowed=false;foreach($bundle['species'] as $species)foreach($species['media'] as $media)if(($media['premium_media_id']??'')===$id)$allowed=true;
+        if(!$allowed)throw new DomainException('missing');
+        $this->premiumMedia=$id;try{return $this->read($id);}finally{$this->premiumMedia=null;}
     }
     public static function captions(string $csv,int $count): array
     {
@@ -71,7 +79,7 @@ class grassguidephotos extends ChisimbaObject
                 $id=bin2hex(random_bytes(16));
                 $url=$this->uri(['action'=>'photo','id'=>$id],'grassguide');
                 $url=grassguideinput::url(['url'=>$url],'url',true);
-                $media[$id]=grassguideinput::media(['kind'=>'image','role'=>'other','state'=>'active','source_url'=>$url,'image_url'=>$url,'caption'=>$captions[$i],'alt_text'=>$captions[$i],'creator'=>$creator,'licence'=>$licence,'rights_note'=>''])+['_file_id'=>$file];
+                $media[$id]=grassguideinput::media(['kind'=>'image','role'=>'other','state'=>'active','source_url'=>$url,'image_url'=>$url,'caption'=>$captions[$i],'alt_text'=>$captions[$i],'creator'=>$creator,'licence'=>$licence,'rights_note'=>'','audience'=>$input['audience']??'everyone'])+['_file_id'=>$file];
             }
             return grassguideservice::unpack($this->store()->writePhotoBatch($species,(int)$current['revision'],$media,$mode,$this->service()->actor()));
         } catch(Throwable $e) {
