@@ -98,7 +98,7 @@ class grassguide extends controller
                 elseif ($action==='setmembership') $record=$service->setMembership($id,$input);
                 elseif ($action==='save') $record=$service->save($id,$input);
                 elseif ($action==='removemediabatch') $record=$service->removeMediaBatch($id,$input);
-                elseif ($action==='savemedia') $record=$service->saveMedia($species,$id,$input);
+                elseif ($action==='savemedia') $record=($input['licence']??'')==='copyright'&&($input['state']??'')==='active'?$this->getObject('grassguidephotos','grassguide')->saveCopyrightMedia($species,$id,$input):$service->saveMedia($species,$id,$input);
                 elseif ($action==='enrich') $message=(string)$service->queueEnrichment();
                 else $message=(string)$service->import($this->param('seed_hash'));
             } catch (DomainException $e) { $error=$e->getMessage(); if (http_response_code()<400) http_response_code($error==='conflict'?409:422); }
