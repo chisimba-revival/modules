@@ -79,6 +79,7 @@
     document.querySelectorAll('[data-grass-form]').forEach(form => {
         const changed = () => {
             dirty.add(form);
+            form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = labels.dataset.unsaved; });
             if (new URL(form.action).searchParams.get('action') === 'savecontact') {
                 document.querySelectorAll('[data-grass-form]').forEach(other => {
                     if (new URL(other.action).searchParams.get('action') !== 'queuepermission') return;
@@ -95,18 +96,18 @@
             event.preventDefault();
             if (form.dataset.busy === '1' || form.dataset.draftDirty === '1') return;
             form.dataset.busy = '1';
-            const status = form.querySelector('[data-save-status]');
-            const button = form.querySelector('button[type="submit"]');
+            const setStatus = message => form.querySelectorAll('[data-save-status]').forEach(status => { status.textContent = message; });
+            const buttons = [...form.querySelectorAll('button[type="submit"]')];
             const body = new FormData(form);
             body.set('ajax', '1');
-            button.disabled = true;
-            status.textContent = labels.dataset.saving;
+            buttons.forEach(button => { button.disabled = true; });
+            setStatus(labels.dataset.saving);
             try {
                 const response = await fetch(form.action, {method: 'POST', body, credentials: 'same-origin', headers: {'Accept': 'application/json'}});
                 const data = await response.json();
                 if (typeof data.csrf === 'string') form.elements.csrf_token.value = data.csrf;
                 if (typeof data.message !== 'string' || typeof data.ok !== 'boolean') throw new Error('Unexpected response');
-                status.textContent = data.message;
+                setStatus(data.message);
                 if (data.ok && response.ok) {
                     dirty.delete(form);
                     // Reload only after a confirmed save, including new record links/preview.
@@ -126,9 +127,9 @@
                     window.location.assign(destination.href);
                 }
             } catch (_) {
-                status.textContent = labels.dataset.failed;
+                setStatus(labels.dataset.failed);
             } finally {
-                button.disabled = false;
+                buttons.forEach(button => { button.disabled = false; });
                 form.dataset.busy = '0';
             }
         });
