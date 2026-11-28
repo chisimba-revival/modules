@@ -91,6 +91,6 @@ require __DIR__.'/botanical.php';
 require __DIR__.'/copyright.php';
 require __DIR__.'/representative.php';
 
-ob_end_flush();
-
 require __DIR__.'/taxonomy.php';
+
+ob_end_flush();
