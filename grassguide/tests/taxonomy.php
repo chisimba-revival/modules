@@ -36,3 +36,16 @@ $apis->responses=[['searchResults'=>['results'=>[['scientificName'=>'Taxonomicus
 $check=$apis->fetch('kew',$old);
 ggCheck($check['taxonomy']['accepted_name']==='Taxonomicus accepted'&&$check['taxonomy']['status']==='unresolved'&&empty($check['fields']),'Worker reports synonym for review without guessing a rename');
 echo "PASS taxonomy: dry-run, full rollback, atomic merge, preserved photo/rights payload/default, archived editorial history, idempotence, old-client checklists and immutable sightings, unresolved visibility and synonym detection.\n";
+
+// The saved identity stays visible; a not-yet-run check is not a failed match.
+$fixture=$service->save(md5('taxonomy-pending-ui'),['revision'=>'0','genus'=>'Stipagrostis','epithet'=>'hirtigluma','state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending']);
+foreach([[] , ['status'=>'unresolved'], ['status'=>'unresolved','checked_at'=>gmdate('Y-m-d')], ['status'=>'accepted','checked_at'=>gmdate('Y-m-d')]] as $metadata){
+ $row=$store->one($fixture['id']);$data=json_decode($row['payload'],true);$data['_taxonomy']=$metadata;$store->writeSpecies($row['id'],(int)$row['revision'],$data,'fixture');
+ $GLOBALS['objects']['grassguiderenderer']=new grassguiderenderer();
+ $_GET=['action'=>'edit','id'=>$fixture['id'],'saved'=>'1'];$_POST=[];$_SERVER['REQUEST_METHOD']='GET';$c=new grassguide();$template=$c->dispatch();ob_start();$c->render($template);$html=ob_get_clean();
+ ggCheck(str_contains($html,'<h2>Edit — <i>Stipagrostis hirtigluma</i></h2>'),'Saved scientific name is prominent and italicised');
+ $notice=substr($html,strpos($html,'<h2>Edit —'),strpos($html,'<details>')-strpos($html,'<h2>Edit —'));
+ ggCheck(str_contains($notice,'Name check pending:')===empty($metadata['checked_at']),'Pending check shown accurately');
+ ggCheck(str_contains($notice,'Unresolved name:')===(($metadata['status']??'')==='unresolved'&&!empty($metadata['checked_at'])),'Unresolved warning requires a completed check');
+}
+echo "PASS post-save identity and pending/completed taxonomy messages.\n";

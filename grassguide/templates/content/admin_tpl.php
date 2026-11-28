@@ -58,15 +58,20 @@ if(in_array($grassView,['rights','contributors','rightstask'],true)) { include _
     echo '</div><div class="chisimba-form-actions">'.$r->button('add_species','plus').$r->link('cancel','arrow-left',['action'=>'index']).'</div></form></section>';
 } elseif ($grassView==='edit') {
     $d=array_merge(['state'=>'draft','taxonomy_review'=>'pending','ecology_review'=>'pending','heads'=>[]],$d);
+    echo '<h2>'.$t('edit').' — '.$r->botanical($grassRecord['scientific_name']).'</h2>';
+    $taxonomy=$grassRecord['_taxonomy']??[];
     if(!empty($d['_merged_into']))echo '<p class="chisimba-notice">'.$t('merged_name').' '.$r->link('edit','pencil',['action'=>'edit','id'=>$d['_merged_into']]).'</p>';
-    elseif(($d['_taxonomy']['status']??'unresolved')!=='accepted')echo '<p class="chisimba-notice">'.$t('unresolved_name').'</p>';
+    elseif(($taxonomy['status']??'')!=='accepted'){
+        $checked=!empty($taxonomy['checked_at'])||!empty($taxonomy['version']);
+        echo '<p class="chisimba-notice" role="status">'.$t($checked?'unresolved_name':'name_check_pending').'</p>';
+    }
     if($grassRecord) {
         echo '<details><summary>'.$t('enrichment_progress').'</summary><ul>';
         foreach($s->enrichmentJobs($grassId) as $job)echo '<li>'.$e($job['provider']).' — '.$t('job_'.$job['status']).' · '.$e($job['updated_at']).' UTC'.($job['last_error']!==''?' · '.$e($job['last_error']):'').'</li>';
         echo '</ul><p>'.$t('enrichment_help').'</p></details>';
     }
     $saveActions=fn()=>'<div class="chisimba-form-actions">'.$r->button('save_changes','save').'<span data-save-status role="status" aria-live="polite"></span></div>';
-    echo '<h2>'.$t($grassRecord?'edit':'new_species').'</h2>'.$start('save',$grassId,$d['revision'] ?? 0).'<p>'.$t('save_species_help').'</p>'.$saveActions();
+    echo $start('save',$grassId,$d['revision'] ?? 0).'<p>'.$t('save_species_help').'</p>'.$saveActions();
     echo '<div class="chisimba-publishing-layout"><div class="chisimba-flow"><fieldset class="chisimba-form-card chisimba-form-card--wide"><legend>'.$t('identity').'</legend><div class="chisimba-form-grid">';
     foreach (['genus'=>100,'epithet'=>100,'authority'=>250,'common_name'=>200] as $key=>$max) echo $r->field($key,$d,$max,in_array($key,['genus','epithet'],true));
     echo '</div>'.$r->field('other_names',$d,1500,false,true).$r->field('synonyms',$d,3000,false,true).'<p>'.$t('names_help').'</p>'.$saveActions().'</fieldset>';
